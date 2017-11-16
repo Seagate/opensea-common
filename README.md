@@ -10,6 +10,7 @@ Other opensea-* libraries depends on this library for common functionality.
 
 Source
 ------
+https://github.com/Seagate/opensea-common.git
 
 Building
 --------
