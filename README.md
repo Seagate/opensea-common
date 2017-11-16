@@ -1,19 +1,29 @@
 # opensea-common
-Cross platform library containing common set of functions used by other libraries. 
+#### Copyright (c) 2014-2017 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 
-Overview 
---------
+Welcome to opensea-common, part of the openSeaChest open source project!
+
+BINARIES and SOURCE CODE files of the opensea-common and openSeaChest open source projects have
+been made available to you under the Mozilla Public License 2.0 (MPL).  The
+openSeaChest project repository is maintained at
+https://github.com/Seagate/openSeaChest.
+
+### opensea-operation
+Cross platform library containing common set of functions used by other libraries.
+
+#### Overview 
+
 The opensea-common library has common set of defines and functions
 that are not specific to any interface, compiler or OS. 
 
 Other opensea-* libraries depends on this library for common functionality. 
 
-Source
-------
+#### Source
+
 https://github.com/Seagate/opensea-common.git
 
-Building
---------
+#### Building
+
 All Makefile and Visual Studio project & solution files are part of Make folder.
 
 The following will build the debug version of the library by default.
@@ -24,12 +34,12 @@ make
 To build under Microsoft Windows, open the correspoinding 
 Visual Studio Solution files for VS 2013 or 2015
 
-Documentation
--------------
+#### Documentation
+
 Header files & functions have doxygen documentation. 
 
-Platforms
----------
+#### Platforms
+
 Under Linux this libraries can be built on the following platforms using 
 a cross platform compiler: 
 
