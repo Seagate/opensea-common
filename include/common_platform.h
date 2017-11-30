@@ -372,7 +372,7 @@ extern "C"
     //
     // Entry:
     //      \param[out] versionNumber - pointer to the OSVersionNumber struct. This will be filled in with version information upon successful completion.
-    //      \param[out] operatingSystemName - This will be a string with the friendly, human readable name of the OS. This will likely be the name of the release as it was announced. IE: Windows 6.2 = Windows 8.
+    //      \param[out] operatingSystemName - (optional, set to NULL if not being used) This will be a string with the friendly, human readable name of the OS. This will likely be the name of the release as it was announced. IE: Windows 6.2 = Windows 8.
     //
     // Exit:
     //      \return SUCCESS = got version information, !SUCCESS = failure getting version information.

@@ -531,122 +531,125 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
     if (ret == SUCCESS)
     {
         //Now that we know whether or not it's a server version and have gotten the version number, set the appropriate string for the OS.
-        switch (versionNumber->versionType.windowsVersion.majorVersion)
+        if (operatingSystemName)
         {
-        case 10://Win 10 or Server 2016
-            switch (versionNumber->versionType.windowsVersion.minorVersion)
+            switch (versionNumber->versionType.windowsVersion.majorVersion)
             {
-            case 0:
-                if (isWindowsServer)
+            case 10://Win 10 or Server 2016
+                switch (versionNumber->versionType.windowsVersion.minorVersion)
                 {
-                    sprintf(&operatingSystemName[0], "Windows Server 2016");
+                case 0:
+                    if (isWindowsServer)
+                    {
+                        sprintf(&operatingSystemName[0], "Windows Server 2016");
+                    }
+                    else
+                    {
+                        sprintf(&operatingSystemName[0], "Windows 10");
+                    }
+                    break;
+                default:
+                    if (isWindowsServer)
+                    {
+                        sprintf(&operatingSystemName[0], "Windows Server 2016 or higher");
+                    }
+                    else
+                    {
+                        sprintf(&operatingSystemName[0], "Windows 10 or higher");
+                    }
+                    break;
                 }
-                else
+                break;
+            case 6://Vista through 8.1
+                switch (versionNumber->versionType.windowsVersion.minorVersion)
                 {
-                    sprintf(&operatingSystemName[0], "Windows 10");
+                case 3:
+                    if (isWindowsServer)
+                    {
+                        sprintf(&operatingSystemName[0], "Windows Server 2012 R2");
+                    }
+                    else
+                    {
+                        sprintf(&operatingSystemName[0], "Windows 8.1");
+                    }
+                    break;
+                case 2:
+                    if (isWindowsServer)
+                    {
+                        sprintf(&operatingSystemName[0], "Windows Server 2012");
+                    }
+                    else
+                    {
+                        sprintf(&operatingSystemName[0], "Windows 8");
+                    }
+                    break;
+                case 1:
+                    if (isWindowsServer)
+                    {
+                        sprintf(&operatingSystemName[0], "Windows Server 2008 R2");
+                    }
+                    else
+                    {
+                        sprintf(&operatingSystemName[0], "Windows 7");
+                    }
+                    break;
+                case 0:
+                    if (isWindowsServer)
+                    {
+                        sprintf(&operatingSystemName[0], "Windows Server 2008");
+                    }
+                    else
+                    {
+                        sprintf(&operatingSystemName[0], "Windows Vista");
+                    }
+                    break;
+                default:
+                    if (isWindowsServer)
+                    {
+                        sprintf(&operatingSystemName[0], "Windows Server 2012 R2 or higher");
+                    }
+                    else
+                    {
+                        sprintf(&operatingSystemName[0], "Windows 8.1 or higher");
+                    }
+                    break;
+                }
+                break;
+            case 5://2000 through XP
+                switch (versionNumber->versionType.windowsVersion.minorVersion)
+                {
+                case 2:
+                    if (isWindowsServer)
+                    {
+                        sprintf(&operatingSystemName[0], "Windows Server 2003");
+                    }
+                    else
+                    {
+                        sprintf(&operatingSystemName[0], "Windows XP 64-Bit Edition");
+                    }
+                    break;
+                case 1:
+                    sprintf(&operatingSystemName[0], "Windows XP");
+                    break;
+                case 0:
+                    sprintf(&operatingSystemName[0], "Windows 2000");
+                    break;
+                default:
+                    if (isWindowsServer)
+                    {
+                        sprintf(&operatingSystemName[0], "Windows Server 2003 or higher");
+                    }
+                    else
+                    {
+                        sprintf(&operatingSystemName[0], "XP or higher");
+                    }
+                    break;
                 }
                 break;
             default:
-                if (isWindowsServer)
-                {
-                    sprintf(&operatingSystemName[0], "Windows Server 2016 or higher");
-                }
-                else
-                {
-                    sprintf(&operatingSystemName[0], "Windows 10 or higher");
-                }
+                sprintf(&operatingSystemName[0], "Unknown Windows OS");
                 break;
             }
-            break;
-        case 6://Vista through 8.1
-            switch (versionNumber->versionType.windowsVersion.minorVersion)
-            {
-            case 3:
-                if (isWindowsServer)
-                {
-                    sprintf(&operatingSystemName[0], "Windows Server 2012 R2");
-                }
-                else
-                {
-                    sprintf(&operatingSystemName[0], "Windows 8.1");
-                }
-                break;
-            case 2:
-                if (isWindowsServer)
-                {
-                    sprintf(&operatingSystemName[0], "Windows Server 2012");
-                }
-                else
-                {
-                    sprintf(&operatingSystemName[0], "Windows 8");
-                }
-                break;
-            case 1:
-                if (isWindowsServer)
-                {
-                    sprintf(&operatingSystemName[0], "Windows Server 2008 R2");
-                }
-                else
-                {
-                    sprintf(&operatingSystemName[0], "Windows 7");
-                }
-                break;
-            case 0:
-                if (isWindowsServer)
-                {
-                    sprintf(&operatingSystemName[0], "Windows Server 2008");
-                }
-                else
-                {
-                    sprintf(&operatingSystemName[0], "Windows Vista");
-                }
-                break;
-            default:
-                if (isWindowsServer)
-                {
-                    sprintf(&operatingSystemName[0], "Windows Server 2012 R2 or higher");
-                }
-                else
-                {
-                    sprintf(&operatingSystemName[0], "Windows 8.1 or higher");
-                }
-                break;
-            }
-            break;
-        case 5://2000 through XP
-            switch (versionNumber->versionType.windowsVersion.minorVersion)
-            {
-            case 2:
-                if (isWindowsServer)
-                {
-                    sprintf(&operatingSystemName[0], "Windows Server 2003");
-                }
-                else
-                {
-                    sprintf(&operatingSystemName[0], "Windows XP 64-Bit Edition");
-                }
-                break;
-            case 1:
-                sprintf(&operatingSystemName[0], "Windows XP");
-                break;
-            case 0:
-                sprintf(&operatingSystemName[0], "Windows 2000");
-                break;
-            default:
-                if (isWindowsServer)
-                {
-                    sprintf(&operatingSystemName[0], "Windows Server 2003 or higher");
-                }
-                else
-                {
-                    sprintf(&operatingSystemName[0], "XP or higher");
-                }
-                break;
-            }
-            break;
-        default:
-            sprintf(&operatingSystemName[0], "Unknown Windows OS");
-            break;
         }
     }
     return ret;
