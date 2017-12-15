@@ -220,7 +220,7 @@ extern "C"
     extern char *g_currentTimeStringPtr;
 
     #define M_NibblesTo1ByteValue(n1, n0) ( \
-    (uint8_t)( ((uint8_t)(n1) << 4) | ((uint8_t)(n0) << 0)) \
+    (uint8_t)( ((uint8_t)((n1) & 0x0F) << 4) | ((uint8_t)((n0) & 0x0F) << 0)) \
                                            )
 
     // Big endian parameter order, little endian value
