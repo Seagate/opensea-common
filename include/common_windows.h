@@ -20,6 +20,7 @@ extern "C"
 #endif
 
     //This pragma is needed to tell a library including opensea-common to look for Version.lib for the version helping information in the .c file.
+	//NOTE: ARM requires 10.0.16299.0 API to get this library!
     #pragma comment(lib,"Version.lib")
 
     #include <windows.h>
