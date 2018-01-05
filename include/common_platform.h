@@ -250,6 +250,7 @@ extern "C"
         OS_LINUX,
         OS_FREEBSD,
         OS_SOLARIS,
+        OS_UEFI,
         OS_MACOSX,//not supported yet
         OS_AIX,//not supported yet
         OS_TRU64,//not supported yet
@@ -343,6 +344,13 @@ extern "C"
         uint16_t minorVersion;
     }HPUXVersionNumber;
 
+    typedef struct _UEFIVersionNumber
+    {
+        uint16_t majorVersion;
+        uint16_t minorVersion;
+        uint16_t revision;
+    }UEFIVersionNumber;
+
     typedef struct _OSVersionNumber
     {
         eOSType osVersioningIdentifier;
@@ -351,6 +359,7 @@ extern "C"
             LinuxVersionNumber linuxVersion;
             FreeBSDVersionNumber freeBSDVersion;
             SolarisVersionNumber solarisVersion;
+            UEFIVersionNumber uefiVersion;
             MacOSVersionNumber macOSVersion;
             AIXVersionNumber aixVersion;
             DragonflyVersionNumber dragonflyVersion;
