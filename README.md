@@ -1,5 +1,5 @@
 # opensea-common
-#### Copyright (c) 2014-2017 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+#### Copyright (c) 2014-2018 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 
 Welcome to opensea-common, part of the openSeaChest open source project!
 
@@ -40,7 +40,7 @@ Header files & functions have doxygen documentation.
 
 #### Platforms
 
-Under Linux this libraries can be built on the following platforms using 
+Under Linux this library can be built on the following platforms using 
 a cross platform compiler: 
 
         aarch64
@@ -63,7 +63,6 @@ a cross platform compiler:
         
 This project can be build under Windows Visual Studio 2013 & 2015 solution
 files for x86 and x64 targets.  
-
 
 ### Names, Logos, and Brands
 
@@ -97,7 +96,7 @@ The newest online version of the openSeaChest Utilities documentation, open
 source usage and acknowledgement licenses, and our Linux USB Boot Maker FAQ can
 be found at: https://github.com/Seagate/openSeaChest.
 
-Copyright (c) 2014-2017 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+Copyright (c) 2014-2018 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 
 -----------------------------------------
 
