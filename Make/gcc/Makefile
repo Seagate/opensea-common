@@ -39,10 +39,6 @@ LIBS = lib$(NAME).a
 
 FILE_OUTPUT_DIR=lib
 
-#DEPFILES = $(LIB_SRC_FILES:.c=.d)
-
-#-include $(DEPFILES)
-
 .PHONY: all 
 
 all: clean mkoutputdir $(LIBS)

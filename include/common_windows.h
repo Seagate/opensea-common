@@ -20,6 +20,7 @@ extern "C"
 #endif
 
     //This pragma is needed to tell a library including opensea-common to look for Version.lib for the version helping information in the .c file.
+	//NOTE: ARM requires 10.0.16299.0 API to get this library!
     #pragma comment(lib,"Version.lib")
 
     #include <windows.h>
@@ -95,6 +96,7 @@ extern "C"
     #define WIN_API_TARGET_WIN10_10586 100105860L //10.0.10586.0 //Win 10 API, build 10586
     #define WIN_API_TARGET_WIN10_14393 100143930L //10.0.14393.0 //Win 10 API, build 14393
     #define WIN_API_TARGET_WIN10_15063 100150630L //10.0.15063.0 //Win 10 API, build 15063
+	#define WIN_API_TARGET_WIN10_16299 100162990L //10.0.16299.0 //Win 10 API, build 16299
 
 
         
