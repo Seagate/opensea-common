@@ -23,6 +23,7 @@ VERSION=$(MAJOR).$(MINOR).$(PATCH)
 SRC_DIR=../../src/
 INC_DIR=-I../../include
 CC=gcc
+AR=ar
 CFLAGS ?= -Wall -c -fPIC -I. -std=gnu99
 CFLAGS += -c -fPIC -I. -std=gnu99
 LFLAGS = -Wall
@@ -48,7 +49,7 @@ all: clean mkoutputdir $(LIBS)
 
 $(LIBS): $(LIB_OBJ_FILES)
 	rm -f $(FILE_OUTPUT_DIR)/$@
-	ar cq $(FILE_OUTPUT_DIR)/$@ $(LIB_OBJ_FILES)
+	$(AR) cq $(FILE_OUTPUT_DIR)/$@ $(LIB_OBJ_FILES)
 # Removing the line below since we don't need a shared object for this right now...a static library is enough for the common stuff
 #	$(CC) -shared $(LIB_OBJ_FILES) -o lib$(NAME).so.$(VERSION)
 clean:
