@@ -681,7 +681,15 @@ uint32_t random_Range_32(uint32_t rangeMin, uint32_t rangeMax)
     //return (xorshiftplus32() % (rangeMax + 1 - rangeMin) + rangeMin);
 
     //This method below should return unbiased results. see http://c-faq.com/lib/randrange.html
-    return (rangeMin + xorshiftplus32() / (UINT32_MAX / (rangeMax - rangeMin + 1) + 1));
+    uint32_t d = (UINT32_MAX / (rangeMax - rangeMin + 1) + 1);
+    if (d > 0)
+    {
+        return (rangeMin + xorshiftplus32() / d);
+    }
+    else
+    {
+        return 0;
+    }
 }
 uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax)
 {
@@ -694,7 +702,15 @@ uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax)
     //return (xorshiftplus64() % (rangeMax + 1 - rangeMin) + rangeMin);
 
     //This method below should return unbiased results. see http://c-faq.com/lib/randrange.html
-    return (rangeMin + xorshiftplus64() / (UINT64_MAX / (rangeMax - rangeMin + 1) + 1));
+    uint64_t d = (UINT64_MAX / (rangeMax - rangeMin + 1) + 1);
+    if (d > 0)
+    {
+        return (rangeMin + xorshiftplus64() / d);
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 int fill_Random_Pattern_In_Buffer(uint8_t *ptrData, uint32_t dataLength)
