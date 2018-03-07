@@ -166,7 +166,7 @@ extern "C"
     #define BIT62     (M_BitN((uint64_t)62))
     #define BIT63     (M_BitN((uint64_t)63))
 
-    #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~0 << ((msb) - (lsb) + 1)))
+    #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~0U << ((msb) - (lsb) + 1)))
 
     //define something called reserved that has a value of zero. Use it to set reserved bytes to 0
     #define RESERVED 0
