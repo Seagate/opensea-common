@@ -66,14 +66,6 @@ int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
     }
 }
 
-static uint16_t get_Console_Default_Color()
-{
-    //This is a dummy function. We cannot actually get the default colors in linux. The ANSI escape sequence has a "default" or "remove formatting" that we use instead.
-    //This is here to match what we have in Windows, where we actually need to store this value to return the console back to it's default value later. - TJE
-    //This is currently only in here
-    return 0;
-}
-
 void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
 {
     //linux/BSD use the ANSI escape sequences to change colors http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x329.html
