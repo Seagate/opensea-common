@@ -329,6 +329,7 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\common_platform.h" />
     <ClInclude Include="..\..\..\..\include\common_windows.h" />
+    <ClInclude Include="..\..\..\..\include\opensea_common_version.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\common.c" />
