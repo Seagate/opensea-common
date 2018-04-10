@@ -257,7 +257,7 @@ extern "C"
         OS_NETBSD,//not supported yet
         OS_DRAGONFLYBSD,//not supported yet
         OS_HPUX,//not supported yet
-        OS_ESX,//not supported yet
+        OS_ESX,// supporting
         //Add more operating systems here as we add support for them in our libraries
     }eOSType;
 
