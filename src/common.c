@@ -214,23 +214,21 @@ void remove_Trailing_Whitespace(char *stringToChange)
 
 void remove_Leading_Whitespace(char *stringToChange)
 {
-    size_t iter = 0, len = 0, stringToChangeLen = 0;
+    size_t iter = 0, stringToChangeLen = 0;
     if (stringToChange == NULL)
     {
         return;
     }
     stringToChangeLen = strlen(stringToChange);
-    len = strspn(stringToChange, " \t\n\v\f"); //only touch spaces at the beginning of the string, not the whole string
-    if (len == 0)
-    {
-        return;
-    }
-    while (isspace(stringToChange[iter]) && iter < (stringToChangeLen - len))
+    while (isspace(stringToChange[iter]) && iter < stringToChangeLen)
     {
         iter++;
     }
-	memmove(&stringToChange[0], &stringToChange[iter], stringToChangeLen - iter);
-	stringToChange[stringToChangeLen - 1] = 0;//should this be a null? Or a space? Leaving as null for now since it seems to work...
+	if (iter > 0)
+	{
+		memmove(&stringToChange[0], &stringToChange[iter], stringToChangeLen - iter);
+		stringToChange[stringToChangeLen - 1] = 0;//should this be a null? Or a space? Leaving as null for now since it seems to work...
+	}
 }
 
 void remove_Leading_And_Trailing_Whitespace(char *stringToChange)
