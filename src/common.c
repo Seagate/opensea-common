@@ -227,10 +227,10 @@ void remove_Leading_Whitespace(char *stringToChange)
     }
     while (isspace(stringToChange[iter]) && iter < (stringToChangeLen - len))
     {
-        stringToChange[iter] = stringToChange[iter + len];
-        stringToChange[iter + len] = 0;
         iter++;
     }
+	memmove(&stringToChange[0], &stringToChange[iter], stringToChangeLen - iter);
+	stringToChange[stringToChangeLen - 1] = 0;//should this be a null? Or a space? Leaving as null for now since it seems to work...
 }
 
 void remove_Leading_And_Trailing_Whitespace(char *stringToChange)
