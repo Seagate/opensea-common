@@ -443,6 +443,7 @@ INC_DIR=-I../../include $(VMW_EXTRA_DEFS)
 CC=$(VMW_$(VMW_TARGET)_CCBIN)
 AR=ar
 CFLAGS ?= -Wall -c -fPIC -I. $(VMW_$(VMW_TARGET)_COMPILEFLAGS) -std=gnu99
+CFLAGS += -DVMK_CROSS_COMP
 #CFLAGS += -c -fPIC -I.#-std=gnu99
 LFLAGS = -Wall $(VMW_LINK_FLAGS)
 LIB_SRC_FILES = \
