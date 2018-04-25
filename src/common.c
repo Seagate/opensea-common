@@ -227,7 +227,7 @@ void remove_Leading_Whitespace(char *stringToChange)
 	if (iter > 0)
 	{
 		memmove(&stringToChange[0], &stringToChange[iter], stringToChangeLen - iter);
-		stringToChange[stringToChangeLen - 1] = 0;//should this be a null? Or a space? Leaving as null for now since it seems to work...
+		memset(&stringToChange[stringToChangeLen - iter], 0, iter);//should this be a null? Or a space? Leaving as null for now since it seems to work...
 	}
 }
 
