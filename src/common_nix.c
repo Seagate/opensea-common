@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012 - 2017 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012 - 2018 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -64,14 +64,6 @@ int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
     {
         return FAILURE;
     }
-}
-
-static uint16_t get_Console_Default_Color()
-{
-    //This is a dummy function. We cannot actually get the default colors in linux. The ANSI escape sequence has a "default" or "remove formatting" that we use instead.
-    //This is here to match what we have in Windows, where we actually need to store this value to return the console back to it's default value later. - TJE
-    //This is currently only in here
-    return 0;
 }
 
 void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
@@ -368,15 +360,18 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                     if (fread(issueMemory, sizeof(char), issueSize, issue))
                     {
                         linuxOSNameFound = true;
-                        strncpy(&operatingSystemName[0], issueMemory, OS_NAME_SIZE-1);
-                        operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                        if (operatingSystemName)
+                        {
+                            strncpy(&operatingSystemName[0], issueMemory, OS_NAME_SIZE - 1);
+                            operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                        }
                     }
                     safe_Free(issueMemory);
                     fclose(issue);
                 }
             }
             //if we couldn't find a name, set unknown linux os
-            if (!linuxOSNameFound)
+            if (!linuxOSNameFound && operatingSystemName)
             {
                 sprintf(&operatingSystemName[0],"Unknown Linux OS");
             }
@@ -390,13 +385,16 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 ret = FAILURE;
             }
             //set the OS Name
-            if (ret != FAILURE)
+            if (operatingSystemName)
             {
-                sprintf(&operatingSystemName[0], "FreeBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.freeBSDVersion.majorVersion, versionNumber->versionType.freeBSDVersion.minorVersion);
-            }
-            else
-            {
-                sprintf(&operatingSystemName[0], "Unknown FreeBSD OS Version");
+                if (ret != FAILURE)
+                {
+                    sprintf(&operatingSystemName[0], "FreeBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.freeBSDVersion.majorVersion, versionNumber->versionType.freeBSDVersion.minorVersion);
+                }
+                else
+                {
+                    sprintf(&operatingSystemName[0], "Unknown FreeBSD OS Version");
+                }
             }
         }
         else if (strcmp("SUNOS", unixUname.sysname) == 0)
@@ -408,7 +406,10 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 ret = FAILURE;
             }
             //set OS name as Solaris "unixUname.version" for the OS Name
-            sprintf(&operatingSystemName[0], "Solaris %s", unixUname.version);
+            if (operatingSystemName)
+            {
+                sprintf(&operatingSystemName[0], "Solaris %s", unixUname.version);
+            }
             //The Solaris Version/name is stored in version
             if (isdigit(unixUname.version[0]))
             {
@@ -428,44 +429,47 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             }
             //set the OS Name from the major numbers starting with "Puma"
             //https://en.wikipedia.org/wiki/Darwin_(operating_system)
-            switch (versionNumber->versionType.macOSVersion.majorVersion)
+            if (operatingSystemName)
             {
-            case 5://puma
-                sprintf(&operatingSystemName[0], "Mac OS X 10.1 Puma");
-                break;
-            case 6://jaguar
-                sprintf(&operatingSystemName[0], "Mac OS X 10.2 Jaguar");
-                break;
-            case 7://panther
-                sprintf(&operatingSystemName[0], "Mac OS X 10.3 Panther");
-                break;
-            case 8://tiger
-                sprintf(&operatingSystemName[0], "Mac OS X 10.4 Tiger");
-                break;
-            case 9://leopard
-                sprintf(&operatingSystemName[0], "Mac OS X 10.5 Leopard");
-                break;
-            case 10://snow leopard
-                sprintf(&operatingSystemName[0], "Mac OS X 10.6 Snow Leopard");
-                break;
-            case 11://lion
-                sprintf(&operatingSystemName[0], "Mac OS X 10.7 Lion");
-                break;
-            case 12://Mountain Lion
-                sprintf(&operatingSystemName[0], "OS X 10.8 Mountain Lion");
-                break;
-            case 13://mavericks
-                sprintf(&operatingSystemName[0], "OS X 10.9 Mavericks");
-                break;
-            case 14://Yosemite
-                sprintf(&operatingSystemName[0], "OS X 10.10 Yosemite");
-                break;
-            case 15://el capitan
-                sprintf(&operatingSystemName[0], "OS X 10.11 El Capitan");
-                break;
-            default:
-                sprintf(&operatingSystemName[0], "Unknown Mac OS X Version");
-                break;
+                switch (versionNumber->versionType.macOSVersion.majorVersion)
+                {
+                case 5://puma
+                    sprintf(&operatingSystemName[0], "Mac OS X 10.1 Puma");
+                    break;
+                case 6://jaguar
+                    sprintf(&operatingSystemName[0], "Mac OS X 10.2 Jaguar");
+                    break;
+                case 7://panther
+                    sprintf(&operatingSystemName[0], "Mac OS X 10.3 Panther");
+                    break;
+                case 8://tiger
+                    sprintf(&operatingSystemName[0], "Mac OS X 10.4 Tiger");
+                    break;
+                case 9://leopard
+                    sprintf(&operatingSystemName[0], "Mac OS X 10.5 Leopard");
+                    break;
+                case 10://snow leopard
+                    sprintf(&operatingSystemName[0], "Mac OS X 10.6 Snow Leopard");
+                    break;
+                case 11://lion
+                    sprintf(&operatingSystemName[0], "Mac OS X 10.7 Lion");
+                    break;
+                case 12://Mountain Lion
+                    sprintf(&operatingSystemName[0], "OS X 10.8 Mountain Lion");
+                    break;
+                case 13://mavericks
+                    sprintf(&operatingSystemName[0], "OS X 10.9 Mavericks");
+                    break;
+                case 14://Yosemite
+                    sprintf(&operatingSystemName[0], "OS X 10.10 Yosemite");
+                    break;
+                case 15://el capitan
+                    sprintf(&operatingSystemName[0], "OS X 10.11 El Capitan");
+                    break;
+                default:
+                    sprintf(&operatingSystemName[0], "Unknown Mac OS X Version");
+                    break;
+                }
             }
         }
         else if (strcmp("AIX", unixUname.sysname) == 0)
@@ -473,7 +477,10 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             versionNumber->osVersioningIdentifier = OS_AIX;
             versionNumber->versionType.aixVersion.majorVersion = (uint16_t)atoi(unixUname.version);
             versionNumber->versionType.aixVersion.minorVersion = (uint16_t)atoi(unixUname.release);
-            sprintf(&operatingSystemName[0], "AIX %"PRIu16".%"PRIu16"", versionNumber->versionType.aixVersion.majorVersion, versionNumber->versionType.aixVersion.minorVersion);
+            if (operatingSystemName)
+            {
+                sprintf(&operatingSystemName[0], "AIX %"PRIu16".%"PRIu16"", versionNumber->versionType.aixVersion.majorVersion, versionNumber->versionType.aixVersion.minorVersion);
+            }
         }
         else if (strcmp("DRAGONFLY", unixUname.sysname) == 0)
         {
@@ -481,11 +488,17 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             if (EOF == sscanf(unixUname.release, "%"SCNu16".%"SCNu16"%*s", &versionNumber->versionType.dragonflyVersion.majorVersion, &versionNumber->versionType.dragonflyVersion.minorVersion))
             {
                 ret = FAILURE;
-                sprintf(&operatingSystemName[0], "Unknown Dragonfly BSD Version");
+                if (operatingSystemName)
+                {
+                    sprintf(&operatingSystemName[0], "Unknown Dragonfly BSD Version");
+                }
             }
             else
             {
-                sprintf(&operatingSystemName[0], "Dragonfly BSD %"PRIu16".%"PRIu16"", versionNumber->versionType.dragonflyVersion.majorVersion, versionNumber->versionType.dragonflyVersion.minorVersion);
+                if (operatingSystemName)
+                {
+                    sprintf(&operatingSystemName[0], "Dragonfly BSD %"PRIu16".%"PRIu16"", versionNumber->versionType.dragonflyVersion.majorVersion, versionNumber->versionType.dragonflyVersion.minorVersion);
+                }
             }
         }
         else if (strcmp("OPENBSD", unixUname.sysname) == 0)
@@ -493,7 +506,10 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             versionNumber->osVersioningIdentifier = OS_OPENBSD;
             versionNumber->versionType.openBSDVersion.majorVersion = (uint16_t)atoi(unixUname.version);
             versionNumber->versionType.openBSDVersion.minorVersion = (uint16_t)atoi(unixUname.release);
-            sprintf(&operatingSystemName[0], "OpenBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.openBSDVersion.majorVersion, versionNumber->versionType.openBSDVersion.minorVersion);
+            if (operatingSystemName)
+            {
+                sprintf(&operatingSystemName[0], "OpenBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.openBSDVersion.majorVersion, versionNumber->versionType.openBSDVersion.minorVersion);
+            }
         }
         else if (strcmp("NETBSD", unixUname.sysname) == 0)
         {
@@ -501,11 +517,17 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             if (EOF == sscanf(unixUname.release, "%"SCNu16".%"SCNu16".%"SCNu16"%*s", &versionNumber->versionType.netBSDVersion.majorVersion, &versionNumber->versionType.netBSDVersion.minorVersion, &versionNumber->versionType.netBSDVersion.revision))
             {
                 ret = FAILURE;
-                sprintf(&operatingSystemName[0], "Unknown NetBSD Version");
+                if (operatingSystemName)
+                {
+                    sprintf(&operatingSystemName[0], "Unknown NetBSD Version");
+                }
             }
             else
             {
-                sprintf(&operatingSystemName[0], "NetBSD %s", unixUname.release);
+                if (operatingSystemName)
+                {
+                    sprintf(&operatingSystemName[0], "NetBSD %s", unixUname.release);
+                }
             }
         }
         else if (strcmp("OSF1", unixUname.sysname) == 0)
@@ -514,11 +536,17 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             if (EOF == sscanf(unixUname.release, "V%"SCNu16".%"SCNu16"", &versionNumber->versionType.tru64Version.majorVersion, &versionNumber->versionType.tru64Version.minorVersion))
             {
                 ret = FAILURE;
-                sprintf(&operatingSystemName[0], "Unknown Tru64 Version");
+                if (operatingSystemName)
+                {
+                    sprintf(&operatingSystemName[0], "Unknown Tru64 Version");
+                }
             }
             else
             {
-                sprintf(&operatingSystemName[0], "Tru64 %s", unixUname.release);
+                if (operatingSystemName)
+                {
+                    sprintf(&operatingSystemName[0], "Tru64 %s", unixUname.release);
+                }
             }
         }
         else if (strcmp("HP-UX", unixUname.sysname) == 0)
@@ -527,11 +555,17 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             if (EOF == sscanf(unixUname.release, "B.%"SCNu16".%"SCNu16"", &versionNumber->versionType.hpuxVersion.majorVersion, &versionNumber->versionType.hpuxVersion.minorVersion))
             {
                 ret = FAILURE;
-                sprintf(&operatingSystemName[0], "Unknown HP-UX Version");
+                if (operatingSystemName)
+                {
+                    sprintf(&operatingSystemName[0], "Unknown HP-UX Version");
+                }
             }
             else
             {
-                sprintf(&operatingSystemName[0], "HP-UX %"PRIu16".%"PRIu16"", versionNumber->versionType.hpuxVersion.majorVersion, versionNumber->versionType.hpuxVersion.minorVersion);
+                if (operatingSystemName)
+                {
+                    sprintf(&operatingSystemName[0], "HP-UX %"PRIu16".%"PRIu16"", versionNumber->versionType.hpuxVersion.majorVersion, versionNumber->versionType.hpuxVersion.minorVersion);
+                }
             }
         }
         else //don't know what unix this is so return not supported

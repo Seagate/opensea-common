@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012 - 2017 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012 - 2018 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -166,7 +166,7 @@ extern "C"
     #define BIT62     (M_BitN((uint64_t)62))
     #define BIT63     (M_BitN((uint64_t)63))
 
-    #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~0 << ((msb) - (lsb) + 1)))
+    #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~0U << ((msb) - (lsb) + 1)))
 
     //define something called reserved that has a value of zero. Use it to set reserved bytes to 0
     #define RESERVED 0
@@ -218,6 +218,10 @@ extern "C"
     extern time_t g_currentTime;
     extern char g_currentTimeString[64];
     extern char *g_currentTimeStringPtr;
+
+    #define M_NibblesTo1ByteValue(n1, n0) ( \
+    (uint8_t)( ((uint8_t)((n1) & 0x0F) << 4) | ((uint8_t)((n0) & 0x0F) << 0)) \
+                                           )
 
     // Big endian parameter order, little endian value
     #define M_BytesTo4ByteValue(b3, b2, b1, b0)                    (        \

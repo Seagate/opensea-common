@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012 - 2017 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012 - 2018 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -214,23 +214,21 @@ void remove_Trailing_Whitespace(char *stringToChange)
 
 void remove_Leading_Whitespace(char *stringToChange)
 {
-    size_t iter = 0, len = 0, stringToChangeLen = 0;
+    size_t iter = 0, stringToChangeLen = 0;
     if (stringToChange == NULL)
     {
         return;
     }
     stringToChangeLen = strlen(stringToChange);
-    len = strspn(stringToChange, " \t\n\v\f"); //only touch spaces at the beginning of the string, not the whole string
-    if (len == 0)
+    while (isspace(stringToChange[iter]) && iter < stringToChangeLen)
     {
-        return;
-    }
-    while (isspace(stringToChange[iter]) && iter < (stringToChangeLen - len))
-    {
-        stringToChange[iter] = stringToChange[iter + len];
-        stringToChange[iter + len] = 0;
         iter++;
     }
+	if (iter > 0)
+	{
+		memmove(&stringToChange[0], &stringToChange[iter], stringToChangeLen - iter);
+		memset(&stringToChange[stringToChangeLen - iter], 0, iter);//should this be a null? Or a space? Leaving as null for now since it seems to work...
+	}
 }
 
 void remove_Leading_And_Trailing_Whitespace(char *stringToChange)
@@ -681,7 +679,15 @@ uint32_t random_Range_32(uint32_t rangeMin, uint32_t rangeMax)
     //return (xorshiftplus32() % (rangeMax + 1 - rangeMin) + rangeMin);
 
     //This method below should return unbiased results. see http://c-faq.com/lib/randrange.html
-    return (rangeMin + xorshiftplus32() / (UINT32_MAX / (rangeMax - rangeMin + 1) + 1));
+    uint32_t d = (UINT32_MAX / (rangeMax - rangeMin + 1) + 1);
+    if (d > 0)
+    {
+        return (rangeMin + xorshiftplus32() / d);
+    }
+    else
+    {
+        return 0;
+    }
 }
 uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax)
 {
@@ -694,7 +700,15 @@ uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax)
     //return (xorshiftplus64() % (rangeMax + 1 - rangeMin) + rangeMin);
 
     //This method below should return unbiased results. see http://c-faq.com/lib/randrange.html
-    return (rangeMin + xorshiftplus64() / (UINT64_MAX / (rangeMax - rangeMin + 1) + 1));
+    uint64_t d = (UINT64_MAX / (rangeMax - rangeMin + 1) + 1);
+    if (d > 0)
+    {
+        return (rangeMin + xorshiftplus64() / d);
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 int fill_Random_Pattern_In_Buffer(uint8_t *ptrData, uint32_t dataLength)

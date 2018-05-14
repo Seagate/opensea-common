@@ -1,7 +1,7 @@
 #
 # Do NOT modify or remove this copyright and license
 #
-# Copyright (c) 2012 - 2017 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+# Copyright (c) 2012 - 2018 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 #
 # This software is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,6 +23,7 @@ VERSION=$(MAJOR).$(MINOR).$(PATCH)
 SRC_DIR=../../src/
 INC_DIR=-I../../include
 CC=gcc
+AR=ar
 CFLAGS ?= -Wall -c -fPIC -I. -std=gnu99
 CFLAGS += -c -fPIC -I. -std=gnu99
 LFLAGS = -Wall
@@ -39,10 +40,6 @@ LIBS = lib$(NAME).a
 
 FILE_OUTPUT_DIR=lib
 
-#DEPFILES = $(LIB_SRC_FILES:.c=.d)
-
-#-include $(DEPFILES)
-
 .PHONY: all 
 
 all: clean mkoutputdir $(LIBS)
@@ -52,7 +49,7 @@ all: clean mkoutputdir $(LIBS)
 
 $(LIBS): $(LIB_OBJ_FILES)
 	rm -f $(FILE_OUTPUT_DIR)/$@
-	ar cq $(FILE_OUTPUT_DIR)/$@ $(LIB_OBJ_FILES)
+	$(AR) cq $(FILE_OUTPUT_DIR)/$@ $(LIB_OBJ_FILES)
 # Removing the line below since we don't need a shared object for this right now...a static library is enough for the common stuff
 #	$(CC) -shared $(LIB_OBJ_FILES) -o lib$(NAME).so.$(VERSION)
 clean:
