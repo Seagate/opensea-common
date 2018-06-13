@@ -168,6 +168,8 @@ extern "C"
 
     #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~0U << ((msb) - (lsb) + 1)))
 
+	#define M_2sCOMPLEMENT(val) (~(val) + 1)
+
     //define something called reserved that has a value of zero. Use it to set reserved bytes to 0
     #define RESERVED 0
     #define OBSOLETE 0
