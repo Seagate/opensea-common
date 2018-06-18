@@ -417,6 +417,74 @@ bool is_Windows_8_Or_Higher()
     return isWindows8OrHigher;
 }
 
+bool is_Windows_8_One_Or_Higher()
+{
+    bool isWindows81OrHigher = false;
+    //Will only work if app manifested correctly
+    /*
+    OSVERSIONINFOEX windowsVersionInfo;
+    DWORDLONG conditionMask = 0;
+    memset(&windowsVersionInfo, 0, sizeof(OSVERSIONINFOEX));
+    conditionMask = 0;
+    //Now get the actual version of the OS...start at windows vista and work forward from there.
+    windowsVersionInfo.dwMajorVersion = 6;
+    windowsVersionInfo.dwMinorVersion = 3;
+    conditionMask = VerSetConditionMask(conditionMask, VER_MAJORVERSION, VER_GREATER_EQUAL);
+    conditionMask = VerSetConditionMask(conditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
+    if (VerifyVersionInfo(&windowsVersionInfo, VER_MAJORVERSION | VER_MINORVERSION, conditionMask))
+    {
+        isWindows81OrHigher = true;
+    }
+    /*/
+    //This uses our method below that checks the version from kernel.dll
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion > 6)
+    {
+        //Win10 or higher
+        isWindows81OrHigher = true;
+    }
+    else if (windowsVersion.versionType.windowsVersion.majorVersion == 6 && windowsVersion.versionType.windowsVersion.minorVersion >= 3)
+    {
+        isWindows81OrHigher = true;
+    }
+    //*/
+    return isWindows81OrHigher;
+}
+
+bool is_Windows_10_Or_Higher()
+{
+    bool isWindows10OrHigher = false;
+    //Will only work if app manifested correctly
+    /*
+    OSVERSIONINFOEX windowsVersionInfo;
+    DWORDLONG conditionMask = 0;
+    memset(&windowsVersionInfo, 0, sizeof(OSVERSIONINFOEX));
+    conditionMask = 0;
+    //Now get the actual version of the OS...start at windows vista and work forward from there.
+    windowsVersionInfo.dwMajorVersion = 10;
+    windowsVersionInfo.dwMinorVersion = 0;
+    conditionMask = VerSetConditionMask(conditionMask, VER_MAJORVERSION, VER_GREATER_EQUAL);
+    conditionMask = VerSetConditionMask(conditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
+    if (VerifyVersionInfo(&windowsVersionInfo, VER_MAJORVERSION | VER_MINORVERSION, conditionMask))
+    {
+        isWindows10OrHigher = true;
+    }
+    /*/
+    //This uses our method below that checks the version from kernel.dll
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10)
+    {
+        //Win10 or higher
+        isWindows10OrHigher = true;
+    }
+    //*/
+    return isWindows10OrHigher;
+}
+
 bool is_Windows_Server_OS()
 {
     bool isWindowsServer = false;

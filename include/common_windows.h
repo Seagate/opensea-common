@@ -63,6 +63,34 @@ extern "C"
 
     //-----------------------------------------------------------------------------
     //
+    //  is_Windows_8_One_Or_Higher()
+    //
+    //! \brief   Description:  Checks if the current OS is Windows 8.1 or higher. This does NOT require manifesting as 8.1 or higher to work. It uses the version number in kernel32.dll
+    //
+    //  Entry:
+    //!
+    //  Exit:
+    //!   \return true = Windows 8.1 or higher, false = Windows 8 or lower
+    //
+    //-----------------------------------------------------------------------------
+    bool is_Windows_8_One_Or_Higher();
+
+    //-----------------------------------------------------------------------------
+    //
+    //  is_Windows_10_Or_Higher()
+    //
+    //! \brief   Description:  Checks if the current OS is Windows 10 or higher. This does NOT require manifesting as 8.1 or higher to work. It uses the version number in kernel32.dll
+    //
+    //  Entry:
+    //!
+    //  Exit:
+    //!   \return true = Windows 8 or higher, false = Windows 8.1 or lower
+    //
+    //-----------------------------------------------------------------------------
+    bool is_Windows_10_Or_Higher();
+
+    //-----------------------------------------------------------------------------
+    //
     //  print_Windows_Error_To_Screen(unsigned int windowsError)
     //
     //! \brief   Description:  Prints the error number and it's meaning to the screen followed by a newline character
