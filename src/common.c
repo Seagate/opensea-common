@@ -1449,16 +1449,17 @@ uint64_t power_Of_Two(uint16_t exponent)
         result = UINT64_C(268435456);
         break;
     default:
-        {
-            //Since this case is 31 or higher, we can start with the value above to reduce how long this loop runs
-            uint32_t shiftCounter = UINT64_C(30);//uint32 in case we do hit something huge in this loop and roll all the way around a uint16
-            result = UINT64_C(268435456);
-            while (shiftCounter < exponent)
-            {
-                result = result << UINT64_C(1); //multiply by 2
-                ++shiftCounter;
-            }
-        }
+        result = 2 << (exponent - 1);
+        //{
+        //    //Since this case is 31 or higher, we can start with the value above to reduce how long this loop runs
+        //    uint32_t shiftCounter = UINT64_C(30);//uint32 in case we do hit something huge in this loop and roll all the way around a uint16
+        //    result = UINT64_C(268435456);
+        //    while (shiftCounter < exponent)
+        //    {
+        //        result = result << UINT64_C(1); //multiply by 2
+        //        ++shiftCounter;
+        //    }
+        //}
         break;
     }
     return result;
