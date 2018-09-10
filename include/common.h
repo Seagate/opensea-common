@@ -885,6 +885,8 @@ extern "C"
     //-----------------------------------------------------------------------------
     uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax);
 
+    uint64_t power_Of_Two(uint16_t exponent);
+
     //-----------------------------------------------------------------------------
     //
     //  fill_Random_Pattern_In_Buffer(uint8_t *ptrData, uint32_t dataLength)
