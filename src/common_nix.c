@@ -30,7 +30,10 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <ctype.h>
+
+#if defined(__linux__)
 #include <dirent.h>//for scan dir in linux to get os name. We can move ifdef this if it doesn't work for other OS's
+#endif
 
 //freeBSD doesn't have the 64 versions of these functions...so I'm defining things this way to make it work. - TJE
 #if defined(__FreeBSD__)
@@ -325,6 +328,7 @@ eEndianness get_Compiled_Endianness(void)
     return calculate_Endianness();
 }
 
+#if defined(__linux__)
 static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
 {
     int match = 0;
@@ -356,6 +360,7 @@ static int version_file_filter( const struct dirent *entry )
 {
     return lin_file_filter(entry, "version");//most, but not all do a _version, but some do a -, so this should work for both
 }
+#endif
 
 //code is written based on the table in this link https://en.wikipedia.org/wiki/Uname
 //This code is not complete for all operating systems. I only added in support for the ones we are most interested in or are already using today. -TJE
@@ -425,6 +430,10 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                     fclose(release);
                 }
             }
+            #if defined(__linux__)
+            //this else is wrapped by this ifdef because it's not clear this will compile on other nix systems
+            //since it uses some things in the filter functions that may not be part of some OS's like Solaris where there are some
+            //bug reports on the web saying d_type is not available, same with DT_REG definitions
             else
             {
                 //try other release files before /etc/issue. More are here than are implemented: http://linuxmafia.com/faq/Admin/release-files.html
@@ -535,7 +544,21 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 }
                 safe_Free(osrelease);
                 safe_Free(osversion);
+                if (linuxOSNameFound)
+                {
+                    //remove any control characters from the string. We don't need them for what we're doing
+                    for (size_t iter = 0; iter < strlen(operatingSystemName); ++iter)
+                    {
+                        if (iscntrl(operatingSystemName[iter]))
+                        {
+                            operatingSystemName[iter] = ' ';
+                        }
+                    }
+                    //set the null terminator at the end to make sure it's there and not removed in the loop above
+                    operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                }
             }
+            #endif //__linux__
             //only use /etc/issue if we couldn't get a version from anywhere else.
             if (!linuxOSNameFound && os_File_Exists("/etc/issue"))//set the operating system name from /etc/issue (if available, otherwise set "Unknown Linux OS")
             {
