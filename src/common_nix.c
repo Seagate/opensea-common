@@ -328,8 +328,10 @@ eEndianness get_Compiled_Endianness(void)
 static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
 {
     int match = 0;
+    char *filename = (char*)calloc(strlen(entry->d_name) + 6, sizeof(char));
     struct stat s;
-    if (stat(entry->d_name, &s) == 0)
+    sprintf(filename, "/etc/%s", entry->d_name);
+    if (stat(filename, &s) == 0)
     {
         if (S_ISREG(s.st_mode)) //must be a file. TODO: are links ok? I don't think we need them, but may need to revisit this.
         {
