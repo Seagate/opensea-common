@@ -30,6 +30,7 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <dirent.h>//for scan dir in linux to get os name. We can move ifdef this if it doesn't work for other OS's
 
 //freeBSD doesn't have the 64 versions of these functions...so I'm defining things this way to make it work. - TJE
 #if defined(__FreeBSD__)
@@ -324,6 +325,38 @@ eEndianness get_Compiled_Endianness(void)
     return calculate_Endianness();
 }
 
+static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
+{
+    int match = 0;
+    if (entry->d_type == DT_REG)//must be a file. //TODO: ate links ok? They could point to a file we want to read || entry->d_type == DT_LNK
+    {
+        //non-zero means valid match. zero means not a match
+        char *inString = strstr(entry->d_name, stringMatch);
+        if (inString)
+        {
+            //found a file!
+            //make sure the string to match is at the end of the entry's name!
+            size_t nameLen = strlen(entry->d_name);
+            size_t matchLen = strlen(stringMatch);
+            if (0 == strncmp(entry->d_name + nameLen - matchLen, stringMatch, matchLen))
+            {
+                match = 1;
+            }
+        }
+    }
+    return match;
+}
+
+static int release_file_filter( const struct dirent *entry )
+{
+    return lin_file_filter(entry, "-release");//looks like almost all linux specific releases put it as -release
+}
+
+static int version_file_filter( const struct dirent *entry )
+{
+    return lin_file_filter(entry, "version");//most, but not all do a _version, but some do a -, so this should work for both
+}
+
 //code is written based on the table in this link https://en.wikipedia.org/wiki/Uname
 //This code is not complete for all operating systems. I only added in support for the ones we are most interested in or are already using today. -TJE
 int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char *operatingSystemName)
@@ -345,8 +378,124 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             {
                 ret = FAILURE;
             }
-            //set the operating system name from /etc/issue (if available, otherwise set "Unknown Linux OS")
-            if (os_File_Exists("/etc/issue"))
+            bool etcRelease = os_File_Exists("/etc/os-release");
+            bool usrLibRelease = os_File_Exists("/usr/lib/os-release");
+            if (etcRelease || usrLibRelease)//available on newer OS's
+            {
+                //read this file and get the linux name
+                FILE *release = NULL;
+                if(etcRelease)
+                {
+                    release = fopen("/etc/os-release","r");
+                }
+                else
+                {
+                    release = fopen("/usr/lib/os-release","r");
+                }
+                if (release)
+                {
+                    //read it
+                    fseek(release,ftell(release),SEEK_END);
+                    long int releaseSize = ftell(release);
+                    rewind(release);
+                    char *releaseMemory = (char*)calloc(releaseSize,sizeof(char));
+                    if (fread(releaseMemory, sizeof(char), releaseSize, release))
+                    {
+                        //Use the "PRETTY_NAME" field
+                        bool done = false;
+                        char *tok = strtok(releaseMemory, "\n");
+                        while (tok != NULL && !done)
+                        {
+                            if (strncmp(tok, "PRETTY_NAME=", strlen("PRETTY_NAME=")) == 0)
+                            {
+                                linuxOSNameFound = true;
+
+                                if (operatingSystemName)
+                                {
+                                    strncpy(&operatingSystemName[0], tok + strlen("PRETTY_NAME=\""), M_Min(strlen(tok) - 1 -strlen("PRETTY_NAME=\""), OS_NAME_SIZE - 1));
+                                    operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                                }
+                                done = true;
+                                break;
+                            }
+                            tok = strtok(NULL, "\n");
+                        }
+                    }
+                    safe_Free(releaseMemory);
+                    fclose(release);
+                }
+            }
+            else
+            {
+                //try other release files before /etc/issue. More are here than are implemented: http://linuxmafia.com/faq/Admin/release-files.html
+                //This may not cover all of the possible Linux's, but it should get most of them. We'll check for the most common ways of specifying the file to keep this simpler.
+                //NOTE: This may also work on some other unix systems, so we may want to try it on those as well.
+                struct dirent **osrelease;//most use a file named *-release
+                struct dirent **osversion;//some use a file named *_version
+                int releaseFileCount = scandir("/etc", &osrelease, release_file_filter, alphasort);
+                int versionFileCount = scandir("/etc", &osversion, version_file_filter, alphasort);
+                if(releaseFileCount > 0)//ideally this will only ever be 1
+                {
+                    //For now, only reading the first entry...this SHOULD be ok.
+                    FILE *release = fopen(osrelease[0]->d_name, "r");
+                    if (release)
+                    {
+                        //read it
+                        fseek(release,ftell(release),SEEK_END);
+                        long int releaseSize = ftell(release);
+                        rewind(release);
+                        char *releaseMemory = (char*)calloc(releaseSize,sizeof(char));
+                        if (fread(releaseMemory, sizeof(char), releaseSize, release))
+                        {
+                            linuxOSNameFound = true;
+                            if (operatingSystemName)
+                            {
+                                strncpy(&operatingSystemName[0], releaseMemory, OS_NAME_SIZE - 1);
+                                operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                            }
+                        }
+                        safe_Free(releaseMemory);
+                        fclose(release);
+                    }
+                }
+                else if(versionFileCount > 0)//ideally this will only ever be 1
+                {
+                    //For now, only reading the first entry...this SHOULD be ok.
+                    FILE *version = fopen(osversion[0]->d_name, "r");
+                    if (version)
+                    {
+                        //read it
+                        fseek(version,ftell(version),SEEK_END);
+                        long int versionSize = ftell(version);
+                        rewind(version);
+                        char *versionMemory = (char*)calloc(versionSize,sizeof(char));
+                        if (fread(versionMemory, sizeof(char), versionSize, version))
+                        {
+                            linuxOSNameFound = true;
+                            if (operatingSystemName)
+                            {
+                                strncpy(&operatingSystemName[0], versionMemory, OS_NAME_SIZE - 1);
+                                operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                            }
+                        }
+                        safe_Free(versionMemory);
+                        fclose(version);
+                    }
+                }
+                //TODO: free all memory from reading the lists of files.
+                for (int iter = 0; iter < releaseFileCount; ++iter)
+                {
+                    safe_Free(osrelease[iter]);
+                }
+                for (int iter = 0; iter < versionFileCount; ++iter)
+                {
+                    safe_Free(osversion[iter]);
+                }
+                safe_Free(osrelease);
+                safe_Free(osversion);
+            }
+            //only use /etc/issue if we couldn't get a version from anywhere else.
+            if (!linuxOSNameFound && os_File_Exists("/etc/issue"))//set the operating system name from /etc/issue (if available, otherwise set "Unknown Linux OS")
             {
                 //read this file and get the linux name
                 FILE *issue = fopen("/etc/issue","r");
