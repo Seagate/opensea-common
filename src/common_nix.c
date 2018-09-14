@@ -434,34 +434,49 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 struct dirent **osversion;//some use a file named *_version
                 int releaseFileCount = scandir("/etc", &osrelease, release_file_filter, alphasort);
                 int versionFileCount = scandir("/etc", &osversion, version_file_filter, alphasort);
+                int lsbReleaseOffset = -1;//-1 is invalid.
                 if(releaseFileCount > 0)//ideally this will only ever be 1
                 {
-                    //For now, only reading the first entry...this SHOULD be ok.
-                    FILE *release = fopen(osrelease[0]->d_name, "r");
-                    if (release)
+                    for (int releaseIter = 0; releaseIter < releaseFileCount; ++releaseIter)
                     {
-                        //read it
-                        fseek(release,ftell(release),SEEK_END);
-                        long int releaseSize = ftell(release);
-                        rewind(release);
-                        char *releaseMemory = (char*)calloc(releaseSize,sizeof(char));
-                        if (fread(releaseMemory, sizeof(char), releaseSize, release))
+                        if (0 == strcmp(osrelease[releaseIter]->d_name, "lsb-release"))
                         {
-                            linuxOSNameFound = true;
-                            if (operatingSystemName)
+                            lsbReleaseOffset = releaseIter;
+                            //Don't read this file for version info yet. it's common across systems but the other release and version files are more interesting to us
+                        }
+                        else
+                        {
+                            char *fileName = (char *)calloc(strlen(osrelease[releaseIter]->d_name) + 6, sizeof(char));
+                            sprintf(fileName, "/etc/%s", osrelease[releaseIter]->d_name);
+                            FILE *release = fopen(fileName, "r");
+                            if (release)
                             {
-                                strncpy(&operatingSystemName[0], releaseMemory, OS_NAME_SIZE - 1);
-                                operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                                //read it
+                                fseek(release,ftell(release),SEEK_END);
+                                long int releaseSize = ftell(release);
+                                rewind(release);
+                                char *releaseMemory = (char*)calloc(releaseSize,sizeof(char));
+                                if (fread(releaseMemory, sizeof(char), releaseSize, release))
+                                {
+                                    linuxOSNameFound = true;
+                                    if (operatingSystemName)
+                                    {
+                                        strncpy(&operatingSystemName[0], releaseMemory, OS_NAME_SIZE - 1);
+                                        operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                                    }
+                                }
+                                safe_Free(releaseMemory);
+                                fclose(release);
                             }
                         }
-                        safe_Free(releaseMemory);
-                        fclose(release);
                     }
                 }
-                else if(versionFileCount > 0)//ideally this will only ever be 1
+                if(!linuxOSNameFound && versionFileCount > 0)//ideally this will only ever be 1
                 {
                     //For now, only reading the first entry...this SHOULD be ok.
-                    FILE *version = fopen(osversion[0]->d_name, "r");
+                    char *fileName = (char*)calloc(strlen(osversion[0]->d_name) + 6, sizeof(char));
+                    sprintf(fileName, "/etc/%s", osversion[0]->d_name);
+                    FILE *version = fopen(fileName, "r");
                     if (version)
                     {
                         //read it
@@ -482,7 +497,34 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         fclose(version);
                     }
                 }
-                //TODO: free all memory from reading the lists of files.
+                if (!linuxOSNameFound && lsbReleaseOffset >= 0)
+                {
+                    //this case means that we found the lbs-release file, but haven't read it yet because we kept searching for other files to use for version information first.
+                    //So now we need to read it for the version information.
+                    //We use this last because it may not contain something as friendly and useful as we would like that the other version files provide.
+                    char *fileName = (char *)calloc(strlen(osrelease[lsbReleaseOffset]->d_name) + 6, sizeof(char));
+                    sprintf(fileName, "/etc/%s", osrelease[lsbReleaseOffset]->d_name);
+                    FILE *release = fopen(fileName, "r");
+                    if (release)
+                    {
+                        //read it
+                        fseek(release,ftell(release),SEEK_END);
+                        long int releaseSize = ftell(release);
+                        rewind(release);
+                        char *releaseMemory = (char*)calloc(releaseSize,sizeof(char));
+                        if (fread(releaseMemory, sizeof(char), releaseSize, release))
+                        {
+                            linuxOSNameFound = true;
+                            if (operatingSystemName)
+                            {
+                                strncpy(&operatingSystemName[0], releaseMemory, OS_NAME_SIZE - 1);
+                                operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                            }
+                        }
+                        safe_Free(releaseMemory);
+                        fclose(release);
+                    }
+                }
                 for (int iter = 0; iter < releaseFileCount; ++iter)
                 {
                     safe_Free(osrelease[iter]);
