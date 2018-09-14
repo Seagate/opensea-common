@@ -30,10 +30,7 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <ctype.h>
-
-#if defined(__linux__)
 #include <dirent.h>//for scan dir in linux to get os name. We can move ifdef this if it doesn't work for other OS's
-#endif
 
 //freeBSD doesn't have the 64 versions of these functions...so I'm defining things this way to make it work. - TJE
 #if defined(__FreeBSD__)
@@ -328,23 +325,26 @@ eEndianness get_Compiled_Endianness(void)
     return calculate_Endianness();
 }
 
-#if defined(__linux__)
 static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
 {
     int match = 0;
-    if (entry->d_type == DT_REG)//must be a file. //TODO: ate links ok? They could point to a file we want to read || entry->d_type == DT_LNK
+    struct stat s;
+    if (stat(entry->d_name, &s) == 0)
     {
-        //non-zero means valid match. zero means not a match
-        char *inString = strstr(entry->d_name, stringMatch);
-        if (inString)
+        if (S_ISREG(s.st_mode)) //must be a file. TODO: are links ok? I don't think we need them, but may need to revisit this.
         {
-            //found a file!
-            //make sure the string to match is at the end of the entry's name!
-            size_t nameLen = strlen(entry->d_name);
-            size_t matchLen = strlen(stringMatch);
-            if (0 == strncmp(entry->d_name + nameLen - matchLen, stringMatch, matchLen))
+            //non-zero means valid match. zero means not a match
+            char *inString = strstr(entry->d_name, stringMatch);
+            if (inString)
             {
-                match = 1;
+                //found a file!
+                //make sure the string to match is at the end of the entry's name!
+                size_t nameLen = strlen(entry->d_name);
+                size_t matchLen = strlen(stringMatch);
+                if (0 == strncmp(entry->d_name + nameLen - matchLen, stringMatch, matchLen))
+                {
+                    match = 1;
+                }
             }
         }
     }
@@ -360,7 +360,6 @@ static int version_file_filter( const struct dirent *entry )
 {
     return lin_file_filter(entry, "version");//most, but not all do a _version, but some do a -, so this should work for both
 }
-#endif
 
 //code is written based on the table in this link https://en.wikipedia.org/wiki/Uname
 //This code is not complete for all operating systems. I only added in support for the ones we are most interested in or are already using today. -TJE
@@ -430,10 +429,6 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                     fclose(release);
                 }
             }
-            #if defined(__linux__)
-            //this else is wrapped by this ifdef because it's not clear this will compile on other nix systems
-            //since it uses some things in the filter functions that may not be part of some OS's like Solaris where there are some
-            //bug reports on the web saying d_type is not available, same with DT_REG definitions
             else
             {
                 //try other release files before /etc/issue. More are here than are implemented: http://linuxmafia.com/faq/Admin/release-files.html
@@ -477,6 +472,11 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                                 safe_Free(releaseMemory);
                                 fclose(release);
                             }
+                        }
+                        if (linuxOSNameFound)
+                        {
+                            //we got a name, so break out of the loop (in case there are multiple files, we only need to read one)
+                            break;
                         }
                     }
                 }
@@ -558,7 +558,6 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                     operatingSystemName[OS_NAME_SIZE-1] = '\0';
                 }
             }
-            #endif //__linux__
             //only use /etc/issue if we couldn't get a version from anywhere else.
             if (!linuxOSNameFound && os_File_Exists("/etc/issue"))//set the operating system name from /etc/issue (if available, otherwise set "Unknown Linux OS")
             {
