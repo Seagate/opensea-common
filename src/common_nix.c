@@ -568,8 +568,30 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 }
             }
         }
+        else if (strcmp("VMKERNEL", unixUname.sysname) == 0)
+        {
+            versionNumber->osVersioningIdentifier = OS_ESX;
+            if (EOF == sscanf(unixUname.release, "%"SCNu16".%"SCNu16".%"SCNu16"%*s", &versionNumber->versionType.esxiVersion.majorVersion, &versionNumber->versionType.esxiVersion.minorVersion, &versionNumber->versionType.esxiVersion.revision))
+            {
+                ret = FAILURE;
+                if (operatingSystemName)
+                {
+                    sprintf(&operatingSystemName[0], "Unknown ESXi Version");
+                }
+            }
+            else
+            {
+                if (operatingSystemName)
+                {
+                    sprintf(&operatingSystemName[0], "ESXi %s", unixUname.release);
+                }
+            }
+        }
         else //don't know what unix this is so return not supported
         {
+#if defined(_DEBUG)
+            printf("sysname : %s version : %s release : %s \n", unixUname.sysname, unixUname.version, unixUname.release);
+#endif
             ret = NOT_SUPPORTED;
         }
     }
