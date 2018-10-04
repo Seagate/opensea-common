@@ -156,7 +156,7 @@ void print_OS_Type(eOSType osType)
         printf("HP UX");
         break;
     case OS_ESX:
-        printf("VMWare ESX");
+        printf("VMWare ESXi");
         break;
     case OS_UNKNOWN:
     default:
@@ -208,6 +208,8 @@ void print_OS_Version(ptrOSVersionNumber versionNumber)
         printf("%"PRIu16".%"PRIu16"", versionNumber->versionType.tru64Version.majorVersion, versionNumber->versionType.tru64Version.minorVersion);
         break;
     case OS_ESX:
+        printf("%"PRIu16".%"PRIu16".%"PRIu16"", versionNumber->versionType.esxiVersion.majorVersion, versionNumber->versionType.esxiVersion.minorVersion, versionNumber->versionType.esxiVersion.revision);
+        break;
     case OS_UNKNOWN:
     default:
         printf("Unknown OS Version");

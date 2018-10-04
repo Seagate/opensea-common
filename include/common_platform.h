@@ -343,6 +343,14 @@ extern "C"
         uint16_t minorVersion;
     }HPUXVersionNumber;
 
+    //https://en.wikipedia.org/wiki/VMware_ESXi#Versionshistory
+    typedef struct _ESXiVersionNumber
+    {
+        uint16_t majorVersion;
+        uint16_t minorVersion;
+        uint16_t revision;
+    }ESXiVersionNumber;
+
     typedef struct _OSVersionNumber
     {
         eOSType osVersioningIdentifier;
@@ -358,6 +366,7 @@ extern "C"
             NetBSDVersionNumber netBSDVersion;
             Tru64VersionNumber tru64Version;
             HPUXVersionNumber hpuxVersion;
+            ESXiVersionNumber esxiVersion;
             //TODO: Add other OS Versioning Schemes here for each OS we support
         }versionType;
     }OSVersionNumber, *ptrOSVersionNumber;
