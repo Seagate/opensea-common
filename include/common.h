@@ -168,6 +168,8 @@ extern "C"
 
     #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~0U << ((msb) - (lsb) + 1)))
 
+	#define M_2sCOMPLEMENT(val) (~(val) + 1)
+
     //define something called reserved that has a value of zero. Use it to set reserved bytes to 0
     #define RESERVED 0
     #define OBSOLETE 0
@@ -193,6 +195,7 @@ extern "C"
         WARN_INVALID_CHECKSUM   = 16, //The checksum on the data for a command didn't calculate correctly (EX: Identify device, some ATA Logs)
         OS_COMMAND_NOT_AVAILABLE = 17, //This is returned when the OS does not have a way to issue the requested command. (EX: Trying to send an NVMe command without Win10, or trying a 32byte SCSI command pre-Win8)
         OS_COMMAND_BLOCKED      = 18, //This is returned when the OS is blocking the command from being issued (EX: TCG - linux, lib ATA......or Sanitize in Windos 8+)
+        COMMAND_INTERRUPTED		= 19, //Nidhi - Added for SCT commands, if interrupted by some other SCT command.
         UNKNOWN
     }eReturnValues;
 
@@ -882,6 +885,8 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax);
+
+    uint64_t power_Of_Two(uint16_t exponent);
 
     //-----------------------------------------------------------------------------
     //

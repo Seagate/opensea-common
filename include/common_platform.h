@@ -257,7 +257,7 @@ extern "C"
         OS_NETBSD,//not supported yet
         OS_DRAGONFLYBSD,//not supported yet
         OS_HPUX,//not supported yet
-        OS_ESX,//not supported yet
+        OS_ESX,// supporting
         //Add more operating systems here as we add support for them in our libraries
     }eOSType;
 
@@ -343,6 +343,14 @@ extern "C"
         uint16_t minorVersion;
     }HPUXVersionNumber;
 
+    //https://en.wikipedia.org/wiki/VMware_ESXi#Versionshistory
+    typedef struct _ESXiVersionNumber
+    {
+        uint16_t majorVersion;
+        uint16_t minorVersion;
+        uint16_t revision;
+    }ESXiVersionNumber;
+
     typedef struct _OSVersionNumber
     {
         eOSType osVersioningIdentifier;
@@ -358,6 +366,7 @@ extern "C"
             NetBSDVersionNumber netBSDVersion;
             Tru64VersionNumber tru64Version;
             HPUXVersionNumber hpuxVersion;
+            ESXiVersionNumber esxiVersion;
             //TODO: Add other OS Versioning Schemes here for each OS we support
         }versionType;
     }OSVersionNumber, *ptrOSVersionNumber;

@@ -67,19 +67,20 @@
             Filters=""/>
     </CustomFolders>
     <Files AutoFolders="DirectoryView">
+        <Folder Name="../..">
+            <F N="../../README.md"/>
+        </Folder>
         <Folder Name="../gcc">
             <F
                 N="../gcc/Makefile"
                 Type="Makefile"/>
-        </Folder>
-        <Folder Name="../../">
-            <F N="../../README.md"/>
         </Folder>
         <Folder Name="../../include">
             <F N="../../include/common.h"/>
             <F N="../../include/common_nix.h"/>
             <F N="../../include/common_platform.h"/>
             <F N="../../include/common_windows.h"/>
+            <F N="../../include/opensea_common_version.h"/>
         </Folder>
         <Folder Name="../../src">
             <F N="../../src/common.c"/>
