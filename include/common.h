@@ -217,11 +217,6 @@ extern "C"
         VERBOSITY_BUFFERS         = 4
     }eVerbosityLevels;
 
-    extern eVerbosityLevels g_verbosity;
-    extern time_t g_currentTime;
-    extern char g_currentTimeString[64];
-    extern char *g_currentTimeStringPtr;
-
     #define M_NibblesTo1ByteValue(n1, n0) ( \
     (uint8_t)( ((uint8_t)((n1) & 0x0F) << 4) | ((uint8_t)((n0) & 0x0F) << 0)) \
                                            )

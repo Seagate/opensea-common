@@ -23,11 +23,6 @@
 #include <errno.h>
 #endif
 
-eVerbosityLevels g_verbosity = VERBOSITY_DEFAULT;
-time_t           g_currentTime;
-char             g_currentTimeString[64];
-char             *g_currentTimeStringPtr = g_currentTimeString;
-
 void delay_Milliseconds(uint32_t milliseconds)
 {
 #if defined(_WIN32)
@@ -277,11 +272,6 @@ void convert_String_To_Lower_Case(char *stringToChange)
 
 void print_Return_Enum(char *funcName, int ret)
 {
-    if (VERBOSITY_COMMAND_NAMES > g_verbosity) //no printing for default or quiet
-    {
-        return;
-    }
-
     if (NULL == funcName)
     {
         printf("Unknown funtion returning: ");
