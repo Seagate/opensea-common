@@ -166,6 +166,11 @@ extern "C"
     #define BIT62     (M_BitN((uint64_t)62))
     #define BIT63     (M_BitN((uint64_t)63))
 
+    //set a bit to 1 within a value
+    #define M_SET_BIT(val, bitNum) (val | M_BitN(bitNum))
+    //clear a bit to 0 within a value
+    #define M_CLEAR_BIT(val, bitNum) (val & (~M_BitN(bitNum)))
+
     #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~0U << ((msb) - (lsb) + 1)))
 
 	#define M_2sCOMPLEMENT(val) (~(val) + 1)
