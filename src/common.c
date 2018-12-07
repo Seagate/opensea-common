@@ -1273,9 +1273,9 @@ int WriteJSONPair (char *name, char *val, JSONContext *context)       //   "name
     return (retCode);
 }
 
-int get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger)
+bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger)
 {
-	int ret = true; 
+	bool ret = true; 
 	bool hex = false;
 	const char * tmp = strToConvert;
 	while (*tmp != '\0')

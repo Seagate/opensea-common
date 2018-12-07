@@ -770,10 +770,10 @@ extern "C"
 	//!   \param[out] outputInteger - pointer to integer to store the output
 	//!
 	//  Exit:
-	//!   \return SUCCESS on successful completion, !SUCCESS if problems encountered
+	//!   \return true if able to read in an integer number, false if invalid format.
 	//
 	//-----------------------------------------------------------------------------
-	int get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger);
+	bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger);
 
     //-----------------------------------------------------------------------------
     //
