@@ -651,6 +651,8 @@ extern "C"
     //-----------------------------------------------------------------------------
     void convert_String_To_Lower_Case(char *stringToChange);
 
+    void convert_String_To_Inverse_Case(char *stringToChange);
+
     //-----------------------------------------------------------------------------
     //
     //  print_Data_Buffer()

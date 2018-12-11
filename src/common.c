@@ -270,6 +270,32 @@ void convert_String_To_Lower_Case(char *stringToChange)
     }
 }
 
+void convert_String_To_Inverse_Case(char *stringToChange)
+{
+    size_t stringLen = 0, iter = 0;
+    if (stringToChange == NULL)
+    {
+        return;
+    }
+    stringLen = strlen(stringToChange);
+    if (stringLen == 0)
+    {
+        return;
+    }
+    while (iter <= stringLen)
+    {
+        if (islower(stringToChange[iter]))
+        {
+            stringToChange[iter] = (char)tolower(stringToChange[iter]);
+        }
+        else if (isupper(stringToChange[iter]))
+        {
+            stringToChange[iter] = (char)toupper(stringToChange[iter]);
+        }
+        iter++;
+    }
+}
+
 void print_Return_Enum(char *funcName, int ret)
 {
     if (NULL == funcName)
