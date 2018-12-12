@@ -651,6 +651,19 @@ extern "C"
     //-----------------------------------------------------------------------------
     void convert_String_To_Lower_Case(char *stringToChange);
 
+    //-----------------------------------------------------------------------------
+    //
+    //   convert_String_To_Inverse_Case(char *stringToChange)
+    //
+    //! \brief   Description:  convert uppercase characters to lowercase and lowercase characters to uppercase in a string.
+    //
+    //  Entry:
+    //!   \param[out] stringToChange = a pointer to the data containing a string that will be modified
+    //!
+    //  Exit:
+    //!   \return VOID
+    //
+    //-----------------------------------------------------------------------------
     void convert_String_To_Inverse_Case(char *stringToChange);
 
     //-----------------------------------------------------------------------------
