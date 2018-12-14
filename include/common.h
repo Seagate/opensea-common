@@ -14,8 +14,6 @@
 //
 #pragma once
 
-//adding a test comment to make sure the build server is happy
-
 #if defined (__cplusplus)
 //defining these macros for C++ to make older C++ compilers happy and work like the newer C++ compilers
 #ifndef __STDC_FORMAT_MACROS
