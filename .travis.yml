@@ -9,11 +9,7 @@ branches:
   - develop
 
 before_script: 
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-      cd Make/gcc
-    fi;
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then cd Make/gcc; fi
 
 script: 
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-      make
-    fi;
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make; fi
