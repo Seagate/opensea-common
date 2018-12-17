@@ -3,5 +3,17 @@ os: linux
 sudo: false
 compiler: gcc
 dist: xenial
-before_script: cd Make/gcc
-script: make
+branches:
+  only:
+  - master
+  - develop
+
+before_script: 
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+		cd Make/gcc
+	fi
+
+script: 
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+		make
+	fi
