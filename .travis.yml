@@ -10,10 +10,10 @@ branches:
 
 before_script: 
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-		cd Make/gcc
-	fi
+      cd Make/gcc
+    fi
 
 script: 
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-		make
-	fi
+      make
+    fi
