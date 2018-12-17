@@ -2,6 +2,6 @@ language: c
 os: linux
 sudo: false
 compiler: gcc
-dist: precise
+dist: xenial
 before_script: cd Make/gcc
 script: make
