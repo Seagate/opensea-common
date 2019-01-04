@@ -67,6 +67,10 @@ extern "C"
     #define M_Word2(l) ( (uint16_t) ( ( (l) & 0x0000FFFF00000000ULL ) >> 32 ) )
     #define M_Word3(l) ( (uint16_t) ( ( (l) & 0xFFFF000000000000ULL ) >> 48 ) )
 
+    //need to validate that this macro sets the correct bits on 32bit and 64bit
+    #define BITSPERBYTE UINT8_C(8)
+    #define M_ByteN(n) ((UINT8_MAX << (n * BITSPERBYTE)))
+
     //Get a specific byte
     #define M_Byte0(l) ( (uint8_t) ( ( (l) & 0x00000000000000FFULL ) >>  0 ) )
     #define M_Byte1(l) ( (uint8_t) ( ( (l) & 0x000000000000FF00ULL ) >>  8 ) )
