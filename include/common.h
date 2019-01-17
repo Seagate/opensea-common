@@ -1129,45 +1129,6 @@ extern "C"
     //-----------------------------------------------------------------------------
     typedef void (*custom_Update)(void *customData, char *message);
 
-//I removed the #ifdef _DEPOT from here since it broke the linux build since that wrapped would need to be applied to a few other places in code and I think there is a better way than doing this at the moment.
-    typedef struct _JSONContext
-    {
-        custom_Update updateFunction;   // Callback function that tells how to write the message/output to log/screen/etc..
-        void *updateData;               // May be NULL if additional data is not needed
-        int indentSize;                 // Allows user to set how many spaces to indent each entry
-        int currentDepth;               // How many levels deep are we?  If indentSize is 2, and currentDepth is 3, then we will add 6 spaces (2*3) to any prints
-        int *entriesFilled;             // Stack indicating whether or not we have printed a previous entry, so that we can print commas and <CR> as needed
-        int entries[200];
-        //bool openSession;               // flag for see if a session is open(true) or closed(false)
-        //bool openObject;                // flag for seeing if a objectis open(true) or closed(false) note look at currentDepth to get more information
-    } JSONContext;
-    
-    #define MAX_JSON_MSG (256)
-    // Sends message to with TEXT string
-    #define JSON_TEXT    (1)    
-    // Sends message to with LOG string
-    #define JSON_LOG     (2)    
-
-    // Standalone JSON messages
-    void SendJSONMessage  (char *name, char *val, custom_Update updateFunction, void *updateData);
-    void SendJSONProgress (int progress, custom_Update updateFunction, void *updateData );
-    void SendJSONString   (int JSONFlags, const char *msg, custom_Update updateFunction, void *updateData );
-
-
-    void SendIndentation (JSONContext *context);
-    void SendCrComma (JSONContext *context);
-
-    // General/Public JSON Support
-    
-    void InitializeJSONContextData (JSONContext *context, custom_Update updateFunction, void *updateData, int indentSize, int maxStackDepth);
-    void DestroyJSONContextData (JSONContext *context);
-    int OpenJSON (JSONContext *context);                                   //   {
-    int CloseJSON (JSONContext *context);                                  //   }                                                                            
-    int OpenJSONObject (char *name, JSONContext *context);                 //   "name" : {
-    int CloseJSONObject (JSONContext *context);                            //   }
-    int WriteJSONPair (char *name, char *val, JSONContext *context);       //   "name" : "string value"
-
-
 #if defined (__cplusplus)
 } //extern "C"
 #endif
