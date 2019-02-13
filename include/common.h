@@ -1162,6 +1162,26 @@ extern "C"
 
     //-----------------------------------------------------------------------------
     //
+    //  safe_Free_aligned()
+    //
+    //! \brief   Description:  Safely free dynamically alligned allocated memory. This checks for a valid pointer, then frees it and set's it to NULL.
+    //
+    //  Entry:
+    //!   \param[in] mem - heap memory you want to free.
+    //!
+    //  Exit:
+    //!   \return void
+    //
+    //-----------------------------------------------------------------------------
+    #define safe_Free_page_aligned(mem)  \
+    if(mem)                 \
+    {                       \
+        free_aligned(mem);          \
+        mem = NULL;         \
+    }                       \
+
+    //-----------------------------------------------------------------------------
+    //
     //  calloc_aligned(size_t num, size_t size, size_t alignment)
     //
     //! \brief   Description:  Allocates aligned memory based on the specified power of 2 alignement value and zeroes it out.
@@ -1238,6 +1258,27 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void free_page_aligned(void* ptr);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  safe_Free_page_aligned()
+    //
+    //! \brief   Description:  Safely free dynamically page alligned allocated memory. This checks for a valid pointer, then frees it and set's it to NULL.
+    //
+    //  Entry:
+    //!   \param[in] mem - heap memory you want to free.
+    //!
+    //  Exit:
+    //!   \return void
+    //
+    //-----------------------------------------------------------------------------
+    #define safe_Free_page_aligned(mem)  \
+    if(mem)                 \
+    {                       \
+        free_page_aligned(mem);          \
+        mem = NULL;         \
+    }                       \
+
 
     //-----------------------------------------------------------------------------
     //
