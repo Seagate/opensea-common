@@ -1129,6 +1129,149 @@ extern "C"
     //-----------------------------------------------------------------------------
     typedef void (*custom_Update)(void *customData, char *message);
 
+    //-----------------------------------------------------------------------------
+    //
+    //  malloc_aligned(size_t size, size_t alignment)
+    //
+    //! \brief   Description:  Allocates aligned memory based on the specified power of 2 alignement value
+    //
+    //  Entry:
+    //!   \param[in] size = size of memory block in bytes to allocate
+    //!   \param[in] alignment = alignment value required. This MUST be a power of 2.
+    //!
+    //  Exit:
+    //!   \return ptrToAlignedMemory
+    //
+    //-----------------------------------------------------------------------------
+    void *malloc_aligned(size_t size, size_t alignment);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  free_aligned(void* ptr)
+    //
+    //! \brief   Description:  Deallocates memory that was allocated with one of malloc_aligned, calloc_aligned, or realloc_aligned
+    //
+    //  Entry:
+    //!   \param[in] ptr = pointer to the aligned memory to free
+    //!
+    //  Exit:
+    //!   \return void
+    //
+    //-----------------------------------------------------------------------------
+    void free_aligned(void* ptr);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  calloc_aligned(size_t num, size_t size, size_t alignment)
+    //
+    //! \brief   Description:  Allocates aligned memory based on the specified power of 2 alignement value and zeroes it out.
+    //
+    //  Entry:
+    //!   \param[in] num = # of elements to allocate
+    //!   \param[in] size = size of each element
+    //!   \param[in] alignment = alignment value required. This MUST be a power of 2.
+    //!
+    //  Exit:
+    //!   \return ptrToAlignedMemory
+    //
+    //-----------------------------------------------------------------------------
+    void *calloc_aligned(size_t num, size_t size, size_t alignment);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  realloc_aligned(void *alignedPtr, size_t size, size_t alignment)
+    //
+    //! \brief   Description:  Reallocates aligned memory based on the specified power of 2 alignement value and zeroes it out.
+    //!                 NOTE:  This implementation CANNOT keep previous values in the incoming memory pointer. All previous data will be lost using this function!!!
+    //
+    //  Entry:
+    //!   \param[in] alignedPtr = pointer to a memory block previously allocated with malloc_aligned, calloc_aligned, or realloc_aligned. If NULL, this is the same as malloc_aligned
+    //!   \param[in] size = size of memory block in bytes to allocate
+    //!   \param[in] alignment = alignment value required. This MUST be a power of 2.
+    //!
+    //  Exit:
+    //!   \return ptrToAlignedMemory
+    //
+    //-----------------------------------------------------------------------------
+    void *realloc_aligned(void *alignedPtr, size_t size, size_t alignment);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  get_System_Pagesize(void)
+    //
+    //! \brief   Description:  Gets the memory page size from a system if possible.
+    //
+    //  Entry:
+    //!
+    //  Exit:
+    //!   \return Pagesize of system OR -1 if it cannot be determined.
+    //
+    //-----------------------------------------------------------------------------
+    size_t get_System_Pagesize(void);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  malloc_page_aligned(size_t size)
+    //
+    //! \brief   Description:  Allocates aligned memory based on the system page size. Same as calling malloc_aligned(size, get_System_Pagesize())
+    //
+    //  Entry:
+    //!   \param[in] size = size of memory block in bytes to allocate
+    //!
+    //  Exit:
+    //!   \return ptrToAlignedMemory
+    //
+    //-----------------------------------------------------------------------------
+    void *malloc_page_aligned(size_t size);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  free_aligned(void* ptr)
+    //
+    //! \brief   Description:  Deallocates memory that was allocated with one of malloc_page_aligned, calloc_page_aligned, or realloc_page_aligned
+    //
+    //  Entry:
+    //!   \param[in] ptr = pointer to the aligned memory to free
+    //!
+    //  Exit:
+    //!   \return void
+    //
+    //-----------------------------------------------------------------------------
+    void free_page_aligned(void* ptr);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  calloc_page_aligned(size_t num, size_t size)
+    //
+    //! \brief   Description:  Allocates aligned memory based on the system page size. Same as calling calloc_aligned(num, size, get_System_Pagesize());
+    //
+    //  Entry:
+    //!   \param[in] num = # of elements to allocate
+    //!   \param[in] size = size of each element
+    //!
+    //  Exit:
+    //!   \return ptrToAlignedMemory
+    //
+    //-----------------------------------------------------------------------------
+    void *calloc_page_aligned(size_t num, size_t size);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  realloc_page_aligned(void *alignedPtr, size_t size)
+    //
+    //! \brief   Description:  Reallocates aligned memory based on the system page size. Same as calling realloc_aligned(alignedPtr, size, get_System_Pagesize());
+    //!                 NOTE:  This implementation CANNOT keep previous values in the incoming memory pointer. All previous data will be lost using this function!!!
+    //
+    //  Entry:
+    //!   \param[in] alignedPtr = pointer to a memory block previously allocated with malloc_aligned, calloc_aligned, or realloc_aligned. If NULL, this is the same as malloc_aligned
+    //!   \param[in] size = size of memory block in bytes to allocate
+    //!
+    //  Exit:
+    //!   \return ptrToAlignedMemory
+    //
+    //-----------------------------------------------------------------------------
+    void *realloc_page_aligned(void *alignedPtr, size_t size);
+
 #if defined (__cplusplus)
 } //extern "C"
 #endif

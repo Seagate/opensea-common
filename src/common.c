@@ -16,12 +16,13 @@
 #include <ctype.h>
 
 #if defined (_WIN32)
-#include "windows.h" //used for setting color output to the command prompt and Sleep()
+#include <windows.h> //used for setting color output to the command prompt and Sleep()
 #else
 #include <unistd.h> //needed for usleep() or nanosleep()
 #include <time.h>
 #include <errno.h>
 #endif
+#include <stdlib.h>//aligned allocation functions come from here
 
 void delay_Milliseconds(uint32_t milliseconds)
 {
@@ -45,6 +46,186 @@ void delay_Milliseconds(uint32_t milliseconds)
 void delay_Seconds(uint32_t seconds)
 {
     delay_Milliseconds(1000 * seconds);
+}
+//TODO: C11 says supported alignments are implementation defined
+//      We may want an if/else to call back to a generic method if it fails some day. (unlikely, so not done right now)
+//      NOTE: There may also be other functions to do this for other compilers or systems, but they are not known today. Add them as necessary
+//      NOTE: some systems may have memalign instead of the posix definition, but it is not clear how to detect that implementation with feature test macros.
+//      NOTE: In UEFI, using the EDK2, malloc will provide an 8-byte alignment, so it may be possible to do some aligned allocations using it without extra work. but we can revist that later.
+void *malloc_aligned(size_t size, size_t alignment)
+{
+    #if defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+        //C11 added an aligned alloc function we can use
+        return aligned_alloc(alignment, size);
+    #elif defined (__INTEL_COMPILER) || defined (__ICC)
+        //_mm_malloc
+        return _mm_malloc((int)size, (int)alignment);
+    #elif defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        //POSIX.1-2001 and higher define support for posix_memalign
+        void *temp = NULL;
+        if (0 != posix_memalign( &temp, alignment, size));
+        {
+            temp = NULL;//make sure the system we are running didn't change this.
+        }
+        return temp;
+    #elif defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+        //mingw32 has an aligned malloc function that is not available in mingw64.
+        return __mingw_aligned_malloc(size, alignment);
+    #elif defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR)
+        //use the MS _aligned_malloc function. Mingw64 will support this as well from what I can find - TJE
+        return _aligned_malloc(size, alignment);
+    #else
+        //need a generic way to do this with some math and overallocating...not preferred but can make it work.
+        //This can waste a LOT of memory in some cases depending on the required alignment.
+        //This way means overallocating and adding to get to the required alignment...then knowing how much we over aligned by.
+        //Will store the original starting pointer right before the aligned pointer we return to the caller.
+        void *temp = NULL;
+        if (size && alignment)
+        {
+            size_t requiredExtraBytes = sizeof(size_t);//We will store the original beginning address in front of the return data pointer
+            const size_t totalAllocation = size + (2 * alignment) + requiredExtraBytes;
+            temp = malloc(totalAllocation);
+            if (temp)
+            {
+                const void * const originalLocation = temp;
+                temp += requiredExtraBytes;//allow enough room for storing the original pointer location
+                //now offset based on the required alignment
+                temp += alignment - (((size_t)temp) % alignment);
+                //aligned.
+                //now save the original pointer location
+                size_t *savedLocationData = (size_t*)(temp - sizeof(size_t));
+                *savedLocationData = (size_t)originalLocation;
+            }
+        }
+        return temp;
+#endif
+}
+
+void free_aligned(void* ptr)
+{
+    #if defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+        //just call free
+        free(ptr);
+    #elif defined (__INTEL_COMPILER) || defined (__ICC)
+        //_mm_free
+        _mm_free(ptr);
+    #elif defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        //POSIX.1-2001 and higher define support for posix_memalign
+        //Just call free
+        free(ptr);
+    #elif defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+        //mingw32 has an aligned malloc function that is not available in mingw64.
+        __mingw_aligned_free(ptr);
+    #elif defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR)
+        //use the MS _aligned_free function
+        _aligned_free(ptr);
+    #else
+        //original pointer
+        if (ptr)
+        {
+            //find the starting address from the original allocation.
+            void *tempPtr = ptr - sizeof(size_t);//this gets us to where it was stored
+            //this will set it back to what it's supposed to be
+            tempPtr = (void*)(*((size_t*)tempPtr));
+            free(tempPtr);
+        }
+#endif
+}
+
+void *calloc_aligned(size_t num, size_t size, size_t alignment)
+{
+    //call malloc aligned and memset
+    void *zeroedMem = NULL;
+    size_t numSize = num * size;
+    if (numSize)
+    {
+        zeroedMem = malloc_aligned(numSize, alignment);
+        if (zeroedMem)
+        {
+            memset(zeroedMem, 0, numSize);
+        }
+    }
+    return zeroedMem;
+}
+
+void *realloc_aligned(void *alignedPtr, size_t size, size_t alignment)
+{
+    //this will not be exactly the same as a traditional realloc since we don't have low-level access to do the exact same thing
+    //We will mimic the behaviour as best we can by freeing the ptr and allocating new memory with malloc_aligned and returning that.
+    void *temp = NULL;
+    if (alignedPtr)
+    {
+        //free the old pointer
+        free_aligned(alignedPtr);
+    }
+    if (size)
+    {
+        temp = malloc_aligned(size, alignment);
+    }
+    return temp;
+}
+
+size_t get_System_Pagesize(void)
+{
+#if defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+    //use sysconf: http://man7.org/linux/man-pages/man3/sysconf.3.html
+    return (size_t)sysconf(_SC_PAGESIZE);
+#elif defined (_POSIX_VERSION) //this may not be the best way to test this, but I think it will be ok.
+    //use get page size: http://man7.org/linux/man-pages/man2/getpagesize.2.html
+    return (size_t)getpagesize();
+#elif defined defined (_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
+    SYSTEM_INFO system;
+    memset(&system, 0, sizeof(SYSTEMFO));
+    GetSystemInfo(&system);
+    return (size_t)system.dwPageSize;
+#else
+    return -1;//unknown, so return something easy to see an error with.
+#endif
+}
+
+void *malloc_page_aligned(size_t size)
+{
+    size_t pageSize = get_System_Pagesize();
+    if (pageSize)
+    {
+        return malloc_aligned(size, pageSize);
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+void free_page_aligned(void* ptr)
+{
+    free_aligned(ptr);
+}
+
+void *calloc_page_aligned(size_t num, size_t size)
+{
+    size_t pageSize = get_System_Pagesize();
+    if (pageSize)
+    {
+        return calloc_aligned(num, size, get_System_Pagesize());
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+void *realloc_page_aligned(void *alignedPtr, size_t size)
+{
+    size_t pageSize = get_System_Pagesize();
+    if (pageSize)
+    {
+        return realloc_aligned(alignedPtr, size, get_System_Pagesize());
+    }
+    else
+    {
+        free_aligned(alignedPtr);
+        return NULL;
+    }
 }
 
 void nibble_Swap(uint8_t *byteToSwap)
