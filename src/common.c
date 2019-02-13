@@ -153,14 +153,14 @@ void *realloc_aligned(void *alignedPtr, size_t size, size_t alignment)
     //this will not be exactly the same as a traditional realloc since we don't have low-level access to do the exact same thing
     //We will mimic the behaviour as best we can by freeing the ptr and allocating new memory with malloc_aligned and returning that.
     void *temp = NULL;
-    if (alignedPtr)
-    {
-        //free the old pointer
-        free_aligned(alignedPtr);
-    }
     if (size)
     {
         temp = malloc_aligned(size, alignment);
+    }
+    if (alignedPtr && temp)
+    {
+        //free the old pointer
+        free_aligned(alignedPtr);
     }
     return temp;
 }
@@ -223,7 +223,6 @@ void *realloc_page_aligned(void *alignedPtr, size_t size)
     }
     else
     {
-        free_aligned(alignedPtr);
         return NULL;
     }
 }
