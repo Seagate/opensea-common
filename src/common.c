@@ -80,10 +80,10 @@ void *malloc_aligned(size_t size, size_t alignment)
         //This way means overallocating and adding to get to the required alignment...then knowing how much we over aligned by.
         //Will store the original starting pointer right before the aligned pointer we return to the caller.
         void *temp = NULL;
-        if (size && alignment)
+        if (size && (alignment > 0) && ((alignment & (alignment - 1)) == 0))//Check that we have a size to allocate and enforce that the alignment value is a power of 2.
         {
             size_t requiredExtraBytes = sizeof(size_t);//We will store the original beginning address in front of the return data pointer
-            const size_t totalAllocation = size + (2 * alignment) + requiredExtraBytes;
+            const size_t totalAllocation = size + alignment + requiredExtraBytes;
             temp = malloc(totalAllocation);
             if (temp)
             {
