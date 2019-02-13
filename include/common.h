@@ -1173,7 +1173,7 @@ extern "C"
     //!   \return void
     //
     //-----------------------------------------------------------------------------
-    #define safe_Free_page_aligned(mem)  \
+    #define safe_Free_aligned(mem)  \
     if(mem)                 \
     {                       \
         free_aligned(mem);          \
@@ -1202,10 +1202,10 @@ extern "C"
     //  realloc_aligned(void *alignedPtr, size_t size, size_t alignment)
     //
     //! \brief   Description:  Reallocates aligned memory based on the specified power of 2 alignement value and zeroes it out.
-    //!                 NOTE:  This implementation CANNOT keep previous values in the incoming memory pointer. All previous data will be lost using this function!!!
     //
     //  Entry:
     //!   \param[in] alignedPtr = pointer to a memory block previously allocated with malloc_aligned, calloc_aligned, or realloc_aligned. If NULL, this is the same as malloc_aligned
+    //!   \param[in] originalSize = size in bytes of the alignedPtr being passed in. This is used so that previous data can be preserved.
     //!   \param[in] size = size of memory block in bytes to allocate
     //!   \param[in] alignment = alignment value required. This MUST be a power of 2.
     //!
@@ -1213,7 +1213,7 @@ extern "C"
     //!   \return ptrToAlignedMemory
     //
     //-----------------------------------------------------------------------------
-    void *realloc_aligned(void *alignedPtr, size_t size, size_t alignment);
+    void *realloc_aligned(void *alignedPtr, size_t originalSize, size_t size, size_t alignment);
 
     //-----------------------------------------------------------------------------
     //
@@ -1301,17 +1301,17 @@ extern "C"
     //  realloc_page_aligned(void *alignedPtr, size_t size)
     //
     //! \brief   Description:  Reallocates aligned memory based on the system page size. Same as calling realloc_aligned(alignedPtr, size, get_System_Pagesize());
-    //!                 NOTE:  This implementation CANNOT keep previous values in the incoming memory pointer. All previous data will be lost using this function!!!
     //
     //  Entry:
     //!   \param[in] alignedPtr = pointer to a memory block previously allocated with malloc_aligned, calloc_aligned, or realloc_aligned. If NULL, this is the same as malloc_aligned
+    //!   \param[in] originalSize = size in bytes of the alignedPtr being passed in. This is used so that previous data can be preserved.
     //!   \param[in] size = size of memory block in bytes to allocate
     //!
     //  Exit:
     //!   \return ptrToAlignedMemory
     //
     //-----------------------------------------------------------------------------
-    void *realloc_page_aligned(void *alignedPtr, size_t size);
+    void *realloc_page_aligned(void *alignedPtr, size_t originalSize, size_t size);
 
 #if defined (__cplusplus)
 } //extern "C"

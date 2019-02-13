@@ -63,7 +63,7 @@ void *malloc_aligned(size_t size, size_t alignment)
     #elif defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         //POSIX.1-2001 and higher define support for posix_memalign
         void *temp = NULL;
-        if (0 != posix_memalign( &temp, alignment, size));
+        if (0 != posix_memalign( &temp, alignment, size))
         {
             temp = NULL;//make sure the system we are running didn't change this.
         }
@@ -148,14 +148,16 @@ void *calloc_aligned(size_t num, size_t size, size_t alignment)
     return zeroedMem;
 }
 
-void *realloc_aligned(void *alignedPtr, size_t size, size_t alignment)
+void *realloc_aligned(void *alignedPtr, size_t originalSize, size_t size, size_t alignment)
 {
-    //this will not be exactly the same as a traditional realloc since we don't have low-level access to do the exact same thing
-    //We will mimic the behaviour as best we can by freeing the ptr and allocating new memory with malloc_aligned and returning that.
     void *temp = NULL;
     if (size)
     {
         temp = malloc_aligned(size, alignment);
+        if (alignedPtr && originalSize && temp)
+        {
+            memcpy(temp, alignedPtr, originalSize);
+        }
     }
     if (alignedPtr && temp)
     {
@@ -214,12 +216,12 @@ void *calloc_page_aligned(size_t num, size_t size)
     }
 }
 
-void *realloc_page_aligned(void *alignedPtr, size_t size)
+void *realloc_page_aligned(void *alignedPtr, size_t originalSize, size_t size)
 {
     size_t pageSize = get_System_Pagesize();
     if (pageSize)
     {
-        return realloc_aligned(alignedPtr, size, get_System_Pagesize());
+        return realloc_aligned(alignedPtr, originalSize, size, get_System_Pagesize());
     }
     else
     {
