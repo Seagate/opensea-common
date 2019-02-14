@@ -529,7 +529,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
     LPCWSTR subblock = L"\\";
 #else
     static const char kernel32DLL[] = "\\kernel32.dll";
-    LPSTR *systemPathBuf = (LPSTR*)calloc(OPENSEA_PATH_MAX, sizeof(CHAR));
+    LPSTR *systemPathBuf = (LPSTR)calloc(OPENSEA_PATH_MAX, sizeof(CHAR));
     LPCSTR systemPath = &systemPathBuf[0];
     LPCSTR subblock = "\\";
 #endif
