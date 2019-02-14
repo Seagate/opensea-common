@@ -98,7 +98,7 @@ void *malloc_aligned(size_t size, size_t alignment)
             }
         }
         return temp;
-#endif
+    #endif
 }
 
 void free_aligned(void* ptr)
@@ -129,7 +129,7 @@ void free_aligned(void* ptr)
             tempPtr = (void*)(*((size_t*)tempPtr));
             free(tempPtr);
         }
-#endif
+    #endif
 }
 
 void *calloc_aligned(size_t num, size_t size, size_t alignment)
@@ -169,20 +169,20 @@ void *realloc_aligned(void *alignedPtr, size_t originalSize, size_t size, size_t
 
 size_t get_System_Pagesize(void)
 {
-#if defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
-    //use sysconf: http://man7.org/linux/man-pages/man3/sysconf.3.html
-    return (size_t)sysconf(_SC_PAGESIZE);
-#elif defined (_POSIX_VERSION) //this may not be the best way to test this, but I think it will be ok.
-    //use get page size: http://man7.org/linux/man-pages/man2/getpagesize.2.html
-    return (size_t)getpagesize();
-#elif defined defined (_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
-    SYSTEM_INFO system;
-    memset(&system, 0, sizeof(SYSTEMFO));
-    GetSystemInfo(&system);
-    return (size_t)system.dwPageSize;
-#else
-    return -1;//unknown, so return something easy to see an error with.
-#endif
+    #if defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        //use sysconf: http://man7.org/linux/man-pages/man3/sysconf.3.html
+        return (size_t)sysconf(_SC_PAGESIZE);
+    #elif defined (_POSIX_VERSION) //this may not be the best way to test this, but I think it will be ok.
+        //use get page size: http://man7.org/linux/man-pages/man2/getpagesize.2.html
+        return (size_t)getpagesize();
+    #elif defined defined (_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
+        SYSTEM_INFO system;
+        memset(&system, 0, sizeof(SYSTEMFO));
+        GetSystemInfo(&system);
+        return (size_t)system.dwPageSize;
+    #else
+        return -1;//unknown, so return something easy to see an error with.
+    #endif
 }
 
 void *malloc_page_aligned(size_t size)
