@@ -175,9 +175,9 @@ size_t get_System_Pagesize(void)
     #elif defined (_POSIX_VERSION) //this may not be the best way to test this, but I think it will be ok.
         //use get page size: http://man7.org/linux/man-pages/man2/getpagesize.2.html
         return (size_t)getpagesize();
-    #elif defined defined (_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
+    #elif defined (_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
         SYSTEM_INFO system;
-        memset(&system, 0, sizeof(SYSTEMFO));
+        memset(&system, 0, sizeof(SYSTEM_INFO));
         GetSystemInfo(&system);
         return (size_t)system.dwPageSize;
     #else
