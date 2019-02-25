@@ -746,7 +746,7 @@ bool is_Empty(void *ptrData, size_t lengthBytes)
     {
         for (size_t iter = 0; iter < lengthBytes; ++iter)
         {
-            if (((uint_fast8_t*)ptrData)[0] != UINT8_C(0))
+            if (((uint_fast8_t*)ptrData)[iter] != UINT8_C(0))
             {
                 return false;
             }
