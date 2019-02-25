@@ -1312,6 +1312,8 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void *realloc_page_aligned(void *alignedPtr, size_t originalSize, size_t size);
+    //checks if the provided pointer memory is all cleared to zero or not.
+    bool is_Empty(void *ptrData, size_t lengthBytes);
 
 #if defined (__cplusplus)
 } //extern "C"

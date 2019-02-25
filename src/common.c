@@ -740,6 +740,56 @@ int capacity_Unit_Convert(double *byteValue, char** capacityUnit)
     return ret;
 }
 
+bool is_Empty(void *ptrData, size_t lengthBytes)
+{
+    if (ptrData)
+    {
+        for (size_t iter = 0; iter < lengthBytes; ++iter)
+        {
+            if (((uint_fast8_t*)ptrData)[0] != UINT8_C(0))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+//void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
+//{
+//    double tempCalcValue = secondsToConvert;
+//    //get seconds up to a maximum of 60
+//    if (seconds)
+//    {
+//        *seconds = (uint8_t)(tempCalcValue % 60);
+//    }
+//    tempCalcValue /= 60;
+//    //get minutes up to a maximum of 60
+//    if (minutes)
+//    {
+//        *minutes = (uint8_t)(tempCalcValue % 60);
+//    }
+//    tempCalcValue /= 60;
+//    //get hours up to a maximum of 24
+//    if (hours)
+//    {
+//        *hours = (uint8_t)(tempCalcValue % 24);
+//    }
+//    tempCalcValue /= 24;
+//    //get days up to 365
+//    if (days)
+//    {
+//        *days = (uint8_t)(tempCalcValue % 365);
+//    }
+//    tempCalcValue /= 365;
+//    //get years
+//    if (years)
+//    {
+//        *years = (uint8_t)(tempCalcValue);
+//    }
+//}
+
 void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
 {
     uint64_t tempCalcValue = secondsToConvert;
