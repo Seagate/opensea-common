@@ -775,6 +775,8 @@ extern "C"
     //-----------------------------------------------------------------------------
     void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
+    void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
+
 	//-----------------------------------------------------------------------------
 	//
 	//  get_And_Validate_Integer_Input()

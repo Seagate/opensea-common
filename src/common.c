@@ -23,6 +23,7 @@
 #include <errno.h>
 #endif
 #include <stdlib.h>//aligned allocation functions come from here
+#include <math.h>
 
 void delay_Milliseconds(uint32_t milliseconds)
 {
@@ -756,39 +757,39 @@ bool is_Empty(void *ptrData, size_t lengthBytes)
     return false;
 }
 
-//void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
-//{
-//    double tempCalcValue = secondsToConvert;
-//    //get seconds up to a maximum of 60
-//    if (seconds)
-//    {
-//        *seconds = (uint8_t)(tempCalcValue % 60);
-//    }
-//    tempCalcValue /= 60;
-//    //get minutes up to a maximum of 60
-//    if (minutes)
-//    {
-//        *minutes = (uint8_t)(tempCalcValue % 60);
-//    }
-//    tempCalcValue /= 60;
-//    //get hours up to a maximum of 24
-//    if (hours)
-//    {
-//        *hours = (uint8_t)(tempCalcValue % 24);
-//    }
-//    tempCalcValue /= 24;
-//    //get days up to 365
-//    if (days)
-//    {
-//        *days = (uint8_t)(tempCalcValue % 365);
-//    }
-//    tempCalcValue /= 365;
-//    //get years
-//    if (years)
-//    {
-//        *years = (uint8_t)(tempCalcValue);
-//    }
-//}
+void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
+{
+    double tempCalcValue = secondsToConvert;
+    //get seconds up to a maximum of 60
+    if (seconds)
+    {
+        *seconds = (uint8_t)(fmod(tempCalcValue, 60.0));
+    }
+    tempCalcValue /= 60.0;
+    //get minutes up to a maximum of 60
+    if (minutes)
+    {
+        *minutes = (uint8_t)(fmod(tempCalcValue, 60.0));
+    }
+    tempCalcValue /= 60.0;
+    //get hours up to a maximum of 24
+    if (hours)
+    {
+        *hours = (uint8_t)(fmod(tempCalcValue, 24.0));
+    }
+    tempCalcValue /= 24.0;
+    //get days up to 365
+    if (days)
+    {
+        *days = (uint8_t)(fmod(tempCalcValue, 365.0));
+    }
+    tempCalcValue /= 365.0;
+    //get years
+    if (years)
+    {
+        *years = (uint8_t)(tempCalcValue);
+    }
+}
 
 void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
 {
