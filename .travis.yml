@@ -15,6 +15,14 @@ matrix:
         cd Make/gcc
       script: 
         make
+    - os: linux
+      sudo: false
+      compiler: clang
+      dist: trusty
+      before_script: 
+        cd Make/gcc
+      script: 
+        make        
     - os: windows
       env:
         - MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
