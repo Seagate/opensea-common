@@ -17,13 +17,12 @@ matrix:
         make
       after_success:
           - cd ../..
-          - if [ "$TRAVIS_BRANCH" = "develop" ]; then
-            - ./update-version.sh 
-            - git config --global user.email "opensea-build@seagate.com" 
-            - git config --global user.name "Travis CI"
-            - git checkout ${branch}
-            - git commit -am "[skip travis] version changed" 
-            - git push
+          - ./update-version.sh 
+          - git config --global user.email "opensea-build@seagate.com" 
+          - git config --global user.name "Travis CI" 
+          - git checkout ${branch} 
+          - git commit -am "[skip travis] version changed" 
+          - git push
 
     - os: linux
       sudo: false
