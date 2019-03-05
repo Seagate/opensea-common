@@ -20,7 +20,7 @@ matrix:
           - ./update-version.sh 
           - git config --global user.email "opensea-build@seagate.com" 
           - git config --global user.name "Travis CI" 
-          - git checkout ${branch} 
+          - git checkout develop
           - git commit -am "[skip travis] version changed" 
           - git push
 
