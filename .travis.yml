@@ -20,13 +20,13 @@ matrix:
       script: 
         make
       after_success:
-          - cd ../..
+          - cd "$TRAVIS_BUILD_DIR"
           - ./update-version.sh 
           - git config --global user.email "opensea-build@seagate.com" 
           - git config --global user.name "Travis CI" 
           - git checkout develop
           - git commit -am "[skip travis] version changed" 
-          - git push -q https://${GH_TOKEN}@github.com/Seagate/opensea-common.git
+          - git push -q https://$GITHUB_API_KEY@github.com/Seagate/opensea-common.git
 
     - os: linux
       sudo: false
