@@ -15,6 +15,15 @@ matrix:
         cd Make/gcc
       script: 
         make
+      after_success:
+          - cd Make/gcc
+          - ./update-version.sh 
+          - git config --global user.email "opensea-build@seagate.com" 
+          - git config --global user.name "Travis CI"
+          - git add -u
+          - git commit -m "[skip travis] version changed" 
+          - git push
+
     - os: linux
       sudo: false
       compiler: clang
@@ -32,8 +41,3 @@ matrix:
         - export PATH=$MSBUILD_PATH:$PATH 
         - MSBuild.exe //p:Configuration=Release //p:Platform=x64
 
-after_success:
-  - ./update-version.sh
-  - git add -u
-  - git commit -m "[skip travis] version changed"
-  - git push
