@@ -670,6 +670,22 @@ extern "C"
 
     //-----------------------------------------------------------------------------
     //
+    //   find_last_occurrence_in_string(char *originalString, char *stringToFind)
+    //
+    //! \brief   Description:  convert uppercase characters to lowercase and lowercase characters to uppercase in a string.
+    //
+    //  Entry:
+    //!   \param[in] originalString = a pointer to the data containing a string that will be searched(superset)
+	//!   \param[in] stringToFind = a pointer to the data containing a string that is to be searched(subset)
+    //!
+    //  Exit:
+    //!   \return size_t = last occurence of 'stringToFind' in 'originalString'
+    //
+    //-----------------------------------------------------------------------------
+    size_t find_last_occurrence_in_string(char *originalString, char *stringToFind);
+
+    //-----------------------------------------------------------------------------
+    //
     //  print_Data_Buffer()
     //
     //! \brief   Description:  print out a data buffer to the screen

@@ -479,6 +479,29 @@ void convert_String_To_Inverse_Case(char *stringToChange)
     }
 }
 
+size_t find_last_occurrence_in_string(char *originalString, char *stringToFind)
+{  
+    char *stringToCompare = originalString;
+    size_t last_occurrence = strlen(originalString);
+
+    while (stringToCompare != NULL)
+    {
+        char *partialString = strstr(stringToCompare, stringToFind);
+        if (partialString != NULL)
+        {
+            last_occurrence = strlen(partialString);
+            partialString += strlen(stringToFind);
+            stringToCompare = strstr(partialString, stringToFind);
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return last_occurrence;
+}
+
 void print_Return_Enum(char *funcName, int ret)
 {
     if (NULL == funcName)
