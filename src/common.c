@@ -1547,3 +1547,16 @@ uint64_t power_Of_Two(uint16_t exponent)
     }
     return result;
 }
+
+//making it look similar to a std lib function like isPrint.
+int is_ASCII(int c)
+{
+    if (c >= 0x7F || c < 0)
+    {
+        return 0;//false
+    }
+    else
+    {
+        return 1;//true
+    }
+}

@@ -1333,6 +1333,9 @@ extern "C"
     //checks if the provided pointer memory is all cleared to zero or not.
     bool is_Empty(void *ptrData, size_t lengthBytes);
 
+    //This function checks if the provided character is between 0 and 7F. A.K.A. part of the standard ascii character set.
+    int is_ASCII(int c);
+
 #if defined (__cplusplus)
 } //extern "C"
 #endif
