@@ -175,7 +175,7 @@ extern "C"
 
     #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~0U << ((msb) - (lsb) + 1)))
 
-	#define M_2sCOMPLEMENT(val) (~(val) + 1)
+    #define M_2sCOMPLEMENT(val) (~(val) + 1)
 
     //define something called reserved that has a value of zero. Use it to set reserved bytes to 0
     #define RESERVED 0
@@ -192,8 +192,8 @@ extern "C"
         BAD_PARAMETER           = 6, //the only time this return code should be seen is when a developer is writing code to add something. This should not appear in a finished application
         MEMORY_FAILURE          = 7, //could not allocate memory
         OS_PASSTHROUGH_FAILURE  = 8, //For some unknown reason, the OS API call to issue the pass-through command failed.
-		LIBRARY_MISMATCH        = 9,
-        FROZEN			        = 10, //use this to communicate back when the device is in a frozen state for a commmand like sanitize or ata security
+        LIBRARY_MISMATCH        = 9,
+        FROZEN                  = 10, //use this to communicate back when the device is in a frozen state for a commmand like sanitize or ata security
         PERMISSION_DENIED       = 11, //OS returned Access/permission denied
         FILE_OPEN_ERROR         = 12,
         WARN_INCOMPLETE_RFTRS   = 13, //command was issued, and some RTFRs were received, but we were unable to get a complete RTFR result. This is most likely due to a SATL limitation.
@@ -202,7 +202,7 @@ extern "C"
         WARN_INVALID_CHECKSUM   = 16, //The checksum on the data for a command didn't calculate correctly (EX: Identify device, some ATA Logs)
         OS_COMMAND_NOT_AVAILABLE = 17, //This is returned when the OS does not have a way to issue the requested command. (EX: Trying to send an NVMe command without Win10, or trying a 32byte SCSI command pre-Win8)
         OS_COMMAND_BLOCKED      = 18, //This is returned when the OS is blocking the command from being issued (EX: TCG - linux, lib ATA......or Sanitize in Windos 8+)
-        COMMAND_INTERRUPTED		= 19, //Nidhi - Added for SCT commands, if interrupted by some other SCT command.
+        COMMAND_INTERRUPTED     = 19, //Nidhi - Added for SCT commands, if interrupted by some other SCT command.
         UNKNOWN
     }eReturnValues;
 
@@ -220,7 +220,7 @@ extern "C"
         VERBOSITY_QUIET           = 0,
         VERBOSITY_DEFAULT         = 1,
         VERBOSITY_COMMAND_NAMES   = 2,
-		VERBOSITY_COMMAND_VERBOSE = 3,
+        VERBOSITY_COMMAND_VERBOSE = 3,
         VERBOSITY_BUFFERS         = 4
     }eVerbosityLevels;
 
@@ -353,20 +353,20 @@ extern "C"
     //-----------------------------------------------------------------------------
     void byte_Swap_16(uint16_t *wordToSwap);
 
-	//-----------------------------------------------------------------------------
-	//
-	//  big_To_Little_Endian_16()
-	//
-	//! \brief   Description:  swap the bytes in a word only if on little endian system. 
-	//
-	//  Entry:
-	//!   \param[out] wordToSwap = a pointer to the word containing the data in which to have the bytes swapped
-	//!
-	//  Exit:
-	//!   \return VOID
-	//
-	//-----------------------------------------------------------------------------
-	void big_To_Little_Endian_16(uint16_t *wordToSwap);
+    //-----------------------------------------------------------------------------
+    //
+    //  big_To_Little_Endian_16()
+    //
+    //! \brief   Description:  swap the bytes in a word only if on little endian system. 
+    //
+    //  Entry:
+    //!   \param[out] wordToSwap = a pointer to the word containing the data in which to have the bytes swapped
+    //!
+    //  Exit:
+    //!   \return VOID
+    //
+    //-----------------------------------------------------------------------------
+    void big_To_Little_Endian_16(uint16_t *wordToSwap);
 
     //-----------------------------------------------------------------------------
     //
@@ -383,20 +383,20 @@ extern "C"
     //-----------------------------------------------------------------------------
     void byte_Swap_32(uint32_t *doubleWordToSwap);
 
-	//-----------------------------------------------------------------------------
-	//
-	//  big_To_Little_Endian_32()
-	//
-	//! \brief   Description:  swap the bytes in a double word only if running on little endian system
-	//
-	//  Entry:
-	//!   \param[out] doubleWordToSwap = a pointer to the double word containing the data in which to have the bytes swapped
-	//!
-	//  Exit:
-	//!   \return VOID
-	//
-	//-----------------------------------------------------------------------------
-	void big_To_Little_Endian_32(uint32_t *doubleWordToSwap);
+    //-----------------------------------------------------------------------------
+    //
+    //  big_To_Little_Endian_32()
+    //
+    //! \brief   Description:  swap the bytes in a double word only if running on little endian system
+    //
+    //  Entry:
+    //!   \param[out] doubleWordToSwap = a pointer to the double word containing the data in which to have the bytes swapped
+    //!
+    //  Exit:
+    //!   \return VOID
+    //
+    //-----------------------------------------------------------------------------
+    void big_To_Little_Endian_32(uint32_t *doubleWordToSwap);
 
     //-----------------------------------------------------------------------------
     //
@@ -676,7 +676,7 @@ extern "C"
     //
     //  Entry:
     //!   \param[in] originalString = a pointer to the data containing a string that will be searched(superset)
-	//!   \param[in] stringToFind = a pointer to the data containing a string that is to be searched(subset)
+    //!   \param[in] stringToFind = a pointer to the data containing a string that is to be searched(subset)
     //!
     //  Exit:
     //!   \return size_t = last occurence of 'stringToFind' in 'originalString'
@@ -793,22 +793,22 @@ extern "C"
 
     void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
-	//-----------------------------------------------------------------------------
-	//
-	//  get_And_Validate_Integer_Input()
-	//
-	//! \brief   Description:	Validates an input as unsigned integer & converts it to unsigned type.
-	//!							This function supports hex values such as 0xFF AEh etc.  	
-	//
-	//  Entry:
-	//!   \param[in] strToConvert - const char * buffer to convert to integer
-	//!   \param[out] outputInteger - pointer to integer to store the output
-	//!
-	//  Exit:
-	//!   \return true if able to read in an integer number, false if invalid format.
-	//
-	//-----------------------------------------------------------------------------
-	bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger);
+    //-----------------------------------------------------------------------------
+    //
+    //  get_And_Validate_Integer_Input()
+    //
+    //! \brief   Description:   Validates an input as unsigned integer & converts it to unsigned type.
+    //!                         This function supports hex values such as 0xFF AEh etc.     
+    //
+    //  Entry:
+    //!   \param[in] strToConvert - const char * buffer to convert to integer
+    //!   \param[out] outputInteger - pointer to integer to store the output
+    //!
+    //  Exit:
+    //!   \return true if able to read in an integer number, false if invalid format.
+    //
+    //-----------------------------------------------------------------------------
+    bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger);
 
     //-----------------------------------------------------------------------------
     //

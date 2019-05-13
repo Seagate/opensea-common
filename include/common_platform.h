@@ -123,7 +123,7 @@ extern "C"
     // bool os_Directory_Exits (const char * const pathToCheck)
     //
     // \brief   Description: Platform independent helper to check if path exists. 
-    //						 WARNING: May not work with UNICODE path. 
+    //                       WARNING: May not work with UNICODE path. 
     //
     // Entry:
     //      \param[in] pathToCheck The path that needs to be evaluated. 
@@ -139,7 +139,7 @@ extern "C"
     // bool os_File_Exists (const char * const filetoCheck)
     //
     // \brief   Description: Platform independent helper to check if file exists. 
-    //						 WARNING: May not work with UNICODE path. 
+    //                       WARNING: May not work with UNICODE path. 
     //
     // Entry:
     //      \param[in] filetoCheck The file that needs to be evaluated. 

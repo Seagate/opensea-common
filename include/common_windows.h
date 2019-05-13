@@ -20,7 +20,7 @@ extern "C"
 #endif
 
     //This pragma is needed to tell a library including opensea-common to look for Version.lib for the version helping information in the .c file.
-	//NOTE: ARM requires 10.0.16299.0 API to get this library!
+    //NOTE: ARM requires 10.0.16299.0 API to get this library!
     #if !defined (__MINGW32__) && !defined (__MINGW64__)
     #pragma comment(lib,"Version.lib")
     #endif
@@ -32,22 +32,22 @@ extern "C"
     #define SYSTEM_PATH_SEPARATOR '\\'
     #define SYSTEM_PATH_SEPARATOR_STR "\\"
 
-	//  
-	// _WIN32_WINNT version constants  
-	//  
-	#define SEA_WIN32_WINNT_NT4                    0x0400 // Windows NT 4.0  
-	#define SEA_WIN32_WINNT_WIN2K                  0x0500 // Windows 2000  
-	#define SEA_WIN32_WINNT_WINXP                  0x0501 // Windows XP  
-	#define SEA_WIN32_WINNT_WS03                   0x0502 // Windows Server 2003  
-	#define SEA_WIN32_WINNT_WIN6                   0x0600 // Windows Vista  
-	#define SEA_WIN32_WINNT_VISTA                  0x0600 // Windows Vista  
-	#define SEA_WIN32_WINNT_WS08                   0x0600 // Windows Server 2008  
-	#define SEA_WIN32_WINNT_LONGHORN               0x0600 // Windows Vista  
-	#define SEA_WIN32_WINNT_WIN7                   0x0601 // Windows 7  
-	#define SEA_WIN32_WINNT_WIN8                   0x0602 // Windows 8  
-	#define SEA_WIN32_WINNT_WINBLUE                0x0603 // Windows 8.1  
-	#define SEA_WIN32_WINNT_WINTHRESHOLD           0x0A00 // Windows 10  
-	#define SEA_WIN32_WINNT_WIN10                  0x0A00 // Windows 10  
+    //  
+    // _WIN32_WINNT version constants  
+    //  
+    #define SEA_WIN32_WINNT_NT4                    0x0400 // Windows NT 4.0  
+    #define SEA_WIN32_WINNT_WIN2K                  0x0500 // Windows 2000  
+    #define SEA_WIN32_WINNT_WINXP                  0x0501 // Windows XP  
+    #define SEA_WIN32_WINNT_WS03                   0x0502 // Windows Server 2003  
+    #define SEA_WIN32_WINNT_WIN6                   0x0600 // Windows Vista  
+    #define SEA_WIN32_WINNT_VISTA                  0x0600 // Windows Vista  
+    #define SEA_WIN32_WINNT_WS08                   0x0600 // Windows Server 2008  
+    #define SEA_WIN32_WINNT_LONGHORN               0x0600 // Windows Vista  
+    #define SEA_WIN32_WINNT_WIN7                   0x0601 // Windows 7  
+    #define SEA_WIN32_WINNT_WIN8                   0x0602 // Windows 8  
+    #define SEA_WIN32_WINNT_WINBLUE                0x0603 // Windows 8.1  
+    #define SEA_WIN32_WINNT_WINTHRESHOLD           0x0A00 // Windows 10  
+    #define SEA_WIN32_WINNT_WIN10                  0x0A00 // Windows 10  
 
     //-----------------------------------------------------------------------------
     //
@@ -129,7 +129,7 @@ extern "C"
     #define WIN_API_TARGET_WIN10_10586  100105860L //10.0.10586.0 //Win 10 API, build 10586
     #define WIN_API_TARGET_WIN10_14393  100143930L //10.0.14393.0 //Win 10 API, build 14393
     #define WIN_API_TARGET_WIN10_15063  100150630L //10.0.15063.0 //Win 10 API, build 15063
-	#define WIN_API_TARGET_WIN10_16299  100162990L //10.0.16299.0 //Win 10 API, build 16299
+    #define WIN_API_TARGET_WIN10_16299  100162990L //10.0.16299.0 //Win 10 API, build 16299
     #define WIN_API_TARGET_WIN10_17134  100171340L //10.0.17134.0 //Win 10 API, build 17134
     #define WIN_API_TARGET_WIN10_17763  100177630L //10.0.17763.0 //Win 10 API, build 17763
 
