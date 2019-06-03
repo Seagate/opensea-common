@@ -242,10 +242,10 @@ void byte_Swap_16(uint16_t *wordToSwap)
 
 void big_To_Little_Endian_16(uint16_t *wordToSwap)
 {
-	if (get_Compiled_Endianness() == OPENSEA_LITTLE_ENDIAN)
-	{
-		byte_Swap_16(wordToSwap);
-	}
+    if (get_Compiled_Endianness() == OPENSEA_LITTLE_ENDIAN)
+    {
+        byte_Swap_16(wordToSwap);
+    }
 }
 
 void byte_Swap_32(uint32_t *doubleWordToSwap)
@@ -256,10 +256,10 @@ void byte_Swap_32(uint32_t *doubleWordToSwap)
 
 void big_To_Little_Endian_32(uint32_t *doubleWordToSwap)
 {
-	if (get_Compiled_Endianness() == OPENSEA_LITTLE_ENDIAN)
-	{
-		byte_Swap_32(doubleWordToSwap);
-	}
+    if (get_Compiled_Endianness() == OPENSEA_LITTLE_ENDIAN)
+    {
+        byte_Swap_32(doubleWordToSwap);
+    }
 }
 
 void word_Swap_32(uint32_t *doubleWordToSwap)
@@ -402,11 +402,11 @@ void remove_Leading_Whitespace(char *stringToChange)
     {
         iter++;
     }
-	if (iter > 0)
-	{
-		memmove(&stringToChange[0], &stringToChange[iter], stringToChangeLen - iter);
-		memset(&stringToChange[stringToChangeLen - iter], 0, iter);//should this be a null? Or a space? Leaving as null for now since it seems to work...
-	}
+    if (iter > 0)
+    {
+        memmove(&stringToChange[0], &stringToChange[iter], stringToChangeLen - iter);
+        memset(&stringToChange[stringToChangeLen - iter], 0, iter);//should this be a null? Or a space? Leaving as null for now since it seems to work...
+    }
 }
 
 void remove_Leading_And_Trailing_Whitespace(char *stringToChange)
@@ -479,6 +479,29 @@ void convert_String_To_Inverse_Case(char *stringToChange)
     }
 }
 
+size_t find_last_occurrence_in_string(char *originalString, char *stringToFind)
+{  
+    char *stringToCompare = originalString;
+    size_t last_occurrence = strlen(originalString);
+
+    while (stringToCompare != NULL)
+    {
+        char *partialString = strstr(stringToCompare, stringToFind);
+        if (partialString != NULL)
+        {
+            last_occurrence = strlen(partialString);
+            partialString += strlen(stringToFind);
+            stringToCompare = strstr(partialString, stringToFind);
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return last_occurrence;
+}
+
 void print_Return_Enum(char *funcName, int ret)
 {
     if (NULL == funcName)
@@ -522,12 +545,12 @@ void print_Return_Enum(char *funcName, int ret)
     case LIBRARY_MISMATCH:
         printf("LIBRARY MISMATCH\n");
         break;
-	case FROZEN:
-		printf("FROZEN\n");
-		break;
-	case PERMISSION_DENIED:
-	    printf("PERMISSION DENIED\n");
-	    break;
+    case FROZEN:
+        printf("FROZEN\n");
+        break;
+    case PERMISSION_DENIED:
+        printf("PERMISSION DENIED\n");
+        break;
     case FILE_OPEN_ERROR:
         printf("FILE OPEN ERROR\n");
         break;
@@ -550,7 +573,7 @@ void print_Return_Enum(char *funcName, int ret)
         printf("OS COMMAND BLOCKED\n");
         break;
     default:
-		printf("UNKNOWN: %d\n", ret);
+        printf("UNKNOWN: %d\n", ret);
         break;
     }
     printf("\n");
@@ -1345,46 +1368,46 @@ long int get_File_Size(FILE *filePtr)
 
 bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger)
 {
-	bool ret = true; 
-	bool hex = false;
-	const char * tmp = strToConvert;
-	while (*tmp != '\0')
-	{
-		if ( (!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h') )
-		{
-			ret = false;
-			break;
-		}
-		else if (!isdigit(*tmp))
-		{
-			hex = true;
-		}
-		tmp++;
-	}
-	//If everything is a valid hex digit. 
-	//TODO: What about realllyyyy long hex value? 
-	if (ret == true )
-	{
-		if ( hex )
-		{
-			*outputInteger = strtol(strToConvert, NULL, 16);
-		}
-		else
-		{
-			*outputInteger = strtol(strToConvert, NULL, 10);
-		}
-	}
-	else
-	{
-		ret = false; 
-	}
-	//Final Check
-	if (ret == true && errno != 0 && * outputInteger == 0)
-	{
-		ret = false;
-	}
+    bool ret = true; 
+    bool hex = false;
+    const char * tmp = strToConvert;
+    while (*tmp != '\0')
+    {
+        if ( (!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h') )
+        {
+            ret = false;
+            break;
+        }
+        else if (!isdigit(*tmp))
+        {
+            hex = true;
+        }
+        tmp++;
+    }
+    //If everything is a valid hex digit. 
+    //TODO: What about realllyyyy long hex value? 
+    if (ret == true )
+    {
+        if ( hex )
+        {
+            *outputInteger = strtol(strToConvert, NULL, 16);
+        }
+        else
+        {
+            *outputInteger = strtol(strToConvert, NULL, 10);
+        }
+    }
+    else
+    {
+        ret = false; 
+    }
+    //Final Check
+    if (ret == true && errno != 0 && * outputInteger == 0)
+    {
+        ret = false;
+    }
 
-	return ret;
+    return ret;
 }
 
 void print_Errno_To_Screen(int error)
@@ -1523,4 +1546,17 @@ uint64_t power_Of_Two(uint16_t exponent)
         break;
     }
     return result;
+}
+
+//making it look similar to a std lib function like isPrint.
+int is_ASCII(int c)
+{
+    if (c >= 0x7F || c < 0)
+    {
+        return 0;//false
+    }
+    else
+    {
+        return 1;//true
+    }
 }

@@ -1,43 +1,36 @@
 language: c
-
 branches:
   only:
   - master
   - develop
-
 matrix:
   include:
-    - os: linux
-      sudo: false
-      compiler: gcc
-      dist: trusty
-      before_script: 
-        cd Make/gcc
-      script: 
-        make
-      after_success:
-          - cd ../..
-          - ./update-version.sh 
-          - git config --global user.email "opensea-build@seagate.com" 
-          - git config --global user.name "Travis CI" 
-          - git checkout develop
-          - git commit -am "[skip travis] version changed" 
-          - git push
-
-    - os: linux
-      sudo: false
-      compiler: clang
-      dist: trusty
-      before_script: 
-        cd Make/gcc
-      script: 
-        make        
-    - os: windows
-      env:
-        - MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
-      before_script: 
-        cd "Make\VS.2017\opensea-common"
-      script: 
-        - export PATH=$MSBUILD_PATH:$PATH 
-        - MSBuild.exe //p:Configuration=Release //p:Platform=x64
-
+  - os: linux
+    sudo: false
+    compiler: gcc
+    dist: trusty
+    before_script: cd Make/gcc
+    script: make
+    after_success:
+    - cd "$TRAVIS_BUILD_DIR"
+    - ./update-version.sh
+    - git config --global user.email "opensea-build@seagate.com"
+    - git config --global user.name "Travis CI"
+    - git checkout develop
+    - git commit -am "[skip travis] version changed"
+    - git push -q https://${GH_TOKEN}@github.com/Seagate/opensea-common.git
+  - os: linux
+    sudo: false
+    compiler: clang
+    dist: trusty
+    before_script: cd Make/gcc
+    script: make
+  - os: windows
+    env:
+    - MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
+    before_script: cd "Make\VS.2017\opensea-common"
+    script:
+    - export PATH=$MSBUILD_PATH:$PATH
+    - MSBuild.exe //p:Configuration=Release //p:Platform=x64
+env:
+  secure: KDD2bfUIERU6EOoe+vCuNCy6dEHULxkuC/D4ElyJmUso/KcC5Tcj1IgvodF9kOBTypufn7ziyTpFxb73m+u+U7xW57kOU2EA0uqnBQpGqpwjlH4TjJEWEYstRuLMo95Pkaj6vuGOtEt955mzoursItPp5z3kQ50nmr87EbLqMyo4NpboAnfikebJPGGJ1u2wNYfuT3euv4Y3ORW28IXYPaS29r9wQmwxS7fosLEw68ZjFydMkcWkVsanYiNaU8WdHrJlgFlMp+ReoZPTEVU8OU6CPrAhbvHGPR2OaSf/xklv/2a1w0hXQVMIyLtrKBbdpdy9fAD9maUWlx0JVUfV93mXu4216xftT+2Nre1tQtzxGR3OG/Ns7IImRVTLqyvVqOtikvj8fBYAc8wxDgUzZS7gc9v0DCKsVcAIKur+acmo71pnBOzRQTAJBvWYJF4CzODRBhd0E7QMdzkMt26lvxRLsnUpz5YiZQUJhDnBbhSJsiDD07ostbkr+ZMbXMmLW080SHawxD2yT9IG84deNYPb6pjNvOIbTXLqmcxIke3rGJ1/P+Ju1UW1Ei5r/8Sc2Id+SuUBx5+MlhySPZC8+HPgF4HIAh6gUvcCblUra85YrEonvwBHpp+trstHCU70zP1auURPwApmJhuJHJQagOlgrVE1PjSUXJKXuaOHjJU=
