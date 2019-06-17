@@ -16,17 +16,14 @@
 #include <ctype.h>
 
 #if defined (_WIN32)
-#include "windows.h" //used for setting color output to the command prompt and Sleep()
+#include <windows.h> //used for setting color output to the command prompt and Sleep()
 #else
 #include <unistd.h> //needed for usleep() or nanosleep()
 #include <time.h>
 #include <errno.h>
 #endif
-
-eVerbosityLevels g_verbosity = VERBOSITY_DEFAULT;
-time_t           g_currentTime;
-char             g_currentTimeString[64];
-char             *g_currentTimeStringPtr = g_currentTimeString;
+#include <stdlib.h>//aligned allocation functions come from here
+#include <math.h>
 
 void delay_Milliseconds(uint32_t milliseconds)
 {
@@ -51,6 +48,187 @@ void delay_Seconds(uint32_t seconds)
 {
     delay_Milliseconds(1000 * seconds);
 }
+//TODO: C11 says supported alignments are implementation defined
+//      We may want an if/else to call back to a generic method if it fails some day. (unlikely, so not done right now)
+//      NOTE: There may also be other functions to do this for other compilers or systems, but they are not known today. Add them as necessary
+//      NOTE: some systems may have memalign instead of the posix definition, but it is not clear how to detect that implementation with feature test macros.
+//      NOTE: In UEFI, using the EDK2, malloc will provide an 8-byte alignment, so it may be possible to do some aligned allocations using it without extra work. but we can revist that later.
+void *malloc_aligned(size_t size, size_t alignment)
+{
+    #if defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+        //C11 added an aligned alloc function we can use
+        return aligned_alloc(alignment, size);
+    #elif defined (__INTEL_COMPILER) || defined (__ICC)
+        //_mm_malloc
+        return _mm_malloc((int)size, (int)alignment);
+    #elif defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        //POSIX.1-2001 and higher define support for posix_memalign
+        void *temp = NULL;
+        if (0 != posix_memalign( &temp, alignment, size))
+        {
+            temp = NULL;//make sure the system we are running didn't change this.
+        }
+        return temp;
+    #elif defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+        //mingw32 has an aligned malloc function that is not available in mingw64.
+        return __mingw_aligned_malloc(size, alignment);
+    #elif defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR)
+        //use the MS _aligned_malloc function. Mingw64 will support this as well from what I can find - TJE
+        return _aligned_malloc(size, alignment);
+    #else
+        //need a generic way to do this with some math and overallocating...not preferred but can make it work.
+        //This can waste a LOT of memory in some cases depending on the required alignment.
+        //This way means overallocating and adding to get to the required alignment...then knowing how much we over aligned by.
+        //Will store the original starting pointer right before the aligned pointer we return to the caller.
+        void *temp = NULL;
+        if (size && (alignment > 0) && ((alignment & (alignment - 1)) == 0))//Check that we have a size to allocate and enforce that the alignment value is a power of 2.
+        {
+            size_t requiredExtraBytes = sizeof(size_t);//We will store the original beginning address in front of the return data pointer
+            const size_t totalAllocation = size + alignment + requiredExtraBytes;
+            temp = malloc(totalAllocation);
+            if (temp)
+            {
+                const void * const originalLocation = temp;
+                temp += requiredExtraBytes;//allow enough room for storing the original pointer location
+                //now offset based on the required alignment
+                temp += alignment - (((size_t)temp) % alignment);
+                //aligned.
+                //now save the original pointer location
+                size_t *savedLocationData = (size_t*)(temp - sizeof(size_t));
+                *savedLocationData = (size_t)originalLocation;
+            }
+        }
+        return temp;
+    #endif
+}
+
+void free_aligned(void* ptr)
+{
+    #if defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+        //just call free
+        free(ptr);
+    #elif defined (__INTEL_COMPILER) || defined (__ICC)
+        //_mm_free
+        _mm_free(ptr);
+    #elif defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        //POSIX.1-2001 and higher define support for posix_memalign
+        //Just call free
+        free(ptr);
+    #elif defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+        //mingw32 has an aligned malloc function that is not available in mingw64.
+        __mingw_aligned_free(ptr);
+    #elif defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR)
+        //use the MS _aligned_free function
+        _aligned_free(ptr);
+    #else
+        //original pointer
+        if (ptr)
+        {
+            //find the starting address from the original allocation.
+            void *tempPtr = ptr - sizeof(size_t);//this gets us to where it was stored
+            //this will set it back to what it's supposed to be
+            tempPtr = (void*)(*((size_t*)tempPtr));
+            free(tempPtr);
+        }
+    #endif
+}
+
+void *calloc_aligned(size_t num, size_t size, size_t alignment)
+{
+    //call malloc aligned and memset
+    void *zeroedMem = NULL;
+    size_t numSize = num * size;
+    if (numSize)
+    {
+        zeroedMem = malloc_aligned(numSize, alignment);
+        if (zeroedMem)
+        {
+            memset(zeroedMem, 0, numSize);
+        }
+    }
+    return zeroedMem;
+}
+
+void *realloc_aligned(void *alignedPtr, size_t originalSize, size_t size, size_t alignment)
+{
+    void *temp = NULL;
+    if (size)
+    {
+        temp = malloc_aligned(size, alignment);
+        if (alignedPtr && originalSize && temp)
+        {
+            memcpy(temp, alignedPtr, originalSize);
+        }
+    }
+    if (alignedPtr && temp)
+    {
+        //free the old pointer
+        free_aligned(alignedPtr);
+    }
+    return temp;
+}
+
+size_t get_System_Pagesize(void)
+{
+    #if defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        //use sysconf: http://man7.org/linux/man-pages/man3/sysconf.3.html
+        return (size_t)sysconf(_SC_PAGESIZE);
+    #elif defined (_POSIX_VERSION) //this may not be the best way to test this, but I think it will be ok.
+        //use get page size: http://man7.org/linux/man-pages/man2/getpagesize.2.html
+        return (size_t)getpagesize();
+    #elif defined (_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
+        SYSTEM_INFO system;
+        memset(&system, 0, sizeof(SYSTEM_INFO));
+        GetSystemInfo(&system);
+        return (size_t)system.dwPageSize;
+    #else
+        return -1;//unknown, so return something easy to see an error with.
+    #endif
+}
+
+void *malloc_page_aligned(size_t size)
+{
+    size_t pageSize = get_System_Pagesize();
+    if (pageSize)
+    {
+        return malloc_aligned(size, pageSize);
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+void free_page_aligned(void* ptr)
+{
+    free_aligned(ptr);
+}
+
+void *calloc_page_aligned(size_t num, size_t size)
+{
+    size_t pageSize = get_System_Pagesize();
+    if (pageSize)
+    {
+        return calloc_aligned(num, size, get_System_Pagesize());
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+void *realloc_page_aligned(void *alignedPtr, size_t originalSize, size_t size)
+{
+    size_t pageSize = get_System_Pagesize();
+    if (pageSize)
+    {
+        return realloc_aligned(alignedPtr, originalSize, size, get_System_Pagesize());
+    }
+    else
+    {
+        return NULL;
+    }
+}
 
 void nibble_Swap(uint8_t *byteToSwap)
 {
@@ -64,10 +242,10 @@ void byte_Swap_16(uint16_t *wordToSwap)
 
 void big_To_Little_Endian_16(uint16_t *wordToSwap)
 {
-	if (get_Compiled_Endianness() == OPENSEA_LITTLE_ENDIAN)
-	{
-		byte_Swap_16(wordToSwap);
-	}
+    if (get_Compiled_Endianness() == OPENSEA_LITTLE_ENDIAN)
+    {
+        byte_Swap_16(wordToSwap);
+    }
 }
 
 void byte_Swap_32(uint32_t *doubleWordToSwap)
@@ -78,10 +256,10 @@ void byte_Swap_32(uint32_t *doubleWordToSwap)
 
 void big_To_Little_Endian_32(uint32_t *doubleWordToSwap)
 {
-	if (get_Compiled_Endianness() == OPENSEA_LITTLE_ENDIAN)
-	{
-		byte_Swap_32(doubleWordToSwap);
-	}
+    if (get_Compiled_Endianness() == OPENSEA_LITTLE_ENDIAN)
+    {
+        byte_Swap_32(doubleWordToSwap);
+    }
 }
 
 void word_Swap_32(uint32_t *doubleWordToSwap)
@@ -224,11 +402,11 @@ void remove_Leading_Whitespace(char *stringToChange)
     {
         iter++;
     }
-	if (iter > 0)
-	{
-		memmove(&stringToChange[0], &stringToChange[iter], stringToChangeLen - iter);
-		memset(&stringToChange[stringToChangeLen - iter], 0, iter);//should this be a null? Or a space? Leaving as null for now since it seems to work...
-	}
+    if (iter > 0)
+    {
+        memmove(&stringToChange[0], &stringToChange[iter], stringToChangeLen - iter);
+        memset(&stringToChange[stringToChangeLen - iter], 0, iter);//should this be a null? Or a space? Leaving as null for now since it seems to work...
+    }
 }
 
 void remove_Leading_And_Trailing_Whitespace(char *stringToChange)
@@ -275,13 +453,57 @@ void convert_String_To_Lower_Case(char *stringToChange)
     }
 }
 
-void print_Return_Enum(char *funcName, int ret)
+void convert_String_To_Inverse_Case(char *stringToChange)
 {
-    if (VERBOSITY_COMMAND_NAMES > g_verbosity) //no printing for default or quiet
+    size_t stringLen = 0, iter = 0;
+    if (stringToChange == NULL)
     {
         return;
     }
+    stringLen = strlen(stringToChange);
+    if (stringLen == 0)
+    {
+        return;
+    }
+    while (iter <= stringLen)
+    {
+        if (islower(stringToChange[iter]))
+        {
+            stringToChange[iter] = (char)tolower(stringToChange[iter]);
+        }
+        else if (isupper(stringToChange[iter]))
+        {
+            stringToChange[iter] = (char)toupper(stringToChange[iter]);
+        }
+        iter++;
+    }
+}
 
+size_t find_last_occurrence_in_string(char *originalString, char *stringToFind)
+{  
+    char *stringToCompare = originalString;
+    size_t last_occurrence = strlen(originalString);
+
+    while (stringToCompare != NULL)
+    {
+        char *partialString = strstr(stringToCompare, stringToFind);
+        if (partialString != NULL)
+        {
+            last_occurrence = strlen(partialString);
+            partialString += strlen(stringToFind);
+            stringToCompare = strstr(partialString, stringToFind);
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return last_occurrence;
+}
+
+void print_Return_Enum(char *funcName, int ret)
+{
     if (NULL == funcName)
     {
         printf("Unknown funtion returning: ");
@@ -323,12 +545,12 @@ void print_Return_Enum(char *funcName, int ret)
     case LIBRARY_MISMATCH:
         printf("LIBRARY MISMATCH\n");
         break;
-	case FROZEN:
-		printf("FROZEN\n");
-		break;
-	case PERMISSION_DENIED:
-	    printf("PERMISSION DENIED\n");
-	    break;
+    case FROZEN:
+        printf("FROZEN\n");
+        break;
+    case PERMISSION_DENIED:
+        printf("PERMISSION DENIED\n");
+        break;
     case FILE_OPEN_ERROR:
         printf("FILE OPEN ERROR\n");
         break;
@@ -351,7 +573,7 @@ void print_Return_Enum(char *funcName, int ret)
         printf("OS COMMAND BLOCKED\n");
         break;
     default:
-		printf("UNKNOWN: %d\n", ret);
+        printf("UNKNOWN: %d\n", ret);
         break;
     }
     printf("\n");
@@ -540,6 +762,56 @@ int capacity_Unit_Convert(double *byteValue, char** capacityUnit)
         ret = FAILURE;
     }
     return ret;
+}
+
+bool is_Empty(void *ptrData, size_t lengthBytes)
+{
+    if (ptrData)
+    {
+        for (size_t iter = 0, iterEnd = lengthBytes - 1; iter < lengthBytes && iterEnd >= 0 && iterEnd >= iter; ++iter, --iterEnd)
+        {
+            if (((uint_fast8_t*)ptrData)[iter] != UINT8_C(0) || ((uint_fast8_t*)ptrData)[iterEnd] != UINT8_C(0))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
+{
+    double tempCalcValue = secondsToConvert;
+    //get seconds up to a maximum of 60
+    if (seconds)
+    {
+        *seconds = (uint8_t)(fmod(tempCalcValue, 60.0));
+    }
+    tempCalcValue /= 60.0;
+    //get minutes up to a maximum of 60
+    if (minutes)
+    {
+        *minutes = (uint8_t)(fmod(tempCalcValue, 60.0));
+    }
+    tempCalcValue /= 60.0;
+    //get hours up to a maximum of 24
+    if (hours)
+    {
+        *hours = (uint8_t)(fmod(tempCalcValue, 24.0));
+    }
+    tempCalcValue /= 24.0;
+    //get days up to 365
+    if (days)
+    {
+        *days = (uint8_t)(fmod(tempCalcValue, 365.0));
+    }
+    tempCalcValue /= 365.0;
+    //get years
+    if (years)
+    {
+        *years = (uint8_t)(tempCalcValue);
+    }
 }
 
 void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
@@ -1094,237 +1366,48 @@ long int get_File_Size(FILE *filePtr)
     return fileSize;
 }
 
-void SendJSONMessage (char *JSONname, char *JSONvalue, custom_Update updateFunction, void *updateData)
+bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger)
 {
-  char message[MAX_JSON_MSG];
-  snprintf(message, MAX_JSON_MSG, "{\"%s\":\"%s\"}", JSONname, JSONvalue);
-  if (updateFunction != NULL) 
-  {
-      updateFunction(updateData, message); // Call the custom UI update
-  }
-  //printf("JSON Message:  %s\n",message);
-}
-
-void SendJSONProgress (int progress, custom_Update updateFunction, void *updateData )
-{
-  char message[MAX_JSON_MSG];
-  snprintf(message, MAX_JSON_MSG, "%d", (int) progress);
-
-  SendJSONMessage ("Progress", message, updateFunction, updateData);
-}
-
-void SendJSONString (int JSONFlags, const char *msg, custom_Update updateFunction, void *updateData )
-{
-  char message[MAX_JSON_MSG];
-  snprintf(message, MAX_JSON_MSG, "%s", msg);
-
-  // Sends the message to the standard text location
-  if (JSONFlags & JSON_TEXT)
-  {
-//      printf("Text\n");
-      SendJSONMessage("Text", message, updateFunction, updateData);
-  }
-  // Sends the message to the log
-  if (JSONFlags & JSON_LOG)
-  {
-//      printf("Log\n");
-      SendJSONMessage("Log", message, updateFunction, updateData);
-  }
-}
-
-void InitializeJSONContextData (JSONContext *context, custom_Update updateFunction, void *updateData, int indentSize, int maxStackDepth)
-{
-    int stackCounter = 0;
-    context->currentDepth   = 0;
-    context->indentSize     = indentSize;
-    context->updateData     = updateData;
-    context->updateFunction = updateFunction;
-    context->entriesFilled = &context->entries[0];
-    //context->entriesFilled = malloc (maxStackDepth);
-    for (stackCounter = 0; stackCounter < maxStackDepth; ++stackCounter)
+    bool ret = true; 
+    bool hex = false;
+    const char * tmp = strToConvert;
+    while (*tmp != '\0')
     {
-        if (context->entriesFilled != NULL)
+        if ( (!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h') )
         {
-            (context->entriesFilled)[stackCounter] = 0;
+            ret = false;
+            break;
         }
-    }
-}
-
-void DestroyJSONContextData (JSONContext *context)
-{
-    if (context->entriesFilled != NULL)
-    {
-        free (context->entriesFilled);
-    }
-}
-
-void SendIndentation (JSONContext *context)
-{
-    if (context->updateFunction != NULL) 
-    {
-        // Print the indentation
-        for (int count = 0; count < context->indentSize * context->currentDepth; ++count)
+        else if (!isdigit(*tmp))
         {
-            context->updateFunction(context->updateData, " ");
+            hex = true;
         }
+        tmp++;
     }
-}
-
-void SendCrComma (JSONContext *context)
-{
-    if (context->updateFunction != NULL) 
+    //If everything is a valid hex digit. 
+    //TODO: What about realllyyyy long hex value? 
+    if (ret == true )
     {
-        // If entriesFilled at the current depth is set, print a ,<CR>, otherwise, just a <CR>
-        if (context->entriesFilled[context->currentDepth] >= 1)
+        if ( hex )
         {
-            context->updateFunction(context->updateData, ",\n");
+            *outputInteger = strtol(strToConvert, NULL, 16);
         }
         else
         {
-            context->updateFunction(context->updateData, "\n");
+            *outputInteger = strtol(strToConvert, NULL, 10);
         }
-    }
-}
-
-int OpenJSON (JSONContext *context)                                   //   {
-{
-    int retCode = FAILURE;
-    if (context->currentDepth != 0)
-    {
-        printf("Error:  OpenJSON - JSON already open.\n");
     }
     else
     {
-        retCode = SUCCESS;
-        if (context->updateFunction != NULL) 
-        {
-            context->updateFunction(context->updateData, "{"); 
-        }
-        context->currentDepth++;
+        ret = false; 
     }
-    return (retCode);
-}
-                                                                      
-int CloseJSON (JSONContext *context)                                  //   }
-{
-    int retCode = FAILURE;
-    if (context->currentDepth != 1)
+    //Final Check
+    if (ret == true && errno != 0 && * outputInteger == 0)
     {
-        printf("Error:  CloseJSON - JSON current depth should only equal 1 when calling this function.\n");
+        ret = false;
     }
-    else
-    {
-        retCode = SUCCESS;
-        if (context->updateFunction != NULL) 
-        {
-            context->updateFunction(context->updateData, "\n}"); 
-        }
-        context->currentDepth--;
-    }
-    return (retCode);
-}
-                                                                        
-int OpenJSONObject (char *name, JSONContext *context)                 //   "name" : {
-{
-    int retCode = FAILURE;
-    if (context->currentDepth < 1)
-    {
-        printf("Error:  OpenJSONObject - JSON must be open before calling.\n");
-    }
-    else
-    {
-        retCode = SUCCESS;
-        if (context->updateFunction != NULL)
-        {
-            // Insert the indent spaces
-            SendCrComma (context);
-            SendIndentation (context);
-            context->updateFunction(context->updateData, "\"");
-            context->updateFunction(context->updateData, name);
-            context->updateFunction(context->updateData, "\": {");
-            context->entriesFilled[context->currentDepth]++;  // Running count of number of entries at the current depth
-        }
-        context->currentDepth++;
-    }
-    return (retCode);
-}
-                                                                       
-int CloseJSONObject (JSONContext *context)                            //   }
-{
-    int retCode = FAILURE;
-    if (context->currentDepth < 1)
-    {
-        printf("Error:  CloseJSONObject - JSON current depth MUST be >= 1 when calling this function.\n");
-    }
-    else
-    {
-        retCode = SUCCESS;
-        context->entriesFilled[context->currentDepth] = 0; // Reset the previous entries filled to 0 when closing an object
-        context->currentDepth--;
-        if (context->updateFunction != NULL) 
-        {
-            context->updateFunction(context->updateData, "\n"); 
-            SendIndentation (context);
-            context->updateFunction(context->updateData, "}"); 
-        }
-    }
-    return (retCode);
-}
 
-int WriteJSONPair (char *name, char *val, JSONContext *context)       //   "name" : "string value"
-{
-    int retCode = FAILURE;
-    SendCrComma (context);
-    SendIndentation (context);
-    char message[MAX_JSON_MSG];
-    snprintf(message, MAX_JSON_MSG, "\"%s\": \"%s\"", name, val);
-    context->updateFunction(context->updateData, message); 
-    context->entriesFilled[context->currentDepth]++;  // Running count of number of entries at the current depth
-    return (retCode);
-}
-
-int get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger)
-{
-	int ret = true; 
-	bool hex = false;
-	const char * tmp = strToConvert;
-	while (*tmp != '\0')
-	{
-		if ( (!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h') )
-		{
-			ret = false;
-			break;
-		}
-		else if (!isdigit(*tmp))
-		{
-			hex = true;
-		}
-		tmp++;
-	}
-	//If everything is a valid hex digit. 
-	//TODO: What about realllyyyy long hex value? 
-	if (ret == true )
-	{
-		if ( hex )
-		{
-			*outputInteger = strtol(strToConvert, NULL, 16);
-		}
-		else
-		{
-			*outputInteger = strtol(strToConvert, NULL, 10);
-		}
-	}
-	else
-	{
-		ret = false; 
-	}
-	//Final Check
-	if (ret == true && errno != 0 && * outputInteger == 0)
-	{
-		ret = false;
-	}
-
-	return ret;
+    return ret;
 }
 
 void print_Errno_To_Screen(int error)
@@ -1463,4 +1546,17 @@ uint64_t power_Of_Two(uint16_t exponent)
         break;
     }
     return result;
+}
+
+//making it look similar to a std lib function like isPrint.
+int is_ASCII(int c)
+{
+    if (c >= 0x7F || c < 0)
+    {
+        return 0;//false
+    }
+    else
+    {
+        return 1;//true
+    }
 }

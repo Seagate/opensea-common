@@ -15,8 +15,8 @@
 #include "common.h"
 #include "common_windows.h"
 #include <windows.h> //needed for all the stuff to get the windows version
-#include <Strsafe.h> //needed in the code written to get the windows version since I'm using a Microsoft provided string concatenation call-tje
-#include <IO.h> //needed for getting the size of a file in windows
+#include <strsafe.h> //needed in the code written to get the windows version since I'm using a Microsoft provided string concatenation call-tje
+#include <io.h> //needed for getting the size of a file in windows
 
 bool os_Directory_Exists(const char * const pathToCheck)
 {
@@ -529,7 +529,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
     LPCWSTR subblock = L"\\";
 #else
     static const char kernel32DLL[] = "\\kernel32.dll";
-    LPSTR *systemPathBuf = (LPSTR*)calloc(OPENSEA_PATH_MAX, sizeof(CHAR));
+    LPSTR *systemPathBuf = (LPSTR)calloc(OPENSEA_PATH_MAX, sizeof(CHAR));
     LPCSTR systemPath = &systemPathBuf[0];
     LPCSTR subblock = "\\";
 #endif

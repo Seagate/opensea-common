@@ -1,0 +1,108 @@
+#
+# Do NOT modify or remove this copyright and license
+#
+# Copyright (c) 2012 - 2019 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+#
+# This software is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# ******************************************************************************************
+
+# Hand Written Makefile (Edit with caution) -Muhammad
+# Windows, MSYS2 64-bit, MinGW 64-bit, gcc environment version - Billy
+
+NAME = opensea-common
+#Change the Major version when major interface changes are made. E.g. tDevice changes
+MAJOR = 1
+#Change the Minor version when new features are added.
+MINOR = 18
+#Change the patch version when only bug fixes are made.
+PATCH = 0
+VERSION = $(MAJOR).$(MINOR).$(PATCH)
+SRC_DIR = ../../src/
+INC_DIR = -I../../include
+
+MYUNAME := $(shell uname -s)
+ifneq (,$(findstring Linux,$(MYUNAME)))
+	UNAME = MINGW64
+else ifneq (,$(findstring MINGW64,$(MYUNAME)))
+	UNAME = MINGW64
+endif
+
+ifneq (,$(findstring Linux,$(MYUNAME)))
+	CC = x86_64-w64-mingw32-gcc
+	AR = x86_64-w64-mingw32-ar
+else
+	CC = gcc
+	AR = ar
+endif
+
+CFLAGS ?= -Wall
+#BR note: If you want to hide all of the informational compiler messages, uncomment the line below
+CFLAGS += -Wno-incompatible-pointer-types
+CFLAGS += -c -fPIC -I. -std=gnu99
+
+# is this necessary? doesn't it need a <dir>?
+CFLAGS += -isystem
+
+LDFLAGS = -Wall
+
+ifneq (,$(findstring MINGW64,$(UNAME)))
+	#BR note: pragma comment(lib,"Version.lib") is not supported by gcc, use the below supply the version.lib functions
+	LDFLAGS += -L/msys64/mingw64/x86_64-w64-mingw32/lib
+	LDLIBS += -lversion
+	LDLIBS += -lcfgmgr32
+endif
+
+LIB_SRC_FILES = \
+    $(SRC_DIR)common.c\
+    $(SRC_DIR)common_platform.c\
+    $(SRC_DIR)common_windows.c
+
+PROJECT_DEFINES += -DENABLE_CSMI
+PROJECT_DEFINES += -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE
+PROJECT_DEFINES += -DWIN_API_TARGET_VERSION=100162990L #-D_DEBUG
+ifneq (,$(findstring Linux,$(MYUNAME)))
+	PROJECT_DEFINES += -DDISABLE_NVME_PASSTHROUGH
+else
+	PROJECT_DEFINES += #-DDISABLE_NVME_PASSTHROUGH
+endif
+
+
+ifneq (,$(findstring MINGW64,$(UNAME)))
+	PROJECT_DEFINES += -D__MINGW64__
+	# PROJECT_DEFINES += -D__MINGW32__
+	#BR note: this define added to surpress gcc error with sprintf. should be made conditional to __MINGW... etc
+	PROJECT_DEFINES += -DSTRSAFE_NO_DEPRECATE
+	#BR note: trying different stuff during debugging
+	# PROJECT_DEFINES += -D_WIN32_WINNT=0x0601
+	# PROJECT_DEFINES += -DWIN_API_TARGET_VERSION=100150630L
+	# PROJECT_DEFINES += -DWIN_API_TARGET_VERSION=81000000L
+	# PROJECT_DEFINES += #-DWINVER=SEA_WIN32_WINNT_WIN10
+endif
+
+#All of the source files have associated object files
+LIB_OBJ_FILES = $(LIB_SRC_FILES:.c=.o)
+LIBS = lib$(NAME).a
+
+FILE_OUTPUT_DIR = lib
+
+.PHONY: all
+all: clean mkoutputdir $(LIBS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(PROJECT_DEFINES) $(INC_DIR) $< -o $@
+
+$(LIBS): $(LIB_OBJ_FILES)
+	rm -f $(FILE_OUTPUT_DIR)/$@
+	$(AR) cq $(FILE_OUTPUT_DIR)/$@ $(LIB_OBJ_FILES)
+
+	$(CC) -shared $(LIB_OBJ_FILES) $(LDFLAGS) $(LDLIBS) -o $(FILE_OUTPUT_DIR)/lib$(NAME).so.$(VERSION)
+
+clean:
+	rm -f $(FILE_OUTPUT_DIR)/lib$(NAME).a $(FILE_OUTPUT_DIR)/lib$(NAME).so.$(VERSION) *.o $(SRC_DIR)*.o
+	rm -rf $(FILE_OUTPUT_DIR)
+
+mkoutputdir:
+	mkdir -p $(FILE_OUTPUT_DIR)

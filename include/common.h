@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012 - 2018 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012 - 2019 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,9 +13,7 @@
 // \brief Defines the constants structures and function headers that are common to OS & Non-OS code.
 //
 #pragma once
-
-//adding a test comment to make sure the build server is happy
-
+//test comment
 #if defined (__cplusplus)
 //defining these macros for C++ to make older C++ compilers happy and work like the newer C++ compilers
 #ifndef __STDC_FORMAT_MACROS
@@ -68,6 +66,10 @@ extern "C"
     #define M_Word1(l) ( (uint16_t) ( ( (l) & 0x00000000FFFF0000ULL ) >> 16 ) )
     #define M_Word2(l) ( (uint16_t) ( ( (l) & 0x0000FFFF00000000ULL ) >> 32 ) )
     #define M_Word3(l) ( (uint16_t) ( ( (l) & 0xFFFF000000000000ULL ) >> 48 ) )
+
+    //need to validate that this macro sets the correct bits on 32bit and 64bit
+    #define BITSPERBYTE UINT8_C(8)
+    #define M_ByteN(n) ((UINT8_MAX << (n * BITSPERBYTE)))
 
     //Get a specific byte
     #define M_Byte0(l) ( (uint8_t) ( ( (l) & 0x00000000000000FFULL ) >>  0 ) )
@@ -166,9 +168,14 @@ extern "C"
     #define BIT62     (M_BitN((uint64_t)62))
     #define BIT63     (M_BitN((uint64_t)63))
 
+    //set a bit to 1 within a value
+    #define M_SET_BIT(val, bitNum) (val | M_BitN(bitNum))
+    //clear a bit to 0 within a value
+    #define M_CLEAR_BIT(val, bitNum) (val & (~M_BitN(bitNum)))
+
     #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~0U << ((msb) - (lsb) + 1)))
 
-	#define M_2sCOMPLEMENT(val) (~(val) + 1)
+    #define M_2sCOMPLEMENT(val) (~(val) + 1)
 
     //define something called reserved that has a value of zero. Use it to set reserved bytes to 0
     #define RESERVED 0
@@ -185,8 +192,8 @@ extern "C"
         BAD_PARAMETER           = 6, //the only time this return code should be seen is when a developer is writing code to add something. This should not appear in a finished application
         MEMORY_FAILURE          = 7, //could not allocate memory
         OS_PASSTHROUGH_FAILURE  = 8, //For some unknown reason, the OS API call to issue the pass-through command failed.
-		LIBRARY_MISMATCH        = 9,
-        FROZEN			        = 10, //use this to communicate back when the device is in a frozen state for a commmand like sanitize or ata security
+        LIBRARY_MISMATCH        = 9,
+        FROZEN                  = 10, //use this to communicate back when the device is in a frozen state for a commmand like sanitize or ata security
         PERMISSION_DENIED       = 11, //OS returned Access/permission denied
         FILE_OPEN_ERROR         = 12,
         WARN_INCOMPLETE_RFTRS   = 13, //command was issued, and some RTFRs were received, but we were unable to get a complete RTFR result. This is most likely due to a SATL limitation.
@@ -195,7 +202,7 @@ extern "C"
         WARN_INVALID_CHECKSUM   = 16, //The checksum on the data for a command didn't calculate correctly (EX: Identify device, some ATA Logs)
         OS_COMMAND_NOT_AVAILABLE = 17, //This is returned when the OS does not have a way to issue the requested command. (EX: Trying to send an NVMe command without Win10, or trying a 32byte SCSI command pre-Win8)
         OS_COMMAND_BLOCKED      = 18, //This is returned when the OS is blocking the command from being issued (EX: TCG - linux, lib ATA......or Sanitize in Windos 8+)
-        COMMAND_INTERRUPTED		= 19, //Nidhi - Added for SCT commands, if interrupted by some other SCT command.
+        COMMAND_INTERRUPTED     = 19, //Nidhi - Added for SCT commands, if interrupted by some other SCT command.
         UNKNOWN
     }eReturnValues;
 
@@ -213,14 +220,9 @@ extern "C"
         VERBOSITY_QUIET           = 0,
         VERBOSITY_DEFAULT         = 1,
         VERBOSITY_COMMAND_NAMES   = 2,
-		VERBOSITY_COMMAND_VERBOSE = 3,
+        VERBOSITY_COMMAND_VERBOSE = 3,
         VERBOSITY_BUFFERS         = 4
     }eVerbosityLevels;
-
-    extern eVerbosityLevels g_verbosity;
-    extern time_t g_currentTime;
-    extern char g_currentTimeString[64];
-    extern char *g_currentTimeStringPtr;
 
     #define M_NibblesTo1ByteValue(n1, n0) ( \
     (uint8_t)( ((uint8_t)((n1) & 0x0F) << 4) | ((uint8_t)((n0) & 0x0F) << 0)) \
@@ -351,20 +353,20 @@ extern "C"
     //-----------------------------------------------------------------------------
     void byte_Swap_16(uint16_t *wordToSwap);
 
-	//-----------------------------------------------------------------------------
-	//
-	//  big_To_Little_Endian_16()
-	//
-	//! \brief   Description:  swap the bytes in a word only if on little endian system. 
-	//
-	//  Entry:
-	//!   \param[out] wordToSwap = a pointer to the word containing the data in which to have the bytes swapped
-	//!
-	//  Exit:
-	//!   \return VOID
-	//
-	//-----------------------------------------------------------------------------
-	void big_To_Little_Endian_16(uint16_t *wordToSwap);
+    //-----------------------------------------------------------------------------
+    //
+    //  big_To_Little_Endian_16()
+    //
+    //! \brief   Description:  swap the bytes in a word only if on little endian system. 
+    //
+    //  Entry:
+    //!   \param[out] wordToSwap = a pointer to the word containing the data in which to have the bytes swapped
+    //!
+    //  Exit:
+    //!   \return VOID
+    //
+    //-----------------------------------------------------------------------------
+    void big_To_Little_Endian_16(uint16_t *wordToSwap);
 
     //-----------------------------------------------------------------------------
     //
@@ -381,20 +383,20 @@ extern "C"
     //-----------------------------------------------------------------------------
     void byte_Swap_32(uint32_t *doubleWordToSwap);
 
-	//-----------------------------------------------------------------------------
-	//
-	//  big_To_Little_Endian_32()
-	//
-	//! \brief   Description:  swap the bytes in a double word only if running on little endian system
-	//
-	//  Entry:
-	//!   \param[out] doubleWordToSwap = a pointer to the double word containing the data in which to have the bytes swapped
-	//!
-	//  Exit:
-	//!   \return VOID
-	//
-	//-----------------------------------------------------------------------------
-	void big_To_Little_Endian_32(uint32_t *doubleWordToSwap);
+    //-----------------------------------------------------------------------------
+    //
+    //  big_To_Little_Endian_32()
+    //
+    //! \brief   Description:  swap the bytes in a double word only if running on little endian system
+    //
+    //  Entry:
+    //!   \param[out] doubleWordToSwap = a pointer to the double word containing the data in which to have the bytes swapped
+    //!
+    //  Exit:
+    //!   \return VOID
+    //
+    //-----------------------------------------------------------------------------
+    void big_To_Little_Endian_32(uint32_t *doubleWordToSwap);
 
     //-----------------------------------------------------------------------------
     //
@@ -653,6 +655,37 @@ extern "C"
 
     //-----------------------------------------------------------------------------
     //
+    //   convert_String_To_Inverse_Case(char *stringToChange)
+    //
+    //! \brief   Description:  convert uppercase characters to lowercase and lowercase characters to uppercase in a string.
+    //
+    //  Entry:
+    //!   \param[out] stringToChange = a pointer to the data containing a string that will be modified
+    //!
+    //  Exit:
+    //!   \return VOID
+    //
+    //-----------------------------------------------------------------------------
+    void convert_String_To_Inverse_Case(char *stringToChange);
+
+    //-----------------------------------------------------------------------------
+    //
+    //   find_last_occurrence_in_string(char *originalString, char *stringToFind)
+    //
+    //! \brief   Description:  convert uppercase characters to lowercase and lowercase characters to uppercase in a string.
+    //
+    //  Entry:
+    //!   \param[in] originalString = a pointer to the data containing a string that will be searched(superset)
+    //!   \param[in] stringToFind = a pointer to the data containing a string that is to be searched(subset)
+    //!
+    //  Exit:
+    //!   \return size_t = last occurence of 'stringToFind' in 'originalString'
+    //
+    //-----------------------------------------------------------------------------
+    size_t find_last_occurrence_in_string(char *originalString, char *stringToFind);
+
+    //-----------------------------------------------------------------------------
+    //
     //  print_Data_Buffer()
     //
     //! \brief   Description:  print out a data buffer to the screen
@@ -758,22 +791,24 @@ extern "C"
     //-----------------------------------------------------------------------------
     void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
-	//-----------------------------------------------------------------------------
-	//
-	//  get_And_Validate_Integer_Input()
-	//
-	//! \brief   Description:	Validates an input as unsigned integer & converts it to unsigned type.
-	//!							This function supports hex values such as 0xFF AEh etc.  	
-	//
-	//  Entry:
-	//!   \param[in] strToConvert - const char * buffer to convert to integer
-	//!   \param[out] outputInteger - pointer to integer to store the output
-	//!
-	//  Exit:
-	//!   \return SUCCESS on successful completion, !SUCCESS if problems encountered
-	//
-	//-----------------------------------------------------------------------------
-	int get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger);
+    void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  get_And_Validate_Integer_Input()
+    //
+    //! \brief   Description:   Validates an input as unsigned integer & converts it to unsigned type.
+    //!                         This function supports hex values such as 0xFF AEh etc.     
+    //
+    //  Entry:
+    //!   \param[in] strToConvert - const char * buffer to convert to integer
+    //!   \param[out] outputInteger - pointer to integer to store the output
+    //!
+    //  Exit:
+    //!   \return true if able to read in an integer number, false if invalid format.
+    //
+    //-----------------------------------------------------------------------------
+    bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger);
 
     //-----------------------------------------------------------------------------
     //
@@ -1112,44 +1147,194 @@ extern "C"
     //-----------------------------------------------------------------------------
     typedef void (*custom_Update)(void *customData, char *message);
 
-//I removed the #ifdef _DEPOT from here since it broke the linux build since that wrapped would need to be applied to a few other places in code and I think there is a better way than doing this at the moment.
-    typedef struct _JSONContext
-    {
-        custom_Update updateFunction;   // Callback function that tells how to write the message/output to log/screen/etc..
-        void *updateData;               // May be NULL if additional data is not needed
-        int indentSize;                 // Allows user to set how many spaces to indent each entry
-        int currentDepth;               // How many levels deep are we?  If indentSize is 2, and currentDepth is 3, then we will add 6 spaces (2*3) to any prints
-        int *entriesFilled;             // Stack indicating whether or not we have printed a previous entry, so that we can print commas and <CR> as needed
-        int entries[200];
-        //bool openSession;               // flag for see if a session is open(true) or closed(false)
-        //bool openObject;                // flag for seeing if a objectis open(true) or closed(false) note look at currentDepth to get more information
-    } JSONContext;
-    
-    #define MAX_JSON_MSG (256)
-    // Sends message to with TEXT string
-    #define JSON_TEXT    (1)    
-    // Sends message to with LOG string
-    #define JSON_LOG     (2)    
+    //-----------------------------------------------------------------------------
+    //
+    //  malloc_aligned(size_t size, size_t alignment)
+    //
+    //! \brief   Description:  Allocates aligned memory based on the specified power of 2 alignement value
+    //
+    //  Entry:
+    //!   \param[in] size = size of memory block in bytes to allocate
+    //!   \param[in] alignment = alignment value required. This MUST be a power of 2.
+    //!
+    //  Exit:
+    //!   \return ptrToAlignedMemory
+    //
+    //-----------------------------------------------------------------------------
+    void *malloc_aligned(size_t size, size_t alignment);
 
-    // Standalone JSON messages
-    void SendJSONMessage  (char *name, char *val, custom_Update updateFunction, void *updateData);
-    void SendJSONProgress (int progress, custom_Update updateFunction, void *updateData );
-    void SendJSONString   (int JSONFlags, const char *msg, custom_Update updateFunction, void *updateData );
+    //-----------------------------------------------------------------------------
+    //
+    //  free_aligned(void* ptr)
+    //
+    //! \brief   Description:  Deallocates memory that was allocated with one of malloc_aligned, calloc_aligned, or realloc_aligned
+    //
+    //  Entry:
+    //!   \param[in] ptr = pointer to the aligned memory to free
+    //!
+    //  Exit:
+    //!   \return void
+    //
+    //-----------------------------------------------------------------------------
+    void free_aligned(void* ptr);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  safe_Free_aligned()
+    //
+    //! \brief   Description:  Safely free dynamically alligned allocated memory. This checks for a valid pointer, then frees it and set's it to NULL.
+    //
+    //  Entry:
+    //!   \param[in] mem - heap memory you want to free.
+    //!
+    //  Exit:
+    //!   \return void
+    //
+    //-----------------------------------------------------------------------------
+    #define safe_Free_aligned(mem)  \
+    if(mem)                 \
+    {                       \
+        free_aligned(mem);          \
+        mem = NULL;         \
+    }                       \
+
+    //-----------------------------------------------------------------------------
+    //
+    //  calloc_aligned(size_t num, size_t size, size_t alignment)
+    //
+    //! \brief   Description:  Allocates aligned memory based on the specified power of 2 alignement value and zeroes it out.
+    //
+    //  Entry:
+    //!   \param[in] num = # of elements to allocate
+    //!   \param[in] size = size of each element
+    //!   \param[in] alignment = alignment value required. This MUST be a power of 2.
+    //!
+    //  Exit:
+    //!   \return ptrToAlignedMemory
+    //
+    //-----------------------------------------------------------------------------
+    void *calloc_aligned(size_t num, size_t size, size_t alignment);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  realloc_aligned(void *alignedPtr, size_t size, size_t alignment)
+    //
+    //! \brief   Description:  Reallocates aligned memory based on the specified power of 2 alignement value and zeroes it out.
+    //
+    //  Entry:
+    //!   \param[in] alignedPtr = pointer to a memory block previously allocated with malloc_aligned, calloc_aligned, or realloc_aligned. If NULL, this is the same as malloc_aligned
+    //!   \param[in] originalSize = size in bytes of the alignedPtr being passed in. This is used so that previous data can be preserved.
+    //!   \param[in] size = size of memory block in bytes to allocate
+    //!   \param[in] alignment = alignment value required. This MUST be a power of 2.
+    //!
+    //  Exit:
+    //!   \return ptrToAlignedMemory
+    //
+    //-----------------------------------------------------------------------------
+    void *realloc_aligned(void *alignedPtr, size_t originalSize, size_t size, size_t alignment);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  get_System_Pagesize(void)
+    //
+    //! \brief   Description:  Gets the memory page size from a system if possible.
+    //
+    //  Entry:
+    //!
+    //  Exit:
+    //!   \return Pagesize of system OR -1 if it cannot be determined.
+    //
+    //-----------------------------------------------------------------------------
+    size_t get_System_Pagesize(void);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  malloc_page_aligned(size_t size)
+    //
+    //! \brief   Description:  Allocates aligned memory based on the system page size. Same as calling malloc_aligned(size, get_System_Pagesize())
+    //
+    //  Entry:
+    //!   \param[in] size = size of memory block in bytes to allocate
+    //!
+    //  Exit:
+    //!   \return ptrToAlignedMemory
+    //
+    //-----------------------------------------------------------------------------
+    void *malloc_page_aligned(size_t size);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  free_aligned(void* ptr)
+    //
+    //! \brief   Description:  Deallocates memory that was allocated with one of malloc_page_aligned, calloc_page_aligned, or realloc_page_aligned
+    //
+    //  Entry:
+    //!   \param[in] ptr = pointer to the aligned memory to free
+    //!
+    //  Exit:
+    //!   \return void
+    //
+    //-----------------------------------------------------------------------------
+    void free_page_aligned(void* ptr);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  safe_Free_page_aligned()
+    //
+    //! \brief   Description:  Safely free dynamically page alligned allocated memory. This checks for a valid pointer, then frees it and set's it to NULL.
+    //
+    //  Entry:
+    //!   \param[in] mem - heap memory you want to free.
+    //!
+    //  Exit:
+    //!   \return void
+    //
+    //-----------------------------------------------------------------------------
+    #define safe_Free_page_aligned(mem)  \
+    if(mem)                 \
+    {                       \
+        free_page_aligned(mem);          \
+        mem = NULL;         \
+    }                       \
 
 
-    void SendIndentation (JSONContext *context);
-    void SendCrComma (JSONContext *context);
+    //-----------------------------------------------------------------------------
+    //
+    //  calloc_page_aligned(size_t num, size_t size)
+    //
+    //! \brief   Description:  Allocates aligned memory based on the system page size. Same as calling calloc_aligned(num, size, get_System_Pagesize());
+    //
+    //  Entry:
+    //!   \param[in] num = # of elements to allocate
+    //!   \param[in] size = size of each element
+    //!
+    //  Exit:
+    //!   \return ptrToAlignedMemory
+    //
+    //-----------------------------------------------------------------------------
+    void *calloc_page_aligned(size_t num, size_t size);
 
-    // General/Public JSON Support
-    
-    void InitializeJSONContextData (JSONContext *context, custom_Update updateFunction, void *updateData, int indentSize, int maxStackDepth);
-    void DestroyJSONContextData (JSONContext *context);
-    int OpenJSON (JSONContext *context);                                   //   {
-    int CloseJSON (JSONContext *context);                                  //   }                                                                            
-    int OpenJSONObject (char *name, JSONContext *context);                 //   "name" : {
-    int CloseJSONObject (JSONContext *context);                            //   }
-    int WriteJSONPair (char *name, char *val, JSONContext *context);       //   "name" : "string value"
+    //-----------------------------------------------------------------------------
+    //
+    //  realloc_page_aligned(void *alignedPtr, size_t size)
+    //
+    //! \brief   Description:  Reallocates aligned memory based on the system page size. Same as calling realloc_aligned(alignedPtr, size, get_System_Pagesize());
+    //
+    //  Entry:
+    //!   \param[in] alignedPtr = pointer to a memory block previously allocated with malloc_aligned, calloc_aligned, or realloc_aligned. If NULL, this is the same as malloc_aligned
+    //!   \param[in] originalSize = size in bytes of the alignedPtr being passed in. This is used so that previous data can be preserved.
+    //!   \param[in] size = size of memory block in bytes to allocate
+    //!
+    //  Exit:
+    //!   \return ptrToAlignedMemory
+    //
+    //-----------------------------------------------------------------------------
+    void *realloc_page_aligned(void *alignedPtr, size_t originalSize, size_t size);
+    //checks if the provided pointer memory is all cleared to zero or not.
+    bool is_Empty(void *ptrData, size_t lengthBytes);
 
+    //This function checks if the provided character is between 0 and 7F. A.K.A. part of the standard ascii character set.
+    int is_ASCII(int c);
 
 #if defined (__cplusplus)
 } //extern "C"
