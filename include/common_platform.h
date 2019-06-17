@@ -123,7 +123,7 @@ extern "C"
     // bool os_Directory_Exits (const char * const pathToCheck)
     //
     // \brief   Description: Platform independent helper to check if path exists. 
-    //						 WARNING: May not work with UNICODE path. 
+    //                       WARNING: May not work with UNICODE path. 
     //
     // Entry:
     //      \param[in] pathToCheck The path that needs to be evaluated. 
@@ -139,7 +139,7 @@ extern "C"
     // bool os_File_Exists (const char * const filetoCheck)
     //
     // \brief   Description: Platform independent helper to check if file exists. 
-    //						 WARNING: May not work with UNICODE path. 
+    //                       WARNING: May not work with UNICODE path. 
     //
     // Entry:
     //      \param[in] filetoCheck The file that needs to be evaluated. 
@@ -258,7 +258,7 @@ extern "C"
         OS_NETBSD,//not supported yet
         OS_DRAGONFLYBSD,//not supported yet
         OS_HPUX,//not supported yet
-        OS_ESX,//not supported yet
+        OS_ESX,// supporting
         //Add more operating systems here as we add support for them in our libraries
     }eOSType;
 
@@ -344,6 +344,14 @@ extern "C"
         uint16_t minorVersion;
     }HPUXVersionNumber;
 
+    //https://en.wikipedia.org/wiki/VMware_ESXi#Versionshistory
+    typedef struct _ESXiVersionNumber
+    {
+        uint16_t majorVersion;
+        uint16_t minorVersion;
+        uint16_t revision;
+    }ESXiVersionNumber;
+
     typedef struct _UEFIVersionNumber
     {
         uint16_t majorVersion;
@@ -367,6 +375,7 @@ extern "C"
             NetBSDVersionNumber netBSDVersion;
             Tru64VersionNumber tru64Version;
             HPUXVersionNumber hpuxVersion;
+            ESXiVersionNumber esxiVersion;
             //TODO: Add other OS Versioning Schemes here for each OS we support
         }versionType;
     }OSVersionNumber, *ptrOSVersionNumber;

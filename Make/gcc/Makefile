@@ -1,7 +1,7 @@
 #
 # Do NOT modify or remove this copyright and license
 #
-# Copyright (c) 2012 - 2018 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+# Copyright (c) 2012 - 2019 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 #
 # This software is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,17 +16,17 @@ NAME=opensea-common
 #Change the Major version when major interface changes are made. E.g. tDevice changes
 MAJOR=1
 #Change the Minor version when new features are added. 
-MINOR=17
+MINOR=18
 #Change the patch version when only bug fixes are made.
-PATCH=5
+PATCH=7
 VERSION=$(MAJOR).$(MINOR).$(PATCH)
 SRC_DIR=../../src/
 INC_DIR=-I../../include
-CC=gcc
-AR=ar
+CC ?= gcc
+AR ?= ar
 CFLAGS ?= -Wall -c -fPIC -I. -std=gnu99
 CFLAGS += -c -fPIC -I. -std=gnu99
-LFLAGS = -Wall
+LFLAGS ?= -Wall
 LIB_SRC_FILES = \
     $(SRC_DIR)common.c\
     $(SRC_DIR)common_platform.c\
