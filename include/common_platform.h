@@ -18,7 +18,9 @@
 
 //This file's sole purpose is to include the correct common_<os/platform>.h/.c files for common things we may want to do -TJE
 //Currently everything is being done in common_nix.h. If something begins to get too specific to linux vs freebsd, then we'll need common_linux and common_freebsd files.
-#if defined (__linux__) 
+#if defined (UEFI_C_SOURCE)
+#include "common_uefi.h"
+#elif defined (__linux__) 
 #include "common_nix.h"
 //#include "common_linux.h"
 #elif defined (__DragonFly__)
