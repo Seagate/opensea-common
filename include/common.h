@@ -103,6 +103,8 @@ extern "C"
 
     #define M_BitN(n)   ((uint64_t)1 << n)
 
+#if !defined(UEFI_C_SOURCE)//defined in EDK2 MdePkg and causes conflicts, so checking this define for now to avoid conflicts
+
     #define BIT0      (M_BitN((uint64_t)0))
     #define BIT1      (M_BitN((uint64_t)1))
     #define BIT2      (M_BitN((uint64_t)2))
@@ -167,6 +169,8 @@ extern "C"
     #define BIT61     (M_BitN((uint64_t)61))
     #define BIT62     (M_BitN((uint64_t)62))
     #define BIT63     (M_BitN((uint64_t)63))
+
+#endif //UEFI_C_SOURCE
 
     //set a bit to 1 within a value
     #define M_SET_BIT(val, bitNum) (val | M_BitN(bitNum))
