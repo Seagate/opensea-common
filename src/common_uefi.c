@@ -16,6 +16,7 @@
 #include "common.h"
 #include "common_uefi.h"
 #include <time.h> //may need sys/time.h to to the timers. gettimeofday & struct timeval
+#include <utime.h>
 
 bool os_Directory_Exists(const char * const pathToCheck)
 {
