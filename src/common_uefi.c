@@ -17,6 +17,11 @@
 #include "common_uefi.h"
 #include <time.h> //may need sys/time.h to to the timers. gettimeofday & struct timeval
 #include <utime.h>
+//UEFI EDK includes
+#include <Uefi.h>
+#include <Library/UefiBootServicesTableLib.h>//to get global boot services pointer. This pointer should be checked before use, but any app using stdlib will have this set.
+#include <Library/PrintLib.h> //to convert CHAR16 string to CHAR8. may also be able to use stdlib in someway, but this seems to work
+#include <Protocol/SimpleTextOut.h> //for colors
 
 bool os_Directory_Exists(const char * const pathToCheck)
 {
@@ -33,14 +38,250 @@ int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
     return FAILURE;
 }
 
+int get_Simple_Test_Output_Protocol_Ptr(void **pOutput)
+{
+    int ret = SUCCESS;
+    EFI_STATUS uefiStatus = EFI_SUCCESS;
+    EFI_HANDLE *handle = NULL;
+    EFI_GUID outputGuid = EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL_GUID;
+    UINTN nodeCount = 0;
+
+    if (!gBS) //make sure global boot services pointer is valid before accessing it.
+    {
+        return MEMORY_FAILURE;
+    }
+
+    uefiStatus = gBS->LocateHandleBuffer ( ByProtocol, &outputGuid, NULL, &nodeCount, &handle);
+    if(EFI_ERROR(uefiStatus))
+    {
+        return FAILURE;
+    }
+    //NOTE: This code below assumes that we only care to change color output on node 0. This seems to work from a quick test, but may not be correct. Not sure what the other 2 nodes are for...serial?
+    uefiStatus = gBS->OpenProtocol( handle[0], &outputGuid, pOutput, gImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+    //TODO: based on the error code, rather than assuming failure, check for supported/not supported.
+    if(EFI_ERROR(uefiStatus))
+    {
+        ret = FAILURE;
+    }
+    return ret;
+}
+
+int32_t get_Default_Console_Colors()
+{
+    static int32_t defaultAttributes = INT32_MAX;
+    if (defaultAttributes == INT32_MAX)
+    {
+        EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *outputProtocol;
+        if (SUCCESS == get_Simple_Test_Output_Protocol_Ptr((void**)&outputProtocol))
+        {
+            defaultAttributes = outputProtocol->Mode->Attribute;
+        }
+    }
+    return defaultAttributes;
+}
+
+//Comment from simpletextout.h describes acceptable colors....we will try setting whatever we can, but it may not actually work!
+// For Foreground, and EFI_* value is valid from EFI_BLACK(0x00) to
+// EFI_WHITE (0x0F).
+// For Background, only EFI_BLACK, EFI_BLUE, EFI_GREEN, EFI_CYAN,
+// EFI_RED, EFI_MAGENTA, EFI_BROWN, and EFI_LIGHTGRAY are acceptable
 void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
 {
-    //ANSI escape sequences? Or something else?
+    EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *outputProtocol;
+    if (SUCCESS == get_Simple_Test_Output_Protocol_Ptr((void**)&outputProtocol))
+    {
+        if (foregroundBackground)//change foreground color
+        {
+            //save current background color
+            uint8_t currentBackground = M_Nibble1((unsigned long long)outputProtocol->Mode->Attribute);
+            switch (consoleColor)
+            {
+            case DARK_BLUE:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_BLUE, currentBackground));
+                break;
+            case BLUE:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTBLUE, currentBackground));
+                break;
+            case DARK_GREEN:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_GREEN, currentBackground));
+                break;
+            case GREEN:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTGREEN, currentBackground));
+                break;
+            case DARK_RED:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_RED, currentBackground));
+                break;
+            case RED:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTRED, currentBackground));
+                break;
+            case BLACK:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_BLACK, currentBackground));
+                break;
+            case BROWN:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_BROWN, currentBackground));
+                break;
+            case YELLOW:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_YELLOW, currentBackground));
+                break;
+            case TEAL:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_CYAN, currentBackground));
+                break;
+            case CYAN:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTCYAN, currentBackground));
+                break;
+            case PURPLE:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_MAGENTA, currentBackground));
+                break;
+            case MAGENTA:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTMAGENTA, currentBackground));
+                break;
+            case WHITE:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_WHITE, currentBackground));
+                break;
+            case DARK_GRAY:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_DARKGRAY, currentBackground));
+                break;
+            case GRAY:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTGRAY, currentBackground));
+                break;
+            case DEFAULT:
+            default:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(M_Nibble0((unsigned long long)get_Default_Console_Colors), currentBackground));
+                break;
+            }
+        }
+        else//change background color
+        {
+            uint8_t currentForeground = M_Nibble0((unsigned long long)outputProtocol->Mode->Attribute);
+            switch (consoleColor)
+            {
+            case DARK_BLUE:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_BLUE));
+                break;
+            case BLUE:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTBLUE));
+                break;
+            case DARK_GREEN:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_GREEN));
+                break;
+            case GREEN:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTGREEN));
+                break;
+            case DARK_RED:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_RED));
+                break;
+            case RED:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTRED));
+                break;
+            case BLACK:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_BLACK));
+                break;
+            case BROWN:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_BROWN));
+                break;
+            case YELLOW:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_YELLOW));
+                break;
+            case TEAL:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_CYAN));
+                break;
+            case CYAN:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTCYAN));
+                break;
+            case PURPLE:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_MAGENTA));
+                break;
+            case MAGENTA:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTMAGENTA));
+                break;
+            case WHITE:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_WHITE));
+                break;
+            case DARK_GRAY:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_DARKGRAY));
+                break;
+            case GRAY:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTGRAY));
+                break;
+            case DEFAULT:
+            default:
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, M_Nibble1((unsigned long long)get_Default_Console_Colors)));
+                break;
+            }
+        }
+    }
 }
 
 eArchitecture get_Compiled_Architecture(void)
 {
-    return OPENSEA_ARCH_UNKNOWN;
+    //check which compiler we're using to use it's preprocessor definitions
+    #if defined __INTEL_COMPILER || defined _MSC_VER //Intel's C/C++ compiler & Visual studio compiler
+        #if defined _M_X64 || defined _M_AMD64
+            return OPENSEA_ARCH_X86_64;
+        #elif defined _M_ALPHA
+            return OPENSEA_ARCH_ALPHA;
+        #elif defined _M_ARM || defined _M_ARMT
+            return OPENSEA_ARCH_ARM;
+        #elif defined _M_IX86
+            return OPENSEA_ARCH_X86;
+        #elif defined _M_IA64
+            return OPENSEA_ARCH_IA_64;
+        #elif defined _M_PPC //32bits I'm guessing - TJE
+            return OPENSEA_ARCH_POWERPC;
+        #else
+            return OPENSEA_ARCH_UNKNOWN;
+        #endif
+    #elif defined __MINGW32__ || defined __MINGW64__ || defined __CYGWIN__ || defined __clang__ || defined __GNUC__ //I'm guessing that all these compilers will use the same macro definitions since the sourceforge pages aren't 100% complete (clang I'm most unsure about)
+        #if defined __alpha__
+            return OPENSEA_ARCH_ALPHA;
+        #elif defined __amd64__ || defined __x86_64__
+            return OPENSEA_ARCH_X86_64;
+        #elif defined __arm__ || defined __thumb__
+            return OPENSEA_ARCH_ARM;
+        #elif defined __aarch64__
+            return OPENSEA_ARCH_ARM64;
+        #elif defined __i386__ || defined __i486__ || defined __i586__ || defined __i686__
+            return OPENSEA_ARCH_X86;
+        #elif defined __ia64__ || defined __IA64__
+            return OPENSEA_ARCH_IA_64;
+        #elif defined __powerpc64__ || defined __PPC64__ || defined __ppc64__ || defined _ARCH_PPC64
+            return OPENSEA_ARCH_POWERPC64;
+        #elif defined __powerpc__ || defined __POWERPC__ || defined __PPC__ || defined __ppc__ || defined _ARCH_PPC
+            return OPENSEA_ARCH_POWERPC;
+        #elif defined __sparc__
+            return OPENSEA_ARCH_SPARC;
+        #elif defined __s390__ || defined __s390x__ || defined __zarch__
+            return OPENSEA_ARCH_SYSTEMZ;
+        #elif defined __mips__
+            return OPENSEA_ARCH_MIPS;
+        #else
+            return OPENSEA_ARCH_UNKNOWN;
+        #endif
+    #elif defined __SUNPRO_C || defined __SUNPRO_CC //SUN/Oracle compilers (unix)
+        #if defined __amd64__ || defined __x86_64__
+            return OPENSEA_ARCH_X86_64;
+        #elif defined __i386
+            return OPENSEA_ARCH_X86;
+        #elif defined __sparc
+            return OPENSEA_ARCH_SPARC;
+        #else
+            return OPENSEA_ARCH_UNKNOWN;
+        #endif
+    #elif defined __IBMC__ || defined __IBMCPP__ //IBM compiler (unix, linux)
+        #if defined __370__ || defined __THW_370__
+            return OPENSEA_ARCH_SYSTEMZ;
+        #elif defined __THW_INTEL__
+            return OPENSEA_ARCH_X86;
+        #elif defined _ARCH_PPC64
+            return OPENSEA_ARCH_POWERPC64;
+        #elif defined _ARCH_PPC
+            return OPENSEA_ARCH_POWERPC;
+        #else
+            return OPENSEA_ARCH_UNKNOWN;
+        #endif
+    #else
+        return OPENSEA_ARCH_UNKNOWN;
+    #endif
 }
 
 eEndianness calculate_Endianness(void)
@@ -83,19 +324,79 @@ eEndianness calculate_Endianness(void)
 
 eEndianness get_Compiled_Endianness(void)
 {
+    #if defined _MSC_VER || defined __INTEL_COMPILER && !defined (__GNUC__)
+        #if defined _M_X64 || defined _M_AMD64
+            return OPENSEA_LITTLE_ENDIAN;
+        #elif defined _M_ALPHA
+            return OPENSEA_LITTLE_ENDIAN;
+        #elif defined _M_ARM || defined _M_ARMT
+            return OPENSEA_LITTLE_ENDIAN;
+        #elif defined _M_IX86
+            return OPENSEA_LITTLE_ENDIAN;
+        #elif defined _M_IA64
+            return OPENSEA_LITTLE_ENDIAN;
+        #elif defined _M_PPC //32bits I'm guessing - TJE
+            return OPENSEA_BIG_ENDIAN;
+        #elif defined __LITTLE_ENDIAN__
+            return OPENSEA_LITTLE_ENDIAN;
+        #elif defined __BIG_ENDIAN__
+            return OPENSEA_BIG_ENDIAN;
+        #else
+            return calculate_Endianness();
+        #endif
+    #else
+        #if defined (__BYTE_ORDER__)
+            #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+                return OPENSEA_BIG_ENDIAN;
+            #elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+                return OPENSEA_LITTLE_ENDIAN;
+            #else
+                return calculate_Endianness();
+            #endif
+        #else
+            #if defined (__BIG_ENDIAN__)
+                return OPENSEA_BIG_ENDIAN;
+            #elif defined (__LITTLE_ENDIAN__)
+                return OPENSEA_LITTLE_ENDIAN;
+            #else
+                //check architecture specific defines...
+                #if defined (__ARMEB__) || defined (__THUMBEB__) || defined (__AARCH64EB__) || defined (_MIPSEB) || defined (__MIPSEB) || defined (__MIPSEB__)
+                    return OPENSEA_BIG_ENDIAN;
+                #elif defined (__ARMEL__) || defined (__THUMBEL__) || defined (__AARCH64EL__) || defined (_MIPSEL) || defined (__MIPSEL) || defined (__MIPSEL__)
+                    return OPENSEA_LITTLE_ENDIAN;
+                #else
+                    return calculate_Endianness();
+                #endif
+            #endif
+        #endif
+    #endif
     return calculate_Endianness();
 }
 
 int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char *operatingSystemName)
 {
-    //TODO: get the UEFI version information and return it.
+    //get the UEFI version information and return it.
     //Also, set the operating system name to "UEFI" or "EFI" (If old enough version)
-    sprintf(&operatingSystemName[0],"UEFI");
     versionNumber->osVersioningIdentifier = OS_UEFI;
-    versionNumber->versionType.uefiVersion.majorVersion = 0;
-    versionNumber->versionType.uefiVersion.minorVersion = 0;
-    versionNumber->versionType.uefiVersion.revision = 0;
-    return NOT_SUPPORTED;
+    versionNumber->versionType.uefiVersion.majorVersion = M_Word1(gST->Hdr.Revision);
+    versionNumber->versionType.uefiVersion.minorVersion = M_Word0(gST->Hdr.Revision);
+    //gST->FirmwareVendor and gST->FirmwareRevision should be part of the operating system name!
+    //The FirmwareVendor is a CHAR16 string, so it needs conversion. The revision is a UINT32 and stores some vendor specific version data (display as hex)
+    char firmwareVendorASCII[80] = { 0 };
+    AsciiSPrintUnicodeFormat(firmwareVendorASCII, 80, L"%s", gST->FirmwareVendor);
+    if (strlen(firmwareVendorASCII) == 0)
+    {
+        snprintf(firmwareVendorASCII, 80, "Unknown Firmware Vendor");
+    }
+    if (versionNumber->versionType.uefiVersion.majorVersion >= 2)
+    {
+        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "UEFI - %s - 0x%08" PRIX32, firmwareVendorASCII, gST->FirmwareRevision);
+    }
+    else
+    {
+        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "EFI - %s - 0x%08" PRIX32, firmwareVendorASCII, gST->FirmwareRevision);
+    }
+    return SUCCESS;
 }
 
 int64_t os_Get_File_Size(FILE *filePtr)
@@ -105,70 +406,26 @@ int64_t os_Get_File_Size(FILE *filePtr)
 
 void start_Timer(seatimer_t *timer)
 {
-    //Cannot use clock_gettime in UEFI EDK2...at least I can't find it in any definitions for it
-    /*
-    struct timespec startTimespec;
-    int ret = 0;
-    memset(&startTimespec, 0, sizeof(struct timespec));
-    ret = clock_gettime(CLOCK_MONOTONIC, &startTimespec);
-    if (0 == ret)//hopefully this always works...-TJE
-    {
-    //        printf("Start Time:  %lu\n", startTimespec.tv_nsec);
-        timer->timerStart = (uint64_t) (startTimespec.tv_sec * (uint64_t) 1000000000) + startTimespec.tv_nsec;
-    }
-    //    else
-    //    {
-    //       printf("Bad start_timer Ret:  %d\n",ret);
-    //    }
-    /*/
     struct timeval startTimespec;
     int ret = 0;
     memset(&startTimespec, 0, sizeof(struct timeval));
     ret = gettimeofday(&startTimespec, NULL);
     if (0 == ret)//hopefully this always works...-TJE
     {
-    //        printf("Start Time:  %lu\n", startTimespec.tv_nsec);
         timer->timerStart = (uint64_t) (startTimespec.tv_sec * (uint64_t) 1000000000) + (uint64_t)(startTimespec.tv_usec * (uint64_t) 1000);
     }
-    //    else
-    //    {
-    //       printf("Bad start_timer Ret:  %d\n",ret);
-    //    }
-    //*/
 }
 
 void stop_Timer(seatimer_t *timer)
 {
-    //Cannot use clock_gettime in UEFI EDK2...at least I can't find it in any definitions for it
-    /*
-    struct timespec stopTimespec;
-    int ret = 0;
-    memset(&stopTimespec, 0, sizeof(struct timespec));
-    ret = clock_gettime(CLOCK_MONOTONIC, &stopTimespec);
-    if (0 == ret)//hopefully this always works...-TJE
-    {
-    //        printf("Start Time:  %lu\n", startTimespec.tv_nsec);
-    timer->timerStart = (uint64_t) (stopTimespec.tv_sec * (uint64_t) 1000000000) + stopTimespec.tv_nsec;
-    }
-    //    else
-    //    {
-    //       printf("Bad start_timer Ret:  %d\n",ret);
-    //    }
-    /*/
     struct timeval stopTimespec;
     int ret = 0;
     memset(&stopTimespec, 0, sizeof(struct timeval));
     ret = gettimeofday(&stopTimespec, NULL);
     if (0 == ret)//hopefully this always works...-TJE
     {
-    //        printf("Stop Time:  %lu\n", stopTimespec.tv_usec);
         timer->timerStop = (uint64_t) (stopTimespec.tv_sec * (uint64_t) 1000000000) + (uint64_t)(stopTimespec.tv_usec * (uint64_t) 1000);
     }
-    //    else
-    //    {
-    //       printf("Bad start_timer Ret:  %d\n",ret);
-    //    }
-    //*/
 }
 
 uint64_t get_Nano_Seconds(seatimer_t timer)

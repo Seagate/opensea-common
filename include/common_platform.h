@@ -358,7 +358,6 @@ extern "C"
     {
         uint16_t majorVersion;
         uint16_t minorVersion;
-        uint16_t revision;
     }UEFIVersionNumber;
 
     typedef struct _OSVersionNumber
