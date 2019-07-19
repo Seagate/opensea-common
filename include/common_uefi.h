@@ -27,6 +27,8 @@ extern "C"
     #define SYSTEM_PATH_SEPARATOR '/'
     #define SYSTEM_PATH_SEPARATOR_STR "/"
 
+    void print_EFI_STATUS_To_Screen(UINTN efiStatus);
+
 #if defined (__cplusplus)
 }
 #endif

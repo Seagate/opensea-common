@@ -138,8 +138,15 @@ static uint16_t get_Console_Default_Color()
 
 void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
 {
+    static bool defaultsSet = false;
     HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
     WORD theColor = 0;
+    if (!defaultsSet)
+    {
+        //First time we are setting colors backup the default settings so they can be restored properly later.
+        get_Default_Console_Colors();
+        defaultsSet = true;
+    }
     if (foregroundBackground)//change foreground color
     {
         switch (consoleColor)

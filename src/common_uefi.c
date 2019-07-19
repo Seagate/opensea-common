@@ -22,6 +22,7 @@
 #include <Library/UefiBootServicesTableLib.h>//to get global boot services pointer. This pointer should be checked before use, but any app using stdlib will have this set.
 #include <Library/PrintLib.h> //to convert CHAR16 string to CHAR8. may also be able to use stdlib in someway, but this seems to work
 #include <Protocol/SimpleTextOut.h> //for colors
+#include <Uefi/UefiBaseType.h> //for EFI_STATUS definitions
 
 bool os_Directory_Exists(const char * const pathToCheck)
 {
@@ -66,7 +67,7 @@ int get_Simple_Test_Output_Protocol_Ptr(void **pOutput)
     return ret;
 }
 
-int32_t get_Default_Console_Colors()
+static int32_t get_Default_Console_Colors()
 {
     static int32_t defaultAttributes = INT32_MAX;
     if (defaultAttributes == INT32_MAX)
@@ -75,6 +76,7 @@ int32_t get_Default_Console_Colors()
         if (SUCCESS == get_Simple_Test_Output_Protocol_Ptr((void**)&outputProtocol))
         {
             defaultAttributes = outputProtocol->Mode->Attribute;
+            printf("Default text output attributes are set to %" PRIX32 "\n", defaultAttributes);
         }
     }
     return defaultAttributes;
@@ -87,8 +89,15 @@ int32_t get_Default_Console_Colors()
 // EFI_RED, EFI_MAGENTA, EFI_BROWN, and EFI_LIGHTGRAY are acceptable
 void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
 {
+    staticBool defaultsSet = false;
     EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *outputProtocol;
-    if (SUCCESS == get_Simple_Test_Output_Protocol_Ptr((void**)&outputProtocol))
+    if (!defaultsSet)
+    {
+        //First time we are setting colors backup the default settings so they can be restored properly later.
+        get_Default_Console_Colors();
+        defaultsSet = true;
+    }
+    if (SUCCESS == get_Simple_Test_Output_Protocol_Ptr((void **)&outputProtocol))
     {
         if (foregroundBackground)//change foreground color
         {
@@ -146,7 +155,7 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
                 break;
             case DEFAULT:
             default:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(M_Nibble0((unsigned long long)get_Default_Console_Colors), currentBackground));
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(M_Nibble0((unsigned long long)get_Default_Console_Colors()), currentBackground));
                 break;
             }
         }
@@ -205,13 +214,13 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
                 break;
             case DEFAULT:
             default:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, M_Nibble1((unsigned long long)get_Default_Console_Colors)));
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, M_Nibble1((unsigned long long)get_Default_Console_Colors())));
                 break;
             }
         }
     }
 }
-
+//TODO: Need to validate if these are set correctly when switching between ARM/AARCH64/IA32/X^$ UEFI builds. If not, may need to use MDE_CPU_x macros instead
 eArchitecture get_Compiled_Architecture(void)
 {
     //check which compiler we're using to use it's preprocessor definitions
@@ -447,4 +456,140 @@ double get_Milli_Seconds(seatimer_t timer)
 double get_Seconds(seatimer_t timer)
 {
     return (get_Milli_Seconds(timer) / 1000.00);
+}
+
+//These will be defined in a ProcessorBind.h file somewhere on the system. On 64bit processors, this is defined as a UINT64. On 32bit processors, this is defined as a UINT32
+#if defined (MDE_CPU_IA32) || defined (MDE_CPU_ARM)
+#define PRI_UINTN PRIu32
+#elif defined (MDE_CPU_X64) || defined(MDE_CPU_AARCH64)
+#define PRI_UINTN PRIu64
+#else
+#error "Cannot set PRI_UINTN definition. Unknown processor type."
+#endif
+
+void print_EFI_STATUS_To_Screen(UINTN efiStatus)
+{
+    switch (efiStatus)
+    {
+    case EFI_SUCCESS:
+        printf("%" PRI_UINTN " - Success\n", efiStatus);
+        break;
+    case EFI_LOAD_ERROR:
+        printf("%" PRI_UINTN " - Load Error\n", efiStatus);
+        break;
+    case EFI_INVALID_PARAMETER:
+        printf("%" PRI_UINTN " - Invalid Parameter\n", efiStatus);
+        break;
+    case EFI_UNSUPPORTED:
+        printf("%" PRI_UINTN " - Unsupported\n", efiStatus);
+        break;
+    case EFI_BAD_BUFFER_SIZE:
+        printf("%" PRI_UINTN " - Bad Buffer Size\n", efiStatus);
+        break;
+    case EFI_BUFFER_TOO_SMALL:
+        printf("%" PRI_UINTN " - Buffer Too Small\n", efiStatus);
+        break;
+    case EFI_NOT_READY:
+        printf("%" PRI_UINTN " - Not Ready\n", efiStatus);
+        break;
+    case EFI_DEVICE_ERROR:
+        printf("%" PRI_UINTN " - Device Error\n", efiStatus);
+        break;
+    case EFI_WRITE_PROTECTED:
+        printf("%" PRI_UINTN " - Write Protected\n", efiStatus);
+        break;
+    case EFI_OUT_OF_RESOURCES:
+        printf("%" PRI_UINTN " - Out Of Resources\n", efiStatus);
+        break;
+    case EFI_VOLUME_CORRUPTED:
+        printf("%" PRI_UINTN " - Volume Corrupted\n", efiStatus);
+        break;
+    case EFI_VOLUME_FULL:
+        printf("%" PRI_UINTN " - Volume Full\n", efiStatus);
+        break;
+    case EFI_NO_MEDIA:
+        printf("%" PRI_UINTN " - No Media\n", efiStatus);
+        break;
+    case EFI_MEDIA_CHANGED:
+        printf("%" PRI_UINTN " - Media Changed\n", efiStatus);
+        break;
+    case EFI_NOT_FOUND:
+        printf("%" PRI_UINTN " - Not Found\n", efiStatus);
+        break;
+    case EFI_ACCESS_DENIED:
+        printf("%" PRI_UINTN " - Access Denied\n", efiStatus);
+        break;
+    case EFI_NO_RESPONSE:
+        printf("%" PRI_UINTN " - No Response\n", efiStatus);
+        break;
+    case EFI_NO_MAPPING:
+        printf("%" PRI_UINTN " - No Mapping\n", efiStatus);
+        break;
+    case EFI_TIMEOUT:
+        printf("%" PRI_UINTN " - Timeout\n", efiStatus);
+        break;
+    case EFI_NOT_STARTED:
+        printf("%" PRI_UINTN " - Not Started\n", efiStatus);
+        break;
+    case EFI_ALREADY_STARTED:
+        printf("%" PRI_UINTN " - Already Started\n", efiStatus);
+        break;
+    case EFI_ABORTED:
+        printf("%" PRI_UINTN " - Aborted\n", efiStatus);
+        break;
+    case EFI_ICMP_ERROR:
+        printf("%" PRI_UINTN " - ICMP Error\n", efiStatus);
+        break;
+    case EFI_TFTP_ERROR:
+        printf("%" PRI_UINTN " - TFTP Error\n", efiStatus);
+        break;
+    case EFI_PROTOCOL_ERROR:
+        printf("%" PRI_UINTN " - Protocol Error\n", efiStatus);
+        break;
+    case EFI_INCOMPATIBLE_VERSION:
+        printf("%" PRI_UINTN " - Incompatible Version\n", efiStatus);
+        break;
+    case EFI_SECURITY_VIOLATION:
+        printf("%" PRI_UINTN " - Security Violation\n", efiStatus);
+        break;
+    case EFI_CRC_ERROR:
+        printf("%" PRI_UINTN " - CRC Error\n", efiStatus);
+        break;
+    case EFI_END_OF_MEDIA:
+        printf("%" PRI_UINTN " - End Of Media\n", efiStatus);
+        break;
+    case EFI_END_OF_FILE:
+        printf("%" PRI_UINTN " - End Of File\n", efiStatus);
+        break;
+    case EFI_INVALID_LANGUAGE:
+        printf("%" PRI_UINTN " - Invalid Language\n", efiStatus);
+        break;
+    case EFI_COMPROMISED_DATA:
+        printf("%" PRI_UINTN " - Compromised Data\n", efiStatus);
+        break;
+    case EFI_HTTP_ERROR:
+        printf("%" PRI_UINTN " - HTTP Error\n", efiStatus);
+        break;
+    case EFI_WARN_UNKNOWN_GLYPH:
+        printf("%" PRI_UINTN " - Warning Unknown Glyph\n", efiStatus);
+        break;
+    case EFI_WARN_DELETE_FAILURE:
+        printf("%" PRI_UINTN " - Warning Delete Failure\n", efiStatus);
+        break;
+    case EFI_WARN_WRITE_FAILURE:
+        printf("%" PRI_UINTN " - Warning Write Failure\n", efiStatus);
+        break;
+    case EFI_WARN_BUFFER_TOO_SMALL:
+        printf("%" PRI_UINTN " - Warning Buffer Too Small\n", efiStatus);
+        break;
+    case EFI_WARN_STALE_DATA:
+        printf("%" PRI_UINTN " - Warning Stale Data\n", efiStatus);
+        break;
+    case EFI_WARN_FILE_SYSTEM:
+        printf("%" PRI_UINTN " - Warning File System\n", efiStatus);
+        break;
+    default:
+        printf("%" PRI_UINTN " - Unknown EFI Status value\n", efiStatus);
+        break;
+    }
 }
