@@ -17,6 +17,8 @@
 #include "common_uefi.h"
 #include <time.h> //may need sys/time.h to to the timers. gettimeofday & struct timeval
 #include <utime.h>
+#include <stdlib.h>
+#include <sys/stat.h>
 //UEFI EDK includes
 #include <Uefi.h>
 #include <Library/UefiBootServicesTableLib.h>//to get global boot services pointer. This pointer should be checked before use, but any app using stdlib will have this set.
@@ -26,17 +28,31 @@
 
 bool os_Directory_Exists(const char * const pathToCheck)
 {
+    struct stat st;
+    if (stat(pathToCheck, &st) == SUCCESS)
+    {
+        return (st.st_mode & S_IFDIR) != 0;
+    }
     return false;
 }
 
 bool os_File_Exists(const char * const filetoCheck)
 {
-    return false;
+    struct stat st;
+    return (stat(filetoCheck, &st) == SUCCESS);
 }
 
 int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
 {
-    return FAILURE;
+    char *resolvedPath = realpath((char*)pathAndFile, (char*)fullPath);
+    if (resolvedPath)
+    {
+        return SUCCESS;
+    }
+    else
+    {
+        return FAILURE;
+    }
 }
 
 int get_Simple_Test_Output_Protocol_Ptr(void **pOutput)
@@ -89,7 +105,7 @@ static int32_t get_Default_Console_Colors()
 // EFI_RED, EFI_MAGENTA, EFI_BROWN, and EFI_LIGHTGRAY are acceptable
 void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
 {
-    staticBool defaultsSet = false;
+    static bool defaultsSet = false;
     EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *outputProtocol;
     if (!defaultsSet)
     {
@@ -221,76 +237,99 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
     }
 }
 //TODO: Need to validate if these are set correctly when switching between ARM/AARCH64/IA32/X^$ UEFI builds. If not, may need to use MDE_CPU_x macros instead
+//MDE_CPU_IPF - itanium
+//MDE_CPU_X64 - x86_64
+//MDE_CPU_IA32 - x86
+//MDE_CPU_EBC
+//MDE_CPU_ARM
+//MDE_CPU_AARCH64
 eArchitecture get_Compiled_Architecture(void)
 {
-    //check which compiler we're using to use it's preprocessor definitions
-    #if defined __INTEL_COMPILER || defined _MSC_VER //Intel's C/C++ compiler & Visual studio compiler
-        #if defined _M_X64 || defined _M_AMD64
-            return OPENSEA_ARCH_X86_64;
-        #elif defined _M_ALPHA
-            return OPENSEA_ARCH_ALPHA;
-        #elif defined _M_ARM || defined _M_ARMT
-            return OPENSEA_ARCH_ARM;
-        #elif defined _M_IX86
-            return OPENSEA_ARCH_X86;
-        #elif defined _M_IA64
-            return OPENSEA_ARCH_IA_64;
-        #elif defined _M_PPC //32bits I'm guessing - TJE
-            return OPENSEA_ARCH_POWERPC;
-        #else
-            return OPENSEA_ARCH_UNKNOWN;
-        #endif
-    #elif defined __MINGW32__ || defined __MINGW64__ || defined __CYGWIN__ || defined __clang__ || defined __GNUC__ //I'm guessing that all these compilers will use the same macro definitions since the sourceforge pages aren't 100% complete (clang I'm most unsure about)
-        #if defined __alpha__
-            return OPENSEA_ARCH_ALPHA;
-        #elif defined __amd64__ || defined __x86_64__
-            return OPENSEA_ARCH_X86_64;
-        #elif defined __arm__ || defined __thumb__
-            return OPENSEA_ARCH_ARM;
-        #elif defined __aarch64__
-            return OPENSEA_ARCH_ARM64;
-        #elif defined __i386__ || defined __i486__ || defined __i586__ || defined __i686__
-            return OPENSEA_ARCH_X86;
-        #elif defined __ia64__ || defined __IA64__
-            return OPENSEA_ARCH_IA_64;
-        #elif defined __powerpc64__ || defined __PPC64__ || defined __ppc64__ || defined _ARCH_PPC64
-            return OPENSEA_ARCH_POWERPC64;
-        #elif defined __powerpc__ || defined __POWERPC__ || defined __PPC__ || defined __ppc__ || defined _ARCH_PPC
-            return OPENSEA_ARCH_POWERPC;
-        #elif defined __sparc__
-            return OPENSEA_ARCH_SPARC;
-        #elif defined __s390__ || defined __s390x__ || defined __zarch__
-            return OPENSEA_ARCH_SYSTEMZ;
-        #elif defined __mips__
-            return OPENSEA_ARCH_MIPS;
-        #else
-            return OPENSEA_ARCH_UNKNOWN;
-        #endif
-    #elif defined __SUNPRO_C || defined __SUNPRO_CC //SUN/Oracle compilers (unix)
-        #if defined __amd64__ || defined __x86_64__
-            return OPENSEA_ARCH_X86_64;
-        #elif defined __i386
-            return OPENSEA_ARCH_X86;
-        #elif defined __sparc
-            return OPENSEA_ARCH_SPARC;
-        #else
-            return OPENSEA_ARCH_UNKNOWN;
-        #endif
-    #elif defined __IBMC__ || defined __IBMCPP__ //IBM compiler (unix, linux)
-        #if defined __370__ || defined __THW_370__
-            return OPENSEA_ARCH_SYSTEMZ;
-        #elif defined __THW_INTEL__
-            return OPENSEA_ARCH_X86;
-        #elif defined _ARCH_PPC64
-            return OPENSEA_ARCH_POWERPC64;
-        #elif defined _ARCH_PPC
-            return OPENSEA_ARCH_POWERPC;
-        #else
-            return OPENSEA_ARCH_UNKNOWN;
-        #endif
-    #else
+    //All of these are defined somewhere in EDK2
+    #if defined (MDE_CPU_IPF)
+        return OPENSEA_ARCH_IA_64;
+    #elif defined (MDE_CPU_X64)
+        return OPENSEA_ARCH_X86_64;
+    #elif defined (MDE_CPU_IA32)
+        return OPENSEA_ARCH_X86;
+    #elif defined (MDE_CPU_EBC)
         return OPENSEA_ARCH_UNKNOWN;
+    #elif defined (MDE_CPU_ARM)
+        return OPENSEA_ARCH_ARM;
+    #elif defined (MDE_CPU_AARCH64)
+        return OPENSEA_ARCH_ARM64;
+    #else 
+      return OPENSEA_ARCH_UNKNOWN;
     #endif
+
+    //check which compiler we're using to use it's preprocessor definitions
+//  #if defined __INTEL_COMPILER || defined _MSC_VER //Intel's C/C++ compiler & Visual studio compiler
+//      #if defined _M_X64 || defined _M_AMD64
+//          return OPENSEA_ARCH_X86_64;
+//      #elif defined _M_ALPHA
+//          return OPENSEA_ARCH_ALPHA;
+//      #elif defined _M_ARM || defined _M_ARMT
+//          return OPENSEA_ARCH_ARM;
+//      #elif defined _M_IX86
+//          return OPENSEA_ARCH_X86;
+//      #elif defined _M_IA64
+//          return OPENSEA_ARCH_IA_64;
+//      #elif defined _M_PPC //32bits I'm guessing - TJE
+//          return OPENSEA_ARCH_POWERPC;
+//      #else
+//          return OPENSEA_ARCH_UNKNOWN;
+//      #endif
+//  #elif defined __MINGW32__ || defined __MINGW64__ || defined __CYGWIN__ || defined __clang__ || defined __GNUC__ //I'm guessing that all these compilers will use the same macro definitions since the sourceforge pages aren't 100% complete (clang I'm most unsure about)
+//      #if defined __alpha__
+//          return OPENSEA_ARCH_ALPHA;
+//      #elif defined __amd64__ || defined __x86_64__
+//          return OPENSEA_ARCH_X86_64;
+//      #elif defined __arm__ || defined __thumb__
+//          return OPENSEA_ARCH_ARM;
+//      #elif defined __aarch64__
+//          return OPENSEA_ARCH_ARM64;
+//      #elif defined __i386__ || defined __i486__ || defined __i586__ || defined __i686__
+//          return OPENSEA_ARCH_X86;
+//      #elif defined __ia64__ || defined __IA64__
+//          return OPENSEA_ARCH_IA_64;
+//      #elif defined __powerpc64__ || defined __PPC64__ || defined __ppc64__ || defined _ARCH_PPC64
+//          return OPENSEA_ARCH_POWERPC64;
+//      #elif defined __powerpc__ || defined __POWERPC__ || defined __PPC__ || defined __ppc__ || defined _ARCH_PPC
+//          return OPENSEA_ARCH_POWERPC;
+//      #elif defined __sparc__
+//          return OPENSEA_ARCH_SPARC;
+//      #elif defined __s390__ || defined __s390x__ || defined __zarch__
+//          return OPENSEA_ARCH_SYSTEMZ;
+//      #elif defined __mips__
+//          return OPENSEA_ARCH_MIPS;
+//      #else
+//          return OPENSEA_ARCH_UNKNOWN;
+//      #endif
+//  #elif defined __SUNPRO_C || defined __SUNPRO_CC //SUN/Oracle compilers (unix)
+//      #if defined __amd64__ || defined __x86_64__
+//          return OPENSEA_ARCH_X86_64;
+//      #elif defined __i386
+//          return OPENSEA_ARCH_X86;
+//      #elif defined __sparc
+//          return OPENSEA_ARCH_SPARC;
+//      #else
+//          return OPENSEA_ARCH_UNKNOWN;
+//      #endif
+//  #elif defined __IBMC__ || defined __IBMCPP__ //IBM compiler (unix, linux)
+//      #if defined __370__ || defined __THW_370__
+//          return OPENSEA_ARCH_SYSTEMZ;
+//      #elif defined __THW_INTEL__
+//          return OPENSEA_ARCH_X86;
+//      #elif defined _ARCH_PPC64
+//          return OPENSEA_ARCH_POWERPC64;
+//      #elif defined _ARCH_PPC
+//          return OPENSEA_ARCH_POWERPC;
+//      #else
+//          return OPENSEA_ARCH_UNKNOWN;
+//      #endif
+//  #else
+//      return OPENSEA_ARCH_UNKNOWN;
+//  #endif
 }
 
 eEndianness calculate_Endianness(void)
@@ -333,52 +372,67 @@ eEndianness calculate_Endianness(void)
 
 eEndianness get_Compiled_Endianness(void)
 {
-    #if defined _MSC_VER || defined __INTEL_COMPILER && !defined (__GNUC__)
-        #if defined _M_X64 || defined _M_AMD64
-            return OPENSEA_LITTLE_ENDIAN;
-        #elif defined _M_ALPHA
-            return OPENSEA_LITTLE_ENDIAN;
-        #elif defined _M_ARM || defined _M_ARMT
-            return OPENSEA_LITTLE_ENDIAN;
-        #elif defined _M_IX86
-            return OPENSEA_LITTLE_ENDIAN;
-        #elif defined _M_IA64
-            return OPENSEA_LITTLE_ENDIAN;
-        #elif defined _M_PPC //32bits I'm guessing - TJE
-            return OPENSEA_BIG_ENDIAN;
-        #elif defined __LITTLE_ENDIAN__
-            return OPENSEA_LITTLE_ENDIAN;
-        #elif defined __BIG_ENDIAN__
-            return OPENSEA_BIG_ENDIAN;
-        #else
-            return calculate_Endianness();
-        #endif
-    #else
-        #if defined (__BYTE_ORDER__)
-            #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-                return OPENSEA_BIG_ENDIAN;
-            #elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-                return OPENSEA_LITTLE_ENDIAN;
-            #else
-                return calculate_Endianness();
-            #endif
-        #else
-            #if defined (__BIG_ENDIAN__)
-                return OPENSEA_BIG_ENDIAN;
-            #elif defined (__LITTLE_ENDIAN__)
-                return OPENSEA_LITTLE_ENDIAN;
-            #else
-                //check architecture specific defines...
-                #if defined (__ARMEB__) || defined (__THUMBEB__) || defined (__AARCH64EB__) || defined (_MIPSEB) || defined (__MIPSEB) || defined (__MIPSEB__)
-                    return OPENSEA_BIG_ENDIAN;
-                #elif defined (__ARMEL__) || defined (__THUMBEL__) || defined (__AARCH64EL__) || defined (_MIPSEL) || defined (__MIPSEL) || defined (__MIPSEL__)
-                    return OPENSEA_LITTLE_ENDIAN;
-                #else
-                    return calculate_Endianness();
-                #endif
-            #endif
-        #endif
+    #if defined (MDE_CPU_IPF)
+        return OPENSEA_LITTLE_ENDIAN;
+    #elif defined (MDE_CPU_X64)
+        return OPENSEA_LITTLE_ENDIAN;
+    #elif defined (MDE_CPU_IA32)
+        return OPENSEA_LITTLE_ENDIAN;
+    #elif defined (MDE_CPU_EBC)
+        //unknown what endianness this is.
+    #elif defined (MDE_CPU_ARM)
+        return OPENSEA_LITTLE_ENDIAN;
+    #elif defined (MDE_CPU_AARCH64)
+        return OPENSEA_LITTLE_ENDIAN;
     #endif
+
+
+//  #if defined _MSC_VER || defined __INTEL_COMPILER && !defined (__GNUC__)
+//      #if defined _M_X64 || defined _M_AMD64
+//          return OPENSEA_LITTLE_ENDIAN;
+//      #elif defined _M_ALPHA
+//          return OPENSEA_LITTLE_ENDIAN;
+//      #elif defined _M_ARM || defined _M_ARMT
+//          return OPENSEA_LITTLE_ENDIAN;
+//      #elif defined _M_IX86
+//          return OPENSEA_LITTLE_ENDIAN;
+//      #elif defined _M_IA64
+//          return OPENSEA_LITTLE_ENDIAN;
+//      #elif defined _M_PPC //32bits I'm guessing - TJE
+//          return OPENSEA_BIG_ENDIAN;
+//      #elif defined __LITTLE_ENDIAN__
+//          return OPENSEA_LITTLE_ENDIAN;
+//      #elif defined __BIG_ENDIAN__
+//          return OPENSEA_BIG_ENDIAN;
+//      #else
+//          return calculate_Endianness();
+//      #endif
+//  #else
+//      #if defined (__BYTE_ORDER__)
+//          #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+//              return OPENSEA_BIG_ENDIAN;
+//          #elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+//              return OPENSEA_LITTLE_ENDIAN;
+//          #else
+//              return calculate_Endianness();
+//          #endif
+//      #else
+//          #if defined (__BIG_ENDIAN__)
+//              return OPENSEA_BIG_ENDIAN;
+//          #elif defined (__LITTLE_ENDIAN__)
+//              return OPENSEA_LITTLE_ENDIAN;
+//          #else
+//              //check architecture specific defines...
+//              #if defined (__ARMEB__) || defined (__THUMBEB__) || defined (__AARCH64EB__) || defined (_MIPSEB) || defined (__MIPSEB) || defined (__MIPSEB__)
+//                  return OPENSEA_BIG_ENDIAN;
+//              #elif defined (__ARMEL__) || defined (__THUMBEL__) || defined (__AARCH64EL__) || defined (_MIPSEL) || defined (__MIPSEL) || defined (__MIPSEL__)
+//                  return OPENSEA_LITTLE_ENDIAN;
+//              #else
+//                  return calculate_Endianness();
+//              #endif
+//          #endif
+//      #endif
+//  #endif
     return calculate_Endianness();
 }
 
