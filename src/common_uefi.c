@@ -92,7 +92,7 @@ static int32_t get_Default_Console_Colors()
         if (SUCCESS == get_Simple_Test_Output_Protocol_Ptr((void**)&outputProtocol))
         {
             defaultAttributes = outputProtocol->Mode->Attribute;
-            printf("Default text output attributes are set to %" PRIX32 "\n", defaultAttributes);
+            //printf("Default text output attributes are set to %" PRIX32 "\n", defaultAttributes);
         }
     }
     return defaultAttributes;
