@@ -55,7 +55,7 @@ int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
     }
 }
 
-int get_Simple_Test_Output_Protocol_Ptr(void **pOutput)
+int get_Simple_Text_Output_Protocol_Ptr(void **pOutput)
 {
     int ret = SUCCESS;
     EFI_STATUS uefiStatus = EFI_SUCCESS;
@@ -83,16 +83,48 @@ int get_Simple_Test_Output_Protocol_Ptr(void **pOutput)
     return ret;
 }
 
+void close_Simple_Text_Output_Protocol_Ptr(void **pOutput)
+{
+    EFI_STATUS uefiStatus = EFI_SUCCESS;
+    EFI_HANDLE *handle = NULL;
+    EFI_GUID outputGuid = EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL_GUID;
+    UINTN nodeCount = 0;
+
+    if (!gBS) //make sure global boot services pointer is valid before accessing it.
+    {
+        return;
+    }
+
+    uefiStatus = gBS->LocateHandleBuffer ( ByProtocol, &outputGuid, NULL, &nodeCount, &handle);
+    if(EFI_ERROR(uefiStatus))
+    {
+        return;
+    }
+    //NOTE: This code below assumes that we only care to change color output on node 0. This seems to work from a quick test, but may not be correct. Not sure what the other 2 nodes are for...serial?
+    uefiStatus = gBS->CloseProtocol( handle[0], &outputGuid, gImageHandle, NULL);
+    //TODO: based on the error code, rather than assuming failure, check for supported/not supported.
+    if(EFI_ERROR(uefiStatus))
+    {
+        perror("Failed to close simple text output protocol\n");
+    }
+    else
+    {
+        *pOutput = NULL;//this pointer is no longer valid!
+    }
+    return;
+}
+
 static int32_t get_Default_Console_Colors()
 {
     static int32_t defaultAttributes = INT32_MAX;
     if (defaultAttributes == INT32_MAX)
     {
         EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *outputProtocol;
-        if (SUCCESS == get_Simple_Test_Output_Protocol_Ptr((void**)&outputProtocol))
+        if (SUCCESS == get_Simple_Text_Output_Protocol_Ptr((void**)&outputProtocol))
         {
             defaultAttributes = outputProtocol->Mode->Attribute;
             //printf("Default text output attributes are set to %" PRIX32 "\n", defaultAttributes);
+            close_Simple_Text_Output_Protocol_Ptr((void**)&outputProtocol);
         }
     }
     return defaultAttributes;
@@ -113,7 +145,7 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
         get_Default_Console_Colors();
         defaultsSet = true;
     }
-    if (SUCCESS == get_Simple_Test_Output_Protocol_Ptr((void **)&outputProtocol))
+    if (SUCCESS == get_Simple_Text_Output_Protocol_Ptr((void **)&outputProtocol))
     {
         if (foregroundBackground)//change foreground color
         {
@@ -234,6 +266,8 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
                 break;
             }
         }
+        //close the protocol since we are done for now.
+        close_Simple_Text_Output_Protocol_Ptr((void**)&outputProtocol);
     }
 }
 //TODO: Need to validate if these are set correctly when switching between ARM/AARCH64/IA32/X^$ UEFI builds. If not, may need to use MDE_CPU_x macros instead
@@ -512,16 +546,9 @@ double get_Seconds(seatimer_t timer)
     return (get_Milli_Seconds(timer) / 1000.00);
 }
 
-//These will be defined in a ProcessorBind.h file somewhere on the system. On 64bit processors, this is defined as a UINT64. On 32bit processors, this is defined as a UINT32
-#if defined (MDE_CPU_IA32) || defined (MDE_CPU_ARM)
-#define PRI_UINTN PRIu32
-#elif defined (MDE_CPU_X64) || defined(MDE_CPU_AARCH64)
-#define PRI_UINTN PRIu64
-#else
-#error "Cannot set PRI_UINTN definition. Unknown processor type."
-#endif
-
-void print_EFI_STATUS_To_Screen(UINTN efiStatus)
+//Use %d to print this out or the output look really strange
+#define PRI_UINTN "d"
+void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus)
 {
     switch (efiStatus)
     {
