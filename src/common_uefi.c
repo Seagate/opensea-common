@@ -107,10 +107,6 @@ void close_Simple_Text_Output_Protocol_Ptr(void **pOutput)
     {
         perror("Failed to close simple text output protocol\n");
     }
-    else
-    {
-        *pOutput = NULL;//this pointer is no longer valid!
-    }
     return;
 }
 
