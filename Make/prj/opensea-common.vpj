@@ -95,5 +95,10 @@
             <F N="../../src/common_uefi.c"/>
             <F N="../../src/common_windows.c"/>
         </Folder>
+        <Folder Name="../UEFI">
+            <F N="../UEFI/opensea-common.dec"/>
+            <F N="../UEFI/opensea-common.dsc"/>
+            <F N="../UEFI/opensea-common.inf"/>
+        </Folder>
     </Files>
 </Project>
