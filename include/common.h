@@ -204,6 +204,7 @@ extern "C"
         OS_COMMAND_BLOCKED      = 18, //This is returned when the OS is blocking the command from being issued (EX: TCG - linux, lib ATA......or Sanitize in Windos 8+)
         COMMAND_INTERRUPTED     = 19, //Nidhi - Added for SCT commands, if interrupted by some other SCT command.
 		VALIDATION_FAILURE       =20, //For UDS/SM2 validation check
+        STRIP_HDR_FOOTER_FAILURE = 21, //For UDS
         UNKNOWN
     }eReturnValues;
 
