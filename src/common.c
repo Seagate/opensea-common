@@ -27,7 +27,7 @@
 
 void delay_Milliseconds(uint32_t milliseconds)
 {
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined (UEFI_C_SOURCE)
     Sleep(milliseconds);
 #else
     //according to this link: http://linux.die.net/man/3/usleep
