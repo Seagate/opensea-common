@@ -205,6 +205,7 @@ extern "C"
         COMMAND_INTERRUPTED     = 19, //Nidhi - Added for SCT commands, if interrupted by some other SCT command.
 		VALIDATION_FAILURE       =20, //For UDS/SM2 validation check
         STRIP_HDR_FOOTER_FAILURE = 21, //For UDS
+        PARSE_FAILURE             =22,
         UNKNOWN
     }eReturnValues;
 
