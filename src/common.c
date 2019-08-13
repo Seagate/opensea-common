@@ -57,11 +57,16 @@ void *malloc_aligned(size_t size, size_t alignment)
 {
     #if !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
         //C11 added an aligned alloc function we can use
+        //One additional requirement of this function is that the size must be a multiple of alignment, so we will check and round up the size to make this easy.
+        if (size % alignment)
+        {
+            size = size + alignment - (size % alignment);
+        }
         return aligned_alloc(alignment, size);
-    #elif defined (__INTEL_COMPILER) || defined (__ICC)
+    #elif !defined(UEFI_C_SOURCE) && defined (__INTEL_COMPILER) || defined (__ICC)
         //_mm_malloc
         return _mm_malloc((int)size, (int)alignment);
-    #elif defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+    #elif !defined(UEFI_C_SOURCE) && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         //POSIX.1-2001 and higher define support for posix_memalign
         void *temp = NULL;
         if (0 != posix_memalign( &temp, alignment, size))
@@ -69,10 +74,10 @@ void *malloc_aligned(size_t size, size_t alignment)
             temp = NULL;//make sure the system we are running didn't change this.
         }
         return temp;
-    #elif defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+    #elif !defined(UEFI_C_SOURCE) && defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
         //mingw32 has an aligned malloc function that is not available in mingw64.
         return __mingw_aligned_malloc(size, alignment);
-    #elif defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR)
+    #elif !defined(UEFI_C_SOURCE) && defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR)
         //use the MS _aligned_malloc function. Mingw64 will support this as well from what I can find - TJE
         return _aligned_malloc(size, alignment);
     #else
@@ -107,17 +112,17 @@ void free_aligned(void* ptr)
     #if !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
         //just call free
         free(ptr);
-    #elif defined (__INTEL_COMPILER) || defined (__ICC)
+    #elif !defined(UEFI_C_SOURCE) && defined (__INTEL_COMPILER) || defined (__ICC)
         //_mm_free
         _mm_free(ptr);
-    #elif defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+    #elif !defined(UEFI_C_SOURCE) && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         //POSIX.1-2001 and higher define support for posix_memalign
         //Just call free
         free(ptr);
-    #elif defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+    #elif !defined(UEFI_C_SOURCE) && defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
         //mingw32 has an aligned malloc function that is not available in mingw64.
         __mingw_aligned_free(ptr);
-    #elif defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR)
+    #elif !defined(UEFI_C_SOURCE) && defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR)
         //use the MS _aligned_free function
         _aligned_free(ptr);
     #else
