@@ -144,7 +144,7 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
     if (!defaultsSet)
     {
         //First time we are setting colors backup the default settings so they can be restored properly later.
-        get_Default_Console_Colors();
+        get_Console_Default_Color();
         defaultsSet = true;
     }
     if (foregroundBackground)//change foreground color
