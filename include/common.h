@@ -35,6 +35,18 @@ extern "C"
     #include <stdlib.h>
     #include <inttypes.h>
     #include <errno.h> //for printing std errors to the screen...more useful for 'nix OSs, but useful everywhere since it is at least standard functions
+
+    #if !defined(UINTPTR_MAX)
+    //need uintptr_t type for NVMe capabilities to prevent warnings/errors
+    //TODO: if C11, _Static_assert can be used to check against sizeof(void*) to make sure this is defined in a way that should work.
+        #if defined (_WIN64) || defined (_M_IA64) || defined (_M_ALPHA) || defined (_M_X64) || defined (_M_AMD64) || defined (__alpha__) || defined (__amd64__) || defined (__x86_64__) || defined (__aarch64__) || defined (__ia64__) || defined (__IA64__) || defined (__powerpc64__) || defined (__PPC64__) || defined (__ppc64__) || defined (_ARCH_PPC64)//64bit
+            typedef uint64_t uintptr_t;
+            #define UINTPTR_MAX UINT64_MAX
+        #else //assuming 32bit
+            typedef uint32_t uintptr_t;
+            #define UINTPTR_MAX UINT32_MAX
+        #endif
+    #endif
         
     #if defined (OPENSEA_COMMON_BOOLS) //THIS FLAG IS NOT ENABLED BY DEFAULT
     //I'm doing this because 
