@@ -185,9 +185,9 @@ extern "C"
 #endif //UEFI_C_SOURCE
 
     //set a bit to 1 within a value
-    #define M_SET_BIT(val, bitNum) (val | M_BitN(bitNum))
+    #define M_SET_BIT(val, bitNum) (val |= M_BitN(bitNum))
     //clear a bit to 0 within a value
-    #define M_CLEAR_BIT(val, bitNum) (val & (~M_BitN(bitNum)))
+    #define M_CLEAR_BIT(val, bitNum) (val &= (~M_BitN(bitNum)))
 
     #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~0U << ((msb) - (lsb) + 1)))
 
