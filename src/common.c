@@ -86,6 +86,7 @@ void *malloc_aligned(size_t size, size_t alignment)
         //This way means overallocating and adding to get to the required alignment...then knowing how much we over aligned by.
         //Will store the original starting pointer right before the aligned pointer we return to the caller.
         void *temp = NULL;
+        //printf("\trequested allocation: size = %zu  alignment = %zu\n");
         if (size && (alignment > 0) && ((alignment & (alignment - 1)) == 0))//Check that we have a size to allocate and enforce that the alignment value is a power of 2.
         {
             size_t requiredExtraBytes = sizeof(size_t);//We will store the original beginning address in front of the return data pointer
@@ -103,6 +104,10 @@ void *malloc_aligned(size_t size, size_t alignment)
                 *savedLocationData = (size_t)originalLocation;
             }
         }
+        //else
+        //{
+        //    printf("\trequest did not meet requirements for generic allocation function\n");
+        //}
         return temp;
     #endif
 }
@@ -157,6 +162,11 @@ void *calloc_aligned(size_t num, size_t size, size_t alignment)
 void *realloc_aligned(void *alignedPtr, size_t originalSize, size_t size, size_t alignment)
 {
     void *temp = NULL;
+    if (originalSize > 0)//if this is zero, they don't want or care to keep the data
+    {
+        free_aligned(alignedPtr);
+        alignedPtr = NULL;
+    }
     if (size)
     {
         temp = malloc_aligned(size, alignment);

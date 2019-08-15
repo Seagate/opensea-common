@@ -1239,7 +1239,7 @@ extern "C"
     //
     //  Entry:
     //!   \param[in] alignedPtr = pointer to a memory block previously allocated with malloc_aligned, calloc_aligned, or realloc_aligned. If NULL, this is the same as malloc_aligned
-    //!   \param[in] originalSize = size in bytes of the alignedPtr being passed in. This is used so that previous data can be preserved.
+    //!   \param[in] originalSize = size in bytes of the alignedPtr being passed in. This is used so that previous data can be preserved. Can be set to 0 if there is no care about the original data.
     //!   \param[in] size = size of memory block in bytes to allocate
     //!   \param[in] alignment = alignment value required. This MUST be a power of 2.
     //!
