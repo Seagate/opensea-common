@@ -1349,10 +1349,37 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void *realloc_page_aligned(void *alignedPtr, size_t originalSize, size_t size);
-    //checks if the provided pointer memory is all cleared to zero or not.
+
+    //-----------------------------------------------------------------------------
+    //
+    //  is_Empty(void *ptrData, size_t lengthBytes)
+    //
+    //! \brief   Description:  Checks if the provided pointer is cleared to zeros
+    //
+    //  Entry:
+    //!   \param[in] ptrData = pointer to a memory block to check if zeros
+    //!   \param[in] lengthBytes = size in bytes of the ptr to check
+    //!
+    //  Exit:
+    //!   \return true = memory is filled with zeros. false = memory has nonzero values in it.
+    //
+    //-----------------------------------------------------------------------------
     bool is_Empty(void *ptrData, size_t lengthBytes);
 
-    //This function checks if the provided character is between 0 and 7F. A.K.A. part of the standard ascii character set.
+    //
+    //-----------------------------------------------------------------------------
+    //
+    //  int is_ASCII(int c)
+    //
+    //! \brief   Description:  This function checks if the provided character is between 0 and 7F. A.K.A. part of the standard ascii character set.
+    //
+    //  Entry:
+    //!   \param[in] c = character to check if is an ASCII character
+    //!
+    //  Exit:
+    //!   \return 0 = not an ASCII character. 1 = is an ASCII character
+    //
+    //-----------------------------------------------------------------------------
     int is_ASCII(int c);
 
 #if defined (__cplusplus)

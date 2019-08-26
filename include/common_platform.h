@@ -540,6 +540,20 @@ extern "C"
     //-----------------------------------------------------------------------------
     double get_Seconds(seatimer_t timer);
 
+    //-----------------------------------------------------------------------------
+    //
+    //  is_Running_Elevated
+    //
+    //! \brief   Description:  Function that checks if the process is currently running with elevated permissions or not. Useful since things like disc access require this.
+    //
+    //  Entry:
+    //!
+    //  Exit:
+    //!   \return true = is elevated permissions, false = not running with elevated permissions
+    //
+    //-----------------------------------------------------------------------------
+    bool is_Running_Elevated();
+
 #if defined (__cplusplus)
 } //extern "C"
 #endif

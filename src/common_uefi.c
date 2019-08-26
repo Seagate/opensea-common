@@ -670,3 +670,8 @@ void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus)
         break;
     }
 }
+
+bool is_Running_Elevated()
+{
+    return true;//In UEFI, there is no concept of admin or sudo. The getuid function always returns zero, and the geteuid function isn't present at all currently, so it's safe to just return true here.
+}

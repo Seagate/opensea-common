@@ -804,3 +804,26 @@ void print_Windows_Error_To_Screen(unsigned int windowsError)
     printf("%u - %s\n", windowsError, windowsErrorString);
     LocalFree(windowsErrorString);
 }
+
+bool is_Running_Elevated()
+{
+    bool isElevated = false;
+    HANDLE currentProcess = NULL;
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &currentProcess))
+    {
+        TOKEN_ELEVATION elevation;
+        DWORD returnedSize = sizeof(TOKEN_ELEVATION);
+        if (GetTokenInformation(currentProcess, TokenElevation, &elevation, sizeof(elevation), &returnedSize))
+        {
+            if (elevation.TokenIsElevated)
+            {
+                isElevated = true;
+            }
+        }
+    }
+    if (currentProcess)
+    {
+        CloseHandle(currentProcess);
+    }
+    return isElevated;
+}

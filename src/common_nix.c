@@ -885,3 +885,13 @@ double get_Seconds(seatimer_t timer)
 {
     return (get_Milli_Seconds(timer) / 1000.00);
 }
+
+bool is_Running_Elevated()
+{
+    bool isElevated = false;
+    if (getuid() == 0 || geteuid() == 0)
+    {
+        isElevated = true;
+    }
+    return isElevated;
+}

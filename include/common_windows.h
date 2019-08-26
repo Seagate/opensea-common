@@ -106,7 +106,7 @@ extern "C"
     void print_Windows_Error_To_Screen(unsigned int windowsError);
 
     //The macros for NTDDI_VERSION & _WIN32_WINNT & WINVER are rarely checked once in Win 10 since they all get set to the same thing, so the below targets should also be defined in the preprocessor
-    //so that we know which version of the WIN10 SDK is being targetted.
+    //so that we know which version of the WIN10 SDK is being targeted.
 
 #if !defined(WIN_API_TARGET_VERSION)
 #if defined _MSC_VER
