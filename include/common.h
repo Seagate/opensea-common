@@ -35,6 +35,18 @@ extern "C"
     #include <stdlib.h>
     #include <inttypes.h>
     #include <errno.h> //for printing std errors to the screen...more useful for 'nix OSs, but useful everywhere since it is at least standard functions
+
+    #if !defined(UINTPTR_MAX)
+    //need uintptr_t type for NVMe capabilities to prevent warnings/errors
+    //TODO: if C11, _Static_assert can be used to check against sizeof(void*) to make sure this is defined in a way that should work.
+        #if defined (_WIN64) || defined (_M_IA64) || defined (_M_ALPHA) || defined (_M_X64) || defined (_M_AMD64) || defined (__alpha__) || defined (__amd64__) || defined (__x86_64__) || defined (__aarch64__) || defined (__ia64__) || defined (__IA64__) || defined (__powerpc64__) || defined (__PPC64__) || defined (__ppc64__) || defined (_ARCH_PPC64)//64bit
+            typedef uint64_t uintptr_t;
+            #define UINTPTR_MAX UINT64_MAX
+        #else //assuming 32bit
+            typedef uint32_t uintptr_t;
+            #define UINTPTR_MAX UINT32_MAX
+        #endif
+    #endif
         
     #if defined (OPENSEA_COMMON_BOOLS) //THIS FLAG IS NOT ENABLED BY DEFAULT
     //I'm doing this because 
@@ -103,6 +115,8 @@ extern "C"
 
     #define M_BitN(n)   ((uint64_t)1 << n)
 
+#if !defined(UEFI_C_SOURCE)//defined in EDK2 MdePkg and causes conflicts, so checking this define for now to avoid conflicts
+
     #define BIT0      (M_BitN((uint64_t)0))
     #define BIT1      (M_BitN((uint64_t)1))
     #define BIT2      (M_BitN((uint64_t)2))
@@ -168,10 +182,12 @@ extern "C"
     #define BIT62     (M_BitN((uint64_t)62))
     #define BIT63     (M_BitN((uint64_t)63))
 
+#endif //UEFI_C_SOURCE
+
     //set a bit to 1 within a value
-    #define M_SET_BIT(val, bitNum) (val | M_BitN(bitNum))
+    #define M_SET_BIT(val, bitNum) (val |= M_BitN(bitNum))
     //clear a bit to 0 within a value
-    #define M_CLEAR_BIT(val, bitNum) (val & (~M_BitN(bitNum)))
+    #define M_CLEAR_BIT(val, bitNum) (val &= (~M_BitN(bitNum)))
 
     #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~0U << ((msb) - (lsb) + 1)))
 
@@ -1226,7 +1242,7 @@ extern "C"
     //
     //  Entry:
     //!   \param[in] alignedPtr = pointer to a memory block previously allocated with malloc_aligned, calloc_aligned, or realloc_aligned. If NULL, this is the same as malloc_aligned
-    //!   \param[in] originalSize = size in bytes of the alignedPtr being passed in. This is used so that previous data can be preserved.
+    //!   \param[in] originalSize = size in bytes of the alignedPtr being passed in. This is used so that previous data can be preserved. Can be set to 0 if there is no care about the original data.
     //!   \param[in] size = size of memory block in bytes to allocate
     //!   \param[in] alignment = alignment value required. This MUST be a power of 2.
     //!

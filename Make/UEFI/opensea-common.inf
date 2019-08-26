@@ -1,0 +1,47 @@
+## @file
+#  opensea-common lib
+#
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = opensea-common
+  FILE_GUID                      = dbe40986-457d-497a-af75-588db0a31da4
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = opensea-common
+
+#
+#  VALID_ARCHITECTURES           = IA32 X64 ARM AARCH64 IPF
+#
+
+[Sources]
+  src/common.c
+  src/common_uefi.c
+  src/common_platform.c
+  include/common.h
+  include/common_platform.h
+  include/common_uefi.h
+
+[Packages]
+  StdLib/StdLib.dec
+  StdLibPrivateInternalFiles/DoNotUse.dec
+  MdePkg/MdePkg.dec
+  ShellPkg/ShellPkg.dec
+
+[LibraryClasses]
+  LibC
+  LibCType
+  LibMath
+  LibTime
+  ShellCEntryLib
+  UefiLib
+  BaseLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  LibStdLib
+  LibStdio
+  LibString
+  DevConsole
+

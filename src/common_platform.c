@@ -56,7 +56,7 @@ void print_Architecture(eArchitecture arch)
     case OPENSEA_ARCH_UNKNOWN:
     case OPENSEA_ARCH_RESERVED:
     default:
-        printf("Unkown Architecture");
+        printf("Unknown Architecture");
         break;
     }
 }
@@ -158,6 +158,9 @@ void print_OS_Type(eOSType osType)
     case OS_ESX:
         printf("VMWare ESXi");
         break;
+    case OS_UEFI:
+        printf("UEFI");
+        break;
     case OS_UNKNOWN:
     default:
         printf("Unknown OS");
@@ -209,6 +212,9 @@ void print_OS_Version(ptrOSVersionNumber versionNumber)
         break;
     case OS_ESX:
         printf("%"PRIu16".%"PRIu16".%"PRIu16"", versionNumber->versionType.esxiVersion.majorVersion, versionNumber->versionType.esxiVersion.minorVersion, versionNumber->versionType.esxiVersion.revision);
+        break;
+    case OS_UEFI:
+        printf("%"PRIu16".%"PRIu16"", versionNumber->versionType.uefiVersion.majorVersion, versionNumber->versionType.uefiVersion.minorVersion);
         break;
     case OS_UNKNOWN:
     default:

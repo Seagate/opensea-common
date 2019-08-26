@@ -18,7 +18,9 @@
 
 //This file's sole purpose is to include the correct common_<os/platform>.h/.c files for common things we may want to do -TJE
 //Currently everything is being done in common_nix.h. If something begins to get too specific to linux vs freebsd, then we'll need common_linux and common_freebsd files.
-#if defined (__linux__) 
+#if defined (UEFI_C_SOURCE)
+#include "common_uefi.h"
+#elif defined (__linux__) 
 #include "common_nix.h"
 //#include "common_linux.h"
 #elif defined (__DragonFly__)
@@ -250,6 +252,7 @@ extern "C"
         OS_LINUX,
         OS_FREEBSD,
         OS_SOLARIS,
+        OS_UEFI,
         OS_MACOSX,//not supported yet
         OS_AIX,//not supported yet
         OS_TRU64,//not supported yet
@@ -351,6 +354,12 @@ extern "C"
         uint16_t revision;
     }ESXiVersionNumber;
 
+    typedef struct _UEFIVersionNumber
+    {
+        uint16_t majorVersion;
+        uint16_t minorVersion;
+    }UEFIVersionNumber;
+
     typedef struct _OSVersionNumber
     {
         eOSType osVersioningIdentifier;
@@ -359,6 +368,7 @@ extern "C"
             LinuxVersionNumber linuxVersion;
             FreeBSDVersionNumber freeBSDVersion;
             SolarisVersionNumber solarisVersion;
+            UEFIVersionNumber uefiVersion;
             MacOSVersionNumber macOSVersion;
             AIXVersionNumber aixVersion;
             DragonflyVersionNumber dragonflyVersion;

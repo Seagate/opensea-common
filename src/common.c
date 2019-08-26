@@ -27,7 +27,7 @@
 
 void delay_Milliseconds(uint32_t milliseconds)
 {
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined (UEFI_C_SOURCE)
     Sleep(milliseconds);
 #else
     //according to this link: http://linux.die.net/man/3/usleep
@@ -55,13 +55,18 @@ void delay_Seconds(uint32_t seconds)
 //      NOTE: In UEFI, using the EDK2, malloc will provide an 8-byte alignment, so it may be possible to do some aligned allocations using it without extra work. but we can revist that later.
 void *malloc_aligned(size_t size, size_t alignment)
 {
-    #if defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+    #if !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
         //C11 added an aligned alloc function we can use
+        //One additional requirement of this function is that the size must be a multiple of alignment, so we will check and round up the size to make this easy.
+        if (size % alignment)
+        {
+            size = size + alignment - (size % alignment);
+        }
         return aligned_alloc(alignment, size);
-    #elif defined (__INTEL_COMPILER) || defined (__ICC)
+    #elif !defined(UEFI_C_SOURCE) && defined (__INTEL_COMPILER) || defined (__ICC)
         //_mm_malloc
         return _mm_malloc((int)size, (int)alignment);
-    #elif defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+    #elif !defined(UEFI_C_SOURCE) && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         //POSIX.1-2001 and higher define support for posix_memalign
         void *temp = NULL;
         if (0 != posix_memalign( &temp, alignment, size))
@@ -69,10 +74,10 @@ void *malloc_aligned(size_t size, size_t alignment)
             temp = NULL;//make sure the system we are running didn't change this.
         }
         return temp;
-    #elif defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+    #elif !defined(UEFI_C_SOURCE) && defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
         //mingw32 has an aligned malloc function that is not available in mingw64.
         return __mingw_aligned_malloc(size, alignment);
-    #elif defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR)
+    #elif !defined(UEFI_C_SOURCE) && defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR)
         //use the MS _aligned_malloc function. Mingw64 will support this as well from what I can find - TJE
         return _aligned_malloc(size, alignment);
     #else
@@ -81,6 +86,7 @@ void *malloc_aligned(size_t size, size_t alignment)
         //This way means overallocating and adding to get to the required alignment...then knowing how much we over aligned by.
         //Will store the original starting pointer right before the aligned pointer we return to the caller.
         void *temp = NULL;
+        //printf("\trequested allocation: size = %zu  alignment = %zu\n");
         if (size && (alignment > 0) && ((alignment & (alignment - 1)) == 0))//Check that we have a size to allocate and enforce that the alignment value is a power of 2.
         {
             size_t requiredExtraBytes = sizeof(size_t);//We will store the original beginning address in front of the return data pointer
@@ -98,26 +104,30 @@ void *malloc_aligned(size_t size, size_t alignment)
                 *savedLocationData = (size_t)originalLocation;
             }
         }
+        //else
+        //{
+        //    printf("\trequest did not meet requirements for generic allocation function\n");
+        //}
         return temp;
     #endif
 }
 
 void free_aligned(void* ptr)
 {
-    #if defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+    #if !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
         //just call free
         free(ptr);
-    #elif defined (__INTEL_COMPILER) || defined (__ICC)
+    #elif !defined(UEFI_C_SOURCE) && defined (__INTEL_COMPILER) || defined (__ICC)
         //_mm_free
         _mm_free(ptr);
-    #elif defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+    #elif !defined(UEFI_C_SOURCE) && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         //POSIX.1-2001 and higher define support for posix_memalign
         //Just call free
         free(ptr);
-    #elif defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+    #elif !defined(UEFI_C_SOURCE) && defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
         //mingw32 has an aligned malloc function that is not available in mingw64.
         __mingw_aligned_free(ptr);
-    #elif defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR)
+    #elif !defined(UEFI_C_SOURCE) && defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR)
         //use the MS _aligned_free function
         _aligned_free(ptr);
     #else
@@ -152,6 +162,11 @@ void *calloc_aligned(size_t num, size_t size, size_t alignment)
 void *realloc_aligned(void *alignedPtr, size_t originalSize, size_t size, size_t alignment)
 {
     void *temp = NULL;
+    if (originalSize > 0)//if this is zero, they don't want or care to keep the data
+    {
+        free_aligned(alignedPtr);
+        alignedPtr = NULL;
+    }
     if (size)
     {
         temp = malloc_aligned(size, alignment);
@@ -170,7 +185,9 @@ void *realloc_aligned(void *alignedPtr, size_t originalSize, size_t size, size_t
 
 size_t get_System_Pagesize(void)
 {
-    #if defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+    #if defined (UEFI_C_SOURCE)
+        return 4096;//This is not the processor page size, just the pagesize allocated by EDK2. It's in <dePkg/Include/Uefi/UedfiBaseType.h
+    #elif defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         //use sysconf: http://man7.org/linux/man-pages/man3/sysconf.3.html
         return (size_t)sysconf(_SC_PAGESIZE);
     #elif defined (_POSIX_VERSION) //this may not be the best way to test this, but I think it will be ok.
@@ -607,7 +624,7 @@ void print_Data_Buffer(uint8_t *dataBuffer, uint32_t bufferLen, bool showPrint)
 
     for (printIter = 0; printIter < 16 && printIter < bufferLen; printIter++)
     {
-        printf("%"PRIX32"  ", printIter);
+        printf("%" PRIX32 "  ", printIter);
     }
     char lineBuff[18] = { 0 };
     uint8_t lineBuffIter = 0;
