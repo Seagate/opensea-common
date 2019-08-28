@@ -133,7 +133,7 @@ extern "C"
     #define WIN_API_TARGET_WIN10_16299  100162990L //10.0.16299.0 //Win 10 API, build 16299
     #define WIN_API_TARGET_WIN10_17134  100171340L //10.0.17134.0 //Win 10 API, build 17134
     #define WIN_API_TARGET_WIN10_17763  100177630L //10.0.17763.0 //Win 10 API, build 17763
-
+    #define WIN_API_TARGET_WIN10_18362  100183620L //10.0.18362.0 //Win 10 API, build 18362
 
         
 #if defined (__cplusplus)
