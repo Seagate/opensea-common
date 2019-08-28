@@ -22,7 +22,8 @@ extern "C"
     //This pragma is needed to tell a library including opensea-common to look for Version.lib for the version helping information in the .c file.
     //NOTE: ARM requires 10.0.16299.0 API to get this library!
     #if !defined (__MINGW32__) && !defined (__MINGW64__)
-    #pragma comment(lib,"Version.lib")
+    #pragma comment(lib,"Version.lib")//for getting Windows system versions
+    #pragma comment(lib,"Advapi32.lib")//for checking for "run as administrator". May not be necessary to build some tools, but putting this here to prevent problems.
     #endif
 
     #include <windows.h>
