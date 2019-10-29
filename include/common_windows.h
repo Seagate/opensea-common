@@ -27,7 +27,10 @@ extern "C"
     #endif
 
     #include <windows.h>
+#if !defined(NTDDSCSI_INCLUDED)
     #include <ntddscsi.h>
+    #define NTDDSCSI_INCLUDED
+#endif
     #define OPENSEA_PATH_MAX MAX_PATH
 
     #define SYSTEM_PATH_SEPARATOR '\\'
