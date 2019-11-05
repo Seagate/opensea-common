@@ -350,6 +350,7 @@ static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
             }
         }
     }
+    safe_Free(filename);
     return match;
 }
 
@@ -474,6 +475,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                                 safe_Free(releaseMemory);
                                 fclose(release);
                             }
+                            safe_Free(fileName);
                         }
                         if (linuxOSNameFound)
                         {
@@ -507,6 +509,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         safe_Free(versionMemory);
                         fclose(version);
                     }
+                    safe_Free(fileName);
                 }
                 if (!linuxOSNameFound && lsbReleaseOffset >= 0)
                 {
@@ -535,6 +538,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         safe_Free(releaseMemory);
                         fclose(release);
                     }
+                    safe_Free(fileName);
                 }
                 for (int iter = 0; iter < releaseFileCount; ++iter)
                 {
