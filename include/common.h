@@ -189,7 +189,7 @@ extern "C"
     //clear a bit to 0 within a value
     #define M_CLEAR_BIT(val, bitNum) (val &= (~M_BitN(bitNum)))
 
-    #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~0U << ((msb) - (lsb) + 1)))
+    #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~UINT64_C(0) << ((msb) - (lsb) + 1)))
 
     #define M_2sCOMPLEMENT(val) (~(val) + 1)
 
