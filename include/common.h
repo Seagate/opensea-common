@@ -190,6 +190,8 @@ extern "C"
     #define M_CLEAR_BIT(val, bitNum) (val &= (~M_BitN(bitNum)))
 
     #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~UINT64_C(0) << ((msb) - (lsb) + 1)))
+    // get bit range for signed values
+    #define M_IGETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~INT64_C(0) << ((msb) - (lsb) + 1)))
 
     #define M_2sCOMPLEMENT(val) (~(val) + 1)
 
@@ -371,7 +373,20 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void byte_Swap_16(uint16_t *wordToSwap);
-
+    //-----------------------------------------------------------------------------
+    //
+    //  byte_Swap_Int16()
+    //
+    //! \brief   Description:  swap the bytes in a singned word 
+    //
+    //  Entry:
+    //!   \param[out] signedWordToSwap = a pointer to the signed word containing the data in which to have the bytes swapped
+    //!
+    //  Exit:
+    //!   \return VOID
+    //
+    //-----------------------------------------------------------------------------
+    void byte_Swap_Int16(int16_t *signedWordToSwap);
     //-----------------------------------------------------------------------------
     //
     //  big_To_Little_Endian_16()

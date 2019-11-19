@@ -257,6 +257,11 @@ void byte_Swap_16(uint16_t *wordToSwap)
     *wordToSwap = ((*wordToSwap & 0x00FF) << 8) | ((*wordToSwap & 0xFF00) >> 8);
 }
 
+void byte_Swap_Int16(int16_t *signedWordToSwap)
+{
+    *signedWordToSwap = ((*signedWordToSwap & 0x00FF) << 8) | ((*signedWordToSwap & 0xFF00) >> 8);
+}
+
 void big_To_Little_Endian_16(uint16_t *wordToSwap)
 {
     if (get_Compiled_Endianness() == OPENSEA_LITTLE_ENDIAN)
