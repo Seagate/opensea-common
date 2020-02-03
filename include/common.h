@@ -65,7 +65,7 @@ extern "C"
     #include "common_platform.h"
 
     //Microsoft doesn't have snprintf...it has _snprintf...at least until VS2015 according to my web search - TJE
-    #if _MFC_VER <= 1800 && defined _WIN32
+    #if _MSC_VER <= 1800 && defined _WIN32
     #define snprintf _snprintf
     #endif
 

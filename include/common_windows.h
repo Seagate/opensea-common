@@ -53,6 +53,23 @@ extern "C"
     #define SEA_WIN32_WINNT_WINTHRESHOLD           0x0A00 // Windows 10  
     #define SEA_WIN32_WINNT_WIN10                  0x0A00 // Windows 10  
 
+    //Visual studio MSVC versions that are easy to check for.
+    //values come from here:https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
+    #define SEA_MSC_VER_VS2013      1800
+    #define SEA_MSC_VER_VS2015      1900
+    #define SEA_MSC_VER_VS2017_RTW  1910
+    #define SEA_MSC_VER_VS2017_15_3 1911
+    #define SEA_MSC_VER_VS2017_15_5 1912
+    #define SEA_MSC_VER_VS2017_15_6 1913
+    #define SEA_MSC_VER_VS2017_15_7 1914
+    #define SEA_MSC_VER_VS2017_15_8 1915
+    #define SEA_MSC_VER_VS2017_15_9 1916
+    #define SEA_MSC_VER_VS2019_RTW  1920
+    #define SEA_MSC_VER_VS2019_16_1 1921
+    #define SEA_MSC_VER_VS2019_16_2 1922
+    #define SEA_MSC_VER_VS2019_16_3 1923
+
+
     //-----------------------------------------------------------------------------
     //
     //  is_Windows_8_Or_Higher()

@@ -15,9 +15,10 @@
 #include "common.h"
 #include "common_windows.h"
 #include <windows.h> //needed for all the stuff to get the windows version
+#include <tchar.h>
 #include <strsafe.h> //needed in the code written to get the windows version since I'm using a Microsoft provided string concatenation call-tje
 #include <io.h> //needed for getting the size of a file in windows
-#include <tchar.h>
+
 
 bool os_Directory_Exists(const char * const pathToCheck)
 {
