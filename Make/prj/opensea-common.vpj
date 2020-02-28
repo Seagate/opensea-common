@@ -100,5 +100,10 @@
             <F N="../UEFI/opensea-common.dsc"/>
             <F N="../UEFI/opensea-common.inf"/>
         </Folder>
+        <Folder Name="../vmware">
+            <F
+                N="../vmware/Makefile"
+                Type="Makefile"/>
+        </Folder>
     </Files>
 </Project>
