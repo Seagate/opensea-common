@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012 - 2018 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012 - 2020 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -350,6 +350,7 @@ static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
             }
         }
     }
+    safe_Free(filename);
     return match;
 }
 
@@ -474,6 +475,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                                 safe_Free(releaseMemory);
                                 fclose(release);
                             }
+                            safe_Free(fileName);
                         }
                         if (linuxOSNameFound)
                         {
@@ -507,6 +509,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         safe_Free(versionMemory);
                         fclose(version);
                     }
+                    safe_Free(fileName);
                 }
                 if (!linuxOSNameFound && lsbReleaseOffset >= 0)
                 {
@@ -535,6 +538,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         safe_Free(releaseMemory);
                         fclose(release);
                     }
+                    safe_Free(fileName);
                 }
                 for (int iter = 0; iter < releaseFileCount; ++iter)
                 {
@@ -884,4 +888,14 @@ double get_Milli_Seconds(seatimer_t timer)
 double get_Seconds(seatimer_t timer)
 {
     return (get_Milli_Seconds(timer) / 1000.00);
+}
+
+bool is_Running_Elevated()
+{
+    bool isElevated = false;
+    if (getuid() == 0 || geteuid() == 0)
+    {
+        isElevated = true;
+    }
+    return isElevated;
 }

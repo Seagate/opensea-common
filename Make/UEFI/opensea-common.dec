@@ -1,0 +1,23 @@
+## @file
+#   Declarations for the opensea-common library
+##
+
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = opensea-commonlib
+  PACKAGE_GUID                   = 2967d6a9-2216-4348-aa0e-fb657576adde
+  PACKAGE_VERSION                = 0.01
+
+
+[Includes]
+  include
+
+[Guids]
+  gopensea-commonLibTokenSpaceGuid          = { 0x5016bf02, 0x0a40, 0x4467, { 0xbb, 0x9d, 0xb3, 0x64, 0xc0, 0x93, 0xa1, 0xfd }}
+
+
+[Protocols]
+  gEfiSocketProtocolGuid = { 0x58e6ed63, 0x1694, 0x440b, { 0x93, 0x88, 0xe9, 0x8f, 0xed, 0x6b, 0x65, 0xaf } }
+  gEfiSocketServiceBindingProtocolGuid = { 0x8aaedb2a, 0xa6bb, 0x47c6, { 0x94, 0xce, 0x1b, 0x80, 0x96, 0x42, 0x3f, 0x2a } }
+

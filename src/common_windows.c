@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012 - 2018 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012 - 2020 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,30 +15,27 @@
 #include "common.h"
 #include "common_windows.h"
 #include <windows.h> //needed for all the stuff to get the windows version
+#include <tchar.h>
 #include <strsafe.h> //needed in the code written to get the windows version since I'm using a Microsoft provided string concatenation call-tje
 #include <io.h> //needed for getting the size of a file in windows
+
 
 bool os_Directory_Exists(const char * const pathToCheck)
 {
     DWORD attrib = INVALID_FILE_ATTRIBUTES;
-#if defined (UNICODE)
-    //determine what the length of the new string will be
-    size_t pathCheckLength = mbstowcs(NULL, pathToCheck, strlen(pathToCheck) + 1);
-    //allocate memory
-    LPWSTR localPathToCheckBuf = (LPWSTR)calloc(pathCheckLength + 2, sizeof(WCHAR));
-    LPCWSTR localPathToCheck = &localPathToCheckBuf[0];
-    //convert incoming string to work
-    pathCheckLength = mbstowcs(localPathToCheckBuf, pathToCheck, strlen(pathToCheck) + 1);
-#else
-    LPCSTR localPathToCheck = (LPCSTR)pathToCheck;
-#endif
+    size_t pathCheckLength = (strlen(pathToCheck) + 1) * sizeof(TCHAR);
+    TCHAR *localPathToCheckBuf = (TCHAR*)calloc(pathCheckLength, sizeof(TCHAR));
+    if (!localPathToCheckBuf)
+    {
+        return false;
+    }
+    CONST TCHAR *localPathToCheck = &localPathToCheckBuf[0];
+    _stprintf_s(localPathToCheckBuf, pathCheckLength, TEXT("%hs"), pathToCheck);
 
     attrib = GetFileAttributes(localPathToCheck);
 
-#if defined (UNICODE)
     safe_Free(localPathToCheckBuf);
     localPathToCheck = NULL;
-#endif
 
     if (attrib == INVALID_FILE_ATTRIBUTES)
     {
@@ -58,24 +55,19 @@ bool os_Directory_Exists(const char * const pathToCheck)
 bool os_File_Exists(const char * const filetoCheck)
 {
     DWORD attrib = INVALID_FILE_ATTRIBUTES;
-#if defined (UNICODE)
-    //determine what the length of the new string will be
-    size_t fileCheckLength = mbstowcs(NULL, filetoCheck, strlen(filetoCheck) + 1);
-    //allocate memory
-    LPWSTR localFileToCheckBuf = (LPWSTR)calloc(fileCheckLength + 2, sizeof(WCHAR));
-    LPCWSTR localFileToCheck = &localFileToCheckBuf[0];
-    //convert incoming string to work
-    fileCheckLength = mbstowcs(localFileToCheckBuf, filetoCheck, strlen(filetoCheck) + 1);
-#else
-    LPCSTR localFileToCheck = (LPCSTR)filetoCheck;
-#endif
+    size_t fileCheckLength = (strlen(filetoCheck) + 1) * sizeof(TCHAR);
+    TCHAR *localFileToCheckBuf = (TCHAR*)calloc(fileCheckLength, sizeof(TCHAR));
+    if (!localFileToCheckBuf)
+    {
+        return false;
+    }
+    CONST TCHAR *localFileToCheck = &localFileToCheckBuf[0];
+    _stprintf_s(localFileToCheckBuf, fileCheckLength, TEXT("%hs"), filetoCheck);
 
     attrib = GetFileAttributes(localFileToCheck);
 
-#if defined (UNICODE)
     safe_Free(localFileToCheckBuf);
     localFileToCheck = NULL;
-#endif
 
     if (attrib == INVALID_FILE_ATTRIBUTES)
     {
@@ -138,8 +130,15 @@ static uint16_t get_Console_Default_Color()
 
 void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
 {
+    static bool defaultsSet = false;
     HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
     WORD theColor = 0;
+    if (!defaultsSet)
+    {
+        //First time we are setting colors backup the default settings so they can be restored properly later.
+        get_Console_Default_Color();
+        defaultsSet = true;
+    }
     if (foregroundBackground)//change foreground color
     {
         switch (consoleColor)
@@ -522,17 +521,10 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
     versionNumber->osVersioningIdentifier = OS_WINDOWS;
     //start getting the Windows version using the verifyVersionInfo call. I'm doing it this way since the "version helpers" are essentially doing the same thing but are not available to minGW
     
-#if defined (UNICODE)
-    static const wchar_t kernel32DLL[] = L"\\kernel32.dll";
-    LPWSTR systemPathBuf = (LPWSTR)calloc(OPENSEA_PATH_MAX, sizeof(WCHAR));
-    LPCWSTR systemPath = &systemPathBuf[0];
-    LPCWSTR subblock = L"\\";
-#else
-    static const char kernel32DLL[] = "\\kernel32.dll";
-    LPSTR *systemPathBuf = (LPSTR)calloc(OPENSEA_PATH_MAX, sizeof(CHAR));
-    LPCSTR systemPath = &systemPathBuf[0];
-    LPCSTR subblock = "\\";
-#endif
+    static CONST TCHAR kernel32DLL[] = TEXT("\\kernel32.dll");
+    TCHAR *systemPathBuf = (TCHAR*)calloc(OPENSEA_PATH_MAX, sizeof(TCHAR));
+    CONST TCHAR *systemPath = &systemPathBuf[0];
+    CONST TCHAR *subblock = TEXT(SYSTEM_PATH_SEPARATOR_STR);
 
     if(!systemPath)
     {
@@ -796,4 +788,27 @@ void print_Windows_Error_To_Screen(unsigned int windowsError)
         NULL, windowsError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&windowsErrorString, 0, NULL);
     printf("%u - %s\n", windowsError, windowsErrorString);
     LocalFree(windowsErrorString);
+}
+
+bool is_Running_Elevated()
+{
+    bool isElevated = false;
+    HANDLE currentProcess = NULL;
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &currentProcess))
+    {
+        TOKEN_ELEVATION elevation;
+        DWORD returnedSize = sizeof(TOKEN_ELEVATION);
+        if (GetTokenInformation(currentProcess, TokenElevation, &elevation, sizeof(elevation), &returnedSize))
+        {
+            if (elevation.TokenIsElevated)
+            {
+                isElevated = true;
+            }
+        }
+    }
+    if (currentProcess)
+    {
+        CloseHandle(currentProcess);
+    }
+    return isElevated;
 }

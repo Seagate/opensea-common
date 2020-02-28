@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012 - 2019 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012 - 2020 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,6 +35,18 @@ extern "C"
     #include <stdlib.h>
     #include <inttypes.h>
     #include <errno.h> //for printing std errors to the screen...more useful for 'nix OSs, but useful everywhere since it is at least standard functions
+
+    #if !defined(UINTPTR_MAX)
+    //need uintptr_t type for NVMe capabilities to prevent warnings/errors
+    //TODO: if C11, _Static_assert can be used to check against sizeof(void*) to make sure this is defined in a way that should work.
+        #if defined (_WIN64) || defined (_M_IA64) || defined (_M_ALPHA) || defined (_M_X64) || defined (_M_AMD64) || defined (__alpha__) || defined (__amd64__) || defined (__x86_64__) || defined (__aarch64__) || defined (__ia64__) || defined (__IA64__) || defined (__powerpc64__) || defined (__PPC64__) || defined (__ppc64__) || defined (_ARCH_PPC64)//64bit
+            typedef uint64_t uintptr_t;
+            #define UINTPTR_MAX UINT64_MAX
+        #else //assuming 32bit
+            typedef uint32_t uintptr_t;
+            #define UINTPTR_MAX UINT32_MAX
+        #endif
+    #endif
         
     #if defined (OPENSEA_COMMON_BOOLS) //THIS FLAG IS NOT ENABLED BY DEFAULT
     //I'm doing this because 
@@ -53,7 +65,7 @@ extern "C"
     #include "common_platform.h"
 
     //Microsoft doesn't have snprintf...it has _snprintf...at least until VS2015 according to my web search - TJE
-    #if _MFC_VER <= 1800 && defined _WIN32
+    #if _MSC_VER <= 1800 && defined _WIN32
     #define snprintf _snprintf
     #endif
 
@@ -102,6 +114,8 @@ extern "C"
     // Bit access macros
 
     #define M_BitN(n)   ((uint64_t)1 << n)
+
+#if !defined(UEFI_C_SOURCE)//defined in EDK2 MdePkg and causes conflicts, so checking this define for now to avoid conflicts
 
     #define BIT0      (M_BitN((uint64_t)0))
     #define BIT1      (M_BitN((uint64_t)1))
@@ -168,12 +182,16 @@ extern "C"
     #define BIT62     (M_BitN((uint64_t)62))
     #define BIT63     (M_BitN((uint64_t)63))
 
-    //set a bit to 1 within a value
-    #define M_SET_BIT(val, bitNum) (val | M_BitN(bitNum))
-    //clear a bit to 0 within a value
-    #define M_CLEAR_BIT(val, bitNum) (val & (~M_BitN(bitNum)))
+#endif //UEFI_C_SOURCE
 
-    #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~0U << ((msb) - (lsb) + 1)))
+    //set a bit to 1 within a value
+    #define M_SET_BIT(val, bitNum) (val |= M_BitN(bitNum))
+    //clear a bit to 0 within a value
+    #define M_CLEAR_BIT(val, bitNum) (val &= (~M_BitN(bitNum)))
+
+    #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~UINT64_C(0) << ((msb) - (lsb) + 1)))
+    // get bit range for signed values
+    #define M_IGETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~INT64_C(0) << ((msb) - (lsb) + 1)))
 
     #define M_2sCOMPLEMENT(val) (~(val) + 1)
 
@@ -203,6 +221,9 @@ extern "C"
         OS_COMMAND_NOT_AVAILABLE = 17, //This is returned when the OS does not have a way to issue the requested command. (EX: Trying to send an NVMe command without Win10, or trying a 32byte SCSI command pre-Win8)
         OS_COMMAND_BLOCKED      = 18, //This is returned when the OS is blocking the command from being issued (EX: TCG - linux, lib ATA......or Sanitize in Windos 8+)
         COMMAND_INTERRUPTED     = 19, //Nidhi - Added for SCT commands, if interrupted by some other SCT command.
+		VALIDATION_FAILURE       =20, //For UDS/SM2 validation check
+        STRIP_HDR_FOOTER_FAILURE = 21, //For UDS
+        PARSE_FAILURE             =22,
         UNKNOWN
     }eReturnValues;
 
@@ -352,7 +373,20 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void byte_Swap_16(uint16_t *wordToSwap);
-
+    //-----------------------------------------------------------------------------
+    //
+    //  byte_Swap_Int16()
+    //
+    //! \brief   Description:  swap the bytes in a singned word 
+    //
+    //  Entry:
+    //!   \param[out] signedWordToSwap = a pointer to the signed word containing the data in which to have the bytes swapped
+    //!
+    //  Exit:
+    //!   \return VOID
+    //
+    //-----------------------------------------------------------------------------
+    void byte_Swap_Int16(int16_t *signedWordToSwap);
     //-----------------------------------------------------------------------------
     //
     //  big_To_Little_Endian_16()
@@ -1223,7 +1257,7 @@ extern "C"
     //
     //  Entry:
     //!   \param[in] alignedPtr = pointer to a memory block previously allocated with malloc_aligned, calloc_aligned, or realloc_aligned. If NULL, this is the same as malloc_aligned
-    //!   \param[in] originalSize = size in bytes of the alignedPtr being passed in. This is used so that previous data can be preserved.
+    //!   \param[in] originalSize = size in bytes of the alignedPtr being passed in. This is used so that previous data can be preserved. Can be set to 0 if there is no care about the original data.
     //!   \param[in] size = size of memory block in bytes to allocate
     //!   \param[in] alignment = alignment value required. This MUST be a power of 2.
     //!
@@ -1330,10 +1364,37 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void *realloc_page_aligned(void *alignedPtr, size_t originalSize, size_t size);
-    //checks if the provided pointer memory is all cleared to zero or not.
+
+    //-----------------------------------------------------------------------------
+    //
+    //  is_Empty(void *ptrData, size_t lengthBytes)
+    //
+    //! \brief   Description:  Checks if the provided pointer is cleared to zeros
+    //
+    //  Entry:
+    //!   \param[in] ptrData = pointer to a memory block to check if zeros
+    //!   \param[in] lengthBytes = size in bytes of the ptr to check
+    //!
+    //  Exit:
+    //!   \return true = memory is filled with zeros. false = memory has nonzero values in it.
+    //
+    //-----------------------------------------------------------------------------
     bool is_Empty(void *ptrData, size_t lengthBytes);
 
-    //This function checks if the provided character is between 0 and 7F. A.K.A. part of the standard ascii character set.
+    //
+    //-----------------------------------------------------------------------------
+    //
+    //  int is_ASCII(int c)
+    //
+    //! \brief   Description:  This function checks if the provided character is between 0 and 7F. A.K.A. part of the standard ascii character set.
+    //
+    //  Entry:
+    //!   \param[in] c = character to check if is an ASCII character
+    //!
+    //  Exit:
+    //!   \return 0 = not an ASCII character. 1 = is an ASCII character
+    //
+    //-----------------------------------------------------------------------------
     int is_ASCII(int c);
 
 #if defined (__cplusplus)
