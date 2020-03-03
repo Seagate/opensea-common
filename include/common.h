@@ -224,6 +224,7 @@ extern "C"
 		VALIDATION_FAILURE       =20, //For UDS/SM2 validation check
         STRIP_HDR_FOOTER_FAILURE = 21, //For UDS
         PARSE_FAILURE             =22,
+        INVALID_LENGTH           = 23,  // Binary file has a invalid length or the parameters for the length don't match the size of the fiile
         UNKNOWN
     }eReturnValues;
 
