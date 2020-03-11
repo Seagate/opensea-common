@@ -633,7 +633,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             if (isdigit(unixUname.version[0]))
             {
                 //set OS name as Solaris x.x
-                if (EOF == sscanf(unixUname.release,"%"SCNu16".%"SCNu16".%"SCNu16"%*s",&versionNumber->versionType.solarisVersion.solarisMajorVersion, &versionNumber->versionType.solarisVersion.solarisMinorVersion, &versionNumber->versionType.solarisVersion.solarisRevision))
+                if (EOF == sscanf(unixUname.version,"%"SCNu16".%"SCNu16".%"SCNu16"%*s",&versionNumber->versionType.solarisVersion.solarisMajorVersion, &versionNumber->versionType.solarisVersion.solarisMinorVersion, &versionNumber->versionType.solarisVersion.solarisRevision))
                 {
                     //do nothing for now - TJE
                 }
