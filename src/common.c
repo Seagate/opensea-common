@@ -55,6 +55,24 @@ void delay_Seconds(uint32_t seconds)
 //      NOTE: In UEFI, using the EDK2, malloc will provide an 8-byte alignment, so it may be possible to do some aligned allocations using it without extra work. but we can revist that later.
 void *malloc_aligned(size_t size, size_t alignment)
 {
+    /**
+     * Lets not do anything for VMWare
+     */
+    #if defined (VMK_CROSS_COMP)
+        #ifdef _DEBUG
+            printf("<--%s size : %d  alignment : %d\n",__FUNCTION__, size, alignment);
+        #endif
+        void *temp = NULL;
+        //temp = malloc(size);
+
+        if (0 != posix_memalign( &temp, alignment, size))
+        {
+            temp = NULL;//make sure the system we are running didn't change this.
+        }
+
+        return temp;
+    #else
+
     #if !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
         //C11 added an aligned alloc function we can use
         //One additional requirement of this function is that the size must be a multiple of alignment, so we will check and round up the size to make this easy.
@@ -110,10 +128,15 @@ void *malloc_aligned(size_t size, size_t alignment)
         //}
         return temp;
     #endif
+
+    #endif
 }
 
 void free_aligned(void* ptr)
 {
+    #if defined (VMK_CROSS_COMP)
+    free(ptr);
+    #else
     #if !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
         //just call free
         free(ptr);
@@ -141,6 +164,7 @@ void free_aligned(void* ptr)
             free(tempPtr);
         }
     #endif
+    #endif
 }
 
 void *calloc_aligned(size_t num, size_t size, size_t alignment)
@@ -151,6 +175,7 @@ void *calloc_aligned(size_t num, size_t size, size_t alignment)
     if (numSize)
     {
         zeroedMem = malloc_aligned(numSize, alignment);
+        
         if (zeroedMem)
         {
             memset(zeroedMem, 0, numSize);
