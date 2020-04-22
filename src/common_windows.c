@@ -504,6 +504,46 @@ bool is_Windows_Server_OS()
     }
     return isWindowsServer;
 }
+//TODO: If this ever fasly detects PE, it may be better to require checking for multiple keys and making sure they are all found.
+bool is_Windows_PE()
+{
+    bool isWindowsPE = false;
+    //To figure out if running in PE requires checking the registry. There is not another known way to look for this.
+    //All other functions to read or check versions will return build numbers that match the equivalent non-PE version of windows, which can still be useful for determining supported APIs
+    //We will be looking for one of these keys:
+    /*
+    -HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WinPE
+    -HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\MiniNT
+    -HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\MiniNT
+    //NOTE: 3 below are not used today. Only these top two are checked at this time
+    -HKEY_LOCAL_MACHINE\system\currentcontrolset\control\PEBootType (PE2)
+    -HKEY_LOCAL_MACHINE\system\currentcontrolset\control\PEFirmwareType (PE4)
+    -HKEY_LOCAL_MACHINE\System\Setup\SystemSetupInProgress
+    */
+    HKEY keyHandle;
+    if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WinPE"), 0, KEY_READ, &keyHandle))
+    {
+        printf("Found HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WinPE\n");
+        isWindowsPE = true;
+        RegCloseKey(keyHandle);
+        keyHandle = 0;
+    }
+    if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\CurrentControlSet\\Control\\MiniNT"), 0, KEY_READ, &keyHandle))
+    {
+        printf("Found HKLM\\SYSTEM\\CurrentControlSet\\Control\\MiniNT\n");
+        isWindowsPE = true;
+        RegCloseKey(keyHandle);
+        keyHandle = 0;
+    }
+    if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\ControlSet001\\Control\\MiniNT"), 0, KEY_READ, &keyHandle))
+    {
+        printf("Found HKLM\\SYSTEM\\ControlSet001\\Control\\MiniNT\n");
+        isWindowsPE = true;
+        RegCloseKey(keyHandle);
+        keyHandle = 0;
+    }
+    return isWindowsPE;
+}
 
 //possible MSDN api calls: 
 //https://msdn.microsoft.com/en-us/library/windows/desktop/aa370624(v=vs.85).aspx
@@ -517,6 +557,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
 {
     int ret = SUCCESS;
     bool isWindowsServer = is_Windows_Server_OS();
+    bool isWindowsPE = is_Windows_PE();
     memset(versionNumber, 0, sizeof(OSVersionNumber));
     versionNumber->osVersioningIdentifier = OS_WINDOWS;
     //start getting the Windows version using the verifyVersionInfo call. I'm doing it this way since the "version helpers" are essentially doing the same thing but are not available to minGW
@@ -709,6 +750,10 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             default:
                 sprintf(&operatingSystemName[0], "Unknown Windows OS");
                 break;
+            }
+            if (isWindowsPE)
+            {
+                strcat(operatingSystemName, " (PE)");
             }
         }
     }

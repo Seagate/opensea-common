@@ -112,6 +112,8 @@ extern "C"
     //-----------------------------------------------------------------------------
     bool is_Windows_10_Or_Higher();
 
+    bool is_Windows_PE();
+
     //-----------------------------------------------------------------------------
     //
     //  print_Windows_Error_To_Screen(unsigned int windowsError)
