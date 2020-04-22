@@ -112,6 +112,18 @@ extern "C"
     //-----------------------------------------------------------------------------
     bool is_Windows_10_Or_Higher();
 
+    //-----------------------------------------------------------------------------
+    //
+    //  is_Windows_PE()
+    //
+    //! \brief   Description:  Checks if the application is currently running in the Windows Pre-Installation Environment (PE).
+    //
+    //  Entry:
+    //!
+    //  Exit:
+    //!   \return true = running in PE, false = running in standard windows
+    //
+    //-----------------------------------------------------------------------------
     bool is_Windows_PE();
 
     //-----------------------------------------------------------------------------
