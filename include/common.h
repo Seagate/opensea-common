@@ -73,11 +73,21 @@ extern "C"
     #define M_DoubleWord0(l) ( (uint32_t) ( ( (l) & 0x00000000FFFFFFFFULL ) >>  0 ) )
     #define M_DoubleWord1(l) ( (uint32_t) ( ( (l) & 0xFFFFFFFF00000000ULL ) >> 32 ) )
 
+    //get a specific double word
+    #define M_DoubleWordInt0(l) ( (int32_t) ( ( (l) & 0x00000000FFFFFFFFULL ) >>  0 ) )
+    #define M_DoubleWordInt1(l) ( (int32_t) ( ( (l) & 0xFFFFFFFF00000000ULL ) >> 32 ) )
+
     //get a specific word
     #define M_Word0(l) ( (uint16_t) ( ( (l) & 0x000000000000FFFFULL ) >>  0 ) )
     #define M_Word1(l) ( (uint16_t) ( ( (l) & 0x00000000FFFF0000ULL ) >> 16 ) )
     #define M_Word2(l) ( (uint16_t) ( ( (l) & 0x0000FFFF00000000ULL ) >> 32 ) )
     #define M_Word3(l) ( (uint16_t) ( ( (l) & 0xFFFF000000000000ULL ) >> 48 ) )
+
+    //get a specific word as int's
+    #define M_WordInt0(l) ( (int16_t) ( ( (l) & 0x000000000000FFFFULL ) >>  0 ) )
+    #define M_WordInt1(l) ( (int16_t) ( ( (l) & 0x00000000FFFF0000ULL ) >> 16 ) )
+    #define M_WordInt2(l) ( (int16_t) ( ( (l) & 0x0000FFFF00000000ULL ) >> 32 ) )
+    #define M_WordInt3(l) ( (int16_t) ( ( (l) & 0xFFFF000000000000ULL ) >> 48 ) )
 
     //need to validate that this macro sets the correct bits on 32bit and 64bit
     #define BITSPERBYTE UINT8_C(8)
