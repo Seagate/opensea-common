@@ -31,6 +31,8 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <dirent.h>//for scan dir in linux to get os name. We can move ifdef this if it doesn't work for other OS's
+#include <pwd.h>
+#include <grp.h>
 
 //freeBSD doesn't have the 64 versions of these functions...so I'm defining things this way to make it work. - TJE
 #if defined(__FreeBSD__)
@@ -899,3 +901,46 @@ bool is_Running_Elevated()
     }
     return isElevated;
 }
+
+//If this is successful, this function allocates enough memory to hold the full user's name for you.
+//NOTE: This is static since it will probably only be used here...we may want to  enable this for use elsewhere if we want to print fancy warnings with the user's name
+static bool get_User_Name_From_ID(uid_t userID, char **userName)
+{
+    bool success = false;
+    if(userName)
+    {
+        struct passwd *userInfo = getpwuid(userID);
+        if(userInfo)
+        {
+            size_t userNameLength = strlen(userInfo->pw_name) + 1;
+            if(userNameLength > 1)
+            {
+                *userName = (char*)calloc(userNameLength, sizeof(char));
+                if(userName)
+                {
+                    strcpy(*userName, userInfo->pw_name);
+                    success = true;
+                }
+            }
+        }
+    }
+    return success;
+}
+//Gets the user name for who is running the process
+int get_Current_User_Name(char **userName)
+{
+    int ret = SUCCESS;
+    if (userName)
+    {
+        if (!get_User_Name_From_ID(getuid(), userName))
+        {
+            ret = FAILURE;
+        }
+    }
+    else
+    {
+        ret = BAD_PARAMETER;
+    }
+    return ret;
+}
+

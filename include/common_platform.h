@@ -553,6 +553,20 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     bool is_Running_Elevated();
+    
+    //-----------------------------------------------------------------------------
+    //
+    //  get_Current_User_Name
+    //
+    //! \brief   Description:  This function will look up the current user name using getuid(). This function allocates memory for the user name, so make sure to free it when it is done.
+    //
+    //  Entry:
+    //!
+    //  Exit:
+    //!   \return SUCCESS = no errors, userName allocated and ready to be user, BAD_PARAMTER = bas pointer, FAILURE = could not determine user name.
+    //
+    //-----------------------------------------------------------------------------
+    int get_Current_User_Name(char **userName);
 
 #if defined (__cplusplus)
 } //extern "C"
