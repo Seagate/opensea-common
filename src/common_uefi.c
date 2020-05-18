@@ -675,3 +675,26 @@ bool is_Running_Elevated()
 {
     return true;//In UEFI, there is no concept of admin or sudo. The getuid function always returns zero, and the geteuid function isn't present at all currently, so it's safe to just return true here.
 }
+
+int get_Current_User_Name(char **userName)
+{
+    int ret = SUCCESS;
+    if (userName)
+    {
+        //while unix functions are there, they are all stubs, so we're just going to return "efi" as the username.
+        *userName = (char*)calloc(4, sizeof(char));
+        if (*userName)
+        {
+            sprintf(userName, "efi");
+        }
+        else
+        {
+            ret = FAILURE;
+        }
+    }
+    else
+    {
+        ret = BAD_PARAMETER;
+    }
+    return ret;
+}
