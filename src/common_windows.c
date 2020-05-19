@@ -523,21 +523,27 @@ bool is_Windows_PE()
     HKEY keyHandle;
     if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WinPE"), 0, KEY_READ, &keyHandle))
     {
+#if defined (_DEBUG)
         printf("Found HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WinPE\n");
+#endif
         isWindowsPE = true;
         RegCloseKey(keyHandle);
         keyHandle = 0;
     }
     if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\CurrentControlSet\\Control\\MiniNT"), 0, KEY_READ, &keyHandle))
     {
+#if defined (_DEBUG)
         printf("Found HKLM\\SYSTEM\\CurrentControlSet\\Control\\MiniNT\n");
+#endif
         isWindowsPE = true;
         RegCloseKey(keyHandle);
         keyHandle = 0;
     }
     if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\ControlSet001\\Control\\MiniNT"), 0, KEY_READ, &keyHandle))
     {
+#if defined (_DEBUG)
         printf("Found HKLM\\SYSTEM\\ControlSet001\\Control\\MiniNT\n");
+#endif
         isWindowsPE = true;
         RegCloseKey(keyHandle);
         keyHandle = 0;
