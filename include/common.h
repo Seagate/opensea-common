@@ -103,6 +103,16 @@ extern "C"
     #define M_Byte6(l) ( (uint8_t) ( ( (l) & 0x00FF000000000000ULL ) >> 48 ) )
     #define M_Byte7(l) ( (uint8_t) ( ( (l) & 0xFF00000000000000ULL ) >> 56 ) )
 
+    //Get a specific byte int
+    #define M_ByteInt0(l) ( (uint8_t) ( ( (l) & 0x00000000000000FFULL ) >>  0 ) )
+    #define M_ByteInt1(l) ( (uint8_t) ( ( (l) & 0x000000000000FF00ULL ) >>  8 ) )
+    #define M_ByteInt2(l) ( (uint8_t) ( ( (l) & 0x0000000000FF0000ULL ) >> 16 ) )
+    #define M_ByteInt3(l) ( (uint8_t) ( ( (l) & 0x00000000FF000000ULL ) >> 24 ) )
+    #define M_ByteInt4(l) ( (uint8_t) ( ( (l) & 0x000000FF00000000ULL ) >> 32 ) )
+    #define M_ByteInt5(l) ( (uint8_t) ( ( (l) & 0x0000FF0000000000ULL ) >> 40 ) )
+    #define M_ByteInt6(l) ( (uint8_t) ( ( (l) & 0x00FF000000000000ULL ) >> 48 ) )
+    #define M_ByteInt7(l) ( (uint8_t) ( ( (l) & 0xFF00000000000000ULL ) >> 56 ) )
+
     //get a specific nibble
     #define M_Nibble0(l)  ( (uint8_t) ( ( (l) & 0x000000000000000FULL ) >>  0 ) )
     #define M_Nibble1(l)  ( (uint8_t) ( ( (l) & 0x00000000000000F0ULL ) >>  4 ) )
