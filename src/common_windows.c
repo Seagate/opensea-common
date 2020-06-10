@@ -18,7 +18,7 @@
 #include <tchar.h>
 #include <strsafe.h> //needed in the code written to get the windows version since I'm using a Microsoft provided string concatenation call-tje
 #include <io.h> //needed for getting the size of a file in windows
-
+#include <lmcons.h> //for UNLEN
 
 bool os_Directory_Exists(const char * const pathToCheck)
 {
@@ -862,4 +862,63 @@ bool is_Running_Elevated()
         CloseHandle(currentProcess);
     }
     return isElevated;
+}
+
+//Gets the user name for who is running the process
+//https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getusernamea?redirectedfrom=MSDN
+//NOTE: Not using Ex version at this time to avoid linking yet another library. This can be added if necessary, or this doesn't do quite what we want it to do. -TJE
+int get_Current_User_Name(char **userName)
+{
+    int ret = SUCCESS;
+    if (userName)
+    {
+        DWORD localNameLength = UNLEN + 1;//start with this for input
+        TCHAR localName[UNLEN + 1] = { 0 };
+        if (TRUE == GetUserName(localName, &localNameLength))
+        {
+            const char *isAdmin = " (admin)";//This will be concatenated to the string if running as administrator since we only get the user's name in Windows.
+            size_t usernameLength = _tcslen(localName) + strlen(isAdmin) + 1;
+            *userName = (char*)calloc(usernameLength, sizeof(char));
+            if (*userName)
+            {
+#if defined UNICODE
+                size_t charsConverted = 0;
+                //convert output to a char string
+                if (wcstombs_s(&charsConverted, *userName, usernameLength, localName, usernameLength))
+                {
+                    safe_Free(*userName);
+                    ret = FAILURE;
+                }
+#else
+                //just copy it over after allocating
+                if (strcpy_s(*userName, usernameLength, localName))
+                {
+                    safe_Free(*userName);
+                    return FAILURE;
+                }
+#endif
+                if (is_Running_Elevated())
+                {
+                    if (strcat_s(*userName, usernameLength, isAdmin))
+                    {
+                        safe_Free(*userName);
+                        return FAILURE;
+                    }
+                }
+            }
+            else
+            {
+                ret = FAILURE;
+            }
+        }
+        else
+        {
+            ret = FAILURE;
+        }
+    }
+    else
+    {
+        ret = BAD_PARAMETER;
+    }
+    return ret;
 }
