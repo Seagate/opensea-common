@@ -438,7 +438,20 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void byte_Swap_32(uint32_t *doubleWordToSwap);
-
+    //-----------------------------------------------------------------------------
+    //
+    //  byte_Swap_Int32()
+    //
+    //! \brief   Description:  swap the bytes in a Signed double word - useful for converting between endianness
+    //
+    //  Entry:
+    //!   \param[out] signedDWord = a pointer to the Signed double word containing the data in which to have the bytes swapped
+    //!
+    //  Exit:
+    //!   \return VOID
+    //
+    //-----------------------------------------------------------------------------
+    void byte_Swap_Int32(int32_t *signedDWord);
     //-----------------------------------------------------------------------------
     //
     //  big_To_Little_Endian_32()

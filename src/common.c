@@ -301,6 +301,11 @@ void byte_Swap_32(uint32_t *doubleWordToSwap)
     *doubleWordToSwap = ((*doubleWordToSwap & 0x00FF00FF) << 8) | ((*doubleWordToSwap & 0xFF00FF00) >> 8);
 }
 
+void byte_Swap_Int32(int32_t *signedDWord)
+{
+    *signedDWord = ((*signedDWord & 0x0000FFFF) << 16) | ((*signedDWord & 0xFFFF0000) >> 16);
+    *signedDWord = ((*signedDWord & 0x00FF00FF) << 8) | ((*signedDWord & 0xFF00FF00) >> 8);
+}
 void big_To_Little_Endian_32(uint32_t *doubleWordToSwap)
 {
     if (get_Compiled_Endianness() == OPENSEA_LITTLE_ENDIAN)
