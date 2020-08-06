@@ -834,10 +834,10 @@ double get_Seconds(seatimer_t timer)
 
 void print_Windows_Error_To_Screen(unsigned int windowsError)
 {
-    LPSTR windowsErrorString = NULL;
-    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL, windowsError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&windowsErrorString, 0, NULL);
-    printf("%u - %s\n", windowsError, windowsErrorString);
+    TCHAR *windowsErrorString = NULL;
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL, windowsError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), windowsErrorString, 0, NULL);
+    _tprintf_s(TEXT("%u - %s\n"), windowsError, windowsErrorString);
     LocalFree(windowsErrorString);
 }
 
