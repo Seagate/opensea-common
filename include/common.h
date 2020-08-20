@@ -1432,6 +1432,22 @@ extern "C"
     //-----------------------------------------------------------------------------
     int is_ASCII(int c);
 
+    //-----------------------------------------------------------------------------
+    //
+    //  void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue))
+    //
+    //! \brief   Description:  This function converts 4 Byte Representation of a Floating Point Number to Decimal Format
+    //
+    //  Entry:
+    //!   \param[in] floatValue = 4 byte format value
+    //!   \param[out] decimalValue = corresponding decimal format value
+    //!
+    //  Exit:
+    //!   \return void
+    //
+    //-----------------------------------------------------------------------------
+    void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue);
+
 #if defined (__cplusplus)
 } //extern "C"
 #endif

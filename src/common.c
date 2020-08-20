@@ -1612,3 +1612,19 @@ int is_ASCII(int c)
         return 1;//true
     }
 }
+
+void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue)
+{
+    int32_t  exponent = M_GETBITRANGE(floatValue, 30, 23) - 127;
+    double sign = pow(-1.0, (double)M_GETBITRANGE(floatValue, 31, 31));
+
+    int8_t power = -23;
+    double mantisa = 1.0;
+    for (uint8_t i = 0; i < 23; i++)
+    {
+        mantisa += (double)M_GETBITRANGE(floatValue, i, i) * (double)pow(2.0, power);
+        power++;
+    }
+
+    *decimalValue = sign * (float)pow(2.0, exponent) * mantisa;
+}
