@@ -246,6 +246,7 @@ extern "C"
         PARSE_FAILURE             =22,
         INVALID_LENGTH           = 23,  // Binary file has a invalid length or the parameters for the length don't match the size of the fiile
         ERROR_WRITING_FILE       = 24, //LookTan added for fwrite check on May20'20
+		TIMEOUT					 = 25, //Pranali added for indicating operation timeout for SeaQueue
         UNKNOWN
     }eReturnValues;
 
