@@ -261,7 +261,7 @@ extern "C"
             
         #endif
     #elif defined __has_c_attribute
-        #if defined __has_c_attribute(fallthrough)
+        #if __has_c_attribute(fallthrough)
             //C2x style
             #define M_FALLTHROUGH [[fallthrough]];
         #elif defined __has_attribute
@@ -355,13 +355,13 @@ extern "C"
             
         #endif
     #elif defined __has_c_attribute //C2x
-        #if defined __has_c_attribute(maybe_unused)
+        #if __has_c_attribute(maybe_unused)
             //C2x style
-            #define M_ATTR_UNUSED [[maybe_unused]];
+            #define M_ATTR_UNUSED [[maybe_unused]]
         #elif defined __has_attribute
             //GCC type compiler check
-            #if __has_attribute(maybe_unused)
-                #define M_ATTR_UNUSED __attribute__ ((unused));
+            #if __has_attribute(unused)
+                #define M_ATTR_UNUSED __attribute__ ((unused))
             #else
                 #define M_ATTR_UNUSED /*UNUSED*/ \
                 
