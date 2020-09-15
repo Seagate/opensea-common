@@ -24,7 +24,7 @@ SRC_DIR=../../src/
 INC_DIR=-I../../include
 CC ?= gcc
 AR ?= ar
-CFLAGS ?= -Wall -c -fPIC -I. -std=gnu99
+CFLAGS ?= -Wall -Wextra -c -fPIC -I. -std=gnu99
 CFLAGS += -c -fPIC -I. -std=gnu99
 LFLAGS ?= -Wall
 LIB_SRC_FILES = \
