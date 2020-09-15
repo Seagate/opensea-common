@@ -219,6 +219,171 @@ extern "C"
     #define RESERVED 0
     #define OBSOLETE 0
 
+    //Defining the M_FALLTHROUGH macro to make it easy to correctly specify when to fallthrough on switch-case statements without extra warnings.
+    //This is defined differently depending on c/c++ and which version of the standard is currently being supported by the compiler. In addition
+    //some compilers support this and others do not, so this is a little complicated to define in a way that works with everything, but it is
+    //attempted below...update this as errors are found. -TJE
+    #if defined (__cplusplus)
+        //check if the standardized way to check for support is available...
+        #if defined __has_cpp_attribute
+            #if __has_cpp_attribute(fallthrough)
+                //This is the standardized way intriduced in C++17
+                #define M_FALLTHROUGH [[fallthrough]];
+            /* gnu::fallback check is not included as this breaks in other compilers that support some gcc-isms, and it's easier to comment this out for now than setup something complicated to support it. -TJE
+            #elif __has_cpp_attribute(gnu::fallthrough)
+                //This is the GNU method for C++11 and C++14
+                #define M_FALLTHROUGH [[gnu::fallthrough]];
+            */
+            #elif defined __has_attribute
+                //GCC type compiler check
+                #if __has_attribute(fallthrough)
+                    #define M_FALLTHROUGH __attribute__ ((fallthrough));
+                #else
+                    #define M_FALLTHROUGH /*FALLTHRU*/ \
+                    
+                #endif
+            #else
+                //Insert a comment instead since other methods were not detected.
+                #define M_FALLTHROUGH /*FALLTHRU*/ \
+                
+            #endif
+        #elif defined __has_attribute
+            //GCC type compiler check
+            #if __has_attribute(fallthrough)
+                #define M_FALLTHROUGH __attribute__ ((fallthrough));
+            #else
+                #define M_FALLTHROUGH /*FALLTHRU*/ \
+                
+            #endif
+        #else
+            //Insert a comment instead since other methods were not detected.
+            #define M_FALLTHROUGH /*FALLTHRU*/ \
+            
+        #endif
+    #elif defined __has_c_attribute
+        #if defined __has_c_attribute(fallthrough)
+            //C2x style
+            #define M_FALLTHROUGH [[fallthrough]];
+        #elif defined __has_attribute
+            //GCC type compiler check
+            #if __has_attribute(fallthrough)
+                #define M_FALLTHROUGH __attribute__ ((fallthrough));
+            #else
+                #define M_FALLTHROUGH /*FALLTHRU*/ \
+                
+            #endif
+        #else
+            //Insert a comment instead since other methods were not detected.
+            #define M_FALLTHROUGH /*FALLTHRU*/ \
+            
+        #endif
+    #else //not C++ and doesn't have __has_c_attribute so do something for older C code
+        #if defined __has_attribute
+            //GCC type compiler check
+            #if __has_attribute(fallthrough)
+                #define M_FALLTHROUGH __attribute__ ((fallthrough));
+            #else
+                #define M_FALLTHROUGH /*FALLTHRU*/ \
+                
+            #endif
+        #else
+            //Insert a comment instead since other methods were not detected.
+            #define M_FALLTHROUGH /*FALLTHRU*/ \
+            
+        #endif
+    #endif //Checking C/C++
+    
+    //Now defining a set of macros for unused variables, unused functions, unused parameters. This can be used to deal with specific cases where these warnings need to be
+    //turned off in compiling code. This may be because these things are only used at certain times, or under certain OSs, or other strange flags.
+    //Ideally, these macros aren't used at all, but they are available to help cleanup code warnings that may show up sometimes.
+    //Some of these may be unique to C/C++ standards or to certain compilers.
+    //HOW TO USE Each:
+    //M_USE_UNUSED(var): This is mean to be used within a function:
+    // void Func(int unusedVar)
+    // ...
+    //    M_USE_UNUSED(unusedVar);
+    // ...
+    //    return;
+    //
+    //M_ATTR_UNUSED: This is meant to be used in front of unused variables withing functions, unused functions, and unused parameters in functions
+    // void Func(int someVar)
+    //    M_ATTR_UNUSED int thisIsntUsed = 0;
+    //
+    // void Func2 (M_ATTR_UNUSED int unusedVar)
+    //
+    // M_ATTR_UNUSED void Func3(int param)
+    //
+    //NOTE: Please adjust these as necessary if they aren't quite working. Hopefully, not too many are compiler unique...-TJE
+    //Define M_USE_UNUSED firstt since it is likely to be common on various compilers...(adjust as needed)
+    #define M_USE_UNUSED(var) (void)(var)
+    //Define all others below since they are used differently
+    #if defined (__cplusplus)
+        //check if the standardized way to check for support is available...
+        //NOTE: Checking for >= C++11 for __has_cpp_attribute due to issues where this shows up even when the GNU C++ compiler 
+        //is set to 98 or 03 and thows errors for not knowing what to do. Seemed easiest to add this additional version check to get rid of this error
+        #if __cplusplus >= 201103L && defined __has_cpp_attribute
+            #if __has_cpp_attribute(maybe_unused)
+                //This is the standardized way intriduced in C++17
+                #define M_ATTR_UNUSED [[maybe_unused]]
+            #elif defined __has_attribute
+                //GCC type compiler check
+                #if __has_attribute(unused)
+                    #define M_ATTR_UNUSED __attribute__ ((unused))
+                #else
+                    #define M_ATTR_UNUSED /*UNUSED*/ \
+                    
+                #endif
+            #else
+                //Insert a comment instead since other methods were not detected.
+                #define M_ATTR_UNUSED /*UNUSED*/ \
+                
+            #endif
+        #elif defined __has_attribute
+            //GCC type compiler check
+            #if __has_attribute(unused)
+                #define M_ATTR_UNUSED __attribute__ ((unused))
+            #else
+                #define M_ATTR_UNUSED /*UNUSED*/ \
+                
+            #endif
+        #else
+            //Insert a comment instead since other methods were not detected.
+            #define M_ATTR_UNUSED /*UNUSED*/ \
+            
+        #endif
+    #elif defined __has_c_attribute //C2x
+        #if defined __has_c_attribute(maybe_unused)
+            //C2x style
+            #define M_ATTR_UNUSED [[maybe_unused]];
+        #elif defined __has_attribute
+            //GCC type compiler check
+            #if __has_attribute(maybe_unused)
+                #define M_ATTR_UNUSED __attribute__ ((unused));
+            #else
+                #define M_ATTR_UNUSED /*UNUSED*/ \
+                
+            #endif
+        #else
+            //Insert a comment instead since other methods were not detected.
+            #define M_ATTR_UNUSED /*UNUSED*/ \
+            
+        #endif
+    #else //older C
+        #if defined __has_attribute
+            //GCC type compiler check
+            #if __has_attribute(unused)
+                #define M_ATTR_UNUSED __attribute__ ((unused))
+            #else
+                #define M_ATTR_UNUSED /*UNUSED*/ \
+                
+            #endif
+        #else
+            //Insert a comment instead since other methods were not detected.
+            #define M_ATTR_UNUSED /*UNUSED*/ \
+            
+        #endif
+    #endif
+
     typedef enum _eReturnValues
     {
         SUCCESS                 = 0,
