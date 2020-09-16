@@ -278,7 +278,14 @@ extern "C"
             
         #endif
     #else //not C++ and doesn't have __has_c_attribute so do something for older C code
-        #if defined __has_attribute
+        //Weird case: Clang 3.4.2 (CentOS7) doesn't like the attribute definition below and throws tons
+        //of warnings for "declaration does not declare anything", but this is not a problem in newer versions
+        //So currently solution to prevent excessive warnings that don't make sense is to define this differently for
+        // clang 3 and earlier. This may need adjusting to specific versions of clang later, but this is what I've been able to do so far - TJE
+        #if defined (__clang__) && __clang__ <= 3
+            #define M_FALLTHROUGH /*FALLTHRU*/ \
+                
+        #elif defined __has_attribute
             //GCC type compiler check
             #if __has_attribute(fallthrough)
                 #define M_FALLTHROUGH __attribute__ ((fallthrough));
