@@ -341,7 +341,7 @@ extern "C"
                     
                 #endif
             #elif defined (_MSC_VER)
-                #define M_ATTR_UNUSED __pragma(warning(suppress:4100))
+                #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
             #else
                 //Insert a comment instead since other methods were not detected.
                 #define M_ATTR_UNUSED /*UNUSED*/ \
@@ -359,7 +359,7 @@ extern "C"
 			//GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
 			#define M_ATTR_UNUSED __attribute__ ((unused))
         #elif defined (_MSC_VER)
-            #define M_ATTR_UNUSED __pragma(warning(suppress:4100))
+            #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
         #else
             //Insert a comment instead since other methods were not detected.
             #define M_ATTR_UNUSED /*UNUSED*/ \
@@ -378,7 +378,7 @@ extern "C"
                 
             #endif
         #elif defined (_MSC_VER)
-            #define M_ATTR_UNUSED __pragma(warning(suppress:4100))
+            #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
         #else
             //Insert a comment instead since other methods were not detected.
             #define M_ATTR_UNUSED /*UNUSED*/ \
@@ -397,7 +397,7 @@ extern "C"
 			//GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
 			#define M_ATTR_UNUSED __attribute__ ((unused))
         #elif defined (_MSC_VER)
-            #define M_ATTR_UNUSED __pragma(warning(suppress:4100))
+            #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
         #else
             //Insert a comment instead since other methods were not detected.
             #define M_ATTR_UNUSED /*UNUSED*/ \
