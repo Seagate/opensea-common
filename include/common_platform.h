@@ -552,7 +552,7 @@ extern "C"
     //!   \return true = is elevated permissions, false = not running with elevated permissions
     //
     //-----------------------------------------------------------------------------
-    bool is_Running_Elevated();
+    bool is_Running_Elevated(void);
     
     //-----------------------------------------------------------------------------
     //
