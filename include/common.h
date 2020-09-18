@@ -405,6 +405,10 @@ extern "C"
         #endif
     #endif
 
+    //Macro to help make casts more clear and searchable. Can be very helpful while debugging.
+    //If using C++, use static_cast, reinterpret_cast, dynamic_cast before trying a C_CAST.
+    #define C_CAST(type, val) (type)(val)
+
     typedef enum _eReturnValues
     {
         SUCCESS                 = 0,
