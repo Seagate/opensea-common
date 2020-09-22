@@ -26,6 +26,8 @@ extern "C"
     #pragma comment(lib,"Advapi32.lib")//for checking for "run as administrator". May not be necessary to build some tools, but putting this here to prevent problems.
     #endif
 
+    #include <sdkddkver.h>
+    #include <winsdkver.h>
     #include <windows.h>
 #if !defined(NTDDSCSI_INCLUDED)
     #include <ntddscsi.h>

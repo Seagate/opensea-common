@@ -108,7 +108,7 @@ int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
     return SUCCESS;
 }
 
-static uint16_t get_Console_Default_Color()
+static uint16_t get_Console_Default_Color(void)
 {
     static uint16_t defaultConsoleAttributes = UINT16_MAX;
     if (defaultConsoleAttributes == UINT16_MAX)
