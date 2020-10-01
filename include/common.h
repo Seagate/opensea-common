@@ -28,7 +28,11 @@
 extern "C"
 {
 #endif
-
+/*
+//This was an attempt to fix annoying warnings from MinGW rather than completely disable them, but it doesn't actually work, so instead we have to disable otherwise helpful warnings!
+#if defined (__MINGW32__) || defined (__MINGW64__)
+#define __USE_MINGW_ANSI_STDIO 1
+#endif*/
     #include <stdio.h>
     #include <time.h>
     #include <string.h>
