@@ -431,7 +431,7 @@ void remove_Trailing_Whitespace(char *stringToChange)
         return;
     }
     iter = (strlen(stringToChange));
-    if (iter == -1)
+    if (iter == 0)
     {
         return;
     }
@@ -820,7 +820,7 @@ bool is_Empty(void *ptrData, size_t lengthBytes)
 {
     if (ptrData)
     {
-        for (size_t iter = 0, iterEnd = lengthBytes - 1; iter < lengthBytes && iterEnd >= 0 && iterEnd >= iter; ++iter, --iterEnd)
+        for (size_t iter = 0, iterEnd = lengthBytes - 1; iter < lengthBytes && iterEnd >= iter; ++iter, --iterEnd)
         {
             if (((uint_fast8_t*)ptrData)[iter] != UINT8_C(0) || ((uint_fast8_t*)ptrData)[iterEnd] != UINT8_C(0))
             {

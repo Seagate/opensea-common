@@ -108,7 +108,7 @@ int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
     return SUCCESS;
 }
 
-static uint16_t get_Console_Default_Color()
+static uint16_t get_Console_Default_Color(void)
 {
     static uint16_t defaultConsoleAttributes = UINT16_MAX;
     if (defaultConsoleAttributes == UINT16_MAX)
@@ -397,7 +397,7 @@ eEndianness get_Compiled_Endianness(void)
     #endif
 }
 
-bool is_Windows_8_Or_Higher()
+bool is_Windows_8_Or_Higher(void)
 {
     bool isWindows8OrHigher = false;
     OSVERSIONINFOEX windowsVersionInfo;
@@ -416,7 +416,7 @@ bool is_Windows_8_Or_Higher()
     return isWindows8OrHigher;
 }
 
-bool is_Windows_8_One_Or_Higher()
+bool is_Windows_8_One_Or_Higher(void)
 {
     bool isWindows81OrHigher = false;
     //Will only work if app manifested correctly
@@ -452,7 +452,7 @@ bool is_Windows_8_One_Or_Higher()
     return isWindows81OrHigher;
 }
 
-bool is_Windows_10_Or_Higher()
+bool is_Windows_10_Or_Higher(void)
 {
     bool isWindows10OrHigher = false;
     //Will only work if app manifested correctly
@@ -484,7 +484,7 @@ bool is_Windows_10_Or_Higher()
     return isWindows10OrHigher;
 }
 
-bool is_Windows_Server_OS()
+bool is_Windows_Server_OS(void)
 {
     bool isWindowsServer = false;
     OSVERSIONINFOEX windowsVersionInfo;
@@ -505,7 +505,7 @@ bool is_Windows_Server_OS()
     return isWindowsServer;
 }
 //TODO: If this ever fasly detects PE, it may be better to require checking for multiple keys and making sure they are all found.
-bool is_Windows_PE()
+bool is_Windows_PE(void)
 {
     bool isWindowsPE = false;
     //To figure out if running in PE requires checking the registry. There is not another known way to look for this.
@@ -841,7 +841,7 @@ void print_Windows_Error_To_Screen(unsigned int windowsError)
     LocalFree(windowsErrorString);
 }
 
-bool is_Running_Elevated()
+bool is_Running_Elevated(void)
 {
     bool isElevated = false;
     HANDLE currentProcess = NULL;

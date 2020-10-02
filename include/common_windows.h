@@ -26,6 +26,8 @@ extern "C"
     #pragma comment(lib,"Advapi32.lib")//for checking for "run as administrator". May not be necessary to build some tools, but putting this here to prevent problems.
     #endif
 
+    #include <sdkddkver.h>
+    #include <winsdkver.h>
     #include <windows.h>
 #if !defined(NTDDSCSI_INCLUDED)
     #include <ntddscsi.h>
@@ -82,7 +84,7 @@ extern "C"
     //!   \return true = Windows 8 or higher, false = Windows 7 or lower
     //
     //-----------------------------------------------------------------------------
-    bool is_Windows_8_Or_Higher();
+    bool is_Windows_8_Or_Higher(void);
 
     //-----------------------------------------------------------------------------
     //
@@ -96,7 +98,7 @@ extern "C"
     //!   \return true = Windows 8.1 or higher, false = Windows 8 or lower
     //
     //-----------------------------------------------------------------------------
-    bool is_Windows_8_One_Or_Higher();
+    bool is_Windows_8_One_Or_Higher(void);
 
     //-----------------------------------------------------------------------------
     //
@@ -110,7 +112,7 @@ extern "C"
     //!   \return true = Windows 8 or higher, false = Windows 8.1 or lower
     //
     //-----------------------------------------------------------------------------
-    bool is_Windows_10_Or_Higher();
+    bool is_Windows_10_Or_Higher(void);
 
     //-----------------------------------------------------------------------------
     //
@@ -124,7 +126,7 @@ extern "C"
     //!   \return true = running in PE, false = running in standard windows
     //
     //-----------------------------------------------------------------------------
-    bool is_Windows_PE();
+    bool is_Windows_PE(void);
 
     //-----------------------------------------------------------------------------
     //
