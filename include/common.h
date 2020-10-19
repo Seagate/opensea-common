@@ -219,6 +219,9 @@ extern "C"
 
     #define M_2sCOMPLEMENT(val) (~(val) + 1)
 
+    // MACRO to round the number of x so that it will not round up when formating the float
+    #define ROUNDF(f, c) (((float)((int)((f) * (c))) / (c)))
+
     //define something called reserved that has a value of zero. Use it to set reserved bytes to 0
     #define RESERVED 0
     #define OBSOLETE 0
