@@ -1,0 +1,43 @@
+#cmake_minimum_required(VERSION "2.8")
+
+#if (UNIX)
+#	add_subdirectory(gcc)
+#endif()
+
+#if (MSVC)
+#	add_subdirectory(VS.2017)
+#endif()
+
+cmake_minimum_required(VERSION "2.8")
+
+set(VALID_BUILD_TYPES "Release" "Debug" "Static-Debug" "Static-Release")
+
+if (MSVC)
+    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+	    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/VS.2017/opensea-common/x64/LIB/${CMAKE_BUILD_TYPE}")
+	    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/VS.2017/opensea-common/x64/LIB/${CMAKE_BUILD_TYPE}")
+	    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/VS.2017/opensea-common/x64/LIB/${CMAKE_BUILD_TYPE}")
+    elseif (CMAKE_SIZEOF_VOID_P EQUAL 4)
+	    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/VS.2017/opensea-common/Win32/LIB/${CMAKE_BUILD_TYPE}")
+	    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/VS.2017/opensea-common/Win32/LIB/${CMAKE_BUILD_TYPE}")
+	    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/VS.2017/opensea-common/Win32/LIB/${CMAKE_BUILD_TYPE}")
+    endif()
+
+    add_definitions(-D WIN_API_TARGET_VERSION="100162990L")
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
+
+if (UNIX)
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/gcc/LIB")
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/gcc/LIB")
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/gcc/LIB")	
+
+    set(CMAKE_C_FLAGS "-Wall -fPIC -c -I. -std=gnu99 ${CMAKE_C_FLAGS}")
+endif()
+
+add_library("${PROJECT_NAME}" STATIC ${SOURCES} ${EXTRA_SRC})
+
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include")
+
+
