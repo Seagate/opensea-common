@@ -1,16 +1,4 @@
-#cmake_minimum_required(VERSION "2.8")
-
-#if (UNIX)
-#	add_subdirectory(gcc)
-#endif()
-
-#if (MSVC)
-#	add_subdirectory(VS.2017)
-#endif()
-
-cmake_minimum_required(VERSION "2.8")
-
-set(VALID_BUILD_TYPES "Release" "Debug" "Static-Debug" "Static-Release")
+cmake_minimum_required(VERSION "3.12")
 
 if (MSVC)
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -35,6 +23,8 @@ if (UNIX)
 
     set(CMAKE_C_FLAGS "-Wall -fPIC -c -I. -std=gnu99 ${CMAKE_C_FLAGS}")
 endif()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /ZI /JMC /Wall /wd4214 /wd4201 /wd4668 /wd4820 /wd4710 /wd4255 /wd5045 /wd4711 /wd4324 /wd4221 /wd4204 /sdl /diagnostics:caret")
 
 add_library("${PROJECT_NAME}" STATIC ${SOURCES} ${EXTRA_SRC})
 
