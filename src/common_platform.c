@@ -105,7 +105,8 @@ void print_Endianness(eEndianness endian, bool shortPrint)
             printf("Big Endian (Word)");
         }
         break;
-    default:
+    //default:
+    case OPENSEA_UNKNOWN_ENDIAN:
         if (shortPrint)
         {
             printf("???");
