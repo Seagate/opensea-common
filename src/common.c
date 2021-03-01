@@ -624,6 +624,30 @@ void print_Return_Enum(char *funcName, int ret)
     case OS_COMMAND_BLOCKED:
         printf("OS COMMAND BLOCKED\n");
         break;
+    case COMMAND_INTERRUPTED:
+        printf("COMMAND INTERRUPTED\n");
+        break;
+    case VALIDATION_FAILURE:
+        printf("VALIDATION FAILURE\n");
+        break;
+    case STRIP_HDR_FOOTER_FAILURE:
+        printf("STRIP HDR FOOTER FAILURE\n");
+        break;
+    case PARSE_FAILURE:
+        printf("PARSE FAILURE\n");
+        break;
+    case INVALID_LENGTH:
+        printf("INVALID LENGTH\n");
+        break;
+    case ERROR_WRITING_FILE:
+        printf("ERROR WRITING FILE\n");
+        break;
+    case TIMEOUT:
+        printf("TIMEOUT\n");
+        break;
+    case OS_TIMEOUT_TOO_LARGE:
+        printf("OS TIMEOUT TOO LARGE\n");
+        break;
     default:
         printf("UNKNOWN: %d\n", ret);
         break;
