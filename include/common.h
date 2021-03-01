@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012 - 2019 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012 - 2020 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -28,13 +28,29 @@
 extern "C"
 {
 #endif
-
+/*
+//This was an attempt to fix annoying warnings from MinGW rather than completely disable them, but it doesn't actually work, so instead we have to disable otherwise helpful warnings!
+#if defined (__MINGW32__) || defined (__MINGW64__)
+#define __USE_MINGW_ANSI_STDIO 1
+#endif*/
     #include <stdio.h>
     #include <time.h>
     #include <string.h>
     #include <stdlib.h>
     #include <inttypes.h>
     #include <errno.h> //for printing std errors to the screen...more useful for 'nix OSs, but useful everywhere since it is at least standard functions
+
+    #if !defined(UINTPTR_MAX)
+    //need uintptr_t type for NVMe capabilities to prevent warnings/errors
+    //TODO: if C11, _Static_assert can be used to check against sizeof(void*) to make sure this is defined in a way that should work.
+        #if defined (_WIN64) || defined (_M_IA64) || defined (_M_ALPHA) || defined (_M_X64) || defined (_M_AMD64) || defined (__alpha__) || defined (__amd64__) || defined (__x86_64__) || defined (__aarch64__) || defined (__ia64__) || defined (__IA64__) || defined (__powerpc64__) || defined (__PPC64__) || defined (__ppc64__) || defined (_ARCH_PPC64)//64bit
+            typedef uint64_t uintptr_t;
+            #define UINTPTR_MAX UINT64_MAX
+        #else //assuming 32bit
+            typedef uint32_t uintptr_t;
+            #define UINTPTR_MAX UINT32_MAX
+        #endif
+    #endif
         
     #if defined (OPENSEA_COMMON_BOOLS) //THIS FLAG IS NOT ENABLED BY DEFAULT
     //I'm doing this because 
@@ -53,7 +69,7 @@ extern "C"
     #include "common_platform.h"
 
     //Microsoft doesn't have snprintf...it has _snprintf...at least until VS2015 according to my web search - TJE
-    #if _MFC_VER <= 1800 && defined _WIN32
+    #if _MSC_VER <= 1800 && defined _WIN32
     #define snprintf _snprintf
     #endif
 
@@ -61,11 +77,21 @@ extern "C"
     #define M_DoubleWord0(l) ( (uint32_t) ( ( (l) & 0x00000000FFFFFFFFULL ) >>  0 ) )
     #define M_DoubleWord1(l) ( (uint32_t) ( ( (l) & 0xFFFFFFFF00000000ULL ) >> 32 ) )
 
+    //get a specific double word
+    #define M_DoubleWordInt0(l) ( (int32_t) ( ( (l) & 0x00000000FFFFFFFFULL ) >>  0 ) )
+    #define M_DoubleWordInt1(l) ( (int32_t) ( ( (l) & 0xFFFFFFFF00000000ULL ) >> 32 ) )
+
     //get a specific word
     #define M_Word0(l) ( (uint16_t) ( ( (l) & 0x000000000000FFFFULL ) >>  0 ) )
     #define M_Word1(l) ( (uint16_t) ( ( (l) & 0x00000000FFFF0000ULL ) >> 16 ) )
     #define M_Word2(l) ( (uint16_t) ( ( (l) & 0x0000FFFF00000000ULL ) >> 32 ) )
     #define M_Word3(l) ( (uint16_t) ( ( (l) & 0xFFFF000000000000ULL ) >> 48 ) )
+
+    //get a specific word as int's
+    #define M_WordInt0(l) ( (int16_t) ( ( (l) & 0x000000000000FFFFULL ) >>  0 ) )
+    #define M_WordInt1(l) ( (int16_t) ( ( (l) & 0x00000000FFFF0000ULL ) >> 16 ) )
+    #define M_WordInt2(l) ( (int16_t) ( ( (l) & 0x0000FFFF00000000ULL ) >> 32 ) )
+    #define M_WordInt3(l) ( (int16_t) ( ( (l) & 0xFFFF000000000000ULL ) >> 48 ) )
 
     //need to validate that this macro sets the correct bits on 32bit and 64bit
     #define BITSPERBYTE UINT8_C(8)
@@ -80,6 +106,16 @@ extern "C"
     #define M_Byte5(l) ( (uint8_t) ( ( (l) & 0x0000FF0000000000ULL ) >> 40 ) )
     #define M_Byte6(l) ( (uint8_t) ( ( (l) & 0x00FF000000000000ULL ) >> 48 ) )
     #define M_Byte7(l) ( (uint8_t) ( ( (l) & 0xFF00000000000000ULL ) >> 56 ) )
+
+    //Get a specific byte int
+    #define M_ByteInt0(l) ( (uint8_t) ( ( (l) & 0x00000000000000FFULL ) >>  0 ) )
+    #define M_ByteInt1(l) ( (uint8_t) ( ( (l) & 0x000000000000FF00ULL ) >>  8 ) )
+    #define M_ByteInt2(l) ( (uint8_t) ( ( (l) & 0x0000000000FF0000ULL ) >> 16 ) )
+    #define M_ByteInt3(l) ( (uint8_t) ( ( (l) & 0x00000000FF000000ULL ) >> 24 ) )
+    #define M_ByteInt4(l) ( (uint8_t) ( ( (l) & 0x000000FF00000000ULL ) >> 32 ) )
+    #define M_ByteInt5(l) ( (uint8_t) ( ( (l) & 0x0000FF0000000000ULL ) >> 40 ) )
+    #define M_ByteInt6(l) ( (uint8_t) ( ( (l) & 0x00FF000000000000ULL ) >> 48 ) )
+    #define M_ByteInt7(l) ( (uint8_t) ( ( (l) & 0xFF00000000000000ULL ) >> 56 ) )
 
     //get a specific nibble
     #define M_Nibble0(l)  ( (uint8_t) ( ( (l) & 0x000000000000000FULL ) >>  0 ) )
@@ -102,6 +138,8 @@ extern "C"
     // Bit access macros
 
     #define M_BitN(n)   ((uint64_t)1 << n)
+
+#if !defined(UEFI_C_SOURCE)//defined in EDK2 MdePkg and causes conflicts, so checking this define for now to avoid conflicts
 
     #define BIT0      (M_BitN((uint64_t)0))
     #define BIT1      (M_BitN((uint64_t)1))
@@ -168,18 +206,215 @@ extern "C"
     #define BIT62     (M_BitN((uint64_t)62))
     #define BIT63     (M_BitN((uint64_t)63))
 
-    //set a bit to 1 within a value
-    #define M_SET_BIT(val, bitNum) (val | M_BitN(bitNum))
-    //clear a bit to 0 within a value
-    #define M_CLEAR_BIT(val, bitNum) (val & (~M_BitN(bitNum)))
+#endif //UEFI_C_SOURCE
 
-    #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~0U << ((msb) - (lsb) + 1)))
+    //set a bit to 1 within a value
+    #define M_SET_BIT(val, bitNum) (val |= M_BitN(bitNum))
+    //clear a bit to 0 within a value
+    #define M_CLEAR_BIT(val, bitNum) (val &= (~M_BitN(bitNum)))
+
+    #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~UINT64_C(0) << ((msb) - (lsb) + 1)))
+    // get bit range for signed values
+    #define M_IGETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~INT64_C(0) << ((msb) - (lsb) + 1)))
 
     #define M_2sCOMPLEMENT(val) (~(val) + 1)
+
+    // MACRO to round the number of x so that it will not round up when formating the float
+    #define ROUNDF(f, c) (((float)((int)((f) * (c))) / (c)))
 
     //define something called reserved that has a value of zero. Use it to set reserved bytes to 0
     #define RESERVED 0
     #define OBSOLETE 0
+
+    //Defining the M_FALLTHROUGH macro to make it easy to correctly specify when to fallthrough on switch-case statements without extra warnings.
+    //This is defined differently depending on c/c++ and which version of the standard is currently being supported by the compiler. In addition
+    //some compilers support this and others do not, so this is a little complicated to define in a way that works with everything, but it is
+    //attempted below...update this as errors are found. -TJE
+    #if defined (__cplusplus)
+        //check if the standardized way to check for support is available...
+        #if defined __has_cpp_attribute
+            #if __has_cpp_attribute(fallthrough)
+                //This is the standardized way intriduced in C++17
+                #define M_FALLTHROUGH [[fallthrough]];
+            /* gnu::fallback check is not included as this breaks in other compilers that support some gcc-isms, and it's easier to comment this out for now than setup something complicated to support it. -TJE
+            #elif __has_cpp_attribute(gnu::fallthrough)
+                //This is the GNU method for C++11 and C++14
+                #define M_FALLTHROUGH [[gnu::fallthrough]];
+            */
+            #elif defined __has_attribute
+                //GCC type compiler check
+                #if __has_attribute(fallthrough)
+                    #define M_FALLTHROUGH __attribute__ ((fallthrough));
+                #else
+                    #define M_FALLTHROUGH /*FALLTHRU*/ \
+                    
+                #endif
+            #else
+                //Insert a comment instead since other methods were not detected.
+                #define M_FALLTHROUGH /*FALLTHRU*/ \
+                
+            #endif
+        #elif defined __has_attribute
+            //GCC type compiler check
+            #if __has_attribute(fallthrough)
+                #define M_FALLTHROUGH __attribute__ ((fallthrough));
+            #else
+                #define M_FALLTHROUGH /*FALLTHRU*/ \
+                
+            #endif
+        #else
+            //Insert a comment instead since other methods were not detected.
+            #define M_FALLTHROUGH /*FALLTHRU*/ \
+            
+        #endif
+    #elif defined __has_c_attribute
+        #if __has_c_attribute(fallthrough)
+            //C2x style
+            #define M_FALLTHROUGH [[fallthrough]];
+        #elif defined __has_attribute
+            //GCC type compiler check
+            #if __has_attribute(fallthrough)
+                #define M_FALLTHROUGH __attribute__ ((fallthrough));
+            #else
+                #define M_FALLTHROUGH /*FALLTHRU*/ \
+                
+            #endif
+        #else
+            //Insert a comment instead since other methods were not detected.
+            #define M_FALLTHROUGH /*FALLTHRU*/ \
+            
+        #endif
+    #else //not C++ and doesn't have __has_c_attribute so do something for older C code
+        //Weird case: Clang 3.4.2 (CentOS7) doesn't like the attribute definition below and throws tons
+        //of warnings for "declaration does not declare anything", but this is not a problem in newer versions
+        //So currently solution to prevent excessive warnings that don't make sense is to define this differently for
+        // clang 3 and earlier. This may need adjusting to specific versions of clang later, but this is what I've been able to do so far - TJE
+        #if defined (__clang__) && __clang__ <= 3
+            #define M_FALLTHROUGH /*FALLTHRU*/ \
+                
+        #elif defined __has_attribute
+            //GCC type compiler check
+            #if __has_attribute(fallthrough)
+                #define M_FALLTHROUGH __attribute__ ((fallthrough));
+            #else
+                #define M_FALLTHROUGH /*FALLTHRU*/ \
+                
+            #endif
+        #else
+            //Insert a comment instead since other methods were not detected.
+            #define M_FALLTHROUGH /*FALLTHRU*/ \
+            
+        #endif
+    #endif //Checking C/C++
+    
+    //Now defining a set of macros for unused variables, unused functions, unused parameters. This can be used to deal with specific cases where these warnings need to be
+    //turned off in compiling code. This may be because these things are only used at certain times, or under certain OSs, or other strange flags.
+    //Ideally, these macros aren't used at all, but they are available to help cleanup code warnings that may show up sometimes.
+    //Some of these may be unique to C/C++ standards or to certain compilers.
+    //HOW TO USE Each:
+    //M_USE_UNUSED(var): This is mean to be used within a function:
+    // void Func(int unusedVar)
+    // ...
+    //    M_USE_UNUSED(unusedVar);
+    // ...
+    //    return;
+    //
+    //M_ATTR_UNUSED: This is meant to be used in front of unused variables withing functions, unused functions, and unused parameters in functions
+    // void Func(int someVar)
+    //    M_ATTR_UNUSED int thisIsntUsed = 0;
+    //
+    // void Func2 (M_ATTR_UNUSED int unusedVar)
+    //
+    // M_ATTR_UNUSED void Func3(int param)
+    //
+    //NOTE: Please adjust these as necessary if they aren't quite working. Hopefully, not too many are compiler unique...-TJE
+    //Define M_USE_UNUSED firstt since it is likely to be common on various compilers...(adjust as needed)
+    #define M_USE_UNUSED(var) (void)(var)
+    //Define all others below since they are used differently
+    #if defined (__cplusplus)
+        //check if the standardized way to check for support is available...
+        //NOTE: Checking for >= C++11 for __has_cpp_attribute due to issues where this shows up even when the GNU C++ compiler 
+        //is set to 98 or 03 and thows errors for not knowing what to do. Seemed easiest to add this additional version check to get rid of this error
+        #if __cplusplus >= 201103L && defined __has_cpp_attribute
+            #if __has_cpp_attribute(maybe_unused)
+                //This is the standardized way intriduced in C++17
+                #define M_ATTR_UNUSED [[maybe_unused]]
+            #elif defined __has_attribute
+                //GCC type compiler check
+                #if __has_attribute(unused)
+                    #define M_ATTR_UNUSED __attribute__ ((unused))
+                #else
+                    #define M_ATTR_UNUSED /*UNUSED*/ \
+                    
+                #endif
+            #elif defined (_MSC_VER)
+                #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
+            #else
+                //Insert a comment instead since other methods were not detected.
+                #define M_ATTR_UNUSED /*UNUSED*/ \
+                
+            #endif
+        #elif defined __has_attribute
+            //GCC type compiler check
+            #if __has_attribute(unused)
+                #define M_ATTR_UNUSED __attribute__ ((unused))
+            #else
+                #define M_ATTR_UNUSED /*UNUSED*/ \
+                
+            #endif
+		#elif defined (__GNUC__) && __GNUC__ >= 3
+			//GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+			#define M_ATTR_UNUSED __attribute__ ((unused))
+        #elif defined (_MSC_VER)
+            #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
+        #else
+            //Insert a comment instead since other methods were not detected.
+            #define M_ATTR_UNUSED /*UNUSED*/ \
+            
+        #endif
+    #elif defined __has_c_attribute //C2x
+        #if __has_c_attribute(maybe_unused)
+            //C2x style
+            #define M_ATTR_UNUSED [[maybe_unused]]
+        #elif defined __has_attribute
+            //GCC type compiler check
+            #if __has_attribute(unused)
+                #define M_ATTR_UNUSED __attribute__ ((unused))
+            #else
+                #define M_ATTR_UNUSED /*UNUSED*/ \
+                
+            #endif
+        #elif defined (_MSC_VER)
+            #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
+        #else
+            //Insert a comment instead since other methods were not detected.
+            #define M_ATTR_UNUSED /*UNUSED*/ \
+            
+        #endif
+    #else //older C
+        #if defined __has_attribute
+            //GCC type compiler check
+            #if __has_attribute(unused)
+                #define M_ATTR_UNUSED __attribute__ ((unused))
+            #else
+                #define M_ATTR_UNUSED /*UNUSED*/ \
+                
+            #endif
+		#elif defined (__GNUC__) && __GNUC__ >= 3
+			//GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+			#define M_ATTR_UNUSED __attribute__ ((unused))
+        #elif defined (_MSC_VER)
+            #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
+        #else
+            //Insert a comment instead since other methods were not detected.
+            #define M_ATTR_UNUSED /*UNUSED*/ \
+            
+        #endif
+    #endif
+
+    //Macro to help make casts more clear and searchable. Can be very helpful while debugging.
+    //If using C++, use static_cast, reinterpret_cast, dynamic_cast before trying a C_CAST.
+    #define C_CAST(type, val) (type)(val)
 
     typedef enum _eReturnValues
     {
@@ -203,6 +438,13 @@ extern "C"
         OS_COMMAND_NOT_AVAILABLE = 17, //This is returned when the OS does not have a way to issue the requested command. (EX: Trying to send an NVMe command without Win10, or trying a 32byte SCSI command pre-Win8)
         OS_COMMAND_BLOCKED      = 18, //This is returned when the OS is blocking the command from being issued (EX: TCG - linux, lib ATA......or Sanitize in Windos 8+)
         COMMAND_INTERRUPTED     = 19, //Nidhi - Added for SCT commands, if interrupted by some other SCT command.
+		VALIDATION_FAILURE       =20, //For UDS/SM2 validation check
+        STRIP_HDR_FOOTER_FAILURE = 21, //For UDS
+        PARSE_FAILURE             =22,
+        INVALID_LENGTH           = 23,  // Binary file has a invalid length or the parameters for the length don't match the size of the fiile
+        ERROR_WRITING_FILE       = 24, //LookTan added for fwrite check on May20'20
+		TIMEOUT					 = 25, //Pranali added for indicating operation timeout for SeaQueue
+        OS_TIMEOUT_TOO_LARGE     = 26, //Tyler added for cases where a requested timeout is larger than the OS is capable of supporting in passthrough
         UNKNOWN
     }eReturnValues;
 
@@ -352,7 +594,20 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void byte_Swap_16(uint16_t *wordToSwap);
-
+    //-----------------------------------------------------------------------------
+    //
+    //  byte_Swap_Int16()
+    //
+    //! \brief   Description:  swap the bytes in a singned word 
+    //
+    //  Entry:
+    //!   \param[out] signedWordToSwap = a pointer to the signed word containing the data in which to have the bytes swapped
+    //!
+    //  Exit:
+    //!   \return VOID
+    //
+    //-----------------------------------------------------------------------------
+    void byte_Swap_Int16(int16_t *signedWordToSwap);
     //-----------------------------------------------------------------------------
     //
     //  big_To_Little_Endian_16()
@@ -382,7 +637,20 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void byte_Swap_32(uint32_t *doubleWordToSwap);
-
+    //-----------------------------------------------------------------------------
+    //
+    //  byte_Swap_Int32()
+    //
+    //! \brief   Description:  swap the bytes in a Signed double word - useful for converting between endianness
+    //
+    //  Entry:
+    //!   \param[out] signedDWord = a pointer to the Signed double word containing the data in which to have the bytes swapped
+    //!
+    //  Exit:
+    //!   \return VOID
+    //
+    //-----------------------------------------------------------------------------
+    void byte_Swap_Int32(int32_t *signedDWord);
     //-----------------------------------------------------------------------------
     //
     //  big_To_Little_Endian_32()
@@ -1223,7 +1491,7 @@ extern "C"
     //
     //  Entry:
     //!   \param[in] alignedPtr = pointer to a memory block previously allocated with malloc_aligned, calloc_aligned, or realloc_aligned. If NULL, this is the same as malloc_aligned
-    //!   \param[in] originalSize = size in bytes of the alignedPtr being passed in. This is used so that previous data can be preserved.
+    //!   \param[in] originalSize = size in bytes of the alignedPtr being passed in. This is used so that previous data can be preserved. Can be set to 0 if there is no care about the original data.
     //!   \param[in] size = size of memory block in bytes to allocate
     //!   \param[in] alignment = alignment value required. This MUST be a power of 2.
     //!
@@ -1330,11 +1598,54 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void *realloc_page_aligned(void *alignedPtr, size_t originalSize, size_t size);
-    //checks if the provided pointer memory is all cleared to zero or not.
+
+    //-----------------------------------------------------------------------------
+    //
+    //  is_Empty(void *ptrData, size_t lengthBytes)
+    //
+    //! \brief   Description:  Checks if the provided pointer is cleared to zeros
+    //
+    //  Entry:
+    //!   \param[in] ptrData = pointer to a memory block to check if zeros
+    //!   \param[in] lengthBytes = size in bytes of the ptr to check
+    //!
+    //  Exit:
+    //!   \return true = memory is filled with zeros. false = memory has nonzero values in it.
+    //
+    //-----------------------------------------------------------------------------
     bool is_Empty(void *ptrData, size_t lengthBytes);
 
-    //This function checks if the provided character is between 0 and 7F. A.K.A. part of the standard ascii character set.
+    //
+    //-----------------------------------------------------------------------------
+    //
+    //  int is_ASCII(int c)
+    //
+    //! \brief   Description:  This function checks if the provided character is between 0 and 7F. A.K.A. part of the standard ascii character set.
+    //
+    //  Entry:
+    //!   \param[in] c = character to check if is an ASCII character
+    //!
+    //  Exit:
+    //!   \return 0 = not an ASCII character. 1 = is an ASCII character
+    //
+    //-----------------------------------------------------------------------------
     int is_ASCII(int c);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue))
+    //
+    //! \brief   Description:  This function converts 4 Byte Representation of a Floating Point Number to Decimal Format
+    //
+    //  Entry:
+    //!   \param[in] floatValue = 4 byte format value
+    //!   \param[out] decimalValue = corresponding decimal format value
+    //!
+    //  Exit:
+    //!   \return void
+    //
+    //-----------------------------------------------------------------------------
+    void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue);
 
 #if defined (__cplusplus)
 } //extern "C"

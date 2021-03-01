@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012 - 2018 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012 - 2020 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,7 +18,9 @@
 
 //This file's sole purpose is to include the correct common_<os/platform>.h/.c files for common things we may want to do -TJE
 //Currently everything is being done in common_nix.h. If something begins to get too specific to linux vs freebsd, then we'll need common_linux and common_freebsd files.
-#if defined (__linux__) 
+#if defined (UEFI_C_SOURCE)
+#include "common_uefi.h"
+#elif defined (__linux__) 
 #include "common_nix.h"
 //#include "common_linux.h"
 #elif defined (__DragonFly__)
@@ -250,6 +252,7 @@ extern "C"
         OS_LINUX,
         OS_FREEBSD,
         OS_SOLARIS,
+        OS_UEFI,
         OS_MACOSX,//not supported yet
         OS_AIX,//not supported yet
         OS_TRU64,//not supported yet
@@ -351,6 +354,12 @@ extern "C"
         uint16_t revision;
     }ESXiVersionNumber;
 
+    typedef struct _UEFIVersionNumber
+    {
+        uint16_t majorVersion;
+        uint16_t minorVersion;
+    }UEFIVersionNumber;
+
     typedef struct _OSVersionNumber
     {
         eOSType osVersioningIdentifier;
@@ -359,6 +368,7 @@ extern "C"
             LinuxVersionNumber linuxVersion;
             FreeBSDVersionNumber freeBSDVersion;
             SolarisVersionNumber solarisVersion;
+            UEFIVersionNumber uefiVersion;
             MacOSVersionNumber macOSVersion;
             AIXVersionNumber aixVersion;
             DragonflyVersionNumber dragonflyVersion;
@@ -529,6 +539,34 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     double get_Seconds(seatimer_t timer);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  is_Running_Elevated
+    //
+    //! \brief   Description:  Function that checks if the process is currently running with elevated permissions or not. Useful since things like disc access require this.
+    //
+    //  Entry:
+    //!
+    //  Exit:
+    //!   \return true = is elevated permissions, false = not running with elevated permissions
+    //
+    //-----------------------------------------------------------------------------
+    bool is_Running_Elevated(void);
+    
+    //-----------------------------------------------------------------------------
+    //
+    //  get_Current_User_Name
+    //
+    //! \brief   Description:  This function will look up the current user name using getuid(). This function allocates memory for the user name, so make sure to free it when it is done.
+    //
+    //  Entry:
+    //!
+    //  Exit:
+    //!   \return SUCCESS = no errors, userName allocated and ready to be user, BAD_PARAMTER = bas pointer, FAILURE = could not determine user name.
+    //
+    //-----------------------------------------------------------------------------
+    int get_Current_User_Name(char **userName);
 
 #if defined (__cplusplus)
 } //extern "C"

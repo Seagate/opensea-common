@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012 - 2018 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012 - 2020 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,30 +15,27 @@
 #include "common.h"
 #include "common_windows.h"
 #include <windows.h> //needed for all the stuff to get the windows version
+#include <tchar.h>
 #include <strsafe.h> //needed in the code written to get the windows version since I'm using a Microsoft provided string concatenation call-tje
 #include <io.h> //needed for getting the size of a file in windows
+#include <lmcons.h> //for UNLEN
 
 bool os_Directory_Exists(const char * const pathToCheck)
 {
     DWORD attrib = INVALID_FILE_ATTRIBUTES;
-#if defined (UNICODE)
-    //determine what the length of the new string will be
-    size_t pathCheckLength = mbstowcs(NULL, pathToCheck, strlen(pathToCheck) + 1);
-    //allocate memory
-    LPWSTR localPathToCheckBuf = (LPWSTR)calloc(pathCheckLength + 2, sizeof(WCHAR));
-    LPCWSTR localPathToCheck = &localPathToCheckBuf[0];
-    //convert incoming string to work
-    pathCheckLength = mbstowcs(localPathToCheckBuf, pathToCheck, strlen(pathToCheck) + 1);
-#else
-    LPCSTR localPathToCheck = (LPCSTR)pathToCheck;
-#endif
+    size_t pathCheckLength = (strlen(pathToCheck) + 1) * sizeof(TCHAR);
+    TCHAR *localPathToCheckBuf = (TCHAR*)calloc(pathCheckLength, sizeof(TCHAR));
+    if (!localPathToCheckBuf)
+    {
+        return false;
+    }
+    CONST TCHAR *localPathToCheck = &localPathToCheckBuf[0];
+    _stprintf_s(localPathToCheckBuf, pathCheckLength, TEXT("%hs"), pathToCheck);
 
     attrib = GetFileAttributes(localPathToCheck);
 
-#if defined (UNICODE)
     safe_Free(localPathToCheckBuf);
     localPathToCheck = NULL;
-#endif
 
     if (attrib == INVALID_FILE_ATTRIBUTES)
     {
@@ -58,24 +55,19 @@ bool os_Directory_Exists(const char * const pathToCheck)
 bool os_File_Exists(const char * const filetoCheck)
 {
     DWORD attrib = INVALID_FILE_ATTRIBUTES;
-#if defined (UNICODE)
-    //determine what the length of the new string will be
-    size_t fileCheckLength = mbstowcs(NULL, filetoCheck, strlen(filetoCheck) + 1);
-    //allocate memory
-    LPWSTR localFileToCheckBuf = (LPWSTR)calloc(fileCheckLength + 2, sizeof(WCHAR));
-    LPCWSTR localFileToCheck = &localFileToCheckBuf[0];
-    //convert incoming string to work
-    fileCheckLength = mbstowcs(localFileToCheckBuf, filetoCheck, strlen(filetoCheck) + 1);
-#else
-    LPCSTR localFileToCheck = (LPCSTR)filetoCheck;
-#endif
+    size_t fileCheckLength = (strlen(filetoCheck) + 1) * sizeof(TCHAR);
+    TCHAR *localFileToCheckBuf = (TCHAR*)calloc(fileCheckLength, sizeof(TCHAR));
+    if (!localFileToCheckBuf)
+    {
+        return false;
+    }
+    CONST TCHAR *localFileToCheck = &localFileToCheckBuf[0];
+    _stprintf_s(localFileToCheckBuf, fileCheckLength, TEXT("%hs"), filetoCheck);
 
     attrib = GetFileAttributes(localFileToCheck);
 
-#if defined (UNICODE)
     safe_Free(localFileToCheckBuf);
     localFileToCheck = NULL;
-#endif
 
     if (attrib == INVALID_FILE_ATTRIBUTES)
     {
@@ -116,7 +108,7 @@ int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
     return SUCCESS;
 }
 
-static uint16_t get_Console_Default_Color()
+static uint16_t get_Console_Default_Color(void)
 {
     static uint16_t defaultConsoleAttributes = UINT16_MAX;
     if (defaultConsoleAttributes == UINT16_MAX)
@@ -138,8 +130,15 @@ static uint16_t get_Console_Default_Color()
 
 void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
 {
+    static bool defaultsSet = false;
     HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
     WORD theColor = 0;
+    if (!defaultsSet)
+    {
+        //First time we are setting colors backup the default settings so they can be restored properly later.
+        get_Console_Default_Color();
+        defaultsSet = true;
+    }
     if (foregroundBackground)//change foreground color
     {
         switch (consoleColor)
@@ -398,7 +397,7 @@ eEndianness get_Compiled_Endianness(void)
     #endif
 }
 
-bool is_Windows_8_Or_Higher()
+bool is_Windows_8_Or_Higher(void)
 {
     bool isWindows8OrHigher = false;
     OSVERSIONINFOEX windowsVersionInfo;
@@ -417,7 +416,7 @@ bool is_Windows_8_Or_Higher()
     return isWindows8OrHigher;
 }
 
-bool is_Windows_8_One_Or_Higher()
+bool is_Windows_8_One_Or_Higher(void)
 {
     bool isWindows81OrHigher = false;
     //Will only work if app manifested correctly
@@ -453,7 +452,7 @@ bool is_Windows_8_One_Or_Higher()
     return isWindows81OrHigher;
 }
 
-bool is_Windows_10_Or_Higher()
+bool is_Windows_10_Or_Higher(void)
 {
     bool isWindows10OrHigher = false;
     //Will only work if app manifested correctly
@@ -485,7 +484,7 @@ bool is_Windows_10_Or_Higher()
     return isWindows10OrHigher;
 }
 
-bool is_Windows_Server_OS()
+bool is_Windows_Server_OS(void)
 {
     bool isWindowsServer = false;
     OSVERSIONINFOEX windowsVersionInfo;
@@ -505,6 +504,52 @@ bool is_Windows_Server_OS()
     }
     return isWindowsServer;
 }
+//TODO: If this ever fasly detects PE, it may be better to require checking for multiple keys and making sure they are all found.
+bool is_Windows_PE(void)
+{
+    bool isWindowsPE = false;
+    //To figure out if running in PE requires checking the registry. There is not another known way to look for this.
+    //All other functions to read or check versions will return build numbers that match the equivalent non-PE version of windows, which can still be useful for determining supported APIs
+    //We will be looking for one of these keys:
+    /*
+    -HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WinPE
+    -HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\MiniNT
+    -HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\MiniNT
+    //NOTE: 3 below are not used today. Only these top two are checked at this time
+    -HKEY_LOCAL_MACHINE\system\currentcontrolset\control\PEBootType (PE2)
+    -HKEY_LOCAL_MACHINE\system\currentcontrolset\control\PEFirmwareType (PE4)
+    -HKEY_LOCAL_MACHINE\System\Setup\SystemSetupInProgress
+    */
+    HKEY keyHandle;
+    if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WinPE"), 0, KEY_READ, &keyHandle))
+    {
+#if defined (_DEBUG)
+        printf("Found HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WinPE\n");
+#endif
+        isWindowsPE = true;
+        RegCloseKey(keyHandle);
+        keyHandle = 0;
+    }
+    if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\CurrentControlSet\\Control\\MiniNT"), 0, KEY_READ, &keyHandle))
+    {
+#if defined (_DEBUG)
+        printf("Found HKLM\\SYSTEM\\CurrentControlSet\\Control\\MiniNT\n");
+#endif
+        isWindowsPE = true;
+        RegCloseKey(keyHandle);
+        keyHandle = 0;
+    }
+    if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\ControlSet001\\Control\\MiniNT"), 0, KEY_READ, &keyHandle))
+    {
+#if defined (_DEBUG)
+        printf("Found HKLM\\SYSTEM\\ControlSet001\\Control\\MiniNT\n");
+#endif
+        isWindowsPE = true;
+        RegCloseKey(keyHandle);
+        keyHandle = 0;
+    }
+    return isWindowsPE;
+}
 
 //possible MSDN api calls: 
 //https://msdn.microsoft.com/en-us/library/windows/desktop/aa370624(v=vs.85).aspx
@@ -518,21 +563,15 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
 {
     int ret = SUCCESS;
     bool isWindowsServer = is_Windows_Server_OS();
+    bool isWindowsPE = is_Windows_PE();
     memset(versionNumber, 0, sizeof(OSVersionNumber));
     versionNumber->osVersioningIdentifier = OS_WINDOWS;
     //start getting the Windows version using the verifyVersionInfo call. I'm doing it this way since the "version helpers" are essentially doing the same thing but are not available to minGW
     
-#if defined (UNICODE)
-    static const wchar_t kernel32DLL[] = L"\\kernel32.dll";
-    LPWSTR systemPathBuf = (LPWSTR)calloc(OPENSEA_PATH_MAX, sizeof(WCHAR));
-    LPCWSTR systemPath = &systemPathBuf[0];
-    LPCWSTR subblock = L"\\";
-#else
-    static const char kernel32DLL[] = "\\kernel32.dll";
-    LPSTR *systemPathBuf = (LPSTR)calloc(OPENSEA_PATH_MAX, sizeof(CHAR));
-    LPCSTR systemPath = &systemPathBuf[0];
-    LPCSTR subblock = "\\";
-#endif
+    static CONST TCHAR kernel32DLL[] = TEXT("\\kernel32.dll");
+    TCHAR *systemPathBuf = (TCHAR*)calloc(OPENSEA_PATH_MAX, sizeof(TCHAR));
+    CONST TCHAR *systemPath = &systemPathBuf[0];
+    CONST TCHAR *subblock = TEXT(SYSTEM_PATH_SEPARATOR_STR);
 
     if(!systemPath)
     {
@@ -718,6 +757,10 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 sprintf(&operatingSystemName[0], "Unknown Windows OS");
                 break;
             }
+            if (isWindowsPE)
+            {
+                strcat(operatingSystemName, " (PE)");
+            }
         }
     }
     return ret;
@@ -791,9 +834,91 @@ double get_Seconds(seatimer_t timer)
 
 void print_Windows_Error_To_Screen(unsigned int windowsError)
 {
-    LPSTR windowsErrorString = NULL;
-    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL, windowsError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&windowsErrorString, 0, NULL);
-    printf("%u - %s\n", windowsError, windowsErrorString);
+    TCHAR *windowsErrorString = NULL;
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL, windowsError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (TCHAR*)&windowsErrorString, 0, NULL);
+    _tprintf_s(TEXT("%u - %s\n"), windowsError, windowsErrorString);
     LocalFree(windowsErrorString);
+}
+
+bool is_Running_Elevated(void)
+{
+    bool isElevated = false;
+    HANDLE currentProcess = NULL;
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &currentProcess))
+    {
+        TOKEN_ELEVATION elevation;
+        DWORD returnedSize = sizeof(TOKEN_ELEVATION);
+        if (GetTokenInformation(currentProcess, TokenElevation, &elevation, sizeof(elevation), &returnedSize))
+        {
+            if (elevation.TokenIsElevated)
+            {
+                isElevated = true;
+            }
+        }
+    }
+    if (currentProcess)
+    {
+        CloseHandle(currentProcess);
+    }
+    return isElevated;
+}
+
+//Gets the user name for who is running the process
+//https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getusernamea?redirectedfrom=MSDN
+//NOTE: Not using Ex version at this time to avoid linking yet another library. This can be added if necessary, or this doesn't do quite what we want it to do. -TJE
+int get_Current_User_Name(char **userName)
+{
+    int ret = SUCCESS;
+    if (userName)
+    {
+        DWORD localNameLength = UNLEN + 1;//start with this for input
+        TCHAR localName[UNLEN + 1] = { 0 };
+        if (TRUE == GetUserName(localName, &localNameLength))
+        {
+            const char *isAdmin = " (admin)";//This will be concatenated to the string if running as administrator since we only get the user's name in Windows.
+            size_t usernameLength = _tcslen(localName) + strlen(isAdmin) + 1;
+            *userName = (char*)calloc(usernameLength, sizeof(char));
+            if (*userName)
+            {
+#if defined UNICODE
+                size_t charsConverted = 0;
+                //convert output to a char string
+                if (wcstombs_s(&charsConverted, *userName, usernameLength, localName, usernameLength))
+                {
+                    safe_Free(*userName);
+                    ret = FAILURE;
+                }
+#else
+                //just copy it over after allocating
+                if (strcpy_s(*userName, usernameLength, localName))
+                {
+                    safe_Free(*userName);
+                    return FAILURE;
+                }
+#endif
+                if (is_Running_Elevated())
+                {
+                    if (strcat_s(*userName, usernameLength, isAdmin))
+                    {
+                        safe_Free(*userName);
+                        return FAILURE;
+                    }
+                }
+            }
+            else
+            {
+                ret = FAILURE;
+            }
+        }
+        else
+        {
+            ret = FAILURE;
+        }
+    }
+    else
+    {
+        ret = BAD_PARAMETER;
+    }
+    return ret;
 }

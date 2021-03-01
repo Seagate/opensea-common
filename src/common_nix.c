@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012 - 2018 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012 - 2020 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,6 +31,8 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <dirent.h>//for scan dir in linux to get os name. We can move ifdef this if it doesn't work for other OS's
+#include <pwd.h>
+#include <grp.h>
 
 //freeBSD doesn't have the 64 versions of these functions...so I'm defining things this way to make it work. - TJE
 #if defined(__FreeBSD__)
@@ -350,6 +352,7 @@ static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
             }
         }
     }
+    safe_Free(filename);
     return match;
 }
 
@@ -474,6 +477,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                                 safe_Free(releaseMemory);
                                 fclose(release);
                             }
+                            safe_Free(fileName);
                         }
                         if (linuxOSNameFound)
                         {
@@ -507,6 +511,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         safe_Free(versionMemory);
                         fclose(version);
                     }
+                    safe_Free(fileName);
                 }
                 if (!linuxOSNameFound && lsbReleaseOffset >= 0)
                 {
@@ -535,6 +540,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         safe_Free(releaseMemory);
                         fclose(release);
                     }
+                    safe_Free(fileName);
                 }
                 for (int iter = 0; iter < releaseFileCount; ++iter)
                 {
@@ -629,7 +635,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             if (isdigit(unixUname.version[0]))
             {
                 //set OS name as Solaris x.x
-                if (EOF == sscanf(unixUname.release,"%"SCNu16".%"SCNu16".%"SCNu16"%*s",&versionNumber->versionType.solarisVersion.solarisMajorVersion, &versionNumber->versionType.solarisVersion.solarisMinorVersion, &versionNumber->versionType.solarisVersion.solarisRevision))
+                if (EOF == sscanf(unixUname.version,"%"SCNu16".%"SCNu16".%"SCNu16"%*s",&versionNumber->versionType.solarisVersion.solarisMajorVersion, &versionNumber->versionType.solarisVersion.solarisMinorVersion, &versionNumber->versionType.solarisVersion.solarisRevision))
                 {
                     //do nothing for now - TJE
                 }
@@ -885,3 +891,56 @@ double get_Seconds(seatimer_t timer)
 {
     return (get_Milli_Seconds(timer) / 1000.00);
 }
+
+bool is_Running_Elevated()
+{
+    bool isElevated = false;
+    if (getuid() == 0 || geteuid() == 0)
+    {
+        isElevated = true;
+    }
+    return isElevated;
+}
+
+//If this is successful, this function allocates enough memory to hold the full user's name for you.
+//NOTE: This is static since it will probably only be used here...we may want to  enable this for use elsewhere if we want to print fancy warnings with the user's name
+static bool get_User_Name_From_ID(uid_t userID, char **userName)
+{
+    bool success = false;
+    if(userName)
+    {
+        struct passwd *userInfo = getpwuid(userID);
+        if(userInfo)
+        {
+            size_t userNameLength = strlen(userInfo->pw_name) + 1;
+            if(userNameLength > 1)
+            {
+                *userName = (char*)calloc(userNameLength, sizeof(char));
+                if(userName)
+                {
+                    strcpy(*userName, userInfo->pw_name);
+                    success = true;
+                }
+            }
+        }
+    }
+    return success;
+}
+//Gets the user name for who is running the process
+int get_Current_User_Name(char **userName)
+{
+    int ret = SUCCESS;
+    if (userName)
+    {
+        if (!get_User_Name_From_ID(getuid(), userName))
+        {
+            ret = FAILURE;
+        }
+    }
+    else
+    {
+        ret = BAD_PARAMETER;
+    }
+    return ret;
+}
+

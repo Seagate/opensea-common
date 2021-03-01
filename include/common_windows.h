@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012 - 2018 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012 - 2020 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,11 +22,17 @@ extern "C"
     //This pragma is needed to tell a library including opensea-common to look for Version.lib for the version helping information in the .c file.
     //NOTE: ARM requires 10.0.16299.0 API to get this library!
     #if !defined (__MINGW32__) && !defined (__MINGW64__)
-    #pragma comment(lib,"Version.lib")
+    #pragma comment(lib,"Version.lib")//for getting Windows system versions
+    #pragma comment(lib,"Advapi32.lib")//for checking for "run as administrator". May not be necessary to build some tools, but putting this here to prevent problems.
     #endif
 
+    #include <sdkddkver.h>
+    #include <winsdkver.h>
     #include <windows.h>
+#if !defined(NTDDSCSI_INCLUDED)
     #include <ntddscsi.h>
+    #define NTDDSCSI_INCLUDED
+#endif
     #define OPENSEA_PATH_MAX MAX_PATH
 
     #define SYSTEM_PATH_SEPARATOR '\\'
@@ -49,6 +55,23 @@ extern "C"
     #define SEA_WIN32_WINNT_WINTHRESHOLD           0x0A00 // Windows 10  
     #define SEA_WIN32_WINNT_WIN10                  0x0A00 // Windows 10  
 
+    //Visual studio MSVC versions that are easy to check for.
+    //values come from here:https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
+    #define SEA_MSC_VER_VS2013      1800
+    #define SEA_MSC_VER_VS2015      1900
+    #define SEA_MSC_VER_VS2017_RTW  1910
+    #define SEA_MSC_VER_VS2017_15_3 1911
+    #define SEA_MSC_VER_VS2017_15_5 1912
+    #define SEA_MSC_VER_VS2017_15_6 1913
+    #define SEA_MSC_VER_VS2017_15_7 1914
+    #define SEA_MSC_VER_VS2017_15_8 1915
+    #define SEA_MSC_VER_VS2017_15_9 1916
+    #define SEA_MSC_VER_VS2019_RTW  1920
+    #define SEA_MSC_VER_VS2019_16_1 1921
+    #define SEA_MSC_VER_VS2019_16_2 1922
+    #define SEA_MSC_VER_VS2019_16_3 1923
+
+
     //-----------------------------------------------------------------------------
     //
     //  is_Windows_8_Or_Higher()
@@ -61,7 +84,7 @@ extern "C"
     //!   \return true = Windows 8 or higher, false = Windows 7 or lower
     //
     //-----------------------------------------------------------------------------
-    bool is_Windows_8_Or_Higher();
+    bool is_Windows_8_Or_Higher(void);
 
     //-----------------------------------------------------------------------------
     //
@@ -75,7 +98,7 @@ extern "C"
     //!   \return true = Windows 8.1 or higher, false = Windows 8 or lower
     //
     //-----------------------------------------------------------------------------
-    bool is_Windows_8_One_Or_Higher();
+    bool is_Windows_8_One_Or_Higher(void);
 
     //-----------------------------------------------------------------------------
     //
@@ -89,7 +112,21 @@ extern "C"
     //!   \return true = Windows 8 or higher, false = Windows 8.1 or lower
     //
     //-----------------------------------------------------------------------------
-    bool is_Windows_10_Or_Higher();
+    bool is_Windows_10_Or_Higher(void);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  is_Windows_PE()
+    //
+    //! \brief   Description:  Checks if the application is currently running in the Windows Pre-Installation Environment (PE).
+    //
+    //  Entry:
+    //!
+    //  Exit:
+    //!   \return true = running in PE, false = running in standard windows
+    //
+    //-----------------------------------------------------------------------------
+    bool is_Windows_PE(void);
 
     //-----------------------------------------------------------------------------
     //
@@ -106,7 +143,7 @@ extern "C"
     void print_Windows_Error_To_Screen(unsigned int windowsError);
 
     //The macros for NTDDI_VERSION & _WIN32_WINNT & WINVER are rarely checked once in Win 10 since they all get set to the same thing, so the below targets should also be defined in the preprocessor
-    //so that we know which version of the WIN10 SDK is being targetted.
+    //so that we know which version of the WIN10 SDK is being targeted.
 
 #if !defined(WIN_API_TARGET_VERSION)
 #if defined _MSC_VER
@@ -132,7 +169,7 @@ extern "C"
     #define WIN_API_TARGET_WIN10_16299  100162990L //10.0.16299.0 //Win 10 API, build 16299
     #define WIN_API_TARGET_WIN10_17134  100171340L //10.0.17134.0 //Win 10 API, build 17134
     #define WIN_API_TARGET_WIN10_17763  100177630L //10.0.17763.0 //Win 10 API, build 17763
-
+    #define WIN_API_TARGET_WIN10_18362  100183620L //10.0.18362.0 //Win 10 API, build 18362
 
         
 #if defined (__cplusplus)

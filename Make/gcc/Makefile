@@ -18,13 +18,13 @@ MAJOR=1
 #Change the Minor version when new features are added. 
 MINOR=18
 #Change the patch version when only bug fixes are made.
-PATCH=6
+PATCH=18
 VERSION=$(MAJOR).$(MINOR).$(PATCH)
 SRC_DIR=../../src/
 INC_DIR=-I../../include
 CC ?= gcc
 AR ?= ar
-CFLAGS ?= -Wall -c -fPIC -I. -std=gnu99
+CFLAGS ?= -Wall -Wextra -c -fPIC -I. -std=gnu99
 CFLAGS += -c -fPIC -I. -std=gnu99
 LFLAGS ?= -Wall
 LIB_SRC_FILES = \
