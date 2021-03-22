@@ -39,6 +39,8 @@ extern "C"
     #include <stdlib.h>
     #include <inttypes.h>
     #include <errno.h> //for printing std errors to the screen...more useful for 'nix OSs, but useful everywhere since it is at least standard functions
+    #define __STDC_WANT_LIB_EXT1__ 1
+    #include <time.h>
 
     #if !defined(UINTPTR_MAX)
     //need uintptr_t type for NVMe capabilities to prevent warnings/errors
@@ -1278,6 +1280,20 @@ extern "C"
     int fill_Pattern_Buffer_Into_Another_Buffer(uint8_t *inPattern, uint32_t inpatternLength, uint8_t *ptrData, uint32_t dataLength);
 
     double convert_128bit_to_double(uint8_t * pData);
+
+    //meant to replace calling gmtime() function as this handles all the cross-platform weirdness calling the safest possible version
+    struct tm * get_UTCtime(const time_t *timer, struct tm *buf);
+
+    //meant to replace calling localtime() function as this handles all the cross-platform weirdness calling the safest possible version
+    struct tm * get_Localtime(const time_t *timer, struct tm *buf);
+
+    #define TIME_STRING_LENGTH 26
+    //meant to replace calling asctime() function as this handles all the cross-platform weirdness calling the safest possible version
+    char * get_Time_String_From_TM_Structure(const struct tm * timeptr, char *buffer, size_t bufferSize);
+
+    #define CURRENT_TIME_STRING_LENGTH TIME_STRING_LENGTH
+    //meant to replace calling ctime() function as this handles all the cross-platform weirdness calling the safest possible version
+    char* get_Current_Time_String(const time_t* timer, char *buffer, size_t bufferSize);
 
     //-----------------------------------------------------------------------------
     //
