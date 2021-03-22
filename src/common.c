@@ -33,7 +33,7 @@ void delay_Milliseconds(uint32_t milliseconds)
     //according to this link: http://linux.die.net/man/3/usleep
     //usleep is obsolete starting in POSIX 2001 and removed entirely in POSIX 2008 and nanosleep is supposed to be used instead.
     //the usleep code is left in just in case it is needed for any reason, but nanosleep works as expected
-    #if defined _POSIX_VERSION >= 199309L && _POSIX_TIMERS 
+    #if defined _POSIX_VERSION && _POSIX_VERSION >= 199309L && defined _POSIX_TIMERS 
         struct timespec delayTime;
         delayTime.tv_sec = milliseconds / 1000;
         delayTime.tv_nsec = 1000000 * (milliseconds % 1000);
@@ -1150,7 +1150,7 @@ struct tm * get_UTCtime(const time_t *timer, struct tm *buf)
     if (timer && buf)
     {
         //TODO: C2x not fully defined yet, but can update this first check when it is and is supported.
-#if defined __POSIX_VERSION >= 200112L && _POSIX_THREAD_SAFE_FUNCTIONS
+#if defined _POSIX_VERSION && _POSIX_VERSION >= 200112L && defined _POSIX_THREAD_SAFE_FUNCTIONS
         //POSIX or C2x (C23 right now) have gmtime_r to use
         return gmtime_r(timer, buf);
 
@@ -1184,7 +1184,7 @@ struct tm * get_Localtime(const time_t *timer, struct tm *buf)
     if (timer && buf)
     {
         //TODO: C2x not fully defined yet, but can update this first check when it is and is supported.
-#if defined __POSIX_VERSION >= 200112L && _POSIX_THREAD_SAFE_FUNCTIONS
+#if defined _POSIX_VERSION && _POSIX_VERSION >= 200112L && defined _POSIX_THREAD_SAFE_FUNCTIONS
         //POSIX or C2x (C23 right now) have localtime_r to use
         return localtime_r(timer, buf);
 
