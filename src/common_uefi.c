@@ -685,7 +685,7 @@ int get_Current_User_Name(char **userName)
         *userName = (char*)calloc(4, sizeof(char));
         if (*userName)
         {
-            sprintf(userName, "efi");
+            sprintf(*userName, "efi");
         }
         else
         {
