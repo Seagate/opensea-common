@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2018 - 2020 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2018-2021 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -685,7 +685,7 @@ int get_Current_User_Name(char **userName)
         *userName = (char*)calloc(4, sizeof(char));
         if (*userName)
         {
-            sprintf(userName, "efi");
+            sprintf(*userName, "efi");
         }
         else
         {

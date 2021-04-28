@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012 - 2020 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012-2021 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -33,7 +33,7 @@ void delay_Milliseconds(uint32_t milliseconds)
     //according to this link: http://linux.die.net/man/3/usleep
     //usleep is obsolete starting in POSIX 2001 and removed entirely in POSIX 2008 and nanosleep is supposed to be used instead.
     //the usleep code is left in just in case it is needed for any reason, but nanosleep works as expected
-    #if defined _POSIX_VERSION >= 199309L
+    #if defined _POSIX_VERSION && _POSIX_VERSION >= 199309L && defined _POSIX_TIMERS 
         struct timespec delayTime;
         delayTime.tv_sec = milliseconds / 1000;
         delayTime.tv_nsec = 1000000 * (milliseconds % 1000);
@@ -1138,10 +1138,112 @@ double convert_128bit_to_double(uint8_t * pData)
     return result;
 }
 
+//helper functions for time.h functions to be safer depending on what is supported on a given system and compiler.
+//__STDC_LIB_EXT1__ can be checked for the C11 _s functions. Otherwise, check posix definitions or C standard versions, or possible compiler specific
+//definitions depending on what is available.
+
+struct tm * get_UTCtime(const time_t *timer, struct tm *buf)
+{
+    //There are a few different things we can do in here to be more safe depending on what is supported
+    //by the system and compiler, so there are ifdefs to help with that...
+    //Microsoft CRT uses different parameter order! May need to detect this if using the _s version in here
+    if (timer && buf)
+    {
+        //TODO: C2x not fully defined yet, but can update this first check when it is and is supported.
+#if defined _POSIX_VERSION && _POSIX_VERSION >= 200112L && defined _POSIX_THREAD_SAFE_FUNCTIONS
+        //POSIX or C2x (C23 right now) have gmtime_r to use
+        return gmtime_r(timer, buf);
+
+#elif defined __STDC_LIB_EXT1__
+        //If __STDC_LIB_EXT1__, can use gmtime_s
+        //NOTE: This is only available if the __STDC_WANT_LIB_EXT1__ is defined before time.h and system library supports it
+        //It is also possible to get through through a library implementation of these _s functions, but one is not currently used today.
+        return gmtime_s(timer, buf);
+
+#elif defined _MSC_VER
+        //If MSFT CRT available, use microsoft gmtime_s which is incompatible with the standard
+        if (0 != gmtime_s(buf, timer))
+        {
+            return NULL;
+        }
+#else
+        //TODO: There may be better options beyond what is done below, but it may be a per-system implementation or something like that
+        //      So there is room for improvement in this fallback function
+        //Last thing we can do is use the unsafe version and copy it immediately to our own buffer if nothing else is possible
+        memcpy(buf, gmtime(timer), sizeof(struct tm));
+#endif
+    }
+    return buf;
+}
+
+struct tm * get_Localtime(const time_t *timer, struct tm *buf)
+{
+    //There are a few different things we can do in here to be more safe depending on what is supported
+    //by the system and compiler, so there are ifdefs to help with that...
+    //Microsoft CRT uses different parameter order! May need to detect this if using the _s version in here
+    if (timer && buf)
+    {
+        //TODO: C2x not fully defined yet, but can update this first check when it is and is supported.
+#if defined _POSIX_VERSION && _POSIX_VERSION >= 200112L && defined _POSIX_THREAD_SAFE_FUNCTIONS
+        //POSIX or C2x (C23 right now) have localtime_r to use
+        return localtime_r(timer, buf);
+
+#elif defined __STDC_LIB_EXT1__
+        //If __STDC_LIB_EXT1__, can use gmtime_s
+        //NOTE: This is only available if the __STDC_WANT_LIB_EXT1__ is defined before time.h and system library supports it
+        //It is also possible to get through through a library implementation of these _s functions, but one is not currently used today.
+        return localtime_s(timer, buf);
+
+#elif defined _MSC_VER
+        //If MSFT CRT available, use microsoft localtime_s which is incompatible with the standard
+        if (0 != localtime_s(buf, timer))
+        {
+            return NULL;
+        }
+#else
+        //TODO: There may be better options beyond what is done below, but it may be a per-system implementation or something like that
+        //      So there is room for improvement in this fallback function
+        //Last thing we can do is use the unsafe version and copy it immediately to our own buffer if nothing else is possible
+        memcpy(buf, localtime(timer), sizeof(struct tm));
+#endif
+    }
+    return buf;
+}
+
+char * get_Time_String_From_TM_Structure(const struct tm * timeptr, char *buffer, size_t bufferSize)
+{
+    if (timeptr && buffer && bufferSize >= TIME_STRING_LENGTH)
+    {
+        //start with a known zeroed buffer
+        memset(buffer, 0, bufferSize);
+        //strftime is recommended to be used. Using format %c will return the matching output for this function
+        if (0 == strftime(buffer, bufferSize, "%c", timeptr))
+        {
+            //This means the array was too small...which shouldn't happen...but in case it does, zero out the memory
+            memset(buffer, 0, bufferSize);
+        }
+    }
+    return buffer;
+}
+
+
+char* get_Current_Time_String(const time_t* timer, char *buffer, size_t bufferSize)
+{
+    if (timer && buffer && bufferSize >= CURRENT_TIME_STRING_LENGTH)
+    {
+        struct tm cTimeBuf;
+        memset(&cTimeBuf, 0, sizeof(struct tm));
+        get_Time_String_From_TM_Structure(get_Localtime(timer, &cTimeBuf), buffer, bufferSize);
+    }
+    return buffer;
+}
+
 time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
 {
     uint8_t years = 0, months = 0, days = 0, hours = 0, minutes = 0, seconds = 0;
-    struct tm futureTime = *localtime((const time_t*)&inputTime);
+    struct tm futureTime;
+    memset(&futureTime, 0, sizeof(struct tm));
+    get_Localtime(C_CAST(const time_t*, &inputTime), &futureTime);
     //first break the input time into seperate units
     convert_Seconds_To_Displayable_Time(secondsInTheFuture, &years, &days, &hours, &minutes, &seconds);
     //now start setting the future time struct and checking when incrementing things for overflow
