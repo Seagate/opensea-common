@@ -508,6 +508,10 @@ extern "C"
     #define  M_Min(a,b)    (((a)<(b))?(a):(b))
     #define  M_Max(a,b)    (((a)>(b))?(a):(b))
 
+    // Convert the result to a boolean true or false (ternary operator)
+    // This is especially good for C++ since you get conversion warnings, but this is an acceptible method for C++ code
+    #define M_ToBool(expression) ((expression) > 0 ? true : false)
+
     typedef enum _eOutputFormat
     {
         SEAC_OUTPUT_TEXT, //default way everything is output
