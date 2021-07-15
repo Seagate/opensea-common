@@ -19,19 +19,9 @@ extern "C"
 {
 #endif
 
-    #if defined(__linux__)
-    /*
-    Please note that GCC doesn't really have a PATH_MAX & recommends path buffers be allocated dynamically.
-    Also, this #if #else might need to expand to cater to nauances of BSD/HP UX etc.
-    */
-    #include <linux/limits.h>
-    #define OPENSEA_PATH_MAX PATH_MAX
-    #else 
-
     #include <limits.h>
     #define OPENSEA_PATH_MAX PATH_MAX
-    #endif
-
+    
     #define SYSTEM_PATH_SEPARATOR '/'
     #define SYSTEM_PATH_SEPARATOR_STR "/"
 
