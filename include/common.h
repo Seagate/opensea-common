@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012 - 2020 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012-2021 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -39,6 +39,8 @@ extern "C"
     #include <stdlib.h>
     #include <inttypes.h>
     #include <errno.h> //for printing std errors to the screen...more useful for 'nix OSs, but useful everywhere since it is at least standard functions
+    #define __STDC_WANT_LIB_EXT1__ 1
+    #include <time.h>
 
     #if !defined(UINTPTR_MAX)
     //need uintptr_t type for NVMe capabilities to prevent warnings/errors
@@ -444,6 +446,7 @@ extern "C"
         INVALID_LENGTH           = 23,  // Binary file has a invalid length or the parameters for the length don't match the size of the fiile
         ERROR_WRITING_FILE       = 24, //LookTan added for fwrite check on May20'20
 		TIMEOUT					 = 25, //Pranali added for indicating operation timeout for SeaQueue
+        OS_TIMEOUT_TOO_LARGE     = 26, //Tyler added for cases where a requested timeout is larger than the OS is capable of supporting in passthrough
         UNKNOWN
     }eReturnValues;
 
@@ -511,6 +514,10 @@ extern "C"
     // Max & Min Helpers
     #define  M_Min(a,b)    (((a)<(b))?(a):(b))
     #define  M_Max(a,b)    (((a)>(b))?(a):(b))
+
+    // Convert the result to a boolean true or false (ternary operator)
+    // This is especially good for C++ since you get conversion warnings, but this is an acceptible method for C++ code
+    #define M_ToBool(expression) ((expression) > 0 ? true : false)
 
     typedef enum _eOutputFormat
     {
@@ -1284,6 +1291,20 @@ extern "C"
     int fill_Pattern_Buffer_Into_Another_Buffer(uint8_t *inPattern, uint32_t inpatternLength, uint8_t *ptrData, uint32_t dataLength);
 
     double convert_128bit_to_double(uint8_t * pData);
+
+    //meant to replace calling gmtime() function as this handles all the cross-platform weirdness calling the safest possible version
+    struct tm * get_UTCtime(const time_t *timer, struct tm *buf);
+
+    //meant to replace calling localtime() function as this handles all the cross-platform weirdness calling the safest possible version
+    struct tm * get_Localtime(const time_t *timer, struct tm *buf);
+
+    #define TIME_STRING_LENGTH 26
+    //meant to replace calling asctime() function as this handles all the cross-platform weirdness calling the safest possible version
+    char * get_Time_String_From_TM_Structure(const struct tm * timeptr, char *buffer, size_t bufferSize);
+
+    #define CURRENT_TIME_STRING_LENGTH TIME_STRING_LENGTH
+    //meant to replace calling ctime() function as this handles all the cross-platform weirdness calling the safest possible version
+    char* get_Current_Time_String(const time_t* timer, char *buffer, size_t bufferSize);
 
     //-----------------------------------------------------------------------------
     //
