@@ -465,6 +465,13 @@ extern "C"
         VERBOSITY_BUFFERS         = 4
     }eVerbosityLevels;
 
+    // json data type sets. used for formating data to a customer demands 
+    typedef enum _eDataFormat
+    {
+        JSON_DATA = 0,   //default
+        PREPYTHON_DATA = 1,
+    }eDataFormat;
+
     #define M_NibblesTo1ByteValue(n1, n0) ( \
     (uint8_t)( ((uint8_t)((n1) & 0x0F) << 4) | ((uint8_t)((n0) & 0x0F) << 0)) \
                                            )
