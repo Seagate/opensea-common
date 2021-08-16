@@ -916,7 +916,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
             if(userNameLength > 1)
             {
                 *userName = (char*)calloc(userNameLength, sizeof(char));
-                if(userName)
+                if (*userName)
                 {
                     strcpy(*userName, userInfo->pw_name);
                     success = true;
