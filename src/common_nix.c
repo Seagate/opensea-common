@@ -902,6 +902,16 @@ bool is_Running_Elevated()
     return isElevated;
 }
 
+static size_t get_Sys_Username_Max_Length()
+{
+    #if defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        //get this in case the system is configured differently
+        return sysconf(_SC_LOGIN_NAME_MAX);
+    #else
+        return 256;//this should be more than big enough. Some searching indicates 32 is usually the default
+    #endif
+}
+
 //If this is successful, this function allocates enough memory to hold the full user's name for you.
 //NOTE: This is static since it will probably only be used here...we may want to  enable this for use elsewhere if we want to print fancy warnings with the user's name
 static bool get_User_Name_From_ID(uid_t userID, char **userName)
@@ -909,20 +919,72 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
     bool success = false;
     if(userName)
     {
-        struct passwd *userInfo = getpwuid(userID);
-        if(userInfo)
-        {
-            size_t userNameLength = strlen(userInfo->pw_name) + 1;
-            if(userNameLength > 1)
+        #if defined _POSIX_C_SOURCE && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+            //use reentrant call instead.
+            char *rawBuffer = NULL;
+            long pwdSize = -1;
+            int error = 0;
+            struct passwd userInfoBuf;
+            struct passwd *userInfo = NULL;
+            #if defined (_SC_GETPW_R_SIZE_MAX)
+                pwdSize = sysconf(_SC_GETPW_R_SIZE_MAX);
+            #endif
+            if(pwdSize == -1)
             {
-                *userName = (char*)calloc(userNameLength, sizeof(char));
-                if (*userName)
+                //some linux man pages suggest 16384
+                pwdSize = 1024;//start with this, will increment it below if it fails to read
+            }
+            rawBuffer = C_CAST(char*, calloc(pwdSize, sizeof(char)));
+            if(rawBuffer)
+            {
+                while (ERANGE == (error = getpwuid_r(userID, &userInfoBuf, rawBuffer, pwdSize, &userInfo)))
                 {
-                    strcpy(*userName, userInfo->pw_name);
-                    success = true;
+                    //this means there was not enough memory allocated in order to read this.
+                    //realloc with more memory and try again
+                    char *temp = NULL;
+                    pwdSize *= 2;
+                    temp = realloc(rawBuffer, pwdSize);
+                    if(!temp)
+                    {
+                        safe_Free(rawBuffer);
+                        break;
+                    }
+                    rawBuffer = temp;
+                    memset(rawBuffer, 0, pwdSize);
+                }
+                if(error == 0 && userInfo && rawBuffer)
+                {
+                    //success
+                    size_t userNameLength = strlen(userInfo->pw_name);
+                    if(userNameLength > 0 && userNameLength <= get_Sys_Username_Max_Length())//make sure userNameLength is valid and not too large
+                    {
+                        *userName = C_CAST(char*, calloc(userNameLength + 1, sizeof(char)));//add 1 to ensure room for NULL termination
+                        if(*userName)
+                        {
+                            //strcpy(*userName, userInfo->pw_name);
+                            snprintf(*userName, userNameLength + 1, "%s", userInfo->pw_name);
+                            success = true;
+                        }
+                    }
+                }
+            }            
+        #else
+            struct passwd *userInfo = getpwuid(userID);
+            if(userInfo)
+            {
+                size_t userNameLength = strlen(userInfo->pw_name);
+                if(userNameLength > 0 && userNameLength <= get_Sys_Username_Max_Length())//make sure userNameLength is valid and not too large
+                {
+                    *userName = C_CAST(char*, calloc(userNameLength + 1, sizeof(char)));//add 1 to ensure room for NULL termination
+                    if(*userName)
+                    {
+                        //strcpy(*userName, userInfo->pw_name);
+                        snprintf(*userName, userNameLength + 1, "%s", userInfo->pw_name);
+                        success = true;
+                    }
                 }
             }
-        }
+        #endif
     }
     return success;
 }
