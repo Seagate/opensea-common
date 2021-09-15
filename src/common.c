@@ -382,7 +382,7 @@ int16_t kelvin_To_Fahrenheit(int16_t *kelvin)
 //use this to swap the bytes in a string...useful for ATA strings
 void byte_Swap_String(char *stringToChange)
 {
-    uint32_t stringIter = 0;
+    size_t stringIter = 0;
     size_t   stringlen = strlen(stringToChange);
     char *swappedString = (char *)calloc(stringlen, sizeof(char));
     if (swappedString == NULL)
@@ -1710,7 +1710,7 @@ uint64_t power_Of_Two(uint16_t exponent)
         result = UINT64_C(268435456);
         break;
     default:
-        result = 2 << (exponent - 1);
+        result = UINT64_C(2) << (exponent - 1);
         //{
         //    //Since this case is 31 or higher, we can start with the value above to reduce how long this loop runs
         //    uint32_t shiftCounter = UINT64_C(30);//uint32 in case we do hit something huge in this loop and roll all the way around a uint16
