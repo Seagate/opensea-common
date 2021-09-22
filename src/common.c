@@ -1398,8 +1398,9 @@ int get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersio
 #if defined _MSC_VER
     //Microsoft Visual C/C++ compiler (code is written to use the _MSC_FULL_VER from 2003 and later and we only really support 2013 and higher due to C99 usage)-TJE
     *compilerUsed = OPENSEA_COMPILER_MICROSOFT_VISUAL_C_CPP;
-    char msVersion[10] = { 0 };
-    sprintf(msVersion, "%u", _MSC_FULL_VER);
+#define MS_VERSION_STRING_LENGTH 10
+    char msVersion[MS_VERSION_STRING_LENGTH] = { 0 };
+    snprintf(msVersion, MS_VERSION_STRING_LENGTH, "%u", _MSC_FULL_VER);
     char msMajor[3] = { 0 };
     char msMinor[3] = { 0 };
     char msPatch[6] = { 0 };
@@ -1430,8 +1431,9 @@ int get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersio
 #elif defined __HP_aCC
     //untested
     *compilerUsed = OPENSEA_COMPILER_HP_A_CPP;
-    char hpVersion[7] = { 0 };
-    sprintf(hpVersion, "%u", __HP_aCC);
+#define HP_ACC_VERSION_STRING_LENGTH 7
+    char hpVersion[HP_ACC_VERSION_STRING_LENGTH] = { 0 };
+    snprintf(hpVersion, HP_ACC_VERSION_STRING_LENGTH, "%u", __HP_aCC);
     char hpMajor[3] = { 0 };
     char hpMinor[3] = { 0 };
     char hpPatch[3] = { 0 };
@@ -1458,8 +1460,9 @@ int get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersio
 #elif defined __INTEL_COMPILER
     //untested
     *compilerUsed = OPENSEA_COMPILER_INTEL_C_CPP;
+#define INTEL_VERSION_STRING_MAX_LENGTH 4;
     char intelVersion[4] = { 0 };
-    sprintf(intelVersion, "%u", __INTEL_COMPILER);
+    snprintf(intelVersion, INTEL_VERSION_STRING_MAX_LENGTH, "%u", __INTEL_COMPILER);
     char intelMajor[2] = { 0 };
     char intelMinor[2] = { 0 };
     char intelPatch[2] = { 0 };

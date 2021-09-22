@@ -330,9 +330,10 @@ eEndianness get_Compiled_Endianness(void)
 static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
 {
     int match = 0;
-    char *filename = (char*)calloc(strlen(entry->d_name) + 6, sizeof(char));
+    size_t filenameLength = strlen(entry->d_name) + 6;
+    char *filename = (char*)calloc(filenameLength, sizeof(char));
     struct stat s;
-    sprintf(filename, "/etc/%s", entry->d_name);
+    snprintf(filename, filenameLength, "/etc/%s", entry->d_name);
     if (stat(filename, &s) == 0)
     {
         if (S_ISREG(s.st_mode)) //must be a file. TODO: are links ok? I don't think we need them, but may need to revisit this.
@@ -455,8 +456,9 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         }
                         else
                         {
-                            char *fileName = (char *)calloc(strlen(osrelease[releaseIter]->d_name) + 6, sizeof(char));
-                            sprintf(fileName, "/etc/%s", osrelease[releaseIter]->d_name);
+                            size_t fileNameLength = strlen(osrelease[releaseIter]->d_name) + 6;
+                            char *fileName = (char *)calloc(fileNameLength, sizeof(char));
+                            snprintf(fileName, fileNameLength, "/etc/%s", osrelease[releaseIter]->d_name);
                             FILE *release = fopen(fileName, "r");
                             if (release)
                             {
@@ -489,8 +491,9 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 if(!linuxOSNameFound && versionFileCount > 0)//ideally this will only ever be 1
                 {
                     //For now, only reading the first entry...this SHOULD be ok.
-                    char *fileName = (char*)calloc(strlen(osversion[0]->d_name) + 6, sizeof(char));
-                    sprintf(fileName, "/etc/%s", osversion[0]->d_name);
+                    size_t fileNameLength = strlen(osversion[0]->d_name) + 6;
+                    char *fileName = (char*)calloc(fileNameLength, sizeof(char));
+                    snprintf(fileName, fileNameLength, "/etc/%s", osversion[0]->d_name);
                     FILE *version = fopen(fileName, "r");
                     if (version)
                     {
@@ -518,8 +521,9 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                     //this case means that we found the lbs-release file, but haven't read it yet because we kept searching for other files to use for version information first.
                     //So now we need to read it for the version information.
                     //We use this last because it may not contain something as friendly and useful as we would like that the other version files provide.
-                    char *fileName = (char *)calloc(strlen(osrelease[lsbReleaseOffset]->d_name) + 6, sizeof(char));
-                    sprintf(fileName, "/etc/%s", osrelease[lsbReleaseOffset]->d_name);
+                    size_t fileNameLength = strlen(osrelease[lsbReleaseOffset]->d_name) + 6;
+                    char *fileName = (char *)calloc(fileNameLength, sizeof(char));
+                    snprintf(fileName, fileNameLength, "/etc/%s", osrelease[lsbReleaseOffset]->d_name);
                     FILE *release = fopen(fileName, "r");
                     if (release)
                     {
@@ -594,7 +598,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             //if we couldn't find a name, set unknown linux os
             if (!linuxOSNameFound && operatingSystemName)
             {
-                sprintf(&operatingSystemName[0],"Unknown Linux OS");
+                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Linux OS");
             }
         }
         else if (strcmp("FREEBSD", unixUname.sysname) == 0)
@@ -610,11 +614,11 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             {
                 if (ret != FAILURE)
                 {
-                    sprintf(&operatingSystemName[0], "FreeBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.freeBSDVersion.majorVersion, versionNumber->versionType.freeBSDVersion.minorVersion);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "FreeBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.freeBSDVersion.majorVersion, versionNumber->versionType.freeBSDVersion.minorVersion);
                 }
                 else
                 {
-                    sprintf(&operatingSystemName[0], "Unknown FreeBSD OS Version");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown FreeBSD OS Version");
                 }
             }
         }
@@ -629,7 +633,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             //set OS name as Solaris "unixUname.version" for the OS Name
             if (operatingSystemName)
             {
-                sprintf(&operatingSystemName[0], "Solaris %s", unixUname.version);
+                snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Solaris %s", unixUname.version);
             }
             //The Solaris Version/name is stored in version
             if (isdigit(unixUname.version[0]))
@@ -655,40 +659,40 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 switch (versionNumber->versionType.macOSVersion.majorVersion)
                 {
                 case 5://puma
-                    sprintf(&operatingSystemName[0], "Mac OS X 10.1 Puma");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Mac OS X 10.1 Puma");
                     break;
                 case 6://jaguar
-                    sprintf(&operatingSystemName[0], "Mac OS X 10.2 Jaguar");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Mac OS X 10.2 Jaguar");
                     break;
                 case 7://panther
-                    sprintf(&operatingSystemName[0], "Mac OS X 10.3 Panther");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Mac OS X 10.3 Panther");
                     break;
                 case 8://tiger
-                    sprintf(&operatingSystemName[0], "Mac OS X 10.4 Tiger");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Mac OS X 10.4 Tiger");
                     break;
                 case 9://leopard
-                    sprintf(&operatingSystemName[0], "Mac OS X 10.5 Leopard");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Mac OS X 10.5 Leopard");
                     break;
                 case 10://snow leopard
-                    sprintf(&operatingSystemName[0], "Mac OS X 10.6 Snow Leopard");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Mac OS X 10.6 Snow Leopard");
                     break;
                 case 11://lion
-                    sprintf(&operatingSystemName[0], "Mac OS X 10.7 Lion");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Mac OS X 10.7 Lion");
                     break;
                 case 12://Mountain Lion
-                    sprintf(&operatingSystemName[0], "OS X 10.8 Mountain Lion");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "OS X 10.8 Mountain Lion");
                     break;
                 case 13://mavericks
-                    sprintf(&operatingSystemName[0], "OS X 10.9 Mavericks");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "OS X 10.9 Mavericks");
                     break;
                 case 14://Yosemite
-                    sprintf(&operatingSystemName[0], "OS X 10.10 Yosemite");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "OS X 10.10 Yosemite");
                     break;
                 case 15://el capitan
-                    sprintf(&operatingSystemName[0], "OS X 10.11 El Capitan");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "OS X 10.11 El Capitan");
                     break;
                 default:
-                    sprintf(&operatingSystemName[0], "Unknown Mac OS X Version");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Unknown Mac OS X Version");
                     break;
                 }
             }
@@ -700,7 +704,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             versionNumber->versionType.aixVersion.minorVersion = (uint16_t)atoi(unixUname.release);
             if (operatingSystemName)
             {
-                sprintf(&operatingSystemName[0], "AIX %"PRIu16".%"PRIu16"", versionNumber->versionType.aixVersion.majorVersion, versionNumber->versionType.aixVersion.minorVersion);
+                snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "AIX %"PRIu16".%"PRIu16"", versionNumber->versionType.aixVersion.majorVersion, versionNumber->versionType.aixVersion.minorVersion);
             }
         }
         else if (strcmp("DRAGONFLY", unixUname.sysname) == 0)
@@ -711,14 +715,14 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 ret = FAILURE;
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "Unknown Dragonfly BSD Version");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Unknown Dragonfly BSD Version");
                 }
             }
             else
             {
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "Dragonfly BSD %"PRIu16".%"PRIu16"", versionNumber->versionType.dragonflyVersion.majorVersion, versionNumber->versionType.dragonflyVersion.minorVersion);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Dragonfly BSD %"PRIu16".%"PRIu16"", versionNumber->versionType.dragonflyVersion.majorVersion, versionNumber->versionType.dragonflyVersion.minorVersion);
                 }
             }
         }
@@ -729,7 +733,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             versionNumber->versionType.openBSDVersion.minorVersion = (uint16_t)atoi(unixUname.release);
             if (operatingSystemName)
             {
-                sprintf(&operatingSystemName[0], "OpenBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.openBSDVersion.majorVersion, versionNumber->versionType.openBSDVersion.minorVersion);
+                snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "OpenBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.openBSDVersion.majorVersion, versionNumber->versionType.openBSDVersion.minorVersion);
             }
         }
         else if (strcmp("NETBSD", unixUname.sysname) == 0)
@@ -740,14 +744,14 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 ret = FAILURE;
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "Unknown NetBSD Version");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Unknown NetBSD Version");
                 }
             }
             else
             {
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "NetBSD %s", unixUname.release);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "NetBSD %s", unixUname.release);
                 }
             }
         }
@@ -759,14 +763,14 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 ret = FAILURE;
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "Unknown Tru64 Version");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Unknown Tru64 Version");
                 }
             }
             else
             {
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "Tru64 %s", unixUname.release);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Tru64 %s", unixUname.release);
                 }
             }
         }
@@ -778,14 +782,14 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 ret = FAILURE;
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "Unknown HP-UX Version");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Unknown HP-UX Version");
                 }
             }
             else
             {
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "HP-UX %"PRIu16".%"PRIu16"", versionNumber->versionType.hpuxVersion.majorVersion, versionNumber->versionType.hpuxVersion.minorVersion);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "HP-UX %"PRIu16".%"PRIu16"", versionNumber->versionType.hpuxVersion.majorVersion, versionNumber->versionType.hpuxVersion.minorVersion);
                 }
             }
         }
@@ -797,14 +801,14 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 ret = FAILURE;
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "Unknown ESXi Version");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Unknown ESXi Version");
                 }
             }
             else
             {
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "ESXi %s", unixUname.release);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "ESXi %s", unixUname.release);
                 }
             }
         }
