@@ -965,7 +965,6 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                         *userName = C_CAST(char*, calloc(userNameLength + 1, sizeof(char)));//add 1 to ensure room for NULL termination
                         if(*userName)
                         {
-                            //strcpy(*userName, userInfo->pw_name);
                             snprintf(*userName, userNameLength + 1, "%s", userInfo->pw_name);
                             success = true;
                         }
@@ -982,7 +981,6 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                     *userName = C_CAST(char*, calloc(userNameLength + 1, sizeof(char)));//add 1 to ensure room for NULL termination
                     if(*userName)
                     {
-                        //strcpy(*userName, userInfo->pw_name);
                         snprintf(*userName, userNameLength + 1, "%s", userInfo->pw_name);
                         success = true;
                     }

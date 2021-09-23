@@ -755,6 +755,11 @@ int metric_Unit_Convert(double *byteValue, char** metricUnit)
     int ret = SUCCESS;
     uint8_t unitCounter = 0;
 
+    if (!byteValue || !metricUnit || !*metricUnit)
+    {
+        return BAD_PARAMETER;
+    }
+
     while ((*byteValue / 1000.0) >= 1 && (unitCounter + 1) < 8)
     {
         *byteValue = *byteValue / 1000.00;
@@ -763,31 +768,31 @@ int metric_Unit_Convert(double *byteValue, char** metricUnit)
     switch (unitCounter)
     {
     case 0:
-        strcpy(*metricUnit, "B");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "B");
         break;
     case 1:
-        strcpy(*metricUnit, "KB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "KB");
         break;
     case 2:
-        strcpy(*metricUnit, "MB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "MB");
         break;
     case 3:
-        strcpy(*metricUnit, "GB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "GB");
         break;
     case 4:
-        strcpy(*metricUnit, "TB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "TB");
         break;
     case 5:
-        strcpy(*metricUnit, "PB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "PB");
         break;
     case 6:
-        strcpy(*metricUnit, "EB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "EB");
         break;
     case 7:
-        strcpy(*metricUnit, "ZB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "ZB");
         break;
     case 8:
-        strcpy(*metricUnit, "YB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "YB");
         break;
     default:
         ret = FAILURE;
@@ -800,6 +805,11 @@ int capacity_Unit_Convert(double *byteValue, char** capacityUnit)
     int ret = SUCCESS;
     uint8_t unitCounter = 0;
 
+    if (!byteValue || !capacityUnit || !*capacityUnit)
+    {
+        return BAD_PARAMETER;
+    }
+
     while ((*byteValue / 1024.0) >= 1 && (unitCounter + 1) < 8)
     {
         *byteValue = *byteValue / 1024.00;
@@ -808,31 +818,31 @@ int capacity_Unit_Convert(double *byteValue, char** capacityUnit)
     switch (unitCounter)
     {
     case 0:
-        strcpy(*capacityUnit, "B");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "B");
         break;
     case 1:
-        strcpy(*capacityUnit, "KiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "KiB");
         break;
     case 2:
-        strcpy(*capacityUnit, "MiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "MiB");
         break;
     case 3:
-        strcpy(*capacityUnit, "GiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "GiB");
         break;
     case 4:
-        strcpy(*capacityUnit, "TiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "TiB");
         break;
     case 5:
-        strcpy(*capacityUnit, "PiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "PiB");
         break;
     case 6:
-        strcpy(*capacityUnit, "EiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "EiB");
         break;
     case 7:
-        strcpy(*capacityUnit, "ZiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "ZiB");
         break;
     case 8:
-        strcpy(*capacityUnit, "YiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "YiB");
         break;
     default:
         ret = FAILURE;

@@ -998,6 +998,8 @@ extern "C"
     //-----------------------------------------------------------------------------
     void print_Return_Enum(char *funcName, int ret);
 
+#define UNIT_STRING_LENGTH 4
+
     //-----------------------------------------------------------------------------
     //
     //  metric_Unit_Convert()
@@ -1007,7 +1009,7 @@ extern "C"
     //
     //  Entry:
     //!   \param[in] byteValue = value specifying a number of bytes
-    //!   \param[in] metricUnit = char ptr to hold the metric unit. This can be NULL
+    //!   \param[in] metricUnit = char ptr to hold the metric unit. 
     //!
     //  Exit:
     //!   \return SUCCESS on successful completion, !SUCCESS if problems encountered
@@ -1024,7 +1026,7 @@ extern "C"
     //
     //  Entry:
     //!   \param[in] byteValue = value specifying a number of bytes
-    //!   \param[in] capacityUnit = char ptr to hold the metric unit. This can be NULL
+    //!   \param[in] capacityUnit = char ptr to hold the metric unit. 
     //!
     //  Exit:
     //!   \return SUCCESS on successful completion, !SUCCESS if problems encountered
