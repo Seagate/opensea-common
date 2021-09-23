@@ -1204,6 +1204,8 @@ extern "C"
 
     uint64_t power_Of_Two(uint16_t exponent);
 
+    double raise_to_power(double number, double power);
+
     //-----------------------------------------------------------------------------
     //
     //  fill_Random_Pattern_In_Buffer(uint8_t *ptrData, uint32_t dataLength)
