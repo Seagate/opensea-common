@@ -408,7 +408,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                     fseek(release,ftell(release),SEEK_END);
                     long int releaseSize = ftell(release);
                     rewind(release);
-                    char *releaseMemory = (char*)calloc(releaseSize,sizeof(char));
+                    char *releaseMemory = (char*)calloc(releaseSize, sizeof(char));
                     if (fread(releaseMemory, sizeof(char), releaseSize, release))
                     {
                         //Use the "PRETTY_NAME" field
@@ -422,8 +422,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
 
                                 if (operatingSystemName)
                                 {
-                                    strncpy(&operatingSystemName[0], tok + strlen("PRETTY_NAME=\""), M_Min(strlen(tok) - 1 -strlen("PRETTY_NAME=\""), OS_NAME_SIZE - 1));
-                                    operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", strlen(tok) - 1 - strlen("PRETTY_NAME=\""), tok + strlen("PRETTY_NAME=\""));
                                 }
                                 done = true;
                                 break;
@@ -472,8 +471,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                                     linuxOSNameFound = true;
                                     if (operatingSystemName)
                                     {
-                                        strncpy(&operatingSystemName[0], releaseMemory, OS_NAME_SIZE - 1);
-                                        operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", releaseSize, releaseMemory);
                                     }
                                 }
                                 safe_Free(releaseMemory);
@@ -507,8 +505,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                             linuxOSNameFound = true;
                             if (operatingSystemName)
                             {
-                                strncpy(&operatingSystemName[0], versionMemory, OS_NAME_SIZE - 1);
-                                operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", versionSize, versionMemory);
                             }
                         }
                         safe_Free(versionMemory);
@@ -537,8 +534,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                             linuxOSNameFound = true;
                             if (operatingSystemName)
                             {
-                                strncpy(&operatingSystemName[0], releaseMemory, OS_NAME_SIZE - 1);
-                                operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", releaseSize, releaseMemory);
                             }
                         }
                         safe_Free(releaseMemory);
@@ -587,8 +583,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         linuxOSNameFound = true;
                         if (operatingSystemName)
                         {
-                            strncpy(&operatingSystemName[0], issueMemory, OS_NAME_SIZE - 1);
-                            operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", issueSize, issueMemory);
                         }
                     }
                     safe_Free(issueMemory);
