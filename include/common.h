@@ -33,14 +33,13 @@ extern "C"
 #if defined (__MINGW32__) || defined (__MINGW64__)
 #define __USE_MINGW_ANSI_STDIO 1
 #endif*/
+#define __STDC_WANT_LIB_EXT1__ 1
     #include <stdio.h>
     #include <time.h>
     #include <string.h>
     #include <stdlib.h>
     #include <inttypes.h>
     #include <errno.h> //for printing std errors to the screen...more useful for 'nix OSs, but useful everywhere since it is at least standard functions
-    #define __STDC_WANT_LIB_EXT1__ 1
-    #include <time.h>
 
     #if !defined(UINTPTR_MAX)
     //need uintptr_t type for NVMe capabilities to prevent warnings/errors
