@@ -1736,6 +1736,18 @@ uint64_t power_Of_Two(uint16_t exponent)
     return result;
 }
 
+double raise_to_power(double number, double power)
+{
+    double result = 1.0;
+    if (power == 1)
+        return number;
+    for (int64_t i = -1; i >= power && power != 0; i--) {
+
+        result = result * (1/number);
+    }
+    return result;
+}
+
 //making it look similar to a std lib function like isPrint.
 int is_ASCII(int c)
 {
