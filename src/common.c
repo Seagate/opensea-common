@@ -401,7 +401,7 @@ void byte_Swap_String(char *stringToChange)
             }
         }
     }
-    strncpy(stringToChange, swappedString, stringlen);
+    snprintf(stringToChange, stringlen, "%s", swappedString);
     free(swappedString);
 }
 void remove_Whitespace_Left(char *stringToChange)
