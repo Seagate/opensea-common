@@ -1677,6 +1677,8 @@ extern "C"
     //-----------------------------------------------------------------------------
     void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue);
 
+    char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source);
+
 #if defined (__cplusplus)
 } //extern "C"
 #endif

@@ -1776,3 +1776,18 @@ void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue)
 
     *decimalValue = sign * (float)pow(2.0, exponent) * mantisa;
 }
+
+char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source)
+{
+    if(destination && source && destinationSizeBytes > 0)
+    {
+        char *dup = strdup(destination);
+        if(dup)
+        {
+            snprintf(destination, destinationSizeBytes, "%s%s", dup, source);
+            safe_Free(dup);
+            return destination;
+        }
+    }
+    return NULL;
+}
