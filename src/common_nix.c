@@ -422,7 +422,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
 
                                 if (operatingSystemName)
                                 {
-                                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", strlen(tok) - 1 - strlen("PRETTY_NAME=\""), tok + strlen("PRETTY_NAME=\""));
+                                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(tok) - 1 - strlen("PRETTY_NAME=\"")), tok + strlen("PRETTY_NAME=\""));
                                 }
                                 done = true;
                                 break;
@@ -471,7 +471,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                                     linuxOSNameFound = true;
                                     if (operatingSystemName)
                                     {
-                                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", releaseSize, releaseMemory);
+                                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, releaseSize), releaseMemory);
                                     }
                                 }
                                 safe_Free(releaseMemory);
@@ -505,7 +505,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                             linuxOSNameFound = true;
                             if (operatingSystemName)
                             {
-                                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", versionSize, versionMemory);
+                                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, versionSize), versionMemory);
                             }
                         }
                         safe_Free(versionMemory);
@@ -534,7 +534,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                             linuxOSNameFound = true;
                             if (operatingSystemName)
                             {
-                                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", releaseSize, releaseMemory);
+                                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, releaseSize), releaseMemory);
                             }
                         }
                         safe_Free(releaseMemory);
@@ -583,7 +583,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         linuxOSNameFound = true;
                         if (operatingSystemName)
                         {
-                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", issueSize, issueMemory);
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, issueSize), issueMemory);
                         }
                     }
                     safe_Free(issueMemory);
