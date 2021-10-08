@@ -381,11 +381,12 @@ extern "C"
         }versionType;
     }OSVersionNumber, *ptrOSVersionNumber;
 
-    #define OS_NAME_SIZE (40)
+    //very large due to utsname potentially having different sizes for some fields: https://man7.org/linux/man-pages/man2/uname.2.html
+    #define OS_NAME_SIZE (512) 
 
     //-----------------------------------------------------------------------------
     //
-    // get_Operating_System_Version_And_Name(eOSType *osType, ptrOSVersionNumber versionNumber, char *operatingSystemName[40])
+    // get_Operating_System_Version_And_Name(eOSType *osType, ptrOSVersionNumber versionNumber, char *operatingSystemName)
     //
     // \brief   Description: Gets the version number of the OS opensea-* libs are currently running on. Windows will get the OS version number (not Win7 vs Win8, but 6.1 vs 6.2). Nix systems will get whatever is placed into uname -r (solaris will also get uname -v information)
     //
