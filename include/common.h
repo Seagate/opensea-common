@@ -1679,6 +1679,8 @@ extern "C"
 
     char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source);
 
+    char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, const char* source, int sourceLength);
+
 #if defined (__cplusplus)
 } //extern "C"
 #endif

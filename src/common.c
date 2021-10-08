@@ -1791,3 +1791,18 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
     }
     return NULL;
 }
+
+char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, const char* source, int sourceLength)
+{
+    if(destination && source && destinationSizeBytes > 0 && sourceLength > 0)
+    {
+        char *dup = strdup(destination);
+        if(dup)
+        {
+            snprintf(destination, destinationSizeBytes, "%s%.*s", dup, sourceLength, source);
+            safe_Free(dup);
+            return destination;
+        }
+    }
+    return NULL;
+}
