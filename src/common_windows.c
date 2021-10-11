@@ -648,21 +648,21 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 case 0:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2016");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2016");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows 10");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10");
                     }
                     break;
                 default:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2016 or higher");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2016 or higher");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows 10 or higher");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10 or higher");
                     }
                     break;
                 }
@@ -673,51 +673,51 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 case 3:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2012 R2");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2012 R2");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows 8.1");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 8.1");
                     }
                     break;
                 case 2:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2012");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2012");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows 8");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 8");
                     }
                     break;
                 case 1:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2008 R2");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2008 R2");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows 7");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 7");
                     }
                     break;
                 case 0:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2008");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2008");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows Vista");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Vista");
                     }
                     break;
                 default:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2012 R2 or higher");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2012 R2 or higher");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows 8.1 or higher");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 8.1 or higher");
                     }
                     break;
                 }
@@ -728,38 +728,38 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 case 2:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2003");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2003");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows XP 64-Bit Edition");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows XP 64-Bit Edition");
                     }
                     break;
                 case 1:
-                    sprintf(&operatingSystemName[0], "Windows XP");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows XP");
                     break;
                 case 0:
-                    sprintf(&operatingSystemName[0], "Windows 2000");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 2000");
                     break;
                 default:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2003 or higher");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2003 or higher");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "XP or higher");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "XP or higher");
                     }
                     break;
                 }
                 break;
             default:
-                sprintf(&operatingSystemName[0], "Unknown Windows OS");
+                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows OS");
                 break;
             }
             if (isWindowsPE)
             {
-                strcat(operatingSystemName, " (PE)");
+                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%s (PE)", operatingSystemName);
             }
         }
     }

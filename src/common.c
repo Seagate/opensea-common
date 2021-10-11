@@ -401,7 +401,7 @@ void byte_Swap_String(char *stringToChange)
             }
         }
     }
-    strncpy(stringToChange, swappedString, stringlen);
+    snprintf(stringToChange, stringlen, "%s", swappedString);
     free(swappedString);
 }
 void remove_Whitespace_Left(char *stringToChange)
@@ -755,6 +755,11 @@ int metric_Unit_Convert(double *byteValue, char** metricUnit)
     int ret = SUCCESS;
     uint8_t unitCounter = 0;
 
+    if (!byteValue || !metricUnit || !*metricUnit)
+    {
+        return BAD_PARAMETER;
+    }
+
     while ((*byteValue / 1000.0) >= 1 && (unitCounter + 1) < 8)
     {
         *byteValue = *byteValue / 1000.00;
@@ -763,31 +768,31 @@ int metric_Unit_Convert(double *byteValue, char** metricUnit)
     switch (unitCounter)
     {
     case 0:
-        strcpy(*metricUnit, "B");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "B");
         break;
     case 1:
-        strcpy(*metricUnit, "KB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "KB");
         break;
     case 2:
-        strcpy(*metricUnit, "MB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "MB");
         break;
     case 3:
-        strcpy(*metricUnit, "GB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "GB");
         break;
     case 4:
-        strcpy(*metricUnit, "TB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "TB");
         break;
     case 5:
-        strcpy(*metricUnit, "PB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "PB");
         break;
     case 6:
-        strcpy(*metricUnit, "EB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "EB");
         break;
     case 7:
-        strcpy(*metricUnit, "ZB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "ZB");
         break;
     case 8:
-        strcpy(*metricUnit, "YB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "YB");
         break;
     default:
         ret = FAILURE;
@@ -800,6 +805,11 @@ int capacity_Unit_Convert(double *byteValue, char** capacityUnit)
     int ret = SUCCESS;
     uint8_t unitCounter = 0;
 
+    if (!byteValue || !capacityUnit || !*capacityUnit)
+    {
+        return BAD_PARAMETER;
+    }
+
     while ((*byteValue / 1024.0) >= 1 && (unitCounter + 1) < 8)
     {
         *byteValue = *byteValue / 1024.00;
@@ -808,31 +818,31 @@ int capacity_Unit_Convert(double *byteValue, char** capacityUnit)
     switch (unitCounter)
     {
     case 0:
-        strcpy(*capacityUnit, "B");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "B");
         break;
     case 1:
-        strcpy(*capacityUnit, "KiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "KiB");
         break;
     case 2:
-        strcpy(*capacityUnit, "MiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "MiB");
         break;
     case 3:
-        strcpy(*capacityUnit, "GiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "GiB");
         break;
     case 4:
-        strcpy(*capacityUnit, "TiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "TiB");
         break;
     case 5:
-        strcpy(*capacityUnit, "PiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "PiB");
         break;
     case 6:
-        strcpy(*capacityUnit, "EiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "EiB");
         break;
     case 7:
-        strcpy(*capacityUnit, "ZiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "ZiB");
         break;
     case 8:
-        strcpy(*capacityUnit, "YiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "YiB");
         break;
     default:
         ret = FAILURE;
@@ -1398,17 +1408,15 @@ int get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersio
 #if defined _MSC_VER
     //Microsoft Visual C/C++ compiler (code is written to use the _MSC_FULL_VER from 2003 and later and we only really support 2013 and higher due to C99 usage)-TJE
     *compilerUsed = OPENSEA_COMPILER_MICROSOFT_VISUAL_C_CPP;
-    char msVersion[10] = { 0 };
-    sprintf(msVersion, "%u", _MSC_FULL_VER);
+#define MS_VERSION_STRING_LENGTH 10
+    char msVersion[MS_VERSION_STRING_LENGTH] = { 0 };
+    snprintf(msVersion, MS_VERSION_STRING_LENGTH, "%u", _MSC_FULL_VER);
     char msMajor[3] = { 0 };
     char msMinor[3] = { 0 };
     char msPatch[6] = { 0 };
-    strncpy(msMajor,&msVersion[0], 2);
-    msMajor[2] = '\0';
-    strncpy(msMinor,&msVersion[2], 2);
-    msMinor[2] = '\0';
-    strncpy(msPatch,&msVersion[4], 5);
-    msPatch[5] = '\0';
+    snprintf(msMajor, 3, "%.2s", &msVersion[0]);
+    snprintf(msMinor, 3, "%.2s", &msVersion[2]);
+    snprintf(msPatch, 6, "%.5s", &msVersion[4]);
     compilerVersionInfo->major = (uint16_t)atoi(msMajor);
     compilerVersionInfo->minor = (uint16_t)atoi(msMinor);
     compilerVersionInfo->patch = (uint16_t)atoi(msPatch);
@@ -1430,14 +1438,15 @@ int get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersio
 #elif defined __HP_aCC
     //untested
     *compilerUsed = OPENSEA_COMPILER_HP_A_CPP;
-    char hpVersion[7] = { 0 };
-    sprintf(hpVersion, "%u", __HP_aCC);
+#define HP_ACC_VERSION_STRING_LENGTH 7
+    char hpVersion[HP_ACC_VERSION_STRING_LENGTH] = { 0 };
+    snprintf(hpVersion, HP_ACC_VERSION_STRING_LENGTH, "%u", __HP_aCC);
     char hpMajor[3] = { 0 };
     char hpMinor[3] = { 0 };
     char hpPatch[3] = { 0 };
-    strncpy(hpMajor, &hpVersion[0], 2);
-    strncpy(hpMinor, &hpVersion[2], 2);
-    strncpy(hpPatch, &hpVersion[4], 2);
+    snprintf(hpMajor, 3, "%.2s", &hpVersion[0]);
+    snprintf(hpMinor, 3, "%.2s", &hpVersion[2]);
+    snprintf(hpPatch, 3, "%.2s", &hpVersion[4]);
     compilerVersionInfo->major = (uint16_t)atoi(hpMajor);
     compilerVersionInfo->minor = (uint16_t)atoi(hpMinor);
     compilerVersionInfo->patch = (uint16_t)atoi(hpPatch);
@@ -1458,14 +1467,15 @@ int get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersio
 #elif defined __INTEL_COMPILER
     //untested
     *compilerUsed = OPENSEA_COMPILER_INTEL_C_CPP;
+#define INTEL_VERSION_STRING_MAX_LENGTH 4;
     char intelVersion[4] = { 0 };
-    sprintf(intelVersion, "%u", __INTEL_COMPILER);
+    snprintf(intelVersion, INTEL_VERSION_STRING_MAX_LENGTH, "%u", __INTEL_COMPILER);
     char intelMajor[2] = { 0 };
     char intelMinor[2] = { 0 };
     char intelPatch[2] = { 0 };
-    strncpy(intelMajor, &intelVersion[0], 1);
-    strncpy(intelMinor, &intelVersion[1], 1);
-    strncpy(intelPatch, &intelVersion[2], 1);
+    snprintf(intelMajor, 2, "%.1s", &intelVersion[0]);
+    snprintf(intelMinor, 2, "%.1s", &intelVersion[1]);
+    snprintf(intelPatch, 2, "%.1s", &intelVersion[2]);
     compilerVersionInfo->major = (uint16_t)atoi(intelMajor);
     compilerVersionInfo->minor = (uint16_t)atoi(intelMinor);
     compilerVersionInfo->patch = (uint16_t)atoi(intelPatch);
@@ -1765,4 +1775,34 @@ void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue)
     }
 
     *decimalValue = sign * (float)pow(2.0, exponent) * mantisa;
+}
+
+char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source)
+{
+    if(destination && source && destinationSizeBytes > 0)
+    {
+        char *dup = strdup(destination);
+        if(dup)
+        {
+            snprintf(destination, destinationSizeBytes, "%s%s", dup, source);
+            safe_Free(dup);
+            return destination;
+        }
+    }
+    return NULL;
+}
+
+char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, const char* source, int sourceLength)
+{
+    if(destination && source && destinationSizeBytes > 0 && sourceLength > 0)
+    {
+        char *dup = strdup(destination);
+        if(dup)
+        {
+            snprintf(destination, destinationSizeBytes, "%s%.*s", dup, sourceLength, source);
+            safe_Free(dup);
+            return destination;
+        }
+    }
+    return NULL;
 }

@@ -33,6 +33,8 @@ extern "C"
     #include <ntddscsi.h>
     #define NTDDSCSI_INCLUDED
 #endif
+    //more info on max path in Windows
+    //https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd
     #define OPENSEA_PATH_MAX MAX_PATH
 
     #define SYSTEM_PATH_SEPARATOR '\\'

@@ -682,10 +682,11 @@ int get_Current_User_Name(char **userName)
     if (userName)
     {
         //while unix functions are there, they are all stubs, so we're just going to return "efi" as the username.
-        *userName = (char*)calloc(4, sizeof(char));
+#define UEFI_USER_NAME_LENGTH 4
+        *userName = (char*)calloc(UEFI_USER_NAME_LENGTH, sizeof(char));
         if (*userName)
         {
-            sprintf(*userName, "efi");
+            snprintf(*userName, UEFI_USER_NAME_LENGTH, "efi");
         }
         else
         {

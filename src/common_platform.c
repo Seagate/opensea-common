@@ -227,22 +227,28 @@ void print_OS_Version(ptrOSVersionNumber versionNumber)
 int replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char *newFileName)
 {
     char *ptr = NULL;
-    if (NULL != (ptr = strrchr(fullPath, '/')))
+    char *dup = NULL;
+    size_t ptrLen = 0;
+    if (NULL != (ptr = strrchr(fullPath, SYSTEM_PATH_SEPARATOR)))
     {
-        //'nix full path
-        ptr += 1;
-    }
-    else if (NULL != (ptr = strrchr(fullPath, '\\')))
-    {
-        //Windows full path
         ptr += 1;
     }
     else
     {
         return FAILURE;
     }
+    ptrLen = strlen(ptr);
     //now that we have a valid pointer, set all the remaining characters to null, then set the new file name in place.
-    memset(ptr, 0, strlen(ptr));
-    strcat(ptr, newFileName);
-    return SUCCESS;
+    memset(ptr, 0, ptrLen);
+    dup = strdup(ptr);
+    if(dup)
+    {
+        snprintf(ptr, ptrLen, "%s%s", dup, newFileName);
+        safe_Free(dup);
+        return SUCCESS;
+    }
+    else
+    {
+        return FAILURE;
+    }
 }
