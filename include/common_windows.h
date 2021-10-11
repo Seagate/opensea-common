@@ -116,6 +116,24 @@ extern "C"
     //-----------------------------------------------------------------------------
     bool is_Windows_10_Or_Higher(void);
 
+    //Functions to help with different sub versions of Windows 10
+    bool is_Windows_10_Version_1507_Or_Higher(void);
+    bool is_Windows_10_Version_1511_Or_Higher(void);
+    bool is_Windows_10_Version_1607_Or_Higher(void);
+    bool is_Windows_10_Version_1703_Or_Higher(void);
+    bool is_Windows_10_Version_1709_Or_Higher(void);
+    bool is_Windows_10_Version_1803_Or_Higher(void);
+    bool is_Windows_10_Version_1809_Or_Higher(void);
+    bool is_Windows_10_Version_1903_Or_Higher(void);
+    bool is_Windows_10_Version_1909_Or_Higher(void);
+    bool is_Windows_10_Version_2004_Or_Higher(void);
+    bool is_Windows_10_Version_20H2_Or_Higher(void);
+    bool is_Windows_10_Version_21H1_Or_Higher(void);
+    bool is_Windows_10_Version_21H2_Or_Higher(void);
+    
+    //Windows 11 check below
+    bool is_Windows_11_Version_21H2_Or_Higher(void);
+
     //-----------------------------------------------------------------------------
     //
     //  is_Windows_PE()

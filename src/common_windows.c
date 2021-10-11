@@ -484,6 +484,202 @@ bool is_Windows_10_Or_Higher(void)
     return isWindows10OrHigher;
 }
 
+bool is_Windows_10_Version_1507_Or_Higher(void)
+{
+    bool isWindows10_1507OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 10240)
+    {
+        //Win10 or higher
+        isWindows10_1507OrHigher = true;
+    }
+    return isWindows10_1507OrHigher;
+}
+
+bool is_Windows_10_Version_1511_Or_Higher(void)
+{
+    bool isWindows10_1511OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 10586)
+    {
+        //Win10 or higher
+        isWindows10_1511OrHigher = true;
+    }
+    return isWindows10_1511OrHigher;
+}
+
+bool is_Windows_10_Version_1607_Or_Higher(void)
+{
+    bool isWindows10_1607OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 14393)
+    {
+        //Win10 or higher
+        isWindows10_1607OrHigher = true;
+    }
+    return isWindows10_1607OrHigher;
+}
+
+bool is_Windows_10_Version_1703_Or_Higher(void)
+{
+    bool isWindows10_1703OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 15063)
+    {
+        //Win10 or higher
+        isWindows10_1703OrHigher = true;
+    }
+    return isWindows10_1703OrHigher;
+}
+
+bool is_Windows_10_Version_1709_Or_Higher(void)
+{
+    bool isWindows10_1709OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 16299)
+    {
+        //Win10 or higher
+        isWindows10_1709OrHigher = true;
+    }
+    return isWindows10_1709OrHigher;
+}
+
+bool is_Windows_10_Version_1803_Or_Higher(void)
+{
+    bool isWindows10_1803OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 17134)
+    {
+        //Win10 or higher
+        isWindows10_1803OrHigher = true;
+    }
+    return isWindows10_1803OrHigher;
+}
+
+bool is_Windows_10_Version_1809_Or_Higher(void)
+{
+    bool isWindows10_1809OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 17763)
+    {
+        //Win10 or higher
+        isWindows10_1809OrHigher = true;
+    }
+    return isWindows10_1809OrHigher;
+}
+
+bool is_Windows_10_Version_1903_Or_Higher(void)
+{
+    bool isWindows10_1903OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 18362)
+    {
+        //Win10 or higher
+        isWindows10_1903OrHigher = true;
+    }
+    return isWindows10_1903OrHigher;
+}
+
+bool is_Windows_10_Version_1909_Or_Higher(void)
+{
+    bool isWindows10_1909OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 18363)
+    {
+        //Win10 or higher
+        isWindows10_1909OrHigher = true;
+    }
+    return isWindows10_1909OrHigher;
+}
+
+bool is_Windows_10_Version_2004_Or_Higher(void)
+{
+    bool isWindows10_2004OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 19041)
+    {
+        //Win10 or higher
+        isWindows10_2004OrHigher = true;
+    }
+    return isWindows10_2004OrHigher;
+}
+
+bool is_Windows_10_Version_20H2_Or_Higher(void)
+{
+    bool isWindows10_20H2OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 19042)
+    {
+        //Win10 or higher
+        isWindows10_20H2OrHigher = true;
+    }
+    return isWindows10_20H2OrHigher;
+}
+
+bool is_Windows_10_Version_21H1_Or_Higher(void)
+{
+    bool isWindows10_21H1OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 19043)
+    {
+        //Win10 or higher
+        isWindows10_21H1OrHigher = true;
+    }
+    return isWindows10_21H1OrHigher;
+}
+
+bool is_Windows_10_Version_21H2_Or_Higher(void)
+{
+    bool isWindows10_21H2OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 19044)
+    {
+        //Win10 or higher
+        isWindows10_21H2OrHigher = true;
+    }
+    return isWindows10_21H2OrHigher;
+}
+
+bool is_Windows_11_Version_21H2_Or_Higher(void)
+{
+    bool isWindows10_21H2OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 22000)
+    {
+        //Win10 or higher
+        isWindows10_21H2OrHigher = true;
+    }
+    return isWindows10_21H2OrHigher;
+}
+
 bool is_Windows_Server_OS(void)
 {
     bool isWindowsServer = false;
@@ -648,21 +844,94 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 case 0:
                     if (isWindowsServer)
                     {
-                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2016");
+                        switch (versionNumber->versionType.windowsVersion.buildNumber)
+                        {
+                        case 17763:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2019");
+                            break;
+                        case 14393:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2016");
+                            break;
+                        case 18362:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 1903");
+                            break;
+                        case 18363:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 1909");
+                            break;
+                        case 19041:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 2004");
+                            break;
+                        case 19042:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 20H2");
+                            break;
+                        case 20348:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2022");
+                            break;
+                        default:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows Server Version");
+                            break;
+                        }
                     }
                     else
                     {
-                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10");
+                        switch (versionNumber->versionType.windowsVersion.buildNumber)
+                        {
+                        case 10240:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1507");
+                            break;
+                        case 10586:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1511");
+                            break;
+                        case 14393:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1607");
+                            break;
+                        case 15063:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1703");
+                            break;
+                        case 16299:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1709");
+                            break;
+                        case 17134:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1803");
+                            break;
+                        case 17763:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1809");
+                            break;
+                        case 18362:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1903");
+                            break;
+                        case 18363:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1909");
+                            break;
+                        case 19041:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 2004");
+                            break;
+                        case 19042:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 20H2");
+                            break;
+                        case 19043:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 21H1");
+                            break;
+                        case 19044:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 21H2");
+                            break;
+                        case 22000:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 11, version 21H2");
+                            break;
+                        default:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows 10/11 version");
+                            break;
+                        }
                     }
                     break;
                 default:
                     if (isWindowsServer)
                     {
-                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2016 or higher");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows Server Version");
                     }
                     else
                     {
-                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10 or higher");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows Version");
                     }
                     break;
                 }
