@@ -267,11 +267,11 @@ extern "C"
     #define WIN_API_TARGET_WIN10_15063      0x0A000004     //10.0.15063.0 //Win 10 API, build 15063
     #define WIN_API_TARGET_WIN10_16299      0x0A000005     //10.0.16299.0 //Win 10 API, build 16299
     #define WIN_API_TARGET_WIN10_17134      0x0A000006     //10.0.17134.0 //Win 10 API, build 17134
-    #define WIN_API_TARGET_WIN10_17763      0x0A000007    //10.0.17763.0 //Win 10 API, build 17763
-    #define WIN_API_TARGET_WIN10_18362      0x0A000008      //10.0.18362.0 //Win 10 API, build 18362
-    #define WIN_API_TARGET_WIN10_19041      0x0A000009      //10.0.19041.0 //Win 10 API, build 19041
-    #define WIN_API_TARGET_WIN10_20348      0x0A00000A      //10.0.20348.0 //Win 10 API, build 20348
-
+    #define WIN_API_TARGET_WIN10_17763      0x0A000007     //10.0.17763.0 //Win 10 API, build 17763
+    #define WIN_API_TARGET_WIN10_18362      0x0A000008     //10.0.18362.0 //Win 10 API, build 18362
+    #define WIN_API_TARGET_WIN10_19041      0x0A000009     //10.0.19041.0 //Win 10 API, build 19041
+    #define WIN_API_TARGET_WIN10_20348      0x0A00000A     //10.0.20348.0 //Win 10 API, build 20348
+    #define WIN_API_TARGET_WIN10_22000      0x0A00000B     //10.0.22000.0 //Win 10 API, build 22000
         
 #if defined (__cplusplus)
 }
