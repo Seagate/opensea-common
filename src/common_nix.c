@@ -353,7 +353,7 @@ static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
             }
         }
     }
-    safe_Free(filename);
+    safe_Free(filename)
     return match;
 }
 
@@ -430,7 +430,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                             tok = strtok(NULL, "\n");
                         }
                     }
-                    safe_Free(releaseMemory);
+                    safe_Free(releaseMemory)
                     fclose(release);
                 }
             }
@@ -474,10 +474,10 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                                         snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, releaseSize), releaseMemory);
                                     }
                                 }
-                                safe_Free(releaseMemory);
+                                safe_Free(releaseMemory)
                                 fclose(release);
                             }
-                            safe_Free(fileName);
+                            safe_Free(fileName)
                         }
                         if (linuxOSNameFound)
                         {
@@ -508,10 +508,10 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                                 snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, versionSize), versionMemory);
                             }
                         }
-                        safe_Free(versionMemory);
+                        safe_Free(versionMemory)
                         fclose(version);
                     }
-                    safe_Free(fileName);
+                    safe_Free(fileName)
                 }
                 if (!linuxOSNameFound && lsbReleaseOffset >= 0)
                 {
@@ -537,21 +537,21 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                                 snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, releaseSize), releaseMemory);
                             }
                         }
-                        safe_Free(releaseMemory);
+                        safe_Free(releaseMemory)
                         fclose(release);
                     }
-                    safe_Free(fileName);
+                    safe_Free(fileName)
                 }
                 for (int iter = 0; iter < releaseFileCount; ++iter)
                 {
-                    safe_Free(osrelease[iter]);
+                    safe_Free(osrelease[iter])
                 }
                 for (int iter = 0; iter < versionFileCount; ++iter)
                 {
-                    safe_Free(osversion[iter]);
+                    safe_Free(osversion[iter])
                 }
-                safe_Free(osrelease);
-                safe_Free(osversion);
+                safe_Free(osrelease)
+                safe_Free(osversion)
                 if (linuxOSNameFound)
                 {
                     //remove any control characters from the string. We don't need them for what we're doing
@@ -586,7 +586,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, issueSize), issueMemory);
                         }
                     }
-                    safe_Free(issueMemory);
+                    safe_Free(issueMemory)
                     fclose(issue);
                 }
             }
@@ -945,7 +945,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                     temp = realloc(rawBuffer, pwdSize);
                     if(!temp)
                     {
-                        safe_Free(rawBuffer);
+                        safe_Free(rawBuffer)
                         break;
                     }
                     rawBuffer = temp;

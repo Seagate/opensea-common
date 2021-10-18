@@ -244,7 +244,7 @@ int replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char *newFileName
     if(dup)
     {
         snprintf(ptr, ptrLen, "%s%s", dup, newFileName);
-        safe_Free(dup);
+        safe_Free(dup)
         return SUCCESS;
     }
     else

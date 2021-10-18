@@ -274,17 +274,17 @@ void *realloc_page_aligned(void *alignedPtr, size_t originalSize, size_t size)
 
 void nibble_Swap(uint8_t *byteToSwap)
 {
-    *byteToSwap = ((*byteToSwap & 0x0F) << 4) | ((*byteToSwap & 0xF0) >> 4);
+    *byteToSwap = C_CAST(uint8_t, ((*byteToSwap & 0x0F) << 4)) | C_CAST(uint8_t, ((*byteToSwap & 0xF0) >> 4));
 }
 
 void byte_Swap_16(uint16_t *wordToSwap)
 {
-    *wordToSwap = ((*wordToSwap & 0x00FF) << 8) | ((*wordToSwap & 0xFF00) >> 8);
+    *wordToSwap = C_CAST(uint16_t, ((*wordToSwap & 0x00FF) << 8)) | C_CAST(uint16_t, ((*wordToSwap & 0xFF00) >> 8));
 }
 
 void byte_Swap_Int16(int16_t *signedWordToSwap)
 {
-    *signedWordToSwap = ((*signedWordToSwap & 0x00FF) << 8) | ((*signedWordToSwap & 0xFF00) >> 8);
+    *signedWordToSwap = C_CAST(int16_t, ((*signedWordToSwap & 0x00FF) << 8)) | C_CAST(int16_t, ((*signedWordToSwap & 0xFF00) >> 8));
 }
 
 void big_To_Little_Endian_16(uint16_t *wordToSwap)
@@ -297,8 +297,8 @@ void big_To_Little_Endian_16(uint16_t *wordToSwap)
 
 void byte_Swap_32(uint32_t *doubleWordToSwap)
 {
-    *doubleWordToSwap = ((*doubleWordToSwap & 0x0000FFFF) << 16) | ((*doubleWordToSwap & 0xFFFF0000) >> 16);
-    *doubleWordToSwap = ((*doubleWordToSwap & 0x00FF00FF) << 8) | ((*doubleWordToSwap & 0xFF00FF00) >> 8);
+    *doubleWordToSwap = C_CAST(uint32_t, ((*doubleWordToSwap & 0x0000FFFF) << 16)) | C_CAST(uint32_t, ((*doubleWordToSwap & 0xFFFF0000) >> 16));
+    *doubleWordToSwap = C_CAST(uint32_t, ((*doubleWordToSwap & 0x00FF00FF) << 8)) | C_CAST(uint32_t, ((*doubleWordToSwap & 0xFF00FF00) >> 8));
 }
 
 void byte_Swap_Int32(int32_t *signedDWord)
@@ -321,54 +321,54 @@ void word_Swap_32(uint32_t *doubleWordToSwap)
 
 void byte_Swap_64(uint64_t *quadWordToSwap)
 {
-    *quadWordToSwap = ((*quadWordToSwap & 0x00000000FFFFFFFFULL) << 32) | ((*quadWordToSwap & 0xFFFFFFFF00000000ULL) >> 32);
-    *quadWordToSwap = ((*quadWordToSwap & 0x0000FFFF0000FFFFULL) << 16) | ((*quadWordToSwap & 0xFFFF0000FFFF0000ULL) >> 16);
-    *quadWordToSwap = ((*quadWordToSwap & 0x00FF00FF00FF00FFULL) << 8) | ((*quadWordToSwap & 0xFF00FF00FF00FF00ULL) >> 8);
+    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) | ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
+    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x0000FFFF0000FFFF)) << 16) | ((*quadWordToSwap & UINT64_C(0xFFFF0000FFFF0000)) >> 16);
+    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00FF00FF00FF00FF)) << 8) | ((*quadWordToSwap & UINT64_C(0xFF00FF00FF00FF00)) >> 8);
 }
 
 void word_Swap_64(uint64_t *quadWordToSwap)
 {
-    *quadWordToSwap = ((*quadWordToSwap & 0x00000000FFFFFFFFULL) << 32) | ((*quadWordToSwap & 0xFFFFFFFF00000000ULL) >> 32);
-    *quadWordToSwap = ((*quadWordToSwap & 0x0000FFFF0000FFFFULL) << 16) | ((*quadWordToSwap & 0xFFFF0000FFFF0000ULL) >> 16);
+    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) | ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
+    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x0000FFFF0000FFFF)) << 16) | ((*quadWordToSwap & UINT64_C(0xFFFF0000FFFF0000)) >> 16);
 }
 
 void double_Word_Swap_64(uint64_t *quadWordToSwap)
 {
-    *quadWordToSwap = ((*quadWordToSwap & 0x00000000FFFFFFFFULL) << 32) | ((*quadWordToSwap & 0xFFFFFFFF00000000ULL) >> 32);
+    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) | ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
 }
 
 int16_t celsius_To_Fahrenheit(int16_t *celsius)
 {
     int16_t fahrenheit = 0;
-    fahrenheit = (int16_t)((*celsius * (9.0 / 5.0)) + 32.0);
+    fahrenheit = C_CAST(int16_t, (*celsius * (9.0 / 5.0)) + 32.0);
     return fahrenheit;
 }
 
 int16_t fahrenheit_To_celsius(int16_t *fahrenheit)
 {
     int16_t celsius = 0;
-    celsius = (int16_t)((*fahrenheit - 32.0) * (5.0 / 9.0));
+    celsius = C_CAST(int16_t, (*fahrenheit - 32.0) * (5.0 / 9.0));
     return celsius;
 }
 
 int16_t celsius_To_Kelvin(int16_t *celsius)
 {
     int16_t kelvin = 0;
-    kelvin = (uint16_t)(*celsius + 273.15);
+    kelvin = C_CAST(int16_t, *celsius + 273.15);
     return kelvin;
 }
 
 int16_t fahrenheit_To_Kelvin(int16_t *fahrenheit)
 {
     int16_t kelvin = 0;
-    kelvin = (int16_t)((5.0 / 9.0) * (*fahrenheit - 32.0) + 273.15);
+    kelvin = C_CAST(int16_t, (5.0 / 9.0) * (*fahrenheit - 32.0) + 273.15);
     return kelvin;
 }
 
 int16_t kelvin_To_Celsius(int16_t *kelvin)
 {
     int16_t celsius = 0;
-    celsius = (uint16_t)(*kelvin - 273.15);
+    celsius = C_CAST(int16_t, *kelvin - 273.15);
     return celsius;
 }
 
@@ -717,9 +717,9 @@ void print_Data_Buffer(uint8_t *dataBuffer, uint32_t bufferLen, bool showPrint)
         printf("%02"PRIX8" ", dataBuffer[printIter]);
         if (showPrint)
         {
-            if (isprint((int)dataBuffer[printIter]))
+            if (isprint(C_CAST(int, dataBuffer[printIter])))
             {
-                lineBuff[lineBuffIter] = dataBuffer[printIter];
+                lineBuff[lineBuffIter] = C_CAST(char, dataBuffer[printIter]);
             }
             else
             {
@@ -1071,30 +1071,36 @@ uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax)
 
 int fill_Random_Pattern_In_Buffer(uint8_t *ptrData, uint32_t dataLength)
 {
-    uint32_t *localPtr = (uint32_t*)ptrData;
-    if (dataLength < sizeof(uint32_t) || !ptrData)
+    size_t localPtrDataLen = ((dataLength + sizeof(uint32_t)) - 1) / sizeof(uint32_t);//round up to nearest uint32 amount
+    uint32_t* localPtr = C_CAST(uint32_t*, calloc(localPtrDataLen, sizeof(uint32_t)));
+    if (!localPtr)
     {
-        return BAD_PARAMETER;
+        return MEMORY_FAILURE;
     }
     seed_32((uint32_t)time(NULL));
     for (uint32_t iter = 0; iter < (dataLength / sizeof(uint32_t)); ++iter)
     {
         localPtr[iter] = xorshiftplus32();
     }
+    memcpy(ptrData, localPtr, dataLength);//copy only the length of the original pointer since we may have overallocated and rounded up earlier.
+    safe_Free(localPtr)
     return SUCCESS;
 }
 
 int fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t *ptrData, uint32_t dataLength)
 {
-    uint32_t *localPtr = (uint32_t*)ptrData;
-    if (!ptrData || dataLength < sizeof(uint32_t))
+    size_t localPtrDataLen = ((dataLength + sizeof(uint32_t)) - 1) / sizeof(uint32_t);//round up to nearest uint32 amount
+    uint32_t *localPtr = C_CAST(uint32_t*, calloc(localPtrDataLen, sizeof(uint32_t)));
+    if (!localPtr)
     {
-        return BAD_PARAMETER;
+        return MEMORY_FAILURE;
     }
     for (uint32_t iter = 0; iter < (dataLength / sizeof(uint32_t)); ++iter)
     {
         localPtr[iter] = hexPattern;
     }
+    memcpy(ptrData, localPtr, dataLength);//copy only the length of the original pointer since we may have overallocated and rounded up earlier.
+    safe_Free(localPtr)
     return SUCCESS;
 }
 
@@ -1531,7 +1537,7 @@ void print_Compiler(eCompiler compilerUsed)
         break;
     case OPENSEA_COMPILER_UNKNOWN:
     case OPENSEA_COMPILER_RESERVED:
-    default:
+    //default:
         printf("Unknown Compiler");
         break;
     }
@@ -1574,15 +1580,15 @@ bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * output
     }
     //If everything is a valid hex digit. 
     //TODO: What about realllyyyy long hex value? 
-    if (ret == true )
+    if (ret)
     {
         if ( hex )
         {
-            *outputInteger = strtol(strToConvert, NULL, 16);
+            *outputInteger = C_CAST(uint64_t, strtoll(strToConvert, NULL, 16));
         }
         else
         {
-            *outputInteger = strtol(strToConvert, NULL, 10);
+            *outputInteger = C_CAST(uint64_t, strtoll(strToConvert, NULL, 10));
         }
     }
     else
@@ -1590,7 +1596,7 @@ bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * output
         ret = false; 
     }
     //Final Check
-    if (ret == true && errno != 0 && * outputInteger == 0)
+    if (ret && errno != 0 && *outputInteger == 0)
     {
         ret = false;
     }
@@ -1612,7 +1618,7 @@ void print_Errno_To_Screen(int error)
     {
         printf("%d - <Unable to convert error to string>\n", error);
     }
-    safe_Free(errorString);
+    safe_Free(errorString)
 #elif defined (_MSC_VER) //TODO: Check for a specific version of visual studio?
     char errorString[1024] = { 0 };
     if(0 == strerror_s(errorString, 1024, error))
@@ -1785,7 +1791,7 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
         if(dup)
         {
             snprintf(destination, destinationSizeBytes, "%s%s", dup, source);
-            safe_Free(dup);
+            safe_Free(dup)
             return destination;
         }
     }
@@ -1800,7 +1806,7 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
         if(dup)
         {
             snprintf(destination, destinationSizeBytes, "%s%.*s", dup, sourceLength, source);
-            safe_Free(dup);
+            safe_Free(dup)
             return destination;
         }
     }

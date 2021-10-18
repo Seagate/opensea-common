@@ -115,7 +115,6 @@ extern "C"
     //!   \param[in] consoleColor = one of the enum values defined in this header for which color you want.
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor);

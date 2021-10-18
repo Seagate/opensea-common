@@ -157,7 +157,6 @@ extern "C"
     //  Entry:
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void print_Windows_Error_To_Screen(unsigned int windowsError);

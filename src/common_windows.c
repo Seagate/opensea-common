@@ -34,7 +34,7 @@ bool os_Directory_Exists(const char * const pathToCheck)
 
     attrib = GetFileAttributes(localPathToCheck);
 
-    safe_Free(localPathToCheckBuf);
+    safe_Free(localPathToCheckBuf)
     localPathToCheck = NULL;
 
     if (attrib == INVALID_FILE_ATTRIBUTES)
@@ -66,7 +66,7 @@ bool os_File_Exists(const char * const filetoCheck)
 
     attrib = GetFileAttributes(localFileToCheck);
 
-    safe_Free(localFileToCheckBuf);
+    safe_Free(localFileToCheckBuf)
     localFileToCheck = NULL;
 
     if (attrib == INVALID_FILE_ATTRIBUTES)
@@ -308,6 +308,7 @@ eArchitecture get_Compiled_Architecture(void)
         return OPENSEA_ARCH_UNKNOWN;
     #endif
 }
+
 eEndianness calculate_Endianness(void)
 {
     static eEndianness endian = OPENSEA_UNKNOWN_ENDIAN;//using static so that it should only need to run this code once...not that it takes a long time, but this may help optimise this.
@@ -778,7 +779,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
     if (directoryStringLength > OPENSEA_PATH_MAX || directoryStringLength == 0 || directoryStringLength > OPENSEA_PATH_MAX - sizeof(kernel32DLL) / sizeof(*kernel32DLL))
     {
         //error
-        safe_Free(systemPathBuf);
+        safe_Free(systemPathBuf)
         systemPath = NULL;
         return FAILURE;
     }
@@ -794,7 +795,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
         LPVOID ver = malloc(versionInfoSize);
         if (!ver)
         {
-            safe_Free(systemPathBuf);
+            safe_Free(systemPathBuf)
             systemPath = NULL;
             return MEMORY_FAILURE;
         }
@@ -821,14 +822,14 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             //error
             ret = FAILURE;
         }
-        safe_Free(ver);
+        safe_Free(ver)
     }
     else
     {
         //error
         ret = FAILURE;
     }
-    safe_Free(systemPathBuf);
+    safe_Free(systemPathBuf)
     systemPath = NULL;
 
     if (ret == SUCCESS)
@@ -1038,8 +1039,9 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
 int64_t os_Get_File_Size(FILE *filePtr)
 {
     LARGE_INTEGER fileSize;
+    intptr_t osfHandle = _get_osfhandle(_fileno(filePtr));
     //convert the fileptr to a HANDLE
-    HANDLE fileHandle = (HANDLE)_get_osfhandle(_fileno(filePtr));
+    HANDLE fileHandle = C_CAST(HANDLE, osfHandle);
     fileSize.QuadPart = 0;//set to something before we call GetFileSizeEx
     //use GetFileSizeEx to get the size of the file as a 64bit integer
     if (GetFileSizeEx(fileHandle, &fileSize))
@@ -1155,14 +1157,14 @@ int get_Current_User_Name(char **userName)
                 //convert output to a char string
                 if (wcstombs_s(&charsConverted, *userName, usernameLength, localName, usernameLength))
                 {
-                    safe_Free(*userName);
+                    safe_Free(*userName)
                     ret = FAILURE;
                 }
 #else
                 //just copy it over after allocating
                 if (strcpy_s(*userName, usernameLength, localName))
                 {
-                    safe_Free(*userName);
+                    safe_Free(*userName)
                     return FAILURE;
                 }
 #endif
@@ -1170,7 +1172,7 @@ int get_Current_User_Name(char **userName)
                 {
                     if (strcat_s(*userName, usernameLength, isAdmin))
                     {
-                        safe_Free(*userName);
+                        safe_Free(*userName)
                         return FAILURE;
                     }
                 }

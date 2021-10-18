@@ -28,12 +28,10 @@
 extern "C"
 {
 #endif
-/*
-//This was an attempt to fix annoying warnings from MinGW rather than completely disable them, but it doesn't actually work, so instead we have to disable otherwise helpful warnings!
-#if defined (__MINGW32__) || defined (__MINGW64__)
-#define __USE_MINGW_ANSI_STDIO 1
-#endif*/
-#define __STDC_WANT_LIB_EXT1__ 1
+
+//This should be defined to get _s functions from C11 annex K when they are available. Not currently used though - TJE
+//#define __STDC_WANT_LIB_EXT1__ 1
+
     #include <stdio.h>
     #include <time.h>
     #include <string.h>
@@ -75,66 +73,66 @@ extern "C"
     #endif
 
     //get a specific double word
-    #define M_DoubleWord0(l) ( (uint32_t) ( ( (l) & 0x00000000FFFFFFFFULL ) >>  0 ) )
-    #define M_DoubleWord1(l) ( (uint32_t) ( ( (l) & 0xFFFFFFFF00000000ULL ) >> 32 ) )
+    #define M_DoubleWord0(l) ( (uint32_t) ( ( (l) & UINT64_C(0x00000000FFFFFFFF) ) >>  0 ) )
+    #define M_DoubleWord1(l) ( (uint32_t) ( ( (l) & UINT64_C(0xFFFFFFFF00000000) ) >> 32 ) )
 
     //get a specific double word
-    #define M_DoubleWordInt0(l) ( (int32_t) ( ( (l) & 0x00000000FFFFFFFFULL ) >>  0 ) )
-    #define M_DoubleWordInt1(l) ( (int32_t) ( ( (l) & 0xFFFFFFFF00000000ULL ) >> 32 ) )
+    #define M_DoubleWordInt0(l) ( (int32_t) ( ( (l) & UINT64_C(0x00000000FFFFFFFF) ) >>  0 ) )
+    #define M_DoubleWordInt1(l) ( (int32_t) ( ( (l) & UINT64_C(0xFFFFFFFF00000000) ) >> 32 ) )
 
     //get a specific word
-    #define M_Word0(l) ( (uint16_t) ( ( (l) & 0x000000000000FFFFULL ) >>  0 ) )
-    #define M_Word1(l) ( (uint16_t) ( ( (l) & 0x00000000FFFF0000ULL ) >> 16 ) )
-    #define M_Word2(l) ( (uint16_t) ( ( (l) & 0x0000FFFF00000000ULL ) >> 32 ) )
-    #define M_Word3(l) ( (uint16_t) ( ( (l) & 0xFFFF000000000000ULL ) >> 48 ) )
+    #define M_Word0(l) ( (uint16_t) ( ( (l) & UINT64_C(0x000000000000FFFF) ) >>  0 ) )
+    #define M_Word1(l) ( (uint16_t) ( ( (l) & UINT64_C(0x00000000FFFF0000) ) >> 16 ) )
+    #define M_Word2(l) ( (uint16_t) ( ( (l) & UINT64_C(0x0000FFFF00000000) ) >> 32 ) )
+    #define M_Word3(l) ( (uint16_t) ( ( (l) & UINT64_C(0xFFFF000000000000) ) >> 48 ) )
 
     //get a specific word as int's
-    #define M_WordInt0(l) ( (int16_t) ( ( (l) & 0x000000000000FFFFULL ) >>  0 ) )
-    #define M_WordInt1(l) ( (int16_t) ( ( (l) & 0x00000000FFFF0000ULL ) >> 16 ) )
-    #define M_WordInt2(l) ( (int16_t) ( ( (l) & 0x0000FFFF00000000ULL ) >> 32 ) )
-    #define M_WordInt3(l) ( (int16_t) ( ( (l) & 0xFFFF000000000000ULL ) >> 48 ) )
+    #define M_WordInt0(l) ( (int16_t) ( ( (l) & UINT64_C(0x000000000000FFFF) ) >>  0 ) )
+    #define M_WordInt1(l) ( (int16_t) ( ( (l) & UINT64_C(0x00000000FFFF0000) ) >> 16 ) )
+    #define M_WordInt2(l) ( (int16_t) ( ( (l) & UINT64_C(0x0000FFFF00000000) ) >> 32 ) )
+    #define M_WordInt3(l) ( (int16_t) ( ( (l) & UINT64_C(0xFFFF000000000000) ) >> 48 ) )
 
     //need to validate that this macro sets the correct bits on 32bit and 64bit
     #define BITSPERBYTE UINT8_C(8)
     #define M_ByteN(n) ((UINT8_MAX << (n * BITSPERBYTE)))
 
     //Get a specific byte
-    #define M_Byte0(l) ( (uint8_t) ( ( (l) & 0x00000000000000FFULL ) >>  0 ) )
-    #define M_Byte1(l) ( (uint8_t) ( ( (l) & 0x000000000000FF00ULL ) >>  8 ) )
-    #define M_Byte2(l) ( (uint8_t) ( ( (l) & 0x0000000000FF0000ULL ) >> 16 ) )
-    #define M_Byte3(l) ( (uint8_t) ( ( (l) & 0x00000000FF000000ULL ) >> 24 ) )
-    #define M_Byte4(l) ( (uint8_t) ( ( (l) & 0x000000FF00000000ULL ) >> 32 ) )
-    #define M_Byte5(l) ( (uint8_t) ( ( (l) & 0x0000FF0000000000ULL ) >> 40 ) )
-    #define M_Byte6(l) ( (uint8_t) ( ( (l) & 0x00FF000000000000ULL ) >> 48 ) )
-    #define M_Byte7(l) ( (uint8_t) ( ( (l) & 0xFF00000000000000ULL ) >> 56 ) )
+    #define M_Byte0(l) ( (uint8_t) ( ( (l) & UINT64_C(0x00000000000000FF) ) >>  0 ) )
+    #define M_Byte1(l) ( (uint8_t) ( ( (l) & UINT64_C(0x000000000000FF00) ) >>  8 ) )
+    #define M_Byte2(l) ( (uint8_t) ( ( (l) & UINT64_C(0x0000000000FF0000) ) >> 16 ) )
+    #define M_Byte3(l) ( (uint8_t) ( ( (l) & UINT64_C(0x00000000FF000000) ) >> 24 ) )
+    #define M_Byte4(l) ( (uint8_t) ( ( (l) & UINT64_C(0x000000FF00000000) ) >> 32 ) )
+    #define M_Byte5(l) ( (uint8_t) ( ( (l) & UINT64_C(0x0000FF0000000000) ) >> 40 ) )
+    #define M_Byte6(l) ( (uint8_t) ( ( (l) & UINT64_C(0x00FF000000000000) ) >> 48 ) )
+    #define M_Byte7(l) ( (uint8_t) ( ( (l) & UINT64_C(0xFF00000000000000) ) >> 56 ) )
 
     //Get a specific byte int
-    #define M_ByteInt0(l) ( (uint8_t) ( ( (l) & 0x00000000000000FFULL ) >>  0 ) )
-    #define M_ByteInt1(l) ( (uint8_t) ( ( (l) & 0x000000000000FF00ULL ) >>  8 ) )
-    #define M_ByteInt2(l) ( (uint8_t) ( ( (l) & 0x0000000000FF0000ULL ) >> 16 ) )
-    #define M_ByteInt3(l) ( (uint8_t) ( ( (l) & 0x00000000FF000000ULL ) >> 24 ) )
-    #define M_ByteInt4(l) ( (uint8_t) ( ( (l) & 0x000000FF00000000ULL ) >> 32 ) )
-    #define M_ByteInt5(l) ( (uint8_t) ( ( (l) & 0x0000FF0000000000ULL ) >> 40 ) )
-    #define M_ByteInt6(l) ( (uint8_t) ( ( (l) & 0x00FF000000000000ULL ) >> 48 ) )
-    #define M_ByteInt7(l) ( (uint8_t) ( ( (l) & 0xFF00000000000000ULL ) >> 56 ) )
+    #define M_ByteInt0(l) ( (uint8_t) ( ( (l) & UINT64_C(0x00000000000000FF) ) >>  0 ) )
+    #define M_ByteInt1(l) ( (uint8_t) ( ( (l) & UINT64_C(0x000000000000FF00) ) >>  8 ) )
+    #define M_ByteInt2(l) ( (uint8_t) ( ( (l) & UINT64_C(0x0000000000FF0000) ) >> 16 ) )
+    #define M_ByteInt3(l) ( (uint8_t) ( ( (l) & UINT64_C(0x00000000FF000000) ) >> 24 ) )
+    #define M_ByteInt4(l) ( (uint8_t) ( ( (l) & UINT64_C(0x000000FF00000000) ) >> 32 ) )
+    #define M_ByteInt5(l) ( (uint8_t) ( ( (l) & UINT64_C(0x0000FF0000000000) ) >> 40 ) )
+    #define M_ByteInt6(l) ( (uint8_t) ( ( (l) & UINT64_C(0x00FF000000000000) ) >> 48 ) )
+    #define M_ByteInt7(l) ( (uint8_t) ( ( (l) & UINT64_C(0xFF00000000000000) ) >> 56 ) )
 
     //get a specific nibble
-    #define M_Nibble0(l)  ( (uint8_t) ( ( (l) & 0x000000000000000FULL ) >>  0 ) )
-    #define M_Nibble1(l)  ( (uint8_t) ( ( (l) & 0x00000000000000F0ULL ) >>  4 ) )
-    #define M_Nibble2(l)  ( (uint8_t) ( ( (l) & 0x0000000000000F00ULL ) >>  8 ) )
-    #define M_Nibble3(l)  ( (uint8_t) ( ( (l) & 0x000000000000F000ULL ) >> 12 ) )
-    #define M_Nibble4(l)  ( (uint8_t) ( ( (l) & 0x00000000000F0000ULL ) >> 16 ) )
-    #define M_Nibble5(l)  ( (uint8_t) ( ( (l) & 0x0000000000F00000ULL ) >> 20 ) )
-    #define M_Nibble6(l)  ( (uint8_t) ( ( (l) & 0x000000000F000000ULL ) >> 24 ) )
-    #define M_Nibble7(l)  ( (uint8_t) ( ( (l) & 0x00000000F0000000ULL ) >> 28 ) )
-    #define M_Nibble8(l)  ( (uint8_t) ( ( (l) & 0x0000000F00000000ULL ) >> 32 ) )
-    #define M_Nibble9(l)  ( (uint8_t) ( ( (l) & 0x000000F000000000ULL ) >> 36 ) )
-    #define M_Nibble10(l) ( (uint8_t) ( ( (l) & 0x00000F0000000000ULL ) >> 40 ) )
-    #define M_Nibble11(l) ( (uint8_t) ( ( (l) & 0x0000F00000000000ULL ) >> 44 ) )
-    #define M_Nibble12(l) ( (uint8_t) ( ( (l) & 0x000F000000000000ULL ) >> 48 ) )
-    #define M_Nibble13(l) ( (uint8_t) ( ( (l) & 0x00F0000000000000ULL ) >> 52 ) )
-    #define M_Nibble14(l) ( (uint8_t) ( ( (l) & 0x0F00000000000000ULL ) >> 56 ) )
-    #define M_Nibble15(l) ( (uint8_t) ( ( (l) & 0xF000000000000000ULL ) >> 60 ) )
+    #define M_Nibble0(l)  ( (uint8_t) ( ( (l) & UINT64_C(0x000000000000000F) ) >>  0 ) )
+    #define M_Nibble1(l)  ( (uint8_t) ( ( (l) & UINT64_C(0x00000000000000F0) ) >>  4 ) )
+    #define M_Nibble2(l)  ( (uint8_t) ( ( (l) & UINT64_C(0x0000000000000F00) ) >>  8 ) )
+    #define M_Nibble3(l)  ( (uint8_t) ( ( (l) & UINT64_C(0x000000000000F000) ) >> 12 ) )
+    #define M_Nibble4(l)  ( (uint8_t) ( ( (l) & UINT64_C(0x00000000000F0000) ) >> 16 ) )
+    #define M_Nibble5(l)  ( (uint8_t) ( ( (l) & UINT64_C(0x0000000000F00000) ) >> 20 ) )
+    #define M_Nibble6(l)  ( (uint8_t) ( ( (l) & UINT64_C(0x000000000F000000) ) >> 24 ) )
+    #define M_Nibble7(l)  ( (uint8_t) ( ( (l) & UINT64_C(0x00000000F0000000) ) >> 28 ) )
+    #define M_Nibble8(l)  ( (uint8_t) ( ( (l) & UINT64_C(0x0000000F00000000) ) >> 32 ) )
+    #define M_Nibble9(l)  ( (uint8_t) ( ( (l) & UINT64_C(0x000000F000000000) ) >> 36 ) )
+    #define M_Nibble10(l) ( (uint8_t) ( ( (l) & UINT64_C(0x00000F0000000000) ) >> 40 ) )
+    #define M_Nibble11(l) ( (uint8_t) ( ( (l) & UINT64_C(0x0000F00000000000) ) >> 44 ) )
+    #define M_Nibble12(l) ( (uint8_t) ( ( (l) & UINT64_C(0x000F000000000000) ) >> 48 ) )
+    #define M_Nibble13(l) ( (uint8_t) ( ( (l) & UINT64_C(0x00F0000000000000) ) >> 52 ) )
+    #define M_Nibble14(l) ( (uint8_t) ( ( (l) & UINT64_C(0x0F00000000000000) ) >> 56 ) )
+    #define M_Nibble15(l) ( (uint8_t) ( ( (l) & UINT64_C(0xF000000000000000) ) >> 60 ) )
 
     // Bit access macros
 
@@ -558,7 +556,6 @@ extern "C"
     //!   \param[in] milliseconds = number of milliseconds to delay for
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void delay_Milliseconds(uint32_t milliseconds);
@@ -572,7 +569,6 @@ extern "C"
     //!   \param[in] seconds = number of seconds to delay for
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void delay_Seconds(uint32_t seconds);
@@ -587,7 +583,6 @@ extern "C"
     //!   \param[out] byteToSwap = a pointer to the byte containing the data in which to have the nibbles swapped
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void nibble_Swap(uint8_t *byteToSwap);
@@ -602,7 +597,6 @@ extern "C"
     //!   \param[out] wordToSwap = a pointer to the word containing the data in which to have the bytes swapped
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void byte_Swap_16(uint16_t *wordToSwap);
@@ -616,7 +610,6 @@ extern "C"
     //!   \param[out] signedWordToSwap = a pointer to the signed word containing the data in which to have the bytes swapped
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void byte_Swap_Int16(int16_t *signedWordToSwap);
@@ -630,7 +623,6 @@ extern "C"
     //!   \param[out] wordToSwap = a pointer to the word containing the data in which to have the bytes swapped
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void big_To_Little_Endian_16(uint16_t *wordToSwap);
@@ -645,7 +637,6 @@ extern "C"
     //!   \param[out] doubleWordToSwap = a pointer to the double word containing the data in which to have the bytes swapped
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void byte_Swap_32(uint32_t *doubleWordToSwap);
@@ -659,7 +650,6 @@ extern "C"
     //!   \param[out] signedDWord = a pointer to the Signed double word containing the data in which to have the bytes swapped
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void byte_Swap_Int32(int32_t *signedDWord);
@@ -673,7 +663,6 @@ extern "C"
     //!   \param[out] doubleWordToSwap = a pointer to the double word containing the data in which to have the bytes swapped
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void big_To_Little_Endian_32(uint32_t *doubleWordToSwap);
@@ -688,7 +677,6 @@ extern "C"
     //!   \param[out] doubleWordToSwap = a pointer to the double word containing the data in which to have the words swapped
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void word_Swap_32(uint32_t *doubleWordToSwap);
@@ -703,7 +691,6 @@ extern "C"
     //!   \param[out] quadWordToSwap = a pointer to the quad word containing the data in which to have the bytes swapped
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void byte_Swap_64(uint64_t *quadWordToSwap);
@@ -718,7 +705,6 @@ extern "C"
     //!   \param[out] quadWordToSwap = a pointer to the quad word containing the data in which to have the words swapped
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void word_Swap_64(uint64_t *quadWordToSwap);
@@ -733,7 +719,6 @@ extern "C"
     //!   \param[out] quadWordToSwap = a pointer to the quad word containing the data in which to have the double words swapped
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void double_Word_Swap_64(uint64_t *quadWordToSwap);
@@ -838,7 +823,6 @@ extern "C"
     //!   \param[out] stringToChange = a pointer to the data containing a string that needs to have the bytes swapped
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void byte_Swap_String(char *stringToChange);
@@ -853,7 +837,6 @@ extern "C"
     //!   \param[out] stringToChange = a pointer to the data containing a string that needs to have the beginning whitespace removed
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void remove_Whitespace_Left(char *stringToChange);
@@ -868,7 +851,6 @@ extern "C"
     //!   \param[out] stringToChange = a pointer to the data containing a string that needs to have the ending whitespace removed
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void remove_Trailing_Whitespace(char *stringToChange);
@@ -883,7 +865,6 @@ extern "C"
     //!   \param[out] stringToChange = a pointer to the data containing a string that needs to have the beginning whitespace removed
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void remove_Leading_Whitespace(char *stringToChange);
@@ -898,7 +879,6 @@ extern "C"
     //!   \param[out] stringToChange = a pointer to the data containing a string that needs to have the beginning and ending whitespace removed
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void remove_Leading_And_Trailing_Whitespace(char *stringToChange);
@@ -913,7 +893,6 @@ extern "C"
     //!   \param[out] stringToChange = a pointer to the data containing a string that needs to have all the characters converted to uppercase
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void convert_String_To_Upper_Case(char *stringToChange);
@@ -928,7 +907,6 @@ extern "C"
     //!   \param[out] stringToChange = a pointer to the data containing a string that needs to have all the characters converted to lowercase
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void convert_String_To_Lower_Case(char *stringToChange);
@@ -943,7 +921,6 @@ extern "C"
     //!   \param[out] stringToChange = a pointer to the data containing a string that will be modified
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void convert_String_To_Inverse_Case(char *stringToChange);
@@ -976,7 +953,6 @@ extern "C"
     //!   \param[in] showPrint = set to true to show printable characters on the side of the hex output for the buffer. Non-printable characters will be represented as dots.
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void print_Data_Buffer(uint8_t *dataBuffer, uint32_t bufferLen, bool showPrint);
@@ -992,7 +968,6 @@ extern "C"
     //!   \param[in] ret = value to humanize
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void print_Return_Enum(char *funcName, int ret);
@@ -1043,7 +1018,6 @@ extern "C"
     //!   \param[in] mem - heap memory you want to free.
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     #define safe_Free(mem)  \
@@ -1068,7 +1042,6 @@ extern "C"
     //!   \param[out] seconds = this is a pointer to a value to hold a number representing seconds. Can be NULL.
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
@@ -1106,7 +1079,6 @@ extern "C"
     //!   \param[in] seconds = this is a pointer to a value holding a number representing seconds. Can be NULL.
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     void print_Time_To_Screen(uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
@@ -1123,7 +1095,6 @@ extern "C"
     //!   \param[in] seed = value to use as a seed for the random number generator
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     void seed_32(uint32_t seed);//start the seed for random number generation
@@ -1138,7 +1109,6 @@ extern "C"
     //!   \param[in] seed = value to use as a seed for the random number generator
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     void seed_64(uint64_t seed);//start the seed for random number generation
@@ -1375,7 +1345,6 @@ extern "C"
     //!   \param[in] compilerUsed = eCompiler type that will be printed to the screen in human readable form
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     void print_Compiler(eCompiler compilerUsed);
@@ -1390,7 +1359,6 @@ extern "C"
     //!   \param[in] compilerVersionInfo = pointer to the compilerVersion struct that holds the compiler version information.
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     void print_Compiler_Version_Info(ptrCompilerVersion compilerVersionInfo);
@@ -1421,7 +1389,6 @@ extern "C"
     //  Entry:
     //!
     //  Exit:
-    //!   \return VOID
     //
     //-----------------------------------------------------------------------------
     void print_Errno_To_Screen(int error);
@@ -1440,7 +1407,6 @@ extern "C"
     //! 
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     typedef void (*custom_Update)(void *customData, char *message);
@@ -1471,7 +1437,6 @@ extern "C"
     //!   \param[in] ptr = pointer to the aligned memory to free
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     void free_aligned(void* ptr);
@@ -1486,7 +1451,6 @@ extern "C"
     //!   \param[in] mem - heap memory you want to free.
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     #define safe_Free_aligned(mem)  \
@@ -1570,7 +1534,6 @@ extern "C"
     //!   \param[in] ptr = pointer to the aligned memory to free
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     void free_page_aligned(void* ptr);
@@ -1585,7 +1548,6 @@ extern "C"
     //!   \param[in] mem - heap memory you want to free.
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     #define safe_Free_page_aligned(mem)  \
@@ -1672,7 +1634,6 @@ extern "C"
     //!   \param[out] decimalValue = corresponding decimal format value
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue);
