@@ -1029,7 +1029,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             }
             if (isWindowsPE)
             {
-                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%s (PE)", operatingSystemName);
+                common_String_Concat(operatingSystemName, OS_NAME_SIZE, " (PE)");
             }
         }
     }
