@@ -83,7 +83,7 @@ void *malloc_aligned(size_t size, size_t alignment)
         return aligned_alloc(alignment, size);
     #elif !defined(UEFI_C_SOURCE) && defined (__INTEL_COMPILER) || defined (__ICC)
         //_mm_malloc
-        return _mm_malloc((int)size, (int)alignment);
+        return _mm_malloc(C_CAST(int, size), C_CAST(int, alignment));
     #elif !defined(UEFI_C_SOURCE) && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         //POSIX.1-2001 and higher define support for posix_memalign
         void *temp = NULL;
@@ -115,11 +115,11 @@ void *malloc_aligned(size_t size, size_t alignment)
                 const void * const originalLocation = temp;
                 temp += requiredExtraBytes;//allow enough room for storing the original pointer location
                 //now offset based on the required alignment
-                temp += alignment - (((size_t)temp) % alignment);
+                temp += alignment - (C_CAST(size_t, temp) % alignment);
                 //aligned.
                 //now save the original pointer location
-                size_t *savedLocationData = (size_t*)(temp - sizeof(size_t));
-                *savedLocationData = (size_t)originalLocation;
+                size_t *savedLocationData = C_CAST(size_t*, temp - sizeof(size_t));
+                *savedLocationData = C_CAST(size_t, originalLocation);
             }
         }
         //else
@@ -160,7 +160,7 @@ void free_aligned(void* ptr)
             //find the starting address from the original allocation.
             void *tempPtr = ptr - sizeof(size_t);//this gets us to where it was stored
             //this will set it back to what it's supposed to be
-            tempPtr = (void*)(*((size_t*)tempPtr));
+            tempPtr = C_CAST(void*, *(C_CAST(size_t*, tempPtr)));
             free(tempPtr);
         }
     #endif
@@ -214,15 +214,15 @@ size_t get_System_Pagesize(void)
         return 4096;//This is not the processor page size, just the pagesize allocated by EDK2. It's in <dePkg/Include/Uefi/UedfiBaseType.h
     #elif defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         //use sysconf: http://man7.org/linux/man-pages/man3/sysconf.3.html
-        return (size_t)sysconf(_SC_PAGESIZE);
+        return C_CAST(size_t, sysconf(_SC_PAGESIZE));
     #elif defined (_POSIX_VERSION) //this may not be the best way to test this, but I think it will be ok.
         //use get page size: http://man7.org/linux/man-pages/man2/getpagesize.2.html
-        return (size_t)getpagesize();
+        return C_CAST(size_t, getpagesize());
     #elif defined (_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
         SYSTEM_INFO system;
         memset(&system, 0, sizeof(SYSTEM_INFO));
         GetSystemInfo(&system);
-        return (size_t)system.dwPageSize;
+        return C_CAST(size_t, system.dwPageSize);
     #else
         return -1;//unknown, so return something easy to see an error with.
     #endif
@@ -375,7 +375,7 @@ int16_t kelvin_To_Celsius(int16_t *kelvin)
 int16_t kelvin_To_Fahrenheit(int16_t *kelvin)
 {
     int16_t fahrenheit = 0;
-    fahrenheit = (int16_t)((9.0 / 5.0) * (*kelvin - 273.15) + 32.0);
+    fahrenheit = C_CAST(int16_t, (9.0 / 5.0) * (*kelvin - 273.15) + 32.0);
     return fahrenheit;
 }
 
@@ -384,7 +384,7 @@ void byte_Swap_String(char *stringToChange)
 {
     size_t stringIter = 0;
     size_t   stringlen = strlen(stringToChange);
-    char *swappedString = (char *)calloc(stringlen, sizeof(char));
+    char *swappedString = C_CAST(char *, calloc(stringlen, sizeof(char)));
     if (swappedString == NULL)
     {
         return;
@@ -481,7 +481,7 @@ void convert_String_To_Upper_Case(char *stringToChange)
     }
     while (iter <= stringLen)
     {
-        stringToChange[iter] = (char)toupper(stringToChange[iter]);
+        stringToChange[iter] = C_CAST(char, toupper(stringToChange[iter]));
         iter++;
     }
 }
@@ -500,7 +500,7 @@ void convert_String_To_Lower_Case(char *stringToChange)
     }
     while (iter <= stringLen)
     {
-        stringToChange[iter] = (char)tolower(stringToChange[iter]);
+        stringToChange[iter] = C_CAST(char, tolower(stringToChange[iter]));
         iter++;
     }
 }
@@ -521,11 +521,11 @@ void convert_String_To_Inverse_Case(char *stringToChange)
     {
         if (islower(stringToChange[iter]))
         {
-            stringToChange[iter] = (char)tolower(stringToChange[iter]);
+            stringToChange[iter] = C_CAST(char, tolower(stringToChange[iter]));
         }
         else if (isupper(stringToChange[iter]))
         {
-            stringToChange[iter] = (char)toupper(stringToChange[iter]);
+            stringToChange[iter] = C_CAST(char, toupper(stringToChange[iter]));
         }
         iter++;
     }
@@ -856,7 +856,7 @@ bool is_Empty(void *ptrData, size_t lengthBytes)
     {
         for (size_t iter = 0, iterEnd = lengthBytes - 1; iter < lengthBytes && iterEnd >= iter; ++iter, --iterEnd)
         {
-            if (((uint_fast8_t*)ptrData)[iter] != UINT8_C(0) || ((uint_fast8_t*)ptrData)[iterEnd] != UINT8_C(0))
+            if ((C_CAST(uint_fast8_t*, ptrData))[iter] != UINT8_C(0) || (C_CAST(uint_fast8_t*, ptrData))[iterEnd] != UINT8_C(0))
             {
                 return false;
             }
@@ -872,31 +872,31 @@ void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t
     //get seconds up to a maximum of 60
     if (seconds)
     {
-        *seconds = (uint8_t)(fmod(tempCalcValue, 60.0));
+        *seconds = C_CAST(uint8_t, fmod(tempCalcValue, 60.0));
     }
     tempCalcValue /= 60.0;
     //get minutes up to a maximum of 60
     if (minutes)
     {
-        *minutes = (uint8_t)(fmod(tempCalcValue, 60.0));
+        *minutes = C_CAST(uint8_t, fmod(tempCalcValue, 60.0));
     }
     tempCalcValue /= 60.0;
     //get hours up to a maximum of 24
     if (hours)
     {
-        *hours = (uint8_t)(fmod(tempCalcValue, 24.0));
+        *hours = C_CAST(uint8_t, fmod(tempCalcValue, 24.0));
     }
     tempCalcValue /= 24.0;
     //get days up to 365
     if (days)
     {
-        *days = (uint8_t)(fmod(tempCalcValue, 365.0));
+        *days = C_CAST(uint8_t, fmod(tempCalcValue, 365.0));
     }
     tempCalcValue /= 365.0;
     //get years
     if (years)
     {
-        *years = (uint8_t)(tempCalcValue);
+        *years = C_CAST(uint8_t, tempCalcValue);
     }
 }
 
@@ -906,31 +906,31 @@ void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *yea
     //get seconds up to a maximum of 60
     if (seconds)
     {
-        *seconds = (uint8_t)(tempCalcValue % 60);
+        *seconds = C_CAST(uint8_t, tempCalcValue % 60);
     }
     tempCalcValue /= 60;
     //get minutes up to a maximum of 60
     if (minutes)
     {
-        *minutes = (uint8_t)(tempCalcValue % 60);
+        *minutes = C_CAST(uint8_t, tempCalcValue % 60);
     }
     tempCalcValue /= 60;
     //get hours up to a maximum of 24
     if (hours)
     {
-        *hours = (uint8_t)(tempCalcValue % 24);
+        *hours = C_CAST(uint8_t, tempCalcValue % 24);
     }
     tempCalcValue /= 24;
     //get days up to 365
     if (days)
     {
-        *days = (uint8_t)(tempCalcValue % 365);
+        *days = C_CAST(uint8_t, tempCalcValue % 365);
     }
     tempCalcValue /= 365;
     //get years
     if (years)
     {
-        *years = (uint8_t)(tempCalcValue);
+        *years = C_CAST(uint8_t, tempCalcValue);
     }
 }
 
@@ -989,7 +989,7 @@ void seed_32(uint32_t seed)
 {
     //first initialize
     seed32Array[0] = seed;
-    seed32Array[1] = (uint32_t)((int32_t)seed >> 1);//converting to signed int to perform arithmetic shift, then back for the seed value
+    seed32Array[1] = C_CAST(uint32_t, C_CAST(int32_t, seed) >> 1);//converting to signed int to perform arithmetic shift, then back for the seed value
     //using that initialization, run the random number generator for a more random seed...may or may not be needed, but I'm doing this anyways - Tyler
     seed32Array[0] = xorshiftplus32();
     seed32Array[0] = xorshiftplus32();
@@ -998,7 +998,7 @@ void seed_64(uint64_t seed)
 {
     //first initialize
     seed64Array[0] = seed;
-    seed64Array[1] = (uint64_t)((int64_t)seed >> 2);//converting to signed int to perform arithmetic shift, then back for the seed value
+    seed64Array[1] = C_CAST(uint64_t, C_CAST(int64_t, seed) >> 2);//converting to signed int to perform arithmetic shift, then back for the seed value
     //using that initialization, run the random number generator for a more random seed...may or may not be needed, but I'm doing this anyways - Tyler
     seed64Array[0] = xorshiftplus64();
     seed64Array[0] = xorshiftplus64();
@@ -1077,7 +1077,7 @@ int fill_Random_Pattern_In_Buffer(uint8_t *ptrData, uint32_t dataLength)
     {
         return MEMORY_FAILURE;
     }
-    seed_32((uint32_t)time(NULL));
+    seed_32(C_CAST(uint32_t, time(NULL)));
     for (uint32_t iter = 0; iter < (dataLength / sizeof(uint32_t)); ++iter)
     {
         localPtr[iter] = xorshiftplus32();
@@ -1423,9 +1423,9 @@ int get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersio
     snprintf(msMajor, 3, "%.2s", &msVersion[0]);
     snprintf(msMinor, 3, "%.2s", &msVersion[2]);
     snprintf(msPatch, 6, "%.5s", &msVersion[4]);
-    compilerVersionInfo->major = (uint16_t)atoi(msMajor);
-    compilerVersionInfo->minor = (uint16_t)atoi(msMinor);
-    compilerVersionInfo->patch = (uint16_t)atoi(msPatch);
+    compilerVersionInfo->major = C_CAST(uint16_t, atoi(msMajor));
+    compilerVersionInfo->minor = C_CAST(uint16_t, atoi(msMinor));
+    compilerVersionInfo->patch = C_CAST(uint16_t, atoi(msPatch));
 #elif defined __MINGW64__
     *compilerUsed = OPENSEA_COMPILER_MINGW;
     compilerVersionInfo->major = __MINGW64_VERSION_MAJOR;
@@ -1453,9 +1453,9 @@ int get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersio
     snprintf(hpMajor, 3, "%.2s", &hpVersion[0]);
     snprintf(hpMinor, 3, "%.2s", &hpVersion[2]);
     snprintf(hpPatch, 3, "%.2s", &hpVersion[4]);
-    compilerVersionInfo->major = (uint16_t)atoi(hpMajor);
-    compilerVersionInfo->minor = (uint16_t)atoi(hpMinor);
-    compilerVersionInfo->patch = (uint16_t)atoi(hpPatch);
+    compilerVersionInfo->major = C_CAST(uint16_t, atoi(hpMajor));
+    compilerVersionInfo->minor = C_CAST(uint16_t, atoi(hpMinor));
+    compilerVersionInfo->patch = C_CAST(uint16_t, atoi(hpPatch));
 #elif defined __IBMC__ || defined __IBMCPP__
     //untested
     //detect if it's xl or lx for system z
@@ -1482,9 +1482,9 @@ int get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersio
     snprintf(intelMajor, 2, "%.1s", &intelVersion[0]);
     snprintf(intelMinor, 2, "%.1s", &intelVersion[1]);
     snprintf(intelPatch, 2, "%.1s", &intelVersion[2]);
-    compilerVersionInfo->major = (uint16_t)atoi(intelMajor);
-    compilerVersionInfo->minor = (uint16_t)atoi(intelMinor);
-    compilerVersionInfo->patch = (uint16_t)atoi(intelPatch);
+    compilerVersionInfo->major = C_CAST(uint16_t, atoi(intelMajor));
+    compilerVersionInfo->minor = C_CAST(uint16_t, atoi(intelMinor));
+    compilerVersionInfo->patch = C_CAST(uint16_t, atoi(intelPatch));
 #elif defined __SUNPRO_C || defined __SUNPRO_CC
     //untested
     //code below is written for versions 5.10 and later. (latest release as of writing this code is version 5.12) - TJE
@@ -1608,7 +1608,7 @@ void print_Errno_To_Screen(int error)
 {
 #if defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && defined (__STDC_LIB_EXT1__)//This last piece must be defined by the compiler for this to be used...Only will be set if user defined __STDC_WANT_LIB_EXT1__
     size_t errorStringLen = strerrorlen_s(error);
-    char *errorString = (char*)calloc(errorStringLen + 1, sizeof(char));
+    char *errorString = C_CAST(char*, calloc(errorStringLen + 1, sizeof(char)));
     if (errorString)
     {
         strerror(errorString, errorStringLen + 1, error);//returns 0 if whole string fits, nonzero if it was truncatd
@@ -1770,17 +1770,17 @@ int is_ASCII(int c)
 void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue)
 {
     int32_t  exponent = M_GETBITRANGE(floatValue, 30, 23) - 127;
-    double sign = pow(-1.0, (double)M_GETBITRANGE(floatValue, 31, 31));
+    double sign = pow(-1.0, C_CAST(double, M_GETBITRANGE(floatValue, 31, 31)));
 
     int8_t power = -23;
     double mantisa = 1.0;
     for (uint8_t i = 0; i < 23; i++)
     {
-        mantisa += (double)M_GETBITRANGE(floatValue, i, i) * (double)pow(2.0, power);
+        mantisa += C_CAST(double, M_GETBITRANGE(floatValue, i, i)) * C_CAST(double, pow(2.0, power));
         power++;
     }
 
-    *decimalValue = sign * (float)pow(2.0, exponent) * mantisa;
+    *decimalValue = sign * C_CAST(float, pow(2.0, exponent)) * mantisa;
 }
 
 char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source)

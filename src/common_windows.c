@@ -24,7 +24,7 @@ bool os_Directory_Exists(const char * const pathToCheck)
 {
     DWORD attrib = INVALID_FILE_ATTRIBUTES;
     size_t pathCheckLength = (strlen(pathToCheck) + 1) * sizeof(TCHAR);
-    TCHAR *localPathToCheckBuf = (TCHAR*)calloc(pathCheckLength, sizeof(TCHAR));
+    TCHAR *localPathToCheckBuf = C_CAST(TCHAR*, calloc(pathCheckLength, sizeof(TCHAR)));
     if (!localPathToCheckBuf)
     {
         return false;
@@ -56,7 +56,7 @@ bool os_File_Exists(const char * const filetoCheck)
 {
     DWORD attrib = INVALID_FILE_ATTRIBUTES;
     size_t fileCheckLength = (strlen(filetoCheck) + 1) * sizeof(TCHAR);
-    TCHAR *localFileToCheckBuf = (TCHAR*)calloc(fileCheckLength, sizeof(TCHAR));
+    TCHAR *localFileToCheckBuf = C_CAST(TCHAR*, calloc(fileCheckLength, sizeof(TCHAR)));
     if (!localFileToCheckBuf)
     {
         return false;
@@ -766,7 +766,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
     //start getting the Windows version using the verifyVersionInfo call. I'm doing it this way since the "version helpers" are essentially doing the same thing but are not available to minGW
     
     static CONST TCHAR kernel32DLL[] = TEXT("\\kernel32.dll");
-    TCHAR *systemPathBuf = (TCHAR*)calloc(OPENSEA_PATH_MAX, sizeof(TCHAR));
+    TCHAR *systemPathBuf = C_CAST(TCHAR*, calloc(OPENSEA_PATH_MAX, sizeof(TCHAR)));
     CONST TCHAR *systemPath = &systemPathBuf[0];
     CONST TCHAR *subblock = TEXT(SYSTEM_PATH_SEPARATOR_STR);
 
@@ -804,9 +804,9 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             LPVOID block = NULL;
             UINT blockSize = sizeof(VS_FIXEDFILEINFO);//start with this size...should get at least this
             VS_FIXEDFILEINFO *versionFileInfo = NULL;
-            if (VerQueryValue((LPCVOID)ver, subblock, &block, &blockSize) || blockSize < sizeof(VS_FIXEDFILEINFO))//this should run the first function before performing the comparison
+            if (VerQueryValue(C_CAST(LPCVOID, ver), subblock, &block, &blockSize) || blockSize < sizeof(VS_FIXEDFILEINFO))//this should run the first function before performing the comparison
             {
-                versionFileInfo = (VS_FIXEDFILEINFO*)block;
+                versionFileInfo = C_CAST(VS_FIXEDFILEINFO*, block);
                 versionNumber->versionType.windowsVersion.majorVersion = HIWORD(versionFileInfo->dwProductVersionMS);
                 versionNumber->versionType.windowsVersion.minorVersion = LOWORD(versionFileInfo->dwProductVersionMS);
                 versionNumber->versionType.windowsVersion.buildNumber = HIWORD(versionFileInfo->dwProductVersionLS);
@@ -1090,7 +1090,7 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
 double get_Micro_Seconds(seatimer_t timer)
 {
     uint64_t nanoseconds = get_Nano_Seconds(timer);
-    return ((double)nanoseconds / 1000.00);
+    return (C_CAST(double, nanoseconds) / 1000.00);
 }
 
 double get_Milli_Seconds(seatimer_t timer)
@@ -1149,7 +1149,7 @@ int get_Current_User_Name(char **userName)
         {
             const char *isAdmin = " (admin)";//This will be concatenated to the string if running as administrator since we only get the user's name in Windows.
             size_t usernameLength = _tcslen(localName) + strlen(isAdmin) + 1;
-            *userName = (char*)calloc(usernameLength, sizeof(char));
+            *userName = C_CAST(char*, calloc(usernameLength, sizeof(char)));
             if (*userName)
             {
 #if defined UNICODE

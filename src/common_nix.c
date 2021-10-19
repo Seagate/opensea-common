@@ -331,7 +331,7 @@ static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
 {
     int match = 0;
     size_t filenameLength = strlen(entry->d_name) + 6;
-    char *filename = (char*)calloc(filenameLength, sizeof(char));
+    char *filename = C_CAST(char*, calloc(filenameLength, sizeof(char)));
     struct stat s;
     snprintf(filename, filenameLength, "/etc/%s", entry->d_name);
     if (stat(filename, &s) == 0)
@@ -408,7 +408,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                     fseek(release,ftell(release),SEEK_END);
                     long int releaseSize = ftell(release);
                     rewind(release);
-                    char *releaseMemory = (char*)calloc(releaseSize, sizeof(char));
+                    char *releaseMemory = C_CAST(char*, calloc(releaseSize, sizeof(char)));
                     if (fread(releaseMemory, sizeof(char), releaseSize, release))
                     {
                         //Use the "PRETTY_NAME" field
@@ -456,7 +456,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         else
                         {
                             size_t fileNameLength = strlen(osrelease[releaseIter]->d_name) + 6;
-                            char *fileName = (char *)calloc(fileNameLength, sizeof(char));
+                            char *fileName = C_CAST(char *, calloc(fileNameLength, sizeof(char)));
                             snprintf(fileName, fileNameLength, "/etc/%s", osrelease[releaseIter]->d_name);
                             FILE *release = fopen(fileName, "r");
                             if (release)
@@ -465,7 +465,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                                 fseek(release,ftell(release),SEEK_END);
                                 long int releaseSize = ftell(release);
                                 rewind(release);
-                                char *releaseMemory = (char*)calloc(releaseSize,sizeof(char));
+                                char *releaseMemory = C_CAST(char*, calloc(releaseSize,sizeof(char)));
                                 if (fread(releaseMemory, sizeof(char), releaseSize, release))
                                 {
                                     linuxOSNameFound = true;
@@ -490,7 +490,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 {
                     //For now, only reading the first entry...this SHOULD be ok.
                     size_t fileNameLength = strlen(osversion[0]->d_name) + 6;
-                    char *fileName = (char*)calloc(fileNameLength, sizeof(char));
+                    char *fileName = C_CAST(char*, calloc(fileNameLength, sizeof(char)));
                     snprintf(fileName, fileNameLength, "/etc/%s", osversion[0]->d_name);
                     FILE *version = fopen(fileName, "r");
                     if (version)
@@ -499,7 +499,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         fseek(version,ftell(version),SEEK_END);
                         long int versionSize = ftell(version);
                         rewind(version);
-                        char *versionMemory = (char*)calloc(versionSize,sizeof(char));
+                        char *versionMemory = C_CAST(char*, calloc(versionSize,sizeof(char)));
                         if (fread(versionMemory, sizeof(char), versionSize, version))
                         {
                             linuxOSNameFound = true;
@@ -519,7 +519,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                     //So now we need to read it for the version information.
                     //We use this last because it may not contain something as friendly and useful as we would like that the other version files provide.
                     size_t fileNameLength = strlen(osrelease[lsbReleaseOffset]->d_name) + 6;
-                    char *fileName = (char *)calloc(fileNameLength, sizeof(char));
+                    char *fileName = C_CAST(char *, calloc(fileNameLength, sizeof(char)));
                     snprintf(fileName, fileNameLength, "/etc/%s", osrelease[lsbReleaseOffset]->d_name);
                     FILE *release = fopen(fileName, "r");
                     if (release)
@@ -528,7 +528,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         fseek(release,ftell(release),SEEK_END);
                         long int releaseSize = ftell(release);
                         rewind(release);
-                        char *releaseMemory = (char*)calloc(releaseSize,sizeof(char));
+                        char *releaseMemory = C_CAST(char*, calloc(releaseSize,sizeof(char)));
                         if (fread(releaseMemory, sizeof(char), releaseSize, release))
                         {
                             linuxOSNameFound = true;
@@ -577,7 +577,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                     fseek(issue,ftell(issue),SEEK_END);
                     long int issueSize = ftell(issue);
                     rewind(issue);
-                    char *issueMemory = (char*)calloc(issueSize,sizeof(char));
+                    char *issueMemory = C_CAST(char*, calloc(issueSize,sizeof(char)));
                     if (fread(issueMemory, sizeof(char), issueSize, issue))
                     {
                         linuxOSNameFound = true;
@@ -695,8 +695,8 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
         else if (strcmp("AIX", unixUname.sysname) == 0)
         {
             versionNumber->osVersioningIdentifier = OS_AIX;
-            versionNumber->versionType.aixVersion.majorVersion = (uint16_t)atoi(unixUname.version);
-            versionNumber->versionType.aixVersion.minorVersion = (uint16_t)atoi(unixUname.release);
+            versionNumber->versionType.aixVersion.majorVersion = C_CAST(uint16_t, atoi(unixUname.version));
+            versionNumber->versionType.aixVersion.minorVersion = C_CAST(uint16_t, atoi(unixUname.release));
             if (operatingSystemName)
             {
                 snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "AIX %"PRIu16".%"PRIu16"", versionNumber->versionType.aixVersion.majorVersion, versionNumber->versionType.aixVersion.minorVersion);
@@ -724,8 +724,8 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
         else if (strcmp("OPENBSD", unixUname.sysname) == 0)
         {
             versionNumber->osVersioningIdentifier = OS_OPENBSD;
-            versionNumber->versionType.openBSDVersion.majorVersion = (uint16_t)atoi(unixUname.version);
-            versionNumber->versionType.openBSDVersion.minorVersion = (uint16_t)atoi(unixUname.release);
+            versionNumber->versionType.openBSDVersion.majorVersion = C_CAST(uint16_t, atoi(unixUname.version));
+            versionNumber->versionType.openBSDVersion.minorVersion = C_CAST(uint16_t, atoi(unixUname.release));
             if (operatingSystemName)
             {
                 snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "OpenBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.openBSDVersion.majorVersion, versionNumber->versionType.openBSDVersion.minorVersion);
@@ -878,7 +878,7 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
 double get_Micro_Seconds(seatimer_t timer)
 {
     uint64_t nanoseconds = get_Nano_Seconds(timer);
-    return ((double)nanoseconds / 1000.00);
+    return (C_CAST(double, nanoseconds) / 1000.00);
 }
 
 double get_Milli_Seconds(seatimer_t timer)

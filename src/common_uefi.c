@@ -44,7 +44,7 @@ bool os_File_Exists(const char * const filetoCheck)
 
 int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
 {
-    char *resolvedPath = realpath((char*)pathAndFile, (char*)fullPath);
+    char *resolvedPath = realpath(C_CAST(char*, pathAndFile), C_CAST(char*, fullPath));
     if (resolvedPath)
     {
         return SUCCESS;
@@ -146,7 +146,7 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
         if (foregroundBackground)//change foreground color
         {
             //save current background color
-            uint8_t currentBackground = M_Nibble1((unsigned long long)outputProtocol->Mode->Attribute);
+            uint8_t currentBackground = M_Nibble1(C_CAST(unsigned long long, outputProtocol->Mode->Attribute));
             switch (consoleColor)
             {
             case DARK_BLUE:
@@ -199,13 +199,13 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
                 break;
             case DEFAULT:
             default:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(M_Nibble0((unsigned long long)get_Default_Console_Colors()), currentBackground));
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(M_Nibble0(C_CAST(unsigned long long, get_Default_Console_Colors()), currentBackground)));
                 break;
             }
         }
         else//change background color
         {
-            uint8_t currentForeground = M_Nibble0((unsigned long long)outputProtocol->Mode->Attribute);
+            uint8_t currentForeground = M_Nibble0(C_CAST(unsigned long long, outputProtocol->Mode->Attribute));
             switch (consoleColor)
             {
             case DARK_BLUE:
@@ -258,7 +258,7 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
                 break;
             case DEFAULT:
             default:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, M_Nibble1((unsigned long long)get_Default_Console_Colors())));
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, M_Nibble1(C_CAST(unsigned long long, get_Default_Console_Colors()))));
                 break;
             }
         }
@@ -505,7 +505,7 @@ void start_Timer(seatimer_t *timer)
     ret = gettimeofday(&startTimespec, NULL);
     if (0 == ret)//hopefully this always works...-TJE
     {
-        timer->timerStart = (uint64_t) (startTimespec.tv_sec * (uint64_t) 1000000000) + (uint64_t)(startTimespec.tv_usec * (uint64_t) 1000);
+        timer->timerStart = C_CAST(uint64_t, startTimespec.tv_sec * UINT64_C(1000000000)) + (C_CAST(uint64_t, startTimespec.tv_usec) * UINT64_C(1000));
     }
 }
 
@@ -517,7 +517,7 @@ void stop_Timer(seatimer_t *timer)
     ret = gettimeofday(&stopTimespec, NULL);
     if (0 == ret)//hopefully this always works...-TJE
     {
-        timer->timerStop = (uint64_t) (stopTimespec.tv_sec * (uint64_t) 1000000000) + (uint64_t)(stopTimespec.tv_usec * (uint64_t) 1000);
+        timer->timerStop = C_CAST(uint64_t, stopTimespec.tv_sec * UINT64_C(1000000000)) + (C_CAST(uint64_t, stopTimespec.tv_usec) * UINT64_C(1000));
     }
 }
 
@@ -529,7 +529,7 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
 double get_Micro_Seconds(seatimer_t timer)
 {
     uint64_t nanoseconds = get_Nano_Seconds(timer);
-    return ((double)nanoseconds / 1000.00);
+    return (C_CAST(double, nanoseconds) / 1000.00);
 }
 
 double get_Milli_Seconds(seatimer_t timer)
@@ -683,7 +683,7 @@ int get_Current_User_Name(char **userName)
     {
         //while unix functions are there, they are all stubs, so we're just going to return "efi" as the username.
 #define UEFI_USER_NAME_LENGTH 4
-        *userName = (char*)calloc(UEFI_USER_NAME_LENGTH, sizeof(char));
+        *userName = C_CAST(char*, calloc(UEFI_USER_NAME_LENGTH, sizeof(char)));
         if (*userName)
         {
             snprintf(*userName, UEFI_USER_NAME_LENGTH, "efi");
