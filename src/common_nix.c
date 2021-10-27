@@ -845,7 +845,7 @@ void start_Timer(seatimer_t *timer)
     if (0 == ret)//hopefully this always works...-TJE
     {
 //        printf("Start Time:  %lu\n", startTimespec.tv_nsec);
-        timer->timerStart = (uint64_t) (startTimespec.tv_sec * (uint64_t) 1000000000) + startTimespec.tv_nsec;
+        timer->timerStart = C_CAST(uint64_t, startTimespec.tv_sec * UINT64_C(1000000000)) + startTimespec.tv_nsec;
     }
 //    else
 //    {
@@ -862,7 +862,7 @@ void stop_Timer(seatimer_t *timer)
     if (0 == ret)//hopefully this always works...-TJE
     {
 //        printf("Stop Time:  %lu\n", stopTimespec.tv_nsec);
-        timer->timerStop = (uint64_t) (stopTimespec.tv_sec * (uint64_t) 1000000000) + stopTimespec.tv_nsec;
+        timer->timerStop = C_CAST(uint64_t, stopTimespec.tv_sec * UINT64_C(1000000000)) + stopTimespec.tv_nsec;
     }
 //    else
 //    {
