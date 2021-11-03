@@ -383,7 +383,7 @@ int16_t kelvin_To_Fahrenheit(int16_t *kelvin)
 void byte_Swap_String(char *stringToChange)
 {
     size_t stringIter = 0;
-    size_t   stringlen = strlen(stringToChange);
+    size_t stringlen = strlen(stringToChange);
     char *swappedString = C_CAST(char *, calloc(stringlen, sizeof(char)));
     if (swappedString == NULL)
     {
@@ -401,7 +401,7 @@ void byte_Swap_String(char *stringToChange)
             }
         }
     }
-    snprintf(stringToChange, stringlen, "%s", swappedString);
+    snprintf(stringToChange, stringlen + 1, "%s", swappedString);//The plus 1 is to include the NULL terminating character that ALL strings passed to this function should have room for!-TJE
     free(swappedString);
 }
 void remove_Whitespace_Left(char *stringToChange)
