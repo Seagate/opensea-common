@@ -227,8 +227,7 @@ void print_OS_Version(ptrOSVersionNumber versionNumber)
 int replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char *newFileName)
 {
     char *ptr = NULL;
-    char *dup = NULL;
-    size_t ptrLen = 0;
+    size_t ptrLen = 0, fullLength = 0;
     if (NULL != (ptr = strrchr(fullPath, SYSTEM_PATH_SEPARATOR)))
     {
         ptr += 1;
@@ -240,7 +239,7 @@ int replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char *newFileName
     ptrLen = strlen(ptr);
     //now that we have a valid pointer, set all the remaining characters to null, then set the new file name in place.
     memset(ptr, 0, ptrLen);
-    size_t fullLength = (OPENSEA_PATH_MAX - strlen(fullPath));
+    fullLength = (OPENSEA_PATH_MAX - strlen(fullPath));
     snprintf(ptr, fullLength, "%s", newFileName);
     return SUCCESS;
 }
