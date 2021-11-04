@@ -240,15 +240,7 @@ int replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char *newFileName
     ptrLen = strlen(ptr);
     //now that we have a valid pointer, set all the remaining characters to null, then set the new file name in place.
     memset(ptr, 0, ptrLen);
-    dup = strdup(ptr);
-    if(dup)
-    {
-        snprintf(ptr, ptrLen, "%s%s", dup, newFileName);
-        safe_Free(dup)
-        return SUCCESS;
-    }
-    else
-    {
-        return FAILURE;
-    }
+    size_t fullLength = (OPENSEA_PATH_MAX - strlen(fullPath));
+    snprintf(ptr, fullLength, "%s", newFileName);
+    return SUCCESS;
 }
