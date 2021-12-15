@@ -73,7 +73,7 @@ void *malloc_aligned(size_t size, size_t alignment)
         return temp;
     #else
 
-    #if !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+    #if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
         //C11 added an aligned alloc function we can use
         //One additional requirement of this function is that the size must be a multiple of alignment, so we will check and round up the size to make this easy.
         if (size % alignment)
