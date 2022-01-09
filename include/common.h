@@ -444,6 +444,7 @@ extern "C"
         ERROR_WRITING_FILE       = 24, //LookTan added for fwrite check on May20'20
 		TIMEOUT					 = 25, //Pranali added for indicating operation timeout for SeaQueue
         OS_TIMEOUT_TOO_LARGE     = 26, //Tyler added for cases where a requested timeout is larger than the OS is capable of supporting in passthrough
+        PARSING_EXCEPTION_FAILURE = 27, //Nidhi - For C/C++ exception failure while parsing
         UNKNOWN
     }eReturnValues;
 
