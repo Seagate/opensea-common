@@ -175,7 +175,7 @@ void *calloc_aligned(size_t num, size_t size, size_t alignment)
     if (numSize)
     {
         zeroedMem = malloc_aligned(numSize, alignment);
-        
+
         if (zeroedMem)
         {
             memset(zeroedMem, 0, numSize);
@@ -532,7 +532,7 @@ void convert_String_To_Inverse_Case(char *stringToChange)
 }
 
 size_t find_last_occurrence_in_string(char *originalString, char *stringToFind)
-{  
+{
     char *stringToCompare = originalString;
     size_t last_occurrence = strlen(originalString);
 
@@ -552,6 +552,19 @@ size_t find_last_occurrence_in_string(char *originalString, char *stringToFind)
     }
 
     return last_occurrence;
+}
+
+size_t find_first_occurrence_in_string(char *originalString, char *stringToFind)
+{
+    char *stringToCompare = originalString;
+
+    char *partialString = strstr(stringToCompare, stringToFind);
+    if (partialString != NULL)
+    {
+        return (size_t)(partialString - originalString);
+    }
+
+    return strlen(originalString);;
 }
 
 void print_Return_Enum(char *funcName, int ret)
@@ -1400,7 +1413,7 @@ time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
     {
         //since 1900...just increment since no range applies today
         futureTime.tm_year += years;
-    }    
+    }
     return mktime(&futureTime);
 }
 
@@ -1562,12 +1575,12 @@ long int get_File_Size(FILE *filePtr)
 
 bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger)
 {
-    bool ret = true; 
+    bool ret = true;
     bool hex = false;
     const char * tmp = strToConvert;
     while (*tmp != '\0')
     {
-        if ( (!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h') )
+        if ((!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
         {
             ret = false;
             break;
@@ -1582,7 +1595,7 @@ bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * output
     //TODO: What about realllyyyy long hex value? 
     if (ret)
     {
-        if ( hex )
+        if (hex)
         {
             *outputInteger = C_CAST(uint64_t, strtoll(strToConvert, NULL, 16));
         }
@@ -1593,7 +1606,7 @@ bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * output
     }
     else
     {
-        ret = false; 
+        ret = false;
     }
     //Final Check
     if (ret && errno != 0 && *outputInteger == 0)
@@ -1621,7 +1634,7 @@ void print_Errno_To_Screen(int error)
     safe_Free(errorString)
 #elif defined (_MSC_VER) //TODO: Check for a specific version of visual studio?
     char errorString[1024] = { 0 };
-    if(0 == strerror_s(errorString, 1024, error))
+    if (0 == strerror_s(errorString, 1024, error))
     {
         printf("%d - %s\n", error, errorString);
     }
@@ -1749,7 +1762,7 @@ double raise_to_power(double number, double power)
         return number;
     for (int64_t i = -1; i >= power && power != 0; i--) {
 
-        result = result * (1/number);
+        result = result * (1 / number);
     }
     return result;
 }
@@ -1785,10 +1798,10 @@ void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue)
 
 char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source)
 {
-    if(destination && source && destinationSizeBytes > 0)
+    if (destination && source && destinationSizeBytes > 0)
     {
         char *dup = strdup(destination);
-        if(dup)
+        if (dup)
         {
             snprintf(destination, destinationSizeBytes, "%s%s", dup, source);
             safe_Free(dup)
@@ -1800,10 +1813,10 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
 
 char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, const char* source, int sourceLength)
 {
-    if(destination && source && destinationSizeBytes > 0 && sourceLength > 0)
+    if (destination && source && destinationSizeBytes > 0 && sourceLength > 0)
     {
         char *dup = strdup(destination);
-        if(dup)
+        if (dup)
         {
             snprintf(destination, destinationSizeBytes, "%s%.*s", dup, sourceLength, source);
             safe_Free(dup)
