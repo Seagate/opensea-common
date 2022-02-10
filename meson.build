@@ -40,6 +40,7 @@ elif target_machine.system() == 'windows'
 	  advapi32 = c.find_library('advapi32')
 	  deps += [win32_version, advapi32]
   else
+    global_cpp_args += ['-D_CRT_NONSTDC_NO_DEPRECATE']
   endif
   global_cpp_args += ['-DENABLE_CSMI']
 endif # TODO UEFI and vmware
