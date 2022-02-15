@@ -1597,11 +1597,11 @@ bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * output
     {
         if (hex)
         {
-            *outputInteger = C_CAST(uint64_t, strtoll(strToConvert, NULL, 16));
+            *outputInteger = C_CAST(uint64_t, strtoull(strToConvert, NULL, 16));
         }
         else
         {
-            *outputInteger = C_CAST(uint64_t, strtoll(strToConvert, NULL, 10));
+            *outputInteger = C_CAST(uint64_t, strtoull(strToConvert, NULL, 10));
         }
     }
     else
@@ -1609,7 +1609,7 @@ bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * output
         ret = false;
     }
     //Final Check
-    if (ret && errno != 0 && *outputInteger == 0)
+    if (ret && errno != 0)
     {
         ret = false;
     }
@@ -1632,7 +1632,7 @@ void print_Errno_To_Screen(int error)
         printf("%d - <Unable to convert error to string>\n", error);
     }
     safe_Free(errorString)
-#elif defined (_MSC_VER) //TODO: Check for a specific version of visual studio?
+#elif defined (__STDC_SECURE_LIB__) //This is a MSFT definition for their original _s functions that sometimes differ from the C11 standard
     char errorString[1024] = { 0 };
     if (0 == strerror_s(errorString, 1024, error))
     {
