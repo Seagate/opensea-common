@@ -137,7 +137,7 @@ void free_aligned(void* ptr)
     #if defined (VMK_CROSS_COMP)
     free(ptr);
     #else
-    #if !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+    #if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
         //just call free
         free(ptr);
     #elif !defined(UEFI_C_SOURCE) && defined (__INTEL_COMPILER) || defined (__ICC)
