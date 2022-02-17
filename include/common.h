@@ -111,14 +111,14 @@ extern "C"
     #define M_Byte7(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0xFF00000000000000) ) >> 56 ) ) )
 
     //Get a specific byte int
-    #define M_ByteInt0(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x00000000000000FF) ) >>  0 ) ) )
-    #define M_ByteInt1(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x000000000000FF00) ) >>  8 ) ) )
-    #define M_ByteInt2(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x0000000000FF0000) ) >> 16 ) ) )
-    #define M_ByteInt3(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x00000000FF000000) ) >> 24 ) ) )
-    #define M_ByteInt4(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x000000FF00000000) ) >> 32 ) ) )
-    #define M_ByteInt5(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x0000FF0000000000) ) >> 40 ) ) )
-    #define M_ByteInt6(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x00FF000000000000) ) >> 48 ) ) )
-    #define M_ByteInt7(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0xFF00000000000000) ) >> 56 ) ) )
+    #define M_ByteInt0(l) ( C_CAST(int8_t, ( ( (l) & UINT64_C(0x00000000000000FF) ) >>  0 ) ) )
+    #define M_ByteInt1(l) ( C_CAST(int8_t, ( ( (l) & UINT64_C(0x000000000000FF00) ) >>  8 ) ) )
+    #define M_ByteInt2(l) ( C_CAST(int8_t, ( ( (l) & UINT64_C(0x0000000000FF0000) ) >> 16 ) ) )
+    #define M_ByteInt3(l) ( C_CAST(int8_t, ( ( (l) & UINT64_C(0x00000000FF000000) ) >> 24 ) ) )
+    #define M_ByteInt4(l) ( C_CAST(int8_t, ( ( (l) & UINT64_C(0x000000FF00000000) ) >> 32 ) ) )
+    #define M_ByteInt5(l) ( C_CAST(int8_t, ( ( (l) & UINT64_C(0x0000FF0000000000) ) >> 40 ) ) )
+    #define M_ByteInt6(l) ( C_CAST(int8_t, ( ( (l) & UINT64_C(0x00FF000000000000) ) >> 48 ) ) )
+    #define M_ByteInt7(l) ( C_CAST(int8_t, ( ( (l) & UINT64_C(0xFF00000000000000) ) >> 56 ) ) )
 
     //get a specific nibble
     #define M_Nibble0(l)  ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x000000000000000F) ) >>  0 ) ) )
