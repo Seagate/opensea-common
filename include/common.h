@@ -940,7 +940,7 @@ extern "C"
     //!   \return size_t = last occurence of 'stringToFind' in 'originalString'
     //
     //-----------------------------------------------------------------------------
-    size_t find_last_occurrence_in_string(char *originalString, char *stringToFind);
+    size_t find_last_occurrence_in_string(const char *originalString, const char *stringToFind);
 
     //-----------------------------------------------------------------------------
     //
