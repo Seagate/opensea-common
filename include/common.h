@@ -254,40 +254,40 @@ extern "C"
 
     #define M_NibblesTo1ByteValue(n1, n0) ( \
     C_CAST(uint8_t, ( (C_CAST(uint8_t, ((n1) & 0x0F) << 4) | (C_CAST(uint8_t, ((n0) & 0x0F) << 0)) \
-                                           )
+                                           ) ) )
 
     // Big endian parameter order, little endian value
     #define M_BytesTo4ByteValue(b3, b2, b1, b0)                    (        \
     C_CAST(uint32_t, (  (C_CAST(uint32_t, b3) << 24) | (C_CAST(uint32_t, b2) << 16) |          \
                  (C_CAST(uint32_t, b1) <<  8) | (C_CAST(uint32_t, b0) <<  0)  )         \
-                                                                   )
+                                                                   ) )
     // Big endian parameter order, little endian value
     #define M_BytesTo8ByteValue(b7, b6, b5, b4, b3, b2, b1, b0)    (        \
     C_CAST(uint64_t, ( (C_CAST(uint64_t, b7) << 56) | (C_CAST(uint64_t, b6) << 48) |           \
                 (C_CAST(uint64_t, b5) << 40) | (C_CAST(uint64_t, b4) << 32) |           \
                 (C_CAST(uint64_t, b3) << 24) | (C_CAST(uint64_t, b2) << 16) |           \
                 (C_CAST(uint64_t, b1) <<  8) | (C_CAST(uint64_t, b0) <<  0)  )          \
-                                                                   )
+                                                                   ) )
 
     // Big endian parameter order, little endian value
     #define M_BytesTo2ByteValue(b1, b0)                            (        \
     C_CAST(uint16_t, (  (C_CAST(uint16_t, b1) << 8) | (C_CAST(uint16_t, b0) <<  0)  )          \
-                                                                   )
+                                                                   ) )
 
     // Big endian parameter order, little endian value
     #define M_WordsTo4ByteValue(w1, w0)                            (        \
     C_CAST(uint32_t, (  (C_CAST(uint32_t, w1) << 16) | (C_CAST(uint32_t, w0) <<  0)  )         \
-                                                                   )
+                                                                   ) )
 
     #define M_WordsTo8ByteValue(w3, w2, w1, w0)                    (   \
     C_CAST(uint64_t, (  (C_CAST(uint64_t, w3) << 48) | (C_CAST(uint64_t, w2) << 32) |     \
                  (C_CAST(uint64_t, w1) << 16) | (C_CAST(uint64_t, w0) <<  0)  )    \
-                                                                   )
+                                                                   ) )
 
     // Big endian parameter order, little endian value
     #define M_DWordsTo8ByteValue(d1, d0)                           (        \
     C_CAST(uint64_t, (  (C_CAST(uint64_t, d1) << 32) | (C_CAST(uint64_t, d0) <<  0)  )         \
-                                                                   )
+                                                                   ) )
 
     // MACRO to round the number of x so that it will not round up when formating the float
     #define ROUNDF(f, c) (((float)((int)((f) * (c))) / (c)))
