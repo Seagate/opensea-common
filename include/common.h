@@ -254,7 +254,7 @@ extern "C"
 
     #define M_NibblesTo1ByteValue(n1, n0) ( \
     C_CAST(uint8_t, ( (C_CAST(uint8_t, ((n1) & 0x0F) << 4) | (C_CAST(uint8_t, ((n0) & 0x0F) << 0)) \
-                                           ) ) )
+                                           ) ) ) )
 
     // Big endian parameter order, little endian value
     #define M_BytesTo4ByteValue(b3, b2, b1, b0)                    (        \
