@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012-2021 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012-2022 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,7 +24,7 @@ bool os_Directory_Exists(const char * const pathToCheck)
 {
     DWORD attrib = INVALID_FILE_ATTRIBUTES;
     size_t pathCheckLength = (strlen(pathToCheck) + 1) * sizeof(TCHAR);
-    TCHAR *localPathToCheckBuf = (TCHAR*)calloc(pathCheckLength, sizeof(TCHAR));
+    TCHAR *localPathToCheckBuf = C_CAST(TCHAR*, calloc(pathCheckLength, sizeof(TCHAR)));
     if (!localPathToCheckBuf)
     {
         return false;
@@ -34,7 +34,7 @@ bool os_Directory_Exists(const char * const pathToCheck)
 
     attrib = GetFileAttributes(localPathToCheck);
 
-    safe_Free(localPathToCheckBuf);
+    safe_Free(localPathToCheckBuf)
     localPathToCheck = NULL;
 
     if (attrib == INVALID_FILE_ATTRIBUTES)
@@ -56,7 +56,7 @@ bool os_File_Exists(const char * const filetoCheck)
 {
     DWORD attrib = INVALID_FILE_ATTRIBUTES;
     size_t fileCheckLength = (strlen(filetoCheck) + 1) * sizeof(TCHAR);
-    TCHAR *localFileToCheckBuf = (TCHAR*)calloc(fileCheckLength, sizeof(TCHAR));
+    TCHAR *localFileToCheckBuf = C_CAST(TCHAR*, calloc(fileCheckLength, sizeof(TCHAR)));
     if (!localFileToCheckBuf)
     {
         return false;
@@ -66,7 +66,7 @@ bool os_File_Exists(const char * const filetoCheck)
 
     attrib = GetFileAttributes(localFileToCheck);
 
-    safe_Free(localFileToCheckBuf);
+    safe_Free(localFileToCheckBuf)
     localFileToCheck = NULL;
 
     if (attrib == INVALID_FILE_ATTRIBUTES)
@@ -308,6 +308,7 @@ eArchitecture get_Compiled_Architecture(void)
         return OPENSEA_ARCH_UNKNOWN;
     #endif
 }
+
 eEndianness calculate_Endianness(void)
 {
     static eEndianness endian = OPENSEA_UNKNOWN_ENDIAN;//using static so that it should only need to run this code once...not that it takes a long time, but this may help optimise this.
@@ -484,6 +485,202 @@ bool is_Windows_10_Or_Higher(void)
     return isWindows10OrHigher;
 }
 
+bool is_Windows_10_Version_1507_Or_Higher(void)
+{
+    bool isWindows10_1507OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 10240)
+    {
+        //Win10 or higher
+        isWindows10_1507OrHigher = true;
+    }
+    return isWindows10_1507OrHigher;
+}
+
+bool is_Windows_10_Version_1511_Or_Higher(void)
+{
+    bool isWindows10_1511OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 10586)
+    {
+        //Win10 or higher
+        isWindows10_1511OrHigher = true;
+    }
+    return isWindows10_1511OrHigher;
+}
+
+bool is_Windows_10_Version_1607_Or_Higher(void)
+{
+    bool isWindows10_1607OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 14393)
+    {
+        //Win10 or higher
+        isWindows10_1607OrHigher = true;
+    }
+    return isWindows10_1607OrHigher;
+}
+
+bool is_Windows_10_Version_1703_Or_Higher(void)
+{
+    bool isWindows10_1703OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 15063)
+    {
+        //Win10 or higher
+        isWindows10_1703OrHigher = true;
+    }
+    return isWindows10_1703OrHigher;
+}
+
+bool is_Windows_10_Version_1709_Or_Higher(void)
+{
+    bool isWindows10_1709OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 16299)
+    {
+        //Win10 or higher
+        isWindows10_1709OrHigher = true;
+    }
+    return isWindows10_1709OrHigher;
+}
+
+bool is_Windows_10_Version_1803_Or_Higher(void)
+{
+    bool isWindows10_1803OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 17134)
+    {
+        //Win10 or higher
+        isWindows10_1803OrHigher = true;
+    }
+    return isWindows10_1803OrHigher;
+}
+
+bool is_Windows_10_Version_1809_Or_Higher(void)
+{
+    bool isWindows10_1809OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 17763)
+    {
+        //Win10 or higher
+        isWindows10_1809OrHigher = true;
+    }
+    return isWindows10_1809OrHigher;
+}
+
+bool is_Windows_10_Version_1903_Or_Higher(void)
+{
+    bool isWindows10_1903OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 18362)
+    {
+        //Win10 or higher
+        isWindows10_1903OrHigher = true;
+    }
+    return isWindows10_1903OrHigher;
+}
+
+bool is_Windows_10_Version_1909_Or_Higher(void)
+{
+    bool isWindows10_1909OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 18363)
+    {
+        //Win10 or higher
+        isWindows10_1909OrHigher = true;
+    }
+    return isWindows10_1909OrHigher;
+}
+
+bool is_Windows_10_Version_2004_Or_Higher(void)
+{
+    bool isWindows10_2004OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 19041)
+    {
+        //Win10 or higher
+        isWindows10_2004OrHigher = true;
+    }
+    return isWindows10_2004OrHigher;
+}
+
+bool is_Windows_10_Version_20H2_Or_Higher(void)
+{
+    bool isWindows10_20H2OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 19042)
+    {
+        //Win10 or higher
+        isWindows10_20H2OrHigher = true;
+    }
+    return isWindows10_20H2OrHigher;
+}
+
+bool is_Windows_10_Version_21H1_Or_Higher(void)
+{
+    bool isWindows10_21H1OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 19043)
+    {
+        //Win10 or higher
+        isWindows10_21H1OrHigher = true;
+    }
+    return isWindows10_21H1OrHigher;
+}
+
+bool is_Windows_10_Version_21H2_Or_Higher(void)
+{
+    bool isWindows10_21H2OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 19044)
+    {
+        //Win10 or higher
+        isWindows10_21H2OrHigher = true;
+    }
+    return isWindows10_21H2OrHigher;
+}
+
+bool is_Windows_11_Version_21H2_Or_Higher(void)
+{
+    bool isWindows10_21H2OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 22000)
+    {
+        //Win10 or higher
+        isWindows10_21H2OrHigher = true;
+    }
+    return isWindows10_21H2OrHigher;
+}
+
 bool is_Windows_Server_OS(void)
 {
     bool isWindowsServer = false;
@@ -569,7 +766,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
     //start getting the Windows version using the verifyVersionInfo call. I'm doing it this way since the "version helpers" are essentially doing the same thing but are not available to minGW
     
     static CONST TCHAR kernel32DLL[] = TEXT("\\kernel32.dll");
-    TCHAR *systemPathBuf = (TCHAR*)calloc(OPENSEA_PATH_MAX, sizeof(TCHAR));
+    TCHAR *systemPathBuf = C_CAST(TCHAR*, calloc(OPENSEA_PATH_MAX, sizeof(TCHAR)));
     CONST TCHAR *systemPath = &systemPathBuf[0];
     CONST TCHAR *subblock = TEXT(SYSTEM_PATH_SEPARATOR_STR);
 
@@ -582,7 +779,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
     if (directoryStringLength > OPENSEA_PATH_MAX || directoryStringLength == 0 || directoryStringLength > OPENSEA_PATH_MAX - sizeof(kernel32DLL) / sizeof(*kernel32DLL))
     {
         //error
-        safe_Free(systemPathBuf);
+        safe_Free(systemPathBuf)
         systemPath = NULL;
         return FAILURE;
     }
@@ -598,7 +795,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
         LPVOID ver = malloc(versionInfoSize);
         if (!ver)
         {
-            safe_Free(systemPathBuf);
+            safe_Free(systemPathBuf)
             systemPath = NULL;
             return MEMORY_FAILURE;
         }
@@ -607,9 +804,9 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             LPVOID block = NULL;
             UINT blockSize = sizeof(VS_FIXEDFILEINFO);//start with this size...should get at least this
             VS_FIXEDFILEINFO *versionFileInfo = NULL;
-            if (VerQueryValue((LPCVOID)ver, subblock, &block, &blockSize) || blockSize < sizeof(VS_FIXEDFILEINFO))//this should run the first function before performing the comparison
+            if (VerQueryValue(C_CAST(LPCVOID, ver), subblock, &block, &blockSize) || blockSize < sizeof(VS_FIXEDFILEINFO))//this should run the first function before performing the comparison
             {
-                versionFileInfo = (VS_FIXEDFILEINFO*)block;
+                versionFileInfo = C_CAST(VS_FIXEDFILEINFO*, block);
                 versionNumber->versionType.windowsVersion.majorVersion = HIWORD(versionFileInfo->dwProductVersionMS);
                 versionNumber->versionType.windowsVersion.minorVersion = LOWORD(versionFileInfo->dwProductVersionMS);
                 versionNumber->versionType.windowsVersion.buildNumber = HIWORD(versionFileInfo->dwProductVersionLS);
@@ -625,14 +822,14 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             //error
             ret = FAILURE;
         }
-        safe_Free(ver);
+        safe_Free(ver)
     }
     else
     {
         //error
         ret = FAILURE;
     }
-    safe_Free(systemPathBuf);
+    safe_Free(systemPathBuf)
     systemPath = NULL;
 
     if (ret == SUCCESS)
@@ -648,21 +845,94 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 case 0:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2016");
+                        switch (versionNumber->versionType.windowsVersion.buildNumber)
+                        {
+                        case 17763:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2019");
+                            break;
+                        case 14393:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2016");
+                            break;
+                        case 18362:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 1903");
+                            break;
+                        case 18363:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 1909");
+                            break;
+                        case 19041:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 2004");
+                            break;
+                        case 19042:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 20H2");
+                            break;
+                        case 20348:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2022");
+                            break;
+                        default:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows Server Version");
+                            break;
+                        }
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows 10");
+                        switch (versionNumber->versionType.windowsVersion.buildNumber)
+                        {
+                        case 10240:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1507");
+                            break;
+                        case 10586:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1511");
+                            break;
+                        case 14393:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1607");
+                            break;
+                        case 15063:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1703");
+                            break;
+                        case 16299:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1709");
+                            break;
+                        case 17134:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1803");
+                            break;
+                        case 17763:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1809");
+                            break;
+                        case 18362:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1903");
+                            break;
+                        case 18363:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1909");
+                            break;
+                        case 19041:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 2004");
+                            break;
+                        case 19042:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 20H2");
+                            break;
+                        case 19043:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 21H1");
+                            break;
+                        case 19044:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 21H2");
+                            break;
+                        case 22000:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 11, version 21H2");
+                            break;
+                        default:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows 10/11 version");
+                            break;
+                        }
                     }
                     break;
                 default:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2016 or higher");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows Server Version");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows 10 or higher");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows Version");
                     }
                     break;
                 }
@@ -673,51 +943,51 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 case 3:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2012 R2");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2012 R2");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows 8.1");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 8.1");
                     }
                     break;
                 case 2:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2012");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2012");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows 8");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 8");
                     }
                     break;
                 case 1:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2008 R2");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2008 R2");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows 7");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 7");
                     }
                     break;
                 case 0:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2008");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2008");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows Vista");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Vista");
                     }
                     break;
                 default:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2012 R2 or higher");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2012 R2 or higher");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows 8.1 or higher");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 8.1 or higher");
                     }
                     break;
                 }
@@ -728,38 +998,38 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 case 2:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2003");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2003");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "Windows XP 64-Bit Edition");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows XP 64-Bit Edition");
                     }
                     break;
                 case 1:
-                    sprintf(&operatingSystemName[0], "Windows XP");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows XP");
                     break;
                 case 0:
-                    sprintf(&operatingSystemName[0], "Windows 2000");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 2000");
                     break;
                 default:
                     if (isWindowsServer)
                     {
-                        sprintf(&operatingSystemName[0], "Windows Server 2003 or higher");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2003 or higher");
                     }
                     else
                     {
-                        sprintf(&operatingSystemName[0], "XP or higher");
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "XP or higher");
                     }
                     break;
                 }
                 break;
             default:
-                sprintf(&operatingSystemName[0], "Unknown Windows OS");
+                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows OS");
                 break;
             }
             if (isWindowsPE)
             {
-                strcat(operatingSystemName, " (PE)");
+                common_String_Concat(operatingSystemName, OS_NAME_SIZE, " (PE)");
             }
         }
     }
@@ -769,8 +1039,9 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
 int64_t os_Get_File_Size(FILE *filePtr)
 {
     LARGE_INTEGER fileSize;
+    intptr_t osfHandle = _get_osfhandle(_fileno(filePtr));
     //convert the fileptr to a HANDLE
-    HANDLE fileHandle = (HANDLE)_get_osfhandle(_fileno(filePtr));
+    HANDLE fileHandle = C_CAST(HANDLE, osfHandle);
     fileSize.QuadPart = 0;//set to something before we call GetFileSizeEx
     //use GetFileSizeEx to get the size of the file as a 64bit integer
     if (GetFileSizeEx(fileHandle, &fileSize))
@@ -819,7 +1090,7 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
 double get_Micro_Seconds(seatimer_t timer)
 {
     uint64_t nanoseconds = get_Nano_Seconds(timer);
-    return ((double)nanoseconds / 1000.00);
+    return (C_CAST(double, nanoseconds) / 1000.00);
 }
 
 double get_Milli_Seconds(seatimer_t timer)
@@ -878,7 +1149,7 @@ int get_Current_User_Name(char **userName)
         {
             const char *isAdmin = " (admin)";//This will be concatenated to the string if running as administrator since we only get the user's name in Windows.
             size_t usernameLength = _tcslen(localName) + strlen(isAdmin) + 1;
-            *userName = (char*)calloc(usernameLength, sizeof(char));
+            *userName = C_CAST(char*, calloc(usernameLength, sizeof(char)));
             if (*userName)
             {
 #if defined UNICODE
@@ -886,14 +1157,14 @@ int get_Current_User_Name(char **userName)
                 //convert output to a char string
                 if (wcstombs_s(&charsConverted, *userName, usernameLength, localName, usernameLength))
                 {
-                    safe_Free(*userName);
+                    safe_Free(*userName)
                     ret = FAILURE;
                 }
 #else
                 //just copy it over after allocating
                 if (strcpy_s(*userName, usernameLength, localName))
                 {
-                    safe_Free(*userName);
+                    safe_Free(*userName)
                     return FAILURE;
                 }
 #endif
@@ -901,7 +1172,7 @@ int get_Current_User_Name(char **userName)
                 {
                     if (strcat_s(*userName, usernameLength, isAdmin))
                     {
-                        safe_Free(*userName);
+                        safe_Free(*userName)
                         return FAILURE;
                     }
                 }

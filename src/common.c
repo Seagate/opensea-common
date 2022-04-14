@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012-2021 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012-2022 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -73,7 +73,7 @@ void *malloc_aligned(size_t size, size_t alignment)
         return temp;
     #else
 
-    #if !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+    #if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
         //C11 added an aligned alloc function we can use
         //One additional requirement of this function is that the size must be a multiple of alignment, so we will check and round up the size to make this easy.
         if (size % alignment)
@@ -83,7 +83,7 @@ void *malloc_aligned(size_t size, size_t alignment)
         return aligned_alloc(alignment, size);
     #elif !defined(UEFI_C_SOURCE) && defined (__INTEL_COMPILER) || defined (__ICC)
         //_mm_malloc
-        return _mm_malloc((int)size, (int)alignment);
+        return _mm_malloc(C_CAST(int, size), C_CAST(int, alignment));
     #elif !defined(UEFI_C_SOURCE) && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         //POSIX.1-2001 and higher define support for posix_memalign
         void *temp = NULL;
@@ -115,11 +115,11 @@ void *malloc_aligned(size_t size, size_t alignment)
                 const void * const originalLocation = temp;
                 temp += requiredExtraBytes;//allow enough room for storing the original pointer location
                 //now offset based on the required alignment
-                temp += alignment - (((size_t)temp) % alignment);
+                temp += alignment - (C_CAST(size_t, temp) % alignment);
                 //aligned.
                 //now save the original pointer location
-                size_t *savedLocationData = (size_t*)(temp - sizeof(size_t));
-                *savedLocationData = (size_t)originalLocation;
+                size_t *savedLocationData = C_CAST(size_t*, temp - sizeof(size_t));
+                *savedLocationData = C_CAST(size_t, originalLocation);
             }
         }
         //else
@@ -137,7 +137,7 @@ void free_aligned(void* ptr)
     #if defined (VMK_CROSS_COMP)
     free(ptr);
     #else
-    #if !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+    #if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
         //just call free
         free(ptr);
     #elif !defined(UEFI_C_SOURCE) && defined (__INTEL_COMPILER) || defined (__ICC)
@@ -160,7 +160,7 @@ void free_aligned(void* ptr)
             //find the starting address from the original allocation.
             void *tempPtr = ptr - sizeof(size_t);//this gets us to where it was stored
             //this will set it back to what it's supposed to be
-            tempPtr = (void*)(*((size_t*)tempPtr));
+            tempPtr = C_CAST(void*, *(C_CAST(size_t*, tempPtr)));
             free(tempPtr);
         }
     #endif
@@ -175,7 +175,7 @@ void *calloc_aligned(size_t num, size_t size, size_t alignment)
     if (numSize)
     {
         zeroedMem = malloc_aligned(numSize, alignment);
-        
+
         if (zeroedMem)
         {
             memset(zeroedMem, 0, numSize);
@@ -214,15 +214,15 @@ size_t get_System_Pagesize(void)
         return 4096;//This is not the processor page size, just the pagesize allocated by EDK2. It's in <dePkg/Include/Uefi/UedfiBaseType.h
     #elif defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         //use sysconf: http://man7.org/linux/man-pages/man3/sysconf.3.html
-        return (size_t)sysconf(_SC_PAGESIZE);
+        return C_CAST(size_t, sysconf(_SC_PAGESIZE));
     #elif defined (_POSIX_VERSION) //this may not be the best way to test this, but I think it will be ok.
         //use get page size: http://man7.org/linux/man-pages/man2/getpagesize.2.html
-        return (size_t)getpagesize();
+        return C_CAST(size_t, getpagesize());
     #elif defined (_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
         SYSTEM_INFO system;
         memset(&system, 0, sizeof(SYSTEM_INFO));
         GetSystemInfo(&system);
-        return (size_t)system.dwPageSize;
+        return C_CAST(size_t, system.dwPageSize);
     #else
         return -1;//unknown, so return something easy to see an error with.
     #endif
@@ -274,17 +274,17 @@ void *realloc_page_aligned(void *alignedPtr, size_t originalSize, size_t size)
 
 void nibble_Swap(uint8_t *byteToSwap)
 {
-    *byteToSwap = ((*byteToSwap & 0x0F) << 4) | ((*byteToSwap & 0xF0) >> 4);
+    *byteToSwap = C_CAST(uint8_t, ((*byteToSwap & 0x0F) << 4)) | C_CAST(uint8_t, ((*byteToSwap & 0xF0) >> 4));
 }
 
 void byte_Swap_16(uint16_t *wordToSwap)
 {
-    *wordToSwap = ((*wordToSwap & 0x00FF) << 8) | ((*wordToSwap & 0xFF00) >> 8);
+    *wordToSwap = C_CAST(uint16_t, ((*wordToSwap & 0x00FF) << 8)) | C_CAST(uint16_t, ((*wordToSwap & 0xFF00) >> 8));
 }
 
 void byte_Swap_Int16(int16_t *signedWordToSwap)
 {
-    *signedWordToSwap = ((*signedWordToSwap & 0x00FF) << 8) | ((*signedWordToSwap & 0xFF00) >> 8);
+    *signedWordToSwap = C_CAST(int16_t, ((*signedWordToSwap & 0x00FF) << 8)) | C_CAST(int16_t, ((*signedWordToSwap & 0xFF00) >> 8));
 }
 
 void big_To_Little_Endian_16(uint16_t *wordToSwap)
@@ -297,8 +297,8 @@ void big_To_Little_Endian_16(uint16_t *wordToSwap)
 
 void byte_Swap_32(uint32_t *doubleWordToSwap)
 {
-    *doubleWordToSwap = ((*doubleWordToSwap & 0x0000FFFF) << 16) | ((*doubleWordToSwap & 0xFFFF0000) >> 16);
-    *doubleWordToSwap = ((*doubleWordToSwap & 0x00FF00FF) << 8) | ((*doubleWordToSwap & 0xFF00FF00) >> 8);
+    *doubleWordToSwap = C_CAST(uint32_t, ((*doubleWordToSwap & 0x0000FFFF) << 16)) | C_CAST(uint32_t, ((*doubleWordToSwap & 0xFFFF0000) >> 16));
+    *doubleWordToSwap = C_CAST(uint32_t, ((*doubleWordToSwap & 0x00FF00FF) << 8)) | C_CAST(uint32_t, ((*doubleWordToSwap & 0xFF00FF00) >> 8));
 }
 
 void byte_Swap_Int32(int32_t *signedDWord)
@@ -321,70 +321,70 @@ void word_Swap_32(uint32_t *doubleWordToSwap)
 
 void byte_Swap_64(uint64_t *quadWordToSwap)
 {
-    *quadWordToSwap = ((*quadWordToSwap & 0x00000000FFFFFFFFULL) << 32) | ((*quadWordToSwap & 0xFFFFFFFF00000000ULL) >> 32);
-    *quadWordToSwap = ((*quadWordToSwap & 0x0000FFFF0000FFFFULL) << 16) | ((*quadWordToSwap & 0xFFFF0000FFFF0000ULL) >> 16);
-    *quadWordToSwap = ((*quadWordToSwap & 0x00FF00FF00FF00FFULL) << 8) | ((*quadWordToSwap & 0xFF00FF00FF00FF00ULL) >> 8);
+    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) | ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
+    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x0000FFFF0000FFFF)) << 16) | ((*quadWordToSwap & UINT64_C(0xFFFF0000FFFF0000)) >> 16);
+    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00FF00FF00FF00FF)) << 8) | ((*quadWordToSwap & UINT64_C(0xFF00FF00FF00FF00)) >> 8);
 }
 
 void word_Swap_64(uint64_t *quadWordToSwap)
 {
-    *quadWordToSwap = ((*quadWordToSwap & 0x00000000FFFFFFFFULL) << 32) | ((*quadWordToSwap & 0xFFFFFFFF00000000ULL) >> 32);
-    *quadWordToSwap = ((*quadWordToSwap & 0x0000FFFF0000FFFFULL) << 16) | ((*quadWordToSwap & 0xFFFF0000FFFF0000ULL) >> 16);
+    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) | ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
+    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x0000FFFF0000FFFF)) << 16) | ((*quadWordToSwap & UINT64_C(0xFFFF0000FFFF0000)) >> 16);
 }
 
 void double_Word_Swap_64(uint64_t *quadWordToSwap)
 {
-    *quadWordToSwap = ((*quadWordToSwap & 0x00000000FFFFFFFFULL) << 32) | ((*quadWordToSwap & 0xFFFFFFFF00000000ULL) >> 32);
+    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) | ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
 }
 
 int16_t celsius_To_Fahrenheit(int16_t *celsius)
 {
     int16_t fahrenheit = 0;
-    fahrenheit = (int16_t)((*celsius * (9.0 / 5.0)) + 32.0);
+    fahrenheit = C_CAST(int16_t, (*celsius * (9.0 / 5.0)) + 32.0);
     return fahrenheit;
 }
 
 int16_t fahrenheit_To_celsius(int16_t *fahrenheit)
 {
     int16_t celsius = 0;
-    celsius = (int16_t)((*fahrenheit - 32.0) * (5.0 / 9.0));
+    celsius = C_CAST(int16_t, (*fahrenheit - 32.0) * (5.0 / 9.0));
     return celsius;
 }
 
 int16_t celsius_To_Kelvin(int16_t *celsius)
 {
     int16_t kelvin = 0;
-    kelvin = (uint16_t)(*celsius + 273.15);
+    kelvin = C_CAST(int16_t, *celsius + 273.15);
     return kelvin;
 }
 
 int16_t fahrenheit_To_Kelvin(int16_t *fahrenheit)
 {
     int16_t kelvin = 0;
-    kelvin = (int16_t)((5.0 / 9.0) * (*fahrenheit - 32.0) + 273.15);
+    kelvin = C_CAST(int16_t, (5.0 / 9.0) * (*fahrenheit - 32.0) + 273.15);
     return kelvin;
 }
 
 int16_t kelvin_To_Celsius(int16_t *kelvin)
 {
     int16_t celsius = 0;
-    celsius = (uint16_t)(*kelvin - 273.15);
+    celsius = C_CAST(int16_t, *kelvin - 273.15);
     return celsius;
 }
 
 int16_t kelvin_To_Fahrenheit(int16_t *kelvin)
 {
     int16_t fahrenheit = 0;
-    fahrenheit = (int16_t)((9.0 / 5.0) * (*kelvin - 273.15) + 32.0);
+    fahrenheit = C_CAST(int16_t, (9.0 / 5.0) * (*kelvin - 273.15) + 32.0);
     return fahrenheit;
 }
 
 //use this to swap the bytes in a string...useful for ATA strings
 void byte_Swap_String(char *stringToChange)
 {
-    uint32_t stringIter = 0;
-    size_t   stringlen = strlen(stringToChange);
-    char *swappedString = (char *)calloc(stringlen, sizeof(char));
+    size_t stringIter = 0;
+    size_t stringlen = strlen(stringToChange);
+    char *swappedString = C_CAST(char *, calloc(stringlen, sizeof(char)));
     if (swappedString == NULL)
     {
         return;
@@ -401,7 +401,7 @@ void byte_Swap_String(char *stringToChange)
             }
         }
     }
-    strncpy(stringToChange, swappedString, stringlen);
+    snprintf(stringToChange, stringlen + 1, "%s", swappedString);//The plus 1 is to include the NULL terminating character that ALL strings passed to this function should have room for!-TJE
     free(swappedString);
 }
 void remove_Whitespace_Left(char *stringToChange)
@@ -481,7 +481,7 @@ void convert_String_To_Upper_Case(char *stringToChange)
     }
     while (iter <= stringLen)
     {
-        stringToChange[iter] = (char)toupper(stringToChange[iter]);
+        stringToChange[iter] = C_CAST(char, toupper(stringToChange[iter]));
         iter++;
     }
 }
@@ -500,7 +500,7 @@ void convert_String_To_Lower_Case(char *stringToChange)
     }
     while (iter <= stringLen)
     {
-        stringToChange[iter] = (char)tolower(stringToChange[iter]);
+        stringToChange[iter] = C_CAST(char, tolower(stringToChange[iter]));
         iter++;
     }
 }
@@ -521,19 +521,19 @@ void convert_String_To_Inverse_Case(char *stringToChange)
     {
         if (islower(stringToChange[iter]))
         {
-            stringToChange[iter] = (char)tolower(stringToChange[iter]);
+            stringToChange[iter] = C_CAST(char, tolower(stringToChange[iter]));
         }
         else if (isupper(stringToChange[iter]))
         {
-            stringToChange[iter] = (char)toupper(stringToChange[iter]);
+            stringToChange[iter] = C_CAST(char, toupper(stringToChange[iter]));
         }
         iter++;
     }
 }
 
-size_t find_last_occurrence_in_string(char *originalString, char *stringToFind)
-{  
-    char *stringToCompare = originalString;
+size_t find_last_occurrence_in_string(const char *originalString, const char *stringToFind)
+{
+    char *stringToCompare = C_CAST(char*, originalString);
     size_t last_occurrence = strlen(originalString);
 
     while (stringToCompare != NULL)
@@ -552,6 +552,19 @@ size_t find_last_occurrence_in_string(char *originalString, char *stringToFind)
     }
 
     return last_occurrence;
+}
+
+size_t find_first_occurrence_in_string(char *originalString, char *stringToFind)
+{
+    char *stringToCompare = originalString;
+
+    char *partialString = strstr(stringToCompare, stringToFind);
+    if (partialString != NULL)
+    {
+        return (size_t)(partialString - originalString);
+    }
+
+    return strlen(originalString);;
 }
 
 void print_Return_Enum(char *funcName, int ret)
@@ -717,9 +730,9 @@ void print_Data_Buffer(uint8_t *dataBuffer, uint32_t bufferLen, bool showPrint)
         printf("%02"PRIX8" ", dataBuffer[printIter]);
         if (showPrint)
         {
-            if (isprint((int)dataBuffer[printIter]))
+            if (isprint(C_CAST(int, dataBuffer[printIter])))
             {
-                lineBuff[lineBuffIter] = dataBuffer[printIter];
+                lineBuff[lineBuffIter] = C_CAST(char, dataBuffer[printIter]);
             }
             else
             {
@@ -755,6 +768,11 @@ int metric_Unit_Convert(double *byteValue, char** metricUnit)
     int ret = SUCCESS;
     uint8_t unitCounter = 0;
 
+    if (!byteValue || !metricUnit || !*metricUnit)
+    {
+        return BAD_PARAMETER;
+    }
+
     while ((*byteValue / 1000.0) >= 1 && (unitCounter + 1) < 8)
     {
         *byteValue = *byteValue / 1000.00;
@@ -763,31 +781,31 @@ int metric_Unit_Convert(double *byteValue, char** metricUnit)
     switch (unitCounter)
     {
     case 0:
-        strcpy(*metricUnit, "B");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "B");
         break;
     case 1:
-        strcpy(*metricUnit, "KB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "KB");
         break;
     case 2:
-        strcpy(*metricUnit, "MB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "MB");
         break;
     case 3:
-        strcpy(*metricUnit, "GB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "GB");
         break;
     case 4:
-        strcpy(*metricUnit, "TB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "TB");
         break;
     case 5:
-        strcpy(*metricUnit, "PB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "PB");
         break;
     case 6:
-        strcpy(*metricUnit, "EB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "EB");
         break;
     case 7:
-        strcpy(*metricUnit, "ZB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "ZB");
         break;
     case 8:
-        strcpy(*metricUnit, "YB");
+        snprintf(*metricUnit, UNIT_STRING_LENGTH, "YB");
         break;
     default:
         ret = FAILURE;
@@ -800,6 +818,11 @@ int capacity_Unit_Convert(double *byteValue, char** capacityUnit)
     int ret = SUCCESS;
     uint8_t unitCounter = 0;
 
+    if (!byteValue || !capacityUnit || !*capacityUnit)
+    {
+        return BAD_PARAMETER;
+    }
+
     while ((*byteValue / 1024.0) >= 1 && (unitCounter + 1) < 8)
     {
         *byteValue = *byteValue / 1024.00;
@@ -808,31 +831,31 @@ int capacity_Unit_Convert(double *byteValue, char** capacityUnit)
     switch (unitCounter)
     {
     case 0:
-        strcpy(*capacityUnit, "B");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "B");
         break;
     case 1:
-        strcpy(*capacityUnit, "KiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "KiB");
         break;
     case 2:
-        strcpy(*capacityUnit, "MiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "MiB");
         break;
     case 3:
-        strcpy(*capacityUnit, "GiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "GiB");
         break;
     case 4:
-        strcpy(*capacityUnit, "TiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "TiB");
         break;
     case 5:
-        strcpy(*capacityUnit, "PiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "PiB");
         break;
     case 6:
-        strcpy(*capacityUnit, "EiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "EiB");
         break;
     case 7:
-        strcpy(*capacityUnit, "ZiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "ZiB");
         break;
     case 8:
-        strcpy(*capacityUnit, "YiB");
+        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "YiB");
         break;
     default:
         ret = FAILURE;
@@ -846,7 +869,7 @@ bool is_Empty(void *ptrData, size_t lengthBytes)
     {
         for (size_t iter = 0, iterEnd = lengthBytes - 1; iter < lengthBytes && iterEnd >= iter; ++iter, --iterEnd)
         {
-            if (((uint_fast8_t*)ptrData)[iter] != UINT8_C(0) || ((uint_fast8_t*)ptrData)[iterEnd] != UINT8_C(0))
+            if ((C_CAST(uint_fast8_t*, ptrData))[iter] != UINT8_C(0) || (C_CAST(uint_fast8_t*, ptrData))[iterEnd] != UINT8_C(0))
             {
                 return false;
             }
@@ -862,31 +885,31 @@ void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t
     //get seconds up to a maximum of 60
     if (seconds)
     {
-        *seconds = (uint8_t)(fmod(tempCalcValue, 60.0));
+        *seconds = C_CAST(uint8_t, fmod(tempCalcValue, 60.0));
     }
     tempCalcValue /= 60.0;
     //get minutes up to a maximum of 60
     if (minutes)
     {
-        *minutes = (uint8_t)(fmod(tempCalcValue, 60.0));
+        *minutes = C_CAST(uint8_t, fmod(tempCalcValue, 60.0));
     }
     tempCalcValue /= 60.0;
     //get hours up to a maximum of 24
     if (hours)
     {
-        *hours = (uint8_t)(fmod(tempCalcValue, 24.0));
+        *hours = C_CAST(uint8_t, fmod(tempCalcValue, 24.0));
     }
     tempCalcValue /= 24.0;
     //get days up to 365
     if (days)
     {
-        *days = (uint8_t)(fmod(tempCalcValue, 365.0));
+        *days = C_CAST(uint8_t, fmod(tempCalcValue, 365.0));
     }
     tempCalcValue /= 365.0;
     //get years
     if (years)
     {
-        *years = (uint8_t)(tempCalcValue);
+        *years = C_CAST(uint8_t, tempCalcValue);
     }
 }
 
@@ -896,31 +919,31 @@ void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *yea
     //get seconds up to a maximum of 60
     if (seconds)
     {
-        *seconds = (uint8_t)(tempCalcValue % 60);
+        *seconds = C_CAST(uint8_t, tempCalcValue % 60);
     }
     tempCalcValue /= 60;
     //get minutes up to a maximum of 60
     if (minutes)
     {
-        *minutes = (uint8_t)(tempCalcValue % 60);
+        *minutes = C_CAST(uint8_t, tempCalcValue % 60);
     }
     tempCalcValue /= 60;
     //get hours up to a maximum of 24
     if (hours)
     {
-        *hours = (uint8_t)(tempCalcValue % 24);
+        *hours = C_CAST(uint8_t, tempCalcValue % 24);
     }
     tempCalcValue /= 24;
     //get days up to 365
     if (days)
     {
-        *days = (uint8_t)(tempCalcValue % 365);
+        *days = C_CAST(uint8_t, tempCalcValue % 365);
     }
     tempCalcValue /= 365;
     //get years
     if (years)
     {
-        *years = (uint8_t)(tempCalcValue);
+        *years = C_CAST(uint8_t, tempCalcValue);
     }
 }
 
@@ -979,7 +1002,7 @@ void seed_32(uint32_t seed)
 {
     //first initialize
     seed32Array[0] = seed;
-    seed32Array[1] = (uint32_t)((int32_t)seed >> 1);//converting to signed int to perform arithmetic shift, then back for the seed value
+    seed32Array[1] = C_CAST(uint32_t, C_CAST(int32_t, seed) >> 1);//converting to signed int to perform arithmetic shift, then back for the seed value
     //using that initialization, run the random number generator for a more random seed...may or may not be needed, but I'm doing this anyways - Tyler
     seed32Array[0] = xorshiftplus32();
     seed32Array[0] = xorshiftplus32();
@@ -988,7 +1011,7 @@ void seed_64(uint64_t seed)
 {
     //first initialize
     seed64Array[0] = seed;
-    seed64Array[1] = (uint64_t)((int64_t)seed >> 2);//converting to signed int to perform arithmetic shift, then back for the seed value
+    seed64Array[1] = C_CAST(uint64_t, C_CAST(int64_t, seed) >> 2);//converting to signed int to perform arithmetic shift, then back for the seed value
     //using that initialization, run the random number generator for a more random seed...may or may not be needed, but I'm doing this anyways - Tyler
     seed64Array[0] = xorshiftplus64();
     seed64Array[0] = xorshiftplus64();
@@ -1061,30 +1084,36 @@ uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax)
 
 int fill_Random_Pattern_In_Buffer(uint8_t *ptrData, uint32_t dataLength)
 {
-    uint32_t *localPtr = (uint32_t*)ptrData;
-    if (dataLength < sizeof(uint32_t) || !ptrData)
+    size_t localPtrDataLen = ((dataLength + sizeof(uint32_t)) - 1) / sizeof(uint32_t);//round up to nearest uint32 amount
+    uint32_t* localPtr = C_CAST(uint32_t*, calloc(localPtrDataLen, sizeof(uint32_t)));
+    if (!localPtr)
     {
-        return BAD_PARAMETER;
+        return MEMORY_FAILURE;
     }
-    seed_32((uint32_t)time(NULL));
+    seed_32(C_CAST(uint32_t, time(NULL)));
     for (uint32_t iter = 0; iter < (dataLength / sizeof(uint32_t)); ++iter)
     {
         localPtr[iter] = xorshiftplus32();
     }
+    memcpy(ptrData, localPtr, dataLength);//copy only the length of the original pointer since we may have overallocated and rounded up earlier.
+    safe_Free(localPtr)
     return SUCCESS;
 }
 
 int fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t *ptrData, uint32_t dataLength)
 {
-    uint32_t *localPtr = (uint32_t*)ptrData;
-    if (!ptrData || dataLength < sizeof(uint32_t))
+    size_t localPtrDataLen = ((dataLength + sizeof(uint32_t)) - 1) / sizeof(uint32_t);//round up to nearest uint32 amount
+    uint32_t *localPtr = C_CAST(uint32_t*, calloc(localPtrDataLen, sizeof(uint32_t)));
+    if (!localPtr)
     {
-        return BAD_PARAMETER;
+        return MEMORY_FAILURE;
     }
     for (uint32_t iter = 0; iter < (dataLength / sizeof(uint32_t)); ++iter)
     {
         localPtr[iter] = hexPattern;
     }
+    memcpy(ptrData, localPtr, dataLength);//copy only the length of the original pointer since we may have overallocated and rounded up earlier.
+    safe_Free(localPtr)
     return SUCCESS;
 }
 
@@ -1384,7 +1413,7 @@ time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
     {
         //since 1900...just increment since no range applies today
         futureTime.tm_year += years;
-    }    
+    }
     return mktime(&futureTime);
 }
 
@@ -1398,20 +1427,18 @@ int get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersio
 #if defined _MSC_VER
     //Microsoft Visual C/C++ compiler (code is written to use the _MSC_FULL_VER from 2003 and later and we only really support 2013 and higher due to C99 usage)-TJE
     *compilerUsed = OPENSEA_COMPILER_MICROSOFT_VISUAL_C_CPP;
-    char msVersion[10] = { 0 };
-    sprintf(msVersion, "%u", _MSC_FULL_VER);
+#define MS_VERSION_STRING_LENGTH 10
+    char msVersion[MS_VERSION_STRING_LENGTH] = { 0 };
+    snprintf(msVersion, MS_VERSION_STRING_LENGTH, "%u", _MSC_FULL_VER);
     char msMajor[3] = { 0 };
     char msMinor[3] = { 0 };
     char msPatch[6] = { 0 };
-    strncpy(msMajor,&msVersion[0], 2);
-    msMajor[2] = '\0';
-    strncpy(msMinor,&msVersion[2], 2);
-    msMinor[2] = '\0';
-    strncpy(msPatch,&msVersion[4], 5);
-    msPatch[5] = '\0';
-    compilerVersionInfo->major = (uint16_t)atoi(msMajor);
-    compilerVersionInfo->minor = (uint16_t)atoi(msMinor);
-    compilerVersionInfo->patch = (uint16_t)atoi(msPatch);
+    snprintf(msMajor, 3, "%.2s", &msVersion[0]);
+    snprintf(msMinor, 3, "%.2s", &msVersion[2]);
+    snprintf(msPatch, 6, "%.5s", &msVersion[4]);
+    compilerVersionInfo->major = C_CAST(uint16_t, atoi(msMajor));
+    compilerVersionInfo->minor = C_CAST(uint16_t, atoi(msMinor));
+    compilerVersionInfo->patch = C_CAST(uint16_t, atoi(msPatch));
 #elif defined __MINGW64__
     *compilerUsed = OPENSEA_COMPILER_MINGW;
     compilerVersionInfo->major = __MINGW64_VERSION_MAJOR;
@@ -1430,17 +1457,18 @@ int get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersio
 #elif defined __HP_aCC
     //untested
     *compilerUsed = OPENSEA_COMPILER_HP_A_CPP;
-    char hpVersion[7] = { 0 };
-    sprintf(hpVersion, "%u", __HP_aCC);
+#define HP_ACC_VERSION_STRING_LENGTH 7
+    char hpVersion[HP_ACC_VERSION_STRING_LENGTH] = { 0 };
+    snprintf(hpVersion, HP_ACC_VERSION_STRING_LENGTH, "%u", __HP_aCC);
     char hpMajor[3] = { 0 };
     char hpMinor[3] = { 0 };
     char hpPatch[3] = { 0 };
-    strncpy(hpMajor, &hpVersion[0], 2);
-    strncpy(hpMinor, &hpVersion[2], 2);
-    strncpy(hpPatch, &hpVersion[4], 2);
-    compilerVersionInfo->major = (uint16_t)atoi(hpMajor);
-    compilerVersionInfo->minor = (uint16_t)atoi(hpMinor);
-    compilerVersionInfo->patch = (uint16_t)atoi(hpPatch);
+    snprintf(hpMajor, 3, "%.2s", &hpVersion[0]);
+    snprintf(hpMinor, 3, "%.2s", &hpVersion[2]);
+    snprintf(hpPatch, 3, "%.2s", &hpVersion[4]);
+    compilerVersionInfo->major = C_CAST(uint16_t, atoi(hpMajor));
+    compilerVersionInfo->minor = C_CAST(uint16_t, atoi(hpMinor));
+    compilerVersionInfo->patch = C_CAST(uint16_t, atoi(hpPatch));
 #elif defined __IBMC__ || defined __IBMCPP__
     //untested
     //detect if it's xl or lx for system z
@@ -1458,17 +1486,18 @@ int get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersio
 #elif defined __INTEL_COMPILER
     //untested
     *compilerUsed = OPENSEA_COMPILER_INTEL_C_CPP;
+#define INTEL_VERSION_STRING_MAX_LENGTH 4;
     char intelVersion[4] = { 0 };
-    sprintf(intelVersion, "%u", __INTEL_COMPILER);
+    snprintf(intelVersion, INTEL_VERSION_STRING_MAX_LENGTH, "%u", __INTEL_COMPILER);
     char intelMajor[2] = { 0 };
     char intelMinor[2] = { 0 };
     char intelPatch[2] = { 0 };
-    strncpy(intelMajor, &intelVersion[0], 1);
-    strncpy(intelMinor, &intelVersion[1], 1);
-    strncpy(intelPatch, &intelVersion[2], 1);
-    compilerVersionInfo->major = (uint16_t)atoi(intelMajor);
-    compilerVersionInfo->minor = (uint16_t)atoi(intelMinor);
-    compilerVersionInfo->patch = (uint16_t)atoi(intelPatch);
+    snprintf(intelMajor, 2, "%.1s", &intelVersion[0]);
+    snprintf(intelMinor, 2, "%.1s", &intelVersion[1]);
+    snprintf(intelPatch, 2, "%.1s", &intelVersion[2]);
+    compilerVersionInfo->major = C_CAST(uint16_t, atoi(intelMajor));
+    compilerVersionInfo->minor = C_CAST(uint16_t, atoi(intelMinor));
+    compilerVersionInfo->patch = C_CAST(uint16_t, atoi(intelPatch));
 #elif defined __SUNPRO_C || defined __SUNPRO_CC
     //untested
     //code below is written for versions 5.10 and later. (latest release as of writing this code is version 5.12) - TJE
@@ -1521,7 +1550,7 @@ void print_Compiler(eCompiler compilerUsed)
         break;
     case OPENSEA_COMPILER_UNKNOWN:
     case OPENSEA_COMPILER_RESERVED:
-    default:
+    //default:
         printf("Unknown Compiler");
         break;
     }
@@ -1546,12 +1575,12 @@ long int get_File_Size(FILE *filePtr)
 
 bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger)
 {
-    bool ret = true; 
+    bool ret = true;
     bool hex = false;
     const char * tmp = strToConvert;
     while (*tmp != '\0')
     {
-        if ( (!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h') )
+        if ((!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
         {
             ret = false;
             break;
@@ -1564,23 +1593,23 @@ bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * output
     }
     //If everything is a valid hex digit. 
     //TODO: What about realllyyyy long hex value? 
-    if (ret == true )
+    if (ret)
     {
-        if ( hex )
+        if (hex)
         {
-            *outputInteger = strtol(strToConvert, NULL, 16);
+            *outputInteger = C_CAST(uint64_t, strtoull(strToConvert, NULL, 16));
         }
         else
         {
-            *outputInteger = strtol(strToConvert, NULL, 10);
+            *outputInteger = C_CAST(uint64_t, strtoull(strToConvert, NULL, 10));
         }
     }
     else
     {
-        ret = false; 
+        ret = false;
     }
     //Final Check
-    if (ret == true && errno != 0 && * outputInteger == 0)
+    if (ret && errno != 0)
     {
         ret = false;
     }
@@ -1592,7 +1621,7 @@ void print_Errno_To_Screen(int error)
 {
 #if defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && defined (__STDC_LIB_EXT1__)//This last piece must be defined by the compiler for this to be used...Only will be set if user defined __STDC_WANT_LIB_EXT1__
     size_t errorStringLen = strerrorlen_s(error);
-    char *errorString = (char*)calloc(errorStringLen + 1, sizeof(char));
+    char *errorString = C_CAST(char*, calloc(errorStringLen + 1, sizeof(char)));
     if (errorString)
     {
         strerror(errorString, errorStringLen + 1, error);//returns 0 if whole string fits, nonzero if it was truncatd
@@ -1602,10 +1631,10 @@ void print_Errno_To_Screen(int error)
     {
         printf("%d - <Unable to convert error to string>\n", error);
     }
-    safe_Free(errorString);
-#elif defined (_MSC_VER) //TODO: Check for a specific version of visual studio?
+    safe_Free(errorString)
+#elif defined (__STDC_SECURE_LIB__) //This is a MSFT definition for their original _s functions that sometimes differ from the C11 standard
     char errorString[1024] = { 0 };
-    if(0 == strerror_s(errorString, 1024, error))
+    if (0 == strerror_s(errorString, 1024, error))
     {
         printf("%d - %s\n", error, errorString);
     }
@@ -1710,7 +1739,7 @@ uint64_t power_Of_Two(uint16_t exponent)
         result = UINT64_C(268435456);
         break;
     default:
-        result = 2 << (exponent - 1);
+        result = UINT64_C(2) << (exponent - 1);
         //{
         //    //Since this case is 31 or higher, we can start with the value above to reduce how long this loop runs
         //    uint32_t shiftCounter = UINT64_C(30);//uint32 in case we do hit something huge in this loop and roll all the way around a uint16
@@ -1722,6 +1751,18 @@ uint64_t power_Of_Two(uint16_t exponent)
         //    }
         //}
         break;
+    }
+    return result;
+}
+
+double raise_to_power(double number, double power)
+{
+    double result = 1.0;
+    if (power == 1)
+        return number;
+    for (int64_t i = -1; i >= power && power != 0; i--) {
+
+        result = result * (1 / number);
     }
     return result;
 }
@@ -1742,15 +1783,45 @@ int is_ASCII(int c)
 void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue)
 {
     int32_t  exponent = M_GETBITRANGE(floatValue, 30, 23) - 127;
-    double sign = pow(-1.0, (double)M_GETBITRANGE(floatValue, 31, 31));
+    double sign = pow(-1.0, C_CAST(double, M_GETBITRANGE(floatValue, 31, 31)));
 
     int8_t power = -23;
     double mantisa = 1.0;
     for (uint8_t i = 0; i < 23; i++)
     {
-        mantisa += (double)M_GETBITRANGE(floatValue, i, i) * (double)pow(2.0, power);
+        mantisa += C_CAST(double, M_GETBITRANGE(floatValue, i, i)) * C_CAST(double, pow(2.0, power));
         power++;
     }
 
-    *decimalValue = sign * (float)pow(2.0, exponent) * mantisa;
+    *decimalValue = sign * C_CAST(float, pow(2.0, exponent)) * mantisa;
+}
+
+char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source)
+{
+    if (destination && source && destinationSizeBytes > 0)
+    {
+        char *dup = strdup(destination);
+        if (dup)
+        {
+            snprintf(destination, destinationSizeBytes, "%s%s", dup, source);
+            safe_Free(dup)
+            return destination;
+        }
+    }
+    return NULL;
+}
+
+char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, const char* source, int sourceLength)
+{
+    if (destination && source && destinationSizeBytes > 0 && sourceLength > 0)
+    {
+        char *dup = strdup(destination);
+        if (dup)
+        {
+            snprintf(destination, destinationSizeBytes, "%s%.*s", dup, sourceLength, source);
+            safe_Free(dup)
+            return destination;
+        }
+    }
+    return NULL;
 }

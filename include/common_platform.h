@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012-2021 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012-2022 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -115,7 +115,6 @@ extern "C"
     //!   \param[in] consoleColor = one of the enum values defined in this header for which color you want.
     //!
     //  Exit:
-    //!   \return void
     //
     //-----------------------------------------------------------------------------
     void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor);
@@ -381,11 +380,12 @@ extern "C"
         }versionType;
     }OSVersionNumber, *ptrOSVersionNumber;
 
-    #define OS_NAME_SIZE (40)
+    //very large due to utsname potentially having different sizes for some fields: https://man7.org/linux/man-pages/man2/uname.2.html
+    #define OS_NAME_SIZE (512) 
 
     //-----------------------------------------------------------------------------
     //
-    // get_Operating_System_Version_And_Name(eOSType *osType, ptrOSVersionNumber versionNumber, char *operatingSystemName[40])
+    // get_Operating_System_Version_And_Name(eOSType *osType, ptrOSVersionNumber versionNumber, char *operatingSystemName)
     //
     // \brief   Description: Gets the version number of the OS opensea-* libs are currently running on. Windows will get the OS version number (not Win7 vs Win8, but 6.1 vs 6.2). Nix systems will get whatever is placed into uname -r (solaris will also get uname -v information)
     //

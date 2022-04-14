@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012-2021 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012-2022 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -330,9 +330,10 @@ eEndianness get_Compiled_Endianness(void)
 static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
 {
     int match = 0;
-    char *filename = (char*)calloc(strlen(entry->d_name) + 6, sizeof(char));
+    size_t filenameLength = strlen(entry->d_name) + 6;
+    char *filename = C_CAST(char*, calloc(filenameLength, sizeof(char)));
     struct stat s;
-    sprintf(filename, "/etc/%s", entry->d_name);
+    snprintf(filename, filenameLength, "/etc/%s", entry->d_name);
     if (stat(filename, &s) == 0)
     {
         if (S_ISREG(s.st_mode)) //must be a file. TODO: are links ok? I don't think we need them, but may need to revisit this.
@@ -352,7 +353,7 @@ static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
             }
         }
     }
-    safe_Free(filename);
+    safe_Free(filename)
     return match;
 }
 
@@ -407,7 +408,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                     fseek(release,ftell(release),SEEK_END);
                     long int releaseSize = ftell(release);
                     rewind(release);
-                    char *releaseMemory = (char*)calloc(releaseSize,sizeof(char));
+                    char *releaseMemory = C_CAST(char*, calloc(releaseSize, sizeof(char)));
                     if (fread(releaseMemory, sizeof(char), releaseSize, release))
                     {
                         //Use the "PRETTY_NAME" field
@@ -421,8 +422,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
 
                                 if (operatingSystemName)
                                 {
-                                    strncpy(&operatingSystemName[0], tok + strlen("PRETTY_NAME=\""), M_Min(strlen(tok) - 1 -strlen("PRETTY_NAME=\""), OS_NAME_SIZE - 1));
-                                    operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(tok) - 1 - strlen("PRETTY_NAME=\"")), tok + strlen("PRETTY_NAME=\""));
                                 }
                                 done = true;
                                 break;
@@ -430,7 +430,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                             tok = strtok(NULL, "\n");
                         }
                     }
-                    safe_Free(releaseMemory);
+                    safe_Free(releaseMemory)
                     fclose(release);
                 }
             }
@@ -455,8 +455,9 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         }
                         else
                         {
-                            char *fileName = (char *)calloc(strlen(osrelease[releaseIter]->d_name) + 6, sizeof(char));
-                            sprintf(fileName, "/etc/%s", osrelease[releaseIter]->d_name);
+                            size_t fileNameLength = strlen(osrelease[releaseIter]->d_name) + 6;
+                            char *fileName = C_CAST(char *, calloc(fileNameLength, sizeof(char)));
+                            snprintf(fileName, fileNameLength, "/etc/%s", osrelease[releaseIter]->d_name);
                             FILE *release = fopen(fileName, "r");
                             if (release)
                             {
@@ -464,20 +465,19 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                                 fseek(release,ftell(release),SEEK_END);
                                 long int releaseSize = ftell(release);
                                 rewind(release);
-                                char *releaseMemory = (char*)calloc(releaseSize,sizeof(char));
+                                char *releaseMemory = C_CAST(char*, calloc(releaseSize,sizeof(char)));
                                 if (fread(releaseMemory, sizeof(char), releaseSize, release))
                                 {
                                     linuxOSNameFound = true;
                                     if (operatingSystemName)
                                     {
-                                        strncpy(&operatingSystemName[0], releaseMemory, OS_NAME_SIZE - 1);
-                                        operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, releaseSize), releaseMemory);
                                     }
                                 }
-                                safe_Free(releaseMemory);
+                                safe_Free(releaseMemory)
                                 fclose(release);
                             }
-                            safe_Free(fileName);
+                            safe_Free(fileName)
                         }
                         if (linuxOSNameFound)
                         {
@@ -489,8 +489,9 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 if(!linuxOSNameFound && versionFileCount > 0)//ideally this will only ever be 1
                 {
                     //For now, only reading the first entry...this SHOULD be ok.
-                    char *fileName = (char*)calloc(strlen(osversion[0]->d_name) + 6, sizeof(char));
-                    sprintf(fileName, "/etc/%s", osversion[0]->d_name);
+                    size_t fileNameLength = strlen(osversion[0]->d_name) + 6;
+                    char *fileName = C_CAST(char*, calloc(fileNameLength, sizeof(char)));
+                    snprintf(fileName, fileNameLength, "/etc/%s", osversion[0]->d_name);
                     FILE *version = fopen(fileName, "r");
                     if (version)
                     {
@@ -498,28 +499,28 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         fseek(version,ftell(version),SEEK_END);
                         long int versionSize = ftell(version);
                         rewind(version);
-                        char *versionMemory = (char*)calloc(versionSize,sizeof(char));
+                        char *versionMemory = C_CAST(char*, calloc(versionSize,sizeof(char)));
                         if (fread(versionMemory, sizeof(char), versionSize, version))
                         {
                             linuxOSNameFound = true;
                             if (operatingSystemName)
                             {
-                                strncpy(&operatingSystemName[0], versionMemory, OS_NAME_SIZE - 1);
-                                operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, versionSize), versionMemory);
                             }
                         }
-                        safe_Free(versionMemory);
+                        safe_Free(versionMemory)
                         fclose(version);
                     }
-                    safe_Free(fileName);
+                    safe_Free(fileName)
                 }
                 if (!linuxOSNameFound && lsbReleaseOffset >= 0)
                 {
                     //this case means that we found the lbs-release file, but haven't read it yet because we kept searching for other files to use for version information first.
                     //So now we need to read it for the version information.
                     //We use this last because it may not contain something as friendly and useful as we would like that the other version files provide.
-                    char *fileName = (char *)calloc(strlen(osrelease[lsbReleaseOffset]->d_name) + 6, sizeof(char));
-                    sprintf(fileName, "/etc/%s", osrelease[lsbReleaseOffset]->d_name);
+                    size_t fileNameLength = strlen(osrelease[lsbReleaseOffset]->d_name) + 6;
+                    char *fileName = C_CAST(char *, calloc(fileNameLength, sizeof(char)));
+                    snprintf(fileName, fileNameLength, "/etc/%s", osrelease[lsbReleaseOffset]->d_name);
                     FILE *release = fopen(fileName, "r");
                     if (release)
                     {
@@ -527,31 +528,30 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         fseek(release,ftell(release),SEEK_END);
                         long int releaseSize = ftell(release);
                         rewind(release);
-                        char *releaseMemory = (char*)calloc(releaseSize,sizeof(char));
+                        char *releaseMemory = C_CAST(char*, calloc(releaseSize,sizeof(char)));
                         if (fread(releaseMemory, sizeof(char), releaseSize, release))
                         {
                             linuxOSNameFound = true;
                             if (operatingSystemName)
                             {
-                                strncpy(&operatingSystemName[0], releaseMemory, OS_NAME_SIZE - 1);
-                                operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, releaseSize), releaseMemory);
                             }
                         }
-                        safe_Free(releaseMemory);
+                        safe_Free(releaseMemory)
                         fclose(release);
                     }
-                    safe_Free(fileName);
+                    safe_Free(fileName)
                 }
                 for (int iter = 0; iter < releaseFileCount; ++iter)
                 {
-                    safe_Free(osrelease[iter]);
+                    safe_Free(osrelease[iter])
                 }
                 for (int iter = 0; iter < versionFileCount; ++iter)
                 {
-                    safe_Free(osversion[iter]);
+                    safe_Free(osversion[iter])
                 }
-                safe_Free(osrelease);
-                safe_Free(osversion);
+                safe_Free(osrelease)
+                safe_Free(osversion)
                 if (linuxOSNameFound)
                 {
                     //remove any control characters from the string. We don't need them for what we're doing
@@ -577,24 +577,23 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                     fseek(issue,ftell(issue),SEEK_END);
                     long int issueSize = ftell(issue);
                     rewind(issue);
-                    char *issueMemory = (char*)calloc(issueSize,sizeof(char));
+                    char *issueMemory = C_CAST(char*, calloc(issueSize,sizeof(char)));
                     if (fread(issueMemory, sizeof(char), issueSize, issue))
                     {
                         linuxOSNameFound = true;
                         if (operatingSystemName)
                         {
-                            strncpy(&operatingSystemName[0], issueMemory, OS_NAME_SIZE - 1);
-                            operatingSystemName[OS_NAME_SIZE-1] = '\0';
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, issueSize), issueMemory);
                         }
                     }
-                    safe_Free(issueMemory);
+                    safe_Free(issueMemory)
                     fclose(issue);
                 }
             }
             //if we couldn't find a name, set unknown linux os
             if (!linuxOSNameFound && operatingSystemName)
             {
-                sprintf(&operatingSystemName[0],"Unknown Linux OS");
+                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Linux OS");
             }
         }
         else if (strcmp("FREEBSD", unixUname.sysname) == 0)
@@ -610,11 +609,11 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             {
                 if (ret != FAILURE)
                 {
-                    sprintf(&operatingSystemName[0], "FreeBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.freeBSDVersion.majorVersion, versionNumber->versionType.freeBSDVersion.minorVersion);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "FreeBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.freeBSDVersion.majorVersion, versionNumber->versionType.freeBSDVersion.minorVersion);
                 }
                 else
                 {
-                    sprintf(&operatingSystemName[0], "Unknown FreeBSD OS Version");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown FreeBSD OS Version");
                 }
             }
         }
@@ -629,7 +628,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
             //set OS name as Solaris "unixUname.version" for the OS Name
             if (operatingSystemName)
             {
-                sprintf(&operatingSystemName[0], "Solaris %s", unixUname.version);
+                snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Solaris %s", unixUname.version);
             }
             //The Solaris Version/name is stored in version
             if (isdigit(unixUname.version[0]))
@@ -655,40 +654,40 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 switch (versionNumber->versionType.macOSVersion.majorVersion)
                 {
                 case 5://puma
-                    sprintf(&operatingSystemName[0], "Mac OS X 10.1 Puma");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Mac OS X 10.1 Puma");
                     break;
                 case 6://jaguar
-                    sprintf(&operatingSystemName[0], "Mac OS X 10.2 Jaguar");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Mac OS X 10.2 Jaguar");
                     break;
                 case 7://panther
-                    sprintf(&operatingSystemName[0], "Mac OS X 10.3 Panther");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Mac OS X 10.3 Panther");
                     break;
                 case 8://tiger
-                    sprintf(&operatingSystemName[0], "Mac OS X 10.4 Tiger");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Mac OS X 10.4 Tiger");
                     break;
                 case 9://leopard
-                    sprintf(&operatingSystemName[0], "Mac OS X 10.5 Leopard");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Mac OS X 10.5 Leopard");
                     break;
                 case 10://snow leopard
-                    sprintf(&operatingSystemName[0], "Mac OS X 10.6 Snow Leopard");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Mac OS X 10.6 Snow Leopard");
                     break;
                 case 11://lion
-                    sprintf(&operatingSystemName[0], "Mac OS X 10.7 Lion");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Mac OS X 10.7 Lion");
                     break;
                 case 12://Mountain Lion
-                    sprintf(&operatingSystemName[0], "OS X 10.8 Mountain Lion");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "OS X 10.8 Mountain Lion");
                     break;
                 case 13://mavericks
-                    sprintf(&operatingSystemName[0], "OS X 10.9 Mavericks");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "OS X 10.9 Mavericks");
                     break;
                 case 14://Yosemite
-                    sprintf(&operatingSystemName[0], "OS X 10.10 Yosemite");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "OS X 10.10 Yosemite");
                     break;
                 case 15://el capitan
-                    sprintf(&operatingSystemName[0], "OS X 10.11 El Capitan");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "OS X 10.11 El Capitan");
                     break;
                 default:
-                    sprintf(&operatingSystemName[0], "Unknown Mac OS X Version");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Unknown Mac OS X Version");
                     break;
                 }
             }
@@ -696,11 +695,11 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
         else if (strcmp("AIX", unixUname.sysname) == 0)
         {
             versionNumber->osVersioningIdentifier = OS_AIX;
-            versionNumber->versionType.aixVersion.majorVersion = (uint16_t)atoi(unixUname.version);
-            versionNumber->versionType.aixVersion.minorVersion = (uint16_t)atoi(unixUname.release);
+            versionNumber->versionType.aixVersion.majorVersion = C_CAST(uint16_t, atoi(unixUname.version));
+            versionNumber->versionType.aixVersion.minorVersion = C_CAST(uint16_t, atoi(unixUname.release));
             if (operatingSystemName)
             {
-                sprintf(&operatingSystemName[0], "AIX %"PRIu16".%"PRIu16"", versionNumber->versionType.aixVersion.majorVersion, versionNumber->versionType.aixVersion.minorVersion);
+                snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "AIX %"PRIu16".%"PRIu16"", versionNumber->versionType.aixVersion.majorVersion, versionNumber->versionType.aixVersion.minorVersion);
             }
         }
         else if (strcmp("DRAGONFLY", unixUname.sysname) == 0)
@@ -711,25 +710,25 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 ret = FAILURE;
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "Unknown Dragonfly BSD Version");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Unknown Dragonfly BSD Version");
                 }
             }
             else
             {
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "Dragonfly BSD %"PRIu16".%"PRIu16"", versionNumber->versionType.dragonflyVersion.majorVersion, versionNumber->versionType.dragonflyVersion.minorVersion);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Dragonfly BSD %"PRIu16".%"PRIu16"", versionNumber->versionType.dragonflyVersion.majorVersion, versionNumber->versionType.dragonflyVersion.minorVersion);
                 }
             }
         }
         else if (strcmp("OPENBSD", unixUname.sysname) == 0)
         {
             versionNumber->osVersioningIdentifier = OS_OPENBSD;
-            versionNumber->versionType.openBSDVersion.majorVersion = (uint16_t)atoi(unixUname.version);
-            versionNumber->versionType.openBSDVersion.minorVersion = (uint16_t)atoi(unixUname.release);
+            versionNumber->versionType.openBSDVersion.majorVersion = C_CAST(uint16_t, atoi(unixUname.version));
+            versionNumber->versionType.openBSDVersion.minorVersion = C_CAST(uint16_t, atoi(unixUname.release));
             if (operatingSystemName)
             {
-                sprintf(&operatingSystemName[0], "OpenBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.openBSDVersion.majorVersion, versionNumber->versionType.openBSDVersion.minorVersion);
+                snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "OpenBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.openBSDVersion.majorVersion, versionNumber->versionType.openBSDVersion.minorVersion);
             }
         }
         else if (strcmp("NETBSD", unixUname.sysname) == 0)
@@ -740,14 +739,14 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 ret = FAILURE;
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "Unknown NetBSD Version");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Unknown NetBSD Version");
                 }
             }
             else
             {
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "NetBSD %s", unixUname.release);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "NetBSD %s", unixUname.release);
                 }
             }
         }
@@ -759,14 +758,14 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 ret = FAILURE;
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "Unknown Tru64 Version");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Unknown Tru64 Version");
                 }
             }
             else
             {
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "Tru64 %s", unixUname.release);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Tru64 %s", unixUname.release);
                 }
             }
         }
@@ -778,14 +777,14 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 ret = FAILURE;
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "Unknown HP-UX Version");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Unknown HP-UX Version");
                 }
             }
             else
             {
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "HP-UX %"PRIu16".%"PRIu16"", versionNumber->versionType.hpuxVersion.majorVersion, versionNumber->versionType.hpuxVersion.minorVersion);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "HP-UX %"PRIu16".%"PRIu16"", versionNumber->versionType.hpuxVersion.majorVersion, versionNumber->versionType.hpuxVersion.minorVersion);
                 }
             }
         }
@@ -797,14 +796,14 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 ret = FAILURE;
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "Unknown ESXi Version");
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Unknown ESXi Version");
                 }
             }
             else
             {
                 if (operatingSystemName)
                 {
-                    sprintf(&operatingSystemName[0], "ESXi %s", unixUname.release);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "ESXi %s", unixUname.release);
                 }
             }
         }
@@ -846,7 +845,7 @@ void start_Timer(seatimer_t *timer)
     if (0 == ret)//hopefully this always works...-TJE
     {
 //        printf("Start Time:  %lu\n", startTimespec.tv_nsec);
-        timer->timerStart = (uint64_t) (startTimespec.tv_sec * (uint64_t) 1000000000) + startTimespec.tv_nsec;
+        timer->timerStart = C_CAST(uint64_t, startTimespec.tv_sec * UINT64_C(1000000000)) + startTimespec.tv_nsec;
     }
 //    else
 //    {
@@ -863,7 +862,7 @@ void stop_Timer(seatimer_t *timer)
     if (0 == ret)//hopefully this always works...-TJE
     {
 //        printf("Stop Time:  %lu\n", stopTimespec.tv_nsec);
-        timer->timerStop = (uint64_t) (stopTimespec.tv_sec * (uint64_t) 1000000000) + stopTimespec.tv_nsec;
+        timer->timerStop = C_CAST(uint64_t, stopTimespec.tv_sec * UINT64_C(1000000000)) + stopTimespec.tv_nsec;
     }
 //    else
 //    {
@@ -879,7 +878,7 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
 double get_Micro_Seconds(seatimer_t timer)
 {
     uint64_t nanoseconds = get_Nano_Seconds(timer);
-    return ((double)nanoseconds / 1000.00);
+    return (C_CAST(double, nanoseconds) / 1000.00);
 }
 
 double get_Milli_Seconds(seatimer_t timer)
@@ -902,6 +901,16 @@ bool is_Running_Elevated()
     return isElevated;
 }
 
+static size_t get_Sys_Username_Max_Length()
+{
+    #if defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        //get this in case the system is configured differently
+        return sysconf(_SC_LOGIN_NAME_MAX);
+    #else
+        return 256;//this should be more than big enough. Some searching indicates 32 is usually the default
+    #endif
+}
+
 //If this is successful, this function allocates enough memory to hold the full user's name for you.
 //NOTE: This is static since it will probably only be used here...we may want to  enable this for use elsewhere if we want to print fancy warnings with the user's name
 static bool get_User_Name_From_ID(uid_t userID, char **userName)
@@ -909,20 +918,70 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
     bool success = false;
     if(userName)
     {
-        struct passwd *userInfo = getpwuid(userID);
-        if(userInfo)
-        {
-            size_t userNameLength = strlen(userInfo->pw_name) + 1;
-            if(userNameLength > 1)
+        #if defined _POSIX_C_SOURCE && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+            //use reentrant call instead.
+            char *rawBuffer = NULL;
+            long pwdSize = -1;
+            int error = 0;
+            struct passwd userInfoBuf;
+            struct passwd *userInfo = NULL;
+            #if defined (_SC_GETPW_R_SIZE_MAX)
+                pwdSize = sysconf(_SC_GETPW_R_SIZE_MAX);
+            #endif
+            if(pwdSize == -1)
             {
-                *userName = (char*)calloc(userNameLength, sizeof(char));
-                if(userName)
+                //some linux man pages suggest 16384
+                pwdSize = 1024;//start with this, will increment it below if it fails to read
+            }
+            rawBuffer = C_CAST(char*, calloc(pwdSize, sizeof(char)));
+            if(rawBuffer)
+            {
+                while (ERANGE == (error = getpwuid_r(userID, &userInfoBuf, rawBuffer, pwdSize, &userInfo)))
                 {
-                    strcpy(*userName, userInfo->pw_name);
-                    success = true;
+                    //this means there was not enough memory allocated in order to read this.
+                    //realloc with more memory and try again
+                    char *temp = NULL;
+                    pwdSize *= 2;
+                    temp = realloc(rawBuffer, pwdSize);
+                    if(!temp)
+                    {
+                        safe_Free(rawBuffer)
+                        break;
+                    }
+                    rawBuffer = temp;
+                    memset(rawBuffer, 0, pwdSize);
+                }
+                if(error == 0 && userInfo && rawBuffer)
+                {
+                    //success
+                    size_t userNameLength = strlen(userInfo->pw_name);
+                    if(userNameLength > 0 && userNameLength <= get_Sys_Username_Max_Length())//make sure userNameLength is valid and not too large
+                    {
+                        *userName = C_CAST(char*, calloc(userNameLength + 1, sizeof(char)));//add 1 to ensure room for NULL termination
+                        if(*userName)
+                        {
+                            snprintf(*userName, userNameLength + 1, "%s", userInfo->pw_name);
+                            success = true;
+                        }
+                    }
+                }
+            }            
+        #else
+            struct passwd *userInfo = getpwuid(userID);
+            if(userInfo)
+            {
+                size_t userNameLength = strlen(userInfo->pw_name);
+                if(userNameLength > 0 && userNameLength <= get_Sys_Username_Max_Length())//make sure userNameLength is valid and not too large
+                {
+                    *userName = C_CAST(char*, calloc(userNameLength + 1, sizeof(char)));//add 1 to ensure room for NULL termination
+                    if(*userName)
+                    {
+                        snprintf(*userName, userNameLength + 1, "%s", userInfo->pw_name);
+                        success = true;
+                    }
                 }
             }
-        }
+        #endif
     }
     return success;
 }

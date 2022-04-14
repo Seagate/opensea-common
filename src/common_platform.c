@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012-2021 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012-2022 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -105,7 +105,8 @@ void print_Endianness(eEndianness endian, bool shortPrint)
             printf("Big Endian (Word)");
         }
         break;
-    default:
+    //default:
+    case OPENSEA_UNKNOWN_ENDIAN:
         if (shortPrint)
         {
             printf("???");
@@ -226,22 +227,19 @@ void print_OS_Version(ptrOSVersionNumber versionNumber)
 int replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char *newFileName)
 {
     char *ptr = NULL;
-    if (NULL != (ptr = strrchr(fullPath, '/')))
+    size_t ptrLen = 0, fullLength = 0;
+    if (NULL != (ptr = strrchr(fullPath, SYSTEM_PATH_SEPARATOR)))
     {
-        //'nix full path
-        ptr += 1;
-    }
-    else if (NULL != (ptr = strrchr(fullPath, '\\')))
-    {
-        //Windows full path
         ptr += 1;
     }
     else
     {
         return FAILURE;
     }
+    ptrLen = strlen(ptr);
     //now that we have a valid pointer, set all the remaining characters to null, then set the new file name in place.
-    memset(ptr, 0, strlen(ptr));
-    strcat(ptr, newFileName);
+    memset(ptr, 0, ptrLen);
+    fullLength = (OPENSEA_PATH_MAX - strlen(fullPath));
+    snprintf(ptr, fullLength, "%s", newFileName);
     return SUCCESS;
 }
