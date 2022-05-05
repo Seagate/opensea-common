@@ -1077,6 +1077,23 @@ extern "C"
 
     //-----------------------------------------------------------------------------
     //
+    //   wildcard_Match(char* pattern, char* data)
+    //
+    //! \brief   Description:  match the string with pattern consisting wildcard chars. A single char wildcard match is '?'
+    //  and multi char wildcard match is '*'
+    //
+    //  Entry:
+    //!   \param[in] pattern = a pointer to the pattern consisting wildcard chars
+    //!   \param[in] data = a pointer to the data
+    //!
+    //  Exit:
+    //!   \return bool = true is matches, false if not
+    //
+    //-----------------------------------------------------------------------------
+    bool wildcard_Match(char* pattern, char* data);
+
+    //-----------------------------------------------------------------------------
+    //
     //  print_Data_Buffer()
     //
     //! \brief   Description:  print out a data buffer to the screen

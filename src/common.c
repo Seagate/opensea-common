@@ -567,6 +567,20 @@ size_t find_first_occurrence_in_string(char *originalString, char *stringToFind)
     return strlen(originalString);;
 }
 
+bool wildcard_Match(char * pattern, char * data)
+{
+    if (*pattern == '\0' && *data == '\0')
+        return true;
+
+    if (*pattern == *data || *pattern == '?')
+        return *data != '\0' && wildcard_Match(pattern + 1, data + 1);
+
+    if (*pattern == '*')
+        return wildcard_Match(pattern + 1, data) || (*data != '\0' && wildcard_Match(pattern, data + 1));
+
+    return false;
+}
+
 void print_Return_Enum(char *funcName, int ret)
 {
     if (NULL == funcName)
