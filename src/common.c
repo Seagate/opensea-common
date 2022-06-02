@@ -274,17 +274,17 @@ void *realloc_page_aligned(void *alignedPtr, size_t originalSize, size_t size)
 
 void nibble_Swap(uint8_t *byteToSwap)
 {
-    *byteToSwap = C_CAST(uint8_t, ((*byteToSwap & 0x0F) << 4)) | C_CAST(uint8_t, ((*byteToSwap & 0xF0) >> 4));
+    *byteToSwap = C_CAST(uint8_t, ((*byteToSwap & UINT8_C(0x0F)) << 4)) | C_CAST(uint8_t, ((*byteToSwap & UINT8_C(0xF0)) >> 4));
 }
 
 void byte_Swap_16(uint16_t *wordToSwap)
 {
-    *wordToSwap = C_CAST(uint16_t, ((*wordToSwap & 0x00FF) << 8)) | C_CAST(uint16_t, ((*wordToSwap & 0xFF00) >> 8));
+    *wordToSwap = C_CAST(uint16_t, ((*wordToSwap & UINT16_C(0x00FF)) << 8)) | C_CAST(uint16_t, ((*wordToSwap & UINT16_C(0xFF00)) >> 8));
 }
 
 void byte_Swap_Int16(int16_t *signedWordToSwap)
 {
-    *signedWordToSwap = C_CAST(int16_t, ((*signedWordToSwap & 0x00FF) << 8)) | C_CAST(int16_t, ((*signedWordToSwap & 0xFF00) >> 8));
+    *signedWordToSwap = C_CAST(int16_t, ((*signedWordToSwap & UINT16_C(0x00FF)) << 8)) | C_CAST(int16_t, ((*signedWordToSwap & UINT16_C(0xFF00)) >> 8));
 }
 
 void big_To_Little_Endian_16(uint16_t *wordToSwap)
@@ -297,14 +297,14 @@ void big_To_Little_Endian_16(uint16_t *wordToSwap)
 
 void byte_Swap_32(uint32_t *doubleWordToSwap)
 {
-    *doubleWordToSwap = C_CAST(uint32_t, ((*doubleWordToSwap & 0x0000FFFF) << 16)) | C_CAST(uint32_t, ((*doubleWordToSwap & 0xFFFF0000) >> 16));
-    *doubleWordToSwap = C_CAST(uint32_t, ((*doubleWordToSwap & 0x00FF00FF) << 8)) | C_CAST(uint32_t, ((*doubleWordToSwap & 0xFF00FF00) >> 8));
+    *doubleWordToSwap = C_CAST(uint32_t, ((*doubleWordToSwap & UINT32_C(0x0000FFFF)) << 16)) | C_CAST(uint32_t, ((*doubleWordToSwap & UINT32_C(0xFFFF0000)) >> 16));
+    *doubleWordToSwap = C_CAST(uint32_t, ((*doubleWordToSwap & UINT32_C(0x00FF00FF)) << 8)) | C_CAST(uint32_t, ((*doubleWordToSwap & UINT32_C(0xFF00FF00)) >> 8));
 }
 
 void byte_Swap_Int32(int32_t *signedDWord)
 {
-    *signedDWord = ((*signedDWord & 0x0000FFFF) << 16) | ((*signedDWord & 0xFFFF0000) >> 16);
-    *signedDWord = ((*signedDWord & 0x00FF00FF) << 8) | ((*signedDWord & 0xFF00FF00) >> 8);
+    *signedDWord = ((*signedDWord & INT32_C(0x0000FFFF)) << 16) | ((*signedDWord & INT32_C(0xFFFF0000)) >> 16);
+    *signedDWord = ((*signedDWord & INT32_C(0x00FF00FF)) << 8) | ((*signedDWord & INT32_C(0xFF00FF00)) >> 8);
 }
 void big_To_Little_Endian_32(uint32_t *doubleWordToSwap)
 {
@@ -316,7 +316,7 @@ void big_To_Little_Endian_32(uint32_t *doubleWordToSwap)
 
 void word_Swap_32(uint32_t *doubleWordToSwap)
 {
-    *doubleWordToSwap = ((*doubleWordToSwap & 0x0000FFFF) << 16) | ((*doubleWordToSwap & 0xFFFF0000) >> 16);
+    *doubleWordToSwap = ((*doubleWordToSwap & UINT32_C(0x0000FFFF)) << 16) | ((*doubleWordToSwap & UINT32_C(0xFFFF0000)) >> 16);
 }
 
 void byte_Swap_64(uint64_t *quadWordToSwap)
@@ -1803,11 +1803,11 @@ void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue)
     double mantisa = 1.0;
     for (uint8_t i = 0; i < 23; i++)
     {
-        mantisa += C_CAST(double, M_GETBITRANGE(floatValue, i, i)) * C_CAST(double, pow(2.0, power));
+        mantisa += C_CAST(double, M_GETBITRANGE(floatValue, i, i)) * pow(2.0, power);
         power++;
     }
 
-    *decimalValue = sign * C_CAST(float, pow(2.0, exponent)) * mantisa;
+    *decimalValue = sign * pow(2.0, exponent) * mantisa;
 }
 
 char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source)
