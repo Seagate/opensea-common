@@ -24,11 +24,22 @@ warning_flags = [
 
 add_project_arguments(c.get_supported_arguments(warning_flags), language : 'c')
 
+global_cpp_args = []
+
+#if GCC less than 5.5.x, need to set gnu99 standard (CentOS7, RH7, possibly others)
+#TODO: May be able to move to c11/gnu11 instead, but will need to do a lot of testing first
+#skipping sunos since this was a compatibility issue that was reported earlier. May be able to find a better way to handle this in the future.
+if not (target_machine.system() == 'sunos') and c.get_id().contains('gcc')
+  verStr = c.version().split('.')
+  if verStr.get(0).to_int() <= 5 or (verStr.get(0).to_int() == 5 and verStr.get(1).to_int() < 5)
+      global_cpp_args += ['-std=gnu99']
+  endif
+endif
+
+
 if get_option('debug')
   add_project_arguments('-D_DEBUG', language : 'c')
 endif
-
-global_cpp_args = []
 
 src_files = ['src/common.c', 'src/common_platform.c']
 
