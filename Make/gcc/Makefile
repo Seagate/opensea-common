@@ -24,8 +24,8 @@ SRC_DIR=../../src/
 INC_DIR=-I../../include
 CC ?= gcc
 AR ?= ar
-CFLAGS ?= -Wall -Wextra -c -fPIC -I. -std=gnu99
-CFLAGS += -c -fPIC -I. -std=gnu99
+CFLAGS ?= -Wall -Wextra -c -fPIC -I.
+CFLAGS += -c -fPIC -I.
 LFLAGS ?= -Wall
 LIB_SRC_FILES = \
     $(SRC_DIR)common.c\
@@ -87,6 +87,10 @@ else
 			ifeq ($(shell test $(GCC_MINOR) -gt 4; echo $$?),0)
 				CFLAGS += -Wlogical-not-parentheses
 			endif
+		else
+			#GCC less that v 5.x.x needs to set gnu99 standard
+			#as of 5.x.x, gnu11 is default
+			CFLAGS += -std=gnu99
 		endif
 		
 		CFLAGS += -Wvla -Wfloat-equal -Wjump-misses-init -Wlogical-op -Wdouble-promotion -Wformat-security
