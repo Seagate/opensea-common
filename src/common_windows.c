@@ -65,7 +65,7 @@ int os_Create_Directory(const char * filePath)
     if (returnValue == FALSE)
     {
 #if defined (_DEBUG)
-        printf("\ngetlasterror : %d", GetLastError());
+        print_Windows_Error_To_Screen(GetLastError());
 #endif
         return FAILURE;
     }
