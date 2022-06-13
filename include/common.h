@@ -76,6 +76,120 @@ extern "C"
     #define snprintf _snprintf
     #endif
 
+    //Macro to help make casts more clear and searchable. Can be very helpful while debugging.
+    //If using C++, use static_cast, reinterpret_cast, dynamic_cast before trying a C_CAST.
+    #define C_CAST(type, val) (type)(val)
+
+#if defined (__cplusplus)
+//get a specific double word
+    #define M_DoubleWord0(l) ( static_cast<uint32_t> ( ( (l) & UINT64_C(0x00000000FFFFFFFF) ) >>  0 ) )
+    #define M_DoubleWord1(l) ( static_cast<uint32_t> ( ( (l) & UINT64_C(0xFFFFFFFF00000000) ) >> 32 ) )
+
+    //get a specific double word
+    #define M_DoubleWordInt0(l) ( static_cast<int32_t> ( ( (l) & UINT64_C(0x00000000FFFFFFFF) ) >>  0 ) )
+    #define M_DoubleWordInt1(l) ( static_cast<int32_t> ( ( (l) & UINT64_C(0xFFFFFFFF00000000) ) >> 32 ) )
+
+    //get a specific word
+    #define M_Word0(l) ( static_cast<uint16_t> ( ( (l) & UINT64_C(0x000000000000FFFF) ) >>  0 ) )
+    #define M_Word1(l) ( static_cast<uint16_t> ( ( (l) & UINT64_C(0x00000000FFFF0000) ) >> 16 ) )
+    #define M_Word2(l) ( static_cast<uint16_t> ( ( (l) & UINT64_C(0x0000FFFF00000000) ) >> 32 ) )
+    #define M_Word3(l) ( static_cast<uint16_t> ( ( (l) & UINT64_C(0xFFFF000000000000) ) >> 48 ) )
+
+    //get a specific word as int's
+    #define M_WordInt0(l) ( static_cast<int16_t> ( ( (l) & UINT64_C(0x000000000000FFFF) ) >>  0 ) )
+    #define M_WordInt1(l) ( static_cast<int16_t> ( ( (l) & UINT64_C(0x00000000FFFF0000) ) >> 16 ) )
+    #define M_WordInt2(l) ( static_cast<int16_t> ( ( (l) & UINT64_C(0x0000FFFF00000000) ) >> 32 ) )
+    #define M_WordInt3(l) ( static_cast<int16_t> ( ( (l) & UINT64_C(0xFFFF000000000000) ) >> 48 ) )
+
+    //need to validate that this macro sets the correct bits on 32bit and 64bit
+    #define BITSPERBYTE UINT8_C(8)
+    #define M_ByteN(n) ((UINT8_MAX << (n * BITSPERBYTE)))
+
+    //Get a specific byte
+    #define M_Byte0(l) ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x00000000000000FF) ) >>  0 ) )
+    #define M_Byte1(l) ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x000000000000FF00) ) >>  8 ) )
+    #define M_Byte2(l) ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x0000000000FF0000) ) >> 16 ) )
+    #define M_Byte3(l) ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x00000000FF000000) ) >> 24 ) )
+    #define M_Byte4(l) ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x000000FF00000000) ) >> 32 ) )
+    #define M_Byte5(l) ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x0000FF0000000000) ) >> 40 ) )
+    #define M_Byte6(l) ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x00FF000000000000) ) >> 48 ) )
+    #define M_Byte7(l) ( static_cast<uint8_t> ( ( (l) & UINT64_C(0xFF00000000000000) ) >> 56 ) )
+
+    //Get a specific byte int
+    #define M_ByteInt0(l) ( static_cast<int8_t> ( ( (l) & UINT64_C(0x00000000000000FF) ) >>  0 ) )
+    #define M_ByteInt1(l) ( static_cast<int8_t> ( ( (l) & UINT64_C(0x000000000000FF00) ) >>  8 ) )
+    #define M_ByteInt2(l) ( static_cast<int8_t> ( ( (l) & UINT64_C(0x0000000000FF0000) ) >> 16 ) )
+    #define M_ByteInt3(l) ( static_cast<int8_t> ( ( (l) & UINT64_C(0x00000000FF000000) ) >> 24 ) )
+    #define M_ByteInt4(l) ( static_cast<int8_t> ( ( (l) & UINT64_C(0x000000FF00000000) ) >> 32 ) )
+    #define M_ByteInt5(l) ( static_cast<int8_t> ( ( (l) & UINT64_C(0x0000FF0000000000) ) >> 40 ) )
+    #define M_ByteInt6(l) ( static_cast<int8_t> ( ( (l) & UINT64_C(0x00FF000000000000) ) >> 48 ) )
+    #define M_ByteInt7(l) ( static_cast<int8_t> ( ( (l) & UINT64_C(0xFF00000000000000) ) >> 56 ) )
+
+    //get a specific nibble
+    #define M_Nibble0(l)  ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x000000000000000F) ) >>  0 ) )
+    #define M_Nibble1(l)  ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x00000000000000F0) ) >>  4 ) )
+    #define M_Nibble2(l)  ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x0000000000000F00) ) >>  8 ) )
+    #define M_Nibble3(l)  ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x000000000000F000) ) >> 12 ) )
+    #define M_Nibble4(l)  ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x00000000000F0000) ) >> 16 ) )
+    #define M_Nibble5(l)  ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x0000000000F00000) ) >> 20 ) )
+    #define M_Nibble6(l)  ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x000000000F000000) ) >> 24 ) )
+    #define M_Nibble7(l)  ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x00000000F0000000) ) >> 28 ) )
+    #define M_Nibble8(l)  ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x0000000F00000000) ) >> 32 ) )
+    #define M_Nibble9(l)  ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x000000F000000000) ) >> 36 ) )
+    #define M_Nibble10(l) ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x00000F0000000000) ) >> 40 ) )
+    #define M_Nibble11(l) ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x0000F00000000000) ) >> 44 ) )
+    #define M_Nibble12(l) ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x000F000000000000) ) >> 48 ) )
+    #define M_Nibble13(l) ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x00F0000000000000) ) >> 52 ) )
+    #define M_Nibble14(l) ( static_cast<uint8_t> ( ( (l) & UINT64_C(0x0F00000000000000) ) >> 56 ) )
+    #define M_Nibble15(l) ( static_cast<uint8_t> ( ( (l) & UINT64_C(0xF000000000000000) ) >> 60 ) )
+
+    #define M_NibblesTo1ByteValue(n1, n0) ( \
+    static_cast<uint8_t> ( (static_cast<uint8_t> ((n1) & 0x0F) << 4) | (static_cast<uint8_t> ((n0) & 0x0F) << 0)) \
+                                           )
+
+    // Big endian parameter order, little endian value
+    #define M_BytesTo4ByteValue(b3, b2, b1, b0)                    (        \
+    static_cast<uint32_t> (  (static_cast<uint32_t> (b3) << 24) | (static_cast<uint32_t> (b2) << 16) |          \
+                 (static_cast<uint32_t> (b1) <<  8) | (static_cast<uint32_t> (b0) <<  0)  )         \
+                                                                   )
+    // Big endian parameter order, little endian value
+    #define M_BytesTo8ByteValue(b7, b6, b5, b4, b3, b2, b1, b0)    (        \
+    static_cast<uint64_t> ( (static_cast<uint64_t> (b7) << 56) | (static_cast<uint64_t> (b6) << 48) |           \
+                (static_cast<uint64_t> (b5) << 40) | (static_cast<uint64_t> (b4) << 32) |           \
+                (static_cast<uint64_t> (b3) << 24) | (static_cast<uint64_t> (b2) << 16) |           \
+                (static_cast<uint64_t> (b1) <<  8) | (static_cast<uint64_t> (b0) <<  0)  )          \
+                                                                   )
+
+    // Big endian parameter order, little endian value
+    #define M_BytesTo2ByteValue(b1, b0)                            (        \
+    static_cast<uint16_t> (  (static_cast<uint16_t>(b1) << 8) | (static_cast<uint16_t>(b0) <<  0)  )          \
+                                                                   )
+
+    // Big endian parameter order, little endian value
+    #define M_WordsTo4ByteValue(w1, w0)                            (        \
+    static_cast<uint32_t> (  (static_cast<uint32_t> (w1) << 16) | (static_cast<uint32_t> (w0) <<  0)  )         \
+                                                                   )
+
+    #define M_WordsTo8ByteValue(w3, w2, w1, w0)                    (   \
+    static_cast<uint64_t> (  (static_cast<uint64_t> (w3) << 48) | (static_cast<uint64_t> (w2) << 32) |     \
+                 (static_cast<uint64_t> (w1) << 16) | (static_cast<uint64_t> (w0) <<  0)  )    \
+                                                                   )
+
+    // Big endian parameter order, little endian value
+    #define M_DWordsTo8ByteValue(d1, d0)                           (        \
+    static_cast<uint64_t> (  (static_cast<uint64_t> (d1) << 32) | (static_cast<uint64_t> (d0) <<  0)  )         \
+                                                                   )
+
+    #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~UINT64_C(0) << ((msb) - (lsb) + 1)))
+    // get bit range for signed values
+    #define M_IGETBITRANGE(input, msb, lsb) (static_cast<int64_t>(M_GETBITRANGE(input, msb, lsb)))
+
+    // MACRO to round the number of x so that it will not round up when formating the float
+    #define ROUNDF(f, c) ((static_cast<float>(static_cast<int>((f) * (c))) / (c)))
+
+    // Bit access macros
+
+#else //C, not c++
     //get a specific double word
     #define M_DoubleWord0(l) ( C_CAST(uint32_t, ( ( (l) & UINT64_C(0x00000000FFFFFFFF) ) >>  0 ) ) )
     #define M_DoubleWord1(l) ( C_CAST(uint32_t, ( ( (l) & UINT64_C(0xFFFFFFFF00000000) ) >> 32 ) ) )
@@ -138,9 +252,55 @@ extern "C"
     #define M_Nibble14(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x0F00000000000000) ) >> 56 ) ) )
     #define M_Nibble15(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0xF000000000000000) ) >> 60 ) ) )
 
-    // Bit access macros
+    #define M_NibblesTo1ByteValue(n1, n0) ( \
+    C_CAST(uint8_t, ( (C_CAST(uint8_t, ((n1) & 0x0F) << 4) | (C_CAST(uint8_t, ((n0) & 0x0F) << 0)) \
+                                           ) ) ) )
 
-    #define M_BitN(n)   (C_CAST(uint64_t, 1) << n)
+    // Big endian parameter order, little endian value
+    #define M_BytesTo4ByteValue(b3, b2, b1, b0)                    (        \
+    C_CAST(uint32_t, (  (C_CAST(uint32_t, b3) << 24) | (C_CAST(uint32_t, b2) << 16) |          \
+                 (C_CAST(uint32_t, b1) <<  8) | (C_CAST(uint32_t, b0) <<  0)  )         \
+                                                                   ) )
+    // Big endian parameter order, little endian value
+    #define M_BytesTo8ByteValue(b7, b6, b5, b4, b3, b2, b1, b0)    (        \
+    C_CAST(uint64_t, ( (C_CAST(uint64_t, b7) << 56) | (C_CAST(uint64_t, b6) << 48) |           \
+                (C_CAST(uint64_t, b5) << 40) | (C_CAST(uint64_t, b4) << 32) |           \
+                (C_CAST(uint64_t, b3) << 24) | (C_CAST(uint64_t, b2) << 16) |           \
+                (C_CAST(uint64_t, b1) <<  8) | (C_CAST(uint64_t, b0) <<  0)  )          \
+                                                                   ) )
+
+    // Big endian parameter order, little endian value
+    #define M_BytesTo2ByteValue(b1, b0)                            (        \
+    C_CAST(uint16_t, (  (C_CAST(uint16_t, b1) << 8) | (C_CAST(uint16_t, b0) <<  0)  )          \
+                                                                   ) )
+
+    // Big endian parameter order, little endian value
+    #define M_WordsTo4ByteValue(w1, w0)                            (        \
+    C_CAST(uint32_t, (  (C_CAST(uint32_t, w1) << 16) | (C_CAST(uint32_t, w0) <<  0)  )         \
+                                                                   ) )
+
+    #define M_WordsTo8ByteValue(w3, w2, w1, w0)                    (   \
+    C_CAST(uint64_t, (  (C_CAST(uint64_t, w3) << 48) | (C_CAST(uint64_t, w2) << 32) |     \
+                 (C_CAST(uint64_t, w1) << 16) | (C_CAST(uint64_t, w0) <<  0)  )    \
+                                                                   ) )
+
+    // Big endian parameter order, little endian value
+    #define M_DWordsTo8ByteValue(d1, d0)                           (        \
+    C_CAST(uint64_t, (  (C_CAST(uint64_t, d1) << 32) | (C_CAST(uint64_t, d0) <<  0)  )         \
+                                                                   ) )
+
+    // MACRO to round the number of x so that it will not round up when formating the float
+    #define ROUNDF(f, c) (((float)((int)((f) * (c))) / (c)))
+
+    #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~UINT64_C(0) << ((msb) - (lsb) + 1)))
+    // get bit range for signed values
+    #define M_IGETBITRANGE(input, msb, lsb) C_CAST(int64_t, M_GETBITRANGE(input, msb, lsb))
+
+#endif //__cplusplus
+
+// Bit access macros
+
+    #define M_BitN(n)   (UINT64_C(1) << n)
 
 #if !defined(UEFI_C_SOURCE)//defined in EDK2 MdePkg and causes conflicts, so checking this define for now to avoid conflicts
 
@@ -216,14 +376,7 @@ extern "C"
     //clear a bit to 0 within a value
     #define M_CLEAR_BIT(val, bitNum) (val &= (~M_BitN(bitNum)))
 
-    #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~UINT64_C(0) << ((msb) - (lsb) + 1)))
-    // get bit range for signed values
-    #define M_IGETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~INT64_C(0) << ((msb) - (lsb) + 1)))
-
     #define M_2sCOMPLEMENT(val) (~(val) + 1)
-
-    // MACRO to round the number of x so that it will not round up when formating the float
-    #define ROUNDF(f, c) (((float)((int)((f) * (c))) / (c)))
 
     //define something called reserved that has a value of zero. Use it to set reserved bytes to 0
     #define RESERVED 0
@@ -475,42 +628,6 @@ extern "C"
         PREPYTHON_DATA = 1,
     }eDataFormat;
 
-    #define M_NibblesTo1ByteValue(n1, n0) ( \
-    (uint8_t)( ((uint8_t)((n1) & 0x0F) << 4) | ((uint8_t)((n0) & 0x0F) << 0)) \
-                                           )
-
-    // Big endian parameter order, little endian value
-    #define M_BytesTo4ByteValue(b3, b2, b1, b0)                    (        \
-    (uint32_t)(  (C_CAST(uint32_t, b3) << 24) | (C_CAST(uint32_t, b2) << 16) |          \
-                 (C_CAST(uint32_t, b1) <<  8) | (C_CAST(uint32_t, b0) <<  0)  )         \
-                                                                   )
-    // Big endian parameter order, little endian value
-    #define M_BytesTo8ByteValue(b7, b6, b5, b4, b3, b2, b1, b0)    (        \
-    (uint64_t)( (C_CAST(uint64_t, b7) << 56) | (C_CAST(uint64_t, b6) << 48) |           \
-                (C_CAST(uint64_t, b5) << 40) | (C_CAST(uint64_t, b4) << 32) |           \
-                (C_CAST(uint64_t, b3) << 24) | (C_CAST(uint64_t, b2) << 16) |           \
-                (C_CAST(uint64_t, b1) <<  8) | (C_CAST(uint64_t, b0) <<  0)  )          \
-                                                                   )
-
-    // Big endian parameter order, little endian value
-    #define M_BytesTo2ByteValue(b1, b0)                            (        \
-    (uint16_t)(  (C_CAST(uint16_t, b1) << 8) | (C_CAST(uint16_t, b0) <<  0)  )          \
-                                                                   )
-
-    // Big endian parameter order, little endian value
-    #define M_WordsTo4ByteValue(w1, w0)                            (        \
-    (uint32_t)(  (C_CAST(uint32_t, w1) << 16) | (C_CAST(uint32_t, w0) <<  0)  )         \
-                                                                   )
-
-    #define M_WordsTo8ByteValue(w3, w2, w1, w0)                    (   \
-    (uint64_t)(  (C_CAST(uint64_t, w3) << 48) | (C_CAST(uint64_t, w2) << 32) |     \
-                 (C_CAST(uint64_t, w1) << 16) | (C_CAST(uint64_t, w0) <<  0)  )    \
-                                                                   )
-
-    // Big endian parameter order, little endian value
-    #define M_DWordsTo8ByteValue(d1, d0)                           (        \
-    (uint64_t)(  (C_CAST(uint64_t, d1) << 32) | (C_CAST(uint64_t, d0) <<  0)  )         \
-                                                                   )
     // Max & Min Helpers
     #define  M_Min(a,b)    (((a)<(b))?(a):(b))
     #define  M_Max(a,b)    (((a)>(b))?(a):(b))
@@ -942,7 +1059,7 @@ extern "C"
     //!   \return size_t = last occurence of 'stringToFind' in 'originalString'
     //
     //-----------------------------------------------------------------------------
-    size_t find_last_occurrence_in_string(char *originalString, char *stringToFind);
+    size_t find_last_occurrence_in_string(const char *originalString, const char *stringToFind);
 
     //-----------------------------------------------------------------------------
     //
@@ -959,6 +1076,23 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     size_t find_first_occurrence_in_string(char *originalString, char *stringToFind);
+
+    //-----------------------------------------------------------------------------
+    //
+    //   wildcard_Match(char* pattern, char* data)
+    //
+    //! \brief   Description:  match the string with pattern consisting wildcard chars. A single char wildcard match is '?'
+    //  and multi char wildcard match is '*'
+    //
+    //  Entry:
+    //!   \param[in] pattern = a pointer to the pattern consisting wildcard chars
+    //!   \param[in] data = a pointer to the data
+    //!
+    //  Exit:
+    //!   \return bool = true is matches, false if not
+    //
+    //-----------------------------------------------------------------------------
+    bool wildcard_Match(char* pattern, char* data);
 
     //-----------------------------------------------------------------------------
     //

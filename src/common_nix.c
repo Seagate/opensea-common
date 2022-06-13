@@ -424,7 +424,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 {
                     //read it
                     fseek(release,ftell(release),SEEK_END);
-                    long int releaseSize = ftell(release);
+                    size_t releaseSize = ftell(release);
                     rewind(release);
                     char *releaseMemory = C_CAST(char*, calloc(releaseSize, sizeof(char)));
                     if (fread(releaseMemory, sizeof(char), releaseSize, release))
@@ -863,7 +863,7 @@ void start_Timer(seatimer_t *timer)
     if (0 == ret)//hopefully this always works...-TJE
     {
 //        printf("Start Time:  %lu\n", startTimespec.tv_nsec);
-        timer->timerStart = C_CAST(uint64_t, startTimespec.tv_sec * UINT64_C(1000000000)) + startTimespec.tv_nsec;
+        timer->timerStart = (C_CAST(uint64_t, startTimespec.tv_sec) * UINT64_C(1000000000)) + C_CAST(uint64_t, startTimespec.tv_nsec);
     }
 //    else
 //    {
@@ -880,7 +880,7 @@ void stop_Timer(seatimer_t *timer)
     if (0 == ret)//hopefully this always works...-TJE
     {
 //        printf("Stop Time:  %lu\n", stopTimespec.tv_nsec);
-        timer->timerStop = C_CAST(uint64_t, stopTimespec.tv_sec * UINT64_C(1000000000)) + stopTimespec.tv_nsec;
+        timer->timerStop = (C_CAST(uint64_t, stopTimespec.tv_sec) * UINT64_C(1000000000)) + C_CAST(uint64_t, stopTimespec.tv_nsec);
     }
 //    else
 //    {
