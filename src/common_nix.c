@@ -50,6 +50,24 @@ bool os_Directory_Exists(const char * const pathToCheck)
     return false;
 }
 
+int os_Create_Directory(const char * filePath)
+{
+    int returnValue;
+
+    returnValue = mkdir(filePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    if (returnValue == 0)
+    {
+        return SUCCESS;
+    }
+    else
+    {
+#if defined (_DEBUG)
+        printf("Error: %s\n", strerror(errno));
+#endif
+        return FAILURE;
+    }
+}
+
 bool os_File_Exists(const char * const filetoCheck)
 {
     struct stat st;

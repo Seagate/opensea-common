@@ -73,6 +73,19 @@ extern "C"
     #define SEA_MSC_VER_VS2019_16_2 1922
     #define SEA_MSC_VER_VS2019_16_3 1923
 
+    //-----------------------------------------------------------------------------
+    //
+    //  os_Create_Directory()
+    //
+    //! \brief   Description:  Creates a new directory in Windows
+    //
+    //  Entry:
+    //!
+    //  Exit:
+    //!   \return SUCCESS on successful directory creation and FAILURE when directory creation fails
+    //
+    //-----------------------------------------------------------------------------
+    int os_Create_Directory(const char* filePath);
 
     //-----------------------------------------------------------------------------
     //

@@ -25,6 +25,20 @@ extern "C"
     #define SYSTEM_PATH_SEPARATOR '/'
     #define SYSTEM_PATH_SEPARATOR_STR "/"
 
+    //-----------------------------------------------------------------------------
+    //
+    //  os_Create_Directory()
+    //
+    //! \brief   Description:  Creates a new directory in Unix or Linux OS
+    //
+    //  Entry:
+    //!
+    //  Exit:
+    //!   \return SUCCESS on successful directory creation and FAILURE when directory creation fails
+    //
+    //-----------------------------------------------------------------------------
+    int os_Create_Directory(const char* filePath);
+
 #if defined (__cplusplus)
 }
 #endif

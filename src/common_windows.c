@@ -52,6 +52,29 @@ bool os_Directory_Exists(const char * const pathToCheck)
     }
 }
 
+int os_Create_Directory(const char * filePath)
+{
+    BOOL returnValue;
+    size_t filePathLength = (strlen(filePath) + 1) * sizeof(TCHAR);
+    TCHAR *pathNameBuf = C_CAST(TCHAR*, calloc(filePathLength, sizeof(TCHAR)));
+
+    CONST TCHAR* pathName = &pathNameBuf[0];
+    _stprintf_s(pathNameBuf, filePathLength, TEXT("%hs"), filePath);
+
+    returnValue = CreateDirectory(pathName, NULL);
+    if (returnValue == FALSE)
+    {
+#if defined (_DEBUG)
+        print_Windows_Error_To_Screen(GetLastError());
+#endif
+        return FAILURE;
+    }
+    else
+    {
+        return SUCCESS;
+    }
+}
+
 bool os_File_Exists(const char * const filetoCheck)
 {
     DWORD attrib = INVALID_FILE_ATTRIBUTES;
