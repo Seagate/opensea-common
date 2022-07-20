@@ -598,8 +598,9 @@ extern "C"
 		TIMEOUT					 = 25, //Pranali added for indicating operation timeout for SeaQueue
         OS_TIMEOUT_TOO_LARGE     = 26, //Tyler added for cases where a requested timeout is larger than the OS is capable of supporting in passthrough
         PARSING_EXCEPTION_FAILURE = 27, //Nidhi - For C/C++ exception failure while parsing
-        DIR_CREATION_FAILED       = 28, //Pranali - For Telemetry Log Parser, when the creation of output folder fails
-        FILE_READ_ERROR           = 29, //Pranali - For Telemetry Log Parser, when reading logfile to buffer fails
+        DIR_CREATION_FAILED      = 28, //Pranali - For Telemetry Log Parser, when the creation of output folder fails
+        FILE_READ_ERROR          = 29, //Pranali - For Telemetry Log Parser, when reading logfile to buffer fails
+        POWER_CYCLE_REQUIRED     = 30, //For some firmware update scenarios, a power cycle is required to complete the update. This code is returned in these situations.
         UNKNOWN
     }eReturnValues;
 
