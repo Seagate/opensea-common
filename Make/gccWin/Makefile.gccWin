@@ -16,9 +16,9 @@ NAME = opensea-common
 #Change the Major version when major interface changes are made. E.g. tDevice changes
 MAJOR = 1
 #Change the Minor version when new features are added.
-MINOR = 18
+MINOR = 21
 #Change the patch version when only bug fixes are made.
-PATCH = 0
+PATCH = 2
 VERSION = $(MAJOR).$(MINOR).$(PATCH)
 SRC_DIR = ../../src/
 INC_DIR = -I../../include
@@ -41,7 +41,7 @@ endif
 #turning off format warnings because they are EVERYWHERE but only in minGW which is due to backwards compatibility warnings.
 #I tried using __USE_MINGW_ANSI_STDIO, but this didn't solve the problem either. - TJE
 #https://sourceforge.net/p/mingw-w64/mailman/mingw-w64-public/thread/20120411101049.GA4263%40glandium.org/#msg29128250
-CFLAGS ?= -Wall -Wextra  -Wno-format
+CFLAGS ?= -Wall -Wextra  -Wno-format -Wno-format=
 CFLAGS += -c -fPIC -I. -std=gnu99
 
 # is this necessary? doesn't it need a <dir>?
@@ -63,17 +63,9 @@ LIB_SRC_FILES = \
     $(SRC_DIR)common_windows.c
 
 PROJECT_DEFINES += -DENABLE_CSMI
-PROJECT_DEFINES += -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE
-ifneq (,$(findstring Linux,$(MYUNAME)))
-	PROJECT_DEFINES += -DDISABLE_NVME_PASSTHROUGH
-else
-	PROJECT_DEFINES += #-DDISABLE_NVME_PASSTHROUGH
-endif
-
+PROJECT_DEFINES += -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D__USE_MINGW_ANSI_STDIO
 
 ifneq (,$(findstring MINGW64,$(UNAME)))
-	#PROJECT_DEFINES += -D__MINGW64__
-	# PROJECT_DEFINES += -D__MINGW32__
 	#BR note: this define added to surpress gcc error with sprintf. should be made conditional to __MINGW... etc
 	PROJECT_DEFINES += -DSTRSAFE_NO_DEPRECATE
 	#BR note: trying different stuff during debugging

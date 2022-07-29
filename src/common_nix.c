@@ -278,7 +278,7 @@ eArchitecture get_Compiled_Architecture(void)
     #endif
 }
 //https://sourceforge.net/p/predef/wiki/Endianness/
-eEndianness calculate_Endianness(void)
+static eEndianness calculate_Endianness(void)
 {
     static eEndianness endian = OPENSEA_UNKNOWN_ENDIAN;//using static so that it should only need to run this code once...not that it takes a long time, but this may help optimise this.
     if (endian == OPENSEA_UNKNOWN_ENDIAN)
@@ -909,7 +909,7 @@ double get_Seconds(seatimer_t timer)
     return (get_Milli_Seconds(timer) / 1000.00);
 }
 
-bool is_Running_Elevated()
+bool is_Running_Elevated(void)
 {
     bool isElevated = false;
     if (getuid() == 0 || geteuid() == 0)
@@ -919,7 +919,7 @@ bool is_Running_Elevated()
     return isElevated;
 }
 
-static size_t get_Sys_Username_Max_Length()
+static size_t get_Sys_Username_Max_Length(void)
 {
     #if defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         //get this in case the system is configured differently

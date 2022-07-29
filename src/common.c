@@ -675,6 +675,12 @@ void print_Return_Enum(char *funcName, int ret)
     case OS_TIMEOUT_TOO_LARGE:
         printf("OS TIMEOUT TOO LARGE\n");
         break;
+    case PARSING_EXCEPTION_FAILURE:
+        printf("PARSING EXCEPTION FAILURE\n");
+        break;
+    case POWER_CYCLE_REQUIRED:
+        printf("POWER CYCLE REQUIRED\n");
+        break;
     default:
         printf("UNKNOWN: %d\n", ret);
         break;

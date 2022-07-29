@@ -332,7 +332,7 @@ eArchitecture get_Compiled_Architecture(void)
     #endif
 }
 
-eEndianness calculate_Endianness(void)
+static eEndianness calculate_Endianness(void)
 {
     static eEndianness endian = OPENSEA_UNKNOWN_ENDIAN;//using static so that it should only need to run this code once...not that it takes a long time, but this may help optimise this.
     if (endian == OPENSEA_UNKNOWN_ENDIAN)

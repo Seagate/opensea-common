@@ -161,6 +161,8 @@ extern "C"
     //-----------------------------------------------------------------------------
     bool is_Windows_PE(void);
 
+    bool is_Windows_Server_OS(void);
+
     //-----------------------------------------------------------------------------
     //
     //  print_Windows_Error_To_Screen(unsigned int windowsError)
