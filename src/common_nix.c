@@ -260,7 +260,7 @@ eArchitecture get_Compiled_Architecture(void)
     #endif
 }
 //https://sourceforge.net/p/predef/wiki/Endianness/
-eEndianness calculate_Endianness(void)
+static eEndianness calculate_Endianness(void)
 {
     static eEndianness endian = OPENSEA_UNKNOWN_ENDIAN;//using static so that it should only need to run this code once...not that it takes a long time, but this may help optimise this.
     if (endian == OPENSEA_UNKNOWN_ENDIAN)
@@ -406,7 +406,7 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 {
                     //read it
                     fseek(release,ftell(release),SEEK_END);
-                    long int releaseSize = ftell(release);
+                    size_t releaseSize = ftell(release);
                     rewind(release);
                     char *releaseMemory = C_CAST(char*, calloc(releaseSize, sizeof(char)));
                     if (fread(releaseMemory, sizeof(char), releaseSize, release))
@@ -845,7 +845,7 @@ void start_Timer(seatimer_t *timer)
     if (0 == ret)//hopefully this always works...-TJE
     {
 //        printf("Start Time:  %lu\n", startTimespec.tv_nsec);
-        timer->timerStart = C_CAST(uint64_t, startTimespec.tv_sec * UINT64_C(1000000000)) + startTimespec.tv_nsec;
+        timer->timerStart = (C_CAST(uint64_t, startTimespec.tv_sec) * UINT64_C(1000000000)) + C_CAST(uint64_t, startTimespec.tv_nsec);
     }
 //    else
 //    {
@@ -862,7 +862,7 @@ void stop_Timer(seatimer_t *timer)
     if (0 == ret)//hopefully this always works...-TJE
     {
 //        printf("Stop Time:  %lu\n", stopTimespec.tv_nsec);
-        timer->timerStop = C_CAST(uint64_t, stopTimespec.tv_sec * UINT64_C(1000000000)) + stopTimespec.tv_nsec;
+        timer->timerStop = (C_CAST(uint64_t, stopTimespec.tv_sec) * UINT64_C(1000000000)) + C_CAST(uint64_t, stopTimespec.tv_nsec);
     }
 //    else
 //    {
@@ -891,7 +891,7 @@ double get_Seconds(seatimer_t timer)
     return (get_Milli_Seconds(timer) / 1000.00);
 }
 
-bool is_Running_Elevated()
+bool is_Running_Elevated(void)
 {
     bool isElevated = false;
     if (getuid() == 0 || geteuid() == 0)
@@ -901,7 +901,7 @@ bool is_Running_Elevated()
     return isElevated;
 }
 
-static size_t get_Sys_Username_Max_Length()
+static size_t get_Sys_Username_Max_Length(void)
 {
     #if defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         //get this in case the system is configured differently

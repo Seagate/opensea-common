@@ -37,6 +37,7 @@ extern "C"
     #include <string.h>
     #include <stdlib.h>
     #include <inttypes.h>
+    #include <stdbool.h>
     #include <errno.h> //for printing std errors to the screen...more useful for 'nix OSs, but useful everywhere since it is at least standard functions
 
     #if !defined(UINTPTR_MAX)
@@ -49,20 +50,6 @@ extern "C"
             typedef uint32_t uintptr_t;
             #define UINTPTR_MAX UINT32_MAX
         #endif
-    #endif
-        
-    #if defined (OPENSEA_COMMON_BOOLS) //THIS FLAG IS NOT ENABLED BY DEFAULT
-    //I'm doing this because 
-    //1) some compilers may not support stdbool
-    //2) using booleans with getopt can cause stack corruption depending on how bools are defined by the compiler
-        #define OPENSEA_COMMON_BOOLS
-        #define bool int32_t
-        #define false 0
-        #define true !false
-    //size of bool in this case is 32bits (4 bytes)
-    #else //default definition of bool comes from this standard header
-        //size of bool in this case is compiler dependent, but it is usually 8bits (1 byte)
-        #include <stdbool.h>
     #endif
 
     #include "common_platform.h"
@@ -598,6 +585,7 @@ extern "C"
 		TIMEOUT					 = 25, //Pranali added for indicating operation timeout for SeaQueue
         OS_TIMEOUT_TOO_LARGE     = 26, //Tyler added for cases where a requested timeout is larger than the OS is capable of supporting in passthrough
         PARSING_EXCEPTION_FAILURE = 27, //Nidhi - For C/C++ exception failure while parsing
+        POWER_CYCLE_REQUIRED    = 28, //For some firmware update scenarios, a power cycle is required to complete the update. This code is returned in these situations.
         UNKNOWN
     }eReturnValues;
 
@@ -1074,6 +1062,23 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     size_t find_first_occurrence_in_string(char *originalString, char *stringToFind);
+
+    //-----------------------------------------------------------------------------
+    //
+    //   wildcard_Match(char* pattern, char* data)
+    //
+    //! \brief   Description:  match the string with pattern consisting wildcard chars. A single char wildcard match is '?'
+    //  and multi char wildcard match is '*'
+    //
+    //  Entry:
+    //!   \param[in] pattern = a pointer to the pattern consisting wildcard chars
+    //!   \param[in] data = a pointer to the data
+    //!
+    //  Exit:
+    //!   \return bool = true is matches, false if not
+    //
+    //-----------------------------------------------------------------------------
+    bool wildcard_Match(char* pattern, char* data);
 
     //-----------------------------------------------------------------------------
     //
