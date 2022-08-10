@@ -274,17 +274,17 @@ void *realloc_page_aligned(void *alignedPtr, size_t originalSize, size_t size)
 
 void nibble_Swap(uint8_t *byteToSwap)
 {
-    *byteToSwap = C_CAST(uint8_t, ((*byteToSwap & 0x0F) << 4)) | C_CAST(uint8_t, ((*byteToSwap & 0xF0) >> 4));
+    *byteToSwap = C_CAST(uint8_t, ((*byteToSwap & UINT8_C(0x0F)) << 4)) | C_CAST(uint8_t, ((*byteToSwap & UINT8_C(0xF0)) >> 4));
 }
 
 void byte_Swap_16(uint16_t *wordToSwap)
 {
-    *wordToSwap = C_CAST(uint16_t, ((*wordToSwap & 0x00FF) << 8)) | C_CAST(uint16_t, ((*wordToSwap & 0xFF00) >> 8));
+    *wordToSwap = C_CAST(uint16_t, ((*wordToSwap & UINT16_C(0x00FF)) << 8)) | C_CAST(uint16_t, ((*wordToSwap & UINT16_C(0xFF00)) >> 8));
 }
 
 void byte_Swap_Int16(int16_t *signedWordToSwap)
 {
-    *signedWordToSwap = C_CAST(int16_t, ((*signedWordToSwap & 0x00FF) << 8)) | C_CAST(int16_t, ((*signedWordToSwap & 0xFF00) >> 8));
+    *signedWordToSwap = C_CAST(int16_t, ((*signedWordToSwap & UINT16_C(0x00FF)) << 8)) | C_CAST(int16_t, ((*signedWordToSwap & UINT16_C(0xFF00)) >> 8));
 }
 
 void big_To_Little_Endian_16(uint16_t *wordToSwap)
@@ -297,14 +297,14 @@ void big_To_Little_Endian_16(uint16_t *wordToSwap)
 
 void byte_Swap_32(uint32_t *doubleWordToSwap)
 {
-    *doubleWordToSwap = C_CAST(uint32_t, ((*doubleWordToSwap & 0x0000FFFF) << 16)) | C_CAST(uint32_t, ((*doubleWordToSwap & 0xFFFF0000) >> 16));
-    *doubleWordToSwap = C_CAST(uint32_t, ((*doubleWordToSwap & 0x00FF00FF) << 8)) | C_CAST(uint32_t, ((*doubleWordToSwap & 0xFF00FF00) >> 8));
+    *doubleWordToSwap = C_CAST(uint32_t, ((*doubleWordToSwap & UINT32_C(0x0000FFFF)) << 16)) | C_CAST(uint32_t, ((*doubleWordToSwap & UINT32_C(0xFFFF0000)) >> 16));
+    *doubleWordToSwap = C_CAST(uint32_t, ((*doubleWordToSwap & UINT32_C(0x00FF00FF)) << 8)) | C_CAST(uint32_t, ((*doubleWordToSwap & UINT32_C(0xFF00FF00)) >> 8));
 }
 
 void byte_Swap_Int32(int32_t *signedDWord)
 {
-    *signedDWord = ((*signedDWord & 0x0000FFFF) << 16) | ((*signedDWord & 0xFFFF0000) >> 16);
-    *signedDWord = ((*signedDWord & 0x00FF00FF) << 8) | ((*signedDWord & 0xFF00FF00) >> 8);
+    *signedDWord = ((*signedDWord & INT32_C(0x0000FFFF)) << 16) | ((*signedDWord & INT32_C(0xFFFF0000)) >> 16);
+    *signedDWord = ((*signedDWord & INT32_C(0x00FF00FF)) << 8) | ((*signedDWord & INT32_C(0xFF00FF00)) >> 8);
 }
 void big_To_Little_Endian_32(uint32_t *doubleWordToSwap)
 {
@@ -316,7 +316,7 @@ void big_To_Little_Endian_32(uint32_t *doubleWordToSwap)
 
 void word_Swap_32(uint32_t *doubleWordToSwap)
 {
-    *doubleWordToSwap = ((*doubleWordToSwap & 0x0000FFFF) << 16) | ((*doubleWordToSwap & 0xFFFF0000) >> 16);
+    *doubleWordToSwap = ((*doubleWordToSwap & UINT32_C(0x0000FFFF)) << 16) | ((*doubleWordToSwap & UINT32_C(0xFFFF0000)) >> 16);
 }
 
 void byte_Swap_64(uint64_t *quadWordToSwap)
@@ -682,35 +682,38 @@ void print_Return_Enum(char *funcName, int ret)
     printf("\n");
 }
 
-void print_Data_Buffer(uint8_t *dataBuffer, uint32_t bufferLen, bool showPrint)
+void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset)
 {
     uint32_t printIter = 0, offset = 0;
     uint32_t offsetWidth = 2;//used to figure out how wide we need to pad with 0's for consistent output, 2 is the minimum width
-    if (bufferLen <= UINT8_MAX)
+    if (showOffset)
     {
-        offsetWidth = 2;
-        printf("\n        "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
-    }
-    else if (bufferLen <= UINT16_MAX)
-    {
-        offsetWidth = 4;
-        printf("\n          "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
-    }
-    else if (bufferLen <= 0xFFFFFF)
-    {
-        offsetWidth = 6;
-        printf("\n            "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
-    }
-    else//32bit width, don't care about 64bit since max size if 32bit
-    {
-        offsetWidth = 8;
-        printf("\n              "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
-    }
-    //we print out 2 (0x) + printf formatting width + 2 (spaces) then the offsets
+        if (bufferLen <= UINT8_MAX)
+        {
+            offsetWidth = 2;
+            printf("\n        "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
+        }
+        else if (bufferLen <= UINT16_MAX)
+        {
+            offsetWidth = 4;
+            printf("\n          "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
+        }
+        else if (bufferLen <= 0xFFFFFF)
+        {
+            offsetWidth = 6;
+            printf("\n            "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
+        }
+        else//32bit width, don't care about 64bit since max size if 32bit
+        {
+            offsetWidth = 8;
+            printf("\n              "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
+        }
+        //we print out 2 (0x) + printf formatting width + 2 (spaces) then the offsets
 
-    for (printIter = 0; printIter < 16 && printIter < bufferLen; printIter++)
-    {
-        printf("%" PRIX32 "  ", printIter);
+        for (printIter = 0; printIter < 16 && printIter < bufferLen; printIter++)
+        {
+            printf("%" PRIX32 "  ", printIter);
+        }
     }
     char lineBuff[18] = { 0 };
     uint8_t lineBuffIter = 0;
@@ -720,24 +723,32 @@ void print_Data_Buffer(uint8_t *dataBuffer, uint32_t bufferLen, bool showPrint)
         {
             lineBuffIter = 0;
         }
+
         //for every 16 bytes we print, we need to make a newline, then print the offset (hex) before we print the data again
         if (printIter % 16 == 0)
         {
-            switch (offsetWidth)
+            if (showOffset)
             {
-            case 4:
-                printf("\n  0x%04"PRIX32" ", offset);
-                break;
-            case 6:
-                printf("\n  0x%06"PRIX32" ", offset);
-                break;
-            case 8:
-                printf("\n  0x%08"PRIX32" ", offset);
-                break;
-            case 2:
-            default:
-                printf("\n  0x%02"PRIX32" ", offset);
-                break;
+                switch (offsetWidth)
+                {
+                case 4:
+                    printf("\n  0x%04"PRIX32" ", offset);
+                    break;
+                case 6:
+                    printf("\n  0x%06"PRIX32" ", offset);
+                    break;
+                case 8:
+                    printf("\n  0x%08"PRIX32" ", offset);
+                    break;
+                case 2:
+                default:
+                    printf("\n  0x%02"PRIX32" ", offset);
+                    break;
+                }
+            }
+            else
+            {
+                printf("\n  ");
             }
             offset += 16;
         }
@@ -775,6 +786,16 @@ void print_Data_Buffer(uint8_t *dataBuffer, uint32_t bufferLen, bool showPrint)
         }
     }
     printf("\n\n");
+}
+
+void print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
+{
+    internal_Print_Data_Buffer(dataBuffer, bufferLen, showPrint, true);
+}
+
+void print_Pipe_Data(uint8_t* dataBuffer, uint32_t bufferLen)
+{
+    internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false);
 }
 
 int metric_Unit_Convert(double *byteValue, char** metricUnit)
@@ -1772,11 +1793,18 @@ uint64_t power_Of_Two(uint16_t exponent)
 double raise_to_power(double number, double power)
 {
     double result = 1.0;
-    if (power == 1)
+    int64_t localPower = C_CAST(int64_t, power);
+    if(localPower == INT64_C(0))
+    {
+        return 1.0;
+    }
+    if (localPower == INT64_C(1))
+    {
         return number;
-    for (int64_t i = -1; i >= power && power != 0; i--) {
-
-        result = result * (1 / number);
+    }
+    for (int64_t i = INT64_C(-1); i >= localPower && localPower != INT64_C(0); i--) 
+    {
+        result = result * (1.0 / number);
     }
     return result;
 }
@@ -1803,11 +1831,11 @@ void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue)
     double mantisa = 1.0;
     for (uint8_t i = 0; i < 23; i++)
     {
-        mantisa += C_CAST(double, M_GETBITRANGE(floatValue, i, i)) * C_CAST(double, pow(2.0, power));
+        mantisa += C_CAST(double, M_GETBITRANGE(floatValue, i, i)) * pow(2.0, power);
         power++;
     }
 
-    *decimalValue = sign * C_CAST(float, pow(2.0, exponent)) * mantisa;
+    *decimalValue = sign * pow(2.0, exponent) * mantisa;
 }
 
 char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source)
