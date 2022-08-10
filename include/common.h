@@ -1100,6 +1100,39 @@ extern "C"
 
     //-----------------------------------------------------------------------------
     //
+    //  internal_Print_Data_Buffer()
+    //
+    //! \brief   Description:  print out a data buffer to the screen
+    //
+    //  Entry:
+    //!   \param[in] dataBuffer = a pointer to the data buffer you want to print out
+    //!   \param[in] bufferLen = the length that you want to print out. This can be the length of the buffer, or anything less than that
+    //!   \param[in] showPrint = set to true to show printable characters on the side of the hex output for the buffer. Non-printable characters will be represented as dots.
+    //!
+    //  Exit:
+    //
+    //-----------------------------------------------------------------------------
+    void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  print_Pipe_Data()
+    //
+    //! \brief   Description:  print out a data buffer for piping to the next executable to the screen
+    //
+    //  Entry:
+    //!   \param[in] dataBuffer = a pointer to the data buffer you want to print out
+    //!   \param[in] bufferLen = the length that you want to print out. This can be the length of the buffer, or anything less than that
+    //!   \param[in] showPrint = set to true to show printable characters on the side of the hex output for the buffer. Non-printable characters will be represented as dots.
+    //!   \param[in] showOffset = set to true to show printable offset on the side of the hex output for the buffer. 
+    //!
+    //  Exit:
+    //
+    //-----------------------------------------------------------------------------
+    void print_Pipe_Data(uint8_t* dataBuffer, uint32_t bufferLen);
+
+    //-----------------------------------------------------------------------------
+    //
     //  print_Return_Enum()
     //
     //! \brief   Description:  Prints humanized eReturnValue for a given return value
