@@ -1112,7 +1112,7 @@ extern "C"
     //  Exit:
     //
     //-----------------------------------------------------------------------------
-    static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset);
+    void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset);
 
     //-----------------------------------------------------------------------------
     //
