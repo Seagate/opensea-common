@@ -688,35 +688,38 @@ void print_Return_Enum(char *funcName, int ret)
     printf("\n");
 }
 
-void print_Data_Buffer(uint8_t *dataBuffer, uint32_t bufferLen, bool showPrint)
+static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset)
 {
     uint32_t printIter = 0, offset = 0;
     uint32_t offsetWidth = 2;//used to figure out how wide we need to pad with 0's for consistent output, 2 is the minimum width
-    if (bufferLen <= UINT8_MAX)
+    if (showOffset)
     {
-        offsetWidth = 2;
-        printf("\n        "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
-    }
-    else if (bufferLen <= UINT16_MAX)
-    {
-        offsetWidth = 4;
-        printf("\n          "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
-    }
-    else if (bufferLen <= 0xFFFFFF)
-    {
-        offsetWidth = 6;
-        printf("\n            "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
-    }
-    else//32bit width, don't care about 64bit since max size if 32bit
-    {
-        offsetWidth = 8;
-        printf("\n              "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
-    }
-    //we print out 2 (0x) + printf formatting width + 2 (spaces) then the offsets
+        if (bufferLen <= UINT8_MAX)
+        {
+            offsetWidth = 2;
+            printf("\n        "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
+        }
+        else if (bufferLen <= UINT16_MAX)
+        {
+            offsetWidth = 4;
+            printf("\n          "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
+        }
+        else if (bufferLen <= 0xFFFFFF)
+        {
+            offsetWidth = 6;
+            printf("\n            "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
+        }
+        else//32bit width, don't care about 64bit since max size if 32bit
+        {
+            offsetWidth = 8;
+            printf("\n              "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
+        }
+        //we print out 2 (0x) + printf formatting width + 2 (spaces) then the offsets
 
-    for (printIter = 0; printIter < 16 && printIter < bufferLen; printIter++)
-    {
-        printf("%" PRIX32 "  ", printIter);
+        for (printIter = 0; printIter < 16 && printIter < bufferLen; printIter++)
+        {
+            printf("%" PRIX32 "  ", printIter);
+        }
     }
     char lineBuff[18] = { 0 };
     uint8_t lineBuffIter = 0;
@@ -726,24 +729,32 @@ void print_Data_Buffer(uint8_t *dataBuffer, uint32_t bufferLen, bool showPrint)
         {
             lineBuffIter = 0;
         }
+
         //for every 16 bytes we print, we need to make a newline, then print the offset (hex) before we print the data again
         if (printIter % 16 == 0)
         {
-            switch (offsetWidth)
+            if (showOffset)
             {
-            case 4:
-                printf("\n  0x%04"PRIX32" ", offset);
-                break;
-            case 6:
-                printf("\n  0x%06"PRIX32" ", offset);
-                break;
-            case 8:
-                printf("\n  0x%08"PRIX32" ", offset);
-                break;
-            case 2:
-            default:
-                printf("\n  0x%02"PRIX32" ", offset);
-                break;
+                switch (offsetWidth)
+                {
+                case 4:
+                    printf("\n  0x%04"PRIX32" ", offset);
+                    break;
+                case 6:
+                    printf("\n  0x%06"PRIX32" ", offset);
+                    break;
+                case 8:
+                    printf("\n  0x%08"PRIX32" ", offset);
+                    break;
+                case 2:
+                default:
+                    printf("\n  0x%02"PRIX32" ", offset);
+                    break;
+                }
+            }
+            else
+            {
+                printf("\n  ");
             }
             offset += 16;
         }
@@ -781,6 +792,16 @@ void print_Data_Buffer(uint8_t *dataBuffer, uint32_t bufferLen, bool showPrint)
         }
     }
     printf("\n\n");
+}
+
+void print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
+{
+    internal_Print_Data_Buffer(dataBuffer, bufferLen, showPrint, true);
+}
+
+void print_Pipe_Data(uint8_t* dataBuffer, uint32_t bufferLen)
+{
+    internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false);
 }
 
 int metric_Unit_Convert(double *byteValue, char** metricUnit)
