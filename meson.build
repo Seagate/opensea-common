@@ -53,13 +53,13 @@ deps = []
 if target_machine.system() == 'linux'
   src_files += ['src/common_nix.c']
   if c.check_header('linux/nvme_ioctl.h')
-	global_cpp_args += ['-DSEA_NVME_IOCTL_H']
+	  global_cpp_args += ['-DSEA_NVME_IOCTL_H']
   elif c.check_header('linux/nvme.h')
-	global_cpp_args += ['-DSEA_NVME_H']
+	  global_cpp_args += ['-DSEA_NVME_H']
   elif c.check_header('uapi/nvme.h')
-	global_cpp_args += ['-DSEA_UAPI_NVME_H']
+	  global_cpp_args += ['-DSEA_UAPI_NVME_H']
   else
-	global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
+	  global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
   endif
 elif target_machine.system() == 'freebsd'
   src_files += ['src/common_nix.c']
@@ -69,6 +69,11 @@ elif target_machine.system() == 'freebsd'
 elif target_machine.system() == 'sunos'
   src_files += ['src/common_nix.c']
   global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
+elif target_machine.system() == 'aix'
+  src_files += ['src/common_nix.c']
+  if not c.check_header('sys/nvme.h')
+    global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
+  endif
 elif target_machine.system() == 'windows'
   src_files += ['src/common_windows.c']
   if c.get_define('__MINGW32__') != ''
