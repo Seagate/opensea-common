@@ -17,13 +17,19 @@
 
 #if defined (_WIN32)
 #include <windows.h> //used for setting color output to the command prompt and Sleep()
-#else
+#else //_WIN32
 #include <unistd.h> //needed for usleep() or nanosleep()
 #include <time.h>
 #include <errno.h>
-#endif
+#endif //Win32
+
+#if defined (VMK_CROSS_COMP)
+#include <mm_malloc.h> //doing this to shut up warnings about posix_memalign not available despite stdlib include  TJE
+#endif //VMK_CROSS_COMP
+
 #include <stdlib.h>//aligned allocation functions come from here
 #include <math.h>
+
 
 void delay_Milliseconds(uint32_t milliseconds)
 {
@@ -63,8 +69,6 @@ void *malloc_aligned(size_t size, size_t alignment)
             printf("<--%s size : %d  alignment : %d\n",__FUNCTION__, size, alignment);
         #endif
         void *temp = NULL;
-        //temp = malloc(size);
-
         if (0 != posix_memalign( &temp, alignment, size))
         {
             temp = NULL;//make sure the system we are running didn't change this.
