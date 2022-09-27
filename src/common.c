@@ -636,7 +636,7 @@ void print_Return_Enum(char *funcName, int ret)
     case WARN_INCOMPLETE_RFTRS:
         printf("WARNING INCOMPLETE RTFRS\n");
         break;
-    case COMMAND_TIMEOUT:
+    case OS_COMMAND_TIMEOUT:
         printf("COMMAND TIMEOUT\n");
         break;
     case WARN_NOT_ALL_DEVICES_ENUMERATED:
