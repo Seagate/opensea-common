@@ -571,7 +571,7 @@ extern "C"
         PERMISSION_DENIED       = 11, //OS returned Access/permission denied
         FILE_OPEN_ERROR         = 12,
         WARN_INCOMPLETE_RFTRS   = 13, //command was issued, and some RTFRs were received, but we were unable to get a complete RTFR result. This is most likely due to a SATL limitation.
-        COMMAND_TIMEOUT         = 14, //command took longer than the timeout that was provided to the OS
+        OS_COMMAND_TIMEOUT         = 14, //command took longer than the timeout that was provided to the OS
         WARN_NOT_ALL_DEVICES_ENUMERATED = 15,
         WARN_INVALID_CHECKSUM   = 16, //The checksum on the data for a command didn't calculate correctly (EX: Identify device, some ATA Logs)
         OS_COMMAND_NOT_AVAILABLE = 17, //This is returned when the OS does not have a way to issue the requested command. (EX: Trying to send an NVMe command without Win10, or trying a 32byte SCSI command pre-Win8)
