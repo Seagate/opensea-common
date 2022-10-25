@@ -52,6 +52,18 @@ extern "C"
         #endif
     #endif
 
+    // Including strings.h to have string case compare functionality and working around Windows.
+    // TODO: improve this check as needed for other systems.
+    // TODO: make definitions for other functions in strings.h
+    #if defined (__unix__) || defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        #include <strings.h>
+    #elif defined (_WIN32) 
+        #define strcasecmp(s1, s2) _stricmp(s1, s2)
+        #define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
+    #else 
+        #error "Need string case compare definition."
+    #endif // __unix__, POSIX, WIN32
+
     #include "common_platform.h"
 
     //Macro to help make casts more clear and searchable. Can be very helpful while debugging.
