@@ -1129,8 +1129,11 @@ double get_Seconds(seatimer_t timer)
 void print_Windows_Error_To_Screen(unsigned int windowsError)
 {
     TCHAR *windowsErrorString = NULL;
+    //Originally used: MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT)
+    //switched to MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US) to keep output consistent with all other verbose output.-TJE
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL, windowsError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (TCHAR*)&windowsErrorString, 0, NULL);
+        NULL, windowsError, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), C_CAST(TCHAR*, &windowsErrorString), 0, NULL);
+    //This cast is necessary to tell the Windows API to allocate the string, but it is necessary. Without it, this will not work.
     _tprintf_s(TEXT("%u - %s\n"), windowsError, windowsErrorString);
     LocalFree(windowsErrorString);
 }
