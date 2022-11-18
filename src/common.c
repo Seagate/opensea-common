@@ -439,7 +439,7 @@ void remove_Trailing_Whitespace(char *stringToChange)
     {
         return;
     }
-    while (iter > 0 && isspace(stringToChange[iter - 1]))
+    while (iter > 0 && is_ASCII(stringToChange[iter - 1]) && isspace(stringToChange[iter - 1]))
     {
         stringToChange[iter - 1] = '\0'; //replace spaces with NULL terminators
         iter--;
@@ -454,7 +454,7 @@ void remove_Leading_Whitespace(char *stringToChange)
         return;
     }
     stringToChangeLen = strlen(stringToChange);
-    while (isspace(stringToChange[iter]) && iter < stringToChangeLen)
+    while (is_ASCII(stringToChange[iter]) && isspace(stringToChange[iter]) && iter < stringToChangeLen)
     {
         iter++;
     }
