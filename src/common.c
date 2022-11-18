@@ -765,7 +765,7 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
         printf("%02"PRIX8" ", dataBuffer[printIter]);
         if (showPrint)
         {
-            if (isprint(C_CAST(int, dataBuffer[printIter])))
+            if (is_ASCII(dataBuffer[printIter]) && isprint(C_CAST(int, dataBuffer[printIter])))
             {
                 lineBuff[lineBuffIter] = C_CAST(char, dataBuffer[printIter]);
             }
