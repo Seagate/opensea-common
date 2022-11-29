@@ -388,7 +388,7 @@ void byte_Swap_String(char *stringToChange)
 {
     size_t stringIter = 0;
     size_t stringlen = strlen(stringToChange);
-    char *swappedString = C_CAST(char *, calloc(stringlen, sizeof(char)));
+    char *swappedString = C_CAST(char *, calloc(stringlen + 1, sizeof(char)));
     if (swappedString == NULL)
     {
         return;
