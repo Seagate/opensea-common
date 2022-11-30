@@ -983,6 +983,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                         }
                     }
                 }
+                safe_Free(rawBuffer)
             }            
         #else
             struct passwd *userInfo = getpwuid(userID);
