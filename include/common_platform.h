@@ -75,6 +75,8 @@ extern "C"
 {
 #endif
 
+    //NOTE: This is taken from this list: https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
+    //      These may appear slightly different in each console, but will be close to the requested color
     typedef enum _eConsoleColors
     {
         BLUE,
@@ -94,6 +96,26 @@ extern "C"
         DARK_GRAY,
         PURPLE,
         DEFAULT,//this means white on windows
+        CURRENT,
+        CONSOLE_COLOR_DEFAULT,
+        CONSOLE_COLOR_BLACK,
+        CONSOLE_COLOR_RED,
+        CONSOLE_COLOR_GREEN,
+        CONSOLE_COLOR_YELLOW,
+        CONSOLE_COLOR_BLUE,
+        CONSOLE_COLOR_MAGENTA,
+        CONSOLE_COLOR_CYAN,
+        CONSOLE_COLOR_WHITE,
+        CONSOLE_COLOR_GRAY,
+        CONSOLE_COLOR_BRIGHT_BLACK = CONSOLE_COLOR_GRAY,
+        CONSOLE_COLOR_BRIGHT_RED,
+        CONSOLE_COLOR_BRIGHT_GREEN,
+        CONSOLE_COLOR_BRIGHT_YELLOW,
+        CONSOLE_COLOR_BRIGHT_BLUE,
+        CONSOLE_COLOR_BRIGHT_MAGENTA,
+        CONSOLE_COLOR_BRIGHT_CYAN,
+        CONSOLE_COLOR_BRIGHT_WHITE,
+        CONSOLE_COLOR_CURRENT
     }eConsoleColors;
 
     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -105,10 +127,8 @@ extern "C"
     //
     //  set_Console_Colors()
     //
-    //! \brief   Description:  Set the foreground or background color in the console output
-    //!                        When building a console application, you should call this function to 
-    //!                        set the default color BEFORE you start changing any other colors. 
-    //!                        This is due to how Windows and the lower level API works to set the console colors. This doesn't apply to 'nix - TJE
+    //! \brief   Description:  Recommend using set_Console_Foreground_Background_Colors() instead!
+    //!                        Set the foreground or background color in the console output
     //
     //  Entry:
     //!   \param[in] foregroundBackground - true = foreground, false = background
@@ -118,6 +138,21 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eConsoleColors backgroundColor)
+    //
+    //! \brief   Description:  Set the foreground and background color in the console output
+    //
+    //  Entry:
+    //!   \param[in] foregroundColor = requested foreground color. For no change, use "CURRENT"
+    //!   \param[in] backgroundColor = requested background color. For no change, use "CURRENT"
+    //!
+    //  Exit:
+    //
+    //-----------------------------------------------------------------------------
+    void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eConsoleColors backgroundColor);
 
     //-----------------------------------------------------------------------------
     //

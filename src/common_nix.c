@@ -206,6 +206,171 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
     }
 }
 
+void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eConsoleColors backgroundColor)
+{
+    if (foregroundColor == CURRENT && backgroundColor == CURRENT)
+    {
+        //nothing to do
+        return;
+    }
+    if (foregroundColor == DEFAULT && backgroundColor == DEFAULT)
+    {
+        //reset or normal
+        printf("\033[0m");
+    }
+    else
+    {
+        //set the string for each color that needs to be set.
+        uint8_t foregroundColorInt = UINT8_MAX, backgroundColorInt = UINT8_MAX;
+        uint8_t foregroundIntensity = 0, backgroundIntensity = 0;
+        //according to https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
+        //bright colors may be possible with unique values, but this was not in the standard to start with, so not using those today and instead using the intensity bit to differentiate
+        //between bright and not bright colors
+        switch (foregroundColor)
+        {
+        case CONSOLE_COLOR_CURRENT:
+            break;
+        case CONSOLE_COLOR_BLACK:
+            foregroundColorInt = 30;
+            break;
+        case CONSOLE_COLOR_RED:
+            foregroundColorInt = 31;
+            break;
+        case CONSOLE_COLOR_GREEN:
+            foregroundColorInt = 32;
+            break;
+        case CONSOLE_COLOR_YELLOW:
+            foregroundColorInt = 33;
+            break;
+        case CONSOLE_COLOR_BLUE:
+            foregroundColorInt = 34;
+            break;
+        case CONSOLE_COLOR_MAGENTA:
+            foregroundColorInt = 35;
+            break;
+        case CONSOLE_COLOR_CYAN:
+            foregroundColorInt = 36;
+            break;
+        case CONSOLE_COLOR_WHITE:
+            foregroundColorInt = 37;
+            break;
+        case CONSOLE_COLOR_GRAY:
+            foregroundIntensity = 1;
+            foregroundColorInt = 30;
+            break;
+        case CONSOLE_COLOR_BRIGHT_RED:
+            foregroundIntensity = 1;
+            foregroundColorInt = 31;
+            break;
+        case CONSOLE_COLOR_BRIGHT_GREEN:
+            foregroundIntensity = 1;
+            foregroundColorInt = 32;
+            break;
+        case CONSOLE_COLOR_BRIGHT_YELLOW:
+            foregroundIntensity = 1;
+            foregroundColorInt = 33;
+            break;
+        case CONSOLE_COLOR_BRIGHT_BLUE:
+            foregroundIntensity = 1;
+            foregroundColorInt = 34;
+            break;
+        case CONSOLE_COLOR_BRIGHT_MAGENTA:
+            foregroundIntensity = 1;
+            foregroundColorInt = 35;
+            break;
+        case CONSOLE_COLOR_BRIGHT_CYAN:
+            foregroundIntensity = 1;
+            foregroundColorInt = 36;
+            break;
+        case CONSOLE_COLOR_BRIGHT_WHITE:
+            foregroundIntensity = 1;
+            foregroundColorInt = 37;
+            break;
+        case CONSOLE_COLOR_DEFAULT:
+        default:
+            foregroundColorInt = 39;
+            break;
+        }
+        if (foregroundColorInt != UINT8_MAX)
+        {
+            //print the foreground request
+            printf("\033[%" PRIu8 ";%" PRIu8 "m", foregroundIntensity, foregroundColorInt);
+        }
+
+        switch (foregroundColor)
+        {
+        case CONSOLE_COLOR_CURRENT:
+            break;
+        case CONSOLE_COLOR_BLACK:
+            backgroundColorInt = 40;
+            break;
+        case CONSOLE_COLOR_RED:
+            backgroundColorInt = 41;
+            break;
+        case CONSOLE_COLOR_GREEN:
+            backgroundColorInt = 42;
+            break;
+        case CONSOLE_COLOR_YELLOW:
+            backgroundColorInt = 43;
+            break;
+        case CONSOLE_COLOR_BLUE:
+            backgroundColorInt = 44;
+            break;
+        case CONSOLE_COLOR_MAGENTA:
+            backgroundColorInt = 45;
+            break;
+        case CONSOLE_COLOR_CYAN:
+            backgroundColorInt = 46;
+            break;
+        case CONSOLE_COLOR_WHITE:
+            backgroundColorInt = 47;
+            break;
+        case CONSOLE_COLOR_GRAY:
+            backgroundIntensity = true;
+            backgroundColorInt = 40;
+            break;
+        case CONSOLE_COLOR_BRIGHT_RED:
+            backgroundIntensity = true;
+            backgroundColorInt = 41;
+            break;
+        case CONSOLE_COLOR_BRIGHT_GREEN:
+            backgroundIntensity = true;
+            backgroundColorInt = 42;
+            break;
+        case CONSOLE_COLOR_BRIGHT_YELLOW:
+            backgroundIntensity = true;
+            backgroundColorInt = 43;
+            break;
+        case CONSOLE_COLOR_BRIGHT_BLUE:
+            backgroundIntensity = true;
+            backgroundColorInt = 44;
+            break;
+        case CONSOLE_COLOR_BRIGHT_MAGENTA:
+            backgroundIntensity = true;
+            backgroundColorInt = 45;
+            break;
+        case CONSOLE_COLOR_BRIGHT_CYAN:
+            backgroundIntensity = true;
+            backgroundColorInt = 46;
+            break;
+        case CONSOLE_COLOR_BRIGHT_WHITE:
+            backgroundIntensity = true;
+            backgroundColorInt = 47;
+            break;
+        case CONSOLE_COLOR_DEFAULT:
+        default:
+            backgroundColorInt = 49;
+            break;
+        }
+        if (backgroundColorInt != UINT8_MAX)
+        {
+            //print the background request
+            printf("\033[%" PRIu8 ";%" PRIu8 "m", backgroundIntensity, backgroundColorInt);
+        }
+    }
+    return;
+}
+
 eArchitecture get_Compiled_Architecture(void)
 {
     //check which compiler we're using to use it's preprocessor definitions

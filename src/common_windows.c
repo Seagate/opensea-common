@@ -151,6 +151,23 @@ static uint16_t get_Console_Default_Color(void)
     return defaultConsoleAttributes;
 }
 
+static uint16_t get_Console_Current_Color(void)
+{
+    uint16_t currentConsoleAttributes = UINT16_MAX;
+    CONSOLE_SCREEN_BUFFER_INFO currentInfo;
+    memset(&currentInfo, 0, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
+    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &currentInfo))
+    {
+        currentConsoleAttributes = currentInfo.wAttributes;
+    }
+    else
+    {
+        //set defaultColorVal to zero
+        currentConsoleAttributes = 0;
+    }
+    return currentConsoleAttributes;
+}
+
 void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
 {
     static bool defaultsSet = false;
@@ -281,6 +298,144 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
         }
         SetConsoleTextAttribute(consoleHandle, theColor);
     }
+}
+
+void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eConsoleColors backgroundColor)
+{
+    static bool defaultsSet = false;
+    static WORD defaultColorValue = 0;
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    WORD theColor = 0;
+    if (!defaultsSet)
+    {
+        //First time we are setting colors backup the default settings so they can be restored properly later.
+        defaultColorValue = get_Console_Default_Color();
+        defaultsSet = true;
+    }
+    theColor = get_Console_Current_Color();//get current colors after defaults are setup.
+    //now change what is requested
+    if (foregroundColor != CURRENT)
+    {
+        //clear out foreground bits, then set the requested color
+        theColor &= 0xFFF0;//foreground are lowest 4 bits
+        switch (foregroundColor)
+        {
+        case DARK_BLUE:
+            theColor |= FOREGROUND_BLUE;
+            break;
+        case BLUE:
+            theColor |= FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+            break;
+        case DARK_GREEN:
+            theColor |= FOREGROUND_GREEN;
+            break;
+        case GREEN:
+            theColor |= FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+            break;
+        case DARK_RED:
+            theColor |= FOREGROUND_RED;
+            break;
+        case RED:
+            theColor |= FOREGROUND_RED | FOREGROUND_INTENSITY;
+            break;
+        case BLACK:
+            theColor |= 0;//this should mean no colors or black
+            break;
+        case BROWN:
+            theColor |= FOREGROUND_RED | FOREGROUND_GREEN;
+            break;
+        case YELLOW:
+            theColor |= FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+            break;
+        case TEAL:
+            theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN;
+            break;
+        case CYAN:
+            theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+            break;
+        case PURPLE:
+            theColor |= FOREGROUND_BLUE | FOREGROUND_RED;
+            break;
+        case MAGENTA:
+            theColor |= FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY;
+            break;
+        case WHITE:
+            theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY;
+            break;
+        case DARK_GRAY:
+            theColor |= FOREGROUND_INTENSITY;
+            break;
+        case GRAY:
+            theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
+            break;
+        case DEFAULT://fall through to default
+        default:
+            theColor |= (defaultColorValue & 0x000F);
+            break;
+        }
+    }
+    if (backgroundColor != CURRENT)
+    {
+        //clear out background bits, then set the requested color
+        theColor &= 0xFF0F;//foreground are middle 4 bits
+        switch (backgroundColor)
+        {
+        case DARK_BLUE:
+            theColor |= BACKGROUND_BLUE;
+            break;
+        case BLUE:
+            theColor |= BACKGROUND_BLUE | BACKGROUND_INTENSITY;
+            break;
+        case DARK_GREEN:
+            theColor |= BACKGROUND_GREEN;
+            break;
+        case GREEN:
+            theColor |= BACKGROUND_GREEN | BACKGROUND_INTENSITY;
+            break;
+        case DARK_RED:
+            theColor |= BACKGROUND_RED;
+            break;
+        case RED:
+            theColor |= BACKGROUND_RED | BACKGROUND_INTENSITY;
+            break;
+        case BLACK:
+            theColor |= 0;//this should mean no colors or black
+            break;
+        case BROWN:
+            theColor |= BACKGROUND_RED | BACKGROUND_GREEN;
+            break;
+        case YELLOW:
+            theColor |= BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_INTENSITY;
+            break;
+        case TEAL:
+            theColor |= BACKGROUND_BLUE | BACKGROUND_GREEN;
+            break;
+        case CYAN:
+            theColor |= BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_INTENSITY;
+            break;
+        case PURPLE:
+            theColor |= BACKGROUND_BLUE | BACKGROUND_RED;
+            break;
+        case MAGENTA:
+            theColor |= BACKGROUND_BLUE | BACKGROUND_RED | BACKGROUND_INTENSITY;
+            break;
+        case WHITE:
+            theColor |= BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY;
+            break;
+        case DARK_GRAY:
+            theColor |= BACKGROUND_INTENSITY;
+            break;
+        case GRAY:
+            theColor |= BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED;
+            break;
+        case DEFAULT://fall through to default
+        default:
+            theColor |= (defaultColorValue & 0x00F0);
+            break;
+        }
+    }
+    SetConsoleTextAttribute(consoleHandle, theColor);
+    return;
 }
 
 eArchitecture get_Compiled_Architecture(void)
