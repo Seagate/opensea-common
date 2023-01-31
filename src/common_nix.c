@@ -33,6 +33,7 @@
 #include <dirent.h>//for scan dir in linux to get os name. We can move ifdef this if it doesn't work for other OS's
 #include <pwd.h>
 #include <grp.h>
+#include <stdlib.h>//getenv and related vars.
 
 //freeBSD doesn't have the 64 versions of these functions...so I'm defining things this way to make it work. - TJE
 #if defined(__FreeBSD__)
@@ -206,214 +207,508 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
     }
 }
 
+#if defined (_GNU_SOURCE) && defined (__GLIBC__) && defined (__GLIBC_MINOR__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 17)
+#define SECURE_GETENV
+#endif //lots of checks for secure_getenv function
+
+//this function will return allocated memory for an environment variable that is requested
+//the returned memory must be freed by the caller
+//will return NULL if not found
+static char * get_Environment_Variable(const char * environmentVariableName)
+{
+    char *envVar = NULL;
+    if (environmentVariableName)
+    {
+#if defined(__STDC_SECURE_LIB__)
+        //Microsoft specific _dup_env_s which just wraps getenv_s like the next option does, but makes it slightly easier to use
+        char *buffer = NULL;
+        size_t envLen = 0;
+        if (_dupenv_s(&envLen, buffer, environmentVariableName) == 0)
+        {
+            envVar = buffer;
+        }
+#elif defined (__STDC_LIB_EXT1__)
+        //annex k getenv_s
+        char *buffer = NULL;
+        size_t envLen = 0;
+        if (getenv_s(&envLen, &buffer, envLen, environmentVariableName) == 0)
+        {
+            buffer = (char*)malloc(envLen);
+            if (buffer && getenv_s(&envLen, &buffer, envLen, environmentVariableName) == 0)
+            {
+                envVar = buffer;
+            }
+        }
+#elif defined (SECURE_GETENV)
+        char * env = secure_getenv(environmentVariableName);
+        if (env)
+        {
+            envVar = strdup(env);
+        }
+#else
+        char * env = getenv(environmentVariableName);
+        if (env)
+        {
+            envVar = strdup(env);
+        }
+#endif //checking macros for which getenv function to use
+    }
+    return envVar;
+}
+
+typedef enum _eKnownTERM
+{
+    TERM_UNKNOWN,
+    TERM_XTERM,//no mention of 256 color output support. Can assume 16 colors for now-TJE
+    TERM_XTERM_256COLOR,
+    TERM_GENERIC_256COLOR,
+    TERM_SUN_COLOR,
+    TERM_AIXTERM,
+    TERM_GNOME_256COLOR,
+    TERM_GNOME_COLOR,
+    TERM_TRUECOLOR_256COLOR,
+    TERM_GENERIC_COLOR,//unknown level of support for colors...we just know it has some color capabilities
+    TERM_LINUX_COLOR,//16 colors
+    TERM_LINUX_256COLOR,//16 colors
+    //TODO: More terminal types to use for various color output formats
+}eKnownTERM;
+
+//other things to potentially look for: 
+//    "GNOME_TERMINAL_SERVICE"
+//    "GNOME_TERMINAL_SCREEN"
+//    "TERM_PROGRAM"         <---git bash and msys2 in windows use this and set it to "mintty". TERM is set to xterm
+//    "TERM_PROGRAM_VERSION" <---git bash and msys2 in windows use this for mintty version number
+//See this for more info: https://github.com/termstandard/colors
+static eKnownTERM get_Terminal_Type(void)
+{
+    eKnownTERM terminalType = TERM_UNKNOWN;
+    char *termEnv = get_Environment_Variable("TERM");
+    bool haveCompleteMatch = false;
+    if (termEnv)
+    {
+        //do exact matches up top, then search for substrings
+        if (strcmp(termEnv, "xterm-256color") == 0)
+        {
+            terminalType = TERM_XTERM_256COLOR;
+            haveCompleteMatch = true;
+        }
+        else if (strcmp(termEnv, "aixterm") == 0)
+        {
+            terminalType = TERM_AIXTERM;
+            haveCompleteMatch = true;
+        }
+        else if (strcmp(termEnv, "sun-color") == 0)
+        {
+            terminalType = TERM_SUN_COLOR;
+            haveCompleteMatch = true;
+        }
+        else if (strcmp(termEnv, "xterm") == 0)
+        {
+            terminalType = TERM_XTERM;
+        }
+        else if (strcmp(termEnv, "linux") == 0)
+        {
+            //alpine linux does not set COLORTERM or anything else, so this would be complete there, but let the other checks run too
+            //linux kernel 3.16 and earlier do not support "truecolor" and will be more limited, but this may be ok since we are not using rgb format. Only 16 different colors-TJE
+            OSVersionNumber linVer;
+            memset(&linVer, 0, sizeof(OSVersionNumber));
+            if(SUCCESS == get_Operating_System_Version_And_Name(&linVer, NULL))
+            {
+                if (linVer.versionType.linuxVersion.majorVersion >= 4 || (linVer.versionType.linuxVersion.majorVersion >= 3 && linVer.versionType.linuxVersion.minorVersion > 16))
+                {
+                    terminalType = TERM_LINUX_256COLOR;
+                    haveCompleteMatch = true;
+                }
+                else
+                {
+                    //limited to 16 colors...which is fine
+                    terminalType = TERM_LINUX_COLOR;
+                    haveCompleteMatch = true;
+                }
+            }
+            else
+            {
+                //assuming this as it seems to still support 16 colors, enough for us today
+                terminalType = TERM_LINUX_COLOR;
+            }
+        }
+        else if (strstr(termEnv, "256color"))
+        {
+            terminalType = TERM_GENERIC_256COLOR;
+        }
+        else if (strstr(termEnv, "color"))
+        {
+            terminalType = TERM_GENERIC_COLOR;
+        }
+    }
+    safe_Free(termEnv)
+    if (!haveCompleteMatch)
+    {
+        termEnv = get_Environment_Variable("COLORTERM");
+        if (termEnv)
+        {
+            //check what this is set to.
+            //truecolor seems to mean supports 256 colors
+            if (strcmp(termEnv, "gnome-terminal") == 0)
+            {
+                //centos6 reports "gnome-terminal" which seems to support 256 colors output mode
+                if (terminalType == TERM_XTERM)
+                {
+                    terminalType = TERM_GNOME_256COLOR;
+                    haveCompleteMatch = true;
+                }
+                else
+                {
+                    terminalType = TERM_GNOME_COLOR;
+                    haveCompleteMatch = true;
+                }
+            }
+            else if (strstr(termEnv, "truecolor") == 0)
+            {
+                terminalType = TERM_TRUECOLOR_256COLOR;
+                haveCompleteMatch = true;
+            }
+            else if (strncmp(termEnv, "vte", 3) == 0)
+            {
+                terminalType = TERM_TRUECOLOR_256COLOR;
+                haveCompleteMatch = true;
+            }
+            else //this case is generic and a "last" effort in this part. If "COLORTERM" is set, assume it has some color output support
+            {
+                terminalType = TERM_GENERIC_COLOR;
+            }
+        }
+        safe_Free(termEnv)
+    }
+    if (!haveCompleteMatch)
+    {
+        termEnv = get_Environment_Variable("COLORFGBR");
+        if (termEnv)
+        {
+            //this environment variable is found in kde for forground and background terminal colors
+            //This is probably good enough to say "it has some color" support at this point, but no further indication of what color support is available
+            terminalType = TERM_GENERIC_COLOR;
+        }
+    }
+    return terminalType;
+}
+
+//Future var we might need is whether the reset to defaults (39m & 49m) work or if the complete reset is needed (0m)
+static void get_Console_Color_Capabilities(bool *colorSupport, bool *eightColorsOnly, bool *use256ColorFormat, bool *useIntensityBitFormat, bool *useInvertFormatForBackgroundColors)
+{
+    eKnownTERM term = get_Terminal_Type();
+    switch(term)
+    {
+    case TERM_XTERM_256COLOR:
+    case TERM_GENERIC_256COLOR:
+    case TERM_SUN_COLOR:
+    case TERM_GNOME_256COLOR:
+    case TERM_TRUECOLOR_256COLOR:
+    case TERM_LINUX_256COLOR:
+        if (colorSupport)
+        {
+            *colorSupport = true;
+        }
+        if (use256ColorFormat)
+        {
+            *use256ColorFormat = true;
+        }
+        if (useIntensityBitFormat)
+        {
+            *useIntensityBitFormat = false;
+        }
+        if (useInvertFormatForBackgroundColors)
+        {
+            *useInvertFormatForBackgroundColors = false;
+        }
+        if (eightColorsOnly)
+        {
+            *eightColorsOnly = false;
+        }
+        break;
+    case TERM_XTERM:
+    case TERM_AIXTERM:
+    case TERM_GNOME_COLOR:
+    case TERM_GENERIC_COLOR:
+    case TERM_LINUX_COLOR:
+        if (colorSupport)
+        {
+            *colorSupport = true;
+        }
+        if (use256ColorFormat)
+        {
+            *use256ColorFormat = false;
+        }
+        if (useIntensityBitFormat)
+        {
+            *useIntensityBitFormat = false;
+        }
+        if (useInvertFormatForBackgroundColors)
+        {
+            *useInvertFormatForBackgroundColors = false;
+        }
+        if (eightColorsOnly)
+        {
+            //these should support 16 colors
+            *eightColorsOnly = false;
+        }
+        break;
+    case TERM_UNKNOWN:
+        //Assuming color is supported for now until we run into a terminal that does not support any color code changes
+        //When this is found we need it in a different case to return this variable
+        if (colorSupport)
+        {
+            *colorSupport = true;
+        }
+        //if a terminal does not have any way of doing bright color output, set the 8colorsOnly to true. Ex: red/bright red will be the same in these cases
+        if (eightColorsOnly)
+        {
+            *eightColorsOnly = false;
+        }
+        if (use256ColorFormat)
+        {
+            *use256ColorFormat = false;
+        }
+        if (useIntensityBitFormat)
+        {
+            *useIntensityBitFormat = true;
+        }
+        if (useInvertFormatForBackgroundColors)
+        {
+            *useInvertFormatForBackgroundColors = false;
+        }
+        break;
+    }
+    return;
+}
+
 void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eConsoleColors backgroundColor)
 {
-    if (foregroundColor == CURRENT && backgroundColor == CURRENT)
+    static bool haveTermCapabilities = false;
+    static bool use256Color = true;//TODO: make this conditional for systems that 256colors do not work
+    static bool useIntensityFormat = false;//TODO: Make this conditional if 256 colors do not work as well as extended bright colors not working
+    static bool colorSupport = true;
+    static bool eightColorsOnly = false;
+    static bool useInvertFormatForBackgroundColors = false;//TODO: Add in support for this option. It's what the old color settings would do for background colors
+    if (!haveTermCapabilities)
     {
-        //nothing to do
-        return;
+        get_Console_Color_Capabilities(&colorSupport, &eightColorsOnly, &use256Color, &useIntensityFormat, &useInvertFormatForBackgroundColors);
+        haveTermCapabilities = true;
     }
-    if (foregroundColor == DEFAULT && backgroundColor == DEFAULT)
+    if (colorSupport) //if color is not supported, do not do anything as the escape sequences will just print to the output and make it a mess
     {
-        //reset or normal
-        printf("\033[0m");
-    }
-    else
-    {
-        //written according to https://en.wikipedia.org/wiki/ANSI_escape_code
-        //  There are possible needs to adjust color output if this does not work for an OS we are supporting. Can ifdef or check for other things
-        //set the string for each color that needs to be set.
-        uint8_t foregroundColorInt = UINT8_MAX;
-        uint8_t backgroundColorInt = UINT8_MAX;
-        uint8_t fore256Color = UINT8_MAX;
-        uint8_t back256Color = UINT8_MAX;
-        static bool use256Color = true;//TODO: make this conditional for systems that 256colors do not work
-        static bool useIntensityFormat = false;//TODO: Make this conditional if 256 colors do not work as well as extended bright colors not working
-        //Checking for env variable COLORTERM is one method, or COLORFGBG, or if TERM is set to sun-color, xterm-256color, true-color, or gnome-terminal will work for 256color
-        //when debugging a unix-like system, try printenv | grep "color" and printenv | grep "COLOR" to see what you can find out about the terminal
-        //testing on CentOS 6 through latest Ubuntu the bright colors seem to be supported (codes 90-97 and 100-107) as well as 256color codes
-        //In CentOS 6 & 7 the "intensity" field does change to bright colors, but in Ubuntu 22.04 this only changes to a bold font
-        //If the extended colors are not available, will need to use the "intensity" method of \033[1:##m to set it instead
-        //Sometimes the "intensity" just makes things bold though
-        //FreeBSD 11 through 13 claim xterm-256color so they are also likely supported by 256color and extra bright color codes.
-        //omniOS r151038 seems to support 256 color codes properly too (sun-color terminal)
-        //aixterm also appears to support some color: https://www.ibm.com/docs/en/aix/7.2?topic=aixterm-command, but 256 color is not listed
-        //reading terminfo or termcap may be the best way to change formats or ignore color changes if not capable at all, but that is much more complicated to
-        //  implement in here right now.
-        //http://jdebp.uk./Softwares/nosh/guide/commands/TerminalCapabilities.xml
-        #if defined (_AIX)
-            use256Color = false;
-        #endif //AIX
-        switch (foregroundColor)
+        if (foregroundColor == CURRENT && backgroundColor == CURRENT)
         {
-        case CONSOLE_COLOR_CURRENT:
-            break;
-        case CONSOLE_COLOR_BLACK:
-            foregroundColorInt = 30;
-            break;
-        case CONSOLE_COLOR_RED:
-            foregroundColorInt = 31;
-            break;
-        case CONSOLE_COLOR_GREEN:
-            foregroundColorInt = 32;
-            break;
-        case CONSOLE_COLOR_YELLOW:
-            foregroundColorInt = 33;
-            break;
-        case CONSOLE_COLOR_BLUE:
-            foregroundColorInt = 34;
-            break;
-        case CONSOLE_COLOR_MAGENTA:
-            foregroundColorInt = 35;
-            break;
-        case CONSOLE_COLOR_CYAN:
-            foregroundColorInt = 36;
-            break;
-        case CONSOLE_COLOR_WHITE:
-            foregroundColorInt = 37;
-            break;
-        case CONSOLE_COLOR_GRAY:
-            foregroundColorInt = 90;
-            break;
-        case CONSOLE_COLOR_BRIGHT_RED:
-            foregroundColorInt = 91;
-            break;
-        case CONSOLE_COLOR_BRIGHT_GREEN:
-            foregroundColorInt = 92;
-            break;
-        case CONSOLE_COLOR_BRIGHT_YELLOW:
-            foregroundColorInt = 93;
-            break;
-        case CONSOLE_COLOR_BRIGHT_BLUE:
-            foregroundColorInt = 94;
-            break;
-        case CONSOLE_COLOR_BRIGHT_MAGENTA:
-            foregroundColorInt = 95;
-            break;
-        case CONSOLE_COLOR_BRIGHT_CYAN:
-            foregroundColorInt = 96;
-            break;
-        case CONSOLE_COLOR_BRIGHT_WHITE:
-            foregroundColorInt = 97;
-            break;
-        case CONSOLE_COLOR_DEFAULT:
-        default:
-            //TODO: aixterm does not list this, so will need to test it! otherwise reset with 0m will be as close as we get
-            foregroundColorInt = 39;
-            break;
+            //nothing to do
+            return;
         }
-        if (foregroundColorInt != UINT8_MAX)
+        if (foregroundColor == DEFAULT && backgroundColor == DEFAULT)
         {
-            if (foregroundColorInt < 90)
+            //reset or normal
+            printf("\033[0m");
+        }
+        else
+        {
+            //written according to https://en.wikipedia.org/wiki/ANSI_escape_code
+            //  There are possible needs to adjust color output if this does not work for an OS we are supporting. Can ifdef or check for other things
+            //set the string for each color that needs to be set.
+            uint8_t foregroundColorInt = UINT8_MAX;
+            uint8_t backgroundColorInt = UINT8_MAX;
+            uint8_t fore256Color = UINT8_MAX;
+            uint8_t back256Color = UINT8_MAX;
+            //Checking for env variable COLORTERM is one method, or COLORFGBG, or if TERM is set to sun-color, xterm-256color, true-color, or gnome-terminal will work for 256color
+            //when debugging a unix-like system, try printenv | grep "color" and printenv | grep "COLOR" to see what you can find out about the terminal
+            //testing on CentOS 6 through latest Ubuntu the bright colors seem to be supported (codes 90-97 and 100-107) as well as 256color codes
+            //In CentOS 6 & 7 the "intensity" field does change to bright colors, but in Ubuntu 22.04 this only changes to a bold font
+            //If the extended colors are not available, will need to use the "intensity" method of \033[1:##m to set it instead
+            //Sometimes the "intensity" just makes things bold though
+            //FreeBSD 11 through 13 claim xterm-256color so they are also likely supported by 256color and extra bright color codes.
+            //omniOS r151038 seems to support 256 color codes properly too (sun-color terminal)
+            //aixterm also appears to support some color: https://www.ibm.com/docs/en/aix/7.2?topic=aixterm-command, but 256 color is not listed
+            //reading terminfo or termcap may be the best way to change formats or ignore color changes if not capable at all, but that is much more complicated to
+            //  implement in here right now.
+            //http://jdebp.uk./Softwares/nosh/guide/commands/TerminalCapabilities.xml
+            switch (foregroundColor)
             {
-                fore256Color = foregroundColorInt - 30;//256 colors start at 0
+            case CONSOLE_COLOR_CURRENT:
+                break;
+            case CONSOLE_COLOR_BLACK:
+                foregroundColorInt = 30;
+                break;
+            case CONSOLE_COLOR_RED:
+                foregroundColorInt = 31;
+                break;
+            case CONSOLE_COLOR_GREEN:
+                foregroundColorInt = 32;
+                break;
+            case CONSOLE_COLOR_YELLOW:
+                foregroundColorInt = 33;
+                break;
+            case CONSOLE_COLOR_BLUE:
+                foregroundColorInt = 34;
+                break;
+            case CONSOLE_COLOR_MAGENTA:
+                foregroundColorInt = 35;
+                break;
+            case CONSOLE_COLOR_CYAN:
+                foregroundColorInt = 36;
+                break;
+            case CONSOLE_COLOR_WHITE:
+                foregroundColorInt = 37;
+                break;
+            case CONSOLE_COLOR_GRAY:
+                foregroundColorInt = 90;
+                break;
+            case CONSOLE_COLOR_BRIGHT_RED:
+                foregroundColorInt = 91;
+                break;
+            case CONSOLE_COLOR_BRIGHT_GREEN:
+                foregroundColorInt = 92;
+                break;
+            case CONSOLE_COLOR_BRIGHT_YELLOW:
+                foregroundColorInt = 93;
+                break;
+            case CONSOLE_COLOR_BRIGHT_BLUE:
+                foregroundColorInt = 94;
+                break;
+            case CONSOLE_COLOR_BRIGHT_MAGENTA:
+                foregroundColorInt = 95;
+                break;
+            case CONSOLE_COLOR_BRIGHT_CYAN:
+                foregroundColorInt = 96;
+                break;
+            case CONSOLE_COLOR_BRIGHT_WHITE:
+                foregroundColorInt = 97;
+                break;
+            case CONSOLE_COLOR_DEFAULT:
+            default:
+                //TODO: aixterm does not list this, so will need to test it! otherwise reset with 0m will be as close as we get
+                foregroundColorInt = 39;
+                break;
             }
-            else 
+            if (foregroundColorInt != UINT8_MAX)
             {
-                fore256Color = foregroundColorInt - 90 + 8;//256 bright colors start at 8
-            }
-            if (foregroundColorInt == 39 || !use256Color)
-            {
-                //print the foreground request
-                if (useIntensityFormat && foregroundColorInt >= 90)
+                if (foregroundColorInt < 90)
                 {
-                    printf("\033[1;%" PRIu8 "m", foregroundColorInt - 60);
+                    fore256Color = foregroundColorInt - 30;//256 colors start at 0
+                }
+                else 
+                {
+                    fore256Color = foregroundColorInt - 90 + 8;//256 bright colors start at 8
+                }
+                if (foregroundColorInt == 39 || !use256Color)
+                {
+                    //print the foreground request
+                    if (useIntensityFormat && foregroundColorInt >= 90)
+                    {
+                        printf("\033[1;%" PRIu8 "m", foregroundColorInt - 60);
+                    }
+                    else if (eightColorsOnly && foregroundColorInt >= 90)
+                    {
+                        printf("\033[%" PRIu8 "m", foregroundColorInt - 60);
+                    }
+                    else
+                    {
+                        printf("\033[%" PRIu8 "m", foregroundColorInt);
+                    }
                 }
                 else
                 {
-                    printf("\033[%" PRIu8 "m", foregroundColorInt);
+                    printf("\033[38;5;%" PRIu8 "m", fore256Color);
                 }
             }
-            else
-            {
-                printf("\033[38;5;%" PRIu8 "m", fore256Color);
-            }
-        }
 
-        switch (backgroundColor)
-        {
-        case CONSOLE_COLOR_CURRENT:
-            break;
-        case CONSOLE_COLOR_BLACK:
-            backgroundColorInt = 40;
-            break;
-        case CONSOLE_COLOR_RED:
-            backgroundColorInt = 41;
-            break;
-        case CONSOLE_COLOR_GREEN:
-            backgroundColorInt = 42;
-            break;
-        case CONSOLE_COLOR_YELLOW:
-            backgroundColorInt = 43;
-            break;
-        case CONSOLE_COLOR_BLUE:
-            backgroundColorInt = 44;
-            break;
-        case CONSOLE_COLOR_MAGENTA:
-            backgroundColorInt = 45;
-            break;
-        case CONSOLE_COLOR_CYAN:
-            backgroundColorInt = 46;
-            break;
-        case CONSOLE_COLOR_WHITE:
-            backgroundColorInt = 47;
-            break;
-        case CONSOLE_COLOR_GRAY:
-            backgroundColorInt = 100;
-            break;
-        case CONSOLE_COLOR_BRIGHT_RED:
-            backgroundColorInt = 101;
-            break;
-        case CONSOLE_COLOR_BRIGHT_GREEN:
-            backgroundColorInt = 102;
-            break;
-        case CONSOLE_COLOR_BRIGHT_YELLOW:
-            backgroundColorInt = 103;
-            break;
-        case CONSOLE_COLOR_BRIGHT_BLUE:
-            backgroundColorInt = 104;
-            break;
-        case CONSOLE_COLOR_BRIGHT_MAGENTA:
-            backgroundColorInt = 105;
-            break;
-        case CONSOLE_COLOR_BRIGHT_CYAN:
-            backgroundColorInt = 106;
-            break;
-        case CONSOLE_COLOR_BRIGHT_WHITE:
-            backgroundColorInt = 107;
-            break;
-        case CONSOLE_COLOR_DEFAULT:
-        default:
-            //TODO: aixterm does not list this, so will need to test it! otherwise reset with 0m will be as close as we get
-            backgroundColorInt = 49;
-            break;
-        }
-        //if background colors do not work, may need to try the "invert" trick to make it happen using a format like \033[7;nm or \033[7;1;nm
-        if (backgroundColorInt != UINT8_MAX)
-        {
-            if (backgroundColorInt < 100)
+            switch (backgroundColor)
             {
-                back256Color = backgroundColorInt - 40;//256 colors start at 0
+            case CONSOLE_COLOR_CURRENT:
+                break;
+            case CONSOLE_COLOR_BLACK:
+                backgroundColorInt = 40;
+                break;
+            case CONSOLE_COLOR_RED:
+                backgroundColorInt = 41;
+                break;
+            case CONSOLE_COLOR_GREEN:
+                backgroundColorInt = 42;
+                break;
+            case CONSOLE_COLOR_YELLOW:
+                backgroundColorInt = 43;
+                break;
+            case CONSOLE_COLOR_BLUE:
+                backgroundColorInt = 44;
+                break;
+            case CONSOLE_COLOR_MAGENTA:
+                backgroundColorInt = 45;
+                break;
+            case CONSOLE_COLOR_CYAN:
+                backgroundColorInt = 46;
+                break;
+            case CONSOLE_COLOR_WHITE:
+                backgroundColorInt = 47;
+                break;
+            case CONSOLE_COLOR_GRAY:
+                backgroundColorInt = 100;
+                break;
+            case CONSOLE_COLOR_BRIGHT_RED:
+                backgroundColorInt = 101;
+                break;
+            case CONSOLE_COLOR_BRIGHT_GREEN:
+                backgroundColorInt = 102;
+                break;
+            case CONSOLE_COLOR_BRIGHT_YELLOW:
+                backgroundColorInt = 103;
+                break;
+            case CONSOLE_COLOR_BRIGHT_BLUE:
+                backgroundColorInt = 104;
+                break;
+            case CONSOLE_COLOR_BRIGHT_MAGENTA:
+                backgroundColorInt = 105;
+                break;
+            case CONSOLE_COLOR_BRIGHT_CYAN:
+                backgroundColorInt = 106;
+                break;
+            case CONSOLE_COLOR_BRIGHT_WHITE:
+                backgroundColorInt = 107;
+                break;
+            case CONSOLE_COLOR_DEFAULT:
+            default:
+                //TODO: aixterm does not list this, so will need to test it! otherwise reset with 0m will be as close as we get
+                backgroundColorInt = 49;
+                break;
             }
-            else 
+            //if background colors do not work, may need to try the "invert" trick to make it happen using a format like \033[7;nm or \033[7;1;nm
+            if (backgroundColorInt != UINT8_MAX)
             {
-                back256Color = backgroundColorInt - 100 + 8;//256 bright colors start at 8
-            }
-            if (backgroundColorInt == 49 || !use256Color)
-            {
-                //print the background request
-                if (useIntensityFormat && foregroundColorInt >= 100)
+                if (backgroundColorInt < 100)
                 {
-                    printf("\033[1;%" PRIu8 "m", backgroundColorInt - 60);
+                    back256Color = backgroundColorInt - 40;//256 colors start at 0
+                }
+                else 
+                {
+                    back256Color = backgroundColorInt - 100 + 8;//256 bright colors start at 8
+                }
+                if (backgroundColorInt == 49 || !use256Color)
+                {
+                    //TODO: use the inversion method with 7;intensity;colorm
+                    //if (useInvertFormatForBackgroundColors)
+                    //print the background request
+                    if (useIntensityFormat && backgroundColorInt >= 100)
+                    {
+                        printf("\033[1;%" PRIu8 "m", backgroundColorInt - 60);
+                    }
+                    else if (eightColorsOnly && backgroundColorInt >= 100)
+                    {
+                        printf("\033[%" PRIu8 "m", backgroundColorInt - 60);
+                    }
+                    else
+                    {
+                        printf("\033[%" PRIu8 "m", backgroundColorInt);
+                    }
                 }
                 else
                 {
-                    printf("\033[%" PRIu8 "m", backgroundColorInt);
+                    printf("\033[48;5;%" PRIu8 "m", back256Color);
                 }
-            }
-            else
-            {
-                printf("\033[48;5;%" PRIu8 "m", back256Color);
             }
         }
     }
