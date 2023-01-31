@@ -653,19 +653,39 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
                 if (backgroundColorInt == 49 || !consoleCap.use256ColorFormat || (consoleCap.use256ColorFormat && consoleCap.eightBackgroundColorsOnly))
                 {
                     //TODO: use the inversion method with 7;intensity;colorm
-                    //if (useInvertFormatForBackgroundColors)
-                    //print the background request
-                    if (consoleCap.useIntensityBitFormat && backgroundColorInt >= 100)
+                    if (consoleCap.useInvertFormatForBackgroundColors)
                     {
-                        printf("\033[1;%" PRIu8 "m", backgroundColorInt - 60);
-                    }
-                    else if (consoleCap.eightColorsOnly && backgroundColorInt >= 100)
-                    {
-                        printf("\033[%" PRIu8 "m", backgroundColorInt - 60);
+                        //more background colors are available using the inversion method (maybe)
+                        //convert the color to a foreground color first
+                        backgroundColorInt -= 10;
+                        if (consoleCap.useIntensityBitFormat && backgroundColorInt >= 90)
+                        {
+                            printf("\033[7;1;%" PRIu8 "m", backgroundColorInt - 60);
+                        }
+                        else if (consoleCap.eightColorsOnly && backgroundColorInt >= 90)
+                        {
+                            printf("\033[7;%" PRIu8 "m", backgroundColorInt - 60);
+                        }
+                        else
+                        {
+                            printf("\033[7;%" PRIu8 "m", backgroundColorInt);
+                        }
                     }
                     else
                     {
-                        printf("\033[%" PRIu8 "m", backgroundColorInt);
+                        //print the background request
+                        if (consoleCap.useIntensityBitFormat && backgroundColorInt >= 100)
+                        {
+                            printf("\033[1;%" PRIu8 "m", backgroundColorInt - 60);
+                        }
+                        else if (consoleCap.eightColorsOnly && backgroundColorInt >= 100)
+                        {
+                            printf("\033[%" PRIu8 "m", backgroundColorInt - 60);
+                        }
+                        else
+                        {
+                            printf("\033[%" PRIu8 "m", backgroundColorInt);
+                        }
                     }
                 }
                 else
