@@ -491,96 +491,6 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
             //reading terminfo or termcap may be the best way to change formats or ignore color changes if not capable at all, but that is much more complicated to
             //  implement in here right now.
             //http://jdebp.uk./Softwares/nosh/guide/commands/TerminalCapabilities.xml
-            switch (foregroundColor)
-            {
-            case CONSOLE_COLOR_CURRENT:
-                break;
-            case CONSOLE_COLOR_BLACK:
-                foregroundColorInt = 30;
-                break;
-            case CONSOLE_COLOR_RED:
-                foregroundColorInt = 31;
-                break;
-            case CONSOLE_COLOR_GREEN:
-                foregroundColorInt = 32;
-                break;
-            case CONSOLE_COLOR_YELLOW:
-                foregroundColorInt = 33;
-                break;
-            case CONSOLE_COLOR_BLUE:
-                foregroundColorInt = 34;
-                break;
-            case CONSOLE_COLOR_MAGENTA:
-                foregroundColorInt = 35;
-                break;
-            case CONSOLE_COLOR_CYAN:
-                foregroundColorInt = 36;
-                break;
-            case CONSOLE_COLOR_WHITE:
-                foregroundColorInt = 37;
-                break;
-            case CONSOLE_COLOR_GRAY:
-                foregroundColorInt = 90;
-                break;
-            case CONSOLE_COLOR_BRIGHT_RED:
-                foregroundColorInt = 91;
-                break;
-            case CONSOLE_COLOR_BRIGHT_GREEN:
-                foregroundColorInt = 92;
-                break;
-            case CONSOLE_COLOR_BRIGHT_YELLOW:
-                foregroundColorInt = 93;
-                break;
-            case CONSOLE_COLOR_BRIGHT_BLUE:
-                foregroundColorInt = 94;
-                break;
-            case CONSOLE_COLOR_BRIGHT_MAGENTA:
-                foregroundColorInt = 95;
-                break;
-            case CONSOLE_COLOR_BRIGHT_CYAN:
-                foregroundColorInt = 96;
-                break;
-            case CONSOLE_COLOR_BRIGHT_WHITE:
-                foregroundColorInt = 97;
-                break;
-            case CONSOLE_COLOR_DEFAULT:
-            default:
-                //TODO: aixterm does not list this, so will need to test it! otherwise reset with 0m will be as close as we get
-                foregroundColorInt = 39;
-                break;
-            }
-            if (foregroundColorInt != UINT8_MAX)
-            {
-                if (foregroundColorInt < 90)
-                {
-                    fore256Color = foregroundColorInt - 30;//256 colors start at 0
-                }
-                else 
-                {
-                    fore256Color = foregroundColorInt - 90 + 8;//256 bright colors start at 8
-                }
-                if (foregroundColorInt == 39 || !consoleCap.use256ColorFormat)
-                {
-                    //print the foreground request
-                    if (consoleCap.useIntensityBitFormat && foregroundColorInt >= 90)
-                    {
-                        printf("\033[1;%" PRIu8 "m", foregroundColorInt - 60);
-                    }
-                    else if (consoleCap.eightColorsOnly && foregroundColorInt >= 90)
-                    {
-                        printf("\033[%" PRIu8 "m", foregroundColorInt - 60);
-                    }
-                    else
-                    {
-                        printf("\033[%" PRIu8 "m", foregroundColorInt);
-                    }
-                }
-                else
-                {
-                    printf("\033[38;5;%" PRIu8 "m", fore256Color);
-                }
-            }
-
             switch (backgroundColor)
             {
             case CONSOLE_COLOR_CURRENT:
@@ -691,6 +601,96 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
                 else
                 {
                     printf("\033[48;5;%" PRIu8 "m", back256Color);
+                }
+            }
+
+            switch (foregroundColor)
+            {
+            case CONSOLE_COLOR_CURRENT:
+                break;
+            case CONSOLE_COLOR_BLACK:
+                foregroundColorInt = 30;
+                break;
+            case CONSOLE_COLOR_RED:
+                foregroundColorInt = 31;
+                break;
+            case CONSOLE_COLOR_GREEN:
+                foregroundColorInt = 32;
+                break;
+            case CONSOLE_COLOR_YELLOW:
+                foregroundColorInt = 33;
+                break;
+            case CONSOLE_COLOR_BLUE:
+                foregroundColorInt = 34;
+                break;
+            case CONSOLE_COLOR_MAGENTA:
+                foregroundColorInt = 35;
+                break;
+            case CONSOLE_COLOR_CYAN:
+                foregroundColorInt = 36;
+                break;
+            case CONSOLE_COLOR_WHITE:
+                foregroundColorInt = 37;
+                break;
+            case CONSOLE_COLOR_GRAY:
+                foregroundColorInt = 90;
+                break;
+            case CONSOLE_COLOR_BRIGHT_RED:
+                foregroundColorInt = 91;
+                break;
+            case CONSOLE_COLOR_BRIGHT_GREEN:
+                foregroundColorInt = 92;
+                break;
+            case CONSOLE_COLOR_BRIGHT_YELLOW:
+                foregroundColorInt = 93;
+                break;
+            case CONSOLE_COLOR_BRIGHT_BLUE:
+                foregroundColorInt = 94;
+                break;
+            case CONSOLE_COLOR_BRIGHT_MAGENTA:
+                foregroundColorInt = 95;
+                break;
+            case CONSOLE_COLOR_BRIGHT_CYAN:
+                foregroundColorInt = 96;
+                break;
+            case CONSOLE_COLOR_BRIGHT_WHITE:
+                foregroundColorInt = 97;
+                break;
+            case CONSOLE_COLOR_DEFAULT:
+            default:
+                //TODO: aixterm does not list this, so will need to test it! otherwise reset with 0m will be as close as we get
+                foregroundColorInt = 39;
+                break;
+            }
+            if (foregroundColorInt != UINT8_MAX)
+            {
+                if (foregroundColorInt < 90)
+                {
+                    fore256Color = foregroundColorInt - 30;//256 colors start at 0
+                }
+                else 
+                {
+                    fore256Color = foregroundColorInt - 90 + 8;//256 bright colors start at 8
+                }
+                if (foregroundColorInt == 39 || !consoleCap.use256ColorFormat)
+                {
+                    //print the foreground request
+                    if (consoleCap.useIntensityBitFormat && foregroundColorInt >= 90)
+                    {
+                        printf("\033[1;%" PRIu8 "m", foregroundColorInt - 60);
+                    }
+                    else if (consoleCap.eightColorsOnly && foregroundColorInt >= 90)
+                    {
+                        printf("\033[%" PRIu8 "m", foregroundColorInt - 60);
+                    }
+                    else
+                    {
+                        printf("\033[%" PRIu8 "m", foregroundColorInt);
+                    }
+                }
+                else
+                {
+                    printf("\033[38;5;%" PRIu8 "m", fore256Color);
                 }
             }
         }
