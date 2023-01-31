@@ -79,6 +79,7 @@ extern "C"
     //      These may appear slightly different in each console, but will be close to the requested color
     typedef enum _eConsoleColors
     {
+        //OBSOLETE START
         BLUE,
         GREEN,
         RED,
@@ -97,6 +98,7 @@ extern "C"
         PURPLE,
         DEFAULT,//this means white on windows
         CURRENT,
+        //OBSOLETE END
         CONSOLE_COLOR_DEFAULT,
         CONSOLE_COLOR_BLACK,
         CONSOLE_COLOR_RED,
@@ -125,7 +127,7 @@ extern "C"
 
     //-----------------------------------------------------------------------------
     //
-    //  set_Console_Colors()
+    //  set_Console_Colors() OBSOLETE
     //
     //! \brief   Description:  Recommend using set_Console_Foreground_Background_Colors() instead!
     //!                        Set the foreground or background color in the console output
@@ -143,11 +145,11 @@ extern "C"
     //
     //  set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eConsoleColors backgroundColor)
     //
-    //! \brief   Description:  Set the foreground and background color in the console output
+    //! \brief   Description:  Set the foreground and background color in the console output. MUST USE CONSOLE_COLOR_... types!
     //
     //  Entry:
-    //!   \param[in] foregroundColor = requested foreground color. For no change, use "CURRENT"
-    //!   \param[in] backgroundColor = requested background color. For no change, use "CURRENT"
+    //!   \param[in] foregroundColor = requested foreground color.
+    //!   \param[in] backgroundColor = requested background color.
     //!
     //  Exit:
     //

@@ -90,119 +90,135 @@ int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
 
 void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
 {
-    //linux/BSD use the ANSI escape sequences to change colors http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x329.html
-    if (foregroundBackground)//change foreground color
+    if (consoleColor >= CONSOLE_COLOR_DEFAULT)
     {
-        switch (consoleColor)
+        //use the new behavior
+        if (foregroundBackground)
         {
-        case DARK_BLUE:
-            printf("\033[0;34m");
-            break;
-        case BLUE:
-            printf("\033[1;34m");
-            break;
-        case DARK_GREEN:
-            printf("\033[0;32m");
-            break;
-        case GREEN:
-            printf("\033[1;32m");
-            break;
-        case DARK_RED:
-            printf("\033[0;31m");
-            break;
-        case RED:
-            printf("\033[1;31m");
-            break;
-        case BLACK:
-            printf("\033[0;30m");
-            break;
-        case BROWN:
-            printf("\033[0;33m");
-            break;
-        case YELLOW:
-            printf("\033[1;33m");
-            break;
-        case TEAL:
-            printf("\033[0;36m");
-            break;
-        case CYAN:
-            printf("\033[1;36m");
-            break;
-        case PURPLE:
-            printf("\033[0;35m");
-            break;
-        case MAGENTA:
-            printf("\033[1;35m");
-            break;
-        case WHITE:
-            printf("\033[1;37m");
-            break;
-        case DARK_GRAY:
-            printf("\033[1;30m");
-            break;
-        case GRAY:
-            printf("\033[0;37m");
-            break;
-        case DEFAULT://fall through to default (which is white)
-        default:
-            printf("\033[0m");
+            set_Console_Foreground_Background_Colors(consoleColor, CONSOLE_COLOR_CURRENT);
+        }
+        else
+        {
+            set_Console_Foreground_Background_Colors(CONSOLE_COLOR_CURRENT, consoleColor);
         }
     }
-    else//change background color
+    else
     {
-        switch (consoleColor)
+        //Old behavior
+        //linux/BSD use the ANSI escape sequences to change colors http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x329.html
+        if (foregroundBackground)//change foreground color
         {
-        case DARK_BLUE:
-            printf("\033[7;34m");
-            break;
-        case BLUE:
-            printf("\033[7;1;34m");
-            break;
-        case DARK_GREEN:
-            printf("\033[7;32m");
-            break;
-        case GREEN:
-            printf("\033[7;1;32m");
-            break;
-        case DARK_RED:
-            printf("\033[7;31m");
-            break;
-        case RED:
-            printf("\033[7;1;31m");
-            break;
-        case BLACK:
-            printf("\033[7;30m");
-            break;
-        case BROWN:
-            printf("\033[7;33m");
-            break;
-        case YELLOW:
-            printf("\033[7;1;33m");
-            break;
-        case TEAL:
-            printf("\033[7;36m");
-            break;
-        case CYAN:
-            printf("\033[7;1;36m");
-            break;
-        case PURPLE:
-            printf("\033[7;35m");
-            break;
-        case MAGENTA:
-            printf("\033[7;1;35m");
-            break;
-        case WHITE:
-            printf("\033[7;1;37m");
-            break;
-        case DARK_GRAY:
-            printf("\033[7;1;30m");
-            break;
-        case GRAY:
-            printf("\033[7;37m");
-            break;
-        case DEFAULT://fall through to default (which is white)
-        default:
-            printf("\033[0m");
+            switch (consoleColor)
+            {
+            case DARK_BLUE:
+                printf("\033[0;34m");
+                break;
+            case BLUE:
+                printf("\033[1;34m");
+                break;
+            case DARK_GREEN:
+                printf("\033[0;32m");
+                break;
+            case GREEN:
+                printf("\033[1;32m");
+                break;
+            case DARK_RED:
+                printf("\033[0;31m");
+                break;
+            case RED:
+                printf("\033[1;31m");
+                break;
+            case BLACK:
+                printf("\033[0;30m");
+                break;
+            case BROWN:
+                printf("\033[0;33m");
+                break;
+            case YELLOW:
+                printf("\033[1;33m");
+                break;
+            case TEAL:
+                printf("\033[0;36m");
+                break;
+            case CYAN:
+                printf("\033[1;36m");
+                break;
+            case PURPLE:
+                printf("\033[0;35m");
+                break;
+            case MAGENTA:
+                printf("\033[1;35m");
+                break;
+            case WHITE:
+                printf("\033[1;37m");
+                break;
+            case DARK_GRAY:
+                printf("\033[1;30m");
+                break;
+            case GRAY:
+                printf("\033[0;37m");
+                break;
+            case DEFAULT://fall through to default (which is white)
+            default:
+                printf("\033[0m");
+            }
+        }
+        else//change background color
+        {
+            switch (consoleColor)
+            {
+            case DARK_BLUE:
+                printf("\033[7;34m");
+                break;
+            case BLUE:
+                printf("\033[7;1;34m");
+                break;
+            case DARK_GREEN:
+                printf("\033[7;32m");
+                break;
+            case GREEN:
+                printf("\033[7;1;32m");
+                break;
+            case DARK_RED:
+                printf("\033[7;31m");
+                break;
+            case RED:
+                printf("\033[7;1;31m");
+                break;
+            case BLACK:
+                printf("\033[7;30m");
+                break;
+            case BROWN:
+                printf("\033[7;33m");
+                break;
+            case YELLOW:
+                printf("\033[7;1;33m");
+                break;
+            case TEAL:
+                printf("\033[7;36m");
+                break;
+            case CYAN:
+                printf("\033[7;1;36m");
+                break;
+            case PURPLE:
+                printf("\033[7;35m");
+                break;
+            case MAGENTA:
+                printf("\033[7;1;35m");
+                break;
+            case WHITE:
+                printf("\033[7;1;37m");
+                break;
+            case DARK_GRAY:
+                printf("\033[7;1;30m");
+                break;
+            case GRAY:
+                printf("\033[7;37m");
+                break;
+            case DEFAULT://fall through to default (which is white)
+            default:
+                printf("\033[0m");
+            }
         }
     }
 }
@@ -401,6 +417,7 @@ typedef struct _consoleColorCap
     bool use256ColorFormat;
     bool useIntensityBitFormat;
     bool useInvertFormatForBackgroundColors;
+    //bool useColonInsteadOfSemiColon; //TODO: Implement support for the very few consoles that need a colon instead of semicolon
 }consoleColorCap, *ptrConsoleColorCap;
 
 //Future var we might need is whether the reset to defaults (39m & 49m) work or if the complete reset is needed (0m)
@@ -458,12 +475,12 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
     }
     if (consoleCap.colorSupport) //if color is not supported, do not do anything as the escape sequences will just print to the output and make it a mess
     {
-        if (foregroundColor == CURRENT && backgroundColor == CURRENT)
+        if (foregroundColor == CONSOLE_COLOR_CURRENT && backgroundColor == CONSOLE_COLOR_CURRENT)
         {
             //nothing to do
             return;
         }
-        if (foregroundColor == DEFAULT && backgroundColor == DEFAULT)
+        if (foregroundColor == CONSOLE_COLOR_DEFAULT && backgroundColor == CONSOLE_COLOR_DEFAULT)
         {
             //reset or normal
             printf("\033[0m");

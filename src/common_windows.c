@@ -179,124 +179,140 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
         get_Console_Default_Color();
         defaultsSet = true;
     }
-    if (foregroundBackground)//change foreground color
+    if (consoleColor >= CONSOLE_COLOR_DEFAULT)
     {
-        switch (consoleColor)
+        //use the new behavior
+        if (foregroundBackground)
         {
-        case DARK_BLUE:
-            theColor = FOREGROUND_BLUE;
-            break;
-        case BLUE:
-            theColor = FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-            break;
-        case DARK_GREEN:
-            theColor = FOREGROUND_GREEN;
-            break;
-        case GREEN:
-            theColor = FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-            break;
-        case DARK_RED:
-            theColor = FOREGROUND_RED;
-            break;
-        case RED:
-            theColor = FOREGROUND_RED | FOREGROUND_INTENSITY;
-            break;
-        case BLACK:
-            theColor = 0;//this should mean no colors or black
-            break;
-        case BROWN:
-            theColor = FOREGROUND_RED | FOREGROUND_GREEN;
-            break;
-        case YELLOW:
-            theColor = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-            break;
-        case TEAL:
-            theColor = FOREGROUND_BLUE | FOREGROUND_GREEN;
-            break;
-        case CYAN:
-            theColor = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-            break;
-        case PURPLE:
-            theColor = FOREGROUND_BLUE | FOREGROUND_RED;
-            break;
-        case MAGENTA:
-            theColor = FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY;
-            break;
-        case WHITE:
-            theColor = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY;
-            break;
-        case DARK_GRAY:
-            theColor = FOREGROUND_INTENSITY;
-            break;
-        case GRAY:
-            theColor = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
-            break;
-        case DEFAULT://fall through to default
-        default:
-            //theColor = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
-            theColor = get_Console_Default_Color();
+            set_Console_Foreground_Background_Colors(consoleColor, CONSOLE_COLOR_CURRENT);
         }
-        SetConsoleTextAttribute(consoleHandle, theColor);
+        else
+        {
+            set_Console_Foreground_Background_Colors(CONSOLE_COLOR_CURRENT, consoleColor);
+        }
     }
-    else//change background color
+    else
     {
-        switch (consoleColor)
+        //old behavior
+        if (foregroundBackground)//change foreground color
         {
-        case DARK_BLUE:
-            theColor = BACKGROUND_BLUE;
-            break;
-        case BLUE:
-            theColor = BACKGROUND_BLUE | BACKGROUND_INTENSITY;
-            break;
-        case DARK_GREEN:
-            theColor = BACKGROUND_GREEN;
-            break;
-        case GREEN:
-            theColor = BACKGROUND_GREEN | BACKGROUND_INTENSITY;
-            break;
-        case DARK_RED:
-            theColor = BACKGROUND_RED;
-            break;
-        case RED:
-            theColor = BACKGROUND_RED | BACKGROUND_INTENSITY;
-            break;
-        case BLACK:
-            theColor = 0;//this should mean no colors or black
-            break;
-        case BROWN:
-            theColor = BACKGROUND_RED | BACKGROUND_GREEN;
-            break;
-        case YELLOW:
-            theColor = BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_INTENSITY;
-            break;
-        case TEAL:
-            theColor = BACKGROUND_BLUE | BACKGROUND_GREEN;
-            break;
-        case CYAN:
-            theColor = BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_INTENSITY;
-            break;
-        case PURPLE:
-            theColor = BACKGROUND_BLUE | BACKGROUND_RED;
-            break;
-        case MAGENTA:
-            theColor = BACKGROUND_BLUE | BACKGROUND_RED | BACKGROUND_INTENSITY;
-            break;
-        case WHITE:
-            theColor = BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY;
-            break;
-        case DARK_GRAY:
-            theColor = BACKGROUND_INTENSITY;
-            break;
-        case GRAY:
-            theColor = BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED;
-            break;
-        case DEFAULT://fall through to default
-        default:
-            //theColor = 0;//black background
-            //theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;//white foreground
-            theColor = get_Console_Default_Color();
+            switch (consoleColor)
+            {
+            case DARK_BLUE:
+                theColor = FOREGROUND_BLUE;
+                break;
+            case BLUE:
+                theColor = FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+                break;
+            case DARK_GREEN:
+                theColor = FOREGROUND_GREEN;
+                break;
+            case GREEN:
+                theColor = FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+                break;
+            case DARK_RED:
+                theColor = FOREGROUND_RED;
+                break;
+            case RED:
+                theColor = FOREGROUND_RED | FOREGROUND_INTENSITY;
+                break;
+            case BLACK:
+                theColor = 0;//this should mean no colors or black
+                break;
+            case BROWN:
+                theColor = FOREGROUND_RED | FOREGROUND_GREEN;
+                break;
+            case YELLOW:
+                theColor = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+                break;
+            case TEAL:
+                theColor = FOREGROUND_BLUE | FOREGROUND_GREEN;
+                break;
+            case CYAN:
+                theColor = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+                break;
+            case PURPLE:
+                theColor = FOREGROUND_BLUE | FOREGROUND_RED;
+                break;
+            case MAGENTA:
+                theColor = FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY;
+                break;
+            case WHITE:
+                theColor = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY;
+                break;
+            case DARK_GRAY:
+                theColor = FOREGROUND_INTENSITY;
+                break;
+            case GRAY:
+                theColor = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
+                break;
+            case DEFAULT://fall through to default
+            default:
+                //theColor = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
+                theColor = get_Console_Default_Color();
+            }
+            SetConsoleTextAttribute(consoleHandle, theColor);
         }
-        SetConsoleTextAttribute(consoleHandle, theColor);
+        else//change background color
+        {
+            switch (consoleColor)
+            {
+            case DARK_BLUE:
+                theColor = BACKGROUND_BLUE;
+                break;
+            case BLUE:
+                theColor = BACKGROUND_BLUE | BACKGROUND_INTENSITY;
+                break;
+            case DARK_GREEN:
+                theColor = BACKGROUND_GREEN;
+                break;
+            case GREEN:
+                theColor = BACKGROUND_GREEN | BACKGROUND_INTENSITY;
+                break;
+            case DARK_RED:
+                theColor = BACKGROUND_RED;
+                break;
+            case RED:
+                theColor = BACKGROUND_RED | BACKGROUND_INTENSITY;
+                break;
+            case BLACK:
+                theColor = 0;//this should mean no colors or black
+                break;
+            case BROWN:
+                theColor = BACKGROUND_RED | BACKGROUND_GREEN;
+                break;
+            case YELLOW:
+                theColor = BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_INTENSITY;
+                break;
+            case TEAL:
+                theColor = BACKGROUND_BLUE | BACKGROUND_GREEN;
+                break;
+            case CYAN:
+                theColor = BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_INTENSITY;
+                break;
+            case PURPLE:
+                theColor = BACKGROUND_BLUE | BACKGROUND_RED;
+                break;
+            case MAGENTA:
+                theColor = BACKGROUND_BLUE | BACKGROUND_RED | BACKGROUND_INTENSITY;
+                break;
+            case WHITE:
+                theColor = BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY;
+                break;
+            case DARK_GRAY:
+                theColor = BACKGROUND_INTENSITY;
+                break;
+            case GRAY:
+                theColor = BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED;
+                break;
+            case DEFAULT://fall through to default
+            default:
+                //theColor = 0;//black background
+                //theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;//white foreground
+                theColor = get_Console_Default_Color();
+            }
+            SetConsoleTextAttribute(consoleHandle, theColor);
+        }
     }
 }
 
