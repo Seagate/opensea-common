@@ -689,23 +689,49 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
                 if (foregroundColorInt == 39 || !consoleCap.use256ColorFormat)
                 {
                     //print the foreground request
-                    if (consoleCap.useIntensityBitFormat && foregroundColorInt >= 90)
+                    if (consoleCap.useInvertFormatForBackgroundColors)
                     {
-                        printf("\033[1;%" PRIu8 "m", foregroundColorInt - 60);
-                    }
-                    else if (consoleCap.eightColorsOnly && foregroundColorInt >= 90)
-                    {
-                        printf("\033[%" PRIu8 "m", foregroundColorInt - 60);
-                    }
-                    else
-                    {
-                        if (consoleCap.useIntensityBitFormat)
+                        //more background colors are available using the inversion method (maybe)
+                        if (consoleCap.useIntensityBitFormat && foregroundColorInt >= 90)
                         {
-                            printf("\033[0;%" PRIu8 "m", foregroundColorInt);
+                            printf("\033[27;1;%" PRIu8 "m", foregroundColorInt - 60);
+                        }
+                        else if (consoleCap.eightColorsOnly && foregroundColorInt >= 90)
+                        {
+                            printf("\033[27;%" PRIu8 "m", foregroundColorInt - 60);
                         }
                         else
                         {
-                            printf("\033[%" PRIu8 "m", foregroundColorInt);
+                            if (consoleCap.useIntensityBitFormat)
+                            {
+                                printf("\033[27;0;%" PRIu8 "m", foregroundColorInt);
+                            }
+                            else
+                            {
+                                printf("\033[27;%" PRIu8 "m", foregroundColorInt);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (consoleCap.useIntensityBitFormat && foregroundColorInt >= 90)
+                        {
+                            printf("\033[1;%" PRIu8 "m", foregroundColorInt - 60);
+                        }
+                        else if (consoleCap.eightColorsOnly && foregroundColorInt >= 90)
+                        {
+                            printf("\033[%" PRIu8 "m", foregroundColorInt - 60);
+                        }
+                        else
+                        {
+                            if (consoleCap.useIntensityBitFormat)
+                            {
+                                printf("\033[0;%" PRIu8 "m", foregroundColorInt);
+                            }
+                            else
+                            {
+                                printf("\033[%" PRIu8 "m", foregroundColorInt);
+                            }
                         }
                     }
                 }
