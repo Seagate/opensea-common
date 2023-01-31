@@ -220,12 +220,30 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
     }
     else
     {
+        //written according to https://en.wikipedia.org/wiki/ANSI_escape_code
+        //  There are possible needs to adjust color output if this does not work for an OS we are supporting. Can ifdef or check for other things
         //set the string for each color that needs to be set.
-        uint8_t foregroundColorInt = UINT8_MAX, backgroundColorInt = UINT8_MAX;
-        uint8_t foregroundIntensity = 0, backgroundIntensity = 0;
-        //according to https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
-        //bright colors may be possible with unique values, but this was not in the standard to start with, so not using those today and instead using the intensity bit to differentiate
-        //between bright and not bright colors
+        uint8_t foregroundColorInt = UINT8_MAX;
+        uint8_t backgroundColorInt = UINT8_MAX;
+        uint8_t fore256Color = UINT8_MAX;
+        uint8_t back256Color = UINT8_MAX;
+        static bool use256Color = true;//TODO: make this conditional for systems that 256colors do not work
+        static bool useIntensityFormat = false;//TODO: Make this conditional if 256 colors do not work as well as extended bright colors not working
+        //Checking for env variable COLORTERM is one method, or COLORFGBG, or if TERM is set to sun-color, xterm-256color, true-color, or gnome-terminal will work for 256color
+        //when debugging a unix-like system, try printenv | grep "color" and printenv | grep "COLOR" to see what you can find out about the terminal
+        //testing on CentOS 6 through latest Ubuntu the bright colors seem to be supported (codes 90-97 and 100-107) as well as 256color codes
+        //In CentOS 6 & 7 the "intensity" field does change to bright colors, but in Ubuntu 22.04 this only changes to a bold font
+        //If the extended colors are not available, will need to use the "intensity" method of \033[1:##m to set it instead
+        //Sometimes the "intensity" just makes things bold though
+        //FreeBSD 11 through 13 claim xterm-256color so they are also likely supported by 256color and extra bright color codes.
+        //omniOS r151038 seems to support 256 color codes properly too (sun-color terminal)
+        //aixterm also appears to support some color: https://www.ibm.com/docs/en/aix/7.2?topic=aixterm-command, but 256 color is not listed
+        //reading terminfo or termcap may be the best way to change formats or ignore color changes if not capable at all, but that is much more complicated to
+        //  implement in here right now.
+        //http://jdebp.uk./Softwares/nosh/guide/commands/TerminalCapabilities.xml
+        #if defined (_AIX)
+            use256Color = false;
+        #endif //AIX
         switch (foregroundColor)
         {
         case CONSOLE_COLOR_CURRENT:
@@ -255,49 +273,64 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
             foregroundColorInt = 37;
             break;
         case CONSOLE_COLOR_GRAY:
-            foregroundIntensity = 1;
-            foregroundColorInt = 30;
+            foregroundColorInt = 90;
             break;
         case CONSOLE_COLOR_BRIGHT_RED:
-            foregroundIntensity = 1;
-            foregroundColorInt = 31;
+            foregroundColorInt = 91;
             break;
         case CONSOLE_COLOR_BRIGHT_GREEN:
-            foregroundIntensity = 1;
-            foregroundColorInt = 32;
+            foregroundColorInt = 92;
             break;
         case CONSOLE_COLOR_BRIGHT_YELLOW:
-            foregroundIntensity = 1;
-            foregroundColorInt = 33;
+            foregroundColorInt = 93;
             break;
         case CONSOLE_COLOR_BRIGHT_BLUE:
-            foregroundIntensity = 1;
-            foregroundColorInt = 34;
+            foregroundColorInt = 94;
             break;
         case CONSOLE_COLOR_BRIGHT_MAGENTA:
-            foregroundIntensity = 1;
-            foregroundColorInt = 35;
+            foregroundColorInt = 95;
             break;
         case CONSOLE_COLOR_BRIGHT_CYAN:
-            foregroundIntensity = 1;
-            foregroundColorInt = 36;
+            foregroundColorInt = 96;
             break;
         case CONSOLE_COLOR_BRIGHT_WHITE:
-            foregroundIntensity = 1;
-            foregroundColorInt = 37;
+            foregroundColorInt = 97;
             break;
         case CONSOLE_COLOR_DEFAULT:
         default:
+            //TODO: aixterm does not list this, so will need to test it! otherwise reset with 0m will be as close as we get
             foregroundColorInt = 39;
             break;
         }
         if (foregroundColorInt != UINT8_MAX)
         {
-            //print the foreground request
-            printf("\033[%" PRIu8 ";%" PRIu8 "m", foregroundIntensity, foregroundColorInt);
+            if (foregroundColorInt < 90)
+            {
+                fore256Color = foregroundColorInt - 30;//256 colors start at 0
+            }
+            else 
+            {
+                fore256Color = foregroundColorInt - 90 + 8;//256 bright colors start at 8
+            }
+            if (foregroundColorInt == 39 || !use256Color)
+            {
+                //print the foreground request
+                if (useIntensityFormat && foregroundColorInt >= 90)
+                {
+                    printf("\033[1;%" PRIu8 "m", foregroundColorInt - 60);
+                }
+                else
+                {
+                    printf("\033[%" PRIu8 "m", foregroundColorInt);
+                }
+            }
+            else
+            {
+                printf("\033[38;5;%" PRIu8 "m", fore256Color);
+            }
         }
 
-        switch (foregroundColor)
+        switch (backgroundColor)
         {
         case CONSOLE_COLOR_CURRENT:
             break;
@@ -326,46 +359,62 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
             backgroundColorInt = 47;
             break;
         case CONSOLE_COLOR_GRAY:
-            backgroundIntensity = true;
-            backgroundColorInt = 40;
+            backgroundColorInt = 100;
             break;
         case CONSOLE_COLOR_BRIGHT_RED:
-            backgroundIntensity = true;
-            backgroundColorInt = 41;
+            backgroundColorInt = 101;
             break;
         case CONSOLE_COLOR_BRIGHT_GREEN:
-            backgroundIntensity = true;
-            backgroundColorInt = 42;
+            backgroundColorInt = 102;
             break;
         case CONSOLE_COLOR_BRIGHT_YELLOW:
-            backgroundIntensity = true;
-            backgroundColorInt = 43;
+            backgroundColorInt = 103;
             break;
         case CONSOLE_COLOR_BRIGHT_BLUE:
-            backgroundIntensity = true;
-            backgroundColorInt = 44;
+            backgroundColorInt = 104;
             break;
         case CONSOLE_COLOR_BRIGHT_MAGENTA:
-            backgroundIntensity = true;
-            backgroundColorInt = 45;
+            backgroundColorInt = 105;
             break;
         case CONSOLE_COLOR_BRIGHT_CYAN:
-            backgroundIntensity = true;
-            backgroundColorInt = 46;
+            backgroundColorInt = 106;
             break;
         case CONSOLE_COLOR_BRIGHT_WHITE:
-            backgroundIntensity = true;
-            backgroundColorInt = 47;
+            backgroundColorInt = 107;
             break;
         case CONSOLE_COLOR_DEFAULT:
         default:
+            //TODO: aixterm does not list this, so will need to test it! otherwise reset with 0m will be as close as we get
             backgroundColorInt = 49;
             break;
         }
+        //if background colors do not work, may need to try the "invert" trick to make it happen using a format like \033[7;nm or \033[7;1;nm
         if (backgroundColorInt != UINT8_MAX)
         {
-            //print the background request
-            printf("\033[%" PRIu8 ";%" PRIu8 "m", backgroundIntensity, backgroundColorInt);
+            if (backgroundColorInt < 100)
+            {
+                back256Color = backgroundColorInt - 40;//256 colors start at 0
+            }
+            else 
+            {
+                back256Color = backgroundColorInt - 100 + 8;//256 bright colors start at 8
+            }
+            if (backgroundColorInt == 49 || !use256Color)
+            {
+                //print the background request
+                if (useIntensityFormat && foregroundColorInt >= 100)
+                {
+                    printf("\033[1;%" PRIu8 "m", backgroundColorInt - 60);
+                }
+                else
+                {
+                    printf("\033[%" PRIu8 "m", backgroundColorInt);
+                }
+            }
+            else
+            {
+                printf("\033[48;5;%" PRIu8 "m", back256Color);
+            }
         }
     }
     return;
