@@ -413,7 +413,6 @@ static void get_Console_Color_Capabilities(ptrConsoleColorCap colorCapabilities)
         switch(term)
         {
         case TERM_LINUX_256COLOR:
-            colorCapabilities->useInvertFormatForBackgroundColors = true;
             colorCapabilities->useIntensityBitFormat = true;
             colorCapabilities->eightBackgroundColorsOnly = true;
             M_FALLTHROUGH;
@@ -426,7 +425,6 @@ static void get_Console_Color_Capabilities(ptrConsoleColorCap colorCapabilities)
             colorCapabilities->use256ColorFormat = true;
             break;
         case TERM_LINUX_COLOR:
-            colorCapabilities->useInvertFormatForBackgroundColors = true;
             colorCapabilities->useIntensityBitFormat = true;
             colorCapabilities->eightBackgroundColorsOnly = true;
             M_FALLTHROUGH;
