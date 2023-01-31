@@ -393,109 +393,70 @@ static eKnownTERM get_Terminal_Type(void)
     return terminalType;
 }
 
-//Future var we might need is whether the reset to defaults (39m & 49m) work or if the complete reset is needed (0m)
-static void get_Console_Color_Capabilities(bool *colorSupport, bool *eightColorsOnly, bool *use256ColorFormat, bool *useIntensityBitFormat, bool *useInvertFormatForBackgroundColors)
+typedef struct _consoleColorCap
 {
-    eKnownTERM term = get_Terminal_Type();
-    switch(term)
+    bool colorSupport;
+    bool eightColorsOnly;
+    bool eightBackgroundColorsOnly;
+    bool use256ColorFormat;
+    bool useIntensityBitFormat;
+    bool useInvertFormatForBackgroundColors;
+}consoleColorCap, *ptrConsoleColorCap;
+
+//Future var we might need is whether the reset to defaults (39m & 49m) work or if the complete reset is needed (0m)
+static void get_Console_Color_Capabilities(ptrConsoleColorCap colorCapabilities)
+{
+    if (colorCapabilities)
     {
-    case TERM_XTERM_256COLOR:
-    case TERM_GENERIC_256COLOR:
-    case TERM_SUN_COLOR:
-    case TERM_GNOME_256COLOR:
-    case TERM_TRUECOLOR_256COLOR:
-    case TERM_LINUX_256COLOR:
-        if (colorSupport)
+        eKnownTERM term = get_Terminal_Type();
+        memset(colorCapabilities, 0, sizeof(consoleColorCap));
+        switch(term)
         {
-            *colorSupport = true;
-        }
-        if (use256ColorFormat)
-        {
-            *use256ColorFormat = true;
-        }
-        if (useIntensityBitFormat)
-        {
-            *useIntensityBitFormat = false;
-        }
-        if (useInvertFormatForBackgroundColors)
-        {
-            *useInvertFormatForBackgroundColors = false;
-        }
-        if (eightColorsOnly)
-        {
-            *eightColorsOnly = false;
-        }
-        break;
-    case TERM_XTERM:
-    case TERM_AIXTERM:
-    case TERM_GNOME_COLOR:
-    case TERM_GENERIC_COLOR:
-    case TERM_LINUX_COLOR:
-        if (colorSupport)
-        {
-            *colorSupport = true;
-        }
-        if (use256ColorFormat)
-        {
-            *use256ColorFormat = false;
-        }
-        if (useIntensityBitFormat)
-        {
-            *useIntensityBitFormat = false;
-        }
-        if (useInvertFormatForBackgroundColors)
-        {
-            *useInvertFormatForBackgroundColors = false;
-        }
-        if (eightColorsOnly)
-        {
+        case TERM_LINUX_256COLOR:
+            colorCapabilities->useInvertFormatForBackgroundColors = true;
+            colorCapabilities->eightBackgroundColorsOnly = true;
+            M_FALLTHROUGH;
+        case TERM_XTERM_256COLOR:
+        case TERM_GENERIC_256COLOR:
+        case TERM_SUN_COLOR:
+        case TERM_GNOME_256COLOR:
+        case TERM_TRUECOLOR_256COLOR:
+            colorCapabilities->colorSupport = true;
+            colorCapabilities->use256ColorFormat = true;
+            break;
+        case TERM_LINUX_COLOR:
+            colorCapabilities->useInvertFormatForBackgroundColors = true;
+            colorCapabilities->eightBackgroundColorsOnly = true;
+            M_FALLTHROUGH;
+        case TERM_XTERM:
+        case TERM_AIXTERM:
+        case TERM_GNOME_COLOR:
+        case TERM_GENERIC_COLOR:
+            colorCapabilities->colorSupport = true;
             //these should support 16 colors
-            *eightColorsOnly = false;
+            break;
+        case TERM_UNKNOWN:
+            //Assuming color is supported for now until we run into a terminal that does not support any color code changes
+            //When this is found we need it in a different case to return this variable
+            colorCapabilities->colorSupport = true;
+            //if a terminal does not have any way of doing bright color output, set the 8colorsOnly to true. Ex: red/bright red will be the same in these cases
+            colorCapabilities->useIntensityBitFormat = true;
+            break;
         }
-        break;
-    case TERM_UNKNOWN:
-        //Assuming color is supported for now until we run into a terminal that does not support any color code changes
-        //When this is found we need it in a different case to return this variable
-        if (colorSupport)
-        {
-            *colorSupport = true;
-        }
-        //if a terminal does not have any way of doing bright color output, set the 8colorsOnly to true. Ex: red/bright red will be the same in these cases
-        if (eightColorsOnly)
-        {
-            *eightColorsOnly = false;
-        }
-        if (use256ColorFormat)
-        {
-            *use256ColorFormat = false;
-        }
-        if (useIntensityBitFormat)
-        {
-            *useIntensityBitFormat = true;
-        }
-        if (useInvertFormatForBackgroundColors)
-        {
-            *useInvertFormatForBackgroundColors = false;
-        }
-        break;
     }
     return;
 }
 
 void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eConsoleColors backgroundColor)
 {
+    static consoleColorCap consoleCap;
     static bool haveTermCapabilities = false;
-    static bool use256Color = true;//TODO: make this conditional for systems that 256colors do not work
-    static bool useIntensityFormat = false;//TODO: Make this conditional if 256 colors do not work as well as extended bright colors not working
-    static bool colorSupport = true;
-    static bool eightColorsOnly = false;
-    static bool useInvertFormatForBackgroundColors = false;//TODO: Add in support for this option. It's what the old color settings would do for background colors
     if (!haveTermCapabilities)
     {
-        get_Console_Color_Capabilities(&colorSupport, &eightColorsOnly, &use256Color, &useIntensityFormat, &useInvertFormatForBackgroundColors);
+        get_Console_Color_Capabilities(&consoleCap);
         haveTermCapabilities = true;
     }
-    if (colorSupport) //if color is not supported, do not do anything as the escape sequences will just print to the output and make it a mess
+    if (consoleCap.colorSupport) //if color is not supported, do not do anything as the escape sequences will just print to the output and make it a mess
     {
         if (foregroundColor == CURRENT && backgroundColor == CURRENT)
         {
@@ -596,14 +557,14 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
                 {
                     fore256Color = foregroundColorInt - 90 + 8;//256 bright colors start at 8
                 }
-                if (foregroundColorInt == 39 || !use256Color)
+                if (foregroundColorInt == 39 || !consoleCap.use256ColorFormat)
                 {
                     //print the foreground request
-                    if (useIntensityFormat && foregroundColorInt >= 90)
+                    if (consoleCap.useIntensityBitFormat && foregroundColorInt >= 90)
                     {
                         printf("\033[1;%" PRIu8 "m", foregroundColorInt - 60);
                     }
-                    else if (eightColorsOnly && foregroundColorInt >= 90)
+                    else if (consoleCap.eightColorsOnly && foregroundColorInt >= 90)
                     {
                         printf("\033[%" PRIu8 "m", foregroundColorInt - 60);
                     }
@@ -687,16 +648,16 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
                 {
                     back256Color = backgroundColorInt - 100 + 8;//256 bright colors start at 8
                 }
-                if (backgroundColorInt == 49 || !use256Color)
+                if (backgroundColorInt == 49 || !consoleCap.use256ColorFormat || (consoleCap.use256ColorFormat && consoleCap.eightBackgroundColorsOnly))
                 {
                     //TODO: use the inversion method with 7;intensity;colorm
                     //if (useInvertFormatForBackgroundColors)
                     //print the background request
-                    if (useIntensityFormat && backgroundColorInt >= 100)
+                    if (consoleCap.useIntensityBitFormat && backgroundColorInt >= 100)
                     {
                         printf("\033[1;%" PRIu8 "m", backgroundColorInt - 60);
                     }
-                    else if (eightColorsOnly && backgroundColorInt >= 100)
+                    else if (consoleCap.eightColorsOnly && backgroundColorInt >= 100)
                     {
                         printf("\033[%" PRIu8 "m", backgroundColorInt - 60);
                     }
