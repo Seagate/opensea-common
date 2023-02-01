@@ -336,55 +336,55 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
         theColor &= 0xFFF0;//foreground are lowest 4 bits
         switch (foregroundColor)
         {
-        case DARK_BLUE:
+        case CONSOLE_COLOR_BLUE:
             theColor |= FOREGROUND_BLUE;
             break;
-        case BLUE:
+        case CONSOLE_COLOR_BRIGHT_BLUE:
             theColor |= FOREGROUND_BLUE | FOREGROUND_INTENSITY;
             break;
-        case DARK_GREEN:
+        case CONSOLE_COLOR_GREEN:
             theColor |= FOREGROUND_GREEN;
             break;
-        case GREEN:
+        case CONSOLE_COLOR_BRIGHT_GREEN:
             theColor |= FOREGROUND_GREEN | FOREGROUND_INTENSITY;
             break;
-        case DARK_RED:
+        case CONSOLE_COLOR_RED:
             theColor |= FOREGROUND_RED;
             break;
-        case RED:
+        case CONSOLE_COLOR_BRIGHT_RED:
             theColor |= FOREGROUND_RED | FOREGROUND_INTENSITY;
             break;
-        case BLACK:
+        case CONSOLE_COLOR_BLACK:
             theColor |= 0;//this should mean no colors or black
             break;
-        case BROWN:
+        case CONSOLE_COLOR_YELLOW:
             theColor |= FOREGROUND_RED | FOREGROUND_GREEN;
             break;
-        case YELLOW:
+        case CONSOLE_COLOR_BRIGHT_YELLOW:
             theColor |= FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
             break;
-        case TEAL:
+        case CONSOLE_COLOR_CYAN:
             theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN;
             break;
-        case CYAN:
+        case CONSOLE_COLOR_BRIGHT_CYAN:
             theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
             break;
-        case PURPLE:
+        case CONSOLE_COLOR_MAGENTA:
             theColor |= FOREGROUND_BLUE | FOREGROUND_RED;
             break;
-        case MAGENTA:
+        case CONSOLE_COLOR_BRIGHT_MAGENTA:
             theColor |= FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY;
             break;
-        case WHITE:
+        case CONSOLE_COLOR_BRIGHT_WHITE:
             theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY;
             break;
-        case DARK_GRAY:
+        case CONSOLE_COLOR_GRAY:
             theColor |= FOREGROUND_INTENSITY;
             break;
-        case GRAY:
+        case CONSOLE_COLOR_WHITE:
             theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
             break;
-        case DEFAULT://fall through to default
+        case CONSOLE_COLOR_DEFAULT://fall through to default
         default:
             theColor |= (defaultColorValue & 0x000F);
             break;
@@ -396,55 +396,55 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
         theColor &= 0xFF0F;//foreground are middle 4 bits
         switch (backgroundColor)
         {
-        case DARK_BLUE:
+        case CONSOLE_COLOR_BLUE:
             theColor |= BACKGROUND_BLUE;
             break;
-        case BLUE:
+        case CONSOLE_COLOR_BRIGHT_BLUE:
             theColor |= BACKGROUND_BLUE | BACKGROUND_INTENSITY;
             break;
-        case DARK_GREEN:
+        case CONSOLE_COLOR_GREEN:
             theColor |= BACKGROUND_GREEN;
             break;
-        case GREEN:
+        case CONSOLE_COLOR_BRIGHT_GREEN:
             theColor |= BACKGROUND_GREEN | BACKGROUND_INTENSITY;
             break;
-        case DARK_RED:
+        case CONSOLE_COLOR_RED:
             theColor |= BACKGROUND_RED;
             break;
-        case RED:
+        case CONSOLE_COLOR_BRIGHT_RED:
             theColor |= BACKGROUND_RED | BACKGROUND_INTENSITY;
             break;
-        case BLACK:
+        case CONSOLE_COLOR_BLACK:
             theColor |= 0;//this should mean no colors or black
             break;
-        case BROWN:
+        case CONSOLE_COLOR_YELLOW:
             theColor |= BACKGROUND_RED | BACKGROUND_GREEN;
             break;
-        case YELLOW:
+        case CONSOLE_COLOR_BRIGHT_YELLOW:
             theColor |= BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_INTENSITY;
             break;
-        case TEAL:
+        case CONSOLE_COLOR_CYAN:
             theColor |= BACKGROUND_BLUE | BACKGROUND_GREEN;
             break;
-        case CYAN:
+        case CONSOLE_COLOR_BRIGHT_CYAN:
             theColor |= BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_INTENSITY;
             break;
-        case PURPLE:
+        case CONSOLE_COLOR_MAGENTA:
             theColor |= BACKGROUND_BLUE | BACKGROUND_RED;
             break;
-        case MAGENTA:
+        case CONSOLE_COLOR_BRIGHT_MAGENTA:
             theColor |= BACKGROUND_BLUE | BACKGROUND_RED | BACKGROUND_INTENSITY;
             break;
-        case WHITE:
+        case CONSOLE_COLOR_BRIGHT_WHITE:
             theColor |= BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY;
             break;
-        case DARK_GRAY:
+        case CONSOLE_COLOR_GRAY:
             theColor |= BACKGROUND_INTENSITY;
             break;
-        case GRAY:
+        case CONSOLE_COLOR_WHITE:
             theColor |= BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED;
             break;
-        case DEFAULT://fall through to default
+        case CONSOLE_COLOR_DEFAULT://fall through to default
         default:
             theColor |= (defaultColorValue & 0x00F0);
             break;
