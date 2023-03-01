@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012-2022 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012-2023 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -51,6 +51,18 @@ extern "C"
             #define UINTPTR_MAX UINT32_MAX
         #endif
     #endif
+
+    // Including strings.h to have string case compare functionality and working around Windows.
+    // TODO: improve this check as needed for other systems.
+    // TODO: make definitions for other functions in strings.h
+    #if defined (__unix__) || defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        #include <strings.h>
+    #elif defined (_WIN32) 
+        #define strcasecmp(s1, s2) _stricmp(s1, s2)
+        #define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
+    #else 
+        #error "Need string case compare definition."
+    #endif // __unix__, POSIX, WIN32
 
     #include "common_platform.h"
 
@@ -557,35 +569,38 @@ extern "C"
 
     typedef enum _eReturnValues
     {
-        SUCCESS                 = 0,
-        FAILURE                 = 1,
-        NOT_SUPPORTED           = 2,
-        COMMAND_FAILURE         = 3,
-        IN_PROGRESS             = 4, //another command is in progress, or a command has started and is now in progress in the background
-        ABORTED                 = 5, //Command was aborted
-        BAD_PARAMETER           = 6, //the only time this return code should be seen is when a developer is writing code to add something. This should not appear in a finished application
-        MEMORY_FAILURE          = 7, //could not allocate memory
-        OS_PASSTHROUGH_FAILURE  = 8, //For some unknown reason, the OS API call to issue the pass-through command failed.
-        LIBRARY_MISMATCH        = 9,
-        FROZEN                  = 10, //use this to communicate back when the device is in a frozen state for a commmand like sanitize or ata security
-        PERMISSION_DENIED       = 11, //OS returned Access/permission denied
-        FILE_OPEN_ERROR         = 12,
-        WARN_INCOMPLETE_RFTRS   = 13, //command was issued, and some RTFRs were received, but we were unable to get a complete RTFR result. This is most likely due to a SATL limitation.
-        COMMAND_TIMEOUT         = 14, //command took longer than the timeout that was provided to the OS
+        SUCCESS                         = 0,
+        FAILURE                         = 1,
+        NOT_SUPPORTED                   = 2,
+        COMMAND_FAILURE                 = 3,
+        IN_PROGRESS                     = 4, //another command is in progress, or a command has started and is now in progress in the background
+        ABORTED                         = 5, //Command was aborted
+        BAD_PARAMETER                   = 6, //the only time this return code should be seen is when a developer is writing code to add something. This should not appear in a finished application
+        MEMORY_FAILURE                  = 7, //could not allocate memory
+        OS_PASSTHROUGH_FAILURE          = 8, //For some unknown reason, the OS API call to issue the pass-through command failed.
+        LIBRARY_MISMATCH                = 9,
+        FROZEN                          = 10, //use this to communicate back when the device is in a frozen state for a commmand like sanitize or ata security
+        PERMISSION_DENIED               = 11, //OS returned Access/permission denied
+        FILE_OPEN_ERROR                 = 12,
+        WARN_INCOMPLETE_RFTRS           = 13, //command was issued, and some RTFRs were received, but we were unable to get a complete RTFR result. This is most likely due to a SATL limitation.
+        OS_COMMAND_TIMEOUT              = 14, //command took longer than the timeout that was provided to the OS
         WARN_NOT_ALL_DEVICES_ENUMERATED = 15,
-        WARN_INVALID_CHECKSUM   = 16, //The checksum on the data for a command didn't calculate correctly (EX: Identify device, some ATA Logs)
-        OS_COMMAND_NOT_AVAILABLE = 17, //This is returned when the OS does not have a way to issue the requested command. (EX: Trying to send an NVMe command without Win10, or trying a 32byte SCSI command pre-Win8)
-        OS_COMMAND_BLOCKED      = 18, //This is returned when the OS is blocking the command from being issued (EX: TCG - linux, lib ATA......or Sanitize in Windos 8+)
-        COMMAND_INTERRUPTED     = 19, //Nidhi - Added for SCT commands, if interrupted by some other SCT command.
-		VALIDATION_FAILURE       =20, //For UDS/SM2 validation check
-        STRIP_HDR_FOOTER_FAILURE = 21, //For UDS
-        PARSE_FAILURE             =22,
-        INVALID_LENGTH           = 23,  // Binary file has a invalid length or the parameters for the length don't match the size of the fiile
-        ERROR_WRITING_FILE       = 24, //LookTan added for fwrite check on May20'20
-		TIMEOUT					 = 25, //Pranali added for indicating operation timeout for SeaQueue
-        OS_TIMEOUT_TOO_LARGE     = 26, //Tyler added for cases where a requested timeout is larger than the OS is capable of supporting in passthrough
-        PARSING_EXCEPTION_FAILURE = 27, //Nidhi - For C/C++ exception failure while parsing
-        POWER_CYCLE_REQUIRED    = 28, //For some firmware update scenarios, a power cycle is required to complete the update. This code is returned in these situations.
+        WARN_INVALID_CHECKSUM           = 16, //The checksum on the data for a command didn't calculate correctly (EX: Identify device, some ATA Logs)
+        OS_COMMAND_NOT_AVAILABLE        = 17, //This is returned when the OS does not have a way to issue the requested command. (EX: Trying to send an NVMe command without Win10, or trying a 32byte SCSI command pre-Win8)
+        OS_COMMAND_BLOCKED              = 18, //This is returned when the OS is blocking the command from being issued (EX: TCG - linux, lib ATA......or Sanitize in Windos 8+)
+        COMMAND_INTERRUPTED             = 19, //Nidhi - Added for SCT commands, if interrupted by some other SCT command.
+		VALIDATION_FAILURE              = 20, //For UDS/SM2 validation check
+        STRIP_HDR_FOOTER_FAILURE        = 21, //For UDS
+        PARSE_FAILURE                   = 22,
+        INVALID_LENGTH                  = 23,  // Binary file has a invalid length or the parameters for the length don't match the size of the fiile
+        ERROR_WRITING_FILE              = 24, //LookTan added for fwrite check on May20'20
+		TIMEOUT					        = 25, //Pranali added for indicating operation timeout for SeaQueue
+        OS_TIMEOUT_TOO_LARGE            = 26, //Tyler added for cases where a requested timeout is larger than the OS is capable of supporting in passthrough
+        PARSING_EXCEPTION_FAILURE       = 27, //Nidhi - For C/C++ exception failure while parsing
+        DIR_CREATION_FAILED             = 28, //Pranali - For Telemetry Log Parser, when the creation of output folder fails
+        FILE_READ_ERROR                 = 29, //Pranali - For Telemetry Log Parser, when reading logfile to buffer fails
+        POWER_CYCLE_REQUIRED            = 30, //For some firmware update scenarios, a power cycle is required to complete the update. This code is returned in these situations.
+        DEVICE_ACCESS_DENIED            = 31, //While similar to PERMISSION_DENIED, this is meant for a response from the drive telling us it is not allowing something versus the OS telling us something is not allowed.-TJE
         UNKNOWN
     }eReturnValues;
 
@@ -1095,6 +1110,23 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void print_Data_Buffer(uint8_t *dataBuffer, uint32_t bufferLen, bool showPrint);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  print_Pipe_Data()
+    //
+    //! \brief   Description:  print out a data buffer for piping to the next executable to the screen
+    //
+    //  Entry:
+    //!   \param[in] dataBuffer = a pointer to the data buffer you want to print out
+    //!   \param[in] bufferLen = the length that you want to print out. This can be the length of the buffer, or anything less than that
+    //!   \param[in] showPrint = set to true to show printable characters on the side of the hex output for the buffer. Non-printable characters will be represented as dots.
+    //!   \param[in] showOffset = set to true to show printable offset on the side of the hex output for the buffer. 
+    //!
+    //  Exit:
+    //
+    //-----------------------------------------------------------------------------
+    void print_Pipe_Data(uint8_t* dataBuffer, uint32_t bufferLen);
 
     //-----------------------------------------------------------------------------
     //

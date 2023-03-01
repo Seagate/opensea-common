@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012-2022 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012-2023 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -73,6 +73,19 @@ extern "C"
     #define SEA_MSC_VER_VS2019_16_2 1922
     #define SEA_MSC_VER_VS2019_16_3 1923
 
+    //-----------------------------------------------------------------------------
+    //
+    //  os_Create_Directory()
+    //
+    //! \brief   Description:  Creates a new directory in Windows
+    //
+    //  Entry:
+    //!
+    //  Exit:
+    //!   \return SUCCESS on successful directory creation and FAILURE when directory creation fails
+    //
+    //-----------------------------------------------------------------------------
+    int os_Create_Directory(const char* filePath);
 
     //-----------------------------------------------------------------------------
     //

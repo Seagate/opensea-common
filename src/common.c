@@ -1,7 +1,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012-2022 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012-2023 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,13 +17,19 @@
 
 #if defined (_WIN32)
 #include <windows.h> //used for setting color output to the command prompt and Sleep()
-#else
+#else //_WIN32
 #include <unistd.h> //needed for usleep() or nanosleep()
 #include <time.h>
 #include <errno.h>
-#endif
+#endif //Win32
+
+#if defined (VMK_CROSS_COMP)
+#include <mm_malloc.h> //doing this to shut up warnings about posix_memalign not available despite stdlib include  TJE
+#endif //VMK_CROSS_COMP
+
 #include <stdlib.h>//aligned allocation functions come from here
 #include <math.h>
+
 
 void delay_Milliseconds(uint32_t milliseconds)
 {
@@ -63,8 +69,6 @@ void *malloc_aligned(size_t size, size_t alignment)
             printf("<--%s size : %d  alignment : %d\n",__FUNCTION__, size, alignment);
         #endif
         void *temp = NULL;
-        //temp = malloc(size);
-
         if (0 != posix_memalign( &temp, alignment, size))
         {
             temp = NULL;//make sure the system we are running didn't change this.
@@ -384,7 +388,7 @@ void byte_Swap_String(char *stringToChange)
 {
     size_t stringIter = 0;
     size_t stringlen = strlen(stringToChange);
-    char *swappedString = C_CAST(char *, calloc(stringlen, sizeof(char)));
+    char *swappedString = C_CAST(char *, calloc(stringlen + 1, sizeof(char)));
     if (swappedString == NULL)
     {
         return;
@@ -435,7 +439,7 @@ void remove_Trailing_Whitespace(char *stringToChange)
     {
         return;
     }
-    while (iter > 0 && isspace(stringToChange[iter - 1]))
+    while (iter > 0 && is_ASCII(stringToChange[iter - 1]) && isspace(stringToChange[iter - 1]))
     {
         stringToChange[iter - 1] = '\0'; //replace spaces with NULL terminators
         iter--;
@@ -450,7 +454,7 @@ void remove_Leading_Whitespace(char *stringToChange)
         return;
     }
     stringToChangeLen = strlen(stringToChange);
-    while (isspace(stringToChange[iter]) && iter < stringToChangeLen)
+    while (is_ASCII(stringToChange[iter]) && isspace(stringToChange[iter]) && iter < stringToChangeLen)
     {
         iter++;
     }
@@ -636,7 +640,7 @@ void print_Return_Enum(char *funcName, int ret)
     case WARN_INCOMPLETE_RFTRS:
         printf("WARNING INCOMPLETE RTFRS\n");
         break;
-    case COMMAND_TIMEOUT:
+    case OS_COMMAND_TIMEOUT:
         printf("COMMAND TIMEOUT\n");
         break;
     case WARN_NOT_ALL_DEVICES_ENUMERATED:
@@ -688,35 +692,38 @@ void print_Return_Enum(char *funcName, int ret)
     printf("\n");
 }
 
-void print_Data_Buffer(uint8_t *dataBuffer, uint32_t bufferLen, bool showPrint)
+static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset)
 {
     uint32_t printIter = 0, offset = 0;
     uint32_t offsetWidth = 2;//used to figure out how wide we need to pad with 0's for consistent output, 2 is the minimum width
-    if (bufferLen <= UINT8_MAX)
+    if (showOffset)
     {
-        offsetWidth = 2;
-        printf("\n        "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
-    }
-    else if (bufferLen <= UINT16_MAX)
-    {
-        offsetWidth = 4;
-        printf("\n          "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
-    }
-    else if (bufferLen <= 0xFFFFFF)
-    {
-        offsetWidth = 6;
-        printf("\n            "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
-    }
-    else//32bit width, don't care about 64bit since max size if 32bit
-    {
-        offsetWidth = 8;
-        printf("\n              "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
-    }
-    //we print out 2 (0x) + printf formatting width + 2 (spaces) then the offsets
+        if (bufferLen <= UINT8_MAX)
+        {
+            offsetWidth = 2;
+            printf("\n        "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
+        }
+        else if (bufferLen <= UINT16_MAX)
+        {
+            offsetWidth = 4;
+            printf("\n          "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
+        }
+        else if (bufferLen <= 0xFFFFFF)
+        {
+            offsetWidth = 6;
+            printf("\n            "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
+        }
+        else//32bit width, don't care about 64bit since max size if 32bit
+        {
+            offsetWidth = 8;
+            printf("\n              "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
+        }
+        //we print out 2 (0x) + printf formatting width + 2 (spaces) then the offsets
 
-    for (printIter = 0; printIter < 16 && printIter < bufferLen; printIter++)
-    {
-        printf("%" PRIX32 "  ", printIter);
+        for (printIter = 0; printIter < 16 && printIter < bufferLen; printIter++)
+        {
+            printf("%" PRIX32 "  ", printIter);
+        }
     }
     char lineBuff[18] = { 0 };
     uint8_t lineBuffIter = 0;
@@ -726,31 +733,39 @@ void print_Data_Buffer(uint8_t *dataBuffer, uint32_t bufferLen, bool showPrint)
         {
             lineBuffIter = 0;
         }
+
         //for every 16 bytes we print, we need to make a newline, then print the offset (hex) before we print the data again
         if (printIter % 16 == 0)
         {
-            switch (offsetWidth)
+            if (showOffset)
             {
-            case 4:
-                printf("\n  0x%04"PRIX32" ", offset);
-                break;
-            case 6:
-                printf("\n  0x%06"PRIX32" ", offset);
-                break;
-            case 8:
-                printf("\n  0x%08"PRIX32" ", offset);
-                break;
-            case 2:
-            default:
-                printf("\n  0x%02"PRIX32" ", offset);
-                break;
+                switch (offsetWidth)
+                {
+                case 4:
+                    printf("\n  0x%04"PRIX32" ", offset);
+                    break;
+                case 6:
+                    printf("\n  0x%06"PRIX32" ", offset);
+                    break;
+                case 8:
+                    printf("\n  0x%08"PRIX32" ", offset);
+                    break;
+                case 2:
+                default:
+                    printf("\n  0x%02"PRIX32" ", offset);
+                    break;
+                }
+            }
+            else
+            {
+                printf("\n  ");
             }
             offset += 16;
         }
         printf("%02"PRIX8" ", dataBuffer[printIter]);
         if (showPrint)
         {
-            if (isprint(C_CAST(int, dataBuffer[printIter])))
+            if (is_ASCII(dataBuffer[printIter]) && isprint(C_CAST(int, dataBuffer[printIter])))
             {
                 lineBuff[lineBuffIter] = C_CAST(char, dataBuffer[printIter]);
             }
@@ -781,6 +796,16 @@ void print_Data_Buffer(uint8_t *dataBuffer, uint32_t bufferLen, bool showPrint)
         }
     }
     printf("\n\n");
+}
+
+void print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
+{
+    internal_Print_Data_Buffer(dataBuffer, bufferLen, showPrint, true);
+}
+
+void print_Pipe_Data(uint8_t* dataBuffer, uint32_t bufferLen)
+{
+    internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false);
 }
 
 int metric_Unit_Convert(double *byteValue, char** metricUnit)
