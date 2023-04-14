@@ -568,7 +568,7 @@ size_t find_first_occurrence_in_string(char *originalString, char *stringToFind)
         return (size_t)(partialString - originalString);
     }
 
-    return strlen(originalString);;
+    return strlen(originalString);
 }
 
 bool wildcard_Match(char * pattern, char * data)

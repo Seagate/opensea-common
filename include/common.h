@@ -1120,8 +1120,6 @@ extern "C"
     //  Entry:
     //!   \param[in] dataBuffer = a pointer to the data buffer you want to print out
     //!   \param[in] bufferLen = the length that you want to print out. This can be the length of the buffer, or anything less than that
-    //!   \param[in] showPrint = set to true to show printable characters on the side of the hex output for the buffer. Non-printable characters will be represented as dots.
-    //!   \param[in] showOffset = set to true to show printable offset on the side of the hex output for the buffer. 
     //!
     //  Exit:
     //
