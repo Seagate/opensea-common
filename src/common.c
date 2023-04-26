@@ -404,8 +404,8 @@ void byte_Swap_String(char *stringToChange)
                 swappedString[stringIter + 1] = stringToChange[stringIter];
             }
         }
-
-        snprintf(stringToChange, stringlen, "%s", swappedString);//The plus 1 is to include the NULL terminating character that ALL strings passed to this function should have room for!-TJE
+        memset(stringToChange, 0, stringlen);
+        memcpy(stringToChange, swappedString, stringlen);
         safe_Free(swappedString);
     }
 }
