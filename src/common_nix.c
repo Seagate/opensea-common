@@ -904,28 +904,31 @@ static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
     int match = 0;
     size_t filenameLength = strlen(entry->d_name) + 6;
     char *filename = C_CAST(char*, calloc(filenameLength, sizeof(char)));
-    struct stat s;
-    snprintf(filename, filenameLength, "/etc/%s", entry->d_name);
-    if (stat(filename, &s) == 0)
+    if (filename)
     {
-        if (S_ISREG(s.st_mode)) //must be a file. TODO: are links ok? I don't think we need them, but may need to revisit this.
+        struct stat s;
+        snprintf(filename, filenameLength, "/etc/%s", entry->d_name);
+        if (stat(filename, &s) == 0)
         {
-            //non-zero means valid match. zero means not a match
-            char *inString = strstr(entry->d_name, stringMatch);
-            if (inString)
+            if (S_ISREG(s.st_mode)) //must be a file. TODO: are links ok? I don't think we need them, but may need to revisit this.
             {
-                //found a file!
-                //make sure the string to match is at the end of the entry's name!
-                size_t nameLen = strlen(entry->d_name);
-                size_t matchLen = strlen(stringMatch);
-                if (0 == strncmp(entry->d_name + nameLen - matchLen, stringMatch, matchLen))
+                //non-zero means valid match. zero means not a match
+                char* inString = strstr(entry->d_name, stringMatch);
+                if (inString)
                 {
-                    match = 1;
+                    //found a file!
+                    //make sure the string to match is at the end of the entry's name!
+                    size_t nameLen = strlen(entry->d_name);
+                    size_t matchLen = strlen(stringMatch);
+                    if (0 == strncmp(entry->d_name + nameLen - matchLen, stringMatch, matchLen))
+                    {
+                        match = 1;
+                    }
                 }
             }
         }
+        safe_Free(filename)
     }
-    safe_Free(filename)
     return match;
 }
 
@@ -1029,27 +1032,33 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                         {
                             size_t fileNameLength = strlen(osrelease[releaseIter]->d_name) + 6;
                             char *fileName = C_CAST(char *, calloc(fileNameLength, sizeof(char)));
-                            snprintf(fileName, fileNameLength, "/etc/%s", osrelease[releaseIter]->d_name);
-                            FILE *release = fopen(fileName, "r");
-                            if (release)
+                            if (fileName)
                             {
-                                //read it
-                                fseek(release,ftell(release),SEEK_END);
-                                long int releaseSize = ftell(release);
-                                rewind(release);
-                                char *releaseMemory = C_CAST(char*, calloc(releaseSize,sizeof(char)));
-                                if (fread(releaseMemory, sizeof(char), releaseSize, release))
+                                snprintf(fileName, fileNameLength, "/etc/%s", osrelease[releaseIter]->d_name);
+                                FILE* release = fopen(fileName, "r");
+                                if (release)
                                 {
-                                    linuxOSNameFound = true;
-                                    if (operatingSystemName)
+                                    //read it
+                                    fseek(release, ftell(release), SEEK_END);
+                                    long int releaseSize = ftell(release);
+                                    rewind(release);
+                                    char* releaseMemory = C_CAST(char*, calloc(releaseSize, sizeof(char)));
+                                    if (releaseMemory)
                                     {
-                                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, releaseSize), releaseMemory);
+                                        if (fread(releaseMemory, sizeof(char), releaseSize, release))
+                                        {
+                                            linuxOSNameFound = true;
+                                            if (operatingSystemName)
+                                            {
+                                                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, releaseSize), releaseMemory);
+                                            }
+                                        }
+                                        safe_Free(releaseMemory)
                                     }
+                                    fclose(release);
                                 }
-                                safe_Free(releaseMemory)
-                                fclose(release);
+                                safe_Free(fileName)
                             }
-                            safe_Free(fileName)
                         }
                         if (linuxOSNameFound)
                         {
@@ -1063,27 +1072,33 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                     //For now, only reading the first entry...this SHOULD be ok.
                     size_t fileNameLength = strlen(osversion[0]->d_name) + 6;
                     char *fileName = C_CAST(char*, calloc(fileNameLength, sizeof(char)));
-                    snprintf(fileName, fileNameLength, "/etc/%s", osversion[0]->d_name);
-                    FILE *version = fopen(fileName, "r");
-                    if (version)
+                    if (fileName)
                     {
-                        //read it
-                        fseek(version,ftell(version),SEEK_END);
-                        long int versionSize = ftell(version);
-                        rewind(version);
-                        char *versionMemory = C_CAST(char*, calloc(versionSize,sizeof(char)));
-                        if (fread(versionMemory, sizeof(char), versionSize, version))
+                        snprintf(fileName, fileNameLength, "/etc/%s", osversion[0]->d_name);
+                        FILE* version = fopen(fileName, "r");
+                        if (version)
                         {
-                            linuxOSNameFound = true;
-                            if (operatingSystemName)
+                            //read it
+                            fseek(version, ftell(version), SEEK_END);
+                            long int versionSize = ftell(version);
+                            rewind(version);
+                            char* versionMemory = C_CAST(char*, calloc(versionSize, sizeof(char)));
+                            if (versionMemory)
                             {
-                                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, versionSize), versionMemory);
+                                if (fread(versionMemory, sizeof(char), versionSize, version))
+                                {
+                                    linuxOSNameFound = true;
+                                    if (operatingSystemName)
+                                    {
+                                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, versionSize), versionMemory);
+                                    }
+                                }
+                                safe_Free(versionMemory)
                             }
+                            fclose(version);
                         }
-                        safe_Free(versionMemory)
-                        fclose(version);
+                        safe_Free(fileName)
                     }
-                    safe_Free(fileName)
                 }
                 if (!linuxOSNameFound && lsbReleaseOffset >= 0)
                 {
@@ -1092,27 +1107,33 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                     //We use this last because it may not contain something as friendly and useful as we would like that the other version files provide.
                     size_t fileNameLength = strlen(osrelease[lsbReleaseOffset]->d_name) + 6;
                     char *fileName = C_CAST(char *, calloc(fileNameLength, sizeof(char)));
-                    snprintf(fileName, fileNameLength, "/etc/%s", osrelease[lsbReleaseOffset]->d_name);
-                    FILE *release = fopen(fileName, "r");
-                    if (release)
+                    if (fileName)
                     {
-                        //read it
-                        fseek(release,ftell(release),SEEK_END);
-                        long int releaseSize = ftell(release);
-                        rewind(release);
-                        char *releaseMemory = C_CAST(char*, calloc(releaseSize,sizeof(char)));
-                        if (fread(releaseMemory, sizeof(char), releaseSize, release))
+                        snprintf(fileName, fileNameLength, "/etc/%s", osrelease[lsbReleaseOffset]->d_name);
+                        FILE* release = fopen(fileName, "r");
+                        if (release)
                         {
-                            linuxOSNameFound = true;
-                            if (operatingSystemName)
+                            //read it
+                            fseek(release, ftell(release), SEEK_END);
+                            long int releaseSize = ftell(release);
+                            rewind(release);
+                            char* releaseMemory = C_CAST(char*, calloc(releaseSize, sizeof(char)));
+                            if (releaseMemory)
                             {
-                                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, releaseSize), releaseMemory);
+                                if (fread(releaseMemory, sizeof(char), releaseSize, release))
+                                {
+                                    linuxOSNameFound = true;
+                                    if (operatingSystemName)
+                                    {
+                                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, releaseSize), releaseMemory);
+                                    }
+                                }
+                                safe_Free(releaseMemory)
                             }
+                            fclose(release);
                         }
-                        safe_Free(releaseMemory)
-                        fclose(release);
+                        safe_Free(fileName)
                     }
-                    safe_Free(fileName)
                 }
                 for (int iter = 0; iter < releaseFileCount; ++iter)
                 {
@@ -1146,19 +1167,22 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
                 if (issue)
                 {
                     //read it
-                    fseek(issue,ftell(issue),SEEK_END);
+                    fseek(issue, ftell(issue), SEEK_END);
                     long int issueSize = ftell(issue);
                     rewind(issue);
                     char *issueMemory = C_CAST(char*, calloc(issueSize,sizeof(char)));
-                    if (fread(issueMemory, sizeof(char), issueSize, issue))
+                    if (issueMemory)
                     {
-                        linuxOSNameFound = true;
-                        if (operatingSystemName)
+                        if (fread(issueMemory, sizeof(char), issueSize, issue))
                         {
-                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, issueSize), issueMemory);
+                            linuxOSNameFound = true;
+                            if (operatingSystemName)
+                            {
+                                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, issueSize), issueMemory);
+                            }
                         }
+                        safe_Free(issueMemory)
                     }
-                    safe_Free(issueMemory)
                     fclose(issue);
                 }
             }
@@ -1493,46 +1517,46 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
         #if defined _POSIX_C_SOURCE && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
             //use reentrant call instead.
             char *rawBuffer = NULL;
-            long pwdSize = -1;
+            long dataSize = -1;
             int error = 0;
             struct passwd userInfoBuf;
             struct passwd *userInfo = NULL;
             #if defined (_SC_GETPW_R_SIZE_MAX)
-                pwdSize = sysconf(_SC_GETPW_R_SIZE_MAX);
+                dataSize = sysconf(_SC_GETPW_R_SIZE_MAX);
             #endif
-            if(pwdSize == -1)
+            if (dataSize == -1)
             {
                 //some linux man pages suggest 16384
-                pwdSize = 1024;//start with this, will increment it below if it fails to read
+                dataSize = 1024;//start with this, will increment it below if it fails to read
             }
-            rawBuffer = C_CAST(char*, calloc(pwdSize, sizeof(char)));
-            if(rawBuffer)
+            rawBuffer = C_CAST(char*, calloc(dataSize, sizeof(char)));
+            if (rawBuffer)
             {
-                while (ERANGE == (error = getpwuid_r(userID, &userInfoBuf, rawBuffer, pwdSize, &userInfo)))
+                while (ERANGE == (error = getpwuid_r(userID, &userInfoBuf, rawBuffer, dataSize, &userInfo)))
                 {
                     //this means there was not enough memory allocated in order to read this.
                     //realloc with more memory and try again
                     char *temp = NULL;
-                    pwdSize *= 2;
-                    temp = realloc(rawBuffer, pwdSize);
+                    dataSize *= 2;
+                    temp = realloc(rawBuffer, dataSize);
                     if(!temp)
                     {
                         safe_Free(rawBuffer)
                         break;
                     }
                     rawBuffer = temp;
-                    memset(rawBuffer, 0, pwdSize);
+                    memset(rawBuffer, 0, dataSize);
                 }
-                if(error == 0 && userInfo && rawBuffer)
+                if (error == 0 && userInfo && rawBuffer)
                 {
                     //success
-                    size_t userNameLength = strlen(userInfo->pw_name);
-                    if(userNameLength > 0 && userNameLength <= get_Sys_Username_Max_Length())//make sure userNameLength is valid and not too large
+                    size_t userNameLength = strlen(userInfo->pw_name) + 1;
+                    if (userNameLength > 1 && (userNameLength - 1) <= get_Sys_Username_Max_Length())//make sure userNameLength is valid and not too large
                     {
-                        *userName = C_CAST(char*, calloc(userNameLength + 1, sizeof(char)));//add 1 to ensure room for NULL termination
-                        if(*userName)
+                        *userName = C_CAST(char*, calloc(userNameLength, sizeof(char)));//add 1 to ensure room for NULL termination
+                        if (*userName)
                         {
-                            snprintf(*userName, userNameLength + 1, "%s", userInfo->pw_name);
+                            snprintf(*userName, userNameLength, "%s", userInfo->pw_name);
                             success = true;
                         }
                     }
@@ -1541,15 +1565,15 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
             }            
         #else
             struct passwd *userInfo = getpwuid(userID);
-            if(userInfo)
+            if (userInfo)
             {
-                size_t userNameLength = strlen(userInfo->pw_name);
-                if(userNameLength > 0 && userNameLength <= get_Sys_Username_Max_Length())//make sure userNameLength is valid and not too large
+                size_t userNameLength = strlen(userInfo->pw_name) + 1;
+                if (userNameLength > 1 && (userNameLength - 1) <= get_Sys_Username_Max_Length())//make sure userNameLength is valid and not too large
                 {
-                    *userName = C_CAST(char*, calloc(userNameLength + 1, sizeof(char)));//add 1 to ensure room for NULL termination
-                    if(*userName)
+                    *userName = C_CAST(char*, calloc(userNameLength, sizeof(char)));//add 1 to ensure room for NULL termination
+                    if (*userName)
                     {
-                        snprintf(*userName, userNameLength + 1, "%s", userInfo->pw_name);
+                        snprintf(*userName, userNameLength, "%s", userInfo->pw_name);
                         success = true;
                     }
                 }
