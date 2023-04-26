@@ -406,7 +406,7 @@ void byte_Swap_String(char *stringToChange)
         }
     }
     snprintf(stringToChange, stringlen + 1, "%s", swappedString);//The plus 1 is to include the NULL terminating character that ALL strings passed to this function should have room for!-TJE
-    free(swappedString);
+    safe_Free(swappedString);
 }
 void remove_Whitespace_Left(char *stringToChange)
 {
