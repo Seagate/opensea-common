@@ -29,8 +29,8 @@ extern "C"
 {
 #endif
 
-//This should be defined to get _s functions from C11 annex K when they are available. Not currently used though - TJE
-//#define __STDC_WANT_LIB_EXT1__ 1
+//asking to get C11 _s functions since there is some ability to use them in some places.
+#define __STDC_WANT_LIB_EXT1__ 1
 
     #include <stdio.h>
     #include <time.h>
@@ -1776,7 +1776,6 @@ extern "C"
     //-----------------------------------------------------------------------------
     bool is_Empty(void *ptrData, size_t lengthBytes);
 
-    //
     //-----------------------------------------------------------------------------
     //
     //  int is_ASCII(int c)
@@ -1807,9 +1806,56 @@ extern "C"
     //-----------------------------------------------------------------------------
     void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue);
 
+    //-----------------------------------------------------------------------------
+    //
+    //  char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source);
+    //
+    //! \brief   Description:  To be used in place of strcat. This will work more like strlcat in the BSDs and will always null terminate.
+    //
+    //  Entry:
+    //!   \param[in] destination = pointer to memory to write with zeroes. Must be non-NULL
+    //!   \param[in] destinationSizeBytes = number of bytes pointed to by destination
+    //!   \param[in] source = pointer to source string to concatenate onto destination. Must be NULL terminated.
+    //!
+    //  Exit:
+    //!   \return pointer to destination
+    //
+    //-----------------------------------------------------------------------------
     char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source);
 
+    //-----------------------------------------------------------------------------
+    //
+    //  char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, const char* source, int sourceLength);
+    //
+    //! \brief   Description:  To be used in place of strncat. Will always null terminate destination string.
+    //
+    //  Entry:
+    //!   \param[in] destination = pointer to memory to write with zeroes. Must be non-NULL
+    //!   \param[in] destinationSizeBytes = number of bytes pointed to by destination
+    //!   \param[in] source = pointer to source string to concatenate onto destination. null termination recommended
+    //!   \param[in] sourceLength = number of bytes to use from source for concatenation
+    //!
+    //  Exit:
+    //!   \return pointer to destination
+    //
+    //-----------------------------------------------------------------------------
     char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, const char* source, int sourceLength);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  void* explicit_zeroes(void* dest, size_t count)
+    //
+    //! \brief   Description:  Write zeroes to memory pointer that will not be optimized out by the compiler. 
+    //
+    //  Entry:
+    //!   \param[in] dest = pointer to memory to write with zeroes. Must be non-NULL
+    //!   \param[in] count = number of bytes to write to zero
+    //!
+    //  Exit:
+    //!   \return NULL = error occurred otherwise returns pointer to dest
+    //
+    //-----------------------------------------------------------------------------
+    void* explicit_zeroes(void* dest, size_t count);
 
 #if defined (__cplusplus)
 } //extern "C"

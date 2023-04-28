@@ -25,6 +25,8 @@ extern "C"
     #define SYSTEM_PATH_SEPARATOR '/'
     #define SYSTEM_PATH_SEPARATOR_STR "/"
 
+    #include <sys/param.h> //can be helpful to do compile-time version/capabilities identification
+
     //-----------------------------------------------------------------------------
     //
     //  os_Create_Directory()
