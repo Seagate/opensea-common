@@ -57,21 +57,27 @@ int os_Create_Directory(const char * filePath)
     BOOL returnValue;
     size_t filePathLength = (strlen(filePath) + 1) * sizeof(TCHAR);
     TCHAR *pathNameBuf = C_CAST(TCHAR*, calloc(filePathLength, sizeof(TCHAR)));
-
-    CONST TCHAR* pathName = &pathNameBuf[0];
-    _stprintf_s(pathNameBuf, filePathLength, TEXT("%hs"), filePath);
-
-    returnValue = CreateDirectory(pathName, NULL);
-    if (returnValue == FALSE)
+    if (pathNameBuf)
     {
+        CONST TCHAR* pathName = &pathNameBuf[0];
+        _stprintf_s(pathNameBuf, filePathLength, TEXT("%hs"), filePath);
+
+        returnValue = CreateDirectory(pathName, NULL);
+        if (returnValue == FALSE)
+        {
 #if defined (_DEBUG)
-        print_Windows_Error_To_Screen(GetLastError());
+            print_Windows_Error_To_Screen(GetLastError());
 #endif
-        return FAILURE;
+            return FAILURE;
+        }
+        else
+        {
+            return SUCCESS;
+        }
     }
     else
     {
-        return SUCCESS;
+        return MEMORY_FAILURE;
     }
 }
 
