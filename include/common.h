@@ -71,7 +71,7 @@ extern "C"
     #define C_CAST(type, val) (type)(val)
 
     //Microsoft doesn't have snprintf...it has _snprintf...at least until VS2015 according to my web search - TJE
-    #if _MSC_VER <= 1800 && defined _WIN32
+    #if defined (_MSC_VER) && _MSC_VER <= 1800 && defined _WIN32
     #define snprintf _snprintf
     #endif
 
