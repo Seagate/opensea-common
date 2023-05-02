@@ -1016,13 +1016,17 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
                 //read it
                 fseek(release, ftell(release), SEEK_END);
                 long int releaseSize = ftell(release);
-                rewind(release);
-                char* etcFileMem = C_CAST(char*, calloc(releaseSize, sizeof(char)));
-                if (etcFileMem)
+                if (releaseSize > 0)
                 {
-                    if (fread(etcFileMem, sizeof(char), releaseSize, release) != releaseSize)
+                    rewind(release);
+                    etcFileMem = C_CAST(char*, calloc(releaseSize, sizeof(char)));
+                    if (etcFileMem)
                     {
-                        //todo: some extra error handling?
+                        if (fread(etcFileMem, sizeof(char), releaseSize, release) != C_CAST(size_t, releaseSize) || ferror(release))
+                        {
+                            //some error occurred reading the file, so free this memory to return a checkable null pointer.
+                            safe_Free(etcFileMem);
+                        }
                     }
                 }
                 fclose(release);
