@@ -1063,7 +1063,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
                         gotLinuxInfo = true;
                         if (operatingSystemName)
                         {
-                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(releaseFile), releaseFile);
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(releaseFile)), releaseFile);
                         }
                         safe_Free(releaseFile);
                     }
@@ -1084,7 +1084,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
                 gotLinuxInfo = true;
                 if (operatingSystemName)
                 {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(versionFile), versionFile);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(versionFile)), versionFile);
                 }
                 safe_Free(versionFile);
             }
@@ -1100,7 +1100,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
                 gotLinuxInfo = true;
                 if (operatingSystemName)
                 {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(lsbreleaseFile), lsbreleaseFile);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(lsbreleaseFile)), lsbreleaseFile);
                 }
                 safe_Free(lsbreleaseFile);
             }
