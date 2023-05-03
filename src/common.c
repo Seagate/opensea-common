@@ -223,10 +223,10 @@ size_t get_System_Pagesize(void)
         //use get page size: http://man7.org/linux/man-pages/man2/getpagesize.2.html
         return C_CAST(size_t, getpagesize());
     #elif defined (_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
-        SYSTEM_INFO system;
-        memset(&system, 0, sizeof(SYSTEM_INFO));
-        GetSystemInfo(&system);
-        return C_CAST(size_t, system.dwPageSize);
+        SYSTEM_INFO winSysInfo;
+        memset(&winSysInfo, 0, sizeof(SYSTEM_INFO));
+        GetSystemInfo(&winSysInfo);
+        return C_CAST(size_t, winSysInfo.dwPageSize);
     #else
         return -1;//unknown, so return something easy to see an error with.
     #endif
@@ -386,7 +386,6 @@ int16_t kelvin_To_Fahrenheit(int16_t *kelvin)
 //use this to swap the bytes in a string...useful for ATA strings
 void byte_Swap_String(char *stringToChange)
 {
-    size_t stringIter = 0;
     size_t stringlen = strlen(stringToChange) + 1;
     if (stringlen > 1)//greater than 1 since we append 1 for a null
     {
@@ -396,7 +395,7 @@ void byte_Swap_String(char *stringToChange)
             return;
         }
 
-        for (stringIter = 0; stringIter < stringlen; stringIter += 2)
+        for (size_t stringIter = 0; stringIter < stringlen; stringIter += 2)
         {
             swappedString[stringIter] = stringToChange[stringIter + 1];
             if (stringIter + 1 < stringlen)
@@ -422,7 +421,7 @@ void remove_Whitespace_Left(char *stringToChange)
         return;
     }
 
-    while ((stringToChange[iter]) && iter < (strlen(stringToChange) - 1))  // having issues with the isspace command leaving extra chars in the string
+    while ((iter < (strlen(stringToChange) - 1) && stringToChange[iter]))  // having issues with the isspace command leaving extra chars in the string
     {
         stringToChange[iter] = stringToChange[iter + len];
         iter++;
