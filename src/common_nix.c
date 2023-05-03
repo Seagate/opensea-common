@@ -356,8 +356,8 @@ static eKnownTERM get_Terminal_Type(void)
         {
             terminalType = TERM_GENERIC_COLOR;
         }
+        safe_Free(termEnv)
     }
-    safe_Free(termEnv)
     if (!haveCompleteMatch)
     {
         termEnv = get_Environment_Variable("COLORTERM");
@@ -404,6 +404,7 @@ static eKnownTERM get_Terminal_Type(void)
             //this environment variable is found in kde for forground and background terminal colors
             //This is probably good enough to say "it has some color" support at this point, but no further indication of what color support is available
             terminalType = TERM_GENERIC_COLOR;
+            safe_Free(termEnv)
         }
     }
     return terminalType;
@@ -492,8 +493,6 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
             //set the string for each color that needs to be set.
             uint8_t foregroundColorInt = UINT8_MAX;
             uint8_t backgroundColorInt = UINT8_MAX;
-            uint8_t fore256Color = UINT8_MAX;
-            uint8_t back256Color = UINT8_MAX;
             //Checking for env variable COLORTERM is one method, or COLORFGBG, or if TERM is set to sun-color, xterm-256color, true-color, or gnome-terminal will work for 256color
             //when debugging a unix-like system, try printenv | grep "color" and printenv | grep "COLOR" to see what you can find out about the terminal
             //testing on CentOS 6 through latest Ubuntu the bright colors seem to be supported (codes 90-97 and 100-107) as well as 256color codes
@@ -567,6 +566,7 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
             //if background colors do not work, may need to try the "invert" trick to make it happen using a format like \033[7;nm or \033[7;1;nm
             if (backgroundColorInt != UINT8_MAX)
             {
+                uint8_t back256Color = UINT8_MAX;
                 if (backgroundColorInt < 100)
                 {
                     back256Color = backgroundColorInt - 40;//256 colors start at 0
@@ -693,6 +693,7 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
             }
             if (foregroundColorInt != UINT8_MAX)
             {
+                uint8_t fore256Color = UINT8_MAX;
                 if (foregroundColorInt < 90)
                 {
                     fore256Color = foregroundColorInt - 30;//256 colors start at 0
@@ -971,26 +972,20 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
                 if (fread(releaseMemory, sizeof(char), releaseSize, release))
                 {
                     //Use the "PRETTY_NAME" field
-                    bool done = false;
                     char* tok = strtok(releaseMemory, "\n");
-                    while (tok != NULL && !done)
+                    while (tok != NULL)
                     {
                         if (strncmp(tok, "PRETTY_NAME=", strlen("PRETTY_NAME=")) == 0)
                         {
                             gotLinuxInfo = true;
-
-                            if (operatingSystemName)
-                            {
-                                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(tok) - 1 - strlen("PRETTY_NAME=\"")), tok + strlen("PRETTY_NAME=\""));
-                            }
-                            done = true;
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(tok) - 1 - strlen("PRETTY_NAME=\"")), tok + strlen("PRETTY_NAME=\""));
                             break;
                         }
                         tok = strtok(NULL, "\n");
                     }
                 }
                 safe_Free(releaseMemory)
-                    fclose(release);
+                fclose(release);
             }
         }
     }
@@ -1158,10 +1153,7 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
                     if (fread(issueMemory, sizeof(char), issueSize, issue))
                     {
                         gotLinuxInfo = true;
-                        if (operatingSystemName)
-                        {
-                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, issueSize), issueMemory);
-                        }
+                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, issueSize), issueMemory);
                     }
                     safe_Free(issueMemory)
                 }
