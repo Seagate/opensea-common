@@ -199,7 +199,7 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
                 break;
             case DEFAULT:
             default:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(M_Nibble0(C_CAST(unsigned long long, get_Default_Console_Colors()), currentBackground)));
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(M_Nibble0(C_CAST(unsigned long long, get_Default_Console_Colors())), currentBackground));
                 break;
             }
         }
