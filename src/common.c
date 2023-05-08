@@ -1882,8 +1882,7 @@ void* explicit_zeroes(void* dest, size_t count)
 {
     if (dest && count > 0)
     {
-#if (defined (__STDC_VERSION__) && __STDC_VERSION__ >= 202311L /*C23*/)
-        || defined (HAVE_MEMSET_EXPLICIT)
+#if (defined (__STDC_VERSION__) && __STDC_VERSION__ >= 202311L /*C23*/) || defined (HAVE_MEMSET_EXPLICIT)
         return memset_explicit(dest, 0, count);
 #elif defined (__STDC_LIB_EXT1__) || defined (HAVE_MEMSET_S)
         //use memset_s since it cannot be optimized out
@@ -1898,10 +1897,7 @@ void* explicit_zeroes(void* dest, size_t count)
 #elif defined (_WIN32) && defined (_MSC_VER)
         //use microsoft's SecureZeroMemory function
         return SecureZeroMemory(dest, count);
-#elif (defined (__FreeBSD__) && __FreeBSD__ >= 11) 
-        || (defined (__OpenBSD__) && defined(OpenBSD5_5))
-        || (defined (__GLIBC__) && defined (__GLIBC_MINOR__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 25)
-        || defined (HAVE_EXPLICIT_BZERO)
+#elif (defined (__FreeBSD__) && __FreeBSD__ >= 11) || (defined (__OpenBSD__) && defined(OpenBSD5_5)) || (defined (__GLIBC__) && defined (__GLIBC_MINOR__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 25) || defined (HAVE_EXPLICIT_BZERO)
         //TODO: MUSL seems to support this too, so need to figure out how to detect it there.
         //https://elixir.bootlin.com/musl/latest/source/src/string/explicit_bzero.c <- seems to appear first in 1.1.20
         //https://man.freebsd.org/cgi/man.cgi?query=explicit_bzero
@@ -1911,8 +1907,7 @@ void* explicit_zeroes(void* dest, size_t count)
         //https://illumos.org/man/3C/explicit_bzero
         explicit_bzero(dest, count);
         return dest;
-#elif (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 7000000000L /* net bsd version 7.0 and up*/)
-        || defined (HAVE_EXPLICIT_MEMSET)
+#elif (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 7000000000L /* net bsd version 7.0 and up*/) || defined (HAVE_EXPLICIT_MEMSET)
         //https://man.netbsd.org/NetBSD-8.0/explicit_memset.3
         //https://docs.oracle.com/cd/E88353_01/html/E37843/explicit-memset-3c.html
         //TODO: Solaris 11.4.12 added this, but I cannot find it in illumos based distributions
