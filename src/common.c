@@ -395,7 +395,7 @@ void byte_Swap_String(char *stringToChange)
             return;
         }
 
-        for (size_t stringIter = 0; stringIter < stringlen; stringIter += 2)
+        for (size_t stringIter = 0; stringIter < (stringlen - 1); stringIter += 2)//strlen - 1 to make sure NULL terminator will not be touched with other changes made in this function -TJE
         {
             swappedString[stringIter] = stringToChange[stringIter + 1];
             if (stringIter + 1 < stringlen)
