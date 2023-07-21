@@ -1507,7 +1507,7 @@ double get_Seconds(seatimer_t timer)
 bool is_Running_Elevated(void)
 {
     bool isElevated = false;
-    if (getuid() == 0 || geteuid() == 0)
+    if (getuid() == ROOT_UID_VAL || geteuid() == ROOT_UID_VAL)
     {
         isElevated = true;
     }
@@ -1531,6 +1531,13 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
     bool success = false;
     if(userName)
     {
+        if (userID == ROOT_UID_VAL)
+        {
+            *userName = strdup("root");
+            success = true;
+        }
+        else
+        {
         #if defined _POSIX_C_SOURCE && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
             //use reentrant call instead.
             char *rawBuffer = NULL;
@@ -1580,7 +1587,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                 }
                 safe_Free(rawBuffer)
             }            
-        #else
+        #else //defined _POSIX_C_SOURCE && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
             struct passwd *userInfo = getpwuid(userID);
             if (userInfo)
             {
@@ -1595,7 +1602,8 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                     }
                 }
             }
-        #endif
+        #endif //defined _POSIX_C_SOURCE && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        }
     }
     return success;
 }
@@ -1616,4 +1624,3 @@ int get_Current_User_Name(char **userName)
     }
     return ret;
 }
-
