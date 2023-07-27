@@ -1514,6 +1514,7 @@ bool is_Running_Elevated(void)
     return isElevated;
 }
 
+#if defined (ENABLE_READ_USERNAME)
 static size_t get_Sys_Username_Max_Length(void)
 {
     #if defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
@@ -1630,3 +1631,4 @@ int get_Current_User_Name(char **userName)
     }
     return ret;
 }
+#endif //ENABLE_READ_USERNAME

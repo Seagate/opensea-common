@@ -1338,6 +1338,7 @@ bool is_Running_Elevated(void)
     return isElevated;
 }
 
+#if defined (ENABLE_READ_USERNAME)
 //Gets the user name for who is running the process
 //https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getusernamea?redirectedfrom=MSDN
 //NOTE: Not using Ex version at this time to avoid linking yet another library. This can be added if necessary, or this doesn't do quite what we want it to do. -TJE
@@ -1396,3 +1397,4 @@ int get_Current_User_Name(char **userName)
     }
     return ret;
 }
+#endif //ENABLE_READ_USERNAME

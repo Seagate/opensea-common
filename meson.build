@@ -96,6 +96,10 @@ if get_option('debug')
   add_project_arguments('-D_DEBUG', language : 'c')
 endif
 
+if get_option('username').enabled()
+  add_global_arguments('-DENABLE_READ_USERNAME', language : 'c')
+endif
+
 src_files = ['src/common.c', 'src/common_platform.c']
 
 deps = []
