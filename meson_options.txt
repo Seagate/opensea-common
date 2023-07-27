@@ -1,0 +1,3 @@
+#opensea-common can get the current username, however this reads the /etc/passwd file in linux/unix systems
+#because of this and it possibly being a security concern, this is now off by default.
+option('username', type : 'feature', value : 'disabled')
