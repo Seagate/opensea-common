@@ -924,7 +924,7 @@ bool is_Empty(void *ptrData, size_t lengthBytes)
     return false;
 }
 
-void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
+void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
 {
     double tempCalcValue = secondsToConvert;
     //get seconds up to a maximum of 60
@@ -948,7 +948,7 @@ void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t
     //get days up to 365
     if (days)
     {
-        *days = C_CAST(uint8_t, fmod(tempCalcValue, 365.0));
+        *days = C_CAST(uint16_t, fmod(tempCalcValue, 365.0));
     }
     tempCalcValue /= 365.0;
     //get years
@@ -958,33 +958,33 @@ void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t
     }
 }
 
-void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
+void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
 {
     uint64_t tempCalcValue = secondsToConvert;
     //get seconds up to a maximum of 60
     if (seconds)
     {
-        *seconds = C_CAST(uint8_t, tempCalcValue % 60);
+        *seconds = C_CAST(uint8_t, tempCalcValue % UINT64_C(60));
     }
-    tempCalcValue /= 60;
+    tempCalcValue /= UINT64_C(60);
     //get minutes up to a maximum of 60
     if (minutes)
     {
-        *minutes = C_CAST(uint8_t, tempCalcValue % 60);
+        *minutes = C_CAST(uint8_t, tempCalcValue % UINT64_C(60));
     }
-    tempCalcValue /= 60;
+    tempCalcValue /= UINT64_C(60);
     //get hours up to a maximum of 24
     if (hours)
     {
-        *hours = C_CAST(uint8_t, tempCalcValue % 24);
+        *hours = C_CAST(uint8_t, tempCalcValue % UINT64_C(24));
     }
-    tempCalcValue /= 24;
+    tempCalcValue /= UINT64_C(24);
     //get days up to 365
     if (days)
     {
-        *days = C_CAST(uint8_t, tempCalcValue % 365);
+        *days = C_CAST(uint16_t, tempCalcValue % UINT64_C(365));
     }
-    tempCalcValue /= 365;
+    tempCalcValue /= UINT64_C(365);
     //get years
     if (years)
     {
@@ -992,7 +992,7 @@ void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *yea
     }
 }
 
-void print_Time_To_Screen(uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
+void print_Time_To_Screen(uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
 {
     if (years && *years > 0)
     {
@@ -1314,7 +1314,8 @@ char* get_Current_Time_String(const time_t* timer, char *buffer, size_t bufferSi
 
 time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
 {
-    uint8_t years = 0, months = 0, days = 0, hours = 0, minutes = 0, seconds = 0;
+    uint16_t days = 0;
+    uint8_t years = 0, months = 0, hours = 0, minutes = 0, seconds = 0;
     struct tm futureTime;
     memset(&futureTime, 0, sizeof(struct tm));
     get_Localtime(C_CAST(const time_t*, &inputTime), &futureTime);

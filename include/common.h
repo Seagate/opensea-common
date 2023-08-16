@@ -1213,9 +1213,9 @@ extern "C"
     //  Exit:
     //
     //-----------------------------------------------------------------------------
-    void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
+    void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
-    void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
+    void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
     //-----------------------------------------------------------------------------
     //
@@ -1250,7 +1250,7 @@ extern "C"
     //  Exit:
     //
     //-----------------------------------------------------------------------------
-    void print_Time_To_Screen(uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
+    void print_Time_To_Screen(uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
     extern uint32_t seed32Array[2];
     extern uint64_t seed64Array[2];
