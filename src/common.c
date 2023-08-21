@@ -1004,7 +1004,7 @@ void print_Time_To_Screen(uint8_t *years, uint16_t *days, uint8_t *hours, uint8_
     }
     if (days && *days > 0)
     {
-        printf(" %"PRIu8" day", *days);
+        printf(" %"PRIu16" day", *days);
         if (*days > 1)
         {
             printf("s");
