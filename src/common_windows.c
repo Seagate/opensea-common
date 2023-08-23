@@ -509,12 +509,17 @@ eArchitecture get_Compiled_Architecture(void)
     #endif
 }
 
-#if defined __GNUC__
+#if defined __clang__
+// clang specific because behavior can differ even with the GCC diagnostic being "compatible"
+// https ://clang.llvm.org/docs/UsersManual.html#controlling-diagnostics-via-pragmas
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+#elif defined __GNUC__
 //temporarily disable the warning for unused function
 //TODO: figure out version of GCC this is/is not supported in
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
-#endif //__GNUC__
+#endif //__clang__, __GNUC__
 static eEndianness calculate_Endianness(void)
 {
     static eEndianness endian = OPENSEA_UNKNOWN_ENDIAN;//using static so that it should only need to run this code once...not that it takes a long time, but this may help optimise this.
@@ -552,10 +557,12 @@ static eEndianness calculate_Endianness(void)
     }
     return endian;
 }
-#if defined __GNUC__
+#if defined __clang__
+#pragma clang diagnostic pop
+#elif defined __GNUC__
 //reenable the unused function warning
 #pragma GCC diagnostic pop
-#endif //__GNUC__ && !defined __clang__
+#endif //__clang__, __GNUC__
 
 //from what I can tell, windows basically only ever runs on little endian, but this complete check SHOULD MOSTLY work
 eEndianness get_Compiled_Endianness(void)
