@@ -55,7 +55,6 @@ void print_Architecture(eArchitecture arch)
         break;
     case OPENSEA_ARCH_UNKNOWN:
     case OPENSEA_ARCH_RESERVED:
-    default:
         printf("Unknown Architecture");
         break;
     }
@@ -105,7 +104,6 @@ void print_Endianness(eEndianness endian, bool shortPrint)
             printf("Big Endian (Word)");
         }
         break;
-    //default:
     case OPENSEA_UNKNOWN_ENDIAN:
         if (shortPrint)
         {
