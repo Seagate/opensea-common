@@ -408,6 +408,21 @@ void byte_Swap_String(char *stringToChange)
         safe_Free(swappedString);
     }
 }
+
+//use this to swap the bytes in a string...useful for ATA strings
+void byte_Swap_String_with_length(char *stringToChange, size_t size)
+{
+    byte_Swap_String(stringToChange);
+    size_t size_swapped_string = strlen(stringToChange);
+    if (size != size_swapped_string)
+    {
+        char temp = stringToChange[size_swapped_string];
+        stringToChange[size_swapped_string] = stringToChange[size];
+        stringToChange[size] = temp;
+    }
+
+}
+
 void remove_Whitespace_Left(char *stringToChange)
 {
     size_t iter = 0, len = 0;
