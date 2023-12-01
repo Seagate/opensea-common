@@ -58,8 +58,12 @@ extern "C"
     #if defined (__unix__) || defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         #include <strings.h>
     #elif defined (_WIN32) 
-        #define strcasecmp(s1, s2) _stricmp(s1, s2)
-        #define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
+        #if !defined (strcasecmp)
+            #define strcasecmp(s1, s2) _stricmp(s1, s2)
+        #endif //strcasecmp
+        #if !defined (strncasecmp)
+            #define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
+        #endif //strncasecmp
     #else 
         #error "Need string case compare definition."
     #endif // __unix__, POSIX, WIN32
