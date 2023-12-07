@@ -29,8 +29,8 @@ extern "C"
 {
 #endif
 
-//This should be defined to get _s functions from C11 annex K when they are available. Not currently used though - TJE
-//#define __STDC_WANT_LIB_EXT1__ 1
+//asking to get C11 _s functions since there is some ability to use them in some places.
+#define __STDC_WANT_LIB_EXT1__ 1
 
     #include <stdio.h>
     #include <time.h>
@@ -58,8 +58,12 @@ extern "C"
     #if defined (__unix__) || defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         #include <strings.h>
     #elif defined (_WIN32) 
-        #define strcasecmp(s1, s2) _stricmp(s1, s2)
-        #define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
+        #if !defined (strcasecmp)
+            #define strcasecmp(s1, s2) _stricmp(s1, s2)
+        #endif //strcasecmp
+        #if !defined (strncasecmp)
+            #define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
+        #endif //strncasecmp
     #else 
         #error "Need string case compare definition."
     #endif // __unix__, POSIX, WIN32
@@ -71,7 +75,7 @@ extern "C"
     #define C_CAST(type, val) (type)(val)
 
     //Microsoft doesn't have snprintf...it has _snprintf...at least until VS2015 according to my web search - TJE
-    #if _MSC_VER <= 1800 && defined _WIN32
+    #if defined (_MSC_VER) && _MSC_VER <= 1800 && defined _WIN32
     #define snprintf _snprintf
     #endif
 
@@ -1120,8 +1124,6 @@ extern "C"
     //  Entry:
     //!   \param[in] dataBuffer = a pointer to the data buffer you want to print out
     //!   \param[in] bufferLen = the length that you want to print out. This can be the length of the buffer, or anything less than that
-    //!   \param[in] showPrint = set to true to show printable characters on the side of the hex output for the buffer. Non-printable characters will be represented as dots.
-    //!   \param[in] showOffset = set to true to show printable offset on the side of the hex output for the buffer. 
     //!
     //  Exit:
     //
@@ -1215,9 +1217,9 @@ extern "C"
     //  Exit:
     //
     //-----------------------------------------------------------------------------
-    void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
+    void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
-    void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
+    void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
     //-----------------------------------------------------------------------------
     //
@@ -1252,7 +1254,7 @@ extern "C"
     //  Exit:
     //
     //-----------------------------------------------------------------------------
-    void print_Time_To_Screen(uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
+    void print_Time_To_Screen(uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
     extern uint32_t seed32Array[2];
     extern uint64_t seed64Array[2];
@@ -1778,7 +1780,6 @@ extern "C"
     //-----------------------------------------------------------------------------
     bool is_Empty(void *ptrData, size_t lengthBytes);
 
-    //
     //-----------------------------------------------------------------------------
     //
     //  int is_ASCII(int c)
@@ -1809,9 +1810,56 @@ extern "C"
     //-----------------------------------------------------------------------------
     void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue);
 
+    //-----------------------------------------------------------------------------
+    //
+    //  char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source);
+    //
+    //! \brief   Description:  To be used in place of strcat. This will work more like strlcat in the BSDs and will always null terminate.
+    //
+    //  Entry:
+    //!   \param[in] destination = pointer to memory to write with zeroes. Must be non-NULL
+    //!   \param[in] destinationSizeBytes = number of bytes pointed to by destination
+    //!   \param[in] source = pointer to source string to concatenate onto destination. Must be NULL terminated.
+    //!
+    //  Exit:
+    //!   \return pointer to destination
+    //
+    //-----------------------------------------------------------------------------
     char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source);
 
+    //-----------------------------------------------------------------------------
+    //
+    //  char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, const char* source, int sourceLength);
+    //
+    //! \brief   Description:  To be used in place of strncat. Will always null terminate destination string.
+    //
+    //  Entry:
+    //!   \param[in] destination = pointer to memory to write with zeroes. Must be non-NULL
+    //!   \param[in] destinationSizeBytes = number of bytes pointed to by destination
+    //!   \param[in] source = pointer to source string to concatenate onto destination. null termination recommended
+    //!   \param[in] sourceLength = number of bytes to use from source for concatenation
+    //!
+    //  Exit:
+    //!   \return pointer to destination
+    //
+    //-----------------------------------------------------------------------------
     char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, const char* source, int sourceLength);
+
+    //-----------------------------------------------------------------------------
+    //
+    //  void* explicit_zeroes(void* dest, size_t count)
+    //
+    //! \brief   Description:  Write zeroes to memory pointer that will not be optimized out by the compiler. 
+    //
+    //  Entry:
+    //!   \param[in] dest = pointer to memory to write with zeroes. Must be non-NULL
+    //!   \param[in] count = number of bytes to write to zero
+    //!
+    //  Exit:
+    //!   \return NULL = error occurred otherwise returns pointer to dest
+    //
+    //-----------------------------------------------------------------------------
+    void* explicit_zeroes(void* dest, size_t count);
 
 #if defined (__cplusplus)
 } //extern "C"

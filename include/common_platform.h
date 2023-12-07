@@ -591,11 +591,17 @@ extern "C"
     //-----------------------------------------------------------------------------
     bool is_Running_Elevated(void);
     
+#if defined (ENABLE_READ_USERNAME)
+    //This flag is required to enable this functionality.
+    // A customer reported concerns about this reading the /etc/passwd file in Linux...the only way to map a UID to a username string
+    // So the solution to this problem is to flag this capability to being off by default.
+    // You must define this macro before building to use this functionality now.
     //-----------------------------------------------------------------------------
     //
     //  get_Current_User_Name
     //
     //! \brief   Description:  This function will look up the current user name using getuid(). This function allocates memory for the user name, so make sure to free it when it is done.
+    //!                        In linux/unix systems this uses an API that opens the /etc/passwd file to do this mapping.
     //
     //  Entry:
     //!
@@ -604,6 +610,7 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     int get_Current_User_Name(char **userName);
+#endif //ENABLE_READ_USERNAME
 
 #if defined (__cplusplus)
 } //extern "C"

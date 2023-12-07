@@ -199,7 +199,7 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
                 break;
             case DEFAULT:
             default:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(M_Nibble0(C_CAST(unsigned long long, get_Default_Console_Colors()), currentBackground)));
+                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(M_Nibble0(C_CAST(unsigned long long, get_Default_Console_Colors())), currentBackground));
                 break;
             }
         }
@@ -676,6 +676,7 @@ bool is_Running_Elevated()
     return true;//In UEFI, there is no concept of admin or sudo. The getuid function always returns zero, and the geteuid function isn't present at all currently, so it's safe to just return true here.
 }
 
+#if defined (ENABLE_READ_USERNAME)
 int get_Current_User_Name(char **userName)
 {
     int ret = SUCCESS;
@@ -699,3 +700,4 @@ int get_Current_User_Name(char **userName)
     }
     return ret;
 }
+#endif //ENABLE_READ_USERNAME

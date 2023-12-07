@@ -223,10 +223,10 @@ size_t get_System_Pagesize(void)
         //use get page size: http://man7.org/linux/man-pages/man2/getpagesize.2.html
         return C_CAST(size_t, getpagesize());
     #elif defined (_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
-        SYSTEM_INFO system;
-        memset(&system, 0, sizeof(SYSTEM_INFO));
-        GetSystemInfo(&system);
-        return C_CAST(size_t, system.dwPageSize);
+        SYSTEM_INFO winSysInfo;
+        memset(&winSysInfo, 0, sizeof(SYSTEM_INFO));
+        GetSystemInfo(&winSysInfo);
+        return C_CAST(size_t, winSysInfo.dwPageSize);
     #else
         return -1;//unknown, so return something easy to see an error with.
     #endif
@@ -386,17 +386,16 @@ int16_t kelvin_To_Fahrenheit(int16_t *kelvin)
 //use this to swap the bytes in a string...useful for ATA strings
 void byte_Swap_String(char *stringToChange)
 {
-    size_t stringIter = 0;
-    size_t stringlen = strlen(stringToChange);
-    char *swappedString = C_CAST(char *, calloc(stringlen + 1, sizeof(char)));
-    if (swappedString == NULL)
+    size_t stringlen = strlen(stringToChange) + 1;
+    if (stringlen > 1)//greater than 1 since we append 1 for a null
     {
-        return;
-    }
-    memset(swappedString, 0, stringlen);
-    if (stringlen > 0)
-    {
-        for (stringIter = 0; stringIter < stringlen; stringIter += 2)
+        char* swappedString = C_CAST(char*, calloc(stringlen, sizeof(char)));
+        if (swappedString == NULL)
+        {
+            return;
+        }
+
+        for (size_t stringIter = 0; stringIter < (stringlen - 1); stringIter += 2)//strlen - 1 to make sure NULL terminator will not be touched with other changes made in this function -TJE
         {
             swappedString[stringIter] = stringToChange[stringIter + 1];
             if (stringIter + 1 < stringlen)
@@ -404,9 +403,10 @@ void byte_Swap_String(char *stringToChange)
                 swappedString[stringIter + 1] = stringToChange[stringIter];
             }
         }
+        memset(stringToChange, 0, stringlen);
+        memcpy(stringToChange, swappedString, stringlen);
+        safe_Free(swappedString);
     }
-    snprintf(stringToChange, stringlen + 1, "%s", swappedString);//The plus 1 is to include the NULL terminating character that ALL strings passed to this function should have room for!-TJE
-    free(swappedString);
 }
 void remove_Whitespace_Left(char *stringToChange)
 {
@@ -421,7 +421,7 @@ void remove_Whitespace_Left(char *stringToChange)
         return;
     }
 
-    while ((stringToChange[iter]) && iter < (strlen(stringToChange) - 1))  // having issues with the isspace command leaving extra chars in the string
+    while ((iter < (strlen(stringToChange) - 1) && stringToChange[iter]))  // having issues with the isspace command leaving extra chars in the string
     {
         stringToChange[iter] = stringToChange[iter + len];
         iter++;
@@ -568,7 +568,7 @@ size_t find_first_occurrence_in_string(char *originalString, char *stringToFind)
         return (size_t)(partialString - originalString);
     }
 
-    return strlen(originalString);;
+    return strlen(originalString);
 }
 
 bool wildcard_Match(char * pattern, char * data)
@@ -924,7 +924,7 @@ bool is_Empty(void *ptrData, size_t lengthBytes)
     return false;
 }
 
-void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
+void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
 {
     double tempCalcValue = secondsToConvert;
     //get seconds up to a maximum of 60
@@ -948,7 +948,7 @@ void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t
     //get days up to 365
     if (days)
     {
-        *days = C_CAST(uint8_t, fmod(tempCalcValue, 365.0));
+        *days = C_CAST(uint16_t, fmod(tempCalcValue, 365.0));
     }
     tempCalcValue /= 365.0;
     //get years
@@ -958,33 +958,33 @@ void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t
     }
 }
 
-void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
+void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
 {
     uint64_t tempCalcValue = secondsToConvert;
     //get seconds up to a maximum of 60
     if (seconds)
     {
-        *seconds = C_CAST(uint8_t, tempCalcValue % 60);
+        *seconds = C_CAST(uint8_t, tempCalcValue % UINT64_C(60));
     }
-    tempCalcValue /= 60;
+    tempCalcValue /= UINT64_C(60);
     //get minutes up to a maximum of 60
     if (minutes)
     {
-        *minutes = C_CAST(uint8_t, tempCalcValue % 60);
+        *minutes = C_CAST(uint8_t, tempCalcValue % UINT64_C(60));
     }
-    tempCalcValue /= 60;
+    tempCalcValue /= UINT64_C(60);
     //get hours up to a maximum of 24
     if (hours)
     {
-        *hours = C_CAST(uint8_t, tempCalcValue % 24);
+        *hours = C_CAST(uint8_t, tempCalcValue % UINT64_C(24));
     }
-    tempCalcValue /= 24;
+    tempCalcValue /= UINT64_C(24);
     //get days up to 365
     if (days)
     {
-        *days = C_CAST(uint8_t, tempCalcValue % 365);
+        *days = C_CAST(uint16_t, tempCalcValue % UINT64_C(365));
     }
-    tempCalcValue /= 365;
+    tempCalcValue /= UINT64_C(365);
     //get years
     if (years)
     {
@@ -992,7 +992,7 @@ void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *yea
     }
 }
 
-void print_Time_To_Screen(uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
+void print_Time_To_Screen(uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
 {
     if (years && *years > 0)
     {
@@ -1004,7 +1004,7 @@ void print_Time_To_Screen(uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t
     }
     if (days && *days > 0)
     {
-        printf(" %"PRIu8" day", *days);
+        printf(" %"PRIu16" day", *days);
         if (*days > 1)
         {
             printf("s");
@@ -1314,7 +1314,8 @@ char* get_Current_Time_String(const time_t* timer, char *buffer, size_t bufferSi
 
 time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
 {
-    uint8_t years = 0, months = 0, days = 0, hours = 0, minutes = 0, seconds = 0;
+    uint16_t days = 0;
+    uint8_t years = 0, months = 0, hours = 0, minutes = 0, seconds = 0;
     struct tm futureTime;
     memset(&futureTime, 0, sizeof(struct tm));
     get_Localtime(C_CAST(const time_t*, &inputTime), &futureTime);
@@ -1876,4 +1877,51 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
         }
     }
     return NULL;
+}
+
+void* explicit_zeroes(void* dest, size_t count)
+{
+    if (dest && count > 0)
+    {
+#if (defined (__STDC_VERSION__) && __STDC_VERSION__ >= 202311L /*C23*/) || defined (HAVE_MEMSET_EXPLICIT)
+        return memset_explicit(dest, 0, count);
+#elif defined (__STDC_LIB_EXT1__) || defined (HAVE_MEMSET_S)
+        //use memset_s since it cannot be optimized out
+        if (0 == memset_s(dest, count, 0, count))
+        {
+            return dest;
+        }
+        else
+        {
+            return NULL;
+        }
+#elif defined (_WIN32) && defined (_MSC_VER)
+        //use microsoft's SecureZeroMemory function
+        return SecureZeroMemory(dest, count);
+#elif (defined (__FreeBSD__) && __FreeBSD__ >= 11) || (defined (__OpenBSD__) && defined(OpenBSD5_5)) || (defined (__GLIBC__) && defined (__GLIBC_MINOR__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 25) || defined (HAVE_EXPLICIT_BZERO)
+        //TODO: MUSL seems to support this too, so need to figure out how to detect it there.
+        //https://elixir.bootlin.com/musl/latest/source/src/string/explicit_bzero.c <- seems to appear first in 1.1.20
+        //https://man.freebsd.org/cgi/man.cgi?query=explicit_bzero
+        //https://www.gnu.org/software/gnulib/manual/html_node/explicit_005fbzero.html
+        //https://man.dragonflybsd.org/?command=explicit_bzero&section=3
+        //illumos has this too, but differs from oracle's solaris which has explicit_memset
+        //https://illumos.org/man/3C/explicit_bzero
+        explicit_bzero(dest, count);
+        return dest;
+#elif (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 7000000000L /* net bsd version 7.0 and up*/) || defined (HAVE_EXPLICIT_MEMSET)
+        //https://man.netbsd.org/NetBSD-8.0/explicit_memset.3
+        //https://docs.oracle.com/cd/E88353_01/html/E37843/explicit-memset-3c.html
+        //TODO: Solaris 11.4.12 added this, but I cannot find it in illumos based distributions
+        return explicit_memset(dest, 0, count);
+#else
+        //one idea on the web is this ugly volatile function pointer to memset to stop the compiler optimization
+        //so doing this so I don't need to make more per-compiler ifdefs for other solutions
+        void* (* const volatile no_optimize_memset) (void*, int, size_t) = memset;
+        return no_optimize_memset(dest, 0, count);
+#endif
+    }
+    else
+    {
+        return NULL;
+    }
 }
