@@ -286,6 +286,7 @@ extern "C"
     #define WIN_API_TARGET_WIN10_19041      0x0A000009     //10.0.19041.0 //Win 10 API, build 19041
     #define WIN_API_TARGET_WIN10_20348      0x0A00000A     //10.0.20348.0 //Win 10 API, build 20348
     #define WIN_API_TARGET_WIN10_22000      0x0A00000B     //10.0.22000.0 //Win 10 API, build 22000
+    #define WIN_API_TARGET_WIN11_22621      0x0A00000C     //10.0.22621.755 //Win 11 API, build 22621
         
 #if defined (__cplusplus)
 }

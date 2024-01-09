@@ -58,8 +58,12 @@ extern "C"
     #if defined (__unix__) || defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         #include <strings.h>
     #elif defined (_WIN32) 
-        #define strcasecmp(s1, s2) _stricmp(s1, s2)
-        #define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
+        #if !defined (strcasecmp)
+            #define strcasecmp(s1, s2) _stricmp(s1, s2)
+        #endif //strcasecmp
+        #if !defined (strncasecmp)
+            #define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
+        #endif //strncasecmp
     #else 
         #error "Need string case compare definition."
     #endif // __unix__, POSIX, WIN32
@@ -1227,9 +1231,9 @@ extern "C"
     //  Exit:
     //
     //-----------------------------------------------------------------------------
-    void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
+    void convert_Seconds_To_Displayable_Time(uint64_t secondsToConvert, uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
-    void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
+    void convert_Seconds_To_Displayable_Time_Double(double secondsToConvert, uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
     //-----------------------------------------------------------------------------
     //
@@ -1264,7 +1268,7 @@ extern "C"
     //  Exit:
     //
     //-----------------------------------------------------------------------------
-    void print_Time_To_Screen(uint8_t *years, uint8_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
+    void print_Time_To_Screen(uint8_t *years, uint16_t *days, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
     extern uint32_t seed32Array[2];
     extern uint64_t seed64Array[2];

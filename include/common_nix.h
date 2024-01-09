@@ -27,6 +27,8 @@ extern "C"
 
     #include <sys/param.h> //can be helpful to do compile-time version/capabilities identification
 
+    #define ROOT_UID_VAL (0)
+
     //-----------------------------------------------------------------------------
     //
     //  os_Create_Directory()

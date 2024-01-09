@@ -1507,13 +1507,14 @@ double get_Seconds(seatimer_t timer)
 bool is_Running_Elevated(void)
 {
     bool isElevated = false;
-    if (getuid() == 0 || geteuid() == 0)
+    if (getuid() == ROOT_UID_VAL || geteuid() == ROOT_UID_VAL)
     {
         isElevated = true;
     }
     return isElevated;
 }
 
+#if defined (ENABLE_READ_USERNAME)
 static size_t get_Sys_Username_Max_Length(void)
 {
     #if defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
@@ -1531,6 +1532,13 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
     bool success = false;
     if(userName)
     {
+        if (userID == ROOT_UID_VAL)
+        {
+            *userName = strdup("root");
+            success = true;
+        }
+        else
+        {
         #if defined _POSIX_C_SOURCE && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
             //use reentrant call instead.
             char *rawBuffer = NULL;
@@ -1567,10 +1575,10 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                 if (error == 0 && userInfo && rawBuffer)
                 {
                     //success
-                    size_t userNameLength = strlen(userInfo->pw_name) + 1;
+                    size_t userNameLength = strlen(userInfo->pw_name) + 1;//add 1 to ensure room for NULL termination
                     if (userNameLength > 1 && (userNameLength - 1) <= get_Sys_Username_Max_Length())//make sure userNameLength is valid and not too large
                     {
-                        *userName = C_CAST(char*, calloc(userNameLength, sizeof(char)));//add 1 to ensure room for NULL termination
+                        *userName = C_CAST(char*, calloc(userNameLength, sizeof(char)));
                         if (*userName)
                         {
                             snprintf(*userName, userNameLength, "%s", userInfo->pw_name);
@@ -1578,16 +1586,18 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                         }
                     }
                 }
+                explicit_zeroes(rawBuffer, dataSize);
                 safe_Free(rawBuffer)
-            }            
-        #else
+            }
+            explicit_zeroes(userInfo, sizeof(struct passwd));
+        #else //defined _POSIX_C_SOURCE && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
             struct passwd *userInfo = getpwuid(userID);
             if (userInfo)
             {
-                size_t userNameLength = strlen(userInfo->pw_name) + 1;
+                size_t userNameLength = strlen(userInfo->pw_name) + 1;//add 1 to ensure room for NULL termination
                 if (userNameLength > 1 && (userNameLength - 1) <= get_Sys_Username_Max_Length())//make sure userNameLength is valid and not too large
                 {
-                    *userName = C_CAST(char*, calloc(userNameLength, sizeof(char)));//add 1 to ensure room for NULL termination
+                    *userName = C_CAST(char*, calloc(userNameLength, sizeof(char)));
                     if (*userName)
                     {
                         snprintf(*userName, userNameLength, "%s", userInfo->pw_name);
@@ -1595,7 +1605,12 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                     }
                 }
             }
-        #endif
+            //this should be reasonably safe to do.
+            //This structure can be in a static location, so writing zeroes to it might be a good way to make sure this is cleared out after we are done.
+            //the docs online say subsequent calls to getpwuid may change it, making this not thread-safe, so I would assume this is ok to do.
+            explicit_zeroes(userInfo, sizeof(struct passwd));
+        #endif //defined _POSIX_C_SOURCE && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        }
     }
     return success;
 }
@@ -1616,4 +1631,4 @@ int get_Current_User_Name(char **userName)
     }
     return ret;
 }
-
+#endif //ENABLE_READ_USERNAME
