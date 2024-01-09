@@ -954,20 +954,6 @@ extern "C"
 
     //-----------------------------------------------------------------------------
     //
-    //  byte_Swap_String_with_lenth()
-    //
-    //! \brief   Description:  swap the bytes in a string based on length. This is useful when interpretting ATA strings
-    //
-    //  Entry:
-    //!   \param[out] stringToChange = a pointer to the data containing a string that needs to have the bytes swapped
-    //!   size = size of string
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void byte_Swap_String_with_length(char *stringToChange, size_t size);
-
-    //-----------------------------------------------------------------------------
-    //
     //  remove_Whitespace_Left()
     //
     //! \brief   Description:  remove the whitespace at the beginning of a string with no repeating first char in string
