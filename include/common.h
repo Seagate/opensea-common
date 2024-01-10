@@ -671,6 +671,15 @@ extern "C"
        size_t AllocLen;  // If AllocLen is zero, pData must be NULL also.
     } tDataPtr;
 
+#define TIME_STRING_LENGTH 26
+#define CURRENT_TIME_STRING_LENGTH TIME_STRING_LENGTH
+    // global timestamp
+    extern time_t CURRENT_TIME;
+    extern char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH];
+
+    // get the current timestamp and use same for all log pulls and utility banner.
+    bool get_current_timestamp();
+
     //-----------------------------------------------------------------------------
     //
     //  delay_Milliseconds()
@@ -1444,11 +1453,9 @@ extern "C"
     //meant to replace calling localtime() function as this handles all the cross-platform weirdness calling the safest possible version
     struct tm * get_Localtime(const time_t *timer, struct tm *buf);
 
-    #define TIME_STRING_LENGTH 26
     //meant to replace calling asctime() function as this handles all the cross-platform weirdness calling the safest possible version
     char * get_Time_String_From_TM_Structure(const struct tm * timeptr, char *buffer, size_t bufferSize);
 
-    #define CURRENT_TIME_STRING_LENGTH TIME_STRING_LENGTH
     //meant to replace calling ctime() function as this handles all the cross-platform weirdness calling the safest possible version
     char* get_Current_Time_String(const time_t* timer, char *buffer, size_t bufferSize);
 
