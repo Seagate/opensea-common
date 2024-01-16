@@ -678,7 +678,7 @@ extern "C"
     extern char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH];
 
     // get the current timestamp and use same for all log pulls and utility banner.
-    bool get_current_timestamp();
+    bool get_current_timestamp(void);
 
     //-----------------------------------------------------------------------------
     //

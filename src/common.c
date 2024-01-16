@@ -52,7 +52,7 @@ void delay_Milliseconds(uint32_t milliseconds)
 #endif
 }
 
-bool get_current_timestamp()
+bool get_current_timestamp(void)
 {
     bool retStatus = true;
     if (strcmp(CURRENT_TIME_STRING, "") == 0)
