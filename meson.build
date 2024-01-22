@@ -101,7 +101,7 @@ if get_option('debug')
 endif
 
 if get_option('username').enabled()
-  add_global_arguments('-DENABLE_READ_USERNAME', language : 'c')
+  global_cpp_args += ['-DENABLE_READ_USERNAME']
 endif
 
 src_files = ['src/common.c', 'src/common_platform.c']
