@@ -207,7 +207,7 @@ void *calloc_aligned(size_t num, size_t size, size_t alignment)
 void *realloc_aligned(void *alignedPtr, size_t originalSize, size_t size, size_t alignment)
 {
     void *temp = NULL;
-    if (originalSize > 0)//if this is zero, they don't want or care to keep the data
+    if (originalSize == 0)//if this is zero, they don't want or care to keep the data
     {
         free_aligned(alignedPtr);
         alignedPtr = NULL;
