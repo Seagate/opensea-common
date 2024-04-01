@@ -142,7 +142,7 @@ elif target_machine.system() == 'windows'
 	  deps += [win32_version, advapi32]
   endif
   global_cpp_args += ['-D_CRT_NONSTDC_NO_DEPRECATE', '-D_CRT_SECURE_NO_WARNINGS']
-  global_cpp_args += ['-DENABLE_CSMI']
+#global_cpp_args += ['-DENABLE_CSMI']
 endif # TODO UEFI and vmware
 
 m_dep = c.find_library('m', required : false)
