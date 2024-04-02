@@ -571,6 +571,13 @@ extern "C"
         #endif
     #endif
 
+    //round an integer up to nearest multiple
+    //Example: Need to round up to nearest 512B for a data transfer
+    #define INT_ROUND_UP(value, roundto) (((value) % (roundto)) ? ((value) + (roundto) - ((value) % (roundto))) : (value) )
+
+    //round an integer down to nearest multiple
+    #define INT_ROUND_DOWN(value, roundto) (((value) % (roundto)) ? ((value) - ((value) % (roundto))) : (value) )
+
     typedef enum _eReturnValues
     {
         SUCCESS                         = 0,
