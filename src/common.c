@@ -1318,7 +1318,7 @@ char * get_Time_String_From_TM_Structure(const struct tm * timeptr, char *buffer
         {
             restoreLocale = true;
         }
-        #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L && !defined (__MINGW32__) //MINGW in msys2 is warning it does not know %e, so this is catching that. This will likely need a version check whenever it gets fixed-TJE
+        #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L && !defined (__MINGW32__) || (defined (_MSC_VER) && _MSC_VER >= 1700))//MINGW in msys2 is warning it does not know %e, so this is catching that. This will likely need a version check whenever it gets fixed-TJE
         if (0 == strftime(buffer, bufferSize, "%a %b %e %H:%M:%S %Y", timeptr))
         #else
         if (0 == strftime(buffer, bufferSize, "%a %b %d %H:%M:%S %Y", timeptr))
