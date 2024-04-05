@@ -29,6 +29,7 @@
 
 #include <stdlib.h>//aligned allocation functions come from here
 #include <math.h>
+#include <locale.h> //used when getting time to replace ctime and asctime function to try and replicate the format exactly-TJE
 
 time_t CURRENT_TIME = 0;
 char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH] = { 0 };
@@ -1307,11 +1308,30 @@ char * get_Time_String_From_TM_Structure(const struct tm * timeptr, char *buffer
         //start with a known zeroed buffer
         memset(buffer, 0, bufferSize);
         //strftime is recommended to be used. Using format %c will return the matching output for this function
-        if (0 == strftime(buffer, bufferSize, "%c", timeptr))
+        //asctime (which this replaces uses the format: Www Mmm dd hh:mm:ss yyyy\n)
+        //NOTE: %e is C99. C89's closest is %d which has a leading zero.
+        //To be technically correct in replacing this, need to set locale to english instead of localized locale first.
+        //After that is done, it can be reverted back.
+        bool restoreLocale = false;
+        char *currentLocale = strdup(setlocale(LC_TIME, NULL));
+        if (setlocale(LC_TIME, "en-us.utf8"))
+        {
+            restoreLocale = true;
+        }
+        #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L && !defined (__MINGW32__) //MINGW in msys2 is warning it does not know %e, so this is catching that. This will likely need a version check whenever it gets fixed-TJE
+        if (0 == strftime(buffer, bufferSize, "%a %b %e %H:%M:%S %Y", timeptr))
+        #else
+        if (0 == strftime(buffer, bufferSize, "%a %b %d %H:%M:%S %Y", timeptr))
+        #endif
         {
             //This means the array was too small...which shouldn't happen...but in case it does, zero out the memory
             memset(buffer, 0, bufferSize);
         }
+        if (restoreLocale)
+        {
+            setlocale(LC_TIME, currentLocale);
+        }
+        safe_Free(currentLocale);
     }
     return buffer;
 }
