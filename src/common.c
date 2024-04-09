@@ -1871,7 +1871,7 @@ int is_ASCII(int c)
 
 void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue)
 {
-    int32_t  exponent = M_GETBITRANGE(floatValue, 30, 23) - 127;
+    int32_t  exponent = C_CAST(int32_t, M_GETBITRANGE(floatValue, 30, 23) - 127);
     double sign = pow(-1.0, C_CAST(double, M_GETBITRANGE(floatValue, 31, 31)));
 
     int8_t power = -23;
