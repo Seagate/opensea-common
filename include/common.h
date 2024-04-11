@@ -618,6 +618,9 @@ typedef enum _eReturnValues
     FILE_READ_ERROR                     = 29, //For Telemetry Log Parser, when reading logfile to buffer fails
     POWER_CYCLE_REQUIRED                = 30, //For some firmware update scenarios, a power cycle is required to complete the update. This code is returned in these situations.
     DEVICE_ACCESS_DENIED                = 31, //While similar to PERMISSION_DENIED, this is meant for a response from the drive telling us it is not allowing something versus the OS telling us something is not allowed.-TJE
+    NOT_PARSED                          = 32,           // File was not parsed 
+    MISSING_INFORMATION                 = 33,  // file is missing information inorder to be parsed correctly
+    TRUNCATED_FILE                      = 34,       // file is truncated and might be missing data for parsing it correctly
     UNKNOWN
 #if defined (__cplusplus)
     };
