@@ -193,7 +193,11 @@ extern "C"
 
     int replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char *newFileName);
 
+#if defined (__cplusplus)
+    enum class eArchitecture
+#else
     typedef enum _eArchitecture
+#endif  //end c++
     {
         OPENSEA_ARCH_UNKNOWN,
         OPENSEA_ARCH_X86,
@@ -209,7 +213,11 @@ extern "C"
         OPENSEA_ARCH_MIPS,
         //Add more architectures here as we support them
         OPENSEA_ARCH_RESERVED
+#if defined (__cplusplus)
+    };
+#else
     }eArchitecture;
+#endif
 
     //-----------------------------------------------------------------------------
     //
@@ -240,14 +248,22 @@ extern "C"
     //-----------------------------------------------------------------------------
     void print_Architecture(eArchitecture arch);
 
+#if defined (__cplusplus)
+    enum class eEndianness
+#else
     typedef enum _eEndianness
+#endif //end c++
     {
         OPENSEA_LITTLE_ENDIAN,
         OPENSEA_BIG_ENDIAN,
         OPENSEA_LITTLE_WORD_ENDIAN,//uncommon, probably won't be found/used
         OPENSEA_BIG_WORD_ENDIAN,//uncommon, probably won't be found/used
         OPENSEA_UNKNOWN_ENDIAN //if this is returned, then __LITTLE_ENDIAN__ or __BIG_ENDIAN__ needs to be defined for the compilation. Or you can ignore this and assume little endian - TJE
+#if defined (__cplusplus)
+    };
+#else
     }eEndianness;
+#endif // end c++
 
     //-----------------------------------------------------------------------------
     //

@@ -571,6 +571,7 @@ extern "C"
         #endif
     #endif
 
+
     //round an integer up to nearest multiple
     //Example: Need to round up to nearest 512B for a data transfer
     #define INT_ROUND_UP(value, roundto) (((value) % (roundto)) ? ((value) + (roundto) - ((value) % (roundto))) : (value) )
@@ -578,42 +579,51 @@ extern "C"
     //round an integer down to nearest multiple
     #define INT_ROUND_DOWN(value, roundto) (((value) % (roundto)) ? ((value) - ((value) % (roundto))) : (value) )
 
-    typedef enum _eReturnValues
-    {
-        SUCCESS                         = 0,
-        FAILURE                         = 1,
-        NOT_SUPPORTED                   = 2,
-        COMMAND_FAILURE                 = 3,
-        IN_PROGRESS                     = 4, //another command is in progress, or a command has started and is now in progress in the background
-        ABORTED                         = 5, //Command was aborted
-        BAD_PARAMETER                   = 6, //the only time this return code should be seen is when a developer is writing code to add something. This should not appear in a finished application
-        MEMORY_FAILURE                  = 7, //could not allocate memory
-        OS_PASSTHROUGH_FAILURE          = 8, //For some unknown reason, the OS API call to issue the pass-through command failed.
-        LIBRARY_MISMATCH                = 9,
-        FROZEN                          = 10, //use this to communicate back when the device is in a frozen state for a commmand like sanitize or ata security
-        PERMISSION_DENIED               = 11, //OS returned Access/permission denied
-        FILE_OPEN_ERROR                 = 12,
-        WARN_INCOMPLETE_RFTRS           = 13, //command was issued, and some RTFRs were received, but we were unable to get a complete RTFR result. This is most likely due to a SATL limitation.
-        OS_COMMAND_TIMEOUT              = 14, //command took longer than the timeout that was provided to the OS
-        WARN_NOT_ALL_DEVICES_ENUMERATED = 15,
-        WARN_INVALID_CHECKSUM           = 16, //The checksum on the data for a command didn't calculate correctly (EX: Identify device, some ATA Logs)
-        OS_COMMAND_NOT_AVAILABLE        = 17, //This is returned when the OS does not have a way to issue the requested command. (EX: Trying to send an NVMe command without Win10, or trying a 32byte SCSI command pre-Win8)
-        OS_COMMAND_BLOCKED              = 18, //This is returned when the OS is blocking the command from being issued (EX: TCG - linux, lib ATA......or Sanitize in Windos 8+)
-        COMMAND_INTERRUPTED             = 19, //Nidhi - Added for SCT commands, if interrupted by some other SCT command.
-		VALIDATION_FAILURE              = 20, //For UDS/SM2 validation check
-        STRIP_HDR_FOOTER_FAILURE        = 21, //For UDS
-        PARSE_FAILURE                   = 22,
-        INVALID_LENGTH                  = 23,  // Binary file has a invalid length or the parameters for the length don't match the size of the fiile
-        ERROR_WRITING_FILE              = 24, //LookTan added for fwrite check on May20'20
-		TIMEOUT					        = 25, //Pranali added for indicating operation timeout for SeaQueue
-        OS_TIMEOUT_TOO_LARGE            = 26, //Tyler added for cases where a requested timeout is larger than the OS is capable of supporting in passthrough
-        PARSING_EXCEPTION_FAILURE       = 27, //Nidhi - For C/C++ exception failure while parsing
-        DIR_CREATION_FAILED             = 28, //Pranali - For Telemetry Log Parser, when the creation of output folder fails
-        FILE_READ_ERROR                 = 29, //Pranali - For Telemetry Log Parser, when reading logfile to buffer fails
-        POWER_CYCLE_REQUIRED            = 30, //For some firmware update scenarios, a power cycle is required to complete the update. This code is returned in these situations.
-        DEVICE_ACCESS_DENIED            = 31, //While similar to PERMISSION_DENIED, this is meant for a response from the drive telling us it is not allowing something versus the OS telling us something is not allowed.-TJE
-        UNKNOWN
+
+#if defined (__cplusplus)
+enum class eReturnValues
+#else
+typedef enum _eReturnValues
+#endif
+{
+    SUCCESS                             = 0,
+    FAILURE                             = 1,
+    NOT_SUPPORTED                       = 2,
+    COMMAND_FAILURE                     = 3,
+    IN_PROGRESS                         = 4, //another command is in progress, or a command has started and is now in progress in the background
+    ABORTED                             = 5, //Command was aborted
+    BAD_PARAMETER                       = 6, //the only time this return code should be seen is when a developer is writing code to add something. This should not appear in a finished application
+    MEMORY_FAILURE                      = 7, //could not allocate memory
+    OS_PASSTHROUGH_FAILURE              = 8, //For some unknown reason, the OS API call to issue the pass-through command failed.
+    LIBRARY_MISMATCH                    = 9,
+    FROZEN                              = 10, //use this to communicate back when the device is in a frozen state for a commmand like sanitize or ata security
+    PERMISSION_DENIED                   = 11, //OS returned Access/permission denied
+    FILE_OPEN_ERROR                     = 12,
+    WARN_INCOMPLETE_RFTRS               = 13, //command was issued, and some RTFRs were received, but we were unable to get a complete RTFR result. This is most likely due to a SATL limitation.
+    OS_COMMAND_TIMEOUT                  = 14, //command took longer than the timeout that was provided to the OS
+    WARN_NOT_ALL_DEVICES_ENUMERATED     = 15,
+    WARN_INVALID_CHECKSUM               = 16, //The checksum on the data for a command didn't calculate correctly (EX: Identify device, some ATA Logs)
+    OS_COMMAND_NOT_AVAILABLE            = 17, //This is returned when the OS does not have a way to issue the requested command. (EX: Trying to send an NVMe command without Win10, or trying a 32byte SCSI command pre-Win8)
+    OS_COMMAND_BLOCKED                  = 18, //This is returned when the OS is blocking the command from being issued (EX: TCG - linux, lib ATA......or Sanitize in Windos 8+)
+    COMMAND_INTERRUPTED                 = 19, //Added for SCT commands, if interrupted by some other SCT command.
+    VALIDATION_FAILURE                  = 20, //validation check
+    STRIP_HDR_FOOTER_FAILURE            = 21, //For UDS
+    PARSE_FAILURE                       = 22,
+    INVALID_LENGTH                      = 23,  // Binary file has a invalid length or the parameters for the length don't match the size of the fiile
+    ERROR_WRITING_FILE                  = 24, //added for fwrite check on May20'20
+    TIMEOUT                             = 25, //added for indicating operation timeout for SeaQueue
+    OS_TIMEOUT_TOO_LARGE                = 26, //added for cases where a requested timeout is larger than the OS is capable of supporting in passthrough
+    PARSING_EXCEPTION_FAILURE           = 27, //For C/C++ exception failure while parsing
+    DIR_CREATION_FAILED                 = 28, //For Telemetry Log Parser, when the creation of output folder fails
+    FILE_READ_ERROR                     = 29, //For Telemetry Log Parser, when reading logfile to buffer fails
+    POWER_CYCLE_REQUIRED                = 30, //For some firmware update scenarios, a power cycle is required to complete the update. This code is returned in these situations.
+    DEVICE_ACCESS_DENIED                = 31, //While similar to PERMISSION_DENIED, this is meant for a response from the drive telling us it is not allowing something versus the OS telling us something is not allowed.-TJE
+    UNKNOWN
+#if defined (__cplusplus)
+    };
+#else
     }eReturnValues;
+#endif
 
     typedef enum _eDataTransferDirection 
     {
@@ -624,21 +634,37 @@ extern "C"
         XFER_DATA_IN_OUT, // Transfer from target to host, followed by host to target
      } eDataTransferDirection;
 
+#if defined (__cplusplus)
+    enum class eVerbosityLevels
+#else
     typedef enum _eVerbosityLevels
+#endif //end c++
     {
-        VERBOSITY_QUIET           = 0,
-        VERBOSITY_DEFAULT         = 1,
-        VERBOSITY_COMMAND_NAMES   = 2,
-        VERBOSITY_COMMAND_VERBOSE = 3,
-        VERBOSITY_BUFFERS         = 4
+        VERBOSITY_QUIET             = 0,
+        VERBOSITY_DEFAULT           = 1,
+        VERBOSITY_COMMAND_NAMES     = 2,
+        VERBOSITY_COMMAND_VERBOSE   = 3,
+        VERBOSITY_BUFFERS           = 4
+#if defined (__cplusplus)
+    };
+#else
     }eVerbosityLevels;
+#endif
 
     // json data type sets. used for formating data to a customer demands 
+#if defined (__cplusplus)
+    enum class eDataFormat
+#else
     typedef enum _eDataFormat
+#endif
     {
         JSON_DATA = 0,   //default
         PREPYTHON_DATA = 1,
+#if defined (__cplusplus)
+    };
+#else
     }eDataFormat;
+#endif
 
     // Max & Min Helpers
     #define  M_Min(a,b)    (((a)<(b))?(a):(b))
@@ -1483,7 +1509,11 @@ extern "C"
     //-----------------------------------------------------------------------------
     time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture);
 
+#if defined (__cplusplus)
+    enum class eCompiler
+#else
     typedef enum _eCompiler
+#endif   //end c++
     {
         OPENSEA_COMPILER_UNKNOWN,
         OPENSEA_COMPILER_MICROSOFT_VISUAL_C_CPP,
@@ -1497,7 +1527,11 @@ extern "C"
         OPENSEA_COMPILER_HP_A_CPP,//not supported right now
         //Add other compilers here if we ever add more than those above (which not all listed above are supported!)
         OPENSEA_COMPILER_RESERVED
+#if defined (__cplusplus)
+    };
+#else
     }eCompiler;
+#endif  // end of c++
 
     typedef struct _compilerVersion
     {
