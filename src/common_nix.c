@@ -952,39 +952,48 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
         bool usrLibRelease = os_File_Exists("/usr/lib/os-release");
         if (etcRelease || usrLibRelease)//available on newer OS's
         {
+            #define RELEASE_FILE_NAME_LENGTH 21
+            char releasefile[RELEASE_FILE_NAME_LENGTH] = { 0 };
             //read this file and get the linux name
             FILE* release = NULL;
             if (etcRelease)
             {
                 release = fopen("/etc/os-release", "r");
+                snprintf(releasefile, RELEASE_FILE_NAME_LENGTH, "/etc/os-release");
             }
             else
             {
                 release = fopen("/usr/lib/os-release", "r");
+                snprintf(releasefile, RELEASE_FILE_NAME_LENGTH, "/usr/lib/os-release");
             }
             if (release)
             {
-                //read it
-                fseek(release, ftell(release), SEEK_END);
-                size_t releaseSize = ftell(release);
-                rewind(release);
-                char* releaseMemory = C_CAST(char*, calloc(releaseSize, sizeof(char)));
-                if (fread(releaseMemory, sizeof(char), releaseSize, release))
+                struct stat releasestat;
+                memset(&releasestat, 0, sizeof(struct stat));
+                if (0 == stat(releasefile, &releasestat))
                 {
-                    //Use the "PRETTY_NAME" field
-                    char* tok = strtok(releaseMemory, "\n");
-                    while (tok != NULL)
+                    off_t releaseSize = releasestat.st_size;
+                    if (releaseSize > 0)
                     {
-                        if (strncmp(tok, "PRETTY_NAME=", strlen("PRETTY_NAME=")) == 0)
+                        char* releaseMemory = C_CAST(char*, calloc(C_CAST(size_t, releaseSize), sizeof(char)));
+                        if (fread(releaseMemory, sizeof(char), C_CAST(size_t, releaseSize), release) == C_CAST(size_t, releaseSize) && !ferror(release))
                         {
-                            gotLinuxInfo = true;
-                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(tok) - 1 - strlen("PRETTY_NAME=\"")), tok + strlen("PRETTY_NAME=\""));
-                            break;
+                            //Use the "PRETTY_NAME" field
+                            char* tok = strtok(releaseMemory, "\n");
+                            while (tok != NULL)
+                            {
+                                if (strncmp(tok, "PRETTY_NAME=", strlen("PRETTY_NAME=")) == 0)
+                                {
+                                    gotLinuxInfo = true;
+                                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(tok) - 1 - strlen("PRETTY_NAME=\"")), tok + strlen("PRETTY_NAME=\""));
+                                    break;
+                                }
+                                tok = strtok(NULL, "\n");
+                            }
                         }
-                        tok = strtok(NULL, "\n");
+                        safe_Free(releaseMemory)
                     }
                 }
-                safe_Free(releaseMemory)
                 fclose(release);
             }
         }
@@ -1004,27 +1013,30 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
         char* fileName = C_CAST(char*, calloc(fileNameLength, sizeof(char)));
         if (fileName)
         {
+            struct stat direntfilestat;
+            memset(&direntfilestat, 0, sizeof(struct stat));
             snprintf(fileName, fileNameLength, "/etc/%s", dirent_entry_name);
-            FILE* release = fopen(fileName, "r");
-            if (release)
+            if (0 == stat(fileName, &direntfilestat))
             {
-                //read it
-                fseek(release, ftell(release), SEEK_END);
-                long int releaseSize = ftell(release);
-                if (releaseSize > 0)
+                FILE* release = fopen(fileName, "r");
+                if (release)
                 {
-                    rewind(release);
-                    etcFileMem = C_CAST(char*, calloc(releaseSize, sizeof(char)));
-                    if (etcFileMem)
+                    //read it
+                    off_t releaseSize = direntfilestat.st_size;
+                    if (releaseSize > 0)
                     {
-                        if (fread(etcFileMem, sizeof(char), releaseSize, release) != C_CAST(size_t, releaseSize) || ferror(release))
+                        etcFileMem = C_CAST(char*, calloc(C_CAST(size_t, releaseSize), sizeof(char)));
+                        if (etcFileMem)
                         {
-                            //some error occurred reading the file, so free this memory to return a checkable null pointer.
-                            safe_Free(etcFileMem);
+                            if (fread(etcFileMem, sizeof(char), C_CAST(size_t, releaseSize), release) != C_CAST(size_t, releaseSize) || ferror(release))
+                            {
+                                //some error occurred reading the file, so free this memory to return a checkable null pointer.
+                                safe_Free(etcFileMem);
+                            }
                         }
                     }
+                    fclose(release);
                 }
-                fclose(release);
             }
             safe_Free(fileName)
         }
@@ -1137,25 +1149,28 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
     bool gotLinuxInfo = false;
     if (operatingSystemName)
     {
-        if (os_File_Exists("/etc/issue"))
+        struct stat issuestat;
+        memset(&issuestat, 0, sizeof(struct stat));
+        if (0 == stat("/etc/issue", &issuestat))
         {
             //read this file and get the linux name
             FILE* issue = fopen("/etc/issue", "r");
             if (issue)
             {
                 //read it
-                fseek(issue, ftell(issue), SEEK_END);
-                long int issueSize = ftell(issue);
-                rewind(issue);
-                char* issueMemory = C_CAST(char*, calloc(issueSize, sizeof(char)));
-                if (issueMemory)
+                off_t issueSize = issuestat.st_size;
+                if (issueSize > 0)
                 {
-                    if (fread(issueMemory, sizeof(char), issueSize, issue))
+                    char* issueMemory = C_CAST(char*, calloc(C_CAST(size_t, issueSize), sizeof(char)));
+                    if (issueMemory)
                     {
-                        gotLinuxInfo = true;
-                        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, issueSize), issueMemory);
+                        if (fread(issueMemory, sizeof(char), C_CAST(size_t, issueSize), issue) == C_CAST(size_t, issueSize) && !ferror(issue))
+                        {
+                            gotLinuxInfo = true;
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, issueSize), issueMemory);
+                        }
+                        safe_Free(issueMemory)
                     }
-                    safe_Free(issueMemory)
                 }
                 fclose(issue);
             }
