@@ -50,8 +50,10 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
   '-Wundef',
   '-Wformat',
   '-Wformat=2',
-  '-Wconversion',
-  '-Wno-sign-conversion',
+  '-Wsign-conversion',
+  '-Wint-conversion',#-Warith-conversion
+  '-Wenum-conversion',
+  '-Wfloat-conversion',
   '-Wimplicit-fallthrough',
   '-U_FORTIFY_SOURCE',
   '-D_FORTIFY_SOURCE=3',
