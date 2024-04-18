@@ -30,6 +30,7 @@
 #include <stdlib.h>//aligned allocation functions come from here
 #include <math.h>
 #include <locale.h> //used when getting time to replace ctime and asctime function to try and replicate the format exactly-TJE
+#include <limits.h>
 
 time_t CURRENT_TIME = 0;
 char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH] = { 0 };
@@ -44,12 +45,37 @@ void delay_Milliseconds(uint32_t milliseconds)
     //the usleep code is left in just in case it is needed for any reason, but nanosleep works as expected
     #if defined _POSIX_VERSION && _POSIX_VERSION >= 199309L && defined _POSIX_TIMERS 
         struct timespec delayTime;
-        delayTime.tv_sec = milliseconds / 1000;
-        delayTime.tv_nsec = 1000000 * (milliseconds % 1000);
+        //NOTE: tv_sec is long in C11, but time_t prior.
+        //      tv_nsec is implementation defined until C23 where it is long long
+        //      Because of this change due to standardization, there are extra ifdef's for the casts to fix conversion warnings.-TJE
+        //Try using typeof for GCC and __typeof__ for clang, unless in C23 where typeof is standard.
+        //    
+        #if (defined(__STDC__) && defined (__STDC_VERSION__) &&__STDC_VERSION__ >= 202311L )
+            //C23, so use definitions from C23
+            delayTime.tv_sec = C_CAST(long, milliseconds / UINT32_C(1000));
+            delayTime.tv_nsec = C_CAST(long long, UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
+        #elif defined (__clang__)  
+            //Use __typeof__
+            delayTime.tv_sec = C_CAST(__typeof__(delayTime.tv_sec), milliseconds / UINT32_C(1000));
+            delayTime.tv_nsec = C_CAST(__typeof__(delayTime.tv_nsec), UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
+        #elif defined (__GNUC__)
+            //Use typeof
+            delayTime.tv_sec = C_CAST(typeof(delayTime.tv_sec), milliseconds / UINT32_C(1000));
+            delayTime.tv_nsec = C_CAST(typeof(delayTime.tv_nsec), UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
+        #elif (defined(__STDC__) && defined (__STDC_VERSION__) &&__STDC_VERSION__ >= 201112L)
+            //Use long and long int as a best guess or most likely correct case
+            delayTime.tv_sec = C_CAST(long, milliseconds / UINT32_C(1000));
+            delayTime.tv_nsec = C_CAST(long int, UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
+        #else 
+            //use time_t and long int
+            delayTime.tv_sec = C_CAST(time_t, milliseconds / UINT32_C(1000));
+            delayTime.tv_nsec = C_CAST(long int, UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
+        #endif
+        
         nanosleep(&delayTime, NULL);
-    #else
-        usleep((useconds_t)(milliseconds * 1000));
-    #endif
+    #else //!POSIX 1993...try usleep instead
+        usleep(C_CAST(useconds_t, milliseconds * UINT32_C(1000)));
+    #endif //POSIX check
 #endif
 }
 
@@ -69,8 +95,145 @@ bool get_current_timestamp(void)
 
 void delay_Seconds(uint32_t seconds)
 {
-    delay_Milliseconds(1000 * seconds);
+    delay_Milliseconds(UINT32_C(1000) * seconds);
 }
+
+//returns number of milliseconds since 1970 UTC
+uint64_t get_Milliseconds_Since_Unix_Epoch(void)
+{
+    uint64_t msSinceJan1970 = 0;
+#if (defined(__STDC__) && defined (__STDC_VERSION__) &&__STDC_VERSION__ >= 201112L) || (defined (_MSC_VER) && _MSC_VER >= 1920) //available in VS2019, but stdc version does not get set in certain cases...
+    struct timespec now;
+    memset(&now, 0, sizeof(struct timespec));
+    if (0 != timespec_get(&now, TIME_UTC))
+    {
+        //NOTE: Technically this is a time since the system's epoch as C standard does not set an epoch.
+        //      I'm not sure there is a system we have encountered where it is not the Unix epoch, so this is fine for now - TJE
+        msSinceJan1970 = (C_CAST(uint64_t, now.tv_sec) * UINT64_C(1000)) + (C_CAST(uint64_t, now.tv_nsec) / UINT64_C(1000000));
+    }
+    else 
+#endif //C11
+    {
+#if defined _POSIX_VERSION && _POSIX_VERSION >= 199309L && defined _POSIX_TIMERS 
+        //POSIX gettimeofday() or clock_gettime(CLOCK_REALTIME, ts) https://pubs.opengroup.org/onlinepubs/9699919799/functions/clock_getres.html 
+        //NOTE: Using clock_gettime since it's more accurate and not affected by time-skew
+        struct timespec posixnow;
+        memset(&posixnow, 0, sizeof(struct timespec));
+        if (0 == clock_gettime(CLOCK_REALTIME, &posixnow))
+        {
+            msSinceJan1970 = (C_CAST(uint64_t, posixnow.tv_sec) * UINT64_C(1000)) + (C_CAST(uint64_t, posixnow.tv_nsec) / UINT64_C(1000000));
+        }
+        else
+#elif defined (_MSC_VER)
+        //Use the function in the link below, but MSFT also documents another way to do this, which is what we've implemented -TJE
+        //https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-rtltimetosecondssince1970
+        FILETIME ftnow;
+        FILETIME epochfile;
+        SYSTEMTIME epoch;
+        ULARGE_INTEGER nowAsInt;
+        ULARGE_INTEGER epochAsInt;
+        memset(&ftnow, 0, sizeof(FILETIME));
+        memset(&epochfile, 0, sizeof(FILETIME));
+        memset(&epoch, 0, sizeof(SYSTEMTIME));
+        memset(&nowAsInt, 0, sizeof(ULARGE_INTEGER));
+        memset(&epochAsInt, 0, sizeof(ULARGE_INTEGER));
+        epoch.wYear = 1970;
+        epoch.wMonth = 1;
+        epoch.wSecond = 0;//MSFT says to set to first second.
+        epoch.wDayOfWeek = 4;//Thursday
+        epoch.wDay = 1;
+        GetSystemTimeAsFileTime(&ftnow);
+        memcpy(&nowAsInt, &ftnow, sizeof(ULARGE_INTEGER));//these are both 8 bytes in size, so it SHOULD be fine and MSFT says to do this-TJE
+        SystemTimeToFileTime(&epoch, &epochfile);
+        memcpy(&epochAsInt, &epochfile, sizeof(ULARGE_INTEGER));//these are both 8 bytes in size, so it SHOULD be fine and MSFT says to do this-TJE
+        if (nowAsInt.QuadPart >= epochAsInt.QuadPart)//this should always be true, but seems like microsoft is likely checking this, so checking this as well-TJE
+        {
+            msSinceJan1970 = C_CAST(uint64_t, (nowAsInt.QuadPart - epochAsInt.QuadPart)) / UINT64_C(10000);//subtracting the 2 large integers gives 100 nanosecond intervals since jan 1, 1970, so divide by 10000 to get milliseconds (divide by 10000000 to get seconds)
+        }
+        else
+#endif //OS unique methods to get this info
+        {
+            //time_t is not guaranteed to always be a specific number of units. This can be system specific/library specific.
+            //so to convert using old standards, take a current time_t, convert it to struct tm, then calculate it.
+            //If time_t is 32bits, then this will not work past 2038.
+            //To detect this, we just need to check if the current year is less than 1970. If it is, it could be a roll over problem or some other clock issue.
+            //in that case, just return 0.
+            //NOTE: This code seems to work until approximately the year 275705. The following year I've noticed can be off by a day. There is probably a missing
+            //      adjustment factor somewhere else, but this is close enough-TJE
+            //NOTE: To take into account leap seconds you need a table, or you can average 1 every 1.5 years: https://www.nist.gov/pml/time-and-frequency-division/leap-seconds-faqs#often
+            //      This is not currently taken into account -TJE
+            struct tm nowstruct;
+            time_t currentTime = time(NULL);
+            memset(&nowstruct, 0, sizeof(struct tm));
+            //to get the milliseconds, need to convert this to struct tm, then calculate this.
+            get_UTCtime(&currentTime, &nowstruct);
+            uint64_t currentyear = (C_CAST(uint64_t, nowstruct.tm_year) + UINT64_C(1900));
+            if (currentyear >= UINT64_C(1970))
+            {
+                //need to account for leap years before calculating below. This will get how many leap years there are between the current year and 1970 to add to number of days for adjustment
+                uint64_t leapyears = (currentyear - UINT64_C(1970)) / UINT64_C(4);
+                //now subtract the number of skipped leap years (every 100 years unless divible by 400). This needs to be number since 1970
+                uint64_t skippedleapyears = UINT64_C(0);
+                //years 2000 and 2400 are leap years, but 1700, 1800, 1900, 2100, 2200, and 2300 are not.
+                //To get skipped leap years, need to calculate based on number of centuries that have passed since 1970, then check how many have skipped leap year.
+                //No need to worry about this until at least 2100, however if you skip the year 2000, this causes a problem in 24606 where it will be off by 1 day.-TJE
+                if (currentyear >= UINT64_C(2000))//start at 2000 since it is the first century after 1970.
+                {
+                    //at least year 2100, so need to handle skipped leap years and how many of these have occurred
+                    uint64_t centuriesSince1970 = ((currentyear - UINT64_C(1970)) / UINT64_C(100)) - UINT64_C(1);
+                    //use a loop to check each century, starting in 2100 to see if it was a skipped leap year or not.
+                    uint64_t checkCentury = UINT64_C(2100);
+                    while (checkCentury <= (UINT64_C(2100) + (centuriesSince1970 * UINT64_C(100))))
+                    {
+                        if (checkCentury % UINT64_C(400) != UINT64_C(0))
+                        {
+                            //This century does not have a leap year
+                            skippedleapyears += UINT64_C(1);
+                        }
+                        checkCentury += UINT64_C(100);
+                    }
+                }
+                leapyears -= skippedleapyears;
+                //Need to detect if the leap year is in the current year and if it has occured already or not.
+                if (currentyear % UINT64_C(4) == UINT64_C(0))
+                {
+                    bool adjustforcurrentleapyear = true;
+                    //leap year is in the current year, unless it is a year to skip a leap year (every 100 years, unless divisible by 400)
+                    if (currentyear % UINT64_C(100) == UINT64_C(0) && currentyear % UINT64_C(400) != UINT64_C(0))
+                    {
+                        //currently in a century year without a leap year. No need for the adjustment below
+                        adjustforcurrentleapyear = false;
+                    }
+                    if (adjustforcurrentleapyear)
+                    {
+                        //Check if it is past february 29th already or not.
+                        if (nowstruct.tm_mon < 2)
+                        {
+                            //february or january
+                            if (nowstruct.tm_mon == 0 || (nowstruct.tm_mon == 1 && nowstruct.tm_mday <= 29))
+                            {
+                                //subtract 1 from leapyears since it has not yet occurred for the current year
+                                leapyears -= UINT64_C(1);
+                            }
+                        }
+                    }
+                }
+                //use tm_sec, tm_min, tm_hour, tm_year, and tm_yday to convert this.-TJE
+                msSinceJan1970 = (C_CAST(uint64_t, nowstruct.tm_sec) * UINT64_C(1000)) + (C_CAST(uint64_t, nowstruct.tm_min) * UINT64_C(60000)) + (C_CAST(uint64_t, nowstruct.tm_hour) * UINT64_C(3600000)) + ((C_CAST(uint64_t, nowstruct.tm_yday) + leapyears) * UINT64_C(86400000)) + ((currentyear - UINT64_C(1970)) * UINT64_C(31536000000));
+            }
+            else
+            {
+                //some weird time skew issue or 32bit time_t 2038 issue, so just return zero for an invalid value.-TJE
+                //NOTE: with a 32bit time_t you could probably implement a clever workaround to adjust it to a correct year, but that is not worth
+                //      implmenting in this code. I don't even know which modern OS is using a 32bit time_t in 2024. -TJE
+                //      If a workaround to adjust the year was implemented, it would likely only work until some future time where the same 32bit problem happens again.-TJE
+                msSinceJan1970 = UINT64_C(0);
+            }
+        }
+    }
+    return msSinceJan1970;
+}
+
 //TODO: C11 says supported alignments are implementation defined
 //      We may want an if/else to call back to a generic method if it fails some day. (unlikely, so not done right now)
 //      NOTE: There may also be other functions to do this for other compilers or systems, but they are not known today. Add them as necessary
@@ -324,8 +487,12 @@ void byte_Swap_32(uint32_t *doubleWordToSwap)
 
 void byte_Swap_Int32(int32_t *signedDWord)
 {
-    *signedDWord = ((*signedDWord & INT32_C(0x0000FFFF)) << 16) | ((*signedDWord & INT32_C(0xFFFF0000)) >> 16);
-    *signedDWord = ((*signedDWord & INT32_C(0x00FF00FF)) << 8) | ((*signedDWord & INT32_C(0xFF00FF00)) >> 8);
+    // uint32_t temp = C_CAST(uint32_t, *signedDWord);
+    // byte_Swap_32(&temp);
+    // *signedDWord = C_CAST(int32_t, temp);
+
+    *signedDWord = C_CAST(int32_t, ((*signedDWord & C_CAST(int32_t, INT32_C(0x0000FFFF))) << 16)) | C_CAST(int32_t, ((*signedDWord & C_CAST(int32_t, INT32_C(0xFFFF0000))) >> 16));
+    *signedDWord = C_CAST(int32_t,((*signedDWord & C_CAST(int32_t, INT32_C(0x00FF00FF))) << 8)) | C_CAST(int32_t,((*signedDWord & C_CAST(int32_t, INT32_C(0xFF00FF00))) >> 8));
 }
 void big_To_Little_Endian_32(uint32_t *doubleWordToSwap)
 {
@@ -1964,5 +2131,374 @@ void* explicit_zeroes(void* dest, size_t count)
     else
     {
         return NULL;
+    }
+}
+
+#if !defined (SIZE_MAX)
+#error "SIZE_MAX not defined! Please add a definition for this system!"
+#endif
+
+size_t int8_to_sizet(int8_t val)
+{
+    if (val < 0)
+    {
+        return 0;
+    }
+    #if defined(SIZE_MAX) && defined (INT8_MAX) && SIZE_MAX >= INT8_MAX
+    else
+    {
+        return C_CAST(size_t, val);
+    }
+    #else //SIZE_MAX < INT8_MAX
+    else if (val <= SIZE_MAX)
+    {
+        return C_CAST(size_t, val);
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t uint8_to_sizet(uint8_t val)
+{
+    #if defined(SIZE_MAX) && defined (UINT8_MAX) && SIZE_MAX >= UINT8_MAX
+        return C_CAST(size_t, val);
+    #else //SIZE_MAX < UINT8_MAX
+        if (val <= SIZE_MAX)
+        {
+            return val;
+        }
+        else
+        {
+            return SIZE_MAX;
+        }
+    #endif
+}
+
+size_t int16_to_sizet(int16_t val)
+{
+    if (val < 0)
+    {
+        return 0;
+    }
+    #if defined(SIZE_MAX) && defined (INT16_MAX) && SIZE_MAX >= INT16_MAX
+    else
+    {
+        return C_CAST(size_t, val);
+    }
+    #else //SIZE_MAX < INT8_MAX
+    else if (val <= SIZE_MAX)
+    {
+        return C_CAST(size_t, val);
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t uint16_to_sizet(uint16_t val)
+{
+    #if defined(SIZE_MAX) && defined (UINT16_MAX) && SIZE_MAX >= UINT16_MAX
+        return C_CAST(size_t, val);
+    #else //SIZE_MAX < UINT16_MAX
+    if (val <= SIZE_MAX)
+    {
+        return C_CAST(size_t, val);
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t int32_to_sizet(int32_t val)
+{
+    if (val < 0)
+    {
+        return 0;
+    }
+    #if defined(SIZE_MAX) && defined (INT32_MAX) && SIZE_MAX >= INT32_MAX
+    else
+    {
+        return C_CAST(size_t, val);
+    }
+    #else //SIZE_MAX < INT32_MAX
+    else if (C_CAST(uint32_t, val) <= SIZE_MAX)
+    {
+        return C_CAST(size_t, val);
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t uint32_to_sizet(uint32_t val)
+{
+    #if defined(SIZE_MAX) && defined (UINT32_MAX) && SIZE_MAX >= UINT32_MAX
+        return C_CAST(size_t, val);
+    #else //SIZE_MAX < UINT32_MAX
+    if (val <= SIZE_MAX)
+    {
+        return C_CAST(size_t, val);
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t int64_to_sizet(int64_t val)
+{
+    if (val < 0)
+    {
+        return 0;
+    }
+    #if defined(SIZE_MAX) && defined (INT64_MAX) && SIZE_MAX >= INT64_MAX
+    else
+    {
+        return C_CAST(size_t, val);
+    }
+    #else //SIZE_MAX < INT64_MAX
+    else if (C_CAST(uint64_t, val) <= SIZE_MAX)
+    {
+        return C_CAST(size_t, val);
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t uint64_to_sizet(uint64_t val)
+{
+    #if defined(SIZE_MAX) && defined (UINT64_MAX) && SIZE_MAX >= UINT64_MAX
+        return C_CAST(size_t, val);
+    #else //SIZE_MAX < UINT64_MAX
+    if (val <= SIZE_MAX)
+    {
+        return val;
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t char_to_sizet(char val)
+{
+    #if defined (CHAR_MIN) && CHAR_MIN < 0
+    if (val < 0)
+    {
+        return 0;
+    }
+    #endif //CHAR_MIN < 0
+    #if defined(SIZE_MAX) && defined (CHAR_MAX) && SIZE_MAX >= CHAR_MAX
+    {
+        return C_CAST(size_t, val);
+    }
+    #else //SIZE_MAX < CHAR_MAX
+    if (val <= SIZE_MAX)
+    {
+        return C_CAST(size_t, val);
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t uchar_to_sizet(unsigned char val)
+{
+    #if defined(SIZE_MAX) && defined (UCHAR_MAX) && SIZE_MAX >= UCHAR_MAX
+        return C_CAST(size_t, val);
+    #else //SIZE_MAX < UCHAR_MAX
+        if (val <= SIZE_MAX)
+        {
+            return val;
+        }
+        else
+        {
+            return SIZE_MAX;
+        }
+    #endif
+}
+
+size_t short_to_sizet(short val)
+{
+    if (val < 0)
+    {
+        return 0;
+    }
+    #if defined(SIZE_MAX) && defined (SHRT_MAX) && SIZE_MAX >= SHRT_MAX
+    else
+    {
+        return C_CAST(size_t, val);
+    }
+    #else //SIZE_MAX < SHRT_MAX
+    else if (val <= SIZE_MAX)
+    {
+        return C_CAST(size_t, val);
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t ushort_to_sizet(unsigned short val)
+{
+    #if defined(SIZE_MAX) && defined (USHRT_MAX) && SIZE_MAX >= USHRT_MAX
+        return C_CAST(size_t, val);
+    #else //SIZE_MAX < USHRT_MAX
+    if (val <= SIZE_MAX)
+    {
+        return C_CAST(size_t, val);
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t int_to_sizet(int val)
+{
+    if (val < 0)
+    {
+        return 0;
+    }
+    #if defined(SIZE_MAX) && defined (INT_MAX) && SIZE_MAX >= INT_MAX
+    else
+    {
+        return C_CAST(size_t, val);
+    }
+    #else //SIZE_MAX < INT_MAX
+    else if (C_CAST(unsigned int, val) <= SIZE_MAX)
+    {
+        return C_CAST(size_t, val);
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t uint_to_sizet(unsigned int val)
+{
+    #if defined(SIZE_MAX) && defined (UINT_MAX) && SIZE_MAX >= UINT_MAX
+        return C_CAST(size_t, val);
+    #else //SIZE_MAX < UINT_MAX
+    if (val <= SIZE_MAX)
+    {
+        return C_CAST(size_t, val);
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t long_to_sizet(long val)
+{
+    if (val < 0)
+    {
+        return 0;
+    }
+    #if defined(SIZE_MAX) && defined (LONG_MAX) && SIZE_MAX >= LONG_MAX
+    else
+    {
+        return C_CAST(size_t, val);
+    }
+    #else //SIZE_MAX < LONG_MAX
+    else if (C_CAST(unsigned long, val) <= SIZE_MAX)
+    {
+        return C_CAST(size_t, val);
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t ulong_to_sizet(unsigned long val)
+{
+    #if defined(SIZE_MAX) && defined (ULONG_MAX) && SIZE_MAX >= ULONG_MAX
+        return C_CAST(size_t, val);
+    #else //SIZE_MAX < ULONG_MAX
+    if (val <= SIZE_MAX)
+    {
+        return val;
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t longlong_to_sizet(long long val)
+{
+    if (val < 0)
+    {
+        return 0;
+    }
+    #if defined(SIZE_MAX) && defined (LLONG_MAX) && SIZE_MAX >= LLONG_MAX
+    else
+    {
+        return C_CAST(size_t, val);
+    }
+    #else //SIZE_MAX < LLONG_MAX
+    else if (C_CAST(unsigned long long, val) <= SIZE_MAX)
+    {
+        return C_CAST(size_t, val);
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+size_t ulonglong_to_sizet(unsigned long long val)
+{
+    #if defined(SIZE_MAX) && defined (ULLONG_MAX) && SIZE_MAX >= ULLONG_MAX
+        return C_CAST(size_t, val);
+    #else //SIZE_MAX < ULLONG_MAX
+    if (val <= SIZE_MAX)
+    {
+        return val;
+    }
+    else
+    {
+        return SIZE_MAX;
+    }
+    #endif
+}
+
+
+bool is_size_t_max(size_t val)
+{
+    if (val == SIZE_MAX)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }

@@ -1275,9 +1275,12 @@ void start_Timer(seatimer_t *timer)
 {
     LARGE_INTEGER tempLargeInt;
     tempLargeInt.QuadPart = 0;
-    if (QueryPerformanceCounter(&tempLargeInt))//according to MSDN this will always return success on XP and later systems
+    if (TRUE == QueryPerformanceCounter(&tempLargeInt))//according to MSDN this will always return success on XP and later systems
     {
-        timer->timerStart = tempLargeInt.QuadPart;
+        if (tempLargeInt.QuadPart >= 0)
+        {
+            timer->timerStart = C_CAST(uint64_t, tempLargeInt.QuadPart);
+        }
     }
 }
 
@@ -1285,23 +1288,39 @@ void stop_Timer(seatimer_t *timer)
 {
     LARGE_INTEGER tempLargeInt;
     memset(&tempLargeInt, 0, sizeof(LARGE_INTEGER));
-    if (QueryPerformanceCounter(&tempLargeInt))//according to MSDN this will always return success on XP and later systems
+    if (TRUE == QueryPerformanceCounter(&tempLargeInt))//according to MSDN this will always return success on XP and later systems
     {
-        timer->timerStop = tempLargeInt.QuadPart;
+        if (tempLargeInt.QuadPart >= 0)
+        {
+            timer->timerStop = C_CAST(uint64_t, tempLargeInt.QuadPart);
+        }
     }
 }
 
 uint64_t get_Nano_Seconds(seatimer_t timer)
 {
     LARGE_INTEGER frequency;//clock ticks per second
-    uint64_t ticksPerNanosecond = 1000000000;//start with a count of nanoseconds per second
+    uint64_t ticksPerNanosecond = UINT64_C(1000000000);//start with a count of nanoseconds per second
     uint64_t seconds = 0, nanoSeconds = 0;
     memset(&frequency, 0, sizeof(LARGE_INTEGER));
-    QueryPerformanceFrequency(&frequency);//should always return success
-    ticksPerNanosecond /= frequency.QuadPart;
-    seconds = (timer.timerStop - timer.timerStart) / frequency.QuadPart;//converted to nanoseconds later
-    nanoSeconds = ((timer.timerStop - timer.timerStart) % frequency.QuadPart) * ticksPerNanosecond;
-    return ((seconds * 1000000000) + nanoSeconds);
+    if (TRUE == QueryPerformanceFrequency(&frequency))
+    {
+        if (frequency.QuadPart > 0)//no equals since this is used in division and don't want to divide by zero
+        {
+            ticksPerNanosecond /= C_CAST(uint64_t, frequency.QuadPart);
+            seconds = (timer.timerStop - timer.timerStart) / C_CAST(uint64_t, frequency.QuadPart);//converted to nanoseconds later
+            nanoSeconds = ((timer.timerStop - timer.timerStart) % C_CAST(uint64_t, frequency.QuadPart)) * ticksPerNanosecond;
+            return ((seconds * UINT64_C(1000000000)) + nanoSeconds);
+        }
+        else
+        {
+            return UINT64_C(0);
+        }
+    }
+    else 
+    {
+        return UINT64_C(0);
+    }
 }
 
 double get_Micro_Seconds(seatimer_t timer)

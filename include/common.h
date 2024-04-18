@@ -238,22 +238,22 @@ extern "C"
     #define M_ByteInt7(l) ( C_CAST(int8_t, ( ( (l) & UINT64_C(0xFF00000000000000) ) >> 56 ) ) )
 
     //get a specific nibble
-    #define M_Nibble0(l)  ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x000000000000000F) ) >>  0 ) ) )
-    #define M_Nibble1(l)  ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x00000000000000F0) ) >>  4 ) ) )
-    #define M_Nibble2(l)  ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x0000000000000F00) ) >>  8 ) ) )
-    #define M_Nibble3(l)  ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x000000000000F000) ) >> 12 ) ) )
-    #define M_Nibble4(l)  ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x00000000000F0000) ) >> 16 ) ) )
-    #define M_Nibble5(l)  ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x0000000000F00000) ) >> 20 ) ) )
-    #define M_Nibble6(l)  ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x000000000F000000) ) >> 24 ) ) )
-    #define M_Nibble7(l)  ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x00000000F0000000) ) >> 28 ) ) )
-    #define M_Nibble8(l)  ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x0000000F00000000) ) >> 32 ) ) )
-    #define M_Nibble9(l)  ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x000000F000000000) ) >> 36 ) ) )
-    #define M_Nibble10(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x00000F0000000000) ) >> 40 ) ) )
-    #define M_Nibble11(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x0000F00000000000) ) >> 44 ) ) )
-    #define M_Nibble12(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x000F000000000000) ) >> 48 ) ) )
-    #define M_Nibble13(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x00F0000000000000) ) >> 52 ) ) )
-    #define M_Nibble14(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0x0F00000000000000) ) >> 56 ) ) )
-    #define M_Nibble15(l) ( C_CAST(uint8_t, ( ( (l) & UINT64_C(0xF000000000000000) ) >> 60 ) ) )
+    #define M_Nibble0(l)  C_CAST(uint8_t, C_CAST(uint8_t,l) & C_CAST(uint8_t, UINT8_C(0x0F)) )
+    #define M_Nibble1(l)  C_CAST(uint8_t, ( ( C_CAST(uint8_t,l) & UINT8_C(0xF0) ) >>  4 ) )
+    #define M_Nibble2(l)  C_CAST(uint8_t, ( ( C_CAST(uint16_t,l) & UINT16_C(0x0F00) ) >>  8 ) )
+    #define M_Nibble3(l)  C_CAST(uint8_t, ( ( C_CAST(uint16_t,l) & UINT16_C(0xF000) ) >> 12 ) )
+    #define M_Nibble4(l)  C_CAST(uint8_t, ( ( C_CAST(uint32_t,l) & UINT32_C(0x000F0000) ) >> 16  ) )
+    #define M_Nibble5(l)  C_CAST(uint8_t, ( ( C_CAST(uint32_t,l) & UINT32_C(0x00F00000) ) >> 20  ) )
+    #define M_Nibble6(l)  C_CAST(uint8_t, ( ( C_CAST(uint32_t,l) & UINT32_C(0x0F000000) ) >> 24  ) )
+    #define M_Nibble7(l)  C_CAST(uint8_t, ( ( C_CAST(uint32_t,l) & UINT32_C(0xF0000000) ) >> 28  ) )
+    #define M_Nibble8(l)  C_CAST(uint8_t, ( ( C_CAST(uint64_t,l) & UINT64_C(0x0000000F00000000) ) >> 32 ) )
+    #define M_Nibble9(l)  C_CAST(uint8_t, ( ( C_CAST(uint64_t,l) & UINT64_C(0x000000F000000000) ) >> 36 ) )
+    #define M_Nibble10(l) C_CAST(uint8_t, ( ( C_CAST(uint64_t,l) & UINT64_C(0x00000F0000000000) ) >> 40 ) )
+    #define M_Nibble11(l) C_CAST(uint8_t, ( ( C_CAST(uint64_t,l) & UINT64_C(0x0000F00000000000) ) >> 44 ) )
+    #define M_Nibble12(l) C_CAST(uint8_t, ( ( C_CAST(uint64_t,l) & UINT64_C(0x000F000000000000) ) >> 48 ) )
+    #define M_Nibble13(l) C_CAST(uint8_t, ( ( C_CAST(uint64_t,l) & UINT64_C(0x00F0000000000000) ) >> 52 ) )
+    #define M_Nibble14(l) C_CAST(uint8_t, ( ( C_CAST(uint64_t,l) & UINT64_C(0x0F00000000000000) ) >> 56 ) )
+    #define M_Nibble15(l) C_CAST(uint8_t, ( ( C_CAST(uint64_t,l) & UINT64_C(0xF000000000000000) ) >> 60 ) )
 
     #define M_NibblesTo1ByteValue(n1, n0) ( \
     C_CAST(uint8_t, ( (C_CAST(uint8_t, ((n1) & 0x0F) << 4) | (C_CAST(uint8_t, ((n0) & 0x0F) << 0)) \
@@ -383,18 +383,18 @@ extern "C"
     //set a bit to 1 within a value
     #define M_SET_BIT(val, bitNum) (val |= M_BitN(bitNum))
 
-#define M_SET_BIT8(val, bitNum) (val |= M_BitN8(bitNum))
-#define M_SET_BIT16(val, bitNum) (val |= M_BitN16(bitNum))
-#define M_SET_BIT32(val, bitNum) (val |= M_BitN32(bitNum))
-#define M_SET_BIT64(val, bitNum) (val |= M_BitN64(bitNum))
+    #define M_SET_BIT8(val, bitNum) (val |= M_BitN8(bitNum))
+    #define M_SET_BIT16(val, bitNum) (val |= M_BitN16(bitNum))
+    #define M_SET_BIT32(val, bitNum) (val |= M_BitN32(bitNum))
+    #define M_SET_BIT64(val, bitNum) (val |= M_BitN64(bitNum))
 
     //clear a bit to 0 within a value
     #define M_CLEAR_BIT(val, bitNum) (val &= (~M_BitN(bitNum)))
 
-#define M_CLEAR_BIT8(val, bitNum) (val &= (~M_BitN8(bitNum)))
-#define M_CLEAR_BIT16(val, bitNum) (val &= (~M_BitN16(bitNum)))
-#define M_CLEAR_BIT32(val, bitNum) (val &= (~M_BitN32(bitNum)))
-#define M_CLEAR_BIT64(val, bitNum) (val &= (~M_BitN64(bitNum)))
+    #define M_CLEAR_BIT8(val, bitNum) (val &= C_CAST(uint8_t, (~M_BitN8(bitNum)))) //Cast added because UINT8_C() macro most of the time does not add additional qualifiers, so it ends up thinking this is a sign conversion issue.-TJE
+    #define M_CLEAR_BIT16(val, bitNum) (val &= C_CAST(uint16_t, (~M_BitN16(bitNum)))) //Cast added because UINT16_C() macro most of the time does not add additional qualifiers, so it ends up thinking this is a sign conversion issue.-TJE
+    #define M_CLEAR_BIT32(val, bitNum) (val &= (~M_BitN32(bitNum)))
+    #define M_CLEAR_BIT64(val, bitNum) (val &= (~M_BitN64(bitNum)))
 
 
     #define M_2sCOMPLEMENT(val) (~(val) + 1)
@@ -1929,6 +1929,63 @@ typedef enum _eReturnValues
     //
     //-----------------------------------------------------------------------------
     void* explicit_zeroes(void* dest, size_t count);
+
+    size_t int8_to_sizet(int8_t val);
+
+    size_t uint8_to_sizet(uint8_t val);
+
+    size_t int16_to_sizet(int16_t val);
+
+    size_t uint16_to_sizet(uint16_t val);
+
+    size_t int32_to_sizet(int32_t val);
+
+    size_t uint32_to_sizet(uint32_t val);
+
+    size_t int64_to_sizet(int64_t val);
+
+    size_t uint64_to_sizet(uint64_t val);
+
+    size_t char_to_sizet(char val);
+    size_t uchar_to_sizet(unsigned char val);
+
+    size_t short_to_sizet(short val);
+    size_t ushort_to_sizet(unsigned short val);
+
+    size_t int_to_sizet(int val);
+    size_t uint_to_sizet(unsigned int val);
+
+    size_t long_to_sizet(long val);
+    size_t ulong_to_sizet(unsigned long val);
+
+    size_t longlong_to_sizet(long long val);
+    size_t ulonglong_to_sizet(unsigned long long val);
+
+    #if (defined(__STDC__) && defined (__STDC_VERSION__) &&__STDC_VERSION__ >= 201112L)  || (defined (_MSC_VER) && _MSC_VER >= 1920) //available in VS2019, but stdc version does not get set in certain cases...
+    //This is a generic selection macro.
+    //so based on the type of X, it will call the appropriate function for that type.
+    //similar to an overloaded function in C++ for different types.
+    //NOTE: Not using intX_t or uintX_t since these are type defs to one of the types in the macro below.
+    //NOTE: No default case so we can get a warning when this doesn't expand correctly.
+    #define to_sizet(X) _Generic((X), \
+                        char: char_to_sizet,\
+                        unsigned char: uchar_to_sizet,\
+                        short: short_to_sizet,\
+                        unsigned short: ushort_to_sizet,\
+                        int: int_to_sizet,\
+                        unsigned int: uint_to_sizet,\
+                        long: long_to_sizet,\
+                        unsigned long: ulong_to_sizet,\
+                        long long: longlong_to_sizet,\
+                        unsigned long long: ulonglong_to_sizet\
+                        )(X)
+    #endif //C11
+
+    bool is_size_t_max(size_t val);
+
+    //returns number of milliseconds since Jan 1, 1970 UTC
+    //If an error occurs, returns zero
+    uint64_t get_Milliseconds_Since_Unix_Epoch(void);
 
 #if defined (__cplusplus)
 } //extern "C"
