@@ -50,7 +50,7 @@ void delay_Milliseconds(uint32_t milliseconds)
         //      Because of this change due to standardization, there are extra ifdef's for the casts to fix conversion warnings.-TJE
         //Try using typeof for GCC and __typeof__ for clang, unless in C23 where typeof is standard.
         //    
-        #if (defined(__STDC__) && defined (__STDC_VERSION__) &&__STDC_VERSION__ >= 202311L )
+        #if (USING_C23)
             //C23, so use definitions from C23
             delayTime.tv_sec = C_CAST(long, milliseconds / UINT32_C(1000));
             delayTime.tv_nsec = C_CAST(long long, UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
@@ -62,7 +62,7 @@ void delay_Milliseconds(uint32_t milliseconds)
             //Use typeof
             delayTime.tv_sec = C_CAST(typeof(delayTime.tv_sec), milliseconds / UINT32_C(1000));
             delayTime.tv_nsec = C_CAST(typeof(delayTime.tv_nsec), UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
-        #elif (defined(__STDC__) && defined (__STDC_VERSION__) &&__STDC_VERSION__ >= 201112L)
+        #elif (defined (USING_C11)
             //Use long and long int as a best guess or most likely correct case
             delayTime.tv_sec = C_CAST(long, milliseconds / UINT32_C(1000));
             delayTime.tv_nsec = C_CAST(long int, UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
@@ -102,7 +102,10 @@ void delay_Seconds(uint32_t seconds)
 uint64_t get_Milliseconds_Since_Unix_Epoch(void)
 {
     uint64_t msSinceJan1970 = 0;
-#if (defined(__STDC__) && defined (__STDC_VERSION__) &&__STDC_VERSION__ >= 201112L) || (defined (_MSC_VER) && _MSC_VER >= 1920) //available in VS2019, but stdc version does not get set in certain cases...
+    //Check for C11's standardized API call.
+    //Also check that TIME_UTC is defined, because if it is not, then this will not work.
+    //This apparently causes an error in mingww64 environment in msys2 since this function is missing, but C11 is defined.
+#if defined(USING_C11) && defined (TIME_UTC)
     struct timespec now;
     memset(&now, 0, sizeof(struct timespec));
     if (0 != timespec_get(&now, TIME_UTC))
@@ -257,7 +260,7 @@ void *malloc_aligned(size_t size, size_t alignment)
         return temp;
     #else
 
-    #if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+    #if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined (USING_C11) && !defined(_MSC_VER)
         //C11 added an aligned alloc function we can use
         //One additional requirement of this function is that the size must be a multiple of alignment, so we will check and round up the size to make this easy.
         if (size % alignment)
@@ -321,7 +324,7 @@ void free_aligned(void* ptr)
     #if defined (VMK_CROSS_COMP)
     free(ptr);
     #else
-    #if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined (__STDC__) && defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+    #if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined (USING_C11) && !defined(_MSC_VER)
         //just call free
         free(ptr);
     #elif !defined(UEFI_C_SOURCE) && defined (__INTEL_COMPILER) || defined (__ICC)
@@ -1485,7 +1488,7 @@ char * get_Time_String_From_TM_Structure(const struct tm * timeptr, char *buffer
         {
             restoreLocale = true;
         }
-        #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L && !defined (__MINGW32__) || (defined (_MSC_VER) && _MSC_VER >= 1700))//MINGW in msys2 is warning it does not know %e, so this is catching that. This will likely need a version check whenever it gets fixed-TJE
+        #if (defined(USING_C99) && !defined (__MINGW32__))//MINGW in msys2 is warning it does not know %e, so this is catching that. This will likely need a version check whenever it gets fixed-TJE
         if (0 == strftime(buffer, bufferSize, "%a %b %e %H:%M:%S %Y", timeptr))
         #else
         if (0 == strftime(buffer, bufferSize, "%a %b %d %H:%M:%S %Y", timeptr))
@@ -1873,7 +1876,7 @@ bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * output
 
 void print_Errno_To_Screen(int error)
 {
-#if defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && defined (__STDC_LIB_EXT1__)//This last piece must be defined by the compiler for this to be used...Only will be set if user defined __STDC_WANT_LIB_EXT1__
+#if defined (USING_C11) && defined (__STDC_LIB_EXT1__)//This last piece must be defined by the compiler for this to be used...Only will be set if user defined __STDC_WANT_LIB_EXT1__
     size_t errorStringLen = strerrorlen_s(error);
     char *errorString = C_CAST(char*, calloc(errorStringLen + 1, sizeof(char)));
     if (errorString)
@@ -2057,6 +2060,10 @@ void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue)
     *decimalValue = sign * pow(2.0, exponent) * mantisa;
 }
 
+//these string concatenation functions currently use snprintf for portability.
+//We can look into using strlcat (BSD, glibc 2.38+) or strcpy_s (Annex_k, MSVC) as well to improve performance
+// when these other calls are available.-TJE
+//https://sourceware.org/glibc/wiki/FAQ#Why_no_strlcpy_.2F_strlcat.3F
 char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source)
 {
     if (destination && source && destinationSizeBytes > 0)
@@ -2091,7 +2098,7 @@ void* explicit_zeroes(void* dest, size_t count)
 {
     if (dest && count > 0)
     {
-#if (defined (__STDC_VERSION__) && __STDC_VERSION__ >= 202311L /*C23*/) || defined (HAVE_MEMSET_EXPLICIT)
+#if defined (USING_C23) || defined (HAVE_MEMSET_EXPLICIT)
         return memset_explicit(dest, 0, count);
 #elif defined (__STDC_LIB_EXT1__) || defined (HAVE_MEMSET_S)
         //use memset_s since it cannot be optimized out
