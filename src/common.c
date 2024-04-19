@@ -50,7 +50,7 @@ void delay_Milliseconds(uint32_t milliseconds)
         //      Because of this change due to standardization, there are extra ifdef's for the casts to fix conversion warnings.-TJE
         //Try using typeof for GCC and __typeof__ for clang, unless in C23 where typeof is standard.
         //    
-        #if (USING_C23)
+        #if defined (USING_C23)
             //C23, so use definitions from C23
             delayTime.tv_sec = C_CAST(long, milliseconds / UINT32_C(1000));
             delayTime.tv_nsec = C_CAST(long long, UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
@@ -62,7 +62,7 @@ void delay_Milliseconds(uint32_t milliseconds)
             //Use typeof
             delayTime.tv_sec = C_CAST(typeof(delayTime.tv_sec), milliseconds / UINT32_C(1000));
             delayTime.tv_nsec = C_CAST(typeof(delayTime.tv_nsec), UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
-        #elif (defined (USING_C11)
+        #elif defined (USING_C11)
             //Use long and long int as a best guess or most likely correct case
             delayTime.tv_sec = C_CAST(long, milliseconds / UINT32_C(1000));
             delayTime.tv_nsec = C_CAST(long int, UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
