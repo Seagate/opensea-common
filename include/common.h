@@ -79,6 +79,68 @@ extern "C"
     #define snprintf _snprintf
     #endif
 
+    //Set macros to make it easier to check specific C standards compatibility.
+    //NOTE: Do not rely strictly on these macros for all features from all standards, especially in MSVC
+    //      Prior to VS2022 17.2
+    //      You may still need additional checks before using certain APIs or features since there are a lot of
+    //      missing pieces in some Windows environements.
+    #if defined(__STDC__)
+        #define USING_C89
+        #if defined (__STDC_VERSION__)
+            #if __STDC_VERSION__ >= 199409L 
+                #define USING_C94
+            #endif //__STDC_VERSION__ >= 199409L 
+            #if __STDC_VERSION__ >= 199901L
+                #define USING_C99
+            #endif //__STDC_VERSION__ >= 199901L
+            #if __STDC_VERSION__ >= 201112L
+                #define USING_C11
+            #endif //__STDC_VERSION__ >= 201112L
+            #if __STDC_VERSION__ >= 201710L
+                #define USING_C17
+            #endif //__STDC_VERSION__ >= 201710L
+            #if __STDC_VERSION__ >= 202311L
+                #define USING_C23
+            #endif //__STDC_VERSION__ >= 202311L
+        #endif //__STDC_VERSION__
+    #elif defined (_MSC_VER)
+            //Set an approximate standard based on MSVC_VER
+            //https://learn.microsoft.com/en-us/cpp/overview/compiler-versions?view=msvc-170#service-releases-starting-with-visual-studio-2017
+            //https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+            #if _MSC_VER >= 600
+                #define USING_C89
+            #endif //_MSC_VER >= 600
+            #if defined (_WCHAR_T_DEFINED)
+                //https://learn.microsoft.com/en-us/cpp/build/reference/zc-wchar-t-wchar-t-is-native-type?view=msvc-170
+                //NOTE: This may not be perfect, but it's the best thing I can find to check-TJE
+                #define USING_C94
+            #endif //_WCHAR_T_DEFINED
+            #if _MSC_VER >= 1800
+                //NOTE: This is not exactly true, but close enough.
+                //      MSFT does not support VLAs which is the biggest missing piece of C99 support
+                //      However, starting in MSVC2013 most everything else from C99 was implemented.
+                //      Setting this since we don't use VLAs and don't need the missing math calls
+                //      in our code base
+                #define USING_C99
+            #endif //_MSC_VER >= 1800
+            #if _MSC_VER >= 1920 && _MSC_VER < 1932 && defined (_MSC_EXTENSIONS) \
+                && (defined (__STDC_NO_VLA__) || defined (__STDC_NO_ATOMICS__) || defined (__STDC_NO_COMPLEX__) \
+                    || defined (__STDC_NO_THREADS__))
+                //NOTE: This is far from perfect.
+                //      VS2019 added a way to specify the standard, however the __STDC__ macros above are only defined
+                //      when using /Za until VS2022 17.2 where these are defined when specifying /std::c11 or c17
+                //      So in this case, we are detecting VS2019 running without /Za, and specifying C11 or C17
+                //      by also checking __STDC_NO_VLA__ since that appears to be defined when specifying C11 or C17
+                //      and using extensions. I'm sure this can be further refined.
+                //NOTE: When using C11 or C17, MSFT documentation says these are implemented the same in their case
+                //      So set both of these version macros
+                //__STDC_HOSTED__???
+                #define USING_C11
+                #define USING_C17
+            #endif //MSC_VER and lots of other flags to figure out if it's running in C11/17 mode
+            //NOTE: Not sure when/if C23 will be supported, but hopefully it will show up under the standard macros above going forward-TJE
+    #endif
+
     //Macro to help make casts more clear and searchable. Can be very helpful while debugging.
     //If using C++, use static_cast, reinterpret_cast, dynamic_cast before trying a C_CAST.
     #define C_CAST(type, val) (type)(val)
@@ -1924,7 +1986,7 @@ extern "C"
     size_t longlong_to_sizet(long long val);
     size_t ulonglong_to_sizet(unsigned long long val);
 
-    #if (defined(__STDC__) && defined (__STDC_VERSION__) &&__STDC_VERSION__ >= 201112L)  || (defined (_MSC_VER) && _MSC_VER >= 1920) //available in VS2019, but stdc version does not get set in certain cases...
+    #if defined(USING_C11)
     //This is a generic selection macro.
     //so based on the type of X, it will call the appropriate function for that type.
     //similar to an overloaded function in C++ for different types.
