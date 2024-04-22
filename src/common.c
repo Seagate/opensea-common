@@ -2064,17 +2064,44 @@ void get_Decimal_From_4_byte_Float(uint32_t floatValue, double *decimalValue)
 //We can look into using strlcat (BSD, glibc 2.38+) or strcpy_s (Annex_k, MSVC) as well to improve performance
 // when these other calls are available.-TJE
 //https://sourceware.org/glibc/wiki/FAQ#Why_no_strlcpy_.2F_strlcat.3F
+// Using memccpy as it is available nearly everywhere and is significantly faster
+//https://developers.redhat.com/blog/2019/08/12/efficient-string-copying-and-concatenation-in-c#
 char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source)
 {
     if (destination && source && destinationSizeBytes > 0)
     {
-        char *dup = strdup(destination);
+#if defined _POSIX_VERSION && _POSIX_VERSION >= 200112L || defined (_MSC_VER) || defined (USING_C23)
+        char* dup = strdup(destination);
         if (dup)
         {
+            char* p = C_CAST(char*, memccpy(destination, dup, '\0', destinationSizeBytes));
+            size_t destinationSizeBytesAvailable = destinationSizeBytes - (C_CAST(uintptr_t, p) - C_CAST(uintptr_t, destination) - int_to_sizet(1));
+            if (NULL == memccpy(p - 1, source, '\0', destinationSizeBytesAvailable))
+            {
+                //add null terminator to the destination, overwriting last byte written to stay in bounds -TJE
+                destination[destinationSizeBytes - int_to_sizet(1)] = '\0';
+            }
+            safe_Free(dup)
+            return destination;
+        }
+#elif defined (__FreeBSD__) && __FreeBSD__ >= 4) || (defined (__OpenBSD__) && defined(OpenBSD2_4)) || (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 1040000300L)
+        //use strlcat
+        //FreeBSD 3.3 and later
+        //openBSD 2.4 and later
+        //netbsd  1.4.3
+        strlcat(destination, source, destinationSizeBytes);
+        return destination;
+#else //memccpy, strlcat/strcpy not available
+        size_t duplen = strlen(destination);
+        char* dup = C_CAST(char*, calloc(duplen + 1, sizeof(char)));
+        if (dup)
+        {
+            memcpy(dup, destination, duplen + 1);
             snprintf(destination, destinationSizeBytes, "%s%s", dup, source);
             safe_Free(dup)
             return destination;
         }
+#endif   
     }
     return NULL;
 }
@@ -2083,13 +2110,52 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
 {
     if (destination && source && destinationSizeBytes > 0 && sourceLength > 0)
     {
-        char *dup = strdup(destination);
+#if defined _POSIX_VERSION && _POSIX_VERSION >= 200112L || defined (_MSC_VER) || defined (USING_C23)
+        char* dup = strdup(destination);
         if (dup)
         {
+            char* p = C_CAST(char*, memccpy(destination, dup, '\0', destinationSizeBytes));
+            size_t destinationSizeBytesAvailable = destinationSizeBytes - (C_CAST(uintptr_t, p) - C_CAST(uintptr_t, destination) - int_to_sizet(1));
+            if (NULL == memccpy(p - 1, source, '\0', M_Min(destinationSizeBytesAvailable, int_to_sizet(sourceLength))))
+            {
+                if (int_to_sizet(sourceLength) >= destinationSizeBytesAvailable)
+                {
+                    //add null terminator to the destination, overwriting last byte written to stay in bounds -TJE
+                    destination[destinationSizeBytes - int_to_sizet(1)] = '\0';
+                }
+                else
+                {
+                    //append a null terminator after the last written byte of the string - TJE
+                    destination[destinationSizeBytes - destinationSizeBytesAvailable + int_to_sizet(sourceLength)] = '\0';
+                }
+            }
+            safe_Free(dup)
+            return destination;
+        }
+#elif defined (__FreeBSD__) && __FreeBSD__ >= 4) || (defined (__OpenBSD__) && defined(OpenBSD2_4)) || (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 1040000300L)
+        //use strlcat
+        //FreeBSD 3.3 and later
+        //openBSD 2.4 and later
+        //netbsd  1.4.3
+        char* dup = C_CAST(char*, calloc(sourceLength + 1, sizeof(char)));
+        if (dup)
+        {
+            strlcpy(dup, source, sourceLength);
+            strlcat(destination, dup, destinationSizeBytes);
+            safe_Free(dup)
+            return destination;
+        }
+#else //memccpy, strlcat/strcpy not available
+        size_t duplen = strlen(destination);
+        char* dup = C_CAST(char*, calloc(duplen + 1, sizeof(char)));
+        if (dup)
+        {
+            memcpy(dup, destination, duplen + 1);
             snprintf(destination, destinationSizeBytes, "%s%.*s", dup, sourceLength, source);
             safe_Free(dup)
             return destination;
         }
+#endif
     }
     return NULL;
 }
