@@ -193,7 +193,11 @@ extern "C"
 
     int replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char *newFileName);
 
+#if defined (__cplusplus)
+    enum class eArchitecture
+#else
     typedef enum _eArchitecture
+#endif  //end c++
     {
         OPENSEA_ARCH_UNKNOWN,
         OPENSEA_ARCH_X86,
@@ -209,7 +213,11 @@ extern "C"
         OPENSEA_ARCH_MIPS,
         //Add more architectures here as we support them
         OPENSEA_ARCH_RESERVED
+#if defined (__cplusplus)
+    };
+#else
     }eArchitecture;
+#endif
 
     //-----------------------------------------------------------------------------
     //
@@ -240,14 +248,22 @@ extern "C"
     //-----------------------------------------------------------------------------
     void print_Architecture(eArchitecture arch);
 
+#if defined (__cplusplus)
+    enum class eEndianness
+#else
     typedef enum _eEndianness
+#endif //end c++
     {
         OPENSEA_LITTLE_ENDIAN,
         OPENSEA_BIG_ENDIAN,
         OPENSEA_LITTLE_WORD_ENDIAN,//uncommon, probably won't be found/used
         OPENSEA_BIG_WORD_ENDIAN,//uncommon, probably won't be found/used
         OPENSEA_UNKNOWN_ENDIAN //if this is returned, then __LITTLE_ENDIAN__ or __BIG_ENDIAN__ needs to be defined for the compilation. Or you can ignore this and assume little endian - TJE
+#if defined (__cplusplus)
+    };
+#else
     }eEndianness;
+#endif // end c++
 
     //-----------------------------------------------------------------------------
     //
@@ -427,7 +443,7 @@ extern "C"
     // \brief   Description: Gets the version number of the OS opensea-* libs are currently running on. Windows will get the OS version number (not Win7 vs Win8, but 6.1 vs 6.2). Nix systems will get whatever is placed into uname -r (solaris will also get uname -v information)
     //
     // Entry:
-    //      \param[out] versionNumber - pointer to the OSVersionNumber struct. This will be filled in with version information upon successful completion.
+    //      \param[out] versionNumber - pointer to the OSVersionNumber struct. This will be filled in with version information upon SUCCESSful completion.
     //      \param[out] operatingSystemName - (optional, set to NULL if not being used) This will be a string with the friendly, human readable name of the OS. This will likely be the name of the release as it was announced. IE: Windows 6.2 = Windows 8.
     //
     // Exit:
