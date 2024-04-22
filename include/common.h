@@ -31,6 +31,8 @@ extern "C"
 
 //asking to get C11 _s functions since there is some ability to use them in some places.
 #define __STDC_WANT_LIB_EXT1__ 1
+//asking to get dynamic memory functions (mostly strdup) in C11. Only guaranteed available if __STDC_ALLOC_LIB__ defined, but asking anyways...most systems we support will have this-TJE
+#define __STDC_WANT_LIB_EXT2__ 1
 
     #include <stdio.h>
     #include <time.h>
