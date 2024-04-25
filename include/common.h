@@ -55,7 +55,7 @@ extern "C"
     // Including strings.h to have string case compare functionality and working around Windows.
     // TODO: improve this check as needed for other systems.
     // TODO: make definitions for other functions in strings.h
-    #if defined (__unix__) || defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+    #if defined (__unix__) || defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L || defined (__APPLE__)
         #include <strings.h>
     #elif defined (_WIN32) 
         #if !defined (strcasecmp)
