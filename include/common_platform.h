@@ -628,6 +628,18 @@ extern "C"
     int get_Current_User_Name(char **userName);
 #endif //ENABLE_READ_USERNAME
 
+    //This should be used after prompting the user to enter data.
+    //The echo of the typed characters is disabled while reading input with this function.
+    //Once the reading is complete, the echo is restored to normal.
+    //If you wish to confirm the user input, call this again after asking for confirmation and compare the strings.
+    //this will allocate memory to be free'd with free().
+    //NOTE: Recommend calling explicit_zeroes before freeing to ensure data is securely removed.
+    //NOTE: inputDataLen is the allocated buffer size, not necessarily how many characters were typed.
+    //      this can vary depending on the low-level OS's implementation of getting a password without echoing.
+    //NOTE: On really old systems, this may be limited to 8 characters. Most modern systems should allow at least 128 characters
+    //      As long as POSIX2001 is supported, there should be no limitation to number of characters read from this function-TJE
+    int get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen);
+
 #if defined (__cplusplus)
 } //extern "C"
 #endif
