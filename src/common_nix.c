@@ -34,6 +34,10 @@
 #include <pwd.h>
 #include <grp.h>
 #include <stdlib.h>//getenv and related vars.
+#include <termios.h>
+#if (defined(__FreeBSD__) && __FreeBSD__ >= 4 /*4.6 technically*/) || (defined(__OpenBSD__) && defined OpenBSD2_9)
+    #include <readpassphrase.h>
+#endif //FreeBSD 4.6+ or OpenBSD 2.9+
 
 //freeBSD doesn't have the 64 versions of these functions...so I'm defining things this way to make it work. - TJE
 #if defined(__FreeBSD__)
@@ -1532,7 +1536,7 @@ bool is_Running_Elevated(void)
 #if defined (ENABLE_READ_USERNAME)
 static size_t get_Sys_Username_Max_Length(void)
 {
-    #if defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+    #if defined (POSIX_2001)
         //get this in case the system is configured differently
         return sysconf(_SC_LOGIN_NAME_MAX);
     #else
@@ -1554,7 +1558,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
         }
         else
         {
-        #if defined _POSIX_C_SOURCE && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        #if defined (POSIX_2001) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
             //use reentrant call instead.
             char *rawBuffer = NULL;
             long dataSize = -1;
@@ -1605,7 +1609,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                 safe_Free(rawBuffer)
             }
             explicit_zeroes(userInfo, sizeof(struct passwd));
-        #else //defined _POSIX_C_SOURCE && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        #else //defined (POSIX_2001) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
             struct passwd *userInfo = getpwuid(userID);
             if (userInfo)
             {
@@ -1624,7 +1628,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
             //This structure can be in a static location, so writing zeroes to it might be a good way to make sure this is cleared out after we are done.
             //the docs online say subsequent calls to getpwuid may change it, making this not thread-safe, so I would assume this is ok to do.
             explicit_zeroes(userInfo, sizeof(struct passwd));
-        #endif //defined _POSIX_C_SOURCE && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+        #endif //defined (POSIX_2001) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
         }
     }
     return success;
@@ -1647,3 +1651,158 @@ int get_Current_User_Name(char **userName)
     return ret;
 }
 #endif //ENABLE_READ_USERNAME
+
+
+//if not POSIX.1-2001, getpass exists, but has issues and is not recommended. https://www.man7.org/linux/man-pages/man3/getpass.3.html
+//getpassphrase exists in BSD https://man.freebsd.org/cgi/man.cgi?query=readpassphrase&apropos=0&sektion=0&manpath=FreeBSD+14.0-RELEASE+and+Ports&arch=default&format=html
+//getpass_r is available in NetBSD 7..same with getpassfd
+//getpassphrase is in sunos and accepts up to 256 chars. In sun 5.19 getpass says it reads up to 9 characters getpassphrase starts in sun 5.6
+//Unix 7 says 8 characters
+//freebsd, netbsd, older linux, etc usually say getpass can accept up to 128 chars
+//From one of the BSD manpages on getpass:
+//  Historically getpass accepted and returned a password if	it  could  not
+//  modify  the terminal settings to	turn echo off(or if the input was not
+//  a terminal).
+//So if necessary, for "compatibility" this could be implemented without echo, but avoiding that for now-TJE
+int get_Secure_User_Input(const char *prompt, char** userInput, size_t* inputDataLen)
+{
+    int ret = SUCCESS;
+#if defined (POSIX_2001)
+    struct termios defaultterm, currentterm;
+    FILE* term = fopen("/dev/tty", "r");//use /dev/tty instead of stdin to get the terminal controlling the process.
+    bool devtty = true;
+    memset(&defaultterm, 0, sizeof(struct termios));
+    memset(&currentterm, 0, sizeof(struct termios));
+    if (!term)
+    {
+        term = stdin;//fallback to stdin I guess...
+        devtty = false;
+    }
+    //get the default terminal flags
+    if (tcgetattr(fileno(term), &defaultterm))
+    {
+        if (devtty)
+        {
+            fclose(term);
+        }
+        return FAILURE;
+    }
+    memcpy(&currentterm, &defaultterm, sizeof(struct termios));
+    //print the prompt
+    printf("%s", prompt);
+    fflush(stdout);
+    //disable echo for now.
+    currentterm.c_lflag &= C_CAST(tcflag_t , ~ECHO);
+    if (tcsetattr(fileno(term), TCSAFLUSH, &currentterm) != 0)
+    {
+        if (devtty)
+        {
+            fclose(term);
+        }
+        printf("\n");
+        return FAILURE;
+    }
+    //now read the input with getline
+    if (getline(userInput, inputDataLen, term) <= 0)
+    {
+        ret = FAILURE;
+    }
+    else
+    {
+        //check if newline was read (it likely will be there) and remove it
+        //remove newline from the end...convert to a null.
+        size_t endofinput = strlen(*userInput);
+        if ((*userInput)[endofinput - 1] == '\n')
+        {
+            (*userInput)[endofinput - 1] = '\0';
+        }
+    }
+    //restore echo/default flags
+    if (tcsetattr(fileno(term), TCSAFLUSH, &defaultterm) != 0)
+    {
+        if (devtty)
+        {
+            fclose(term);
+        }
+        printf("\n");
+        return FAILURE;
+    }
+    if (devtty)
+    {
+        fclose(term);
+    }
+    printf("\n");
+#elif (defined (__FreeBSD__) && __FreeBSD__ >= 4 /*4.6 technically*/) || (defined (__OpenBSD__) && defined OpenBSD2_9)
+    //use readpassphrase instead
+    //use BUFSIZ buffer as that should be more than enough to read this
+    //NOTE: Linux's libbsd also provides this, but termios method above is still preferred-TJE
+    *inputDataLen = BUFSIZ;
+    *userInput = C_CAST(char*, calloc(*inputDataLen, sizeof(char)));
+    if (*userInput)
+    {
+        if (!readpassphrase(prompt, *userInput, *inputDataLen, 0))
+        {
+            ret = FAILURE;
+        }
+    }
+    else
+    {
+        ret = MEMORY_FAILURE;
+    }
+#elif defined (__NetBSD__) && defined __NetBSD_Version__ && __NetBSD_Version__ >= 7000000000
+    //Use getpass_r
+    //this will dynamically allocate memory for use when the buffer is set to NULL
+    *userInput = getpass_r(prompt, NULL, 0);
+    if ((*userInput) == NULL)
+    {
+        ret = FAILURE;
+    }
+    else
+    {
+        *inputDataLen = strlen(*userInput) + 1;//add one since this adds to the buffer size and that is what we are returning in all other cases-TJE
+    }
+#elif defined (__sun) && defined(__SunOS_5_6)
+    //use getpassphrase since it can return longer passwords than getpass
+    char* eraseme = getpassphrase(prompt);
+    if (eraseme)
+    {
+        *userInput = strdup(eraseme);
+        //immediately clear the original buffer to make sure it cannot be accessed again
+        explicit_zeroes(eraseme, strlen(eraseme));
+        if (*userInput == NULL)
+        {
+            ret = FAILURE;
+        }
+        else
+        {
+            *inputDataLen = strlen(*userInput) + 1;//add one since this adds to the buffer size and that is what we are returning in all other cases-TJE
+        }
+    }
+    else
+    {
+        ret = FAILURE;
+    }
+#else //POSIX & OS MACRO CHECKS
+    //Last resort is to use getpass. This is the least desirable thing to use which is why it only gets used in this else case as a backup in case the OS we are supporting doesn't support any other available method.-TJE
+    char* eraseme = getpass(prompt);
+    if (eraseme)
+    {
+        *userInput = strdup(eraseme);
+        //immediately clear the original buffer to make sure it cannot be accessed again
+        explicit_zeroes(eraseme, strlen(eraseme));
+        if (*userInput == NULL)
+        {
+            ret = FAILURE;
+        }
+        else
+        {
+            *inputDataLen = strlen(*userInput) + 1;//add one since this adds to the buffer size and that is what we are returning in all other cases-TJE
+        }
+    }
+    else
+    {
+        ret = FAILURE;
+    }
+#endif //POSIX & OS MACRO CHECKS
+    return ret;
+}

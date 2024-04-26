@@ -19,6 +19,7 @@
 #include <strsafe.h> //needed in the code written to get the windows version since I'm using a Microsoft provided string concatenation call-tje
 #include <io.h> //needed for getting the size of a file in windows
 #include <lmcons.h> //for UNLEN
+#include <string.h>
 
 bool os_Directory_Exists(const char * const pathToCheck)
 {
@@ -1434,3 +1435,58 @@ int get_Current_User_Name(char **userName)
     return ret;
 }
 #endif //ENABLE_READ_USERNAME
+
+static DWORD get_Input_Console_Default_Mode(void)
+{
+    static DWORD defaultConsoleMode = UINT32_MAX;
+    if (defaultConsoleMode == UINT32_MAX)
+    {
+        if (FALSE == GetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), &defaultConsoleMode))
+        {
+            defaultConsoleMode = 0;
+            //From MSFT documentation: https://learn.microsoft.com/en-us/windows/console/setconsolemode?redirectedfrom=MSDN
+            //"When a console is created, all input modes except ENABLE_WINDOW_INPUT and ENABLE_VIRTUAL_TERMINAL_INPUT are enabled by default."
+            defaultConsoleMode = ENABLE_ECHO_INPUT | ENABLE_INSERT_MODE | ENABLE_LINE_INPUT | ENABLE_MOUSE_INPUT | ENABLE_PROCESSED_INPUT | ENABLE_QUICK_EDIT_MODE;
+        }
+    }
+    return defaultConsoleMode;
+}
+
+static bool set_Input_Console_Mode(DWORD mode)
+{
+    return M_ToBool(SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), mode));
+}
+
+int get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen)
+{
+    int ret = SUCCESS;
+    DWORD defaultConMode = get_Input_Console_Default_Mode();
+    DWORD conMode = defaultConMode;
+    conMode &= C_CAST(DWORD, ~(ENABLE_ECHO_INPUT));
+    printf("%s", prompt);
+    fflush(stdout);
+    //disable echoing typed characters so that
+    if (set_Input_Console_Mode(conMode))
+    {
+        if (getline(userInput, inputDataLen, stdin) <= 0)
+        {
+            ret = FAILURE;
+        }
+        else
+        {
+            //remove newline from the end...convert to a null.
+            size_t endofinput = strlen(*userInput);
+            if ((*userInput)[endofinput - 1] == '\n')
+            {
+                (*userInput)[endofinput - 1] = '\0';
+            }
+        }
+    }
+    else
+    {
+        ret = FAILURE;
+    }
+    set_Input_Console_Mode(defaultConMode);
+    printf("\n");
+    return ret;
+}
