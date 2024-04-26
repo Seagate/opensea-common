@@ -43,7 +43,7 @@ void delay_Milliseconds(uint32_t milliseconds)
     //according to this link: http://linux.die.net/man/3/usleep
     //usleep is obsolete starting in POSIX 2001 and removed entirely in POSIX 2008 and nanosleep is supposed to be used instead.
     //the usleep code is left in just in case it is needed for any reason, but nanosleep works as expected
-    #if defined _POSIX_VERSION && _POSIX_VERSION >= 199309L && defined _POSIX_TIMERS 
+    #if defined POSIX_1993 && defined _POSIX_TIMERS 
         struct timespec delayTime;
         //NOTE: tv_sec is long in C11, but time_t prior.
         //      tv_nsec is implementation defined until C23 where it is long long
@@ -117,7 +117,7 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
     else 
 #endif //C11
     {
-#if defined _POSIX_VERSION && _POSIX_VERSION >= 199309L && defined _POSIX_TIMERS 
+#if defined (POSIX_1993) && defined _POSIX_TIMERS 
         //POSIX gettimeofday() or clock_gettime(CLOCK_REALTIME, ts) https://pubs.opengroup.org/onlinepubs/9699919799/functions/clock_getres.html 
         //NOTE: Using clock_gettime since it's more accurate and not affected by time-skew
         struct timespec posixnow;
@@ -271,7 +271,7 @@ void *malloc_aligned(size_t size, size_t alignment)
     #elif !defined(UEFI_C_SOURCE) && defined (__INTEL_COMPILER) || defined (__ICC)
         //_mm_malloc
         return _mm_malloc(C_CAST(int, size), C_CAST(int, alignment));
-    #elif !defined(UEFI_C_SOURCE) && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+    #elif !defined(UEFI_C_SOURCE) && defined (POSIX_2001)
         //POSIX.1-2001 and higher define support for posix_memalign
         void *temp = NULL;
         if (0 != posix_memalign( &temp, alignment, size))
@@ -330,7 +330,7 @@ void free_aligned(void* ptr)
     #elif !defined(UEFI_C_SOURCE) && defined (__INTEL_COMPILER) || defined (__ICC)
         //_mm_free
         _mm_free(ptr);
-    #elif !defined(UEFI_C_SOURCE) && defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+    #elif !defined(UEFI_C_SOURCE) && defined (POSIX_2001)
         //POSIX.1-2001 and higher define support for posix_memalign
         //Just call free
         free(ptr);
@@ -399,7 +399,7 @@ size_t get_System_Pagesize(void)
 {
     #if defined (UEFI_C_SOURCE)
         return 4096;//This is not the processor page size, just the pagesize allocated by EDK2. It's in <dePkg/Include/Uefi/UedfiBaseType.h
-    #elif defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+    #elif defined (POSIX_2001)
         //use sysconf: http://man7.org/linux/man-pages/man3/sysconf.3.html
         return C_CAST(size_t, sysconf(_SC_PAGESIZE));
     #elif defined (_POSIX_VERSION) //this may not be the best way to test this, but I think it will be ok.
@@ -1411,7 +1411,7 @@ struct tm * get_UTCtime(const time_t *timer, struct tm *buf)
     if (timer && buf)
     {
         //TODO: C2x not fully defined yet, but can update this first check when it is and is supported.
-#if defined _POSIX_VERSION && _POSIX_VERSION >= 200112L && defined _POSIX_THREAD_SAFE_FUNCTIONS
+#if defined (POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS
         //POSIX or C2x (C23 right now) have gmtime_r to use
         return gmtime_r(timer, buf);
 
@@ -1445,7 +1445,7 @@ struct tm * get_Localtime(const time_t *timer, struct tm *buf)
     if (timer && buf)
     {
         //TODO: C2x not fully defined yet, but can update this first check when it is and is supported.
-#if defined _POSIX_VERSION && _POSIX_VERSION >= 200112L && defined _POSIX_THREAD_SAFE_FUNCTIONS
+#if defined (POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS
         //POSIX or C2x (C23 right now) have localtime_r to use
         return localtime_r(timer, buf);
 
@@ -2070,7 +2070,7 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
 {
     if (destination && source && destinationSizeBytes > 0)
     {
-#if defined _POSIX_VERSION && _POSIX_VERSION >= 200112L || defined (_MSC_VER) || defined (USING_C23)
+#if defined (POSIX_2001) || defined (_MSC_VER) || defined (__MINGW32__) || defined (USING_C23)
         char* dup = strdup(destination);
         if (dup)
         {
@@ -2084,7 +2084,7 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
             safe_Free(dup)
             return destination;
         }
-#elif defined (__FreeBSD__) && __FreeBSD__ >= 4) || (defined (__OpenBSD__) && defined(OpenBSD2_4)) || (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 1040000300L)
+#elif (defined (__FreeBSD__) && __FreeBSD__ >= 4) || (defined (__OpenBSD__) && defined(OpenBSD2_4)) || (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 1040000300L)
         //use strlcat
         //FreeBSD 3.3 and later
         //openBSD 2.4 and later
@@ -2110,7 +2110,7 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
 {
     if (destination && source && destinationSizeBytes > 0 && sourceLength > 0)
     {
-#if defined _POSIX_VERSION && _POSIX_VERSION >= 200112L || defined (_MSC_VER) || defined (USING_C23)
+#if defined (POSIX_2001) || defined (_MSC_VER) || defined (__MINGW32__) || defined (USING_C23)
         char* dup = strdup(destination);
         if (dup)
         {
@@ -2132,7 +2132,7 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
             safe_Free(dup)
             return destination;
         }
-#elif defined (__FreeBSD__) && __FreeBSD__ >= 4) || (defined (__OpenBSD__) && defined(OpenBSD2_4)) || (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 1040000300L)
+#elif (defined (__FreeBSD__) && __FreeBSD__ >= 4) || (defined (__OpenBSD__) && defined(OpenBSD2_4)) || (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 1040000300L)
         //use strlcat
         //FreeBSD 3.3 and later
         //openBSD 2.4 and later
@@ -2358,7 +2358,7 @@ size_t uint64_to_sizet(uint64_t val)
     #else //SIZE_MAX < UINT64_MAX
     if (val <= SIZE_MAX)
     {
-        return val;
+        return C_CAST(size_t, val);
     }
     else
     {
@@ -2554,7 +2554,7 @@ size_t ulonglong_to_sizet(unsigned long long val)
     #else //SIZE_MAX < ULLONG_MAX
     if (val <= SIZE_MAX)
     {
-        return val;
+        return C_CAST(size_t, val);
     }
     else
     {
@@ -2575,3 +2575,94 @@ bool is_size_t_max(size_t val)
         return false;
     }
 }
+
+#if !defined (__STDC_ALLOC_LIB__) && !defined _POSIX_VERSION || (!defined (POSIX_2008))
+//getdelim and getline are not available, so define them ourselves for our own use
+
+ssize_t getdelim(char** restrict lineptr, size_t* restrict n, int delimiter, FILE* stream)
+{
+    char* currentptr = NULL;
+    char* endptr = NULL;
+    if (lineptr == NULL || n == NULL || stream == NULL)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+    if (*lineptr == NULL || *n == 0)
+    {
+        *n = BUFSIZ;
+        *lineptr = C_CAST(char*, malloc(*n));
+        if (NULL == *lineptr)
+        {
+            errno = ENOMEM;
+            return -1;
+        }
+    }
+    currentptr = *lineptr;
+    endptr = *lineptr + *n;
+    //read using fgetc until delimiter is encountered in the stream or end of the stream is reached
+    do
+    {
+        int c = fgetc(stream);
+        if (c == EOF)
+        {
+            //hit end of the stream.
+            if (feof(stream))
+            {
+                ssize_t numchars = C_CAST(ssize_t, C_CAST(intptr_t, currentptr) - C_CAST(intptr_t, *lineptr));
+                if (numchars > 0)
+                {
+                    //read all the characters in the stream to the end.
+                    //set NULL terminator and return how many chars were written
+                    currentptr += 1;
+                    *currentptr = '\0';
+                    return numchars;
+                }
+            }
+            //errno value???
+            return -1;
+        }
+        //add to the stream
+        *currentptr = C_CAST(char, c);//This cast is necessary to stop a warning. C is an int so that EOF can be defined.
+        currentptr += 1;
+        //check if we got the delimiter
+        if (c == delimiter)
+        {
+            *currentptr = '\0';
+            //calculate how may characters were read and return that value
+            return C_CAST(ssize_t, C_CAST(intptr_t, currentptr) - C_CAST(intptr_t, *lineptr));
+        }
+        //check if writing next two characters will overflow the buffer (next char + null terminator if needed)
+        if (C_CAST(intptr_t, currentptr) + 2 >= C_CAST(intptr_t, endptr))
+        {
+            //reallocate. Simple method is to double the current buffer size
+            char* temp = NULL;
+            size_t newsize = *n * 2;
+            ssize_t numchars = C_CAST(ssize_t, C_CAST(intptr_t, currentptr) - C_CAST(intptr_t, *lineptr));
+#if defined (SSIZE_MAX)
+            if (newsize > SSIZE_MAX)
+            {
+                errno = EOVERFLOW;
+                return -1;
+            }
+#endif //SSIZE_MAX
+            temp = realloc(*lineptr, newsize);
+            if (temp == NULL)
+            {
+                errno = ENOMEM;
+                return -1;
+            }
+            *lineptr = temp;
+            *n = newsize;
+            currentptr = *lineptr + numchars;
+            endptr = *lineptr + *n;
+        }
+    } while (1);
+}
+
+ssize_t getline(char** lineptr, size_t* n, FILE* stream)
+{
+    return getdelim(lineptr, n, '\n', stream);
+}
+
+#endif //__STDC_ALLOC_LIB__
