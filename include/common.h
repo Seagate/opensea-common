@@ -29,58 +29,6 @@ extern "C"
 {
 #endif
 
-//asking to get C11 _s functions since there is some ability to use them in some places.
-#define __STDC_WANT_LIB_EXT1__ 1
-//asking to get dynamic memory functions (mostly strdup) in C11. Only guaranteed available if __STDC_ALLOC_LIB__ defined, but asking anyways...most systems we support will have this-TJE
-#define __STDC_WANT_LIB_EXT2__ 1
-
-    #include <stdio.h>
-    #include <time.h>
-    #include <string.h>
-    #include <stdlib.h>
-    #include <inttypes.h>
-    #include <stdbool.h>
-    #include <errno.h> //for printing std errors to the screen...more useful for 'nix OSs, but useful everywhere since it is at least standard functions
-
-    #if !defined(UINTPTR_MAX)
-    //need uintptr_t type for NVMe capabilities to prevent warnings/errors
-    //TODO: if C11, _Static_assert can be used to check against sizeof(void*) to make sure this is defined in a way that should work.
-        #if defined (_WIN64) || defined (_M_IA64) || defined (_M_ALPHA) || defined (_M_X64) || defined (_M_AMD64) || defined (__alpha__) || defined (__amd64__) || defined (__x86_64__) || defined (__aarch64__) || defined (__ia64__) || defined (__IA64__) || defined (__powerpc64__) || defined (__PPC64__) || defined (__ppc64__) || defined (_ARCH_PPC64)//64bit
-            typedef uint64_t uintptr_t;
-            #define UINTPTR_MAX UINT64_MAX
-        #else //assuming 32bit
-            typedef uint32_t uintptr_t;
-            #define UINTPTR_MAX UINT32_MAX
-        #endif
-    #endif
-
-    // Including strings.h to have string case compare functionality and working around Windows.
-    // TODO: improve this check as needed for other systems.
-    // TODO: make definitions for other functions in strings.h
-    #if defined (__unix__) || defined (_POSIX_VERSION) && _POSIX_VERSION >= 200112L
-        #include <strings.h>
-    #elif defined (_WIN32) 
-        #if !defined (strcasecmp)
-            #define strcasecmp(s1, s2) _stricmp(s1, s2)
-        #endif //strcasecmp
-        #if !defined (strncasecmp)
-            #define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
-        #endif //strncasecmp
-    #else 
-        #error "Need string case compare definition."
-    #endif // __unix__, POSIX, WIN32
-
-    #include "common_platform.h"
-
-    //Macro to help make casts more clear and searchable. Can be very helpful while debugging.
-    //If using C++, use static_cast, reinterpret_cast, dynamic_cast before trying a C_CAST.
-    #define C_CAST(type, val) (type)(val)
-
-    //Microsoft doesn't have snprintf...it has _snprintf...at least until VS2015 according to my web search - TJE
-    #if defined (_MSC_VER) && _MSC_VER <= 1800 && defined _WIN32
-    #define snprintf _snprintf
-    #endif
-
     //Set macros to make it easier to check specific C standards compatibility.
     //NOTE: Do not rely strictly on these macros for all features from all standards, especially in MSVC
     //      Prior to VS2022 17.2
@@ -141,7 +89,129 @@ extern "C"
                 #define USING_C17
             #endif //MSC_VER and lots of other flags to figure out if it's running in C11/17 mode
             //NOTE: Not sure when/if C23 will be supported, but hopefully it will show up under the standard macros above going forward-TJE
+    #endif //__STDC__
+
+    #if defined (__cplusplus)
+        #define USING_CPP98
+        #if __cplusplus >= 201103L
+            #define USING_CPP11
+        #endif
+        #if __cplusplus >= 201402L
+            #define USING_CPP14
+        #endif
+        #if __cplusplus >= 201703L
+            #define USING_CPP17
+        #endif
+        #if __cplusplus >= 202002L
+            #define USING_CPP20
+        #endif
+        #if __cplusplus >= 202302L
+            #define USING_CPP23
+        #endif
+        #if defined (_MSC_VER)
+            //Check _MSVC_LANG  as it may or maynot match __cplusplus in some versions of msvc
+            //This may not be an issue with VS2022, but it was an issue at least in VS2015
+            #if !defined (USING_CPP11) && _MSVC_LANG >= 201103L
+                #define USING_CPP11
+            #endif
+            #if !defined (USING_CPP14) && _MSVC_LANG >= 201402L 
+                #define USING_CPP14
+            #endif
+            #if !defined (USING_CPP17) && _MSVC_LANG >= 201703L 
+                #define USING_CPP17
+            #endif
+            #if !defined (USING_CPP20) && _MSVC_LANG >= 202002L
+                #define USING_CPP20
+            #endif
+            #if !defined (USING_CPP23) && _MSVC_LANG >= 202302L
+                #define USING_CPP23
+            #endif
+        #endif//_MSC_VER
+    #endif//__cplusplus
+
+    
+
+//asking to get C11 _s functions since there is some ability to use them in some places.
+#define __STDC_WANT_LIB_EXT1__ 1
+//asking to get dynamic memory functions (mostly strdup) in C11. Only guaranteed available if __STDC_ALLOC_LIB__ defined, but asking anyways...most systems we support will have this-TJE
+#define __STDC_WANT_LIB_EXT2__ 1
+
+    #include <stdio.h>
+    #include <time.h>
+    #include <string.h>
+    #include <stdlib.h>
+    #include <inttypes.h>
+    #include <stdbool.h>
+    #include <errno.h> //for printing std errors to the screen...more useful for 'nix OSs, but useful everywhere since it is at least standard functions
+#if defined (__unix__)
+    #include <unistd.h> //to ensure we can check for POSIX versions
+#endif //__unix__
+    //POSIX version checks. NOTE: not taking into account xopen/sus versions here, just posix
+    //May need to check for other optional posix features using these other macros: https://linux.die.net/man/7/posixoptions
+    #if defined (_POSIX_VERSION)
+        #if _POSIX_VERSION >= 198808L
+            #define POSIX_1988
+        #endif
+        #if _POSIX_VERSION >= 199009L
+            #define POSIX_1990
+        #endif
+        #if defined (_POSIX2_C_VERSION) && _POSIX2_C_VERSION >= 199209L
+            #define POSIX_1992
+        #endif
+        #if _POSIX_VERSION >= 199309L
+            #define POSIX_1993
+        #endif
+        #if _POSIX_VERSION >= 199506L
+            #define POSIX_1996
+        #endif
+        #if _POSIX_VERSION >= 200112L
+            #define POSIX_2001
+        #endif
+        #if _POSIX_VERSION >= 200809L
+            #define POSIX_2008
+        #endif
+    #endif //_POSIX_VERSION 
+
+    #if !defined(UINTPTR_MAX)
+    //need uintptr_t type for NVMe capabilities to prevent warnings/errors
+    //TODO: if C11, _Static_assert can be used to check against sizeof(void*) to make sure this is defined in a way that should work.
+        #if defined (_WIN64) || defined (_M_IA64) || defined (_M_ALPHA) || defined (_M_X64) || defined (_M_AMD64) || defined (__alpha__) || defined (__amd64__) || defined (__x86_64__) || defined (__aarch64__) || defined (__ia64__) || defined (__IA64__) || defined (__powerpc64__) || defined (__PPC64__) || defined (__ppc64__) || defined (_ARCH_PPC64)//64bit
+            typedef uint64_t uintptr_t;
+            #define UINTPTR_MAX UINT64_MAX
+        #else //assuming 32bit
+            typedef uint32_t uintptr_t;
+            #define UINTPTR_MAX UINT32_MAX
+        #endif
     #endif
+
+    // Including strings.h to have string case compare functionality and working around Windows.
+    // TODO: improve this check as needed for other systems.
+    // TODO: make definitions for other functions in strings.h
+    #if defined (__unix__) || defined (POSIX_2001)
+        #include <strings.h>
+    #elif defined (_WIN32) 
+        #if !defined (strcasecmp)
+            #define strcasecmp(s1, s2) _stricmp(s1, s2)
+        #endif //strcasecmp
+        #if !defined (strncasecmp)
+            #define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
+        #endif //strncasecmp
+    #else 
+        #error "Need string case compare definition."
+    #endif // __unix__, POSIX, WIN32
+
+    #include "common_platform.h"
+
+    //Macro to help make casts more clear and searchable. Can be very helpful while debugging.
+    //If using C++, use static_cast, reinterpret_cast, dynamic_cast before trying a C_CAST.
+    #define C_CAST(type, val) (type)(val)
+
+    //Microsoft doesn't have snprintf...it has _snprintf...at least until VS2015 according to my web search - TJE
+    #if defined (_MSC_VER) && _MSC_VER <= 1800 && defined _WIN32
+    #define snprintf _snprintf
+    #endif
+
+    
 
     //Macro to help make casts more clear and searchable. Can be very helpful while debugging.
     //If using C++, use static_cast, reinterpret_cast, dynamic_cast before trying a C_CAST.
@@ -603,9 +673,9 @@ extern "C"
                 #define M_ATTR_UNUSED /*UNUSED*/ \
                 
             #endif
-		#elif defined (__GNUC__) && __GNUC__ >= 3
-			//GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-			#define M_ATTR_UNUSED __attribute__ ((unused))
+        #elif defined (__GNUC__) && __GNUC__ >= 3
+            //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+            #define M_ATTR_UNUSED __attribute__ ((unused))
         #elif defined (_MSC_VER)
             #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
         #else
@@ -641,9 +711,9 @@ extern "C"
                 #define M_ATTR_UNUSED /*UNUSED*/ \
                 
             #endif
-		#elif defined (__GNUC__) && __GNUC__ >= 3
-			//GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-			#define M_ATTR_UNUSED __attribute__ ((unused))
+        #elif defined (__GNUC__) && __GNUC__ >= 3
+            //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+            #define M_ATTR_UNUSED __attribute__ ((unused))
         #elif defined (_MSC_VER)
             #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
         #else
@@ -2050,6 +2120,28 @@ typedef enum _eReturnValues
     //returns number of milliseconds since Jan 1, 1970 UTC
     //If an error occurs, returns zero
     uint64_t get_Milliseconds_Since_Unix_Epoch(void);
+
+    #if !defined (SSIZE_MAX) && defined (_MSC_VER)
+        //assume ssize_t is not defined
+        //using intptr_t since it has the same range.
+        //MSFT has SSIZE_T which also matches this definition, but intptr_t is more standardized, so using it for now-TJE
+        typedef intptr_t ssize_t;
+        #if defined (_WIN64)
+            #define SSIZE_MAX LLONG_MAX
+        #elif defined (_WIN32)
+            #define SSIZE_MAX LONG_MAX
+        #else
+            #pragma message "Unable to set SSIZE_MAX"
+        #endif
+    #endif  //SSIZE_MAX && _MSC_VER
+
+
+#if !defined (__STDC_ALLOC_LIB__) && !defined _POSIX_VERSION || defined (POSIX_2008)
+    //Need getline and getdelim functions since they are not available.
+    ssize_t getline(char** lineptr, size_t* n, FILE* stream);
+
+    ssize_t getdelim(char** restrict lineptr, size_t* restrict n, int delimiter, FILE* stream);
+#endif //!__STDC_ALLOC_LIB__ && !_POSIX || (POSIX < 2008)
 
 #if defined (__cplusplus)
 } //extern "C"
