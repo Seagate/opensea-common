@@ -732,7 +732,7 @@ extern "C"
     #define INT_ROUND_DOWN(value, roundto) (((value) % (roundto)) ? ((value) - ((value) % (roundto))) : (value) )
 
 
-#if defined (__cplusplus)
+#if defined (USING_CPP11)
 enum class eReturnValues
 #else
 typedef enum _eReturnValues
@@ -774,7 +774,7 @@ typedef enum _eReturnValues
     MISSING_INFORMATION                 = 33,  // file is missing information inorder to be parsed correctly
     TRUNCATED_FILE                      = 34,       // file is truncated and might be missing data for parsing it correctly
     UNKNOWN
-#if defined (__cplusplus)
+#if defined (USING_CPP11)
     };
 #else
     }eReturnValues;
@@ -789,7 +789,7 @@ typedef enum _eReturnValues
         XFER_DATA_IN_OUT, // Transfer from target to host, followed by host to target
      } eDataTransferDirection;
 
-#if defined (__cplusplus)
+#if defined (USING_CPP11)
     enum class eVerbosityLevels
 #else
     typedef enum _eVerbosityLevels
@@ -800,14 +800,14 @@ typedef enum _eReturnValues
         VERBOSITY_COMMAND_NAMES     = 2,
         VERBOSITY_COMMAND_VERBOSE   = 3,
         VERBOSITY_BUFFERS           = 4
-#if defined (__cplusplus)
+#if defined (USING_CPP11)
     };
 #else
     }eVerbosityLevels;
 #endif
 
     // json data type sets. used for formating data to a customer demands 
-#if defined (__cplusplus)
+#if defined (USING_CPP11)
     enum class eDataFormat
 #else
     typedef enum _eDataFormat
@@ -815,7 +815,7 @@ typedef enum _eReturnValues
     {
         JSON_DATA = 0,   //default
         PREPYTHON_DATA = 1,
-#if defined (__cplusplus)
+#if defined (USING_CPP11)
     };
 #else
     }eDataFormat;
@@ -1664,7 +1664,7 @@ typedef enum _eReturnValues
     //-----------------------------------------------------------------------------
     time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture);
 
-#if defined (__cplusplus)
+#if defined (USING_CPP11)
     enum class eCompiler
 #else
     typedef enum _eCompiler
@@ -1682,7 +1682,7 @@ typedef enum _eReturnValues
         OPENSEA_COMPILER_HP_A_CPP,//not supported right now
         //Add other compilers here if we ever add more than those above (which not all listed above are supported!)
         OPENSEA_COMPILER_RESERVED
-#if defined (__cplusplus)
+#if defined (USING_CPP11)
     };
 #else
     }eCompiler;
