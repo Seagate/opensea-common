@@ -15,15 +15,10 @@
 #include "common.h"
 #include "common_nix.h"
 #include <sys/types.h>
-//The defines below are to enable fstat64 which i used in the function to read a file size (for large files, 64bit numbers may be required)
-#ifndef __USE_LARGEFILE64
-#define __USE_LARGEFILE64
-#endif
-#ifndef _LARGEFILE_SOURCE
-#define _LARGEFILE_SOURCE
-#endif
-#ifndef _LARGEFILE64_SOURCE
-#define _LARGEFILE64_SOURCE
+//Define this to allow reading larger files in 32bit OSs without a limitation.
+//https://www.gnu.org/software/libc/manual/html_node/Feature-Test-Macros.html
+#ifndef _FILE_OFFSET_BITS
+#define _FILE_OFFSET_BITS=64
 #endif
 #include <sys/stat.h>
 #include <sys/param.h> //hopefully this is available on all 'nix systems
@@ -38,12 +33,6 @@
 #if (defined(__FreeBSD__) && __FreeBSD__ >= 4 /*4.6 technically*/) || (defined(__OpenBSD__) && defined OpenBSD2_9)
     #include <readpassphrase.h>
 #endif //FreeBSD 4.6+ or OpenBSD 2.9+
-
-//freeBSD doesn't have the 64 versions of these functions...so I'm defining things this way to make it work. - TJE
-#if defined(__FreeBSD__)
-#define stat64 stat
-#define fstat64 fstat
-#endif
 
 bool os_Directory_Exists(const char * const pathToCheck)
 {
@@ -1456,9 +1445,9 @@ int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char
 
 int64_t os_Get_File_Size(FILE *filePtr)
 {
-    struct stat64 st;
-    memset(&st, 0, sizeof(struct stat64));
-    if (0 == fstat64(fileno(filePtr), &st))
+    struct stat st;
+    memset(&st, 0, sizeof(struct stat));
+    if (0 == fstat(fileno(filePtr), &st))
     {
         return st.st_size;
     }
