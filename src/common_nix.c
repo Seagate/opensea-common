@@ -36,7 +36,8 @@
 #include <stdlib.h>//getenv and related vars.
 
 //freeBSD doesn't have the 64 versions of these functions...so I'm defining things this way to make it work. - TJE
-#if defined(__FreeBSD__)
+//stat64 and friends are deprecated on macOS - fall back to stat/fstat there as well
+#if defined(__FreeBSD__) || defined(__APPLE__)
 #define stat64 stat
 #define fstat64 fstat
 #endif
