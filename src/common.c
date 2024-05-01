@@ -30,6 +30,8 @@
 #include <stdlib.h>//aligned allocation functions come from here
 #include <math.h>
 
+time_t CURRENT_TIME = 0;
+char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH] = {0};
 
 void delay_Milliseconds(uint32_t milliseconds)
 {
@@ -48,6 +50,20 @@ void delay_Milliseconds(uint32_t milliseconds)
         usleep((useconds_t)(milliseconds * 1000));
     #endif
 #endif
+}
+
+bool get_current_timestamp(void)
+{
+    bool retStatus = true;
+    if (strcmp(CURRENT_TIME_STRING, "") == 0)
+    {
+        struct tm logTime;
+        memset(&logTime, 0, sizeof(struct tm));
+        CURRENT_TIME = time(NULL);
+        memset(CURRENT_TIME_STRING, 0, sizeof(CURRENT_TIME_STRING) / sizeof(*CURRENT_TIME_STRING));
+        retStatus = strftime(CURRENT_TIME_STRING, CURRENT_TIME_STRING_LENGTH, "%Y%m%dT%H%M%S", get_Localtime(&CURRENT_TIME, &logTime));
+    }
+    return retStatus;
 }
 
 void delay_Seconds(uint32_t seconds)
@@ -191,7 +207,7 @@ void *calloc_aligned(size_t num, size_t size, size_t alignment)
 void *realloc_aligned(void *alignedPtr, size_t originalSize, size_t size, size_t alignment)
 {
     void *temp = NULL;
-    if (originalSize > 0)//if this is zero, they don't want or care to keep the data
+    if (originalSize == 0)//if this is zero, they don't want or care to keep the data
     {
         free_aligned(alignedPtr);
         alignedPtr = NULL;

@@ -11,7 +11,7 @@ if not (target_machine.system() == 'sunos') and c.get_id().contains('gcc')
   if c.version().version_compare('<5.0')
     if c.has_argument('-std=gnu99')
       #Add this argument to the list since C99 is a minimum required C compiler standard
-      add_global_arguments('-std=gnu99', language: 'c',)
+      add_project_arguments('-std=gnu99', language: 'c',)
     else
       error('C99/GNU99 standard is required but was not able to be set!')
     endif
@@ -46,6 +46,11 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
   '-Wchar-subscripts',
   '-Wundef'
   ]
+  if target_machine.cpu_family() == 'ppc64'
+    #power pc builds generate a lot of warnings/notes about ABI changes since GCC-5
+    #this flag is disabling them because this is way too noisy.
+    warning_flags += ['-Wno-psabi']
+  endif
 elif c.get_id().contains('msvc')
   #See here for enabling/disabling msvc warnings:
   #https://learn.microsoft.com/en-us/cpp/build/reference/compiler-option-warning-level?view=msvc-170
@@ -101,7 +106,7 @@ if get_option('debug')
 endif
 
 if get_option('username').enabled()
-  add_global_arguments('-DENABLE_READ_USERNAME', language : 'c')
+  global_cpp_args += ['-DENABLE_READ_USERNAME']
 endif
 
 src_files = ['src/common.c', 'src/common_platform.c']
