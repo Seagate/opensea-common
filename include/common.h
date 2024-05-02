@@ -548,74 +548,41 @@ extern "C"
             #if __has_cpp_attribute(fallthrough)
                 //This is the standardized way intriduced in C++17
                 #define M_FALLTHROUGH [[fallthrough]];
-            /* gnu::fallback check is not included as this breaks in other compilers that support some gcc-isms, and it's easier to comment this out for now than setup something complicated to support it. -TJE
-            #elif __has_cpp_attribute(gnu::fallthrough)
-                //This is the GNU method for C++11 and C++14
-                #define M_FALLTHROUGH [[gnu::fallthrough]];
-            */
-            #elif defined __has_attribute
-                //GCC type compiler check
-                #if __has_attribute(fallthrough)
-                    #define M_FALLTHROUGH __attribute__ ((fallthrough));
-                #else
-                    #define M_FALLTHROUGH /*FALLTHRU*/ \
-                    
-                #endif
-            #else
-                //Insert a comment instead since other methods were not detected.
-                #define M_FALLTHROUGH /*FALLTHRU*/ \
-                
             #endif
-        #elif defined __has_attribute
-            //GCC type compiler check
-            #if __has_attribute(fallthrough)
-                #define M_FALLTHROUGH __attribute__ ((fallthrough));
-            #else
-                #define M_FALLTHROUGH /*FALLTHRU*/ \
-                
-            #endif
-        #else
-            //Insert a comment instead since other methods were not detected.
-            #define M_FALLTHROUGH /*FALLTHRU*/ \
-            
         #endif
     #elif defined __has_c_attribute
         #if __has_c_attribute(fallthrough)
-            //C2x style
+            //C23 style
             #define M_FALLTHROUGH [[fallthrough]];
-        #elif defined __has_attribute
-            //GCC type compiler check
-            #if __has_attribute(fallthrough)
-                #define M_FALLTHROUGH __attribute__ ((fallthrough));
-            #else
-                #define M_FALLTHROUGH /*FALLTHRU*/ \
-                
-            #endif
-        #else
-            //Insert a comment instead since other methods were not detected.
-            #define M_FALLTHROUGH /*FALLTHRU*/ \
-            
+        #elif __has_c_attribute(__fallthrough__)
+            //C23 style
+            #define M_FALLTHROUGH [[__fallthrough__]];
         #endif
-    #else //not C++ and doesn't have __has_c_attribute so do something for older C code
+    #endif
+    #if !defined (M_FALLTHROUGH)
+        //not C++ and doesn't have __has_c_attribute so do something for older C code
         //Weird case: Clang 3.4.2 (CentOS7) doesn't like the attribute definition below and throws tons
         //of warnings for "declaration does not declare anything", but this is not a problem in newer versions
         //So currently solution to prevent excessive warnings that don't make sense is to define this differently for
         // clang 3 and earlier. This may need adjusting to specific versions of clang later, but this is what I've been able to do so far - TJE
-        #if defined (__clang__) && __clang__ <= 3
+        #if defined (__clang__) && defined (__clang_major__) && __clang_major__ <= 3
             #define M_FALLTHROUGH /*FALLTHRU*/ \
-                
+
         #elif defined __has_attribute
             //GCC type compiler check
             #if __has_attribute(fallthrough)
-                #define M_FALLTHROUGH __attribute__ ((fallthrough));
-            #else
-                #define M_FALLTHROUGH /*FALLTHRU*/ \
-                
+                #define M_FALLTHROUGH __attribute__((fallthrough));
             #endif
-        #else
-            //Insert a comment instead since other methods were not detected.
-            #define M_FALLTHROUGH /*FALLTHRU*/ \
+        #endif
+        #if !defined M_FALLTHROUGH
+            #if defined (__GNUC__) && __GNUC__ >= 3
+                //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+                #define M_ATTR_UNUSED __attribute__ ((fallthrough))
+            #else
+                //Insert a comment instead since other methods were not detected.
+                #define M_FALLTHROUGH /*FALLTHRU*/ \
             
+            #endif
         #endif
     #endif //Checking C/C++
     
@@ -651,79 +618,171 @@ extern "C"
             #if __has_cpp_attribute(maybe_unused)
                 //This is the standardized way intriduced in C++17
                 #define M_ATTR_UNUSED [[maybe_unused]]
-            #elif defined __has_attribute
-                //GCC type compiler check
-                #if __has_attribute(unused)
-                    #define M_ATTR_UNUSED __attribute__ ((unused))
-                #else
-                    #define M_ATTR_UNUSED /*UNUSED*/ \
-                    
-                #endif
+            #endif
+        #endif
+    #elif defined __has_c_attribute //C23
+        #if __has_c_attribute(maybe_unused)
+            //C23 style
+            #define M_ATTR_UNUSED [[maybe_unused]]
+        #elif __has_c_attribute(__maybe_unused__) //check for standardized double underscore version
+            #define M_DEPRECATED [[__maybe_unused__]]
+        #endif
+    #endif
+    #if !defined (M_ATTR_UNUSED)
+        //older C or CPP or no standard way to define this.
+        //Use compiler specific checks
+        #if defined __has_attribute
+            //GCC type compiler check
+            #if __has_attribute(unused)
+                #define M_ATTR_UNUSED __attribute__ ((unused))
+            #endif
+        #endif
+        #if !defined (M_ATTR_UNUSED)//__has_attribute is available, but doesn't have what we need-TJE
+		    #if defined (__GNUC__) && __GNUC__ >= 3
+			    //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+			    #define M_ATTR_UNUSED __attribute__ ((unused))
             #elif defined (_MSC_VER)
                 #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
             #else
                 //Insert a comment instead since other methods were not detected.
                 #define M_ATTR_UNUSED /*UNUSED*/ \
-                
-            #endif
-        #elif defined __has_attribute
-            //GCC type compiler check
-            #if __has_attribute(unused)
-                #define M_ATTR_UNUSED __attribute__ ((unused))
-            #else
-                #define M_ATTR_UNUSED /*UNUSED*/ \
-                
-            #endif
-        #elif defined (__GNUC__) && __GNUC__ >= 3
-            //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-            #define M_ATTR_UNUSED __attribute__ ((unused))
-        #elif defined (_MSC_VER)
-            #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
-        #else
-            //Insert a comment instead since other methods were not detected.
-            #define M_ATTR_UNUSED /*UNUSED*/ \
             
-        #endif
-    #elif defined __has_c_attribute //C2x
-        #if __has_c_attribute(maybe_unused)
-            //C2x style
-            #define M_ATTR_UNUSED [[maybe_unused]]
-        #elif defined __has_attribute
-            //GCC type compiler check
-            #if __has_attribute(unused)
-                #define M_ATTR_UNUSED __attribute__ ((unused))
-            #else
-                #define M_ATTR_UNUSED /*UNUSED*/ \
-                
             #endif
-        #elif defined (_MSC_VER)
-            #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
-        #else
-            //Insert a comment instead since other methods were not detected.
-            #define M_ATTR_UNUSED /*UNUSED*/ \
-            
-        #endif
-    #else //older C
-        #if defined __has_attribute
-            //GCC type compiler check
-            #if __has_attribute(unused)
-                #define M_ATTR_UNUSED __attribute__ ((unused))
-            #else
-                #define M_ATTR_UNUSED /*UNUSED*/ \
-                
-            #endif
-        #elif defined (__GNUC__) && __GNUC__ >= 3
-            //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-            #define M_ATTR_UNUSED __attribute__ ((unused))
-        #elif defined (_MSC_VER)
-            #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
-        #else
-            //Insert a comment instead since other methods were not detected.
-            #define M_ATTR_UNUSED /*UNUSED*/ \
-            
         #endif
     #endif
 
+    //Macro for marking things as deprecated
+    #if defined (__cplusplus)
+        //check if the standardized way to check for support is available...
+        //NOTE: Checking for >= C++11 for __has_cpp_attribute due to issues where this shows up even when the GNU C++ compiler 
+        //is set to 98 or 03 and thows errors for not knowing what to do. Seemed easiest to add this additional version check to get rid of this error
+        #if __cplusplus >= 201103L && defined __has_cpp_attribute
+            #if __has_cpp_attribute(deprecated)
+                //This is the standardized way introduced in C++17
+                #define M_DEPRECATED [[deprecated]]
+            #endif
+        #endif
+    #elif defined __has_c_attribute //C23
+        #if __has_c_attribute(deprecated)
+            //C23 style
+            #define M_DEPRECATED [[deprecated]]
+        #elif __has_c_attribute(__deprecated__) //check for standardized double underscore version
+            #define M_DEPRECATED [[__deprecated__]]
+        #endif
+    #endif
+    #if !defined M_DEPRECATED //standard ways to set this did not work, so try compiler specific means
+        #if defined __has_attribute 
+            #if __has_attribute(deprecated)
+                #define M_DEPRECATED __attribute__ ((deprecated))
+            #endif
+        #endif  
+        #if !defined M_DEPRECATED //if a test macro didn't work above, check the compiler to set this correctly -TJE
+		    #if defined (__GNUC__) && __GNUC__ >= 3
+			    //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+			    #define M_DEPRECATED __attribute__ ((deprecated))
+            #elif defined (_MSC_VER)
+                #define M_DEPRECATED __declspec(deprecated)
+            #else
+                //Insert a comment instead since other methods were not detected.
+                #define M_DEPRECTED /*DEPRECATED*/ \
+            
+            #endif
+        #endif
+    #endif
+
+    //Macro for marking things as nodiscard
+    //if a function returns something that should not be ignored, this should be used to mark it and help generate compiler warnings.
+    #if defined (__cplusplus)
+        //check if the standardized way to check for support is available...
+        //NOTE: Checking for >= C++11 for __has_cpp_attribute due to issues where this shows up even when the GNU C++ compiler 
+        //is set to 98 or 03 and thows errors for not knowing what to do. Seemed easiest to add this additional version check to get rid of this error
+        #if __cplusplus >= 201103L && defined __has_cpp_attribute
+            #if __has_cpp_attribute(nodiscard)
+                //This is the standardized way introduced in C++17
+                #define M_NODISCARD [[nodiscard]]
+            #endif
+        #endif
+    #elif defined __has_c_attribute //C23
+        #if __has_c_attribute(nodiscard)
+            //C23 style
+            #define M_NODISCARD [[nodiscard]]
+        #elif __has_c_attribute(__nodiscard__) //check for standardized double underscore version
+            #define M_NODISCARD [[__nodiscard__]]
+        #endif
+    #endif
+    #if !defined M_NODISCARD //standard ways to set this did not work, so try compiler specific means
+        #if defined __has_attribute 
+            #if __has_attribute(nodiscard)
+                #define M_NODISCARD __attribute__ ((nodiscard))
+            #elif __has_attribute(warn_unused_result)
+                #define M_NODISCARD __attribute__ ((warn_unused_result))
+            #endif
+        #endif  
+        #if !defined M_NODISCARD //if a test macro didn't work above, check the compiler to set this correctly -TJE
+		    #if defined (__GNUC__) && __GNUC__ >= 3
+			    #define M_NODISCARD __attribute__ ((warn_unused_result))
+            #else
+                //Insert a comment instead since other methods were not detected.
+                #define M_NODISCARD /*NODISCARD*/ \
+            
+            #endif
+        #endif
+    #endif
+
+    //Macro for marking things as noreturn
+    //to be used if a function does not return.
+    //examples of stdlib functions with noreturn: abort, exit, _Exit, quick_exit, thrd_exit, longjmp
+    #if defined USING_C11 && !defined USING_C23
+        //added in C11, then deprecated for function attributes instead in C23
+        //https://en.cppreference.com/w/c/language/_Noreturn
+        #include <stdnoreturn.h>
+    #endif
+    #if defined (__cplusplus)
+        //check if the standardized way to check for support is available...
+        //NOTE: Checking for >= C++11 for __has_cpp_attribute due to issues where this shows up even when the GNU C++ compiler 
+        //is set to 98 or 03 and thows errors for not knowing what to do. Seemed easiest to add this additional version check to get rid of this error
+        #if __cplusplus >= 201103L && defined __has_cpp_attribute
+            #if __has_cpp_attribute(noreturn)
+                //This is the standardized way introduced in C++17
+                #define M_NORETURN [[noreturn]]
+            #endif
+        #endif
+    #elif defined noreturn
+        //C11 convenience macro
+        //https://en.cppreference.com/w/c/language/_Noreturn
+        #define M_NORETURN noreturn
+    #elif defined __has_c_attribute //C23
+        #if __has_c_attribute(noreturn)
+            //C23 style
+            #define M_NORETURN [[noreturn]]
+        #elif __has_c_attribute(__noreturn__) //check for standardized double underscore version
+            #define M_NORETURN [[__noreturn__]]
+        /* next 2 checks are deprecated versions, but also worth checking */
+        #elif __has_c_attribute(_Noreturn)
+            #define M_NORETURN [[_Noreturn]]
+        #elif __has_c_attribute(___Noreturn__)
+            #define M_NORETURN [[___Noreturn__]]
+        #endif
+    #endif
+    #if !defined M_NORETURN //standard ways to set this did not work, so try compiler specific means
+        #if defined __has_attribute 
+            #if __has_attribute(noreturn)
+                #define M_NORETURN __attribute__ ((noreturn))
+            #endif
+        #endif  
+        #if !defined M_NORETURN //if a test macro didn't work above, check the compiler to set this correctly -TJE
+		    #if defined (__GNUC__) && __GNUC__ >= 3
+			    //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+			    #define M_NORETURN __attribute__ ((noreturn))
+            #elif defined (_MSC_VER)
+                #define M_NORETURN __declspec(noreturn)
+            #else
+                //Insert a comment instead since other methods were not detected.
+                #define M_NORETURN /*NORETURN*/ \
+            
+            #endif
+        #endif
+    #endif
 
     //round an integer up to nearest multiple
     //Example: Need to round up to nearest 512B for a data transfer
