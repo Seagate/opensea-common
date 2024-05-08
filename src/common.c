@@ -107,19 +107,27 @@ int snprintf(char *buffer, size_t bufsz, const char *format, ...)
     va_list args, countargs;
     va_start(args, format);
     va_copy(countargs, args);//C99, but available in VS2013 which is the oldest VS compiler we expect to possibly work with this code.
-    if (buffer && bufsz > 0)
+    if (bufsz > 0) //Allow calling only when bufsz > 0. Let _vsnprintf evaluate if buffer is NULL in here.
     {
+        errno = 0;
         charCount = _vsnprintf(buffer, bufsz, format, args);
     }
     if (charCount == -1)
     {
-        //out of space or some error occurred, so need to null terminate and calculate how long the buffer should have been for this format
-        if (buffer && bufsz > 0)
+        if (errno == EINVAL || errno == EILSEQ)
         {
-            //null terminate at bufsz since there was no more room, so we are at the end of the buffer already.
-            buffer[bufsz - 1] = '\0';
+            //do not change the return value or attempt any other actions.
         }
-        charCount = _vscprintf(format, countargs);//gets the count of the number of args
+        else
+        {
+            //out of space or some error occurred, so need to null terminate and calculate how long the buffer should have been for this format
+            if (buffer && bufsz > 0)
+            {
+                //null terminate at bufsz since there was no more room, so we are at the end of the buffer already.
+                buffer[bufsz - 1] = '\0';
+            }
+            charCount = _vscprintf(format, countargs);//gets the count of the number of args
+        }
     }
     va_end(args);
     va_end(countargs);
