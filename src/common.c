@@ -100,6 +100,33 @@ void delay_Seconds(uint32_t seconds)
     delay_Milliseconds(UINT32_C(1000) * seconds);
 }
 
+#if defined (_MSC_VER) && _MSC_VER <= 1800 && defined _WIN32
+int snprintf(char *buffer, size_t bufsz, const char *format, ...)
+{
+    int charCount = -1;
+    va_list args, countargs;
+    va_start(args, format);
+    va_copy(countargs, args);//C99, but available in VS2013 which is the oldest VS compiler we expect to possibly work with this code.
+    if (buffer && bufsz > 0)
+    {
+        charCount = _vsnprintf(buffer, bufsz, format, args);
+    }
+    if (charCount == -1)
+    {
+        //out of space or some error occurred, so need to null terminate and calculate how long the buffer should have been for this format
+        if (buffer && bufsz > 0)
+        {
+            //null terminate at bufsz since there was no more room, so we are at the end of the buffer already.
+            buffer[bufsz - 1] = '\0';
+        }
+        charCount = _vscprintf(format, countargs);//gets the count of the number of args
+    }
+    va_end(args);
+    va_end(countargs);
+    return charCount;
+}
+#endif
+
 //returns number of milliseconds since 1970 UTC
 uint64_t get_Milliseconds_Since_Unix_Epoch(void)
 {
