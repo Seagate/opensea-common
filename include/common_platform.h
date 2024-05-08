@@ -78,28 +78,7 @@ extern "C"
 
     //NOTE: This is taken from this list: https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
     //      These may appear slightly different in each console, but will be close to the requested color
-    typedef enum _eConsoleColors
-    {
-        //OBSOLETE START
-        BLUE,
-        GREEN,
-        RED,
-        BLACK,
-        CYAN,
-        MAGENTA,
-        BROWN,
-        YELLOW,
-        WHITE,
-        GRAY,
-        DARK_BLUE,
-        DARK_GREEN,
-        DARK_RED,
-        TEAL,
-        DARK_GRAY,
-        PURPLE,
-        DEFAULT,//this means white on windows
-        CURRENT,
-        //OBSOLETE END
+    M_DECLARE_ENUM(eConsoleColors,
         CONSOLE_COLOR_DEFAULT,
         CONSOLE_COLOR_BLACK,
         CONSOLE_COLOR_RED,
@@ -119,7 +98,7 @@ extern "C"
         CONSOLE_COLOR_BRIGHT_CYAN,
         CONSOLE_COLOR_BRIGHT_WHITE,
         CONSOLE_COLOR_CURRENT
-    }eConsoleColors;
+    )
 
     ////////////////////////////////////////////////////////////////////////////////////////////
     //// Functions below have specific implementations for OS's in the files included above ////
@@ -157,68 +136,27 @@ extern "C"
     //-----------------------------------------------------------------------------
     void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eConsoleColors backgroundColor);
 
-    //-----------------------------------------------------------------------------
-    //
-    // bool os_Directory_Exits (const char * const pathToCheck)
-    //
-    // \brief   Description: Platform independent helper to check if path exists. 
-    //                       WARNING: May not work with UNICODE path. 
-    //
-    // Entry:
-    //      \param[in] pathToCheck The path that needs to be evaluated. 
-    //
-    // Exit:
-    //      \return true if exists, false if it does not. 
-    //
-    //-----------------------------------------------------------------------------
-    bool os_Directory_Exists(const char * const pathToCheck);
-
-    //-----------------------------------------------------------------------------
-    //
-    // bool os_File_Exists (const char * const filetoCheck)
-    //
-    // \brief   Description: Platform independent helper to check if file exists. 
-    //                       WARNING: May not work with UNICODE path. 
-    //
-    // Entry:
-    //      \param[in] filetoCheck The file that needs to be evaluated. 
-    //
-    // Exit:
-    //      \return true if exists, false if it does not. 
-    //
-    //-----------------------------------------------------------------------------
-    bool os_File_Exists(const char * const filetoCheck);
-
     //windows and 'nix require a file to use for finding a path as far as I can tell.-TJE
-    int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX]);
+    eReturnValues get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX]);
 
-    int replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char *newFileName);
+    eReturnValues replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char *newFileName);
 
-#if defined (__cplusplus)
-    enum class eArchitecture
-#else
-    typedef enum _eArchitecture
-#endif  //end c++
-    {
+    M_DECLARE_ENUM(eArchitecture,
         OPENSEA_ARCH_UNKNOWN,
         OPENSEA_ARCH_X86,
         OPENSEA_ARCH_X86_64,
         OPENSEA_ARCH_ARM,
-        OPENSEA_ARCH_ARM64,//not supported right now
+        OPENSEA_ARCH_ARM64,
         OPENSEA_ARCH_POWERPC,
         OPENSEA_ARCH_POWERPC64,
-        OPENSEA_ARCH_IA_64,//Itanium //not supported right now
-        OPENSEA_ARCH_SPARC,//not supported right now
-        OPENSEA_ARCH_ALPHA,//not supported right now
-        OPENSEA_ARCH_SYSTEMZ,//not supported right now - IBM System z architecture
+        OPENSEA_ARCH_IA_64,
+        OPENSEA_ARCH_SPARC,
+        OPENSEA_ARCH_ALPHA,
+        OPENSEA_ARCH_SYSTEMZ,
         OPENSEA_ARCH_MIPS,
-        //Add more architectures here as we support them
+        /*Add more architectures here as we support them*/
         OPENSEA_ARCH_RESERVED
-#if defined (__cplusplus)
-    };
-#else
-    }eArchitecture;
-#endif
+    )
 
     //-----------------------------------------------------------------------------
     //
@@ -249,22 +187,13 @@ extern "C"
     //-----------------------------------------------------------------------------
     void print_Architecture(eArchitecture arch);
 
-#if defined (__cplusplus)
-    enum class eEndianness
-#else
-    typedef enum _eEndianness
-#endif //end c++
-    {
+    M_DECLARE_ENUM(eEndianness,
         OPENSEA_LITTLE_ENDIAN,
         OPENSEA_BIG_ENDIAN,
-        OPENSEA_LITTLE_WORD_ENDIAN,//uncommon, probably won't be found/used
-        OPENSEA_BIG_WORD_ENDIAN,//uncommon, probably won't be found/used
-        OPENSEA_UNKNOWN_ENDIAN //if this is returned, then __LITTLE_ENDIAN__ or __BIG_ENDIAN__ needs to be defined for the compilation. Or you can ignore this and assume little endian - TJE
-#if defined (__cplusplus)
-    };
-#else
-    }eEndianness;
-#endif // end c++
+        OPENSEA_LITTLE_WORD_ENDIAN,/*uncommon, probably won't be found/used*/
+        OPENSEA_BIG_WORD_ENDIAN,/*uncommon, probably won't be found/used*/
+        OPENSEA_UNKNOWN_ENDIAN /*if this is returned, then __LITTLE_ENDIAN__ or __BIG_ENDIAN__ needs to be defined for the compilation. Or you can ignore this and assume little endian - TJE*/
+    )
 
     //-----------------------------------------------------------------------------
     //
@@ -298,24 +227,23 @@ extern "C"
     void print_Endianness(eEndianness endian, bool shortPrint);
 
     //Not all of these are supported at this time.
-    typedef enum _eOSType
-    {
+    M_DECLARE_ENUM(eOSType,
         OS_UNKNOWN,
         OS_WINDOWS,
         OS_LINUX,
         OS_FREEBSD,
         OS_SOLARIS,
         OS_UEFI,
-        OS_MACOSX,//not supported yet
-        OS_AIX,//not supported yet
-        OS_TRU64,//not supported yet
-        OS_OPENBSD,//not supported yet
-        OS_NETBSD,//not supported yet
-        OS_DRAGONFLYBSD,//not supported yet
-        OS_HPUX,//not supported yet
-        OS_ESX,// supporting
-        //Add more operating systems here as we add support for them in our libraries
-    }eOSType;
+        OS_MACOSX,
+        OS_AIX,
+        OS_TRU64,
+        OS_OPENBSD,
+        OS_NETBSD,
+        OS_DRAGONFLYBSD,
+        OS_HPUX,
+        OS_ESX,
+        /*Add more operating systems here as we add support for them in our libraries*/
+        )
 
     //https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
     //http://blogs.msdn.com/b/chuckw/archive/2010/02/24/what-s-in-a-version-number.aspx
@@ -451,7 +379,7 @@ extern "C"
     //      \return SUCCESS = got version information, !SUCCESS = failure getting version information.
     //
     //-----------------------------------------------------------------------------
-    int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char *operatingSystemName);
+    eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char *operatingSystemName);
 
     //-----------------------------------------------------------------------------
     //
@@ -626,7 +554,7 @@ extern "C"
     //!   \return SUCCESS = no errors, userName allocated and ready to be user, BAD_PARAMTER = bas pointer, FAILURE = could not determine user name.
     //
     //-----------------------------------------------------------------------------
-    int get_Current_User_Name(char **userName);
+    eReturnValues get_Current_User_Name(char **userName);
 #endif //ENABLE_READ_USERNAME
 
     //This should be used after prompting the user to enter data.
@@ -639,7 +567,7 @@ extern "C"
     //      this can vary depending on the low-level OS's implementation of getting a password without echoing.
     //NOTE: On really old systems, this may be limited to 8 characters. Most modern systems should allow at least 128 characters
     //      As long as POSIX2001 is supported, there should be no limitation to number of characters read from this function-TJE
-    int get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen);
+    eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen);
 
 #if defined (__cplusplus)
 } //extern "C"

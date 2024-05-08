@@ -223,7 +223,7 @@ void print_OS_Version(ptrOSVersionNumber versionNumber)
     }
 }
 
-int replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char *newFileName)
+eReturnValues replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char *newFileName)
 {
     char *ptr = NULL;
     size_t ptrLen = 0, fullLength = 0;

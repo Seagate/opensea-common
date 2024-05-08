@@ -32,6 +32,7 @@
 #include <math.h>
 #include <locale.h> //used when getting time to replace ctime and asctime function to try and replicate the format exactly-TJE
 #include <limits.h>
+#include "common_platform.h"
 
 time_t CURRENT_TIME = 0;
 char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH] = {0};
@@ -773,7 +774,7 @@ bool wildcard_Match(char * pattern, char * data)
     return false;
 }
 
-void print_Return_Enum(char *funcName, int ret)
+void print_Return_Enum(char *funcName, eReturnValues ret)
 {
     if (NULL == funcName)
     {
@@ -873,9 +874,28 @@ void print_Return_Enum(char *funcName, int ret)
     case POWER_CYCLE_REQUIRED:
         printf("POWER CYCLE REQUIRED\n");
         break;
-    default:
-        printf("UNKNOWN: %d\n", ret);
+    case DIR_CREATION_FAILED:
+        printf("DIR CREATION FAILED\n");
         break;
+    case FILE_READ_ERROR:
+        printf("FILE READ ERROR\n");
+        break;
+    case DEVICE_ACCESS_DENIED:
+        printf("DEVICE ACCESS DENIED\n");
+        break;
+    case NOT_PARSED:
+        printf("NOT PARSED\n");
+        break;
+    case MISSING_INFORMATION:
+        printf("MISSING INFORMATION\n");
+        break;
+    case TRUNCATED_FILE:
+        printf("TRUNCATED FILE\n");
+        break;
+    case UNKNOWN:
+        printf("UNKNOWN\n");
+        break;
+    //NO DEFAULT CASE! This will cause warnings when an enum value is not in this switch-case so that it is never out of date!
     }
     printf("\n");
 }
@@ -996,9 +1016,9 @@ void print_Pipe_Data(uint8_t* dataBuffer, uint32_t bufferLen)
     internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false);
 }
 
-int metric_Unit_Convert(double *byteValue, char** metricUnit)
+eReturnValues metric_Unit_Convert(double *byteValue, char** metricUnit)
 {
-    int ret = SUCCESS;
+    eReturnValues ret = SUCCESS;
     uint8_t unitCounter = 0;
 
     if (!byteValue || !metricUnit || !*metricUnit)
@@ -1046,9 +1066,9 @@ int metric_Unit_Convert(double *byteValue, char** metricUnit)
     return ret;
 }
 
-int capacity_Unit_Convert(double *byteValue, char** capacityUnit)
+eReturnValues capacity_Unit_Convert(double *byteValue, char** capacityUnit)
 {
-    int ret = SUCCESS;
+    eReturnValues ret = SUCCESS;
     uint8_t unitCounter = 0;
 
     if (!byteValue || !capacityUnit || !*capacityUnit)
@@ -1315,7 +1335,7 @@ uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax)
     }
 }
 
-int fill_Random_Pattern_In_Buffer(uint8_t *ptrData, uint32_t dataLength)
+eReturnValues fill_Random_Pattern_In_Buffer(uint8_t *ptrData, uint32_t dataLength)
 {
     size_t localPtrDataLen = ((dataLength + sizeof(uint32_t)) - 1) / sizeof(uint32_t);//round up to nearest uint32 amount
     uint32_t* localPtr = C_CAST(uint32_t*, calloc(localPtrDataLen, sizeof(uint32_t)));
@@ -1333,7 +1353,7 @@ int fill_Random_Pattern_In_Buffer(uint8_t *ptrData, uint32_t dataLength)
     return SUCCESS;
 }
 
-int fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t *ptrData, uint32_t dataLength)
+eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t *ptrData, uint32_t dataLength)
 {
     size_t localPtrDataLen = ((dataLength + sizeof(uint32_t)) - 1) / sizeof(uint32_t);//round up to nearest uint32 amount
     uint32_t *localPtr = C_CAST(uint32_t*, calloc(localPtrDataLen, sizeof(uint32_t)));
@@ -1350,7 +1370,7 @@ int fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t *ptrData, uint32_t d
     return SUCCESS;
 }
 
-int fill_Incrementing_Pattern_In_Buffer(uint8_t incrementStartValue, uint8_t *ptrData, uint32_t dataLength)
+eReturnValues fill_Incrementing_Pattern_In_Buffer(uint8_t incrementStartValue, uint8_t *ptrData, uint32_t dataLength)
 {
     if (!ptrData)
     {
@@ -1363,7 +1383,7 @@ int fill_Incrementing_Pattern_In_Buffer(uint8_t incrementStartValue, uint8_t *pt
     return SUCCESS;
 }
 
-int fill_ASCII_Pattern_In_Buffer(const char *asciiPattern, uint32_t patternLength, uint8_t *ptrData, uint32_t dataLength)
+eReturnValues fill_ASCII_Pattern_In_Buffer(const char *asciiPattern, uint32_t patternLength, uint8_t *ptrData, uint32_t dataLength)
 {
     if (!ptrData || patternLength == 0 || !asciiPattern)
     {
@@ -1376,7 +1396,7 @@ int fill_ASCII_Pattern_In_Buffer(const char *asciiPattern, uint32_t patternLengt
     return SUCCESS;
 }
 
-int fill_Pattern_Buffer_Into_Another_Buffer(uint8_t *inPattern, uint32_t inpatternLength, uint8_t *ptrData, uint32_t dataLength)
+eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t *inPattern, uint32_t inpatternLength, uint8_t *ptrData, uint32_t dataLength)
 {
     if (!ptrData || inpatternLength == 0 || !inPattern || dataLength == 0)
     {
@@ -1670,9 +1690,9 @@ time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
     return mktime(&futureTime);
 }
 
-int get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersionInfo)
+eReturnValues get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersionInfo)
 {
-    int ret = SUCCESS;//should always return this unless we don't find a compiler we support.
+    eReturnValues ret = SUCCESS;//should always return this unless we don't find a compiler we support.
     //make sure we set unknown and clear out version info before we continue.
     *compilerUsed = OPENSEA_COMPILER_UNKNOWN;
     memset(compilerVersionInfo, 0, sizeof(compilerVersion));

@@ -15,6 +15,7 @@
 //
 #include "common.h"
 #include "common_windows.h"
+#include "common_platform.h"
 #include <windows.h> //needed for all the stuff to get the windows version
 #include <tchar.h>
 #include <strsafe.h> //needed in the code written to get the windows version since I'm using a Microsoft provided string concatenation call-tje
@@ -54,7 +55,7 @@ bool os_Directory_Exists(const char * const pathToCheck)
     }
 }
 
-int os_Create_Directory(const char * filePath)
+eReturnValues os_Create_Directory(const char * filePath)
 {
     BOOL returnValue;
     size_t filePathLength = (strlen(filePath) + 1) * sizeof(TCHAR);
@@ -115,7 +116,7 @@ bool os_File_Exists(const char * const filetoCheck)
     }
 }
 
-int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
+eReturnValues get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
 {
     if (!pathAndFile || !fullPath)
     {
@@ -178,149 +179,13 @@ static uint16_t get_Console_Current_Color(void)
 
 void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
 {
-    static bool defaultsSet = false;
-    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-    WORD theColor = 0;
-    if (!defaultsSet)
+    if (foregroundBackground)
     {
-        //First time we are setting colors backup the default settings so they can be restored properly later.
-        get_Console_Default_Color();
-        defaultsSet = true;
-    }
-    if (consoleColor >= CONSOLE_COLOR_DEFAULT)
-    {
-        //use the new behavior
-        if (foregroundBackground)
-        {
-            set_Console_Foreground_Background_Colors(consoleColor, CONSOLE_COLOR_CURRENT);
-        }
-        else
-        {
-            set_Console_Foreground_Background_Colors(CONSOLE_COLOR_CURRENT, consoleColor);
-        }
+        set_Console_Foreground_Background_Colors(consoleColor, CONSOLE_COLOR_CURRENT);
     }
     else
     {
-        //old behavior
-        if (foregroundBackground)//change foreground color
-        {
-            switch (consoleColor)
-            {
-            case DARK_BLUE:
-                theColor = FOREGROUND_BLUE;
-                break;
-            case BLUE:
-                theColor = FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-                break;
-            case DARK_GREEN:
-                theColor = FOREGROUND_GREEN;
-                break;
-            case GREEN:
-                theColor = FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-                break;
-            case DARK_RED:
-                theColor = FOREGROUND_RED;
-                break;
-            case RED:
-                theColor = FOREGROUND_RED | FOREGROUND_INTENSITY;
-                break;
-            case BLACK:
-                theColor = 0;//this should mean no colors or black
-                break;
-            case BROWN:
-                theColor = FOREGROUND_RED | FOREGROUND_GREEN;
-                break;
-            case YELLOW:
-                theColor = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-                break;
-            case TEAL:
-                theColor = FOREGROUND_BLUE | FOREGROUND_GREEN;
-                break;
-            case CYAN:
-                theColor = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-                break;
-            case PURPLE:
-                theColor = FOREGROUND_BLUE | FOREGROUND_RED;
-                break;
-            case MAGENTA:
-                theColor = FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY;
-                break;
-            case WHITE:
-                theColor = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY;
-                break;
-            case DARK_GRAY:
-                theColor = FOREGROUND_INTENSITY;
-                break;
-            case GRAY:
-                theColor = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
-                break;
-            case DEFAULT://fall through to default
-            default:
-                //theColor = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
-                theColor = get_Console_Default_Color();
-            }
-            SetConsoleTextAttribute(consoleHandle, theColor);
-        }
-        else//change background color
-        {
-            switch (consoleColor)
-            {
-            case DARK_BLUE:
-                theColor = BACKGROUND_BLUE;
-                break;
-            case BLUE:
-                theColor = BACKGROUND_BLUE | BACKGROUND_INTENSITY;
-                break;
-            case DARK_GREEN:
-                theColor = BACKGROUND_GREEN;
-                break;
-            case GREEN:
-                theColor = BACKGROUND_GREEN | BACKGROUND_INTENSITY;
-                break;
-            case DARK_RED:
-                theColor = BACKGROUND_RED;
-                break;
-            case RED:
-                theColor = BACKGROUND_RED | BACKGROUND_INTENSITY;
-                break;
-            case BLACK:
-                theColor = 0;//this should mean no colors or black
-                break;
-            case BROWN:
-                theColor = BACKGROUND_RED | BACKGROUND_GREEN;
-                break;
-            case YELLOW:
-                theColor = BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_INTENSITY;
-                break;
-            case TEAL:
-                theColor = BACKGROUND_BLUE | BACKGROUND_GREEN;
-                break;
-            case CYAN:
-                theColor = BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_INTENSITY;
-                break;
-            case PURPLE:
-                theColor = BACKGROUND_BLUE | BACKGROUND_RED;
-                break;
-            case MAGENTA:
-                theColor = BACKGROUND_BLUE | BACKGROUND_RED | BACKGROUND_INTENSITY;
-                break;
-            case WHITE:
-                theColor = BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY;
-                break;
-            case DARK_GRAY:
-                theColor = BACKGROUND_INTENSITY;
-                break;
-            case GRAY:
-                theColor = BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED;
-                break;
-            case DEFAULT://fall through to default
-            default:
-                //theColor = 0;//black background
-                //theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;//white foreground
-                theColor = get_Console_Default_Color();
-            }
-            SetConsoleTextAttribute(consoleHandle, theColor);
-        }
+        set_Console_Foreground_Background_Colors(CONSOLE_COLOR_CURRENT, consoleColor);
     }
 }
 
@@ -338,7 +203,7 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
     }
     theColor = get_Console_Current_Color();//get current colors after defaults are setup.
     //now change what is requested
-    if (foregroundColor != CURRENT)
+    if (foregroundColor != CONSOLE_COLOR_CURRENT)
     {
         //clear out foreground bits, then set the requested color
         theColor &= 0xFFF0;//foreground are lowest 4 bits
@@ -398,7 +263,7 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
             break;
         }
     }
-    if (backgroundColor != CURRENT)
+    if (backgroundColor != CONSOLE_COLOR_CURRENT)
     {
         //clear out background bits, then set the requested color
         theColor &= 0xFF0F;//foreground are middle 4 bits
@@ -975,9 +840,9 @@ bool is_Windows_PE(void)
 //https://msdn.microsoft.com/en-us/library/windows/desktop/ms724358(v=vs.85).aspx
 //https://msdn.microsoft.com/en-us/library/windows/desktop/ms647003(v=vs.85).aspx //Used this one since it is supposed to work!
 //From MSDN: To obtain the full version number for the operating system, call the GetFileVersionInfo function on one of the system DLLs, such as Kernel32.dll, then call VerQueryValue to obtain the \\StringFileInfo\\<lang><codepage>\\ProductVersion subblock of the file version information.
-int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char *operatingSystemName)
+eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char *operatingSystemName)
 {
-    int ret = SUCCESS;
+    eReturnValues ret = SUCCESS;
     bool isWindowsServer = is_Windows_Server_OS();
     bool isWindowsPE = is_Windows_PE();
     memset(versionNumber, 0, sizeof(OSVersionNumber));
@@ -1380,9 +1245,9 @@ bool is_Running_Elevated(void)
 //Gets the user name for who is running the process
 //https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getusernamea?redirectedfrom=MSDN
 //NOTE: Not using Ex version at this time to avoid linking yet another library. This can be added if necessary, or this doesn't do quite what we want it to do. -TJE
-int get_Current_User_Name(char **userName)
+eReturnValues get_Current_User_Name(char **userName)
 {
-    int ret = SUCCESS;
+    eReturnValues ret = SUCCESS;
     if (userName)
     {
         DWORD localNameLength = UNLEN + 1;//start with this for input
@@ -1458,9 +1323,9 @@ static bool set_Input_Console_Mode(DWORD mode)
     return M_ToBool(SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), mode));
 }
 
-int get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen)
+eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen)
 {
-    int ret = SUCCESS;
+    eReturnValues ret = SUCCESS;
     DWORD defaultConMode = get_Input_Console_Default_Mode();
     DWORD conMode = defaultConMode;
     conMode &= C_CAST(DWORD, ~(ENABLE_ECHO_INPUT));
