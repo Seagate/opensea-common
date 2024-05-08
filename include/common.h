@@ -205,9 +205,9 @@ extern "C"
     //If using C++, use static_cast, reinterpret_cast, dynamic_cast before trying a C_CAST.
     #define C_CAST(type, val) (type)(val)
 
-    //Microsoft doesn't have snprintf...it has _snprintf...at least until VS2015 according to my web search - TJE
+    //Microsoft doesn't have snprintf compliant with C99 until VS2015, so make our own definition using what microsoft does have available.
     #if defined (_MSC_VER) && _MSC_VER <= 1800 && defined _WIN32
-    #define snprintf _snprintf
+    int snprintf(char *buffer, size_t bufsz, const char *format, ...);
     #endif
 
     
