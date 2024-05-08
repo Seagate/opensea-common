@@ -19,7 +19,7 @@
 extern "C"
 {
 #endif
-
+    #include <common.h>
     #include <limits.h>
     #define OPENSEA_PATH_MAX PATH_MAX
     
@@ -42,7 +42,7 @@ extern "C"
     //!   \return SUCCESS on successful directory creation and FAILURE when directory creation fails
     //
     //-----------------------------------------------------------------------------
-    int os_Create_Directory(const char* filePath);
+    eReturnValues os_Create_Directory(const char* filePath);
 
 #if defined (__cplusplus)
 }

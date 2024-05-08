@@ -43,7 +43,7 @@ bool os_File_Exists(const char * const filetoCheck)
     return (stat(filetoCheck, &st) == SUCCESS);
 }
 
-int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
+eReturnValues get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
 {
     char *resolvedPath = realpath(C_CAST(char*, pathAndFile), C_CAST(char*, fullPath));
     if (resolvedPath)
@@ -56,9 +56,9 @@ int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
     }
 }
 
-int get_Simple_Text_Output_Protocol_Ptr(void **pOutput)
+eReturnValues get_Simple_Text_Output_Protocol_Ptr(void **pOutput)
 {
-    int ret = SUCCESS;
+    eReturnValues ret = SUCCESS;
     EFI_STATUS uefiStatus = EFI_SUCCESS;
     EFI_HANDLE *handle = NULL;
     EFI_GUID outputGuid = EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL_GUID;
@@ -467,7 +467,7 @@ eEndianness get_Compiled_Endianness(void)
     return calculate_Endianness();
 }
 
-int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char *operatingSystemName)
+eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char *operatingSystemName)
 {
     //get the UEFI version information and return it.
     //Also, set the operating system name to "UEFI" or "EFI" (If old enough version)
@@ -501,7 +501,7 @@ int64_t os_Get_File_Size(FILE *filePtr)
 void start_Timer(seatimer_t *timer)
 {
     struct timeval startTimespec;
-    int ret = 0;
+    eReturnValues ret = 0;
     memset(&startTimespec, 0, sizeof(struct timeval));
     ret = gettimeofday(&startTimespec, NULL);
     if (0 == ret)//hopefully this always works...-TJE
@@ -513,7 +513,7 @@ void start_Timer(seatimer_t *timer)
 void stop_Timer(seatimer_t *timer)
 {
     struct timeval stopTimespec;
-    int ret = 0;
+    eReturnValues ret = 0;
     memset(&stopTimespec, 0, sizeof(struct timeval));
     ret = gettimeofday(&stopTimespec, NULL);
     if (0 == ret)//hopefully this always works...-TJE
@@ -678,9 +678,9 @@ bool is_Running_Elevated()
 }
 
 #if defined (ENABLE_READ_USERNAME)
-int get_Current_User_Name(char **userName)
+eReturnValues get_Current_User_Name(char **userName)
 {
-    int ret = SUCCESS;
+    eReturnValues ret = SUCCESS;
     if (userName)
     {
         //while unix functions are there, they are all stubs, so we're just going to return "efi" as the username.

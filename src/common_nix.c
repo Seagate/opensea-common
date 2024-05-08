@@ -14,6 +14,7 @@
 // \brief Implements functions that are common to (u)nix like platforms code.
 //
 #include "common.h"
+#include "common_platform.h"
 #include "common_nix.h"
 #include <sys/types.h>
 //Define this to allow reading larger files in 32bit OSs without a limitation.
@@ -45,9 +46,9 @@ bool os_Directory_Exists(const char * const pathToCheck)
     return false;
 }
 
-int os_Create_Directory(const char * filePath)
+eReturnValues os_Create_Directory(const char * filePath)
 {
-    int returnValue;
+    int returnValue = 0;
 
     returnValue = mkdir(filePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     if (returnValue == 0)
@@ -69,7 +70,7 @@ bool os_File_Exists(const char * const filetoCheck)
     return (stat(filetoCheck, &st) == SUCCESS);
 }
 
-int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
+eReturnValues get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
 {
     char *resolvedPath = realpath(pathAndFile, fullPath);
     if (resolvedPath)
@@ -84,136 +85,14 @@ int get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX])
 
 void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
 {
-    if (consoleColor >= CONSOLE_COLOR_DEFAULT)
+    //use the new behavior
+    if (foregroundBackground)
     {
-        //use the new behavior
-        if (foregroundBackground)
-        {
-            set_Console_Foreground_Background_Colors(consoleColor, CONSOLE_COLOR_CURRENT);
-        }
-        else
-        {
-            set_Console_Foreground_Background_Colors(CONSOLE_COLOR_CURRENT, consoleColor);
-        }
+        set_Console_Foreground_Background_Colors(consoleColor, CONSOLE_COLOR_CURRENT);
     }
     else
     {
-        //Old behavior
-        //linux/BSD use the ANSI escape sequences to change colors http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x329.html
-        if (foregroundBackground)//change foreground color
-        {
-            switch (consoleColor)
-            {
-            case DARK_BLUE:
-                printf("\033[0;34m");
-                break;
-            case BLUE:
-                printf("\033[1;34m");
-                break;
-            case DARK_GREEN:
-                printf("\033[0;32m");
-                break;
-            case GREEN:
-                printf("\033[1;32m");
-                break;
-            case DARK_RED:
-                printf("\033[0;31m");
-                break;
-            case RED:
-                printf("\033[1;31m");
-                break;
-            case BLACK:
-                printf("\033[0;30m");
-                break;
-            case BROWN:
-                printf("\033[0;33m");
-                break;
-            case YELLOW:
-                printf("\033[1;33m");
-                break;
-            case TEAL:
-                printf("\033[0;36m");
-                break;
-            case CYAN:
-                printf("\033[1;36m");
-                break;
-            case PURPLE:
-                printf("\033[0;35m");
-                break;
-            case MAGENTA:
-                printf("\033[1;35m");
-                break;
-            case WHITE:
-                printf("\033[1;37m");
-                break;
-            case DARK_GRAY:
-                printf("\033[1;30m");
-                break;
-            case GRAY:
-                printf("\033[0;37m");
-                break;
-            case DEFAULT://fall through to default (which is white)
-            default:
-                printf("\033[0m");
-            }
-        }
-        else//change background color
-        {
-            switch (consoleColor)
-            {
-            case DARK_BLUE:
-                printf("\033[7;34m");
-                break;
-            case BLUE:
-                printf("\033[7;1;34m");
-                break;
-            case DARK_GREEN:
-                printf("\033[7;32m");
-                break;
-            case GREEN:
-                printf("\033[7;1;32m");
-                break;
-            case DARK_RED:
-                printf("\033[7;31m");
-                break;
-            case RED:
-                printf("\033[7;1;31m");
-                break;
-            case BLACK:
-                printf("\033[7;30m");
-                break;
-            case BROWN:
-                printf("\033[7;33m");
-                break;
-            case YELLOW:
-                printf("\033[7;1;33m");
-                break;
-            case TEAL:
-                printf("\033[7;36m");
-                break;
-            case CYAN:
-                printf("\033[7;1;36m");
-                break;
-            case PURPLE:
-                printf("\033[7;35m");
-                break;
-            case MAGENTA:
-                printf("\033[7;1;35m");
-                break;
-            case WHITE:
-                printf("\033[7;1;37m");
-                break;
-            case DARK_GRAY:
-                printf("\033[7;1;30m");
-                break;
-            case GRAY:
-                printf("\033[7;37m");
-                break;
-            case DEFAULT://fall through to default (which is white)
-            default:
-                printf("\033[0m");
-            }
-        }
+        set_Console_Foreground_Background_Colors(CONSOLE_COLOR_CURRENT, consoleColor);
     }
 }
 
@@ -1175,9 +1054,9 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
 
 //code is written based on the table in this link https://en.wikipedia.org/wiki/Uname
 //This code is not complete for all operating systems. I only added in support for the ones we are most interested in or are already using today. -TJE
-int get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char *operatingSystemName)
+eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char *operatingSystemName)
 {
-    int ret = SUCCESS;
+    eReturnValues ret = SUCCESS;
     //check what is filled in by the uname call in the utsname struct (BUT DON"T CHECK THE DOMAIN NAME since that is GNU specific)
     struct utsname unixUname;
     memset(&unixUname, 0, sizeof(struct utsname));
@@ -1624,9 +1503,9 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
     return success;
 }
 //Gets the user name for who is running the process
-int get_Current_User_Name(char **userName)
+eReturnValues get_Current_User_Name(char **userName)
 {
-    int ret = SUCCESS;
+    eReturnValues ret = SUCCESS;
     if (userName)
     {
         if (!get_User_Name_From_ID(getuid(), userName))
@@ -1654,9 +1533,9 @@ int get_Current_User_Name(char **userName)
 //  modify  the terminal settings to	turn echo off(or if the input was not
 //  a terminal).
 //So if necessary, for "compatibility" this could be implemented without echo, but avoiding that for now-TJE
-int get_Secure_User_Input(const char *prompt, char** userInput, size_t* inputDataLen)
+eReturnValues get_Secure_User_Input(const char *prompt, char** userInput, size_t* inputDataLen)
 {
-    int ret = SUCCESS;
+    eReturnValues ret = SUCCESS;
 #if defined (POSIX_2001)
     struct termios defaultterm, currentterm;
     FILE* term = fopen("/dev/tty", "r");//use /dev/tty instead of stdin to get the terminal controlling the process.

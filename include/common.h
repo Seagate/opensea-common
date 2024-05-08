@@ -37,7 +37,7 @@ extern "C"
     //      missing pieces in some Windows environements.
     #if defined(__STDC__)
         #define USING_C89
-        #if defined (__STDC_VERSION__)
+        #if defined(__STDC_VERSION__)
             #if __STDC_VERSION__ >= 199409L 
                 #define USING_C94
             #endif //__STDC_VERSION__ >= 199409L 
@@ -200,8 +200,6 @@ extern "C"
     #else 
         #error "Need string case compare definition."
     #endif // __unix__, POSIX, WIN32
-
-    #include "common_platform.h"
 
     //Macro to help make casts more clear and searchable. Can be very helpful while debugging.
     //If using C++, use static_cast, reinterpret_cast, dynamic_cast before trying a C_CAST.
@@ -638,9 +636,9 @@ extern "C"
             #endif
         #endif
         #if !defined (M_ATTR_UNUSED)//__has_attribute is available, but doesn't have what we need-TJE
-		    #if defined (__GNUC__) && __GNUC__ >= 3
-			    //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-			    #define M_ATTR_UNUSED __attribute__ ((unused))
+            #if defined (__GNUC__) && __GNUC__ >= 3
+                //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+                #define M_ATTR_UNUSED __attribute__ ((unused))
             #elif defined (_MSC_VER)
                 #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
             #else
@@ -677,9 +675,9 @@ extern "C"
             #endif
         #endif  
         #if !defined M_DEPRECATED //if a test macro didn't work above, check the compiler to set this correctly -TJE
-		    #if defined (__GNUC__) && __GNUC__ >= 3
-			    //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-			    #define M_DEPRECATED __attribute__ ((deprecated))
+            #if defined (__GNUC__) && __GNUC__ >= 3
+                //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+                #define M_DEPRECATED __attribute__ ((deprecated))
             #elif defined (_MSC_VER)
                 #define M_DEPRECATED __declspec(deprecated)
             #else
@@ -719,8 +717,8 @@ extern "C"
             #endif
         #endif  
         #if !defined M_NODISCARD //if a test macro didn't work above, check the compiler to set this correctly -TJE
-		    #if defined (__GNUC__) && __GNUC__ >= 3
-			    #define M_NODISCARD __attribute__ ((warn_unused_result))
+            #if defined (__GNUC__) && __GNUC__ >= 3
+                #define M_NODISCARD __attribute__ ((warn_unused_result))
             #else
                 //Insert a comment instead since other methods were not detected.
                 #define M_NODISCARD /*NODISCARD*/ \
@@ -771,9 +769,9 @@ extern "C"
             #endif
         #endif  
         #if !defined M_NORETURN //if a test macro didn't work above, check the compiler to set this correctly -TJE
-		    #if defined (__GNUC__) && __GNUC__ >= 3
-			    //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-			    #define M_NORETURN __attribute__ ((noreturn))
+            #if defined (__GNUC__) && __GNUC__ >= 3
+                //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+                #define M_NORETURN __attribute__ ((noreturn))
             #elif defined (_MSC_VER)
                 #define M_NORETURN __declspec(noreturn)
             #else
@@ -784,6 +782,46 @@ extern "C"
         #endif
     #endif
 
+    //NULL vs nullptr can be an issue with overloads in C++ and _GENERIC selection in C
+    //While NULL should be defined as nullptr in C23, adding this definition to remove ambiguity
+    //when we are checking for valid pointers in our code. This will use a proper type depending on the standard detected at compile time
+    //https://stackoverflow.com/questions/1282295/what-is-the-nullptr-keyword-and-why-is-it-better-than-null
+    #if defined (USING_CPP11)
+        #define M_NULLPTR nullptr
+    #elif defined (USING_CPP98)
+        //NOTE: G++ defines NULL as __null which should be safe
+        //      https://gcc.gnu.org/onlinedocs/gcc-4.9.2/libstdc++/manual/manual/support.html#std.support.types.null
+        //      Can add a special case to use NULL macro instead if this template class doesn't work as expected
+        const class nullptr_t
+        {
+        public:
+           template<class T>
+           operator T*() const
+              { return 0; }
+
+           template<class C, class T>
+              operator T C::*() const
+              { return 0; }
+        private:
+           void operator&() const;
+        } nullptr = {};
+        #define M_NULLPTR nullptr
+    #else //C
+        #if defined (USING_C23)
+            #define M_NULLPTR nullptr
+        #elif defined (NULL)
+            //use NULL since this is commonly available and likely to be safe for the environment we are in.
+            //NOTE: If this is ever an issue, consider improving this check to fall into the #else below
+            //      instead where it is defined as a void* of 0 which should work most of the time unless
+            //      the platform is doing something funky.
+            //      https://stackoverflow.com/questions/2597142/when-was-the-null-macro-not-0
+            #define M_NULLPTR NULL
+        #else
+            //for unknown reasons NULL was not defined so define it the most common way we can to be safe
+            #define M_NULLPTR ((void *)0)
+        #endif//C23
+    #endif //C & C++ NULL PTR definitions
+
     //round an integer up to nearest multiple
     //Example: Need to round up to nearest 512B for a data transfer
     #define INT_ROUND_UP(value, roundto) (((value) % (roundto)) ? ((value) + (roundto) - ((value) % (roundto))) : (value) )
@@ -791,95 +829,91 @@ extern "C"
     //round an integer down to nearest multiple
     #define INT_ROUND_DOWN(value, roundto) (((value) % (roundto)) ? ((value) - ((value) % (roundto))) : (value) )
 
+    //Use this macro to declare enums for C and enum classes for C++11 and later.
+    //Without enum classes there are a lot of excess warnings and this will make it easier to resolve all warnings.
+    #if defined (USING_CPP11)
+        #define M_DECLARE_ENUM(name, ...) enum class name { __VA_ARGS__ };
+    #elif defined (USING_CPP98)
+        #define M_DECLARE_ENUM(name, ...) enum name { __VA_ARGS__ };
+    #else //!CPP11
+        #define M_DECLARE_ENUM(name, ...) typedef enum _ ## name { __VA_ARGS__ }name;
+    #endif //CPP11
 
-#if defined (USING_CPP11)
-enum class eReturnValues
-#else
-typedef enum _eReturnValues
-#endif
-{
-    SUCCESS                             = 0,
-    FAILURE                             = 1,
-    NOT_SUPPORTED                       = 2,
-    COMMAND_FAILURE                     = 3,
-    IN_PROGRESS                         = 4, //another command is in progress, or a command has started and is now in progress in the background
-    ABORTED                             = 5, //Command was aborted
-    BAD_PARAMETER                       = 6, //the only time this return code should be seen is when a developer is writing code to add something. This should not appear in a finished application
-    MEMORY_FAILURE                      = 7, //could not allocate memory
-    OS_PASSTHROUGH_FAILURE              = 8, //For some unknown reason, the OS API call to issue the pass-through command failed.
-    LIBRARY_MISMATCH                    = 9,
-    FROZEN                              = 10, //use this to communicate back when the device is in a frozen state for a commmand like sanitize or ata security
-    PERMISSION_DENIED                   = 11, //OS returned Access/permission denied
-    FILE_OPEN_ERROR                     = 12,
-    WARN_INCOMPLETE_RFTRS               = 13, //command was issued, and some RTFRs were received, but we were unable to get a complete RTFR result. This is most likely due to a SATL limitation.
-    OS_COMMAND_TIMEOUT                  = 14, //command took longer than the timeout that was provided to the OS
-    WARN_NOT_ALL_DEVICES_ENUMERATED     = 15,
-    WARN_INVALID_CHECKSUM               = 16, //The checksum on the data for a command didn't calculate correctly (EX: Identify device, some ATA Logs)
-    OS_COMMAND_NOT_AVAILABLE            = 17, //This is returned when the OS does not have a way to issue the requested command. (EX: Trying to send an NVMe command without Win10, or trying a 32byte SCSI command pre-Win8)
-    OS_COMMAND_BLOCKED                  = 18, //This is returned when the OS is blocking the command from being issued (EX: TCG - linux, lib ATA......or Sanitize in Windos 8+)
-    COMMAND_INTERRUPTED                 = 19, //Added for SCT commands, if interrupted by some other SCT command.
-    VALIDATION_FAILURE                  = 20, //validation check
-    STRIP_HDR_FOOTER_FAILURE            = 21, //For UDS
-    PARSE_FAILURE                       = 22,
-    INVALID_LENGTH                      = 23,  // Binary file has a invalid length or the parameters for the length don't match the size of the fiile
-    ERROR_WRITING_FILE                  = 24, //added for fwrite check on May20'20
-    TIMEOUT                             = 25, //added for indicating operation timeout for SeaQueue
-    OS_TIMEOUT_TOO_LARGE                = 26, //added for cases where a requested timeout is larger than the OS is capable of supporting in passthrough
-    PARSING_EXCEPTION_FAILURE           = 27, //For C/C++ exception failure while parsing
-    DIR_CREATION_FAILED                 = 28, //For Telemetry Log Parser, when the creation of output folder fails
-    FILE_READ_ERROR                     = 29, //For Telemetry Log Parser, when reading logfile to buffer fails
-    POWER_CYCLE_REQUIRED                = 30, //For some firmware update scenarios, a power cycle is required to complete the update. This code is returned in these situations.
-    DEVICE_ACCESS_DENIED                = 31, //While similar to PERMISSION_DENIED, this is meant for a response from the drive telling us it is not allowing something versus the OS telling us something is not allowed.-TJE
-    NOT_PARSED                          = 32,           // File was not parsed 
-    MISSING_INFORMATION                 = 33,  // file is missing information inorder to be parsed correctly
-    TRUNCATED_FILE                      = 34,       // file is truncated and might be missing data for parsing it correctly
-    UNKNOWN
-#if defined (USING_CPP11)
-    };
-#else
-    }eReturnValues;
-#endif
+    //If you want a specific type underlying the enum, use M_DECLAR_ENUM_TYPE to specify it.
+    //This can be something like M_DECLARE_ENUM_TYPE(myEnum, uint32_t, ...)
+    //If you set type to "int" then it's the same as M_DECLARE_ENUM
+    #if defined (USING_CPP11)
+        #define M_DECLARE_ENUM_TYPE(name, type, ...) enum class name : type { __VA_ARGS__ };
+    #elif defined (USING_CPP98)
+        #define M_DECLARE_ENUM_TYPE(name, type, ...) enum name { __VA_ARGS__ };
+    #else//!CPP11...old CPP or C
+        #if defined (USING_C23)
+            #define M_DECLARE_ENUM_TYPE(name, type, ...) typedef enum _ ## name : type { __VA_ARGS__ }name;
+        #else
+            /*cannot specify the type, so just ignore the input for now-TJE*/
+            #define M_DECLARE_ENUM_TYPE(name, type, ...) typedef enum _ ## name { __VA_ARGS__ }name;
+        #endif
+    #endif//CPP11 
 
-    typedef enum _eDataTransferDirection 
-    {
+    M_DECLARE_ENUM(eReturnValues,
+        SUCCESS = 0,
+        FAILURE = 1,
+        NOT_SUPPORTED = 2,
+        COMMAND_FAILURE = 3,
+        IN_PROGRESS = 4, /* another command is in progress, or a command has started and is now in progress in the background */
+        ABORTED = 5, /* Command was aborted */
+        BAD_PARAMETER = 6, /* the only time this return code should be seen is when a developer is writing code to add something. This should not appear in a finished application */
+        MEMORY_FAILURE = 7, /* could not allocate memory */
+        OS_PASSTHROUGH_FAILURE = 8, /* For some unknown reason, the OS API call to issue the pass-through command failed. */
+        LIBRARY_MISMATCH = 9,
+        FROZEN = 10, /* use this to communicate back when the device is in a frozen state for a commmand like sanitize or ata security */
+        PERMISSION_DENIED = 11, /* OS returned Access/permission denied */
+        FILE_OPEN_ERROR = 12,
+        WARN_INCOMPLETE_RFTRS = 13, /* command was issued, and some RTFRs were received, but we were unable to get a complete RTFR result. This is most likely due to a SATL limitation. */
+        OS_COMMAND_TIMEOUT = 14, /* command took longer than the timeout that was provided to the OS */
+        WARN_NOT_ALL_DEVICES_ENUMERATED = 15,
+        WARN_INVALID_CHECKSUM = 16, /* The checksum on the data for a command didn't calculate correctly (EX: Identify device, some ATA Logs) */
+        OS_COMMAND_NOT_AVAILABLE = 17, /* This is returned when the OS does not have a way to issue the requested command. (EX: Trying to send an NVMe command without Win10, or trying a 32byte SCSI command pre-Win8) */
+        OS_COMMAND_BLOCKED = 18, /* This is returned when the OS is blocking the command from being issued (EX: TCG - linux, lib ATA......or Sanitize in Windos 8+) */
+        COMMAND_INTERRUPTED = 19, /* Added for SCT commands, if interrupted by some other SCT command. */
+        VALIDATION_FAILURE = 20, /* validation check*/
+        STRIP_HDR_FOOTER_FAILURE = 21, /* For UDS */
+        PARSE_FAILURE = 22,
+        INVALID_LENGTH = 23,  /* Binary file has a invalid length or the parameters for the length don't match the size of the file */
+        ERROR_WRITING_FILE = 24, /*added for fwrite check on May20'20 */
+        TIMEOUT = 25, /*added for indicating operation timeout for SeaQueue */
+        OS_TIMEOUT_TOO_LARGE = 26, /*added for cases where a requested timeout is larger than the OS is capable of supporting in passthrough */
+        PARSING_EXCEPTION_FAILURE = 27, /*For C/C++ exception failure while parsing */
+        DIR_CREATION_FAILED = 28, /*For Telemetry Log Parser, when the creation of output folder fails */
+        FILE_READ_ERROR = 29, /*For Telemetry Log Parser, when reading logfile to buffer fails */
+        POWER_CYCLE_REQUIRED = 30, /*For some firmware update scenarios, a power cycle is required to complete the update. This code is returned in these situations. */
+        DEVICE_ACCESS_DENIED = 31, /*While similar to PERMISSION_DENIED, this is meant for a response from the drive telling us it is not allowing something versus the OS telling us something is not allowed.-TJE */
+        NOT_PARSED = 32,           /* File was not parsed */
+        MISSING_INFORMATION = 33,  /* file is missing information inorder to be parsed correctly */
+        TRUNCATED_FILE = 34,       /* file is truncated and might be missing data for parsing it correctly */
+        UNKNOWN
+    )
+
+    M_DECLARE_ENUM(eDataTransferDirection,
         XFER_NO_DATA,
-        XFER_DATA_IN,     // Transfer from target to host
-        XFER_DATA_OUT,    // Transfer from host to target
-        XFER_DATA_OUT_IN, // Transfer from host to target, followed by target to host
-        XFER_DATA_IN_OUT, // Transfer from target to host, followed by host to target
-     } eDataTransferDirection;
+        XFER_DATA_IN,     /* Transfer from target to host                             */
+        XFER_DATA_OUT,    /* Transfer from host to target                             */
+        XFER_DATA_OUT_IN, /* Transfer from host to target, followed by target to host */
+        XFER_DATA_IN_OUT, /* Transfer from target to host, followed by host to target */
+    )
 
-#if defined (USING_CPP11)
-    enum class eVerbosityLevels
-#else
-    typedef enum _eVerbosityLevels
-#endif //end c++
-    {
+    M_DECLARE_ENUM(eVerbosityLevels,
         VERBOSITY_QUIET             = 0,
         VERBOSITY_DEFAULT           = 1,
         VERBOSITY_COMMAND_NAMES     = 2,
         VERBOSITY_COMMAND_VERBOSE   = 3,
         VERBOSITY_BUFFERS           = 4
-#if defined (USING_CPP11)
-    };
-#else
-    }eVerbosityLevels;
-#endif
-
+    )
     // json data type sets. used for formating data to a customer demands 
-#if defined (USING_CPP11)
-    enum class eDataFormat
-#else
-    typedef enum _eDataFormat
-#endif
-    {
-        JSON_DATA = 0,   //default
+    M_DECLARE_ENUM(eDataFormat,
+        JSON_DATA = 0,   /*default*/
         PREPYTHON_DATA = 1,
-#if defined (USING_CPP11)
-    };
-#else
-    }eDataFormat;
-#endif
+        )
 
     // Max & Min Helpers
     #define  M_Min(a,b)    (((a)<(b))?(a):(b))
@@ -889,15 +923,14 @@ typedef enum _eReturnValues
     // This is especially good for C++ since you get conversion warnings, but this is an acceptible method for C++ code
     #define M_ToBool(expression) ((expression) > 0 ? true : false)
 
-    typedef enum _eOutputFormat
-    {
-        SEAC_OUTPUT_TEXT, //default way everything is output
-        SEAC_OUTPUT_RAW,  //This will output the data as raw binary glob
+    M_DECLARE_ENUM(eOutputFormat,
+        SEAC_OUTPUT_TEXT, /*default way everything is output            */
+        SEAC_OUTPUT_RAW,  /*This will output the data as raw binary glob*/
         SEAC_OUTPUT_JSON,
-        //TODO: add other output formats as we want to support them
-        SEAC_OUTPUT_CSV, //just an idea...isn't implemented now
-        SEAC_OUTPUT_XML, //just an idea...isn't implemented now
-    }eOutputFormat;
+        /*TODO: add other output formats as we want to support them*/
+        SEAC_OUTPUT_CSV, /*just an idea...isn't implemented now*/
+        SEAC_OUTPUT_XML, /*just an idea...isn't implemented now*/
+        )
 
 
     //NOTE: I don't like how this is done right now...the hardcoded path and filename lengths are the same as OPENSEA_PATH_MAX, but I cannot use that definition due to include structure at this time...
@@ -919,8 +952,8 @@ typedef enum _eReturnValues
        size_t AllocLen;  // If AllocLen is zero, pData must be NULL also.
     } tDataPtr;
 
-#define TIME_STRING_LENGTH 26
-#define CURRENT_TIME_STRING_LENGTH TIME_STRING_LENGTH
+    #define TIME_STRING_LENGTH 26
+    #define CURRENT_TIME_STRING_LENGTH TIME_STRING_LENGTH
     // global timestamp
     extern time_t CURRENT_TIME;
     extern char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH];
@@ -1400,7 +1433,7 @@ typedef enum _eReturnValues
     //  Exit:
     //
     //-----------------------------------------------------------------------------
-    void print_Return_Enum(char *funcName, int ret);
+    void print_Return_Enum(char *funcName, eReturnValues ret);
 
 #define UNIT_STRING_LENGTH 4
 
@@ -1419,7 +1452,7 @@ typedef enum _eReturnValues
     //!   \return SUCCESS on successful completion, !SUCCESS if problems encountered
     //
     //-----------------------------------------------------------------------------
-    int metric_Unit_Convert(double *byteValue, char** metricUnit);
+    eReturnValues metric_Unit_Convert(double *byteValue, char** metricUnit);
 
     //-----------------------------------------------------------------------------
     //
@@ -1436,7 +1469,7 @@ typedef enum _eReturnValues
     //!   \return SUCCESS on successful completion, !SUCCESS if problems encountered
     //
     //-----------------------------------------------------------------------------
-    int capacity_Unit_Convert(double *byteValue, char** capacityUnit);
+    eReturnValues capacity_Unit_Convert(double *byteValue, char** capacityUnit);
 
     //-----------------------------------------------------------------------------
     //
@@ -1621,7 +1654,7 @@ typedef enum _eReturnValues
     //!   \return SUCCESS = successfully filled buffer. BAD_PARAMETER = error in function parameters
     //
     //-----------------------------------------------------------------------------
-    int fill_Random_Pattern_In_Buffer(uint8_t *ptrData, uint32_t dataLength);
+    eReturnValues fill_Random_Pattern_In_Buffer(uint8_t *ptrData, uint32_t dataLength);
 
     //-----------------------------------------------------------------------------
     //
@@ -1638,7 +1671,7 @@ typedef enum _eReturnValues
     //!   \return SUCCESS = successfully filled buffer. BAD_PARAMETER = error in function parameters
     //
     //-----------------------------------------------------------------------------
-    int fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t *ptrData, uint32_t dataLength);
+    eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t *ptrData, uint32_t dataLength);
 
     //-----------------------------------------------------------------------------
     //
@@ -1655,7 +1688,7 @@ typedef enum _eReturnValues
     //!   \return SUCCESS = successfully filled buffer. BAD_PARAMETER = error in function parameters
     //
     //-----------------------------------------------------------------------------
-    int fill_Incrementing_Pattern_In_Buffer(uint8_t incrementStartValue, uint8_t *ptrData, uint32_t dataLength);
+    eReturnValues fill_Incrementing_Pattern_In_Buffer(uint8_t incrementStartValue, uint8_t *ptrData, uint32_t dataLength);
 
     //-----------------------------------------------------------------------------
     //
@@ -1673,7 +1706,7 @@ typedef enum _eReturnValues
     //!   \return SUCCESS = successfully filled buffer. BAD_PARAMETER = error in function parameters
     //
     //-----------------------------------------------------------------------------
-    int fill_ASCII_Pattern_In_Buffer(const char *asciiPattern, uint32_t patternLength, uint8_t *ptrData, uint32_t dataLength);
+    eReturnValues fill_ASCII_Pattern_In_Buffer(const char *asciiPattern, uint32_t patternLength, uint8_t *ptrData, uint32_t dataLength);
 
     //-----------------------------------------------------------------------------
     //
@@ -1691,7 +1724,7 @@ typedef enum _eReturnValues
     //!   \return SUCCESS = successfully filled buffer. BAD_PARAMETER = error in function parameters
     //
     //-----------------------------------------------------------------------------
-    int fill_Pattern_Buffer_Into_Another_Buffer(uint8_t *inPattern, uint32_t inpatternLength, uint8_t *ptrData, uint32_t dataLength);
+    eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t *inPattern, uint32_t inpatternLength, uint8_t *ptrData, uint32_t dataLength);
 
     double convert_128bit_to_double(uint8_t * pData);
 
@@ -1724,29 +1757,20 @@ typedef enum _eReturnValues
     //-----------------------------------------------------------------------------
     time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture);
 
-#if defined (USING_CPP11)
-    enum class eCompiler
-#else
-    typedef enum _eCompiler
-#endif   //end c++
-    {
+    M_DECLARE_ENUM(eCompiler,
         OPENSEA_COMPILER_UNKNOWN,
         OPENSEA_COMPILER_MICROSOFT_VISUAL_C_CPP,
         OPENSEA_COMPILER_GCC,
         OPENSEA_COMPILER_CLANG,
         OPENSEA_COMPILER_MINGW,
-        OPENSEA_COMPILER_INTEL_C_CPP,//not supported right now
-        OPENSEA_COMPILER_SUNPRO_C_CPP,//not supported right now
-        OPENSEA_COMPILER_IBM_XL_C_CPP,//not supported right now
-        OPENSEA_COMPILER_IBM_SYSTEMZ_C_CPP,//very similar to XLC/C++ compiler but slightly different versioning - not supported right now
-        OPENSEA_COMPILER_HP_A_CPP,//not supported right now
-        //Add other compilers here if we ever add more than those above (which not all listed above are supported!)
+        OPENSEA_COMPILER_INTEL_C_CPP,
+        OPENSEA_COMPILER_SUNPRO_C_CPP,
+        OPENSEA_COMPILER_IBM_XL_C_CPP,
+        OPENSEA_COMPILER_IBM_SYSTEMZ_C_CPP,
+        OPENSEA_COMPILER_HP_A_CPP,
+        /*Add other compilers here if we ever add more than those above (which not all listed above are supported!)*/
         OPENSEA_COMPILER_RESERVED
-#if defined (USING_CPP11)
-    };
-#else
-    }eCompiler;
-#endif  // end of c++
+    )
 
     typedef struct _compilerVersion
     {
@@ -1769,7 +1793,7 @@ typedef enum _eReturnValues
     //!   \return SUCCESS on successful completion, !SUCCESS if problems encountered
     //
     //-----------------------------------------------------------------------------
-    int get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersionInfo);
+    eReturnValues get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersionInfo);
 
     //-----------------------------------------------------------------------------
     //
@@ -2186,13 +2210,7 @@ typedef enum _eReturnValues
         //using intptr_t since it has the same range.
         //MSFT has SSIZE_T which also matches this definition, but intptr_t is more standardized, so using it for now-TJE
         typedef intptr_t ssize_t;
-        #if defined (_WIN64)
-            #define SSIZE_MAX LLONG_MAX
-        #elif defined (_WIN32)
-            #define SSIZE_MAX LONG_MAX
-        #else
-            #pragma message "Unable to set SSIZE_MAX"
-        #endif
+        #define SSIZE_MAX INTPTR_MAX
     #endif  //SSIZE_MAX && _MSC_VER
 
 
@@ -2202,6 +2220,40 @@ typedef enum _eReturnValues
 
     ssize_t getdelim(char** restrict lineptr, size_t* restrict n, int delimiter, FILE* stream);
 #endif //!__STDC_ALLOC_LIB__ && !_POSIX || (POSIX < 2008)
+
+
+    //-----------------------------------------------------------------------------
+    //
+    // bool os_Directory_Exits (const char * const pathToCheck)
+    //
+    // \brief   Description: Platform independent helper to check if path exists. 
+    //                       WARNING: May not work with UNICODE path. 
+    //
+    // Entry:
+    //      \param[in] pathToCheck The path that needs to be evaluated. 
+    //
+    // Exit:
+    //      \return true if exists, false if it does not. 
+    //
+    //-----------------------------------------------------------------------------
+    bool os_Directory_Exists(const char * const pathToCheck);
+
+    //-----------------------------------------------------------------------------
+    //
+    // bool os_File_Exists (const char * const filetoCheck)
+    //
+    // \brief   Description: Platform independent helper to check if file exists. 
+    //                       WARNING: May not work with UNICODE path. 
+    //
+    // Entry:
+    //      \param[in] filetoCheck The file that needs to be evaluated. 
+    //
+    // Exit:
+    //      \return true if exists, false if it does not. 
+    //
+    //-----------------------------------------------------------------------------
+    bool os_File_Exists(const char * const filetoCheck);
+
 
 #if defined (__cplusplus)
 } //extern "C"
