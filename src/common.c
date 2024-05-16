@@ -31,7 +31,7 @@
 #include <math.h>
 
 time_t CURRENT_TIME = 0;
-char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH] = {0};
+char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH] = { 0 };
 
 void delay_Milliseconds(uint32_t milliseconds)
 {
@@ -1639,9 +1639,14 @@ bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * output
 {
     bool ret = true;
     bool hex = false;
+    bool isZero = true;
     const char * tmp = strToConvert;
     while (*tmp != '\0')
     {
+        //if non zero char, then isZero=false
+        if (isZero && *tmp != '0' && (*tmp != 'x') && (*tmp != 'h'))
+            isZero = false;
+
         if ((!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
         {
             ret = false;
@@ -1653,8 +1658,7 @@ bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * output
         }
         tmp++;
     }
-    //If everything is a valid hex digit. 
-    //TODO: What about realllyyyy long hex value? 
+    //If everything is a valid hex digit.    
     if (ret)
     {
         if (hex)
@@ -1670,8 +1674,9 @@ bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * output
     {
         ret = false;
     }
+
     //Final Check
-    if (ret && errno != 0)
+    if (ret && ((*outputInteger == ULLONG_MAX && errno == ERANGE) || (*outputInteger == 0 && !isZero)))
     {
         ret = false;
     }
@@ -1821,7 +1826,7 @@ double raise_to_power(double number, double power)
 {
     double result = 1.0;
     int64_t localPower = C_CAST(int64_t, power);
-    if(localPower == INT64_C(0))
+    if (localPower == INT64_C(0))
     {
         return 1.0;
     }
@@ -1829,7 +1834,7 @@ double raise_to_power(double number, double power)
     {
         return number;
     }
-    for (int64_t i = INT64_C(-1); i >= localPower && localPower != INT64_C(0); i--) 
+    for (int64_t i = INT64_C(-1); i >= localPower && localPower != INT64_C(0); i--)
     {
         result = result * (1.0 / number);
     }
@@ -1932,7 +1937,7 @@ void* explicit_zeroes(void* dest, size_t count)
 #else
         //one idea on the web is this ugly volatile function pointer to memset to stop the compiler optimization
         //so doing this so I don't need to make more per-compiler ifdefs for other solutions
-        void* (* const volatile no_optimize_memset) (void*, int, size_t) = memset;
+        void* (*const volatile no_optimize_memset) (void*, int, size_t) = memset;
         return no_optimize_memset(dest, 0, count);
 #endif
     }
