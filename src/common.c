@@ -2635,7 +2635,7 @@ bool is_size_t_max(size_t val)
 #if !defined (__STDC_ALLOC_LIB__) && !defined _POSIX_VERSION || (!defined (POSIX_2008))
 //getdelim and getline are not available, so define them ourselves for our own use
 
-ssize_t getdelim(char** restrict lineptr, size_t* restrict n, int delimiter, FILE* stream)
+ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream)
 {
     char* currentptr = NULL;
     char* endptr = NULL;

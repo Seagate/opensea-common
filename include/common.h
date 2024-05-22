@@ -130,7 +130,15 @@ extern "C"
         #endif//_MSC_VER
     #endif//__cplusplus
 
-    
+    #if defined USING_C99
+    #if defined _MSC_VER && !defined USING_C11
+    #define M_RESTRICT __restrict
+    #else
+    #define M_RESTRICT restrict
+    #endif
+    #else
+    #define M_RESTRICT /*restrict*/
+    #endif
 
 //asking to get C11 _s functions since there is some ability to use them in some places.
 #define __STDC_WANT_LIB_EXT1__ 1
@@ -209,13 +217,7 @@ extern "C"
     #if defined (_MSC_VER) && _MSC_VER <= 1800 && defined _WIN32
     int snprintf(char *buffer, size_t bufsz, const char *format, ...);
     #endif
-
-    
-
-    //Macro to help make casts more clear and searchable. Can be very helpful while debugging.
-    //If using C++, use static_cast, reinterpret_cast, dynamic_cast before trying a C_CAST.
-    #define C_CAST(type, val) (type)(val)
-
+        
 #if defined (__cplusplus)
 //get a specific double word
     #define M_DoubleWord0(l) ( static_cast<uint32_t> ( ( (l) & UINT64_C(0x00000000FFFFFFFF) ) >>  0 ) )
@@ -442,7 +444,6 @@ extern "C"
     #define M_BitN16(n)   (UINT16_C(1) << n)
     #define M_BitN32(n)   (UINT32_C(1) << n)
     #define M_BitN64(n)   (UINT64_C(1) << n)
-
 
 #if !defined(UEFI_C_SOURCE)//defined in EDK2 MdePkg and causes conflicts, so checking this define for now to avoid conflicts
 
@@ -2213,12 +2214,11 @@ extern "C"
         #define SSIZE_MAX INTPTR_MAX
     #endif  //SSIZE_MAX && _MSC_VER
 
-
-#if !defined (__STDC_ALLOC_LIB__) && !defined _POSIX_VERSION || defined (POSIX_2008)
+ #if !defined (__STDC_ALLOC_LIB__) && !defined _POSIX_VERSION || defined (POSIX_2008)
     //Need getline and getdelim functions since they are not available.
     ssize_t getline(char** lineptr, size_t* n, FILE* stream);
 
-    ssize_t getdelim(char** restrict lineptr, size_t* restrict n, int delimiter, FILE* stream);
+    ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream);
 #endif //!__STDC_ALLOC_LIB__ && !_POSIX || (POSIX < 2008)
 
 
