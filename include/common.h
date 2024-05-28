@@ -130,7 +130,38 @@ extern "C"
         #endif//_MSC_VER
     #endif//__cplusplus
 
-    
+#if defined USING_C99
+    #if defined _MSC_VER && !defined USING_C11
+        #define M_RESTRICT __restrict
+    #else
+        #define M_RESTRICT restrict
+    #endif
+#else
+    #define M_RESTRICT /*restrict*/
+#endif
+
+//Detect the LP64 pr LLP64 mode for the system/compiler.
+//This is meant to be used within various opensea-common functions, but defined in this header so that it can be used easily for other uses
+#if defined (__LP64__) || defined (_LP64)
+    #define LP64_DATA_MODEL
+#elif defined (_WIN32)
+    #if defined (_WIN64)
+        #define LLP64_DATA_MODEL
+    #else
+        #define ILP32_DATA_MODEL
+    #endif
+#elif defined (__ILP32__) || defined (_ILP32)
+    #define ILP32_DATA_MODEL
+#elif defined (__ILP64__) || defined (_ILP64)
+    #define ILP64_DATA_MODEL
+#elif defined (__LP32__) || defined (_LP32)
+    #define LP32_DATA_MODEL
+#else 
+    //Add more data model info here as necessary.
+    //If a data model is not already defined above, then some built in logic is used to decide functions to call in 
+    //some scenarios.
+#endif
+
 
 //asking to get C11 _s functions since there is some ability to use them in some places.
 #define __STDC_WANT_LIB_EXT1__ 1
@@ -140,11 +171,18 @@ extern "C"
     #include <stdio.h>
     #include <time.h>
     #include <string.h>
+#if (defined (__STDC_LIB_EXT1__) && defined (__STDC_WANT_LIB_EXT1__)) 
+    #define HAVE_C11_ANNEX_K
+    //NOTE: These are _s functions, but they MAY NOT MATCH the _s functions Microsoft has available.
+    //      Some have different parameters or different parameter order among other things.
+    //      Some do match and are the same.
+    //      To check for Microsoft's version, check for __STDC_SECURE_LIB__
+#endif //check for annex k
     #include <stdlib.h>
     #include <inttypes.h>
     #include <stdbool.h>
     #include <errno.h> //for printing std errors to the screen...more useful for 'nix OSs, but useful everywhere since it is at least standard functions
-#if defined (__unix__)
+#if defined (__unix__) || defined(__APPLE__)
     #include <unistd.h> //to ensure we can check for POSIX versions
 #endif //__unix__
     //POSIX version checks. NOTE: not taking into account xopen/sus versions here, just posix
@@ -1433,7 +1471,7 @@ extern "C"
     //  Exit:
     //
     //-----------------------------------------------------------------------------
-    void print_Return_Enum(char *funcName, eReturnValues ret);
+    void print_Return_Enum(const char *funcName, eReturnValues ret);
 
 #define UNIT_STRING_LENGTH 4
 
@@ -1484,10 +1522,10 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     #define safe_Free(mem)  \
-    if(mem)                 \
+    if (mem)                \
     {                       \
         free(mem);          \
-        mem = NULL;         \
+        (mem) = NULL;       \
     }                       \
 
     //-----------------------------------------------------------------------------
@@ -1526,8 +1564,75 @@ extern "C"
     //!   \return true if able to read in an integer number, false if invalid format.
     //
     //-----------------------------------------------------------------------------
+    M_DEPRECATED /*user the bit width specific versions instead!*/
     bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger);
 
+    //This enum specifies which units are allowed to be at the end of the user's input
+    //it must match exactly the units described in the comments. If we need to expand the
+    //list of allowed units in a given input type, that is OK. All callers should be using the output unit
+    //as needed and any unknown unit must be treated as an error that way if these lists get expanded,
+    //a new unit does not cause unexpected behavior.
+    M_DECLARE_ENUM(eAllowedUnitInput,
+        ALLOW_UNIT_NONE, /*no units allowed.*/
+        ALLOW_UNIT_DATASIZE,/*BLOCKS, SECTORS, B, KB, KiB, MB, MiB, GB, GiB, TB, TiB*/
+        ALLOW_UNIT_SECTOR_TYPE,/*l, p, logical, physical*/
+        ALLOW_UNIT_TIME,/*h, m, s, ms, us, ns*/
+        ALLOW_UNIT_POWER,/*w, mw*/
+        ALLOW_UNIT_VOLTS,/*v, mv*/
+        ALLOW_UNIT_AMPS, /*a, ma*/
+        ALLOW_UNIT_TEMPERATURE/*f, c, k*/
+    )
+
+    M_NODISCARD bool get_And_Validate_Integer_Input_Uint64(const char * strToConvert, char** unit, eAllowedUnitInput unittype, uint64_t * outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input_Uint32(const char * strToConvert, char** unit, eAllowedUnitInput unittype, uint32_t * outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input_Uint16(const char * strToConvert, char** unit, eAllowedUnitInput unittype, uint16_t * outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input_Uint8(const char * strToConvert, char** unit, eAllowedUnitInput unittype, uint8_t * outputInteger);
+
+    M_NODISCARD bool get_And_Validate_Integer_Input_Int64(const char * strToConvert, char** unit, eAllowedUnitInput unittype, int64_t * outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input_Int32(const char * strToConvert, char** unit, eAllowedUnitInput unittype, int32_t * outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input_Int16(const char * strToConvert, char** unit, eAllowedUnitInput unittype, int16_t * outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input_Int8(const char * strToConvert, char** unit, eAllowedUnitInput unittype, int8_t * outputInteger);
+
+    M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char * strToConvert, char** unit, eAllowedUnitInput unittype, unsigned long long * outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char * strToConvert, char** unit, eAllowedUnitInput unittype, unsigned long * outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input_UI(const char * strToConvert, char** unit, eAllowedUnitInput unittype, unsigned int * outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input_US(const char * strToConvert, char** unit, eAllowedUnitInput unittype, unsigned short * outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input_UC(const char * strToConvert, char** unit, eAllowedUnitInput unittype, unsigned char * outputInteger);
+
+    M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char * strToConvert, char** unit, eAllowedUnitInput unittype, long long * outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input_L(const char * strToConvert, char** unit, eAllowedUnitInput unittype, long * outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input_I(const char * strToConvert, char** unit, eAllowedUnitInput unittype, int * outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input_S(const char * strToConvert, char** unit, eAllowedUnitInput unittype, short * outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input_C(const char * strToConvert, char** unit, eAllowedUnitInput unittype, char * outputInteger);
+
+    M_NODISCARD bool get_And_Validate_Float_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, float * outputFloat);
+    M_NODISCARD bool get_And_Validate_Double_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, double * outputFloat);
+    M_NODISCARD bool get_And_Validate_LDouble_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, long double * outputFloat);
+
+    #if defined(USING_C11)
+    //This is a generic selection macro.
+    //so based on the type of X, it will call the appropriate function for that type.
+    //similar to an overloaded function in C++ for different types.
+    //NOTE: Not using intX_t or uintX_t since these are type defs to one of the types in the macro below.
+    //NOTE: No default case so we can get a warning when this doesn't expand correctly.
+    #define get_Valid_Integer_Input(strToConvert, unit, unittype, outputInteger) _Generic((outputInteger), \
+                        char*: get_And_Validate_Integer_Input_C,\
+                        unsigned char*: get_And_Validate_Integer_Input_UC,\
+                        short*: get_And_Validate_Integer_Input_S,\
+                        unsigned short*: get_And_Validate_Integer_Input_US,\
+                        int*: get_And_Validate_Integer_Input_I,\
+                        unsigned int*: get_And_Validate_Integer_Input_UI,\
+                        long*: get_And_Validate_Integer_Input_L,\
+                        unsigned long*: get_And_Validate_Integer_Input_UL,\
+                        long long*: get_And_Validate_Integer_Input_LL,\
+                        unsigned long long*: get_And_Validate_Integer_Input_ULL,\
+                        float*: get_And_Validate_Float_Input,\
+                        double*: get_And_Validate_Double_Input,\
+                        long double*: get_And_Validate_LDouble_Input\
+                        )(strToConvert, unit, unittype, outputInteger)
+    #endif //C11
+
+    
     //-----------------------------------------------------------------------------
     //
     //  print_Time_To_Screen()
@@ -1770,7 +1875,7 @@ extern "C"
         OPENSEA_COMPILER_HP_A_CPP,
         /*Add other compilers here if we ever add more than those above (which not all listed above are supported!)*/
         OPENSEA_COMPILER_RESERVED
-    )
+    );
 
     typedef struct _compilerVersion
     {
@@ -1825,7 +1930,7 @@ extern "C"
 
     //-----------------------------------------------------------------------------
     //
-    //  get_File_Size(FILE *filePtr)
+    //  M_DEPRECATED get_File_Size(FILE *filePtr)
     //
     //! \brief   Description:  Gets the size of a file from the passing in file pointer. This uses fseek(filePtr,0,SEEK_END). 
     //!                        This function will attempt to return to the position it is in when called (leave the file at the same location). File must be opened in binary mode.
@@ -1838,6 +1943,8 @@ extern "C"
     //!   \return long int representing file size as returned from ftell call.
     //
     //-----------------------------------------------------------------------------
+    //Use os_Get_File_Size instead!!!
+    M_DEPRECATED
     long int get_File_Size(FILE *filePtr);
 
     //-----------------------------------------------------------------------------
@@ -2134,6 +2241,31 @@ extern "C"
 
     //-----------------------------------------------------------------------------
     //
+    //  char *common_String_Token(char *str, const char *delim, char **saveptr)
+    //
+    //! \brief   Description:  To be used in place of strtok. This tries to wrap thread safe versions of strtok when possible.
+    //!                        If a thread safe version is not available, then it uses the strtok() function
+    //!                        It is recommended that any string parsed by this function is a duplicate of the original (strdup) so
+    //!                        to ensure the original string is not modified by any of the functions called within this function.
+    //
+    //  Entry:
+    //!   \param[in] str = pointer string to tokenize/parse
+    //!   \param[in] strmax = used by C11 annex K to track remaining characters to parse. Size of the ORIGINAL string to tokenize. Required for all implementations (Will emulate behavior as much as possible)
+    //!   \param[in] delim = list of delimiters to use when tokenizing.
+    //!   \param[in] saveptr = used by the thread-safe strtok functions internally to track their state. This must be non NULL. Does not need to be freed!
+    //!
+    //  Exit:
+    //!   \return pointer to destination
+    //
+    //-----------------------------------------------------------------------------
+    #if !defined (RSIZE_MAX)
+        typedef size_t rsize_t;
+        #define RSIZE_MAX (SIZE_MAX >> 1)
+    #endif //!RSIZE_MAX
+    char *common_String_Token(char * M_RESTRICT str, rsize_t * M_RESTRICT strmax, const char * M_RESTRICT delim, char ** M_RESTRICT saveptr);
+
+    //-----------------------------------------------------------------------------
+    //
     //  void* explicit_zeroes(void* dest, size_t count)
     //
     //! \brief   Description:  Write zeroes to memory pointer that will not be optimized out by the compiler. 
@@ -2214,12 +2346,16 @@ extern "C"
     #endif  //SSIZE_MAX && _MSC_VER
 
 
-#if !defined (__STDC_ALLOC_LIB__) && !defined _POSIX_VERSION || defined (POSIX_2008)
+#if !defined (__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined (USING_C23)
+    //define strndup
+    //NOTE: Not defining strdup since this may be available in the OS's that need this definition already (Windows currently)
+    char* strndup(const char* src, size_t size);
+
     //Need getline and getdelim functions since they are not available.
     ssize_t getline(char** lineptr, size_t* n, FILE* stream);
 
-    ssize_t getdelim(char** restrict lineptr, size_t* restrict n, int delimiter, FILE* stream);
-#endif //!__STDC_ALLOC_LIB__ && !_POSIX || (POSIX < 2008)
+    ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream);
+#endif //!__STDC_ALLOC_LIB__ && (POSIX < 2008)
 
 
     //-----------------------------------------------------------------------------
@@ -2254,6 +2390,213 @@ extern "C"
     //-----------------------------------------------------------------------------
     bool os_File_Exists(const char * const filetoCheck);
 
+    bool get_Bytes_To_16(uint8_t *dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint16_t *out);
+
+    bool get_Bytes_To_32(uint8_t *dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint32_t *out);
+
+    bool get_Bytes_To_64(uint8_t *dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t *out);
+
+    //This is available in Windows and linux/unix-like systems
+#include <sys/types.h>
+
+#if defined (_WIN32)
+    //Windows has stat/stat64 and uses shorts for these members.
+    typedef short uid_t;
+    typedef short gid_t;
+    typedef unsigned short mode_t;
+    typedef short nlink_t;
+    //using our own "type" to make sure we can get as much of the filesize as possible..and workaround Windows issues with off_t -TJE
+    typedef __int64 offset_t;
+
+    //Windows does not supply the macros to test the file, so we are defining them ourselves so that we can use them when we want to.
+    //NOTE: This is only for the mode_t compatibility provided by Windows.
+    #if !defined (S_ISREG)
+        #define S_ISREG(m) (m & _S_IFMT) == _S_IFREG
+    #endif //S_ISREG
+
+    #if !defined (S_ISDIR)
+        #define S_ISDIR(m) (m & _S_IFMT) == _S_IFDIR
+    #endif //S_ISDIR
+
+    #if !defined (S_ISCHR)
+        #define S_ISCHR(m) (m & _S_IFMT) == _S_IFCHR
+    #endif //S_ISCHR
+
+    #if !defined (S_ISBLK)
+        #define S_ISBLK(m) (0)  //Windows doesn't have a flag for this
+    #endif //S_ISBLK
+
+    #if !defined (S_ISFIFO)
+        #define S_ISFIFO(m) (m & _S_IFMT) == _S_IFIFO
+    #endif //S_ISFIFO
+
+    #if !defined (S_ISLNK)
+        #define S_ISLNK(m) (0) //Windows doesn't have a flag for this
+    #endif //S_ISLNK
+
+    #if !defined (S_ISSOCK)
+        #define S_ISSOCK(m) (0) //Windows doesn't have a flag for this
+    #endif //S_ISSOCK
+
+    #if !defined (S_TYPEISMQ)
+        #define S_TYPEISMQ(buf) (0) //Windows doesn't have a flag for this
+    #endif //S_TYPEISMQ
+
+    #if !defined (S_TYPEISSEM)
+        #define S_TYPEISSEM(buf) (0) //Windows doesn't have a flag for this
+    #endif //S_TYPEISSEM
+
+    #if !defined (S_TYPEISSHM)
+        #define S_TYPEISSHM(buf) (0) //Windows doesn't have a flag for this
+    #endif //S_TYPEISSHM
+
+#else
+    //using our own "type" to make sure we can get as much of the filesize as possible..and workaround Windows issues with off_t -TJE
+    typedef off_t offset_t;//to deal with windows differences in off_t definitions in stat
+#endif //_WIN32
+
+    #define FILE_UNIQUE_ID_ARR_MAX (16)
+    typedef struct _fileUniqueIDInfo
+    {
+        //Windows uses unsigned long for vol SN
+        //Windows uses 2 unsigned longs for index high/low. NOTE: REFS needs a 128bit identifier, need to use ex version to read full identifier
+        //Linux has ino_t and dev_t to check for
+        //Idea: Both linux and windows recommend combing things to create a unique ID (Windows: Vol SN + file index, Linux: ino_t + dev_t)
+        //      use a very generic thing to compare that can hold this many bytes of data...an array.
+        //      low-level OS function to do the comparison???
+        union {
+            uint64_t inode;
+            uint64_t volsn;
+        };
+        union {
+            uint64_t deviceid;//dev_t from struct stat in posix
+            uint8_t fileid[FILE_UNIQUE_ID_ARR_MAX];//Windows may use 8 or 16 bytes depending on filesystem. Fat/NTFS can use only 64bits, but REFS needs at least 128 bits to identify this uniquely.
+        };
+    }fileUniqueIDInfo;
+
+    M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file);
+
+    //Most members of this strucuture match the stat structure. There are some differences which is why we define it without that strucure.
+    //Main reason to NOT use struct stat is that Windows has a version, but to get the 64 version would make this a mess to define.
+    //So defining it in a way that is best for cross-platform use.
+    //Some fields may not be set to anything other than 0 on Windows dues to not have the same concepts as on Unix/Unix-like systems
+    typedef struct _fileAttributes
+    {
+        dev_t deviceID;
+        ino_t inode;
+        mode_t filemode;
+        nlink_t numberOfLinks;
+        uid_t userID;
+        gid_t groupID;
+        dev_t representedDeviceID;
+        offset_t filesize;
+        int64_t fileLastAccessTime;//milliseconds since Unix epoch (in Windows, converted from Windows file epoch to this value)
+        int64_t fileModificationTime;//milliseconds since Unix epoch (in Windows, converted from Windows file epoch to this value)
+        int64_t fileStatusChangeTime;//milliseconds since Unix epoch (in Windows, converted from Windows file epoch to this value)
+        //Windows only below here for Windows specific info that may differ from above
+        uint32_t fileFlags;
+        uint16_t securityControlFlags;
+#if defined (_WIN32)
+        //Windows user and group SID?
+        unsigned long securityDescriptorStringLength;
+        char* winSecurityDescriptor;//Allocated by malloc. Call memset_explicit on this to zero it out before freeing.
+#endif//_WIN32
+    }fileAttributes;
+    //DO NOT delete this structure manually. The windows SIDs are allocated and require deletion of their own.
+    //this will be cleaned up when calling the function to delete this for you!
+
+    //This can be used on files or directories.
+    M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck);
+    //This is the preferred method to check attributes are the same once a file has been opened to make sure
+    //that the attributes are read from exactly the same file as expected
+    M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file);
+
+    void free_File_Attributes(fileAttributes** attributes);
+
+    //For terminating value in this list, set ext to NULL
+    typedef struct _fileExt
+    {
+        const char* ext;
+        bool caseInsensitive;//by default to a case sensitive comparison. Only change this if you want .bin and .BIN and .bIN and .Bin...for example.
+    }fileExt;
+
+    M_DECLARE_ENUM(eSecureFileError,
+        SEC_FILE_SUCCESS,
+        SEC_FILE_INVALID_FILE,
+        SEC_FILE_INVALID_PATH,
+        SEC_FILE_FILE_ALREADY_EXISTS, /*attempting to write and create a file that already exists*/
+        SEC_FILE_INVALID_FILE_EXTENSION,
+        SEC_FILE_INVALID_FILE_ATTRIBTUES,
+        SEC_FILE_INVALID_FILE_UNIQUE_ID,
+        SEC_FILE_INSECURE_PATH,
+        SEC_FILE_INVALID_MODE,/*mode string contains invalid options*/
+        SEC_FILE_INVALID_SECURE_FILE, /*passed in NULL secureFileInfo structure to a function that requires this.*/
+        SEC_FILE_FAILURE_CLOSING_FILE, /*a failure occured while trying to close the file*/
+        SEC_FILE_BUFFER_TOO_SMALL, /*provided buffer is too small for read/write*/
+        SEC_FILE_INVALID_PARAMETER, /*this can be returned if a function (like fread/fwrite) require a parameter that was not provided*/
+        SEC_FILE_READ_WRITE_ERROR, /*did not read or write as many bytes as requested, cannot determine a more specific reason*/
+        SEC_FILE_END_OF_FILE_REACHED, /*reached the end of the file...can be a case of success if this is expected*/
+        SEC_FILE_WRITE_DISK_FULL, /*cannot write any more data due to an error from running out of space*/
+        SEC_FILE_SEEK_FAILURE, /*Cannot seek to the specified offset in the file*/
+        SEC_FILE_FLUSH_FAILURE,
+        SEC_FILE_FAILURE /*generic undefinable error*/
+    );
+
+    typedef struct _secureFileInfo
+    {
+        eSecureFileError error;
+        bool isValid;
+        FILE* file;
+        const char fullpath[4096];//contains the full canonicalized path and filename.
+        const char* filename;//pointer to just the name section in the fullpath above
+        int fileno;//POSIX fileno. Translated using fileno(FILE *file);
+        size_t fileSize;//converted from the file attributes file size. May be smaller if size_t cannot represent whole file size. Ex: 4gig file on 32bit OS.
+        fileAttributes *attributes;
+        fileUniqueIDInfo* uniqueID;
+    }secureFileInfo; //do not free this manually. call the free_Secure_File_Info function!
+
+    void free_Secure_File_Info(secureFileInfo** fileInfo);
+
+    //The purpose of this function is to perform the security validation necessary to make sure this is a valid file
+    //on the system and minimize path traversal and validate permissions as much as reasonably possible.
+    //The goal is mitigation of https://cwe.mitre.org/data/definitions/22.html
+    //Will be using recommendations from https://wiki.sei.cmu.edu/confluence/pages/viewpage.action?pageId=87151932
+    //     as much as possible to accomplish this.-TJE
+    //expectedFileInfo can be NULL for the first time opening a file.
+    // If reopening a file used earlier, it is recommended to provide this info so it can be validated as the same file
+    // It is recommended to not reopen files, but that may not always be possible. So this exists to help validate
+    // that a file has not changed in some unexpected way.-TJE
+    M_NODISCARD secureFileInfo* secure_Open_File(const char* filename, const char* mode, const fileExt* extList /*optional*/, fileAttributes* expectedFileInfo /*optional*/, fileUniqueIDInfo* uniqueIdInfo /*optional*/);
+
+    //M_NODISCARD secureFileInfo* secure_Reopen_File(secureFileInfo* fileInfo);
+
+    //matching close for the open.
+    M_NODISCARD eSecureFileError secure_Close_File(secureFileInfo* fileInfo);
+
+    M_DECLARE_ENUM(eSecureFileRename,
+        SEC_RENAME_DO_NOT_REPLACE_EXISTING,
+        SEC_RENAME_REPLACE_EXISTING
+    );
+
+    //NOTE: This will convert the filename into a canonical path internally to ensure a valid path is provided.
+    //      Since the low-level APIs need a file name rather than FILE *, this takes the same kind of input.
+    //eSecureFileError secure_Rename_File_By_Name(const char* filename, eSecureFileRename renameInfo);
+
+    //NOTE: This will convert the filename into a canonical path internally to ensure a valid path is provided.
+    //      Low-level APIs need the filename to do this, so using the same type of input.
+    //eSecureFileError secure_Delete_File_By_Name(const char* filename);
+
+    M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* fileInfo, void* M_RESTRICT buffer, size_t buffersize, size_t elementsize, size_t count, size_t* numberread/*optional*/);
+    M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* fileInfo, void* M_RESTRICT buffer, size_t buffersize, size_t elementsize, size_t count, size_t* numberwritten/*optional*/);
+    M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, offset_t offset, int initialPosition);
+    M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo);
+    M_NODISCARD offset_t secure_Tell_File(secureFileInfo* fileInfo);
+
+    eSecureFileError secure_Flush_File(secureFileInfo* fileInfo);
+
+    eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT fileInfo, fpos_t* M_RESTRICT pos);
+
+    eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos);
 
 #if defined (__cplusplus)
 } //extern "C"

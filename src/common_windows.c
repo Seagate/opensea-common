@@ -22,32 +22,279 @@
 #include <io.h> //needed for getting the size of a file in windows
 #include <lmcons.h> //for UNLEN
 #include <string.h>
+#include <AclAPI.h>
+#include <sddl.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>   
+
+/*
+When stdin, stdout, and stderr aren't associated with a stream (for example, in a Windows application without a console window), 
+the file descriptor values for these streams are returned from _fileno as the special value -2. 
+Similarly, if you use a 0, 1, or 2 as the file descriptor parameter instead of the result of a call to _fileno, 
+_get_osfhandle also returns the special value -2 when the file descriptor is not associated with a stream, and does not set errno. 
+However, this is not a valid file handle value, and subsequent calls that attempt to use it are likely to fail.
+*/
+#define WIN_FD_INVALID (-2)
+
+static bool win_File_Attributes_By_Name(const char* const filename, LPWIN32_FILE_ATTRIBUTE_DATA attributes)
+{
+    bool success = false;
+    if (filename && attributes)
+    {
+        size_t pathCheckLength = (strlen(filename) + 1) * sizeof(TCHAR);
+        TCHAR* localPathToCheckBuf = C_CAST(TCHAR*, calloc(pathCheckLength, sizeof(TCHAR)));
+        if (!localPathToCheckBuf)
+        {
+            return false;
+        }
+        CONST TCHAR* localPathToCheck = &localPathToCheckBuf[0];
+        _stprintf_s(localPathToCheckBuf, pathCheckLength, TEXT("%hs"), filename);
+
+        BOOL gotAttributes = GetFileAttributesEx(localPathToCheck, GetFileExInfoStandard, attributes);
+        if (gotAttributes)
+        {
+            success = true;
+        }
+        safe_Free(localPathToCheckBuf)
+        localPathToCheck = NULL;
+    }
+    return success;
+}
+
+static bool win_File_Attributes_By_File(FILE *file, LPBY_HANDLE_FILE_INFORMATION attributes)
+{
+    bool success = false;
+    if (file && attributes)
+    {
+        int fd = _fileno(file);
+        if (fd == WIN_FD_INVALID)
+        {
+            return false;
+        }
+        HANDLE msftHandle = C_CAST(HANDLE, _get_osfhandle(fd));
+        if (msftHandle == INVALID_HANDLE_VALUE || C_CAST(intptr_t, msftHandle) == WIN_FD_INVALID)
+        {
+            return false;
+        }
+        if (SUCCESS == GetFileInformationByHandle(msftHandle, attributes))
+        {
+            success = true;
+        }
+    }
+    return success;
+}
+
+static bool win_Get_File_Security_Info_By_Name(const char* const filename, fileAttributes* attrs)
+{
+    bool success = false;
+    if (filename && attrs)
+    {
+        size_t pathCheckLength = (strlen(filename) + 1) * sizeof(TCHAR);
+        TCHAR* localPathToCheckBuf = C_CAST(TCHAR*, calloc(pathCheckLength, sizeof(TCHAR)));
+        if (!localPathToCheckBuf)
+        {
+            return false;
+        }
+        _stprintf_s(localPathToCheckBuf, pathCheckLength, TEXT("%hs"), filename);
+        CONST TCHAR* localPathToCheck = &localPathToCheckBuf[0];
+        
+        //Do not need SACL since it may not be available and is about triggering audits instead of a dacl which defines who has access to a file.
+        SECURITY_INFORMATION secInfo = OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION;
+        PSECURITY_DESCRIPTOR secDescriptor = M_NULLPTR;
+        PSID owner = M_NULLPTR, group = M_NULLPTR;
+        PACL dacl = M_NULLPTR;
+        if (ERROR_SUCCESS == GetNamedSecurityInfo(localPathToCheck, SE_FILE_OBJECT, secInfo, &owner, &group, &dacl, NULL, &secDescriptor))
+        {
+            LPSTR temp = M_NULLPTR;
+            if (TRUE == ConvertSecurityDescriptorToStringSecurityDescriptorA(secDescriptor, SDDL_REVISION, secInfo, &temp, &attrs->securityDescriptorStringLength))
+            {
+                attrs->winSecurityDescriptor = strndup(temp, attrs->securityDescriptorStringLength);
+                success = true;
+                //SecureZeroMemory(temp, attrs->securityDescriptorStringLength);
+                LocalFree(temp);
+                temp = M_NULLPTR;
+            }
+            //SecureZeroMemory(secDescriptor, GetSecurityDescriptorLength(secDescriptor));
+            LocalFree(secDescriptor);
+            secDescriptor = M_NULLPTR;
+        }
+    }
+    return success;
+}
+
+static bool win_Get_File_Security_Info_By_File(FILE *file, fileAttributes* attrs)
+{
+    bool success = false;
+    if (file && attrs)
+    {
+        //Do not need SACL since it may not be available and is about triggering audits instead of a dacl which defines who has access to a file.
+        SECURITY_INFORMATION secInfo = OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION;
+        PSECURITY_DESCRIPTOR secDescriptor = M_NULLPTR;
+        PSID owner = M_NULLPTR, group = M_NULLPTR;
+        PACL dacl = M_NULLPTR;
+        HANDLE msftHandle = INVALID_HANDLE_VALUE;
+        int fd = _fileno(file);
+        if (fd == WIN_FD_INVALID)
+        {
+            return false;
+        }
+        msftHandle = C_CAST(HANDLE, _get_osfhandle(fd));
+        if (msftHandle == INVALID_HANDLE_VALUE || C_CAST(intptr_t, msftHandle) == WIN_FD_INVALID)
+        {
+            return false;
+        }
+        if (ERROR_SUCCESS == GetSecurityInfo(msftHandle, SE_FILE_OBJECT, secInfo, &owner, &group, &dacl, NULL, &secDescriptor))
+        {
+            LPSTR temp = M_NULLPTR;
+            if (TRUE == ConvertSecurityDescriptorToStringSecurityDescriptorA(secDescriptor, SDDL_REVISION, secInfo, &temp, &attrs->securityDescriptorStringLength))
+            {
+                attrs->winSecurityDescriptor = strndup(temp, attrs->securityDescriptorStringLength);
+                success = true;
+                //SecureZeroMemory(temp, attrs->securityDescriptorStringLength);
+                LocalFree(temp);
+                temp = M_NULLPTR;
+            }
+            //SecureZeroMemory(secDescriptor, GetSecurityDescriptorLength(secDescriptor));
+            LocalFree(secDescriptor);
+            secDescriptor = M_NULLPTR;
+        }
+    }
+    return success;
+}
+
+fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
+{
+    fileAttributes* attrs = NULL;
+    struct _stat64 st;
+    memset(&st, 0, sizeof(struct _stat64));
+    if (filetoCheck && _stat64(filetoCheck, &st) == 0)
+    {
+        attrs = C_CAST(fileAttributes*, calloc(1, sizeof(attrs)));
+        if (attrs)
+        {
+            attrs->deviceID = st.st_dev;
+            attrs->inode = st.st_ino;
+            attrs->filemode = st.st_mode;
+            attrs->numberOfLinks = st.st_nlink;
+            attrs->userID = st.st_uid;
+            attrs->groupID = st.st_gid;
+            attrs->representedDeviceID = st.st_rdev;
+            attrs->filesize = st.st_size;
+            attrs->fileLastAccessTime = st.st_atime;
+            attrs->fileModificationTime = st.st_mtime;
+            attrs->fileStatusChangeTime = st.st_ctime;
+            WIN32_FILE_ATTRIBUTE_DATA winAttributes;
+            memset(&winAttributes, 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
+            if (win_File_Attributes_By_Name(filetoCheck, &winAttributes))
+            {
+                attrs->fileFlags = winAttributes.dwFileAttributes;
+            }
+            win_Get_File_Security_Info_By_Name(filetoCheck, attrs);
+        }
+    }
+    return attrs;
+}
+
+
+fileAttributes* os_Get_File_Attributes_By_File(FILE *file)
+{
+    fileAttributes* attrs = NULL;
+    struct _stat64 st;
+    memset(&st, 0, sizeof(struct _stat64));
+    if (file && _fstat64(_fileno(file), &st) == 0)
+    {
+        attrs = C_CAST(fileAttributes*, calloc(1, sizeof(attrs)));
+        if (attrs)
+        {
+            attrs->deviceID = st.st_dev;
+            attrs->inode = st.st_ino;
+            attrs->filemode = st.st_mode;
+            attrs->numberOfLinks = st.st_nlink;
+            attrs->userID = st.st_uid;
+            attrs->groupID = st.st_gid;
+            attrs->representedDeviceID = st.st_rdev;
+            attrs->filesize = st.st_size;
+            attrs->fileLastAccessTime = st.st_atime;
+            attrs->fileModificationTime = st.st_mtime;
+            attrs->fileStatusChangeTime = st.st_ctime;
+            BY_HANDLE_FILE_INFORMATION winAttributes;
+            memset(&winAttributes, 0, sizeof(BY_HANDLE_FILE_INFORMATION));
+            if (win_File_Attributes_By_File(file, &winAttributes))
+            {
+                attrs->fileFlags = winAttributes.dwFileAttributes;
+            }
+            win_Get_File_Security_Info_By_File(file, attrs);
+        }
+    }
+    return attrs;
+}
+
+
+fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
+{
+    if (file)
+    {
+        int fd = _fileno(file);//DO NOT CALL CLOSE ON FD!
+        if (fd == WIN_FD_INVALID)//_get_osfhandle says this is a special value defined for MSFT for stdin, stdout, stderr
+        {
+            return NULL; //This is stdout, strerr, stdin and not a file that we can get other info on. This is not the correct thing to pass to this function!
+        }
+        HANDLE msftHandle = C_CAST(HANDLE, _get_osfhandle(fd));//DO NOT CALL CLOSE ON MSFTHANDLE
+        if (msftHandle == INVALID_HANDLE_VALUE || C_CAST(intptr_t, msftHandle) == WIN_FD_INVALID)
+        {
+            return NULL;
+        }
+#if defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_VERSION
+        if (is_Windows_Vista_Or_Higher())//This ex function is only available on Vista and later OSs according to MSFT docs
+        {
+            //try to get ex file info, then if it fails (shouldn't happen) then fall back to old method to get this
+            FILE_ID_INFO winfileid;
+            memset(&winfileid, 0, sizeof(FILE_ID_INFO));
+            if (TRUE == GetFileInformationByHandleEx(msftHandle, FileIdInfo, &winfileid, sizeof(FILE_ID_INFO)))
+            {
+                //full 128bit identifier available
+                fileUniqueIDInfo* fileId = C_CAST(fileUniqueIDInfo*, calloc(1, sizeof(fileUniqueIDInfo)));
+                if (fileId)
+                {
+                    fileId->volsn = winfileid.VolumeSerialNumber;
+                    memcpy(&fileId->fileid[0], &winfileid.FileId.Identifier[0], FILE_UNIQUE_ID_ARR_MAX);
+                }
+                return fileId;
+            }
+        }
+#endif //Windows vista API
+        BY_HANDLE_FILE_INFORMATION winfileinfo;
+        memset(&winfileinfo, 0, sizeof(BY_HANDLE_FILE_INFORMATION));
+        if (TRUE == GetFileInformationByHandle(msftHandle, &winfileinfo))
+        {
+            fileUniqueIDInfo* fileId = C_CAST(fileUniqueIDInfo*, calloc(1, sizeof(fileUniqueIDInfo)));
+            if (fileId)
+            {
+                fileId->volsn = winfileinfo.dwVolumeSerialNumber;
+                memcpy(&fileId->fileid[0], &winfileinfo.nFileIndexHigh, sizeof(DWORD));
+                memcpy(&fileId->fileid[sizeof(DWORD)], &winfileinfo.nFileIndexLow, sizeof(DWORD));
+            }
+            return fileId;
+        }
+    }
+    return NULL;
+}
 
 bool os_Directory_Exists(const char * const pathToCheck)
 {
-    DWORD attrib = INVALID_FILE_ATTRIBUTES;
-    size_t pathCheckLength = (strlen(pathToCheck) + 1) * sizeof(TCHAR);
-    TCHAR *localPathToCheckBuf = C_CAST(TCHAR*, calloc(pathCheckLength, sizeof(TCHAR)));
-    if (!localPathToCheckBuf)
+    WIN32_FILE_ATTRIBUTE_DATA fileAttributes;
+    memset(&fileAttributes, 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
+    if (win_File_Attributes_By_Name(pathToCheck, &fileAttributes))
     {
-        return false;
-    }
-    CONST TCHAR *localPathToCheck = &localPathToCheckBuf[0];
-    _stprintf_s(localPathToCheckBuf, pathCheckLength, TEXT("%hs"), pathToCheck);
-
-    attrib = GetFileAttributes(localPathToCheck);
-
-    safe_Free(localPathToCheckBuf)
-    localPathToCheck = NULL;
-
-    if (attrib == INVALID_FILE_ATTRIBUTES)
-    {
-        //printf("getlasterror = %d(0x%x)\n", GetLastError(), GetLastError());
-        return false;
-    }
-    else if (attrib & FILE_ATTRIBUTE_DIRECTORY)
-    {
-        return true;
+        if (fileAttributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
     else
     {
@@ -86,33 +333,22 @@ eReturnValues os_Create_Directory(const char * filePath)
 
 bool os_File_Exists(const char * const filetoCheck)
 {
-    DWORD attrib = INVALID_FILE_ATTRIBUTES;
-    size_t fileCheckLength = (strlen(filetoCheck) + 1) * sizeof(TCHAR);
-    TCHAR *localFileToCheckBuf = C_CAST(TCHAR*, calloc(fileCheckLength, sizeof(TCHAR)));
-    if (!localFileToCheckBuf)
+    WIN32_FILE_ATTRIBUTE_DATA fileAttributes;
+    memset(&fileAttributes, 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
+    if (win_File_Attributes_By_Name(filetoCheck, &fileAttributes))
     {
-        return false;
-    }
-    CONST TCHAR *localFileToCheck = &localFileToCheckBuf[0];
-    _stprintf_s(localFileToCheckBuf, fileCheckLength, TEXT("%hs"), filetoCheck);
-
-    attrib = GetFileAttributes(localFileToCheck);
-
-    safe_Free(localFileToCheckBuf)
-    localFileToCheck = NULL;
-
-    if (attrib == INVALID_FILE_ATTRIBUTES)
-    {
-        //printf("getlasterror = %d(0x%x)\n", GetLastError(), GetLastError());
-        return false;
-    }
-    else if (attrib & FILE_ATTRIBUTE_DIRECTORY)
-    {
-        return false; //It's a directory, not a file. 
+        if (!(fileAttributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
     else
     {
-        return true;
+        return false;
     }
 }
 
@@ -122,8 +358,16 @@ eReturnValues get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH
     {
         return BAD_PARAMETER;
     }
-    //TODO:?Use macro to work with the wide charcter version?
-    DWORD result = GetFullPathNameA(pathAndFile, OPENSEA_PATH_MAX, fullPath, NULL);
+    size_t localPathAndFileLength = (strlen(pathAndFile) + 1) * sizeof(TCHAR);
+    TCHAR* localpathAndFileBuf = C_CAST(TCHAR*, calloc(localPathAndFileLength, sizeof(TCHAR)));
+    TCHAR fullPathOutput[OPENSEA_PATH_MAX] = { 0 };
+    if (!localpathAndFileBuf)
+    {
+        return false;
+    }
+    CONST TCHAR* localpathAndFile = &localpathAndFileBuf[0];
+    _stprintf_s(localpathAndFileBuf, localPathAndFileLength, TEXT("%hs"), pathAndFile);
+    DWORD result = GetFullPathName(localpathAndFile, OPENSEA_PATH_MAX, fullPathOutput, NULL);
     if (result == 0)
     {
         //fatal error
@@ -136,8 +380,145 @@ eReturnValues get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH
         //TODO: change things based on error code?
         return FAILURE;
     }
-
+#if defined (UNICODE)
+    snprintf(fullPath, OPENSEA_PATH_MAX, "%ws", fullPathOutput);
+#else
+    snprintf(fullPath, OPENSEA_PATH_MAX, "%hs", fullPathOutput);
+#endif
+    //Check if this file even exists to make this more like the behavior of the POSIX realpath function.
+    if (!os_File_Exists(fullPath))
+    {
+        memset(fullPath, 0, OPENSEA_PATH_MAX);
+        return FAILURE;
+    }
+    //Future work, use this API instead??? https://learn.microsoft.com/en-us/windows/win32/api/pathcch/nf-pathcch-pathcchcanonicalizeex
     return SUCCESS;
+}
+
+static bool CompareAces(PACL pAcl1, PACL pAcl2) 
+{
+    if (pAcl1 == M_NULLPTR || pAcl2 == M_NULLPTR)
+    {
+        return false;
+    }
+    if (pAcl1->AceCount != pAcl2->AceCount)
+    {
+        return false;
+    }
+
+    for (DWORD i = 0; i < pAcl1->AceCount; i++) 
+    {
+        PACE_HEADER pAce1 = M_NULLPTR;
+        PACE_HEADER pAce2 = M_NULLPTR;
+
+        if (!GetAce(pAcl1, i, C_CAST(LPVOID*, &pAce1)))
+        {
+            return false;
+        }
+
+        if (!GetAce(pAcl2, i, C_CAST(LPVOID*, &pAce2)))
+        {
+            return false;
+        }
+
+        // Compare the ACEs
+        if (pAce1->AceType != pAce2->AceType ||
+            pAce1->AceFlags != pAce2->AceFlags ||
+            pAce1->AceSize != pAce2->AceSize ||
+            memcmp((PVOID)((PBYTE)pAce1 + sizeof(ACE_HEADER)),
+                (PVOID)((PBYTE)pAce2 + sizeof(ACE_HEADER)),
+                pAce1->AceSize - sizeof(ACE_HEADER)) != 0) 
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+//This function is meant to be called after reading and converting SIDs and DACL to a string.
+//So if a caller wants to do it based off file name alone, or file name and FILE *handle comparison, they can read those, then call this.
+bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char* sidsAndDACLstr2)
+{
+    bool match = false;
+    //This function is not just doing strcmp because that will not work.
+    //convert these back to the raw structures, then compare them.
+    if (sidsAndDACLstr1 && sidsAndDACLstr2)
+    {
+        PSECURITY_DESCRIPTOR secDesc1 = M_NULLPTR, secDesc2 = M_NULLPTR;
+        ULONG secDesc1len = 0, secDesc2len = 0;
+        PSID owner1 = M_NULLPTR, owner2 = M_NULLPTR;
+        PSID group1 = M_NULLPTR, group2 = M_NULLPTR;
+        PACL dacl1 = M_NULLPTR, dacl2 = M_NULLPTR;
+        BOOL validdesc1 = FALSE, validdesc2 = FALSE;
+        BOOL validown1 = FALSE, validown2 = FALSE;
+        BOOL validgroup1 = FALSE, validgroup2 = FALSE;
+        BOOL validdacl1 = FALSE, validdacl2 = FALSE;
+        BOOL defaultown1 = FALSE, defaultown2 = FALSE;
+        BOOL defaultgroup1 = FALSE, defaultgroup2 = FALSE;
+        BOOL defaultdacl1 = FALSE, defaultdacl2 = FALSE;
+        BOOL dacl1present = FALSE, dacl2present = FALSE;
+        if (TRUE == ConvertStringSecurityDescriptorToSecurityDescriptorA(sidsAndDACLstr1, SDDL_REVISION, &secDesc1, &secDesc1len))
+        {
+            validdesc1 = IsValidSecurityDescriptor(secDesc1);
+        }
+        if (TRUE == ConvertStringSecurityDescriptorToSecurityDescriptorA(sidsAndDACLstr2, SDDL_REVISION, &secDesc2, &secDesc2len))
+        {
+            validdesc2 = IsValidSecurityDescriptor(secDesc2);
+        }
+        if (validdesc1 && validdesc2)
+        {
+            if (GetSecurityDescriptorOwner(secDesc1, &owner1, &defaultown1))
+            {
+                validown1 = IsValidSid(owner1);
+            }
+            if (GetSecurityDescriptorGroup(secDesc1, &group1, &defaultgroup1))
+            {
+                validgroup1 = IsValidSid(group1);
+            }
+            if (GetSecurityDescriptorOwner(secDesc2, &owner2, &defaultown2))
+            {
+                validown2 = IsValidSid(owner2);
+            }
+            if (GetSecurityDescriptorGroup(secDesc2, &group2, &defaultgroup2))
+            {
+                validgroup2 = IsValidSid(group2);
+            }
+            //Now that we have read all of the possible values....lets compare everything
+            if ((validown1 && validown2 && defaultown1 == defaultown2 && EqualSid(owner1, owner2))
+                && (validgroup1 && validgroup2 && defaultgroup1 == defaultgroup2 && EqualSid(group1, group2))
+                )
+            {
+                //owner and group are the same.
+                //Compare the dacls
+                if (GetSecurityDescriptorDacl(secDesc1, &dacl1present, &dacl1, &defaultdacl1))
+                {
+                    validdacl1 = IsValidAcl(dacl1);
+                }
+                if (GetSecurityDescriptorDacl(secDesc2, &dacl2present, &dacl2, &defaultdacl2))
+                {
+                    validdacl2 = IsValidAcl(dacl2);
+                }
+                if (validdacl1 && validdacl2 && dacl1present == dacl2present && defaultdacl1 == defaultdacl2 && CompareAces(dacl1, dacl2))
+                {
+                    match = true;
+                }
+            }
+        }
+        if (secDesc1)
+        {
+            RtlSecureZeroMemory(secDesc1, secDesc1len);
+            LocalFree(secDesc1);
+            secDesc1 = M_NULLPTR;
+        }
+        if (secDesc2)
+        {
+            RtlSecureZeroMemory(secDesc2, secDesc2len);
+            LocalFree(secDesc2);
+            secDesc2 = M_NULLPTR;
+        }
+    }
+    return match;
 }
 
 static uint16_t get_Console_Default_Color(void)
@@ -480,6 +861,44 @@ eEndianness get_Compiled_Endianness(void)
             #endif
         #endif
     #endif
+}
+
+bool is_Windows_Vista_Or_Higher(void)
+{
+    bool isWindowsVistaOrHigher = false;
+    OSVERSIONINFOEX windowsVersionInfo;
+    DWORDLONG conditionMask = 0;
+    memset(&windowsVersionInfo, 0, sizeof(OSVERSIONINFOEX));
+    conditionMask = 0;
+    //Now get the actual version of the OS...start at windows vista and work forward from there.
+    windowsVersionInfo.dwMajorVersion = 6;
+    windowsVersionInfo.dwMinorVersion = 0;
+    conditionMask = VerSetConditionMask(conditionMask, VER_MAJORVERSION, VER_GREATER_EQUAL);
+    conditionMask = VerSetConditionMask(conditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
+    if (VerifyVersionInfo(&windowsVersionInfo, VER_MAJORVERSION | VER_MINORVERSION, conditionMask))
+    {
+        isWindowsVistaOrHigher = true;
+    }
+    return isWindowsVistaOrHigher;
+}
+
+bool is_Windows_7_Or_Higher(void)
+{
+    bool isWindows7OrHigher = false;
+    OSVERSIONINFOEX windowsVersionInfo;
+    DWORDLONG conditionMask = 0;
+    memset(&windowsVersionInfo, 0, sizeof(OSVERSIONINFOEX));
+    conditionMask = 0;
+    //Now get the actual version of the OS...start at windows vista and work forward from there.
+    windowsVersionInfo.dwMajorVersion = 6;
+    windowsVersionInfo.dwMinorVersion = 1;
+    conditionMask = VerSetConditionMask(conditionMask, VER_MAJORVERSION, VER_GREATER_EQUAL);
+    conditionMask = VerSetConditionMask(conditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
+    if (VerifyVersionInfo(&windowsVersionInfo, VER_MAJORVERSION | VER_MINORVERSION, conditionMask))
+    {
+        isWindows7OrHigher = true;
+    }
+    return isWindows7OrHigher;
 }
 
 bool is_Windows_8_Or_Higher(void)

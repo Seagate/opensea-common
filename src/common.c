@@ -18,6 +18,7 @@
 
 #if defined (_WIN32)
 #include <windows.h> //used for setting color output to the command prompt and Sleep()
+#include <direct.h> //_getcwd
 #else //_WIN32
 #include <unistd.h> //needed for usleep() or nanosleep()
 #include <time.h>
@@ -110,7 +111,11 @@ int snprintf(char *buffer, size_t bufsz, const char *format, ...)
     if (bufsz > 0) //Allow calling only when bufsz > 0. Let _vsnprintf evaluate if buffer is NULL in here.
     {
         errno = 0;
+#if defined (__STDC_SECURE_LIB__)
+        charCount = _vsnprintf_s(buffer, bufsz, _TRUNCATE, format, args);
+#else
         charCount = _vsnprintf(buffer, bufsz, format, args);
+#endif
     }
     if (charCount == -1)
     {
@@ -809,7 +814,7 @@ bool wildcard_Match(char * pattern, char * data)
     return false;
 }
 
-void print_Return_Enum(char *funcName, eReturnValues ret)
+void print_Return_Enum(const char *funcName, eReturnValues ret)
 {
     if (NULL == funcName)
     {
@@ -1470,14 +1475,9 @@ struct tm * get_UTCtime(const time_t *timer, struct tm *buf)
 #if defined (POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS
         //POSIX or C2x (C23 right now) have gmtime_r to use
         return gmtime_r(timer, buf);
-
-#elif defined __STDC_LIB_EXT1__
-        //If __STDC_LIB_EXT1__, can use gmtime_s
-        //NOTE: This is only available if the __STDC_WANT_LIB_EXT1__ is defined before time.h and system library supports it
-        //It is also possible to get through through a library implementation of these _s functions, but one is not currently used today.
+#elif defined (HAVE_C11_ANNEX_K)
         return gmtime_s(timer, buf);
-
-#elif defined _MSC_VER
+#elif defined (__STDC_SECURE_LIB__)
         //If MSFT CRT available, use microsoft gmtime_s which is incompatible with the standard
         if (0 != gmtime_s(buf, timer))
         {
@@ -1504,14 +1504,9 @@ struct tm * get_Localtime(const time_t *timer, struct tm *buf)
 #if defined (POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS
         //POSIX or C2x (C23 right now) have localtime_r to use
         return localtime_r(timer, buf);
-
-#elif defined __STDC_LIB_EXT1__
-        //If __STDC_LIB_EXT1__, can use gmtime_s
-        //NOTE: This is only available if the __STDC_WANT_LIB_EXT1__ is defined before time.h and system library supports it
-        //It is also possible to get through through a library implementation of these _s functions, but one is not currently used today.
+#elif defined (HAVE_C11_ANNEX_K)
         return localtime_s(timer, buf);
-
-#elif defined _MSC_VER
+#elif defined (__STDC_SECURE_LIB__)
         //If MSFT CRT available, use microsoft localtime_s which is incompatible with the standard
         if (0 != localtime_s(buf, timer))
         {
@@ -1533,6 +1528,13 @@ char * get_Time_String_From_TM_Structure(const struct tm * timeptr, char *buffer
     {
         //start with a known zeroed buffer
         memset(buffer, 0, bufferSize);
+        #if defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
+        if (0 != asctime_s(buffer, bufferSize, timeptr))
+        {
+            //error
+            memset(buffer, 0, bufferSize);
+        }
+        #else
         //strftime is recommended to be used. Using format %c will return the matching output for this function
         //asctime (which this replaces uses the format: Www Mmm dd hh:mm:ss yyyy\n)
         //NOTE: %e is C99. C89's closest is %d which has a leading zero.
@@ -1558,6 +1560,7 @@ char * get_Time_String_From_TM_Structure(const struct tm * timeptr, char *buffer
             setlocale(LC_TIME, currentLocale);
         }
         safe_Free(currentLocale);
+        #endif //!C11 annex k or MSFT secure lib for asctime
     }
     return buffer;
 }
@@ -1744,9 +1747,9 @@ eReturnValues get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion comp
     snprintf(msMajor, 3, "%.2s", &msVersion[0]);
     snprintf(msMinor, 3, "%.2s", &msVersion[2]);
     snprintf(msPatch, 6, "%.5s", &msVersion[4]);
-    compilerVersionInfo->major = C_CAST(uint16_t, atoi(msMajor));
-    compilerVersionInfo->minor = C_CAST(uint16_t, atoi(msMinor));
-    compilerVersionInfo->patch = C_CAST(uint16_t, atoi(msPatch));
+    compilerVersionInfo->major = C_CAST(uint16_t, strtoul(msMajor, NULL, 10));
+    compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(msMinor, NULL, 10));
+    compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(msPatch, NULL, 10));
 #elif defined __MINGW64__
     *compilerUsed = OPENSEA_COMPILER_MINGW;
     compilerVersionInfo->major = __MINGW64_VERSION_MAJOR;
@@ -1774,9 +1777,9 @@ eReturnValues get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion comp
     snprintf(hpMajor, 3, "%.2s", &hpVersion[0]);
     snprintf(hpMinor, 3, "%.2s", &hpVersion[2]);
     snprintf(hpPatch, 3, "%.2s", &hpVersion[4]);
-    compilerVersionInfo->major = C_CAST(uint16_t, atoi(hpMajor));
-    compilerVersionInfo->minor = C_CAST(uint16_t, atoi(hpMinor));
-    compilerVersionInfo->patch = C_CAST(uint16_t, atoi(hpPatch));
+    compilerVersionInfo->major = C_CAST(uint16_t, strtoul(hpMajor, NULL, 10));
+    compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(hpMinor, NULL, 10));
+    compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(hpPatch, NULL, 10));
 #elif defined __IBMC__ || defined __IBMCPP__
     //untested
     //detect if it's xl or lx for system z
@@ -1803,9 +1806,9 @@ eReturnValues get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion comp
     snprintf(intelMajor, 2, "%.1s", &intelVersion[0]);
     snprintf(intelMinor, 2, "%.1s", &intelVersion[1]);
     snprintf(intelPatch, 2, "%.1s", &intelVersion[2]);
-    compilerVersionInfo->major = C_CAST(uint16_t, atoi(intelMajor));
-    compilerVersionInfo->minor = C_CAST(uint16_t, atoi(intelMinor));
-    compilerVersionInfo->patch = C_CAST(uint16_t, atoi(intelPatch));
+    compilerVersionInfo->major = C_CAST(uint16_t, strtoul(intelMajor, NULL, 0));
+    compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(intelMinor, NULL, 0));
+    compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(intelPatch, NULL, 0));
 #elif defined __SUNPRO_C || defined __SUNPRO_CC
     //untested
     //code below is written for versions 5.10 and later. (latest release as of writing this code is version 5.12) - TJE
@@ -1869,6 +1872,7 @@ void print_Compiler_Version_Info(ptrCompilerVersion compilerVersionInfo)
     printf("%"PRIu16".%"PRIu16".%"PRIu16"", compilerVersionInfo->major, compilerVersionInfo->minor, compilerVersionInfo->patch);
 }
 
+//NOTE: This function is deprecated! Use os_Get_File_Size instead!
 long int get_File_Size(FILE *filePtr)
 {
     long int fileSize = 0;
@@ -1881,48 +1885,884 @@ long int get_File_Size(FILE *filePtr)
     return fileSize;
 }
 
-bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger)
+//Should these units be broken up into different types and the allowed type has to be passed in?
+static bool is_Allowed_Unit_For_Get_And_Validate_Input(const char* unit, eAllowedUnitInput unittype)
 {
-    bool ret = true;
-    bool hex = false;
-    const char * tmp = strToConvert;
-    while (*tmp != '\0')
+    bool allowed = false;
+    if (unit)
     {
-        if ((!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
+        switch (unittype)
         {
-            ret = false;
+        case ALLOW_UNIT_NONE:
+            allowed = false;
+            break;
+        case ALLOW_UNIT_DATASIZE:
+            //allowed units must match exactly at the end of the string!
+            if (strcmp(unit, "B") == 0
+                || strcmp(unit, "KB") == 0
+                || strcmp(unit, "KiB") == 0
+                || strcmp(unit, "MB") == 0
+                || strcmp(unit, "MiB") == 0
+                || strcmp(unit, "GB") == 0
+                || strcmp(unit, "GiB") == 0
+                || strcmp(unit, "TB") == 0
+                || strcmp(unit, "TiB") == 0
+                || strcmp(unit, "BLOCKS") == 0
+                || strcmp(unit, "SECTORS") == 0
+                )
+            {
+                allowed = true;
+            }
+            break;
+        case ALLOW_UNIT_SECTOR_TYPE:
+            if (strcmp(unit, "l") == 0 //used by some utilities to indicate a count is in logical sectors instead of physical sectors
+                || strcmp(unit, "p") == 0
+                || strcmp(unit, "logical") == 0
+                || strcmp(unit, "physical") == 0
+                )
+            {
+                allowed = true;
+            }
+            break;
+        case ALLOW_UNIT_TIME:
+            if (strcmp(unit, "ns") == 0 //nanoseconds
+                || strcmp(unit, "us") == 0 //microseconds
+                || strcmp(unit, "ms") == 0 //milliseconds
+                || strcmp(unit, "s") == 0 //seconds
+                || strcmp(unit, "m") == 0 //minutes
+                || strcmp(unit, "h") == 0 //hours
+                )
+            {
+                allowed = true;
+            }
+            break;
+        case ALLOW_UNIT_POWER:
+            if (strcmp(unit, "w") == 0 //watts
+                || strcmp(unit, "mw") == 0 //milliwatts
+                )
+            {
+                allowed = true;
+            }
+            break;
+        case ALLOW_UNIT_VOLTS:
+            if (strcmp(unit, "v") == 0 //volts
+                || strcmp(unit, "mv") == 0 //millivolts
+                )
+            {
+                allowed = true;
+            }
+            break;
+        case ALLOW_UNIT_AMPS:
+            if (strcmp(unit, "a") == 0 //amps
+                || strcmp(unit, "ma") == 0 //milliamps
+                )
+            {
+                allowed = true;
+            }
+            break;
+        case ALLOW_UNIT_TEMPERATURE:
+            if (strcmp(unit, "c") == 0 //celsius
+                || strcmp(unit, "f") == 0 //fahrenheit
+                || strcmp(unit, "k") == 0 //kelvin
+                )
+            {
+                allowed = true;
+            }
             break;
         }
-        else if (!isdigit(*tmp))
-        {
-            hex = true;
-        }
-        tmp++;
     }
-    //If everything is a valid hex digit. 
-    //TODO: What about realllyyyy long hex value? 
-    if (ret)
+    return allowed;
+}
+
+bool get_And_Validate_Integer_Input_ULL(const char * strToConvert, char** unit, eAllowedUnitInput unittype, unsigned long long * outputInteger)
+{
+    if (strToConvert && outputInteger)
     {
-        if (hex)
+        bool ret = true;
+        bool hex = false;
+        const char * tmp = strToConvert;
+        char* localstrend = NULL;
+        char** endPtrToUse = &localstrend;
+        if (unit)
         {
-            *outputInteger = C_CAST(uint64_t, strtoull(strToConvert, NULL, 16));
+            endPtrToUse = unit;
+        }
+        while (*tmp != '\0')
+        {
+            if ((!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
+            {
+                ret = false;
+                break;
+            }
+            else if (!isdigit(*tmp))
+            {
+                hex = true;
+            }
+            tmp++;
+        }
+        if (!ret && unit)//only check for a valid unit if the caller provided an endptr to get the unit out for their use
+        {
+            //check if a valid unit is present to allow this to continue
+            if (is_Allowed_Unit_For_Get_And_Validate_Input(tmp, unittype))
+            {
+                //This will only return true when this is at the end of a string
+                //meaning the user provided 64KB or something like that, so this matched to KB
+                //This allows for the utilities calling this to multiply the output integer into a value that makes sense
+                ret = true;
+            }
+        }
+        //If everything is a valid hex digit. 
+        if (ret)
+        {
+            if (hex)
+            {
+                *outputInteger = strtoull(strToConvert, endPtrToUse, 16);
+            }
+            else
+            {
+                *outputInteger = strtoull(strToConvert, endPtrToUse, 10);
+            }
         }
         else
         {
-            *outputInteger = C_CAST(uint64_t, strtoull(strToConvert, NULL, 10));
+            ret = false;
+        }
+        //Final Check
+        if (ret && ((*outputInteger == ULLONG_MAX && errno == ERANGE) || (strToConvert == *endPtrToUse && *outputInteger == 0)))
+        {
+            ret = false;
+        }
+        return ret;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool get_And_Validate_Integer_Input_UL(const char * strToConvert, char** unit, eAllowedUnitInput unittype, unsigned long * outputInteger)
+{
+    if (strToConvert && outputInteger)
+    {
+        bool ret = true;
+        bool hex = false;
+        const char * tmp = strToConvert;
+        char* localstrend = NULL;
+        char** endPtrToUse = &localstrend;
+        if (unit)
+        {
+            endPtrToUse = unit;
+        }
+        while (*tmp != '\0')
+        {
+            if ((!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
+            {
+                ret = false;
+                break;
+            }
+            else if (!isdigit(*tmp))
+            {
+                hex = true;
+            }
+            tmp++;
+        }
+        if (!ret && unit)//only check for a valid unit if the caller provided an endptr to get the unit out for their use
+        {
+            //check if a valid unit is present to allow this to continue
+            if (is_Allowed_Unit_For_Get_And_Validate_Input(tmp, unittype))
+            {
+                //This will only return true when this is at the end of a string
+                //meaning the user provided 64KB or something like that, so this matched to KB
+                //This allows for the utilities calling this to multiply the output integer into a value that makes sense
+                ret = true;
+            }
+        }
+        //If everything is a valid hex digit. 
+        if (ret)
+        {
+            if (hex)
+            {
+                *outputInteger = strtoul(strToConvert, endPtrToUse, 16);
+            }
+            else
+            {
+                *outputInteger = strtoul(strToConvert, endPtrToUse, 10);
+            }
+        }
+        else
+        {
+            ret = false;
+        }
+        //Final Check
+        if (ret && (((*outputInteger == ULONG_MAX && errno == ERANGE) || (strToConvert == *endPtrToUse && *outputInteger == 0))))
+        {
+            ret = false;
+        }
+        return ret;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool get_And_Validate_Integer_Input_UI(const char * strToConvert, char** unit, eAllowedUnitInput unittype, unsigned int * outputInteger)
+{
+    unsigned long temp = 0;
+    bool ret = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
+    if (ret)
+    {
+        #if defined (UINT_MAX) && defined (ULONG_MAX) && ULONG_MAX > UINT_MAX
+        if (temp > UINT_MAX)
+        {
+            ret = false;
+            errno = ERANGE;
+            *outputInteger = UINT_MAX;
+        }
+        else
+        #endif //ULONG_MAX !> UINT_MAX
+        {
+            *outputInteger = C_CAST(unsigned int, temp);
+        }
+    }
+    return ret;
+}
+bool get_And_Validate_Integer_Input_US(const char * strToConvert, char** unit, eAllowedUnitInput unittype, unsigned short * outputInteger)
+{
+    unsigned long temp = 0;
+    bool ret = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
+    if (ret)
+    {
+        #if defined (USHORT_MAX) && defined (ULONG_MAX) && ULONG_MAX > USHORT_MAX
+        if (temp > USHORT_MAX)
+        {
+            ret = false;
+            errno = ERANGE;
+            *outputInteger = USHORT_MAX;
+        }
+        else
+        #endif //ULONG_MAX !> USHORT_MAX
+        {
+            *outputInteger = C_CAST(unsigned short, temp);
+        }
+    }
+    return ret;
+}
+
+bool get_And_Validate_Integer_Input_UC(const char * strToConvert, char** unit, eAllowedUnitInput unittype, unsigned char * outputInteger)
+{
+    unsigned long temp = 0;
+    bool ret = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
+    if (ret)
+    {
+        #if defined (UCHAR_MAX) && defined (ULONG_MAX) && ULONG_MAX > UCHAR_MAX
+        if (temp > UCHAR_MAX)
+        {
+            ret = false;
+            errno = ERANGE;
+            *outputInteger = UCHAR_MAX;
+        }
+        else
+        #endif //ULONG_MAX !> UCHAR_MAX
+        {
+            *outputInteger = C_CAST(unsigned char, temp);
+        }
+    }
+    return ret;
+}
+
+bool get_And_Validate_Integer_Input_LL(const char * strToConvert, char** unit, eAllowedUnitInput unittype, long long * outputInteger)
+{
+    if (strToConvert && outputInteger)
+    {
+        bool ret = true;
+        bool hex = false;
+        const char * tmp = strToConvert;
+        char* localstrend = NULL;
+        char** endPtrToUse = &localstrend;
+        if (unit)
+        {
+            endPtrToUse = unit;
+        }
+        while (*tmp != '\0')
+        {
+            if ((!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
+            {
+                ret = false;
+                break;
+            }
+            else if (!isdigit(*tmp))
+            {
+                hex = true;
+            }
+            tmp++;
+        }
+        if (!ret && unit)//only check for a valid unit if the caller provided an endptr to get the unit out for their use
+        {
+            //check if a valid unit is present to allow this to continue
+            if (is_Allowed_Unit_For_Get_And_Validate_Input(tmp, unittype))
+            {
+                //This will only return true when this is at the end of a string
+                //meaning the user provided 64KB or something like that, so this matched to KB
+                //This allows for the utilities calling this to multiply the output integer into a value that makes sense
+                ret = true;
+            }
+        }
+        //If everything is a valid hex digit. 
+        if (ret)
+        {
+            if (hex)
+            {
+                *outputInteger = strtoll(strToConvert, endPtrToUse, 16);
+            }
+            else
+            {
+                *outputInteger = strtoll(strToConvert, endPtrToUse, 10);
+            }
+        }
+        else
+        {
+            ret = false;
+        }
+        //Final Check
+        if (ret && (((*outputInteger == LLONG_MAX || *outputInteger == LLONG_MIN) && errno == ERANGE) || (strToConvert == *endPtrToUse && *outputInteger == 0)))
+        {
+            ret = false;
+        }
+        return ret;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool get_And_Validate_Integer_Input_L(const char * strToConvert, char** unit, eAllowedUnitInput unittype, long * outputInteger)
+{
+    if (strToConvert && outputInteger)
+    {
+        bool ret = true;
+        bool hex = false;
+        const char * tmp = strToConvert;
+        char* localstrend = NULL;
+        char** endPtrToUse = &localstrend;
+        if (unit)
+        {
+            endPtrToUse = unit;
+        }
+        while (*tmp != '\0')
+        {
+            if ((!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
+            {
+                ret = false;
+                break;
+            }
+            else if (!isdigit(*tmp))
+            {
+                hex = true;
+            }
+            tmp++;
+        }
+        if (!ret && unit)//only check for a valid unit if the caller provided an endptr to get the unit out for their use
+        {
+            //check if a valid unit is present to allow this to continue
+            if (is_Allowed_Unit_For_Get_And_Validate_Input(tmp, unittype))
+            {
+                //This will only return true when this is at the end of a string
+                //meaning the user provided 64KB or something like that, so this matched to KB
+                //This allows for the utilities calling this to multiply the output integer into a value that makes sense
+                ret = true;
+            }
+        }
+        //If everything is a valid hex digit. 
+        if (ret)
+        {
+            if (hex)
+            {
+                *outputInteger = strtol(strToConvert, endPtrToUse, 16);
+            }
+            else
+            {
+                *outputInteger = strtol(strToConvert, endPtrToUse, 10);
+            }
+        }
+        else
+        {
+            ret = false;
+        }
+        //Final Check
+        if (ret && (((*outputInteger == LONG_MAX || *outputInteger == LONG_MIN) && errno == ERANGE) || (strToConvert == *endPtrToUse && *outputInteger == 0)))
+        {
+            ret = false;
+        }
+        return ret;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool get_And_Validate_Integer_Input_I(const char * strToConvert, char** unit, eAllowedUnitInput unittype, int * outputInteger)
+{
+    long temp = 0;
+    bool ret = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
+    if (ret)
+    {
+        #if defined (INT_MAX) && defined (LONG_MAX) && defined (INT_MIN) && LONG_MAX > INT_MAX  && LONG_MIN < INT_MIN
+        if (temp > INT_MAX)
+        {
+            ret = false;
+            errno = ERANGE;
+            *outputInteger = INT_MAX;
+        }
+        else if (temp < INT_MIN)
+        {
+            ret = false;
+            errno = ERANGE;
+            *outputInteger = INT_MIN;
+        }
+        else
+        #endif //ULONG_MAX !> INT_MAX
+        {
+            *outputInteger = C_CAST(short, temp);
+        }
+    }
+    return ret;
+}
+
+bool get_And_Validate_Integer_Input_S(const char * strToConvert, char** unit, eAllowedUnitInput unittype, short * outputInteger)
+{
+    long temp = 0;
+    bool ret = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
+    if (ret)
+    {
+        #if defined (SHORT_MAX) && defined (LONG_MAX) && defined (SHORT_MIN) && LONG_MAX > SHORT_MAX  && LONG_MIN < SHORT_MIN
+        if (temp > SHORT_MAX)
+        {
+            ret = false;
+            errno = ERANGE;
+            *outputInteger = SHORT_MAX;
+        }
+        else if (temp < SHORT_MIN)
+        {
+            ret = false;
+            errno = ERANGE;
+            *outputInteger = SHORT_MIN;
+        }
+        else
+        #endif //ULONG_MAX !> SHORT_MAX
+        {
+            *outputInteger = C_CAST(short, temp);
+        }
+    }
+    return ret;
+}
+
+bool get_And_Validate_Integer_Input_C(const char * strToConvert, char** unit, eAllowedUnitInput unittype, char * outputInteger)
+{
+    long temp = 0;
+    bool ret = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
+    if (ret)
+    {
+        #if defined (CHAR_MAX) && defined (LONG_MAX) && defined (CHAR_MIN) && LONG_MAX > CHAR_MAX  && LONG_MIN < CHAR_MIN
+        if (temp > CHAR_MAX)
+        {
+            ret = false;
+            errno = ERANGE;
+            *outputInteger = CHAR_MAX;
+        }
+        else if (temp < CHAR_MIN)
+        {
+            ret = false;
+            errno = ERANGE;
+            *outputInteger = CHAR_MIN;
+        }
+        else
+        #endif //ULONG_MAX !> CHAR_MAX
+        {
+            *outputInteger = C_CAST(char, temp);
+        }
+    }
+    return ret;
+}
+
+bool get_And_Validate_Integer_Input_Uint64(const char * strToConvert, char** unit, eAllowedUnitInput unittype, uint64_t * outputInteger)
+{
+    #if defined(USING_C11) && defined (get_Valid_Integer_Input)
+        //let the generic selection macro do this
+        return get_Valid_Integer_Input(strToConvert, unit, unittype, outputInteger);
+    #elif defined (LP64_DATA_MODEL) || defined (ILP64_DATA_MODEL)
+        unsigned long temp = 0;
+        bool ret = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
+        if (ret && temp > UINT64_MAX)
+        {
+            ret = false;
+            errno = ERANGE;
+            *outputInteger = UINT64_MAX;
+        }
+        else
+        {
+            *outputInteger = C_CAST(uint64_t, temp);
+        }
+        return ret;
+    #else
+        unsigned long long temp = 0;
+        bool ret = get_And_Validate_Integer_Input_ULL(strToConvert, unit, unittype, &temp);
+        if (ret && temp > UINT64_MAX)
+        {
+            ret = false;
+            errno = ERANGE;
+            *outputInteger = UINT64_MAX;
+        }
+        else
+        {
+            *outputInteger = C_CAST(uint64_t, temp);
+        }
+        return ret;
+    #endif
+}
+
+bool get_And_Validate_Float_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, float * outputFloat)
+{
+    if (strToConvert && outputFloat)
+    {
+        char* localstrend = NULL;
+        char** endPtrToUse = &localstrend;
+        if (unit)
+        {
+            endPtrToUse = unit;
+        }
+        *outputFloat = strtof(strToConvert, endPtrToUse);
+        if ((*outputFloat >= HUGE_VALF && errno == ERANGE) || strToConvert == *endPtrToUse)
+        {
+            return false;
+        }
+        else
+        {
+            bool unitallowed = is_Allowed_Unit_For_Get_And_Validate_Input(*endPtrToUse, unittype);
+            if (unit)
+            {
+                if (unitallowed)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else if (!unit && unitallowed)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
     }
     else
     {
-        ret = false;
+        return false;
     }
-    //Final Check
-    if (ret && errno != 0)
-    {
-        ret = false;
-    }
+}
 
-    return ret;
+bool get_And_Validate_Double_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, double * outputFloat)
+{
+    if (strToConvert && outputFloat)
+    {
+        char* localstrend = NULL;
+        char** endPtrToUse = &localstrend;
+        if (unit)
+        {
+            endPtrToUse = unit;
+        }
+        *outputFloat = strtod(strToConvert, endPtrToUse);
+        if ((*outputFloat >= HUGE_VAL && errno == ERANGE) || strToConvert == *endPtrToUse)
+        {
+            return false;
+        }
+        else
+        {
+            bool unitallowed = is_Allowed_Unit_For_Get_And_Validate_Input(*endPtrToUse, unittype);
+            if (unit)
+            {
+                if (unitallowed)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else if (!unit && unitallowed)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool get_And_Validate_LDouble_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, long double * outputFloat)
+{
+    if (strToConvert && outputFloat)
+    {
+        char* localstrend = NULL;
+        char** endPtrToUse = &localstrend;
+        if (unit)
+        {
+            endPtrToUse = unit;
+        }
+        *outputFloat = strtold(strToConvert, unit);
+        if ((*outputFloat >= HUGE_VALL && errno == ERANGE) || strToConvert == *endPtrToUse)
+        {
+            return false;
+        }
+        else
+        {
+            bool unitallowed = is_Allowed_Unit_For_Get_And_Validate_Input(*endPtrToUse, unittype);
+            if (unit)
+            {
+                if (unitallowed)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else if (!unit && unitallowed)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+    }
+    else
+    {
+        return false;
+    }
+}
+
+//NOTE: This function is deprecated as you should use the one that matches your integer type instead for best error handling.
+bool get_And_Validate_Integer_Input(const char * strToConvert, uint64_t * outputInteger)
+{
+    return get_And_Validate_Integer_Input_Uint64(strToConvert, NULL, ALLOW_UNIT_NONE, outputInteger);
+}
+
+bool get_And_Validate_Integer_Input_Uint32(const char * strToConvert, char** unit, eAllowedUnitInput unittype, uint32_t * outputInteger)
+{
+    #if defined(USING_C11) && defined (get_Valid_Integer_Input)
+        //let the generic selection macro do this
+        return get_Valid_Integer_Input(strToConvert, unit, unittype, outputInteger);
+    #else
+        unsigned long temp = 0;
+        bool ret = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
+        if (ret && temp > UINT32_MAX)
+        {
+            ret = false;
+            errno = ERANGE;
+            *outputInteger = UINT32_MAX;
+        }
+        else
+        {
+            *outputInteger = C_CAST(uint32_t, temp);
+        }
+        return ret;
+    #endif
+}
+
+bool get_And_Validate_Integer_Input_Uint16(const char * strToConvert, char** unit, eAllowedUnitInput unittype, uint16_t * outputInteger)
+{
+    if (strToConvert && outputInteger)
+    {
+        uint32_t temp = 0;
+        bool ret = get_And_Validate_Integer_Input_Uint32(strToConvert, unit, unittype, &temp);
+        if (ret && temp > UINT16_MAX)
+        {
+            ret = false;
+            errno = ERANGE;//manually set a range error since this is outside of what is expected for this function
+            *outputInteger = UINT16_MAX;
+        }
+        else if (ret)
+        {
+            *outputInteger = C_CAST(uint16_t, temp);
+        }
+        return ret;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool get_And_Validate_Integer_Input_Uint8(const char * strToConvert, char** unit, eAllowedUnitInput unittype, uint8_t * outputInteger)
+{
+    if (strToConvert && outputInteger)
+    {
+        uint32_t temp = 0;
+        bool ret = get_And_Validate_Integer_Input_Uint32(strToConvert, unit, unittype, &temp);
+        if (ret && temp > UINT8_MAX)
+        {
+            ret = false;
+            errno = ERANGE;//manually set a range error since this is outside of what is expected for this function
+            *outputInteger = UINT8_MAX;
+        }
+        else if (ret)
+        {
+            *outputInteger = C_CAST(uint8_t, temp);
+        }
+        return ret;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool get_And_Validate_Integer_Input_Int64(const char * strToConvert, char** unit, eAllowedUnitInput unittype, int64_t * outputInteger)
+{
+    #if defined(USING_C11) && defined (get_Valid_Integer_Input)
+        //let the generic selection macro do this
+        return get_Valid_Integer_Input(strToConvert, unit, unittype, outputInteger);
+    #elif defined (LP64_DATA_MODEL) || defined (ILP64_DATA_MODEL)
+        long temp = 0;
+        bool ret = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
+        if (ret)
+        {
+            if (temp > INT64_MAX)
+            {
+                ret = false;
+                errno = ERANGE;
+                *outputInteger = INT64_MAX;
+            }
+            else if (temp < INT64_MIN)
+            {
+                ret = false;
+                errno = ERANGE;
+                *outputInteger = INT64_MIN;
+            }
+            else
+            {
+                *outputInteger = C_CAST(int64_t, temp);
+            }
+        }
+        return ret;
+    #else
+        long long temp = 0;
+        bool ret = get_And_Validate_Integer_Input_LL(strToConvert,unit, unittype, &temp);
+        if (ret)
+        {
+            if (temp > INT64_MAX)
+            {
+                ret = false;
+                errno = ERANGE;
+                *outputInteger = INT64_MAX;
+            }
+            else if (temp < INT64_MIN)
+            {
+                ret = false;
+                errno = ERANGE;
+                *outputInteger = INT64_MIN;
+            }
+            else
+            {
+                *outputInteger = C_CAST(int64_t, temp);
+            }
+        }
+        return ret;
+    #endif
+}
+
+bool get_And_Validate_Integer_Input_Int32(const char * strToConvert, char** unit, eAllowedUnitInput unittype, int32_t * outputInteger)
+{
+    #if defined(USING_C11) && defined (get_Valid_Integer_Input)
+        //let the generic selection macro do this
+        return get_Valid_Integer_Input(strToConvert, unit, unittype, outputInteger);
+    #else
+        long temp = 0;
+        bool ret = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
+        if (ret)
+        {
+            if (temp > INT32_MAX)
+            {
+                ret = false;
+                errno = ERANGE;
+                *outputInteger = INT32_MAX;
+            }
+            else if (temp < INT32_MIN)
+            {
+                ret = false;
+                errno = ERANGE;
+                *outputInteger = INT32_MIN;
+            }
+            else
+            {
+                *outputInteger = C_CAST(int32_t, temp);
+            }
+        }
+        return ret;
+    #endif
+}
+
+bool get_And_Validate_Integer_Input_Int16(const char * strToConvert, char** unit, eAllowedUnitInput unittype, int16_t * outputInteger)
+{
+    if (strToConvert && outputInteger)
+    {
+        int32_t temp = 0;
+        bool ret = get_And_Validate_Integer_Input_Int32(strToConvert, unit, unittype, &temp);
+        if (ret && (temp > INT16_MAX || temp < INT16_MIN))
+        {
+            ret = false;
+            errno = ERANGE;//manually set a range error since this is outside of what is expected for this function
+        }
+        else if (ret)
+        {
+            *outputInteger = C_CAST(int16_t, temp);
+        }
+        return ret;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool get_And_Validate_Integer_Input_Int8(const char * strToConvert, char** unit, eAllowedUnitInput unittype, int8_t * outputInteger)
+{
+    if (strToConvert && outputInteger)
+    {
+        int32_t temp = 0;
+        bool ret = get_And_Validate_Integer_Input_Int32(strToConvert, unit, unittype, &temp);
+        if (ret && (temp > INT8_MAX || temp < INT8_MIN))
+        {
+            ret = false;
+            errno = ERANGE;//manually set a range error since this is outside of what is expected for this function
+        }
+        else if (ret)
+        {
+            *outputInteger = C_CAST(int8_t, temp);
+        }
+        return ret;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 void print_Errno_To_Screen(int error)
@@ -2148,7 +2988,13 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
         if (dup)
         {
             memcpy(dup, destination, duplen + 1);
+#if defined (HAVE_C11_ANNEX_K)
+            snprintf_s(destination, destinationSizeBytes, "%s%s", dup, source);
+#elif defined (__STDC_SECURE_LIB__)//microsoft _snprintf_s has DIFFERENT parameters...we should be using a method above when possible.-TJE
+            _snprintf_s(destination, destinationSizeBytes, _TRUNCATE, "%s%s", dup, source);
+#else
             snprintf(destination, destinationSizeBytes, "%s%s", dup, source);
+#endif
             safe_Free(dup)
             return destination;
         }
@@ -2202,7 +3048,13 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
         if (dup)
         {
             memcpy(dup, destination, duplen + 1);
+#if defined (HAVE_C11_ANNEX_K)
+            snprintf_s(destination, destinationSizeBytes, "%s%.*s", dup, sourceLength, source);
+#elif defined (__STDC_SECURE_LIB__)//microsoft _snprintf_s has DIFFERENT parameters...we should be using a method above when possible.-TJE
+            _snprintf_s(destination, destinationSizeBytes, _TRUNCATE, "%s%.*s", dup, sourceLength, source);
+#else
             snprintf(destination, destinationSizeBytes, "%s%.*s", dup, sourceLength, source);
+#endif
             safe_Free(dup)
             return destination;
         }
@@ -2627,10 +3479,128 @@ bool is_size_t_max(size_t val)
     }
 }
 
-#if !defined (__STDC_ALLOC_LIB__) && !defined _POSIX_VERSION || (!defined (POSIX_2008))
+char *common_String_Token(char * M_RESTRICT str, rsize_t * M_RESTRICT strmax, const char * M_RESTRICT delim, char ** M_RESTRICT saveptr)
+{
+    #if defined (HAVE_C11_ANNEX_K)
+        return strtok_s(str, strmax, delim, saveptr);
+    #elif defined (POSIX_2001) || defined (__STDC_SECURE_LIB__)
+        char *token = M_NULLPTR;
+        if (str != M_NULLPTR)
+        {
+            //Initial call of the function. Perform some validation
+            if (saveptr == M_NULLPTR || strmax == NULL)
+            {
+                errno = EINVAL;
+                return NULL;
+            }
+            else if (*strmax == 0 || *strmax > RSIZE_MAX)
+            {
+                errno = ERANGE;
+                return NULL;
+            }
+        }
+        if (strmax == M_NULLPTR)//letting strtok_r and strtok_s validate delim and saveptr
+        {
+            errno = EINVAL;
+            return NULL;
+        }
+        if (*strmax == 0)
+        {
+            errno = EINVAL;
+            return NULL;
+        }
+        #if defined (POSIX_2001)
+            token = strtok_r(str, delim, saveptr);
+        #elif defined (__STDC_SECURE_LIB__)
+            token = strtok_s(str, delim, saveptr);
+        #else
+            #error "Missing strtok_r equivalent function for emulation of C11 strtok_s behavior"
+        #endif
+        if (token)
+        {
+            if (*saveptr)
+            {
+                *strmax -= (C_CAST(uintptr_t, (*saveptr)) - C_CAST(uintptr_t, token));
+            }
+            else
+            {
+                *strmax -= strlen(token);
+            }
+        }
+        return token;
+    #else
+        //Do not have a system provided strtok_s, strtok_r implementation, so using our own that works as closely as posisble
+        //to C11 annex K strtok_s
+        char *token = NULL;
+        char *end = NULL;
+        if (strmax == M_NULLPTR || delim == M_NULLPTR || saveptr == M_NULLPTR)
+        {
+            errno = EINVAL;
+            return NULL;
+        }
+        else if (*strmax == 0 || *strmax > RSIZE_MAX)
+        {
+            errno = ERANGE;
+            return NULL;
+        }
+        if (str != M_NULLPTR)
+        {
+            //Initial call of the function. Perform some validation
+            if (saveptr == M_NULLPTR || strmax == NULL)
+            {
+                errno = EINVAL;
+                return NULL;
+            }
+            *saveptr = str;
+            *strmax = strlen(str);
+        }
+        token = *saveptr;
+        end = *saveptr + *strmax;
+        if (*end == '\0')
+        {
+            *saveptr = end;
+            *strmax = C_CAST(uintptr_t, end) - C_CAST(uintptr_t, str);
+            return str;
+        }
+        while (*strmax > 0 && *token && !strchr(delim, *token))
+        {
+            token++;
+            (*strmax)--;
+        }
+        if (*token)
+        {
+            *token = '\0';
+            *saveptr = token + 1;
+            (*strmax)--;
+        }
+        else
+        {
+            *saveptr = end;
+            token = NULL;
+        }
+        return token;
+
+    #endif
+}
+
+#if !defined (__STDC_ALLOC_LIB__) && !defined (POSIX_2008) && !defined (USING_C23)
+char* strndup(const char* src, size_t size)
+{
+    size_t length = strnlen(src, size);//NOTE: Windows has this so not defining it. POSIX defines this in 2008. May need to define this if not available for an os that needs strndup
+
+    char* dupstr = C_CAST(char*, malloc(length + 1));
+    if (dupstr == M_NULLPTR)
+    {
+        errno = ENOMEM;
+        return M_NULLPTR;
+    }
+    dupstr[length] = '\0';
+    return C_CAST(char*, memcpy(dupstr, src, length));
+}
+
 //getdelim and getline are not available, so define them ourselves for our own use
 
-ssize_t getdelim(char** restrict lineptr, size_t* restrict n, int delimiter, FILE* stream)
+ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream)
 {
     char* currentptr = NULL;
     char* endptr = NULL;
@@ -2717,3 +3687,803 @@ ssize_t getline(char** lineptr, size_t* n, FILE* stream)
 }
 
 #endif //__STDC_ALLOC_LIB__
+
+bool get_Bytes_To_64(uint8_t *dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t *out)
+{
+    if (dataPtrBeginning == M_NULLPTR || out == M_NULLPTR || msb > fullDataLen || lsb > fullDataLen)
+    {
+        return false;
+    }
+    if (lsb <= msb)//allowing equals for single bytes
+    {
+        for (size_t iter = msb, counter = 0; counter < fullDataLen && counter < SIZE_MAX && iter >= lsb; --iter, ++counter)
+        {
+            (*out) <<= 8;
+            (*out) |= dataPtrBeginning[iter];
+            if (iter == 0)
+            {
+                //exit the loop to make sure there is no undefined behavior
+                break;
+            }
+        }
+    }
+    else
+    {
+        //opposite byte ordering from above
+        for (size_t iter = msb, counter = 0; counter < fullDataLen && counter < SIZE_MAX && iter <= lsb; ++iter, ++counter)
+        {
+            (*out) <<= 8;
+            (*out) |= dataPtrBeginning[iter];
+        }
+    }
+    return true;
+}
+
+bool get_Bytes_To_32(uint8_t *dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint32_t *out)
+{
+    if (out)
+    {
+        uint64_t temp = 0;
+        bool result = get_Bytes_To_64(dataPtrBeginning, fullDataLen, msb, lsb, &temp);
+        if (result)
+        {
+            *out = C_CAST(uint32_t, temp);
+        }
+        return result;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool get_Bytes_To_16(uint8_t *dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint16_t *out)
+{
+    if (out)
+    {
+        uint64_t temp = 0;
+        bool result = get_Bytes_To_64(dataPtrBeginning, fullDataLen, msb, lsb, &temp);
+        if (result)
+        {
+            *out = C_CAST(uint16_t, temp);
+        }
+        return result;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void free_File_Attributes(fileAttributes** attributes)
+{
+    if (attributes)
+    {
+#if defined (_WIN32)
+        if ((*attributes)->winSecurityDescriptor)
+        {
+            //This string is allocated by a WinAPI call which says to use LocalFree, so use LocalFree.
+            //Changing to free() or our safe_Free() could cause memory corruption otherwise.
+            explicit_zeroes((*attributes)->winSecurityDescriptor, (*attributes)->securityDescriptorStringLength);
+            safe_Free((*attributes)->winSecurityDescriptor);
+            (*attributes)->securityDescriptorStringLength = 0;
+        }
+#endif //_WIN32
+        explicit_zeroes(*attributes, sizeof(fileAttributes));
+        safe_Free(*attributes)
+    }
+}
+
+void free_Secure_File_Info(secureFileInfo** fileInfo)
+{
+    if (fileInfo)
+    {
+        if ((*fileInfo)->attributes)
+        {
+            free_File_Attributes(&(*fileInfo)->attributes);
+            (*fileInfo)->attributes = M_NULLPTR;
+        }
+        if ((*fileInfo)->uniqueID)
+        {
+            explicit_zeroes((*fileInfo)->uniqueID, sizeof(fileUniqueIDInfo));
+            safe_Free((*fileInfo)->uniqueID)
+        }
+        explicit_zeroes(*fileInfo, sizeof(secureFileInfo));
+        safe_Free(fileInfo)
+    }
+}
+
+//The purpose of this function is to perform the security validation necessary to make sure this is a valid file
+//on the system and minimize path traversal and validate permissions as much as reasonably possible.
+//The goal is mitigation of https://cwe.mitre.org/data/definitions/22.html
+//Will be using recommendations from https://wiki.sei.cmu.edu/confluence/pages/viewpage.action?pageId=87151932
+//     as much as possible to accomplish this.-TJE
+//expectedFileInfo can be NULL for the first time opening a file.
+// If reopening a file used earlier, it is recommended to provide this info so it can be validated as the same file
+// It is recommended to not reopen files, but that may not always be possible. So this exists to help validate
+// that a file has not changed in some unexpected way.-TJE
+secureFileInfo* secure_Open_File(const char* filename, const char* mode, const fileExt *extList, fileAttributes *expectedFileInfo, fileUniqueIDInfo* uniqueIdInfo /*optional*/)
+{
+    secureFileInfo* fileInfo = C_CAST(secureFileInfo*, calloc(1, sizeof(secureFileInfo)));
+    if (fileInfo && filename && mode) /* Not checking extList and outInfo because it is optional */
+    {
+        bool creatingFile = false;
+        bool exclusiveFlag = false;
+        char *internalmode = C_CAST(char*, mode);//we will dup mode if we need to modify it later, so this cast is to get rid of a warning
+        bool duplicatedModeForInternalUse = false;
+        char* intFileName = M_NULLPTR;//allocated/dup'd later
+        if (strchr(internalmode, 'w') || strchr(internalmode, 'a'))
+        {
+            //file is being created and does not exist yet.
+            //Get the canonical path to the directory that the file will be in
+            creatingFile = true;
+        }
+        //C11 adds 'x' to mode so that on a write, this forces a failure
+        //Since we may not always be in a system with C11 or support for wx/w+x, handle this manually.
+        if (strchr(internalmode, 'w') && strchr(internalmode, 'x'))
+        {
+            exclusiveFlag = true;
+#if !defined (USING_C11) || (defined (_MSC_VER) && _MSC_VER < 1800) || !(defined (__GLIBC__) || defined (__GNU_LIBRARY__)) || !(defined (USING_MUSL_LIBC) && USING_MUSL_LIBC > 0)//Glibc supports x. VS2013+ support x
+            //For systems that do not support 'x' need to adjust the mode manually so that we do not pass an invalid 'x' flag when it is not supported.
+            //      While this can always be done regardless of standard/library, it is better to pass flags onwards when they are supported for additional verification by the library/system - TJE
+            duplicatedModeForInternalUse = true;
+            internalmode = strdup(mode);
+            char* thex = strchr(internalmode, 'x');
+            if (thex)
+            {
+                //remove it since it is not supported outside C11 and a few \libraries that use it as an extension
+                if (strlen(thex) > 1)
+                {
+                    size_t lenx = strlen(thex);
+                    memmove(thex, thex + 1, lenx - 1);
+                    thex[lenx] = '\0';
+                }
+                else
+                {
+                    thex[0] = '\0';
+                }
+            }
+#endif //!C11 && !MSVC 2013+ && !GLIBC
+        }
+        else if (strchr(internalmode, 'x'))
+        {
+            //invalid mode. X is only allowed with W, W+
+            fileInfo->error = SEC_FILE_INVALID_MODE;
+            return fileInfo;
+        }
+        //Get canonical path here before doing anything else???
+        if (creatingFile)
+        {
+            //setup path to the directory to make sure it exists since the file does not yet.
+            //NOTE: If we only have the current file name, no relative path, etc, need to call a function to get the current working directory to
+            //      use that as the path.
+            if (strchr(filename, '/') //always check for forwards slash since Windows can accept this
+#if defined (_WIN32)
+                || strchr(filename, '\\')//only check for backslash on Windows since this is a common path seperator on Windows and is the "prefered" format
+#endif//_WIN32
+                )
+            {
+                //there is a path or relative path that can be used to setup for getting the canonical path
+                char* lastsep = strrchr(filename, '/');
+#if defined (_WIN32)
+                //In Windows, we need to determine if the final seperator is a / or \.
+                //So also check for \ and figure out which was the last one.
+                //A user can pass a path with both and it can be accepted by Windows, which is why we validate both of these.
+                char* lastwinsep = strrchr(filename, '\\');
+                if (C_CAST(uintptr_t, lastwinsep) > C_CAST(uintptr_t, lastsep))
+                {
+                    //backslash was detected last, so change to this pointer instead for strndup
+                    lastsep = lastwinsep;
+                }
+#endif//_WIN32
+                intFileName = strndup(filename, C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, filename));//path only. No file name
+            }
+            else
+            {
+                //no path, only the filename itself.
+                //get the current working directory to use for the canonical file and path.
+                //Will use getcwd to get this information.
+                //NOTE: A common extension to getcwd is passing NULL will have it allocate and return a buffer.
+                //      This seems to exist on Linux, FreeBSD, Windows (_getcwd), openbsd, netbsd, and solaris...possibly more.
+                //      While this is convenient, we are not using this to make sure behavior is as expected according to POSIX
+                //NOTE: Windows can also use https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcurrentdirectory
+                //need to allocate and call again
+                char *workingdir = malloc(OPENSEA_PATH_MAX);
+                if (workingdir == M_NULLPTR)
+                {
+                    //return an error for invalid path
+                    fileInfo->error = SEC_FILE_INVALID_PATH;
+                    return fileInfo;
+                }
+                workingdir = getcwd(workingdir, OPENSEA_PATH_MAX);
+                if (workingdir == M_NULLPTR)
+                {
+                    //return an error for invalid path
+                    fileInfo->error = SEC_FILE_INVALID_PATH;
+                    return fileInfo;
+                }
+                intFileName = workingdir;//we will free this later when we free intfilename
+            }
+        }
+        else
+        {
+            //not creating a new file, so we will have what we need to get a full canonical path
+            intFileName = strdup(filename);
+        }
+        if (intFileName == M_NULLPTR)
+        {
+            //return an error for invalid path
+            fileInfo->error = SEC_FILE_INVALID_PATH;
+            return fileInfo;
+        }
+        if (SUCCESS != get_Full_Path(intFileName, C_CAST(char*, fileInfo->fullpath)))
+        {
+            //unable to get the full path to this file.
+            //This means something went wrong, and we need to return an error.
+            fileInfo->error = SEC_FILE_INVALID_PATH;
+            return fileInfo;
+        }
+
+        bool fileexists = false;
+        if (!creatingFile || exclusiveFlag)
+        {
+            fileexists = os_File_Exists(intFileName);
+            if (exclusiveFlag && fileexists)
+            {
+                fileInfo->error = SEC_FILE_FILE_ALREADY_EXISTS;
+                if (duplicatedModeForInternalUse)
+                {
+                    safe_Free(internalmode)
+                }
+                safe_Free(intFileName)
+                return fileInfo;
+            }
+            else if (!creatingFile && !fileexists)
+            {
+                fileInfo->error = SEC_FILE_INVALID_FILE;
+                if (duplicatedModeForInternalUse)
+                {
+                    safe_Free(internalmode)
+                }
+                safe_Free(intFileName)
+                return fileInfo;
+            }
+        }
+        fileAttributes* beforeattrs = M_NULLPTR;
+        if (creatingFile)
+        {
+            //append the filename to the end on canonicalFileAndPath
+            //first add a trailing slash since one will not be present
+            common_String_Concat(C_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, SYSTEM_PATH_SEPARATOR_STR);
+            if (strchr(filename, '/') //always check for forwards slash since Windows can accept this
+#if defined (_WIN32)
+                || strchr(filename, '\\')//only check for backslash on Windows since this is a common path seperator on Windows and is the "prefered" format
+#endif//_WIN32
+                )
+            {
+                //there is a path or relative path that we do not want to append to the canonical path
+                char* lastsep = strrchr(filename, '/');
+#if defined (_WIN32)
+                //In Windows, we need to determine if the final seperator is a / or \.
+                //So also check for \ and figure out which was the last one.
+                //A user can pass a path with both and it can be accepted by Windows, which is why we validate both of these.
+                char* lastwinsep = strrchr(filename, '\\');
+                if (C_CAST(uintptr_t, lastwinsep) > C_CAST(uintptr_t, lastsep))
+                {
+                    //backslash was detected last, so change to this pointer instead for strndup
+                    lastsep = lastwinsep;
+                }
+#endif//_WIN32
+                common_String_Concat(C_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, lastsep + 1);
+            }
+            else
+            {
+                common_String_Concat(C_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, filename);
+            }
+        }
+        else
+        {
+            //Validate the file extension if one was provided to check for since the full path will also resolve the extension.
+            //        This check does not guarantee a file is correct since anyone can rename an extension, but it should help make sure the file
+            //        being opened is closer to what is expected by the caller
+            if (extList)
+            {
+                fileExt* currentExtension = C_CAST(fileExt*, extList);//we will increment this pointer as needed, so it cannot be const
+                bool foundValidExtension = false;
+                while (currentExtension && currentExtension->ext != M_NULLPTR)
+                {
+                    char* extension = strrchr(fileInfo->fullpath, '.');
+                    if (extension && strcmp(extension, currentExtension->ext) == 0)
+                    {
+                        //valid extension
+                        foundValidExtension = true;
+                        break;
+                    }
+                    else if (extension && currentExtension->caseInsensitive && strcasecmp(extension, currentExtension->ext) == 0)
+                    {
+                        //valid extension with case insensitive comparison that was allowed
+                        foundValidExtension = true;
+                        break;
+                    }
+                    currentExtension += 1;
+                }
+                if (!foundValidExtension)
+                {
+                    safe_Free(intFileName)
+                    if (duplicatedModeForInternalUse)
+                    {
+                        safe_Free(internalmode)
+                    }
+                    fileInfo->error = SEC_FILE_INVALID_FILE_EXTENSION;
+                    return fileInfo;
+                }
+            }
+            beforeattrs = os_Get_File_Attributes_By_Name(fileInfo->fullpath);
+            //Do a first pass on file attribute comparison with the expected file attributes.
+            //If no match, return an error
+            //This may be done again later after opening the file since some things will not be available without opening the file handle.
+            if (expectedFileInfo)
+            {
+                //check device ID and inode. These are unique on POSIX as a file ID. Windows is not far enough along to get this info yet.
+                if ((expectedFileInfo->deviceID != beforeattrs->deviceID)
+                    || (expectedFileInfo->inode != beforeattrs->inode)
+                    || (expectedFileInfo->userID != beforeattrs->userID)
+                    || (expectedFileInfo->groupID != beforeattrs->groupID)
+                    )
+                {
+                    fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
+                    safe_Free(intFileName)
+                    free_File_Attributes(&beforeattrs);
+                    if (duplicatedModeForInternalUse)
+                    {
+                        safe_Free(internalmode)
+                    }
+                    return fileInfo;
+                }
+#if defined (_WIN32)
+                //Validate Windows SIDs are equivalent
+                //Convert the strings back to structures and use EqualSid and EqualAcl to do the comparisons.
+                //There may be other formatting in the string that does not affect the permissions which is why the conversion is necessary.
+                if (!exact_Compare_SIDS_And_DACL_Strings(beforeattrs->winSecurityDescriptor, expectedFileInfo->winSecurityDescriptor))
+                {
+                    fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
+                    safe_Free(intFileName)
+                    if (duplicatedModeForInternalUse)
+                    {
+                        safe_Free(internalmode)
+                    }
+                    free_File_Attributes(&beforeattrs);
+                    return fileInfo;
+                }
+#endif //_WIN32
+            }
+        }
+        free_File_Attributes(&beforeattrs);
+        
+        //TODO: Check for secure directory - This code must traverse the full path and validate permissions of the directories.
+        if (true)//(os_Is_Directory_Secure(canonicalFileAndPath))
+        {
+            fileInfo->file = M_NULLPTR;
+#if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
+            errno_t fopenError = fopen_s(&fileInfo->file, fileInfo->fullpath, internalmode);
+            if (fopenError == 0 && fileInfo->file != M_NULLPTR)
+#else //fopen_s not available
+            fileInfo->file = fopen(fileInfo->fullpath, internalmode);
+            if (fileInfo->file != M_NULLPTR)
+#endif //checking for MSFT secure functions or annex K of C11
+            {
+                //file is opened, check unique id if it was passed in to compare against
+                fileInfo->uniqueID = os_Get_File_Unique_Identifying_Information(fileInfo->file);
+                //compre to provided unique ID
+                if (uniqueIdInfo)
+                {
+                    if (memcmp(uniqueIdInfo, fileInfo->uniqueID, sizeof(fileUniqueIDInfo)) != 0)
+                    {
+                        //This is not the same file as was meant to be opened. Close it and return an error.
+                        fclose(fileInfo->file);
+                        fileInfo->file = NULL;
+                        fileInfo->error = SEC_FILE_INVALID_FILE_UNIQUE_ID;
+                        safe_Free(intFileName)
+                        if (duplicatedModeForInternalUse)
+                        {
+                            safe_Free(internalmode)
+                        }
+                        return fileInfo;
+                    }
+                }
+                fileInfo->attributes = os_Get_File_Attributes_By_Name(fileInfo->fullpath);
+                //compare to user provided attributes
+                if (expectedFileInfo)
+                {
+                    //devid and inode already checked, but if user didn't provide unique id, it will not hurt to check again
+                    if ((expectedFileInfo->deviceID != fileInfo->attributes->deviceID)
+                        || (expectedFileInfo->inode != fileInfo->attributes->inode)
+                        || (expectedFileInfo->userID != fileInfo->attributes->userID)
+                        || (expectedFileInfo->groupID != fileInfo->attributes->groupID)
+                        )
+                    {
+                        fclose(fileInfo->file);
+                        fileInfo->file = NULL;
+                        fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
+                        safe_Free(intFileName)
+                        if (duplicatedModeForInternalUse)
+                        {
+                            safe_Free(internalmode)
+                        }
+                        return fileInfo;
+                    }
+#if defined (_WIN32)
+                    //Validate Windows SIDs are equivalent
+                    //Convert the strings back to structures and use EqualSid and EqualAcl to do the comparisons.
+                    //There may be other formatting in the string that does not affect the permissions which is why the conversion is necessary.
+                    if (!exact_Compare_SIDS_And_DACL_Strings(fileInfo->attributes->winSecurityDescriptor, expectedFileInfo->winSecurityDescriptor))
+                    {
+                        fclose(fileInfo->file);
+                        fileInfo->file = NULL;
+                        fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
+                        safe_Free(intFileName)
+                        if (duplicatedModeForInternalUse)
+                        {
+                            safe_Free(internalmode)
+                        }
+                        return fileInfo;
+                    }
+#endif //_WIN32
+                }
+
+                fileInfo->isValid = true;
+
+#if defined (USING_C11) && defined (to_sizet)
+                fileInfo->fileSize = to_sizet(fileInfo->attributes->filesize);
+#else
+                fileInfo->fileSize = int64_to_sizet(fileInfo->attributes->filesize);
+#endif
+                fileInfo->filename = strrchr(fileInfo->fullpath, SYSTEM_PATH_SEPARATOR);//Canonical path will already have the proper system path separator in it. No need to search / in Windows
+                
+            }
+            else
+            {
+#if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
+                switch(fopenError)
+#else
+                switch (errno)
+#endif
+                {
+                    //add other errno values to check for?
+                    //https://pubs.opengroup.org/onlinepubs/9699919799/functions/fopen.html
+                case EINVAL:
+                default:
+                    fileInfo->error = SEC_FILE_FAILURE;
+                    break;
+                }
+                
+            }
+        }
+        if (duplicatedModeForInternalUse)
+        {
+            safe_Free(internalmode)
+        }
+        safe_Free(intFileName)
+    }
+    return fileInfo;
+}
+
+//We can add additional things to do before closing the file to validate things, flush, etc as needed to make this better.
+eSecureFileError secure_Close_File(secureFileInfo* fileInfo)
+{
+    if (fileInfo)
+    {
+        fileInfo->error = SEC_FILE_INVALID_FILE;
+        if (fileInfo->file)
+        {
+            int closeres = fclose(fileInfo->file);
+            if (closeres == 0)
+            {
+                fileInfo->file = NULL;
+                fileInfo->error = SEC_FILE_SUCCESS;
+            }
+            else if (closeres == EOF)
+            {
+                fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
+            }
+            else
+            {
+                //unknown result, so call this an error.
+                fileInfo->error = SEC_FILE_FAILURE;
+            }
+        }
+        return fileInfo->error;
+    }
+    return SEC_FILE_INVALID_SECURE_FILE;
+}
+
+M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* fileInfo, void* M_RESTRICT buffer, size_t buffersize, size_t elementsize, size_t count, size_t* numberread/*optional*/)
+{
+    if (fileInfo)
+    {
+        fileInfo->error = SEC_FILE_INVALID_FILE;
+        if (fileInfo->file)
+        {
+            size_t readres = 0;
+#if defined (__STDC_SECURE_LIB__)
+            readres = fread_s(buffer, buffersize, elementsize, count, fileInfo->file);
+#else
+            if (buffer == M_NULLPTR)
+            {
+                fileInfo->error = SEC_FILE_INVALID_PARAMETER;
+                return fileInfo->error;
+            }
+            else if (buffersize < (elementsize * count))
+            {
+                fileInfo->error = SEC_FILE_BUFFER_TOO_SMALL;
+                return fileInfo->error;
+            }
+            readres = fread(buffer, elementsize, count, fileInfo->file);
+#endif
+            if (numberread)
+            {
+                *numberread = readres;
+            }
+            if (readres == 0)
+            {
+                if (elementsize == 0 || count == 0)
+                {
+                    fileInfo->error = SEC_FILE_SUCCESS;
+                }
+                else
+                {
+                    fileInfo->error = SEC_FILE_READ_WRITE_ERROR;
+                }
+            }
+            else if (readres < count)
+            {
+                if (feof(fileInfo->file))
+                {
+                    //end of stream/file
+                    fileInfo->error = SEC_FILE_END_OF_FILE_REACHED;
+                }
+                else if (ferror(fileInfo->file))
+                {
+                    fileInfo->error = SEC_FILE_READ_WRITE_ERROR;
+                }
+                else
+                {
+                    //some other kind of error???
+                    fileInfo->error = SEC_FILE_READ_WRITE_ERROR;
+                }
+            }
+            else if (readres == count)
+            {
+                fileInfo->error = SEC_FILE_SUCCESS;
+            }
+            else
+            {
+                //unknown result, so call this an error.
+                fileInfo->error = SEC_FILE_FAILURE;
+            }
+        }
+        return fileInfo->error;
+    }
+    return SEC_FILE_INVALID_SECURE_FILE;
+}
+
+M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* fileInfo, void* M_RESTRICT buffer, size_t buffersize, size_t elementsize, size_t count, size_t* numberwritten/*optional*/)
+{
+    if (fileInfo)
+    {
+        fileInfo->error = SEC_FILE_INVALID_FILE;
+        if (fileInfo->file)
+        {
+            size_t writeres = 0;
+            if (buffer == M_NULLPTR)
+            {
+                fileInfo->error = SEC_FILE_INVALID_PARAMETER;
+                return fileInfo->error;
+            }
+            else if (buffersize < (elementsize * count))
+            {
+                fileInfo->error = SEC_FILE_BUFFER_TOO_SMALL;
+                return fileInfo->error;
+            }
+            writeres = fwrite(buffer, elementsize, count, fileInfo->file);
+            if (numberwritten)
+            {
+                *numberwritten = writeres;
+            }
+            if (writeres == 0)
+            {
+                if (elementsize == 0 || count == 0)
+                {
+                    fileInfo->error = SEC_FILE_SUCCESS;
+                }
+                else
+                {
+                    fileInfo->error = SEC_FILE_READ_WRITE_ERROR;
+                }
+            }
+            else if (writeres < count)
+            {
+                if (ferror(fileInfo->file))
+                {
+                    fileInfo->error = SEC_FILE_WRITE_DISK_FULL;
+                }
+                else
+                {
+                    //some other kind of error???
+                    fileInfo->error = SEC_FILE_READ_WRITE_ERROR;
+                }
+            }
+            else if (writeres == count)
+            {
+                fileInfo->error = SEC_FILE_SUCCESS;
+            }
+            else
+            {
+                //unknown result, so call this an error.
+                fileInfo->error = SEC_FILE_FAILURE;
+            }
+        }
+        return fileInfo->error;
+    }
+    return SEC_FILE_INVALID_SECURE_FILE;
+}
+
+eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, offset_t offset, int initialPosition)
+{
+    if (fileInfo)
+    {
+        fileInfo->error = SEC_FILE_INVALID_FILE;
+        if (fileInfo->file)
+        {
+            int seekres = 0;
+            //Windows has _fseeki64, which may be better to use instead for larger files or to be compatible with larger files.
+            //Linux/posix have fseeko and ftello which use off_t which can be wider as well. (POSIX 2001)
+#if defined (_WIN32)/*version check for this function?*/
+            seekres = _fseeki64(fileInfo->file, offset, initialPosition);
+#elif defined (POSIX_2001)
+            seekres = fseeko(fileInfo->file, offset, initialPosition);
+#else
+            seekres = fseek(fileInfo->file, offset, initialPosition);
+#endif
+            if (seekres == 0)
+            {
+                fileInfo->error = SEC_FILE_SUCCESS;
+            }
+            else
+            {
+                fileInfo->error = SEC_FILE_SEEK_FAILURE;
+            }
+        }
+        return fileInfo->error;
+    }
+    return SEC_FILE_INVALID_SECURE_FILE;
+}
+
+eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
+{
+    if (fileInfo)
+    {
+        fileInfo->error = SEC_FILE_INVALID_FILE;
+        if (fileInfo->file)
+        {
+            fileInfo->error = secure_Seek_File(fileInfo, 0, SEEK_SET);
+            clearerr(fileInfo->file);//rewind clears errors and eof indicators, so call this to clear the errors in the stream.
+        }
+        return fileInfo->error;
+    }
+    return SEC_FILE_INVALID_SECURE_FILE;
+}
+
+offset_t secure_Tell_File(secureFileInfo* fileInfo)
+{
+    if (fileInfo)
+    {
+        fileInfo->error = SEC_FILE_INVALID_FILE;
+        if (fileInfo->file)
+        {
+            offset_t tellres = 0;
+            //Windows has _fseeki64, which may be better to use instead for larger files or to be compatible with larger files.
+            //Linux/posix have fseeko and ftello which use off_t which can be wider as well. (POSIX 2001)
+#if defined (_WIN32) /*version check for this function?*/
+            tellres = _ftelli64(fileInfo->file);
+#elif defined (POSIX_2001)
+            tellres = ftello(fileInfo->file);
+#else
+            tellres = ftell(fileInfo->file);
+#endif
+            if (tellres >= 0)
+            {
+                fileInfo->error = SEC_FILE_SUCCESS;
+            }
+            else
+            {
+                fileInfo->error = SEC_FILE_SEEK_FAILURE;
+            }
+            return tellres;
+        }
+        return -1;
+    }
+    return -1;
+}
+
+eSecureFileError secure_Flush_File(secureFileInfo* fileInfo)
+{
+    if (fileInfo)
+    {
+        fileInfo->error = SEC_FILE_INVALID_FILE;
+        if (fileInfo->file)
+        {
+            int fflushres = fflush(fileInfo->file);
+            if (fflushres == 0)
+            {
+                fileInfo->error = SEC_FILE_SUCCESS;
+            }
+            else if (fflushres == EOF && ferror(fileInfo->file))
+            {
+                fileInfo->error = SEC_FILE_FLUSH_FAILURE;
+            }
+            else /*not sure what to clasify this error as*/
+            {
+                fileInfo->error = SEC_FILE_FAILURE;
+            }
+        }
+        return fileInfo->error;
+    }
+    return SEC_FILE_INVALID_SECURE_FILE;
+}
+
+eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT fileInfo, fpos_t* M_RESTRICT pos)
+{
+    if (fileInfo && pos)
+    {
+        fileInfo->error = SEC_FILE_INVALID_FILE;
+        if (fileInfo->file)
+        {
+            int getposres = fgetpos(fileInfo->file, pos);
+            if (getposres == 0)
+            {
+                fileInfo->error = SEC_FILE_SUCCESS;
+            }
+            else
+            {
+                fileInfo->error = SEC_FILE_FAILURE;
+            }
+        }
+        return fileInfo->error;
+    }
+    else if (fileInfo)
+    {
+        //pos is invalid
+        fileInfo->error = SEC_FILE_INVALID_PARAMETER;
+        return fileInfo->error;
+    }
+    return SEC_FILE_INVALID_SECURE_FILE;
+}
+
+eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos)
+{
+    if (fileInfo && pos)
+    {
+        fileInfo->error = SEC_FILE_INVALID_FILE;
+        if (fileInfo->file)
+        {
+            int setposres = fsetpos(fileInfo->file, pos);
+            if (setposres == 0)
+            {
+                fileInfo->error = SEC_FILE_SUCCESS;
+            }
+            else
+            {
+                fileInfo->error = SEC_FILE_FAILURE;
+            }
+        }
+        return fileInfo->error;
+    }
+    else if (fileInfo)
+    {
+        //pos is invalid
+        fileInfo->error = SEC_FILE_INVALID_PARAMETER;
+        return fileInfo->error;
+    }
+    return SEC_FILE_INVALID_SECURE_FILE;
+}

@@ -88,6 +88,10 @@ extern "C"
     //-----------------------------------------------------------------------------
     eReturnValues os_Create_Directory(const char* filePath);
 
+    bool is_Windows_Vista_Or_Higher(void);
+
+    bool is_Windows_7_Or_Higher(void);
+
     //-----------------------------------------------------------------------------
     //
     //  is_Windows_8_Or_Higher()
@@ -177,6 +181,8 @@ extern "C"
     //-----------------------------------------------------------------------------
     void print_Windows_Error_To_Screen(unsigned int windowsError);
 
+    bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char* sidsAndDACLstr2);
+
     //The macros for NTDDI_VERSION & _WIN32_WINNT & WINVER are rarely checked once in Win 10 since they all get set to the same thing, so the below targets should also be defined in the preprocessor
     //so that we know which version of the WIN10 SDK is being targeted.
 
@@ -203,6 +209,8 @@ extern "C"
         #define WIN_API_TARGET_VERSION NTDDI_WIN6SP2
     #elif defined (NTDDI_WIN6SP1)
         #define WIN_API_TARGET_VERSION NTDDI_WIN6SP1
+    #elif defined (NTDDI_WIN6)
+        #define WIN_API_TARGET_VERSION NTDDI_WIN6
     #elif defined (NTDDI_WS03SP4)
         #define WIN_API_TARGET_VERSION NTDDI_WS03SP4
     #elif defined (NTDDI_WS03SP3)
