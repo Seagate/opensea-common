@@ -80,11 +80,13 @@ void *malloc_aligned(size_t size, size_t alignment)
     /**
      * Lets not do anything for VMWare
      */
+	void *temp = NULL;
+
     #if defined (VMK_CROSS_COMP)
         #ifdef _DEBUG
-            printf("<--%s size : %d  alignment : %d\n",__FUNCTION__, size, alignment);
+            printf("<--%s size : %zd  alignment : %zd\n",__FUNCTION__, size, alignment);
         #endif
-        void *temp = NULL;
+        
         if (0 != posix_memalign( &temp, alignment, size))
         {
             temp = NULL;//make sure the system we are running didn't change this.
@@ -710,7 +712,9 @@ void print_Return_Enum(char *funcName, int ret)
 
 static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset)
 {
+	char lineBuff[18] = { 0 };
     uint32_t printIter = 0, offset = 0;
+	uint8_t lineBuffIter;
     uint32_t offsetWidth = 2;//used to figure out how wide we need to pad with 0's for consistent output, 2 is the minimum width
     if (showOffset)
     {
@@ -741,8 +745,8 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
             printf("%" PRIX32 "  ", printIter);
         }
     }
-    char lineBuff[18] = { 0 };
-    uint8_t lineBuffIter = 0;
+
+	lineBuffIter = 0;
     for (printIter = 0, offset = 0; printIter < bufferLen; ++printIter, ++lineBuffIter)
     {
         if (lineBuffIter > sizeof(lineBuff))
@@ -792,10 +796,12 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
         }
         if (showPrint && ((printIter + 1) % 16 == 0 || printIter + 1 == bufferLen))
         {
+			uint32_t spacePadding = (printIter + 1) % 16;
             lineBuff[17] = '\0';
             lineBuffIter = UINT8_MAX;//this is done to cause an overflow when the ++happens during the loop
             //need to calculate if padding is needed before printing character translations...but how...
-            uint32_t spacePadding = (printIter + 1) % 16;
+            //uint32_t spacePadding; // = (printIter + 1) % 16;
+			//spacePadding = (printIter + 1) % 16;
             if (spacePadding)
             {
                 uint32_t counter = 0;
@@ -1102,6 +1108,7 @@ uint64_t xorshiftplus64(void)
 
 uint32_t random_Range_32(uint32_t rangeMin, uint32_t rangeMax)
 {
+	uint32_t d;
     //doing this to prevent a possible overflow
     if (rangeMax == UINT32_MAX)
     {
@@ -1111,7 +1118,8 @@ uint32_t random_Range_32(uint32_t rangeMin, uint32_t rangeMax)
     //return (xorshiftplus32() % (rangeMax + 1 - rangeMin) + rangeMin);
 
     //This method below should return unbiased results. see http://c-faq.com/lib/randrange.html
-    uint32_t d = (UINT32_MAX / (rangeMax - rangeMin + 1) + 1);
+    // = (UINT32_MAX / (rangeMax - rangeMin + 1) + 1);
+	d = (UINT32_MAX / (rangeMax - rangeMin + 1) + 1); 
     if (d > 0)
     {
         return (rangeMin + xorshiftplus32() / d);
@@ -1123,6 +1131,7 @@ uint32_t random_Range_32(uint32_t rangeMin, uint32_t rangeMax)
 }
 uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax)
 {
+	uint64_t d;
     //doing this to prevent a possible overflow
     if (rangeMax == UINT64_MAX)
     {
@@ -1132,7 +1141,8 @@ uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax)
     //return (xorshiftplus64() % (rangeMax + 1 - rangeMin) + rangeMin);
 
     //This method below should return unbiased results. see http://c-faq.com/lib/randrange.html
-    uint64_t d = (UINT64_MAX / (rangeMax - rangeMin + 1) + 1);
+    d = (UINT64_MAX / (rangeMax - rangeMin + 1) + 1);
+	
     if (d > 0)
     {
         return (rangeMin + xorshiftplus64() / d);
@@ -1381,6 +1391,7 @@ time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
     //now days (including week day information)
     if (days > 0)
     {
+		uint8_t numberOfDaysInMonth = 31;
         //day of the year
         if (futureTime.tm_yday + days > 365)
         {
@@ -1401,7 +1412,7 @@ time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
             futureTime.tm_wday += days;
         }
         //day of the month (depends on the month!)
-        uint8_t numberOfDaysInMonth = 31;//assume the most common
+        //uint8_t numberOfDaysInMonth = 31;//assume the most common
         switch (futureTime.tm_mon)
         {
         case 0://january

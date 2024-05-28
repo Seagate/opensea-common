@@ -965,15 +965,19 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
             }
             if (release)
             {
+				char* releaseMemory;
+				size_t releaseSize;
+				char* tok;
+
                 //read it
                 fseek(release, ftell(release), SEEK_END);
-                size_t releaseSize = ftell(release);
+                releaseSize = ftell(release);
                 rewind(release);
-                char* releaseMemory = C_CAST(char*, calloc(releaseSize, sizeof(char)));
+                releaseMemory = C_CAST(char*, calloc(releaseSize, sizeof(char)));
                 if (fread(releaseMemory, sizeof(char), releaseSize, release))
                 {
                     //Use the "PRETTY_NAME" field
-                    char* tok = strtok(releaseMemory, "\n");
+                    tok = strtok(releaseMemory, "\n");
                     while (tok != NULL)
                     {
                         if (strncmp(tok, "PRETTY_NAME=", strlen("PRETTY_NAME=")) == 0)
@@ -998,20 +1002,25 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
 //since this is an internal static function, not need for separate function to call free.
 static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
 {
+	size_t fileNameLength;
+	char* fileName;
     char* etcFileMem = NULL;
+	FILE* release;
+	long int releaseSize;
+
     if (dirent_entry_name)
     {
-        size_t fileNameLength = strlen(dirent_entry_name) + strlen("/etc/") + 1;
-        char* fileName = C_CAST(char*, calloc(fileNameLength, sizeof(char)));
+        fileNameLength = strlen(dirent_entry_name) + strlen("/etc/") + 1;
+        fileName = C_CAST(char*, calloc(fileNameLength, sizeof(char)));
         if (fileName)
         {
             snprintf(fileName, fileNameLength, "/etc/%s", dirent_entry_name);
-            FILE* release = fopen(fileName, "r");
+            release = fopen(fileName, "r");
             if (release)
             {
                 //read it
                 fseek(release, ftell(release), SEEK_END);
-                long int releaseSize = ftell(release);
+                releaseSize = ftell(release);
                 if (releaseSize > 0)
                 {
                     rewind(release);
@@ -1135,6 +1144,8 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
 
 static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
 {
+	long int issueSize;
+	char* issueMemory;
     bool gotLinuxInfo = false;
     if (operatingSystemName)
     {
@@ -1146,9 +1157,9 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
             {
                 //read it
                 fseek(issue, ftell(issue), SEEK_END);
-                long int issueSize = ftell(issue);
+                issueSize = ftell(issue);
                 rewind(issue);
-                char* issueMemory = C_CAST(char*, calloc(issueSize, sizeof(char)));
+                issueMemory = C_CAST(char*, calloc(issueSize, sizeof(char)));
                 if (issueMemory)
                 {
                     if (fread(issueMemory, sizeof(char), issueSize, issue))
