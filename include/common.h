@@ -974,7 +974,8 @@ extern "C"
         VERBOSITY_DEFAULT           = 1,
         VERBOSITY_COMMAND_NAMES     = 2,
         VERBOSITY_COMMAND_VERBOSE   = 3,
-        VERBOSITY_BUFFERS           = 4
+        VERBOSITY_BUFFERS           = 4,
+        VERBOSITY_MAX /*This should always be at the end of this list. This allows for a function to use this to check bounds even if we add more levels ahead of this. -TJE*/
     )
     // json data type sets. used for formating data to a customer demands 
     M_DECLARE_ENUM(eDataFormat,
