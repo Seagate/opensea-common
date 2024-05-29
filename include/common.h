@@ -211,6 +211,35 @@ extern "C"
         #endif
     #endif //_POSIX_VERSION 
 
+    //detect X/open portability guide/single unix specification support
+    //X/Open is a portability guide
+    //This eventually became the single unix specifications which are defined under here as well.
+    #if defined (_XOPEN_VERSION)
+        //version 1 and 2 of XOpen?
+        //V1 published in 1985
+        //V2 published in 1987
+        #if _XOPEN_VERSION >= 3
+            #define USING_XPG3 //1989
+        #endif
+        #if _XOPEN_VERSION >= 4
+            #define USING_XPG4 //1992
+            #if defined (_XOPEN_UNIX)
+                #define USING_SUS //UNIX95
+            #endif
+        #endif
+        #if _XOPEN_VERSION >= 500
+            #define USING_SUS2 //UNIX98
+        #endif
+        #if _XOPEN_VERSION >= 600
+            #define USING_SUS3 //UNIX03
+        #endif
+        #if _XOPEN_VERSION >= 700
+            #define USING_SUS4
+        #endif
+    #endif //_XOPEN_VERSION
+    //NOTE: Some functions that were added to posix, xopen, sus may have come from BSD 4.x. Use sys/param.h to check for these old bsd versions
+
+
     #if !defined(UINTPTR_MAX)
     //need uintptr_t type for NVMe capabilities to prevent warnings/errors
     //TODO: if C11, _Static_assert can be used to check against sizeof(void*) to make sure this is defined in a way that should work.

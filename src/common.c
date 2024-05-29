@@ -23,6 +23,7 @@
 #include <unistd.h> //needed for usleep() or nanosleep()
 #include <time.h>
 #include <errno.h>
+#include <sys/param.h>
 #endif //Win32
 
 #if defined (VMK_CROSS_COMP)
@@ -81,6 +82,9 @@ void delay_Milliseconds(uint32_t milliseconds)
     #endif //POSIX check
 #endif
 }
+//sleep first appeared in Version 7 AT&T unix - conforms to POSIX 1990
+//usleep first appeared in 4.3BSD and is in POSIX 2001
+//select first appeared in 4.2BSD and SUSv2 <-posix 2001 uses sys/select, otherwise sys/time, sys/types, and unistd
 
 bool get_current_timestamp(void)
 {
@@ -2961,7 +2965,7 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
 {
     if (destination && source && destinationSizeBytes > 0)
     {
-#if defined (POSIX_2001) || defined (_MSC_VER) || defined (__MINGW32__) || defined (USING_C23)
+#if defined (POSIX_2001) || defined (_MSC_VER) || defined (__MINGW32__) || defined (USING_C23) || defined (BSD4_4)
         char* dup = strdup(destination);
         if (dup)
         {
@@ -4367,7 +4371,11 @@ eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
         if (fileInfo->file)
         {
             fileInfo->error = secure_Seek_File(fileInfo, 0, SEEK_SET);
+#if defined (__STDC_SECURE_LIB__)
+            clearerr_s(fileInfo->file);
+#else
             clearerr(fileInfo->file);//rewind clears errors and eof indicators, so call this to clear the errors in the stream.
+#endif
         }
         return fileInfo->error;
     }
