@@ -2367,12 +2367,19 @@ extern "C"
     //If an error occurs, returns zero
     uint64_t get_Milliseconds_Since_Unix_Epoch(void);
 
-    #if !defined (SSIZE_MAX) && defined (_MSC_VER)
+    #if !defined (SSIZE_MAX) && !defined (SSIZE_T_DEFINED)
         //assume ssize_t is not defined
-        //using intptr_t since it has the same range.
-        //MSFT has SSIZE_T which also matches this definition, but intptr_t is more standardized, so using it for now-TJE
-        typedef intptr_t ssize_t;
-        #define SSIZE_MAX INTPTR_MAX
+        #if defined (_MSC_VER) && defined (MAXSSIZE_T)
+            //MSFT defined this as SSIZE_T, so just make it lowercase to match POSIX
+            //NOTE: reviewing MSFT's headers shows this is the same as intptr_t definitions as well
+            typedef SSIZE_T ssize_t;
+            #define SSIZE_MAX MAXSSIZE_T
+        #else
+            //using intptr_t since it has the same range.
+            typedef intptr_t ssize_t;
+            #define SSIZE_MAX INTPTR_MAX
+        #endif
+        #define SSIZE_T_DEFINED
     #endif  //SSIZE_MAX && _MSC_VER
 
 
@@ -2627,6 +2634,8 @@ extern "C"
     eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT fileInfo, fpos_t* M_RESTRICT pos);
 
     eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos);
+
+    //need secure_fprintf_File to write formatted data to a file
 
 #if defined (__cplusplus)
 } //extern "C"
