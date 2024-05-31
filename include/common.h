@@ -697,8 +697,8 @@ extern "C"
             #endif
         #endif
         #if !defined (M_ATTR_UNUSED)//__has_attribute is available, but doesn't have what we need-TJE
-            #if defined (__GNUC__) && __GNUC__ >= 3
-                //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+            #if (defined (__GNUC__) && (__GNUC__ > 4) || (defined (__GNUC_MINOR__) && __GNUC__ >=4 && __GNUC_MINOR__ >= 9)) || defined (__clang__)
+                //GCC 4.9 added unused attribute.
                 #define M_ATTR_UNUSED __attribute__((unused))
             #elif defined (_MSC_VER)
                 #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
@@ -736,8 +736,9 @@ extern "C"
             #endif
         #endif  
         #if !defined M_DEPRECATED //if a test macro didn't work above, check the compiler to set this correctly -TJE
-            #if defined (__GNUC__) && __GNUC__ >= 3
-                //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+            #if (defined (__GNUC__) && __GNUC__ >= 4) || (defined (__clang__) && defined (__clang_major__) && __clang_major__ >= 3)
+                //GCC 4 added deprecated attribute
+                //Unclear when added to clang, but somewhere around version 3.0
                 #define M_DEPRECATED __attribute__((deprecated))
             #elif defined (_MSC_VER)
                 #define M_DEPRECATED __declspec(deprecated)
@@ -778,7 +779,8 @@ extern "C"
             #endif
         #endif  
         #if !defined M_NODISCARD //if a test macro didn't work above, check the compiler to set this correctly -TJE
-            #if defined (__GNUC__) && __GNUC__ >= 3
+            #if (defined (__GNUC__) && __GNUC__ >= 3) || defined (__clang__)
+                //first in GCC 3.4
                 #define M_NODISCARD __attribute__((warn_unused_result))
             #else
                 //Insert a comment instead since other methods were not detected.
@@ -828,8 +830,8 @@ extern "C"
             #endif
         #endif  
         #if !defined M_NORETURN //if a test macro didn't work above, check the compiler to set this correctly -TJE
-            #if defined (__GNUC__) && __GNUC__ >= 3
-                //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+            #if (defined (__GNUC__) && __GNUC__ >= 3) || defined (__clang__)
+                //GCC 2.5 added this support
                 #define M_NORETURN __attribute__((noreturn))
             #elif defined (_MSC_VER)
                 #define M_NORETURN __declspec(noreturn)
