@@ -823,8 +823,6 @@ extern "C"
         #elif __has_c_attribute(__noreturn__) //check for standardized double underscore version
             #define M_NORETURN [[__noreturn__]]
         /* next 2 checks are deprecated versions, but also worth checking */
-        #elif __has_c_attribute(_Noreturn)
-            #define M_NORETURN [[_Noreturn]]
         #elif __has_c_attribute(___Noreturn__)
             #define M_NORETURN [[___Noreturn__]]
         #endif
