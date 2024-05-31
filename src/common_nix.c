@@ -20,7 +20,7 @@
 //Define this to allow reading larger files in 32bit OSs without a limitation.
 //https://www.gnu.org/software/libc/manual/html_node/Feature-Test-Macros.html
 #ifndef _FILE_OFFSET_BITS
-#define _FILE_OFFSET_BITS=64
+#define _FILE_OFFSET_BITS 64
 #endif
 #include <sys/stat.h>
 #include <sys/param.h> //hopefully this is available on all 'nix systems
