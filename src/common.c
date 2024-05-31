@@ -1476,7 +1476,7 @@ struct tm * get_UTCtime(const time_t *timer, struct tm *buf)
     if (timer && buf)
     {
         //TODO: C2x not fully defined yet, but can update this first check when it is and is supported.
-#if defined (POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS
+#if (defined (POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined (USING_C23)
         //POSIX or C2x (C23 right now) have gmtime_r to use
         return gmtime_r(timer, buf);
 #elif defined (HAVE_C11_ANNEX_K)
@@ -1505,7 +1505,7 @@ struct tm * get_Localtime(const time_t *timer, struct tm *buf)
     if (timer && buf)
     {
         //TODO: C2x not fully defined yet, but can update this first check when it is and is supported.
-#if defined (POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS
+#if (defined (POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined (USING_C23)
         //POSIX or C2x (C23 right now) have localtime_r to use
         return localtime_r(timer, buf);
 #elif defined (HAVE_C11_ANNEX_K)
