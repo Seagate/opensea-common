@@ -626,23 +626,16 @@ extern "C"
     #endif
     #if !defined (M_FALLTHROUGH)
         //not C++ and doesn't have __has_c_attribute so do something for older C code
-        //Weird case: Clang 3.4.2 (CentOS7) doesn't like the attribute definition below and throws tons
-        //of warnings for "declaration does not declare anything", but this is not a problem in newer versions
-        //So currently solution to prevent excessive warnings that don't make sense is to define this differently for
-        // clang 3 and earlier. This may need adjusting to specific versions of clang later, but this is what I've been able to do so far - TJE
-        #if defined (__clang__) && defined (__clang_major__) && __clang_major__ <= 3
-            #define M_FALLTHROUGH /*FALLTHRU*/
-
-        #elif defined __has_attribute
+        #if defined __has_attribute
             //GCC type compiler check
             #if __has_attribute(fallthrough)
-                #define M_FALLTHROUGH __attribute__((fallthrough));
+                #define M_FALLTHROUGH do { } while (0) __attribute__((fallthrough));
             #endif
         #endif
         #if !defined M_FALLTHROUGH
             #if defined (__GNUC__) && __GNUC__ >= 3
                 //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-                #define M_FALLTHROUGH __attribute__((fallthrough));
+                #define M_FALLTHROUGH do { } while (0) __attribute__((fallthrough));
             #else
                 //Insert a comment instead since other methods were not detected.
                 #define M_FALLTHROUGH /*FALLTHRU*/
