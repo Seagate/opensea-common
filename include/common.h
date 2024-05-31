@@ -642,7 +642,7 @@ extern "C"
         #if !defined M_FALLTHROUGH
             #if defined (__GNUC__) && __GNUC__ >= 3
                 //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-                #define M_FALLTHROUGH __attribute__ ((fallthrough));
+                #define M_FALLTHROUGH __attribute__((fallthrough));
             #else
                 //Insert a comment instead since other methods were not detected.
                 #define M_FALLTHROUGH /*FALLTHRU*/
@@ -699,13 +699,13 @@ extern "C"
         #if defined __has_attribute
             //GCC type compiler check
             #if __has_attribute(unused)
-                #define M_ATTR_UNUSED __attribute__ ((unused))
+                #define M_ATTR_UNUSED __attribute__((unused))
             #endif
         #endif
         #if !defined (M_ATTR_UNUSED)//__has_attribute is available, but doesn't have what we need-TJE
             #if defined (__GNUC__) && __GNUC__ >= 3
                 //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-                #define M_ATTR_UNUSED __attribute__ ((unused))
+                #define M_ATTR_UNUSED __attribute__((unused))
             #elif defined (_MSC_VER)
                 #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
             #else
@@ -738,13 +738,13 @@ extern "C"
     #if !defined M_DEPRECATED //standard ways to set this did not work, so try compiler specific means
         #if defined __has_attribute 
             #if __has_attribute(deprecated)
-                #define M_DEPRECATED __attribute__ ((deprecated))
+                #define M_DEPRECATED __attribute__((deprecated))
             #endif
         #endif  
         #if !defined M_DEPRECATED //if a test macro didn't work above, check the compiler to set this correctly -TJE
             #if defined (__GNUC__) && __GNUC__ >= 3
                 //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-                #define M_DEPRECATED __attribute__ ((deprecated))
+                #define M_DEPRECATED __attribute__((deprecated))
             #elif defined (_MSC_VER)
                 #define M_DEPRECATED __declspec(deprecated)
             #else
@@ -778,14 +778,14 @@ extern "C"
     #if !defined M_NODISCARD //standard ways to set this did not work, so try compiler specific means
         #if defined __has_attribute 
             #if __has_attribute(nodiscard)
-                #define M_NODISCARD __attribute__ ((nodiscard))
+                #define M_NODISCARD __attribute__((nodiscard))
             #elif __has_attribute(warn_unused_result)
-                #define M_NODISCARD __attribute__ ((warn_unused_result))
+                #define M_NODISCARD __attribute__((warn_unused_result))
             #endif
         #endif  
         #if !defined M_NODISCARD //if a test macro didn't work above, check the compiler to set this correctly -TJE
             #if defined (__GNUC__) && __GNUC__ >= 3
-                #define M_NODISCARD __attribute__ ((warn_unused_result))
+                #define M_NODISCARD __attribute__((warn_unused_result))
             #else
                 //Insert a comment instead since other methods were not detected.
                 #define M_NODISCARD /*NODISCARD*/
@@ -830,13 +830,13 @@ extern "C"
     #if !defined M_NORETURN //standard ways to set this did not work, so try compiler specific means
         #if defined __has_attribute 
             #if __has_attribute(noreturn)
-                #define M_NORETURN __attribute__ ((noreturn))
+                #define M_NORETURN __attribute__((noreturn))
             #endif
         #endif  
         #if !defined M_NORETURN //if a test macro didn't work above, check the compiler to set this correctly -TJE
             #if defined (__GNUC__) && __GNUC__ >= 3
                 //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-                #define M_NORETURN __attribute__ ((noreturn))
+                #define M_NORETURN __attribute__((noreturn))
             #elif defined (_MSC_VER)
                 #define M_NORETURN __declspec(noreturn)
             #else
