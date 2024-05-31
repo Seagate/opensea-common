@@ -642,7 +642,7 @@ extern "C"
         #if !defined M_FALLTHROUGH
             #if defined (__GNUC__) && __GNUC__ >= 3
                 //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-                #define M_ATTR_UNUSED __attribute__ ((fallthrough))
+                #define M_FALLTHROUGH __attribute__ ((fallthrough))
             #else
                 //Insert a comment instead since other methods were not detected.
                 #define M_FALLTHROUGH /*FALLTHRU*/ \
