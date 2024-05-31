@@ -741,7 +741,7 @@ extern "C"
                 //Unclear when added to clang, but somewhere around version 3.0
                 #define M_DEPRECATED __attribute__((deprecated))
             #elif defined (_MSC_VER)
-                #define M_DEPRECATED __declspec(deprecated)
+                #define M_DEPRECATED __declspec(deprecated) __pragma(warning(suppress : 4996))
             #else
                 //Insert a comment instead since other methods were not detected.
                 #define M_DEPRECTED /*DEPRECATED*/
