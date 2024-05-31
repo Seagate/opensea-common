@@ -153,19 +153,19 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
             case DARK_BLUE:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_BLUE, currentBackground));
                 break;
-            case BLUE:
+            case CONSOLE_COLOR_BLUE:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTBLUE, currentBackground));
                 break;
             case DARK_GREEN:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_GREEN, currentBackground));
                 break;
-            case GREEN:
+            case CONSOLE_COLOR_GREEN:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTGREEN, currentBackground));
                 break;
             case DARK_RED:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_RED, currentBackground));
                 break;
-            case RED:
+            case CONSOLE_COLOR_RED:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTRED, currentBackground));
                 break;
             case BLACK:
@@ -195,10 +195,10 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
             case DARK_GRAY:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_DARKGRAY, currentBackground));
                 break;
-            case GRAY:
+            case CONSOLE_COLOR_GRAY:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTGRAY, currentBackground));
                 break;
-            case DEFAULT:
+            case CONSOLE_COLOR_DEFAULT:
             default:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(M_Nibble0(C_CAST(unsigned long long, get_Default_Console_Colors())), currentBackground));
                 break;
@@ -212,19 +212,19 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
             case DARK_BLUE:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_BLUE));
                 break;
-            case BLUE:
+            case CONSOLE_COLOR_BLUE:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTBLUE));
                 break;
             case DARK_GREEN:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_GREEN));
                 break;
-            case GREEN:
+            case CONSOLE_COLOR_GREEN:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTGREEN));
                 break;
             case DARK_RED:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_RED));
                 break;
-            case RED:
+            case CONSOLE_COLOR_RED:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTRED));
                 break;
             case BLACK:
@@ -254,10 +254,10 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
             case DARK_GRAY:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_DARKGRAY));
                 break;
-            case GRAY:
+            case CONSOLE_COLOR_GRAY:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTGRAY));
                 break;
-            case DEFAULT:
+            case CONSOLE_COLOR_DEFAULT:
             default:
                 outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, M_Nibble1(C_CAST(unsigned long long, get_Default_Console_Colors()))));
                 break;
