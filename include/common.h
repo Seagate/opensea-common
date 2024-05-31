@@ -631,7 +631,7 @@ extern "C"
         //So currently solution to prevent excessive warnings that don't make sense is to define this differently for
         // clang 3 and earlier. This may need adjusting to specific versions of clang later, but this is what I've been able to do so far - TJE
         #if defined (__clang__) && defined (__clang_major__) && __clang_major__ <= 3
-            #define M_FALLTHROUGH /*FALLTHRU*/ \
+            #define M_FALLTHROUGH /*FALLTHRU*/
 
         #elif defined __has_attribute
             //GCC type compiler check
@@ -642,10 +642,10 @@ extern "C"
         #if !defined M_FALLTHROUGH
             #if defined (__GNUC__) && __GNUC__ >= 3
                 //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-                #define M_FALLTHROUGH __attribute__ ((fallthrough))
+                #define M_FALLTHROUGH __attribute__ ((fallthrough));
             #else
                 //Insert a comment instead since other methods were not detected.
-                #define M_FALLTHROUGH /*FALLTHRU*/ \
+                #define M_FALLTHROUGH /*FALLTHRU*/
             
             #endif
         #endif
@@ -710,7 +710,7 @@ extern "C"
                 #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) //4102?
             #else
                 //Insert a comment instead since other methods were not detected.
-                #define M_ATTR_UNUSED /*UNUSED*/ \
+                #define M_ATTR_UNUSED /*UNUSED*/
             
             #endif
         #endif
@@ -749,7 +749,7 @@ extern "C"
                 #define M_DEPRECATED __declspec(deprecated)
             #else
                 //Insert a comment instead since other methods were not detected.
-                #define M_DEPRECTED /*DEPRECATED*/ \
+                #define M_DEPRECTED /*DEPRECATED*/
             
             #endif
         #endif
@@ -788,7 +788,7 @@ extern "C"
                 #define M_NODISCARD __attribute__ ((warn_unused_result))
             #else
                 //Insert a comment instead since other methods were not detected.
-                #define M_NODISCARD /*NODISCARD*/ \
+                #define M_NODISCARD /*NODISCARD*/
             
             #endif
         #endif
@@ -841,7 +841,7 @@ extern "C"
                 #define M_NORETURN __declspec(noreturn)
             #else
                 //Insert a comment instead since other methods were not detected.
-                #define M_NORETURN /*NORETURN*/ \
+                #define M_NORETURN /*NORETURN*/
             
             #endif
         #endif
