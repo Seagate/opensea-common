@@ -202,6 +202,19 @@ endif
 
 src_files = ['src/common.c', 'src/common_platform.c']
 
+#check which memset/bzero is available that will not be optimized out in case we do not have the ability to check via preprocessor in the code.
+if c.has_function('memset_explicit', prefix : '#include <string.h>')
+  global_cpp_args += ['-DHAVE_MEMSET_EXPLICIT']
+elif c.has_header_symbol('stdlib.h', '__STDC_LIB_EXT1__') and c.has_function('memset_s', prefix : '#include <string.h>')
+  global_cpp_args += ['-DHAVE_MEMSET_S']
+elif c.has_function('explicit_bzero', prefix : '#include <strings.h>') or c.has_function('explicit_bzero', prefix : '#include <string.h>')
+  global_cpp_args += ['-DHAVE_EXPLICIT_BZERO']
+elif c.has_function('explicit_memset', prefix : '#include <string.h>')
+  global_cpp_args += ['-DHAVE_EXPLICIT_MEMSET']
+elif c.has_function('SecureZeroMemory', prefix : '#include <Windows.h>')
+  global_cpp_args += ['-DHAVE_MSFT_SECURE_ZERO_MEMORY']
+endif
+
 deps = []
 
 # Opensea common defines the nvme header globally and opensea-transport, opensea-operations and openseachest itself include this, so only need to declare it here

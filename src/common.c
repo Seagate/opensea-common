@@ -3083,7 +3083,7 @@ void* explicit_zeroes(void* dest, size_t count)
         {
             return NULL;
         }
-#elif defined (_WIN32) && defined (_MSC_VER)
+#elif (defined (_WIN32) && defined (_MSC_VER)) || defined (HAVE_MSFT_SECURE_ZERO_MEMORY)
         //use microsoft's SecureZeroMemory function
         return SecureZeroMemory(dest, count);
 #elif (defined (__FreeBSD__) && __FreeBSD__ >= 11) || (defined (__OpenBSD__) && defined(OpenBSD5_5)) || (defined (__GLIBC__) && defined (__GLIBC_MINOR__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 25) || defined (HAVE_EXPLICIT_BZERO)
