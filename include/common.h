@@ -629,13 +629,13 @@ extern "C"
         #if defined __has_attribute
             //GCC type compiler check
             #if __has_attribute(fallthrough)
-                #define M_FALLTHROUGH do { } while (0) __attribute__((fallthrough));
+                #define M_FALLTHROUGH do { } while (0); __attribute__((fallthrough));
             #endif
         #endif
         #if !defined M_FALLTHROUGH
             #if defined (__GNUC__) && __GNUC__ >= 3
                 //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
-                #define M_FALLTHROUGH do { } while (0) __attribute__((fallthrough));
+                #define M_FALLTHROUGH do { } while (0); __attribute__((fallthrough));
             #else
                 //Insert a comment instead since other methods were not detected.
                 #define M_FALLTHROUGH /*FALLTHRU*/
