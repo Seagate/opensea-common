@@ -633,8 +633,9 @@ extern "C"
             #endif
         #endif
         #if !defined M_FALLTHROUGH
-            #if defined (__GNUC__) && __GNUC__ >= 3
-                //GCC 3 & 4 support the unused attribute...you just don't have a convenient way to detect it otherwise
+            #if (defined (__GNUC__) && __GNUC__ >= 7) || (defined __clang__ && defined (__clang_major__) && defined (__clang_minor__) && (__clang_major__ > 3 || (__clang_major__ >=3 && __clang_minor__ >= 9)))
+                //GCC 7+ support the fallthrough attribute.
+                //Clang 3.9+ has similar fallthrough support.
                 #define M_FALLTHROUGH do { } while (0); __attribute__((fallthrough));
             #else
                 //Insert a comment instead since other methods were not detected.
