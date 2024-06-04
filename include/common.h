@@ -916,6 +916,13 @@ extern "C"
         #endif
     #endif//CPP11 
 
+    //This macro is really for C++, but can be used in C as well. It helps with the differences between C++11 and C++98 when accessing an enum value for comparison or assignment.
+    #if defined (USING_CPP11)
+        #define M_ACCESS_ENUM(type, val) type::val
+    #else
+        #define M_ACCESS_ENUM(type, val) val
+    #endif
+
     M_DECLARE_ENUM(eReturnValues,
         SUCCESS = 0,
         FAILURE = 1,
