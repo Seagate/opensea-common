@@ -850,23 +850,7 @@ extern "C"
     #if defined (USING_CPP11)
         #define M_NULLPTR nullptr
     #elif defined (USING_CPP98)
-        //NOTE: G++ defines NULL as __null which should be safe
-        //      https://gcc.gnu.org/onlinedocs/gcc-4.9.2/libstdc++/manual/manual/support.html#std.support.types.null
-        //      Can add a special case to use NULL macro instead if this template class doesn't work as expected
-        const class nullptr_t
-        {
-        public:
-           template<class T>
-           operator T*() const
-              { return 0; }
-
-           template<class C, class T>
-              operator T C::*() const
-              { return 0; }
-        private:
-           void operator&() const;
-        } nullptr = {};
-        #define M_NULLPTR nullptr
+        //NOTE: This is declared at the bottom of the file outside of the extern C to avoid warnings/errors
     #else //C
         #if defined (USING_C23)
             #define M_NULLPTR nullptr
@@ -2641,3 +2625,48 @@ extern "C"
 #if defined (__cplusplus)
 } //extern "C"
 #endif
+
+//This has to live here to avoid errors about C linkage in older GCC in C++98 mode
+#if defined (USING_CPP98) && !defined M_NULLPTR
+
+#if defined (__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnottic ignored "-Wc++0x-compat" //treated as synonymn for Wc++11-compat, so use this for compatibility to old versions
+//gcc 4.7.x - present calls it c++11-compat
+//4.3.6 - 4.6.4 calls it c++0x-compat
+#elif defined (__GNUC__)
+    #if (defined (__GNUC__) && (__GNUC__ > 4) || (defined (__GNUC_MINOR__) && __GNUC__ >=4 && __GNUC_MINOR__ >= 7))
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wc++11-compat"
+    #elif (defined (__GNUC_MINOR__) && __GNUC__ >=4 && __GNUC_MINOR__ >= 3)
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wc++0x-compat"
+    #endif //no need to disable on older GCC as this warning didn't exist
+#endif//GCC or Clang
+    //NOTE: G++ defines NULL as __null which should be safe
+    //      https://gcc.gnu.org/onlinedocs/gcc-4.9.2/libstdc++/manual/manual/support.html#std.support.types.null
+    //      Can add a special case to use NULL macro instead if this template class doesn't work as expected
+    const class nullptr_t
+    {
+    public:
+        template<class T>
+        operator T*() const
+            { return 0; }
+
+        template<class C, class T>
+            operator T C::*() const
+            { return 0; }
+    private:
+        void operator&() const;
+    } nullptr = {};
+    #define M_NULLPTR nullptr
+#if defined (__clang__)
+    #pragma clang diagnostic pop
+#elif defined (__GNUC__)
+    //the pop can be simplified
+    #if (defined (__GNUC_MINOR__) && __GNUC__ >=4 && __GNUC_MINOR__ >= 3)
+        #pragma GCC diagnostic pop
+    #endif 
+#endif
+
+#endif //c++98 and no M_NULLPTR
