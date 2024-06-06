@@ -277,12 +277,6 @@ extern "C"
     int snprintf(char *buffer, size_t bufsz, const char *format, ...);
     #endif
 
-    
-
-    //Macro to help make casts more clear and searchable. Can be very helpful while debugging.
-    //If using C++, use static_cast, reinterpret_cast, dynamic_cast before trying a C_CAST.
-    #define C_CAST(type, val) (type)(val)
-
 #if defined (__cplusplus)
 //get a specific double word
     #define M_DoubleWord0(l) ( static_cast<uint32_t> ( ( (l) & UINT64_C(0x00000000FFFFFFFF) ) >>  0 ) )
