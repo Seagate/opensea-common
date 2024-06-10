@@ -243,7 +243,7 @@ typedef enum _eKnownTERM
     TERM_GENERIC_COLOR,//unknown level of support for colors...we just know it has some color capabilities
     TERM_LINUX_COLOR,//16 colors
     TERM_LINUX_256COLOR,//16 colors
-    //TODO: More terminal types to use for various color output formats
+    //Add more terminal types to use for various color output formats
 }eKnownTERM;
 
 //other things to potentially look for: 
@@ -516,7 +516,7 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
                 break;
             case CONSOLE_COLOR_DEFAULT:
             default:
-                //TODO: aixterm does not list this, so will need to test it! otherwise reset with 0m will be as close as we get
+                //aixterm does not list this, so will need to test it! otherwise reset with 0m will be as close as we get
                 backgroundColorInt = 49;
                 break;
             }
@@ -644,7 +644,7 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
                 break;
             case CONSOLE_COLOR_DEFAULT:
             default:
-                //TODO: aixterm does not list this, so will need to test it! otherwise reset with 0m will be as close as we get
+                //aixterm does not list this, so will need to test it! otherwise reset with 0m will be as close as we get
                 foregroundColorInt = 39;
                 break;
             }

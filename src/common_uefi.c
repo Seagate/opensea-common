@@ -77,7 +77,7 @@ eReturnValues get_Simple_Text_Output_Protocol_Ptr(void **pOutput)
     //NOTE: This code below assumes that we only care to change color output on node 0. This seems to work from a quick test, but may not be correct. Not sure what the other 2 nodes are for...serial?
     uefiStatus = gBS->OpenProtocol( handle[0], &outputGuid, pOutput, gImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
     //TODO: based on the error code, rather than assuming failure, check for supported/not supported.
-    if(EFI_ERROR(uefiStatus))
+    if (EFI_ERROR(uefiStatus))
     {
         ret = FAILURE;
     }
@@ -104,7 +104,7 @@ void close_Simple_Text_Output_Protocol_Ptr(void **pOutput)
     //NOTE: This code below assumes that we only care to change color output on node 0. This seems to work from a quick test, but may not be correct. Not sure what the other 2 nodes are for...serial?
     uefiStatus = gBS->CloseProtocol( handle[0], &outputGuid, gImageHandle, NULL);
     //TODO: based on the error code, rather than assuming failure, check for supported/not supported.
-    if(EFI_ERROR(uefiStatus))
+    if (EFI_ERROR(uefiStatus))
     {
         perror("Failed to close simple text output protocol\n");
     }
@@ -267,7 +267,6 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
         close_Simple_Text_Output_Protocol_Ptr((void**)&outputProtocol);
     }
 }
-//TODO: Need to validate if these are set correctly when switching between ARM/AARCH64/IA32/X^$ UEFI builds. If not, may need to use MDE_CPU_x macros instead
 //MDE_CPU_IPF - itanium
 //MDE_CPU_X64 - x86_64
 //MDE_CPU_IA32 - x86

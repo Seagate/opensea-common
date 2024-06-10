@@ -358,7 +358,7 @@ extern "C"
             Tru64VersionNumber tru64Version;
             HPUXVersionNumber hpuxVersion;
             ESXiVersionNumber esxiVersion;
-            //TODO: Add other OS Versioning Schemes here for each OS we support
+            //Add other OS Versioning Schemes here for each OS we support
         }versionType;
     }OSVersionNumber, *ptrOSVersionNumber;
 

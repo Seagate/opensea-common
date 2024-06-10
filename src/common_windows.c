@@ -377,7 +377,6 @@ eReturnValues get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH
     {
         //This case is when the function returns a buffer size that is required to hold the full path name.
         //DWORD lastError = GetLastError();
-        //TODO: change things based on error code?
         return FAILURE;
     }
 #if defined (UNICODE)
@@ -762,9 +761,8 @@ eArchitecture get_Compiled_Architecture(void)
 // https ://clang.llvm.org/docs/UsersManual.html#controlling-diagnostics-via-pragmas
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-function"
-#elif defined __GNUC__
+#elif defined __GNUC__ && __GNUC__ >= 3
 //temporarily disable the warning for unused function
-//TODO: figure out version of GCC this is/is not supported in
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 #endif //__clang__, __GNUC__
@@ -807,7 +805,7 @@ static eEndianness calculate_Endianness(void)
 }
 #if defined __clang__
 #pragma clang diagnostic pop
-#elif defined __GNUC__
+#elif defined __GNUC__ && __GNUC__ >= 3
 //reenable the unused function warning
 #pragma GCC diagnostic pop
 #endif //__clang__, __GNUC__
@@ -1204,7 +1202,7 @@ bool is_Windows_Server_OS(void)
     }
     return isWindowsServer;
 }
-//TODO: If this ever fasly detects PE, it may be better to require checking for multiple keys and making sure they are all found.
+//Consider checking for multiple keys in the future.
 bool is_Windows_PE(void)
 {
     bool isWindowsPE = false;

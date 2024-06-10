@@ -283,29 +283,13 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
     return msSinceJan1970;
 }
 
-//TODO: C11 says supported alignments are implementation defined
+//NOTE: C11 says supported alignments are implementation defined
 //      We may want an if/else to call back to a generic method if it fails some day. (unlikely, so not done right now)
 //      NOTE: There may also be other functions to do this for other compilers or systems, but they are not known today. Add them as necessary
 //      NOTE: some systems may have memalign instead of the posix definition, but it is not clear how to detect that implementation with feature test macros.
 //      NOTE: In UEFI, using the EDK2, malloc will provide an 8-byte alignment, so it may be possible to do some aligned allocations using it without extra work. but we can revist that later.
 void *malloc_aligned(size_t size, size_t alignment)
 {
-    /**
-     * Lets not do anything for VMWare
-     */
-    #if defined (VMK_CROSS_COMP)
-        #ifdef _DEBUG
-            printf("<--%s size : %d  alignment : %d\n",__FUNCTION__, size, alignment);
-        #endif
-        void *temp = NULL;
-        if (0 != posix_memalign( &temp, alignment, size))
-        {
-            temp = NULL;//make sure the system we are running didn't change this.
-        }
-
-        return temp;
-    #else
-
     #if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined (USING_C11) && !defined(_MSC_VER)
         //C11 added an aligned alloc function we can use
         //One additional requirement of this function is that the size must be a multiple of alignment, so we will check and round up the size to make this easy.
@@ -314,10 +298,10 @@ void *malloc_aligned(size_t size, size_t alignment)
             size = size + alignment - (size % alignment);
         }
         return aligned_alloc(alignment, size);
-    #elif !defined(UEFI_C_SOURCE) && defined (__INTEL_COMPILER) || defined (__ICC)
+    #elif !defined(UEFI_C_SOURCE) && (defined (__INTEL_COMPILER) || defined (__ICC))
         //_mm_malloc
         return _mm_malloc(C_CAST(int, size), C_CAST(int, alignment));
-    #elif !defined(UEFI_C_SOURCE) && defined (POSIX_2001)
+    #elif !defined(UEFI_C_SOURCE) && (defined (POSIX_2001) || defined (VMK_CROSS_COMP))
         //POSIX.1-2001 and higher define support for posix_memalign
         void *temp = NULL;
         if (0 != posix_memalign( &temp, alignment, size))
@@ -328,9 +312,13 @@ void *malloc_aligned(size_t size, size_t alignment)
     #elif !defined(UEFI_C_SOURCE) && defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
         //mingw32 has an aligned malloc function that is not available in mingw64.
         return __mingw_aligned_malloc(size, alignment);
-    #elif !defined(UEFI_C_SOURCE) && defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR)
+    #elif !defined(UEFI_C_SOURCE) && (defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR))
         //use the MS _aligned_malloc function. Mingw64 will support this as well from what I can find - TJE
         return _aligned_malloc(size, alignment);
+    #elif !defined(UEFI_C_SOURCE) && (defined (__linux__) || defined (_sun))
+        //most systems will support POSIX's memalign, but fallback to this if necessary
+        //NOTE: May need to include malloc.h on some systems if this is not a known function from stdlib.h where it is sometimes included from too-TJE
+        return memalign(alignment, size);
     #else
         //need a generic way to do this with some math and overallocating...not preferred but can make it work.
         //This can waste a LOT of memory in some cases depending on the required alignment.
@@ -360,32 +348,31 @@ void *malloc_aligned(size_t size, size_t alignment)
         //    printf("\trequest did not meet requirements for generic allocation function\n");
         //}
         return temp;
-    #endif
-
-    #endif
+    #endif //UEFI vs compiler/OS specific capabilities check
 }
 
 void free_aligned(void* ptr)
 {
-    #if defined (VMK_CROSS_COMP)
-    free(ptr);
-    #else
+    //NOTE: Can probably consolidate this a bit for the cases calling free, however these macros match what is being done in
+    //      the aligned malloc above.
     #if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined (USING_C11) && !defined(_MSC_VER)
         //just call free
         free(ptr);
-    #elif !defined(UEFI_C_SOURCE) && defined (__INTEL_COMPILER) || defined (__ICC)
+    #elif !defined(UEFI_C_SOURCE) && (defined (__INTEL_COMPILER) || defined (__ICC))
         //_mm_free
         _mm_free(ptr);
-    #elif !defined(UEFI_C_SOURCE) && defined (POSIX_2001)
+    #elif !defined(UEFI_C_SOURCE) && (defined (POSIX_2001) || defined(VMK_CROSS_COMP))
         //POSIX.1-2001 and higher define support for posix_memalign
         //Just call free
         free(ptr);
     #elif !defined(UEFI_C_SOURCE) && defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
         //mingw32 has an aligned malloc function that is not available in mingw64.
         __mingw_aligned_free(ptr);
-    #elif !defined(UEFI_C_SOURCE) && defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR)
+    #elif !defined(UEFI_C_SOURCE) && (defined (_MSC_VER) || defined (__MINGW64_VERSION_MAJOR))
         //use the MS _aligned_free function
         _aligned_free(ptr);
+    #elif !defined(UEFI_C_SOURCE) && (defined (__linux__) || defined (_sun))
+        free(ptr);
     #else
         //original pointer
         if (ptr)
@@ -396,8 +383,7 @@ void free_aligned(void* ptr)
             tempPtr = C_CAST(void*, *(C_CAST(size_t*, tempPtr)));
             free(tempPtr);
         }
-    #endif
-    #endif
+    #endif //UEFI vs compiler/OS specific capabilities check
 }
 
 void *calloc_aligned(size_t num, size_t size, size_t alignment)
@@ -447,17 +433,18 @@ size_t get_System_Pagesize(void)
         return 4096;//This is not the processor page size, just the pagesize allocated by EDK2. It's in <dePkg/Include/Uefi/UedfiBaseType.h
     #elif defined (POSIX_2001)
         //use sysconf: http://man7.org/linux/man-pages/man3/sysconf.3.html
-        return C_CAST(size_t, sysconf(_SC_PAGESIZE));
-    #elif defined (_POSIX_VERSION) //this may not be the best way to test this, but I think it will be ok.
+        return long_to_sizet(sysconf(_SC_PAGESIZE));
+    #elif defined (_POSIX_VERSION) || defined (BSD4_4) || defined (USING_SUS2)
         //use get page size: http://man7.org/linux/man-pages/man2/getpagesize.2.html
-        return C_CAST(size_t, getpagesize());
+        //note marked legacy in SUSv2, but checking it if posix is missing for some reason
+        return int_to_sizet(getpagesize())
     #elif defined (_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
         SYSTEM_INFO winSysInfo;
         memset(&winSysInfo, 0, sizeof(SYSTEM_INFO));
         GetSystemInfo(&winSysInfo);
         return C_CAST(size_t, winSysInfo.dwPageSize);
     #else
-        return -1;//unknown, so return something easy to see an error with.
+        return 4096;//most CPUs use a 4KiB page size. We can detect specific architectures using something different if we need to here-TJE
     #endif
 }
 
@@ -1475,7 +1462,6 @@ struct tm * get_UTCtime(const time_t *timer, struct tm *buf)
     //Microsoft CRT uses different parameter order! May need to detect this if using the _s version in here
     if (timer && buf)
     {
-        //TODO: C2x not fully defined yet, but can update this first check when it is and is supported.
 #if (defined (POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined (USING_C23)
         //POSIX or C2x (C23 right now) have gmtime_r to use
         return gmtime_r(timer, buf);
@@ -1488,7 +1474,7 @@ struct tm * get_UTCtime(const time_t *timer, struct tm *buf)
             return NULL;
         }
 #else
-        //TODO: There may be better options beyond what is done below, but it may be a per-system implementation or something like that
+        //There may be better options beyond what is done below, but it may be a per-system implementation or something like that
         //      So there is room for improvement in this fallback function
         //Last thing we can do is use the unsafe version and copy it immediately to our own buffer if nothing else is possible
         memcpy(buf, gmtime(timer), sizeof(struct tm));
@@ -1504,7 +1490,6 @@ struct tm * get_Localtime(const time_t *timer, struct tm *buf)
     //Microsoft CRT uses different parameter order! May need to detect this if using the _s version in here
     if (timer && buf)
     {
-        //TODO: C2x not fully defined yet, but can update this first check when it is and is supported.
 #if (defined (POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined (USING_C23)
         //POSIX or C2x (C23 right now) have localtime_r to use
         return localtime_r(timer, buf);
@@ -1517,7 +1502,7 @@ struct tm * get_Localtime(const time_t *timer, struct tm *buf)
             return NULL;
         }
 #else
-        //TODO: There may be better options beyond what is done below, but it may be a per-system implementation or something like that
+        //There may be better options beyond what is done below, but it may be a per-system implementation or something like that
         //      So there is room for improvement in this fallback function
         //Last thing we can do is use the unsafe version and copy it immediately to our own buffer if nothing else is possible
         memcpy(buf, localtime(timer), sizeof(struct tm));
@@ -3087,7 +3072,6 @@ void* explicit_zeroes(void* dest, size_t count)
         //use microsoft's SecureZeroMemory function
         return SecureZeroMemory(dest, count);
 #elif (defined (__FreeBSD__) && __FreeBSD__ >= 11) || (defined (__OpenBSD__) && defined(OpenBSD5_5)) || (defined (__GLIBC__) && defined (__GLIBC_MINOR__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 25) || defined (HAVE_EXPLICIT_BZERO)
-        //TODO: MUSL seems to support this too, so need to figure out how to detect it there.
         //https://elixir.bootlin.com/musl/latest/source/src/string/explicit_bzero.c <- seems to appear first in 1.1.20
         //https://man.freebsd.org/cgi/man.cgi?query=explicit_bzero
         //https://www.gnu.org/software/gnulib/manual/html_node/explicit_005fbzero.html
@@ -3099,7 +3083,8 @@ void* explicit_zeroes(void* dest, size_t count)
 #elif (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 7000000000L /* net bsd version 7.0 and up*/) || defined (HAVE_EXPLICIT_MEMSET)
         //https://man.netbsd.org/NetBSD-8.0/explicit_memset.3
         //https://docs.oracle.com/cd/E88353_01/html/E37843/explicit-memset-3c.html
-        //TODO: Solaris 11.4.12 added this, but I cannot find it in illumos based distributions
+        //NOTE: Solaris 11.4.12 added this, but I cannot find it in illumos based distributions
+        //      Illumos does not list this, but lists explicit_bzero in their manual. Not sure what version to use, so letting meson detect and set the HAVE_...macros
         return explicit_memset(dest, 0, count);
 #else
         //one idea on the web is this ugly volatile function pointer to memset to stop the compiler optimization

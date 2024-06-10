@@ -15,7 +15,7 @@
 
 #pragma once
 
-//TODO: UEFI includes
+//UEFI includes?
 
 #if defined (__cplusplus)
 extern "C"
