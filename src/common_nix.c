@@ -138,7 +138,7 @@ bool os_File_Exists(const char* const filetoCheck)
 
 eReturnValues os_Create_Directory(const char * filePath)
 {
-    int returnValue = 0;
+    eReturnValues returnValue = SUCCESS;
 
     returnValue = mkdir(filePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     if (returnValue == 0)
