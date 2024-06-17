@@ -138,10 +138,10 @@ bool os_File_Exists(const char* const filetoCheck)
 
 eReturnValues os_Create_Directory(const char * filePath)
 {
-    eReturnValues returnValue = SUCCESS;
-
-    returnValue = mkdir(filePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    if (returnValue == 0)
+    //mkdirres should be an int as it is the output of the mkdir command
+    //We are returning enum values, not the result of this command!
+    int mkdirres = mkdir(filePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    if (mkdirres == 0)
     {
         return SUCCESS;
     }
