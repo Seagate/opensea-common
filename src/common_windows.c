@@ -526,6 +526,13 @@ static bool is_Folder_Secure(const char *securityDescriptorString)
                         )
                     {
                         secure = false;
+#if defined (_DEBUG)
+                        char* sidString = M_NULLPTR;
+                        if (ConvertSidToStringSidA(aceSID, &sidString))
+                        {
+                            printf("Untrusted SID: %s\n", sidString);
+                        }
+#endif //_DEBUG
                     }
 #if defined (_DEBUG)
                     else
@@ -533,10 +540,10 @@ static bool is_Folder_Secure(const char *securityDescriptorString)
                         char* sidString = M_NULLPTR;
                         if (ConvertSidToStringSidA(aceSID, &sidString))
                         {
-                            printf("SID: %s\n", sidString);
+                            printf("Trusted SID: %s\n", sidString);
                         }
                     }
-#endif
+#endif //_DEBUG
                 }
                 else
                 {
