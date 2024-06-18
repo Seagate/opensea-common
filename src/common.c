@@ -3751,8 +3751,6 @@ void free_File_Attributes(fileAttributes** attributes)
 #if defined (_WIN32)
         if ((*attributes)->winSecurityDescriptor)
         {
-            //This string is allocated by a WinAPI call which says to use LocalFree, so use LocalFree.
-            //Changing to free() or our safe_Free() could cause memory corruption otherwise.
             explicit_zeroes((*attributes)->winSecurityDescriptor, (*attributes)->securityDescriptorStringLength);
             safe_Free((*attributes)->winSecurityDescriptor);
             (*attributes)->securityDescriptorStringLength = 0;
@@ -3778,7 +3776,7 @@ void free_Secure_File_Info(secureFileInfo** fileInfo)
             safe_Free((*fileInfo)->uniqueID)
         }
         explicit_zeroes(*fileInfo, sizeof(secureFileInfo));
-        safe_Free(fileInfo)
+        safe_Free(*fileInfo)
     }
 }
 
@@ -3913,6 +3911,9 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
             return fileInfo;
         }
 
+        //Canonical path will already have the proper system path separator in it. No need to search / in Windows
+        fileInfo->filename = strrchr(fileInfo->fullpath, SYSTEM_PATH_SEPARATOR) + 1;//plus 1 to get past final seperator
+
         bool fileexists = false;
         if (!creatingFile || exclusiveFlag)
         {
@@ -3941,7 +3942,7 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
         fileAttributes* beforeattrs = M_NULLPTR;
         if (creatingFile)
         {
-            //append the filename to the end on canonicalFileAndPath
+            //append the filename to the end on fileInfo->fullpath
             //first add a trailing slash since one will not be present
             common_String_Concat(C_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, SYSTEM_PATH_SEPARATOR_STR);
             if (strchr(filename, '/') //always check for forwards slash since Windows can accept this
@@ -4048,9 +4049,34 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
             }
         }
         free_File_Attributes(&beforeattrs);
+
+        //Need to verify only the path. Passing the file in with it will cause it to fail since it is not a directory
+        char* pathOnly = C_CAST(char*, fileInfo->fullpath);
+        bool allocatedLocalPathOnly = false;
+        char* lastsep = strrchr(fileInfo->fullpath, '/');
+#if defined (_WIN32)
+        //In Windows, we need to determine if the final seperator is a / or \.
+        //So also check for \ and figure out which was the last one.
+        //A user can pass a path with both and it can be accepted by Windows, which is why we validate both of these.
+        char* lastwinsep = strrchr(fileInfo->fullpath, '\\');
+        if (C_CAST(uintptr_t, lastwinsep) > C_CAST(uintptr_t, lastsep))
+        {
+            //backslash was detected last, so change to this pointer instead for strndup
+            lastsep = lastwinsep;
+        }
+#endif//_WIN32
+        pathOnly = strndup(fileInfo->fullpath, C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, fileInfo->fullpath));//path only. No file name
+        if (pathOnly)
+        {
+            allocatedLocalPathOnly = true;
+        }
+        else
+        {
+            pathOnly = C_CAST(char*, fileInfo->fullpath);
+        }
         
-        //TODO: Check for secure directory - This code must traverse the full path and validate permissions of the directories.
-        if (true)//(os_Is_Directory_Secure(canonicalFileAndPath))
+        //Check for secure directory - This code must traverse the full path and validate permissions of the directories.
+        if (os_Is_Directory_Secure(pathOnly))
         {
             fileInfo->file = M_NULLPTR;
 #if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
@@ -4077,6 +4103,10 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                         {
                             safe_Free(internalmode)
                         }
+                        if (pathOnly && allocatedLocalPathOnly)
+                        {
+                            safe_Free(pathOnly)
+                        }
                         return fileInfo;
                     }
                 }
@@ -4099,6 +4129,10 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                         {
                             safe_Free(internalmode)
                         }
+                        if (pathOnly && allocatedLocalPathOnly)
+                        {
+                            safe_Free(pathOnly)
+                        }
                         return fileInfo;
                     }
 #if defined (_WIN32)
@@ -4115,6 +4149,10 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                         {
                             safe_Free(internalmode)
                         }
+                        if (pathOnly && allocatedLocalPathOnly)
+                        {
+                            safe_Free(pathOnly)
+                        }
                         return fileInfo;
                     }
 #endif //_WIN32
@@ -4127,8 +4165,6 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
 #else
                 fileInfo->fileSize = int64_to_sizet(fileInfo->attributes->filesize);
 #endif
-                fileInfo->filename = strrchr(fileInfo->fullpath, SYSTEM_PATH_SEPARATOR);//Canonical path will already have the proper system path separator in it. No need to search / in Windows
-                
             }
             else
             {
@@ -4147,6 +4183,10 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 }
                 
             }
+        }
+        if (pathOnly && allocatedLocalPathOnly)
+        {
+            safe_Free(pathOnly)
         }
         if (duplicatedModeForInternalUse)
         {

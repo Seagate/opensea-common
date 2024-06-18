@@ -56,6 +56,15 @@ eReturnValues get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH
     }
 }
 
+bool os_Is_Directory_Secure(M_ATTR_UNUSED const char* fullpath)
+{
+    //This is a stub.
+    //There may not be a way to do this in UEFI/edk2.
+    //A quick review of common_nix's implementation shows geteuid & readlink are not implemented.
+    //Until we know a way to do the same kind of validation, this stub returns true.-TJE
+    return true;
+}
+
 eReturnValues get_Simple_Text_Output_Protocol_Ptr(void **pOutput)
 {
     eReturnValues ret = SUCCESS;

@@ -2492,6 +2492,8 @@ extern "C"
 
     M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file);
 
+    M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath);
+
     //Most members of this strucuture match the stat structure. There are some differences which is why we define it without that strucure.
     //Main reason to NOT use struct stat is that Windows has a version, but to get the 64 version would make this a mess to define.
     //So defining it in a way that is best for cross-platform use.

@@ -28,6 +28,38 @@
 #include <sys/types.h>
 #include <sys/stat.h>   
 
+#if defined (HAVE_NTIFS)
+#include <ntifs.h>
+#else
+//https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_reparse_data_buffer
+//Defining this ourselves to be able to access this.
+typedef struct _REPARSE_DATA_BUFFER {
+    ULONG  ReparseTag;
+    USHORT ReparseDataLength;
+    USHORT Reserved;
+    union {
+        struct {
+            USHORT SubstituteNameOffset;
+            USHORT SubstituteNameLength;
+            USHORT PrintNameOffset;
+            USHORT PrintNameLength;
+            ULONG  Flags;
+            WCHAR  PathBuffer[1];
+        } SymbolicLinkReparseBuffer;
+        struct {
+            USHORT SubstituteNameOffset;
+            USHORT SubstituteNameLength;
+            USHORT PrintNameOffset;
+            USHORT PrintNameLength;
+            WCHAR  PathBuffer[1];
+        } MountPointReparseBuffer;
+        struct {
+            UCHAR DataBuffer[1];
+        } GenericReparseBuffer;
+    } DUMMYUNIONNAME;
+} REPARSE_DATA_BUFFER, * PREPARSE_DATA_BUFFER;
+#endif //HAVE_NTIFS
+
 /*
 When stdin, stdout, and stderr aren't associated with a stream (for example, in a Windows application without a console window), 
 the file descriptor values for these streams are returned from _fileno as the special value -2. 
@@ -106,16 +138,23 @@ static bool win_Get_File_Security_Info_By_Name(const char* const filename, fileA
         PACL dacl = M_NULLPTR;
         if (ERROR_SUCCESS == GetNamedSecurityInfo(localPathToCheck, SE_FILE_OBJECT, secInfo, &owner, &group, &dacl, NULL, &secDescriptor))
         {
+            ULONG tempLen = 0;
             LPSTR temp = M_NULLPTR;
-            if (TRUE == ConvertSecurityDescriptorToStringSecurityDescriptorA(secDescriptor, SDDL_REVISION, secInfo, &temp, &attrs->securityDescriptorStringLength))
+            if (TRUE == ConvertSecurityDescriptorToStringSecurityDescriptorA(secDescriptor, SDDL_REVISION, secInfo, &temp, &tempLen))
             {
-                attrs->winSecurityDescriptor = strndup(temp, attrs->securityDescriptorStringLength);
-                success = true;
-                //SecureZeroMemory(temp, attrs->securityDescriptorStringLength);
+                /* do not use strdup or strndup here. There are some extra nulls at the end of what Windows allocates that we are preserving in memcpy */
+                attrs->winSecurityDescriptor = C_CAST(char*, calloc(tempLen, sizeof(char)));
+                if (attrs->winSecurityDescriptor)
+                {
+                    attrs->securityDescriptorStringLength = tempLen;
+                    memcpy_s(attrs->winSecurityDescriptor, attrs->securityDescriptorStringLength, temp, tempLen);
+                    success = true;
+                }
+                SecureZeroMemory(temp, tempLen);
                 LocalFree(temp);
                 temp = M_NULLPTR;
             }
-            //SecureZeroMemory(secDescriptor, GetSecurityDescriptorLength(secDescriptor));
+            SecureZeroMemory(secDescriptor, GetSecurityDescriptorLength(secDescriptor));
             LocalFree(secDescriptor);
             secDescriptor = M_NULLPTR;
         }
@@ -146,16 +185,23 @@ static bool win_Get_File_Security_Info_By_File(FILE *file, fileAttributes* attrs
         }
         if (ERROR_SUCCESS == GetSecurityInfo(msftHandle, SE_FILE_OBJECT, secInfo, &owner, &group, &dacl, NULL, &secDescriptor))
         {
+            ULONG tempLen = 0;
             LPSTR temp = M_NULLPTR;
-            if (TRUE == ConvertSecurityDescriptorToStringSecurityDescriptorA(secDescriptor, SDDL_REVISION, secInfo, &temp, &attrs->securityDescriptorStringLength))
+            if (TRUE == ConvertSecurityDescriptorToStringSecurityDescriptorA(secDescriptor, SDDL_REVISION, secInfo, &temp, &tempLen))
             {
-                attrs->winSecurityDescriptor = strndup(temp, attrs->securityDescriptorStringLength);
-                success = true;
-                //SecureZeroMemory(temp, attrs->securityDescriptorStringLength);
+                /* do not use strdup or strndup here. There are some extra nulls at the end of what Windows allocates that we are preserving in memcpy */
+                attrs->winSecurityDescriptor = C_CAST(char*, calloc(tempLen, sizeof(char)));
+                if (attrs->winSecurityDescriptor)
+                {
+                    attrs->securityDescriptorStringLength = tempLen;
+                    memcpy_s(attrs->winSecurityDescriptor, attrs->securityDescriptorStringLength, temp, tempLen);
+                    success = true;
+                }
+                SecureZeroMemory(temp, attrs->securityDescriptorStringLength);
                 LocalFree(temp);
                 temp = M_NULLPTR;
             }
-            //SecureZeroMemory(secDescriptor, GetSecurityDescriptorLength(secDescriptor));
+            SecureZeroMemory(secDescriptor, GetSecurityDescriptorLength(secDescriptor));
             LocalFree(secDescriptor);
             secDescriptor = M_NULLPTR;
         }
@@ -170,9 +216,11 @@ fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
     memset(&st, 0, sizeof(struct _stat64));
     if (filetoCheck && _stat64(filetoCheck, &st) == 0)
     {
-        attrs = C_CAST(fileAttributes*, calloc(1, sizeof(attrs)));
+        attrs = C_CAST(fileAttributes*, calloc(1, sizeof(fileAttributes)));
         if (attrs)
         {
+            WIN32_FILE_ATTRIBUTE_DATA winAttributes;
+            memset(&winAttributes, 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
             attrs->deviceID = st.st_dev;
             attrs->inode = st.st_ino;
             attrs->filemode = st.st_mode;
@@ -184,8 +232,6 @@ fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
             attrs->fileLastAccessTime = st.st_atime;
             attrs->fileModificationTime = st.st_mtime;
             attrs->fileStatusChangeTime = st.st_ctime;
-            WIN32_FILE_ATTRIBUTE_DATA winAttributes;
-            memset(&winAttributes, 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
             if (win_File_Attributes_By_Name(filetoCheck, &winAttributes))
             {
                 attrs->fileFlags = winAttributes.dwFileAttributes;
@@ -204,9 +250,11 @@ fileAttributes* os_Get_File_Attributes_By_File(FILE *file)
     memset(&st, 0, sizeof(struct _stat64));
     if (file && _fstat64(_fileno(file), &st) == 0)
     {
-        attrs = C_CAST(fileAttributes*, calloc(1, sizeof(attrs)));
+        attrs = C_CAST(fileAttributes*, calloc(1, sizeof(fileAttributes)));
         if (attrs)
         {
+            BY_HANDLE_FILE_INFORMATION winAttributes;
+            memset(&winAttributes, 0, sizeof(BY_HANDLE_FILE_INFORMATION));
             attrs->deviceID = st.st_dev;
             attrs->inode = st.st_ino;
             attrs->filemode = st.st_mode;
@@ -218,8 +266,6 @@ fileAttributes* os_Get_File_Attributes_By_File(FILE *file)
             attrs->fileLastAccessTime = st.st_atime;
             attrs->fileModificationTime = st.st_mtime;
             attrs->fileStatusChangeTime = st.st_ctime;
-            BY_HANDLE_FILE_INFORMATION winAttributes;
-            memset(&winAttributes, 0, sizeof(BY_HANDLE_FILE_INFORMATION));
             if (win_File_Attributes_By_File(file, &winAttributes))
             {
                 attrs->fileFlags = winAttributes.dwFileAttributes;
@@ -279,6 +325,522 @@ fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
         }
     }
     return NULL;
+}
+
+static char* get_Current_User_SID(void)
+{
+    char* sidAsString = M_NULLPTR;
+    HANDLE hToken = M_NULLPTR;
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) 
+    {
+        DWORD dwSize = 0;
+        GetTokenInformation(hToken, TokenUser, NULL, 0, &dwSize);
+        PTOKEN_USER pUser = C_CAST(PTOKEN_USER, malloc(dwSize));
+        if (pUser)
+        {
+            memset(pUser, 0, dwSize);
+            if (GetTokenInformation(hToken, TokenUser, pUser, dwSize, &dwSize))
+            {
+                LPSTR pSidString = M_NULLPTR;
+                if (ConvertSidToStringSidA(pUser->User.Sid, &pSidString))
+                {
+                    sidAsString = strdup(pSidString);//dup'ing this because want to use std malloc/free's instead of LocalFree
+                    LocalFree(pSidString);
+                }
+            }
+            explicit_zeroes(pUser, dwSize);
+            safe_Free(pUser);
+        }
+        CloseHandle(hToken);
+    }
+    return sidAsString;
+}
+
+static bool is_Root_Path(const char* path)
+{
+    bool isroot = false;
+    if (path)
+    {
+        //Check is for a drive letter + :
+        //trailing \ is not checked because it is stripped off by win_dirname function when this is used to figure out number of directories to validate.
+        if (strlen(path) == 2 && is_ASCII(path[0]) && path[1] == ':')
+        {
+            isroot = true;
+        }
+    }
+    return isroot;
+}
+
+/* this expects path seperators to be '\\' otherwise it will fail */
+static char* win_dirname(char* path)
+{
+    if (path)
+    {
+        char* lastseperator = strrchr(path, '\\');
+        if (lastseperator)
+        {
+            if (!is_Root_Path(lastseperator))
+            {
+                /* Special case. The root path C:\ needs to leave the trailing backslash behind */
+                *lastseperator = '\0';
+            }
+            return path;
+        }
+        else
+        {
+            return ".";
+        }
+    }
+    else
+    {
+        return M_NULLPTR;
+    }
+}
+
+//https://learn.microsoft.com/en-us/windows/win32/secauthz/well-known-sids
+static bool is_Secure_Well_Known_SID(PSID sid)
+{
+    bool secure = false;
+    if (sid && IsValidSid(sid))
+    {
+        if (IsWellKnownSid(sid, WinAccountAdministratorSid)
+            || IsWellKnownSid(sid, WinLocalSystemSid)
+            || IsWellKnownSid(sid, WinNtAuthoritySid)
+            || IsWellKnownSid(sid, WinLocalSid)
+            || IsWellKnownSid(sid, WinBuiltinAdministratorsSid)
+            )
+        {
+            //Do we need to check any of these other SIDs for admins?
+            // POSIX validates user or root. Do any of these others below in the if above as accepted???
+            //WinBuiltinAdministratorsSid ??
+            //WinAccountDomainAdminsSid ??
+            //WinAccountCertAdminsSid ??
+            //WinAccountSchemaAdminsSid ??
+            //WinAccountEnterpriseAdminsSid ??
+            //WinAccountPolicyAdminsSid ??
+            //WinBuiltinHyperVAdminsSid ??
+            //WinLocalAccountAndAdministratorSid ??
+            //WinBuiltinStorageReplicaAdminsSid ??
+            //WinAccountKeyAdminsSid ??
+            //WinAccountEnterpriseKeyAdminsSid ??
+            secure = true;
+        }
+    }
+    return secure;
+}
+
+static bool is_Folder_Secure(const char *securityDescriptorString)
+{
+    bool secure = true;
+    if (!securityDescriptorString)
+    {
+        return false;
+    }
+    char* mySidStr = get_Current_User_SID();
+    PSID mySid = M_NULLPTR;
+    PSECURITY_DESCRIPTOR secdesc = M_NULLPTR;
+    ULONG secdesclen = 0;
+    PSID userSid = M_NULLPTR;
+    BOOL defaultOwner = FALSE;
+    PACL dacl = M_NULLPTR;
+    BOOL daclPresent = FALSE, daclDefault = FALSE;
+    if (FALSE == ConvertStringSidToSidA(mySidStr, &mySid))
+    {
+        /* Handle Error */
+        secure = false;
+        goto secure_desc_cleanup;
+    }
+    if (FALSE == IsValidSid(mySid))
+    {
+        /* Handle Error */
+        secure = false;
+        goto secure_desc_cleanup;
+    }
+    if (FALSE == ConvertStringSecurityDescriptorToSecurityDescriptorA(securityDescriptorString, SDDL_REVISION, &secdesc, &secdesclen))
+    {
+        /* Handle Error */
+        secure = false;
+        goto secure_desc_cleanup;
+    }
+    if (FALSE == IsValidSecurityDescriptor(secdesc))
+    {
+        /* Handle Error */
+        secure = false;
+        goto secure_desc_cleanup;
+    }
+    if (FALSE == GetSecurityDescriptorOwner(secdesc, &userSid, &defaultOwner))
+    {
+        /* Handle Error */
+        secure = false;
+        goto secure_desc_cleanup;
+    }
+    if (FALSE == IsValidSid(userSid))
+    {
+        /* Handle Error */
+        secure = false;
+        goto secure_desc_cleanup;
+    }
+    if (!EqualSid(mySid, userSid) && is_Secure_Well_Known_SID(userSid))
+    {
+        /* Directory is owned by someone besides user/system/administrator */
+        secure = false;
+        goto secure_desc_cleanup;
+    }
+    
+    if (FALSE == GetSecurityDescriptorDacl(secdesc, &daclPresent, &dacl, &daclDefault))
+    {
+        /* Handle Error */
+        secure = false;
+        goto secure_desc_cleanup;
+    }
+
+    if (FALSE == daclPresent || dacl == M_NULLPTR)
+    {
+        /* Missing DACL, so cannot verify permissions */
+        secure = false;
+        goto secure_desc_cleanup;
+    }
+
+    if (FALSE == IsValidAcl(dacl))
+    {
+        /* Handle Error */
+        secure = false;
+        goto secure_desc_cleanup;
+    }
+
+    /* dir is writable by others */
+    for (DWORD iter = 0; secure && iter < dacl->AceCount; ++iter)
+    {
+        ACE_HEADER* aceHeader = M_NULLPTR;
+        if (GetAce(dacl, iter, C_CAST(void**, &aceHeader)))
+        {
+            if (aceHeader->AceType == ACCESS_ALLOWED_ACE_TYPE)
+            {
+                PACCESS_ALLOWED_ACE allowedACE = C_CAST(PACCESS_ALLOWED_ACE, aceHeader);
+                ACCESS_MASK accessMask = allowedACE->Mask;
+                PSID aceSID = C_CAST(PSID, &allowedACE->SidStart);
+                if (IsValidSid(aceSID))
+                {
+                    if (accessMask & (FILE_GENERIC_WRITE | FILE_APPEND_DATA) &&
+                        (!EqualSid(mySid, aceSID) && !is_Secure_Well_Known_SID(aceSID))
+                        )
+                    {
+                        secure = false;
+                    }
+#if defined (_DEBUG)
+                    else
+                    {
+                        char* sidString = M_NULLPTR;
+                        if (ConvertSidToStringSidA(aceSID, &sidString))
+                        {
+                            printf("SID: %s\n", sidString);
+                        }
+                    }
+#endif
+                }
+                else
+                {
+                    secure = false;
+                }
+            }
+            /* Else? What to do about other ACEs?*/
+        }
+        else
+        {
+            /* Handle Error */
+            secure = false;
+        }
+    }
+
+secure_desc_cleanup:
+    SecureZeroMemory(mySidStr, strlen(mySidStr));
+    safe_Free(mySidStr);
+    if (mySid)
+    {
+        SecureZeroMemory(mySid, GetLengthSid(mySid));
+        LocalFree(mySid);
+        mySid = M_NULLPTR;
+    }
+    if (secdesc)
+    {
+        SecureZeroMemory(secdesc, secdesclen);
+        LocalFree(secdesc);
+        secdesc = M_NULLPTR;
+    }
+
+    return secure;
+}
+
+#define MAX_SYMLINKS_IN_PATH 5
+
+/* This function requires Windows style seperators (\) to function properly! */
+static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int num_symlinks)
+{
+    char* path_copy = M_NULLPTR;
+    char** dirs = M_NULLPTR;
+    ssize_t num_of_dirs = 1;
+    bool secure = true;
+    ssize_t i = 0;
+
+    if (!fullpath || fullpath[0] == '\0')
+    {
+        /* Handle error */
+        return false;
+    }
+    //Check for drive letter format:
+    if (fullpath[1] != ':' && fullpath[2] != '\\')
+    {
+        /* Handle error */
+        return false;
+    }
+
+    if (num_symlinks > MAX_SYMLINKS_IN_PATH)
+    {
+        /* Could be a symlink loop */
+        /* Handle error */
+        return false;
+    }
+
+    path_copy = strdup(fullpath);
+    if (!path_copy)
+    {
+        /* Handle error */
+        return false;
+    }
+
+    /* Figure out how far it is to the root */
+    char* path_parent = path_copy;
+    for (; !is_Root_Path(path_parent) &&
+        (strcmp(path_parent, ".") != 0);
+        path_parent = win_dirname(path_parent))
+    {
+        num_of_dirs++;
+        if (num_of_dirs == SSIZE_MAX)
+        {
+            //stop before overflow to return an error
+            break;
+        }
+    }
+    if (num_of_dirs == SSIZE_MAX)
+    {
+        /* out of room to compare this many directories deep */
+        return false;
+    }
+    /* Now num_of_dirs indicates # of dirs we must check */
+    safe_Free(path_copy)
+    dirs = C_CAST(char**, malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)));
+    if (!dirs)
+    {
+        /* Handle error */
+        return false;
+    }
+    dirs[num_of_dirs - 1] = strdup(fullpath);
+    if (!dirs[num_of_dirs - 1])
+    {
+        /* Handle error */
+        safe_Free(dirs)
+        return false;
+    }
+    path_copy = strdup(fullpath);
+    if (!path_copy)
+    {
+        /* Handle error */
+        safe_Free(dirs)
+        return false;
+    }
+
+    /* Now fill the dirs array */
+    path_parent = path_copy;
+    for (i = num_of_dirs - 2; i >= 0; i--)
+    {
+        path_parent = win_dirname(path_parent);
+        dirs[i] = strdup(path_parent);
+        if (!dirs[i])
+        {
+            /* Handle error */
+            secure = false;
+            break;
+        }
+    }
+    safe_Free(path_copy);
+    if (!secure)
+    {
+        //cleanup dirs before returning error
+        //i is set to when strdup failed and was decrementing to zero/negatives
+        //so use it + 1 as the starting point to go through and cleanup the stored directories to free up memory
+        for (ssize_t cleanup = i + 1; cleanup <= num_of_dirs; cleanup++)
+        {
+            safe_Free(dirs[cleanup])
+        }
+        safe_Free(dirs)
+        return secure;
+    }
+
+    /*
+     * Traverse from the root to the fullpath,
+     * checking permissions along the way.
+     */
+    for (i = 0; i < num_of_dirs; i++)
+    {
+        fileAttributes* attrs = M_NULLPTR;
+        char* dirptr = dirs[i];
+        bool appendedTrailingSlash = false;
+        if (is_Root_Path(dirptr))
+        {
+            //append a trailing \ to the end before attempting to get the attributes
+            size_t newlen = strlen(dirptr) + 2;
+            dirptr = C_CAST(char*, calloc(newlen, sizeof(char)));
+            if (dirptr)
+            {
+                memcpy(dirptr, dirs[i], newlen - 2);
+                common_String_Concat(dirptr, newlen, "\\");
+                appendedTrailingSlash = true;
+            }
+            else
+            {
+                dirptr = dirs[i];
+            }
+        }
+        attrs = os_Get_File_Attributes_By_Name(dirptr);
+        if (!attrs)
+        {
+            /* handle error */
+            secure = false;
+            if (appendedTrailingSlash)
+            {
+                safe_Free(dirptr)
+            }
+            break;
+        }
+        if (attrs->numberOfLinks > MAX_SYMLINKS_IN_PATH)
+        {
+            /* handle error */
+            secure = false;
+            free_File_Attributes(&attrs);
+            if (appendedTrailingSlash)
+            {
+                safe_Free(dirptr)
+            }
+            break;
+        }
+
+        if (attrs->fileFlags & FILE_ATTRIBUTE_REPARSE_POINT)
+        {
+            /* This is a link. Need to resolve it and test it */
+            HANDLE link = CreateFileA(dirptr, GENERIC_READ, FILE_SHARE_READ, M_NULLPTR, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, M_NULLPTR);
+            if (link != INVALID_HANDLE_VALUE)
+            {
+                PREPARSE_DATA_BUFFER reparseData = C_CAST(PREPARSE_DATA_BUFFER, malloc(sizeof(REPARSE_DATA_BUFFER) + MAX_PATH));
+                if (reparseData)
+                {
+                    DWORD bytesRead = 0;
+                    memset(reparseData, 0, sizeof(REPARSE_DATA_BUFFER) + MAX_PATH);
+                    if (DeviceIoControl(link, FSCTL_GET_REPARSE_POINT, M_NULLPTR, 0, &reparseData, sizeof(reparseData), &bytesRead, M_NULLPTR))
+                    {
+                        size_t bufferSize = 0;
+                        char* reparsePath = M_NULLPTR;
+#if defined (__STDC_SECURE_LIB__)
+                        wcstombs_s(&bufferSize, M_NULLPTR, 0, C_CAST(wchar_t*, reparseData->SymbolicLinkReparseBuffer.PathBuffer), 0);
+#else
+                        bufferSize = wcstombs(M_NULLPTR, C_CAST(wchar_t*, reparseData->SymbolicLinkReparseBuffer.PathBuffer), 0);
+#endif
+                        if (bufferSize > 0)
+                        {
+                            reparsePath = C_CAST(char*, malloc(bufferSize));
+                            if (reparsePath)
+                            {
+#if defined (__STDC_SECURE_LIB__)
+                                wcstombs_s(M_NULLPTR, reparsePath, bufferSize, C_CAST(wchar_t*, reparseData->SymbolicLinkReparseBuffer.PathBuffer), bufferSize);
+#else
+                                wcstombs(reparsePath, C_CAST(wchar_t*, reparseData->SymbolicLinkReparseBuffer.PathBuffer), bufferSize);
+#endif
+                                num_symlinks++;
+                                bool recurseSecure = internal_OS_Is_Directory_Secure(reparsePath, num_symlinks);
+                                num_symlinks--;
+                                if (!recurseSecure)
+                                {
+                                    secure = false;
+                                }
+                                safe_Free(reparsePath)
+                            }
+                            else
+                            {
+                                secure = false;
+                            }
+                        }
+                        else
+                        {
+                            secure = false;
+                        }
+                    }
+                    else
+                    {
+                        secure = false;
+                    }
+                    safe_Free(reparseData)
+                }
+                else
+                {
+                    secure = false;
+                }
+                CloseHandle(link);
+                if (secure)
+                {
+                    continue;
+                }
+                else
+                {
+                    if (appendedTrailingSlash)
+                    {
+                        safe_Free(dirptr)
+                    }
+                    break;
+                }
+            }
+            else
+            {
+                secure = false;
+                free_File_Attributes(&attrs);
+                if (appendedTrailingSlash)
+                {
+                    safe_Free(dirptr)
+                }
+                break;
+            }
+        }
+
+        if (appendedTrailingSlash)
+        {
+            safe_Free(dirptr)
+        }
+
+        if (!(attrs->fileFlags & FILE_ATTRIBUTE_DIRECTORY))
+        {
+            /* Not a directory */
+            secure = false;
+            free_File_Attributes(&attrs);
+            break;
+        }
+
+        secure = is_Folder_Secure(attrs->winSecurityDescriptor);
+
+        free_File_Attributes(&attrs);
+    }
+
+    for (i = 0; i < num_of_dirs; i++)
+    {
+        safe_Free(dirs[i])
+    }
+
+    safe_Free(dirs)
+    return secure;
+}
+
+bool os_Is_Directory_Secure(const char* fullpath)
+{
+    //This was implemented as close as possible to https://wiki.sei.cmu.edu/confluence/display/c/FIO15-C.+Ensure+that+file+operations+are+performed+in+a+secure+directory
+    unsigned int num_symlinks = 0;
+    return internal_OS_Is_Directory_Secure(fullpath, num_symlinks);
 }
 
 bool os_Directory_Exists(const char * const pathToCheck)
@@ -506,13 +1068,13 @@ bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char
         }
         if (secDesc1)
         {
-            RtlSecureZeroMemory(secDesc1, secDesc1len);
+            SecureZeroMemory(secDesc1, secDesc1len);
             LocalFree(secDesc1);
             secDesc1 = M_NULLPTR;
         }
         if (secDesc2)
         {
-            RtlSecureZeroMemory(secDesc2, secDesc2len);
+            SecureZeroMemory(secDesc2, secDesc2len);
             LocalFree(secDesc2);
             secDesc2 = M_NULLPTR;
         }

@@ -32,6 +32,7 @@
 #include <grp.h>
 #include <stdlib.h>//getenv and related vars.
 #include <termios.h>
+#include <libgen.h>
 #if (defined(__FreeBSD__) && __FreeBSD__ >= 4 /*4.6 technically*/) || (defined(__OpenBSD__) && defined OpenBSD2_9)
     #include <readpassphrase.h>
 #endif //FreeBSD 4.6+ or OpenBSD 2.9+
@@ -104,6 +105,208 @@ fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
         }
     }
     return uniqueID;
+}
+
+#define MAX_SYMLINKS_IN_PATH 5
+
+static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int num_symlinks)
+{
+    char* path_copy = M_NULLPTR;
+    char** dirs = M_NULLPTR;
+    ssize_t num_of_dirs = 1;
+    bool secure = true;
+    ssize_t i = 0;
+    ssize_t r = 0;
+    struct stat buf;
+    uid_t my_uid = geteuid();
+
+    memset(&buf, 0, sizeof(struct stat));
+
+    if (!fullpath || fullpath[0] != '/')
+    {
+        /* Handle error */
+        return false;
+    }
+
+    if (num_symlinks > MAX_SYMLINKS_IN_PATH)
+    {
+        /* Could be a symlink loop */
+        /* Handle error */
+        return false;
+    }
+
+    if (!(path_copy = strdup(fullpath)))
+    {
+        /* Handle error */
+        return false;
+    }
+
+    /* Figure out how far it is to the root */
+    char* path_parent = path_copy;
+    for (; ((strcmp(path_parent, "/") != 0) &&
+        (strcmp(path_parent, "//") != 0) &&
+        (strcmp(path_parent, ".") != 0));
+        path_parent = dirname(path_parent))
+    {
+        num_of_dirs++;
+        if (num_of_dirs == SSIZE_MAX)
+        {
+            //stop before overflow to return an error
+            break;
+        }
+    }
+    if (num_of_dirs == SSIZE_MAX)
+    {
+        /* out of room to compare this many directories deep */
+        return false;
+    }
+    /* Now num_of_dirs indicates # of dirs we must check */
+    safe_Free(path_copy)
+
+    if (!(dirs = C_CAST(char**, malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)))))
+    {
+        /* Handle error */
+        return false;
+    }
+
+    if (!(dirs[num_of_dirs - 1] = strdup(fullpath)))
+    {
+        /* Handle error */
+        safe_Free(dirs)
+        return false;
+    }
+
+    if (!(path_copy = strdup(fullpath)))
+    {
+        /* Handle error */
+        safe_Free(dirs)
+        return false;
+    }
+
+    /* Now fill the dirs array */
+    path_parent = path_copy;
+    for (i = num_of_dirs - 2; i >= 0; i--)
+    {
+        path_parent = dirname(path_parent);
+        if (!(dirs[i] = strdup(path_parent)))
+        {
+            /* Handle error */
+            secure = false;
+            break;
+        }
+    }
+    safe_Free(path_copy);
+    if (!secure)
+    {
+        //cleanup dirs before returning error
+        //i is set to when strdup failed and was decrementing to zero/negatives
+        //so use it + 1 as the starting point to go through and cleanup the stored directories to free up memory
+        for (ssize_t cleanup = i + 1; cleanup <= num_of_dirs; cleanup++)
+        {
+            safe_Free(dirs[cleanup])
+        }
+        safe_Free(dirs)
+        return secure;
+    }
+
+    /*
+     * Traverse from the root to the fullpath,
+     * checking permissions along the way.
+     */
+    for (i = 0; i < num_of_dirs; i++)
+    {
+        ssize_t linksize = 0;
+        char* link = M_NULLPTR;
+        if (lstat(dirs[i], &buf) != 0)
+        {
+            /* Handle error */
+            secure = false;
+            break;
+        }
+
+        if (S_ISLNK(buf.st_mode))
+        {
+            /* Symlink, test linked-to file */
+            if (buf.st_size < 0)
+            {
+                /* Handle error */
+                secure = false;
+                break;
+            }
+            linksize = buf.st_size + 1;
+            if (!(link = C_CAST(char*, malloc(C_CAST(size_t, linksize)))))
+            {
+                /* Handle error */
+                secure = false;
+                break;
+            }
+
+            r = readlink(dirs[i], link, C_CAST(size_t, linksize));
+            if (r == -1)
+            {
+                /* Handle error */
+                secure = false;
+                safe_Free(link)
+                break;
+            }
+            else if (r >= linksize)
+            {
+                /* Handle truncation error */
+                secure = false;
+                safe_Free(link)
+                break;
+            }
+            link[r] = '\0';
+
+            num_symlinks++;
+            bool recurseSecure = internal_OS_Is_Directory_Secure(link, num_symlinks);
+            num_symlinks--;
+
+            if (!recurseSecure)
+            {
+                secure = false;
+                safe_Free(link)
+                break;
+            }
+            safe_Free(link)
+            continue;
+        }
+
+        if (!S_ISDIR(buf.st_mode))
+        {
+            /* Not a directory */
+            secure = false;
+            break;
+        }
+
+        if ((buf.st_uid != my_uid) && (buf.st_uid != 0))
+        {
+            /* Directory is owned by someone besides user or root */
+            secure = false;
+            break;
+        }
+
+        if (buf.st_mode & (S_IWGRP | S_IWOTH))
+        {
+            /* dir is writable by others */
+            secure = false;
+            break;
+        }
+    }
+
+    for (i = 0; i < num_of_dirs; i++)
+    {
+        safe_Free(dirs[i])
+    }
+
+    safe_Free(dirs)
+    return secure;
+}
+
+bool os_Is_Directory_Secure(const char* fullpath)
+{
+    unsigned int num_symlinks = 0;
+    return internal_OS_Is_Directory_Secure(fullpath, num_symlinks);
 }
 
 bool os_Directory_Exists(const char * const pathToCheck)
