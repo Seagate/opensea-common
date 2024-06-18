@@ -4165,6 +4165,7 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
 #else
                 fileInfo->fileSize = int64_to_sizet(fileInfo->attributes->filesize);
 #endif
+                fileInfo->fileno = fileno(fileInfo->file);
             }
             else
             {
