@@ -1884,7 +1884,7 @@ extern "C"
         OPENSEA_COMPILER_HP_A_CPP,
         /*Add other compilers here if we ever add more than those above (which not all listed above are supported!)*/
         OPENSEA_COMPILER_RESERVED
-    );
+    )
 
     typedef struct _compilerVersion
     {
@@ -2422,7 +2422,7 @@ extern "C"
     typedef unsigned short mode_t;
     typedef short nlink_t;
     //using our own "type" to make sure we can get as much of the filesize as possible..and workaround Windows issues with off_t -TJE
-    typedef __int64 offset_t;
+    typedef int64_t offset_t;//NOTE: WinAPI uses __int64_t which is the same as long long which is also what int64_t from stdint.h is defined as
 
     //Windows does not supply the macros to test the file, so we are defining them ourselves so that we can use them when we want to.
     //NOTE: This is only for the mode_t compatibility provided by Windows.
@@ -2558,7 +2558,7 @@ extern "C"
         SEC_FILE_SEEK_FAILURE, /*Cannot seek to the specified offset in the file*/
         SEC_FILE_FLUSH_FAILURE,
         SEC_FILE_FAILURE /*generic undefinable error*/
-    );
+    )
 
     typedef struct _secureFileInfo
     {
@@ -2594,7 +2594,7 @@ extern "C"
     M_DECLARE_ENUM(eSecureFileRename,
         SEC_RENAME_DO_NOT_REPLACE_EXISTING,
         SEC_RENAME_REPLACE_EXISTING
-    );
+    )
 
     //NOTE: This will convert the filename into a canonical path internally to ensure a valid path is provided.
     //      Since the low-level APIs need a file name rather than FILE *, this takes the same kind of input.

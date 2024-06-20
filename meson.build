@@ -68,7 +68,12 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
   '-Wtrampolines', #GCC only at this time
   '-Werror=implicit',
   '-Werror=incompatible-pointer-types',
-  '-Werror=int-conversion'
+  '-Werror=int-conversion',
+  '-Woverlength-strings',
+  '-Wnewline-eof',
+  '-Wno-c23-extensions', #We do not want this warning since we are already checking for when C23 extensions are available before we use them. If not, we use a compiler specific definition, or make it an empty definition.
+  '-Wparentheses',
+  '-Wextra-semi'
   ]
 
   if c.get_id().contains('gcc') and target_machine.system() == 'windows'
