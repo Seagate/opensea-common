@@ -444,122 +444,124 @@ static bool is_Folder_Secure(const char *securityDescriptorString)
     BOOL defaultOwner = FALSE;
     PACL dacl = M_NULLPTR;
     BOOL daclPresent = FALSE, daclDefault = FALSE;
-    if (FALSE == ConvertStringSidToSidA(mySidStr, &mySid))
+    do
     {
-        /* Handle Error */
-        secure = false;
-        goto secure_desc_cleanup;
-    }
-    if (FALSE == IsValidSid(mySid))
-    {
-        /* Handle Error */
-        secure = false;
-        goto secure_desc_cleanup;
-    }
-    if (FALSE == ConvertStringSecurityDescriptorToSecurityDescriptorA(securityDescriptorString, SDDL_REVISION, &secdesc, &secdesclen))
-    {
-        /* Handle Error */
-        secure = false;
-        goto secure_desc_cleanup;
-    }
-    if (FALSE == IsValidSecurityDescriptor(secdesc))
-    {
-        /* Handle Error */
-        secure = false;
-        goto secure_desc_cleanup;
-    }
-    if (FALSE == GetSecurityDescriptorOwner(secdesc, &userSid, &defaultOwner))
-    {
-        /* Handle Error */
-        secure = false;
-        goto secure_desc_cleanup;
-    }
-    if (FALSE == IsValidSid(userSid))
-    {
-        /* Handle Error */
-        secure = false;
-        goto secure_desc_cleanup;
-    }
-    if (!EqualSid(mySid, userSid) && is_Secure_Well_Known_SID(userSid))
-    {
-        /* Directory is owned by someone besides user/system/administrator */
-        secure = false;
-        goto secure_desc_cleanup;
-    }
-    
-    if (FALSE == GetSecurityDescriptorDacl(secdesc, &daclPresent, &dacl, &daclDefault))
-    {
-        /* Handle Error */
-        secure = false;
-        goto secure_desc_cleanup;
-    }
-
-    if (FALSE == daclPresent || dacl == M_NULLPTR)
-    {
-        /* Missing DACL, so cannot verify permissions */
-        secure = false;
-        goto secure_desc_cleanup;
-    }
-
-    if (FALSE == IsValidAcl(dacl))
-    {
-        /* Handle Error */
-        secure = false;
-        goto secure_desc_cleanup;
-    }
-
-    /* dir is writable by others */
-    for (DWORD iter = 0; secure && iter < dacl->AceCount; ++iter)
-    {
-        ACE_HEADER* aceHeader = M_NULLPTR;
-        if (GetAce(dacl, iter, C_CAST(void**, &aceHeader)))
-        {
-            if (aceHeader->AceType == ACCESS_ALLOWED_ACE_TYPE)
-            {
-                PACCESS_ALLOWED_ACE allowedACE = C_CAST(PACCESS_ALLOWED_ACE, aceHeader);
-                ACCESS_MASK accessMask = allowedACE->Mask;
-                PSID aceSID = C_CAST(PSID, &allowedACE->SidStart);
-                if (IsValidSid(aceSID))
-                {
-                    if (accessMask & (FILE_GENERIC_WRITE | FILE_APPEND_DATA) &&
-                        (!EqualSid(mySid, aceSID) && !is_Secure_Well_Known_SID(aceSID))
-                        )
-                    {
-                        secure = false;
-#if defined (_DEBUG)
-                        char* sidString = M_NULLPTR;
-                        if (ConvertSidToStringSidA(aceSID, &sidString))
-                        {
-                            printf("Untrusted SID: %s\n", sidString);
-                        }
-#endif //_DEBUG
-                    }
-#if defined (_DEBUG)
-                    else
-                    {
-                        char* sidString = M_NULLPTR;
-                        if (ConvertSidToStringSidA(aceSID, &sidString))
-                        {
-                            printf("Trusted SID: %s\n", sidString);
-                        }
-                    }
-#endif //_DEBUG
-                }
-                else
-                {
-                    secure = false;
-                }
-            }
-            /* Else? What to do about other ACEs?*/
-        }
-        else
+        if (FALSE == ConvertStringSidToSidA(mySidStr, &mySid))
         {
             /* Handle Error */
             secure = false;
+            break;
         }
-    }
+        if (FALSE == IsValidSid(mySid))
+        {
+            /* Handle Error */
+            secure = false;
+            break;
+        }
+        if (FALSE == ConvertStringSecurityDescriptorToSecurityDescriptorA(securityDescriptorString, SDDL_REVISION, &secdesc, &secdesclen))
+        {
+            /* Handle Error */
+            secure = false;
+            break;
+        }
+        if (FALSE == IsValidSecurityDescriptor(secdesc))
+        {
+            /* Handle Error */
+            secure = false;
+            break;
+        }
+        if (FALSE == GetSecurityDescriptorOwner(secdesc, &userSid, &defaultOwner))
+        {
+            /* Handle Error */
+            secure = false;
+            break;
+        }
+        if (FALSE == IsValidSid(userSid))
+        {
+            /* Handle Error */
+            secure = false;
+            break;
+        }
+        if (!EqualSid(mySid, userSid) && is_Secure_Well_Known_SID(userSid))
+        {
+            /* Directory is owned by someone besides user/system/administrator */
+            secure = false;
+            break;
+        }
+        
+        if (FALSE == GetSecurityDescriptorDacl(secdesc, &daclPresent, &dacl, &daclDefault))
+        {
+            /* Handle Error */
+            secure = false;
+            break;
+        }
 
-secure_desc_cleanup:
+        if (FALSE == daclPresent || dacl == M_NULLPTR)
+        {
+            /* Missing DACL, so cannot verify permissions */
+            secure = false;
+            break;
+        }
+
+        if (FALSE == IsValidAcl(dacl))
+        {
+            /* Handle Error */
+            secure = false;
+            break;
+        }
+
+        /* dir is writable by others */
+        for (DWORD iter = 0; secure && iter < dacl->AceCount; ++iter)
+        {
+            ACE_HEADER* aceHeader = M_NULLPTR;
+            if (GetAce(dacl, iter, C_CAST(void**, &aceHeader)))
+            {
+                if (aceHeader->AceType == ACCESS_ALLOWED_ACE_TYPE)
+                {
+                    PACCESS_ALLOWED_ACE allowedACE = C_CAST(PACCESS_ALLOWED_ACE, aceHeader);
+                    ACCESS_MASK accessMask = allowedACE->Mask;
+                    PSID aceSID = C_CAST(PSID, &allowedACE->SidStart);
+                    if (IsValidSid(aceSID))
+                    {
+                        if (accessMask & (FILE_GENERIC_WRITE | FILE_APPEND_DATA) &&
+                            (!EqualSid(mySid, aceSID) && !is_Secure_Well_Known_SID(aceSID))
+                            )
+                        {
+                            secure = false;
+    #if defined (_DEBUG)
+                            char* sidString = M_NULLPTR;
+                            if (ConvertSidToStringSidA(aceSID, &sidString))
+                            {
+                                printf("Untrusted SID: %s\n", sidString);
+                            }
+    #endif //_DEBUG
+                        }
+    #if defined (_DEBUG)
+                        else
+                        {
+                            char* sidString = M_NULLPTR;
+                            if (ConvertSidToStringSidA(aceSID, &sidString))
+                            {
+                                printf("Trusted SID: %s\n", sidString);
+                            }
+                        }
+    #endif //_DEBUG
+                    }
+                    else
+                    {
+                        secure = false;
+                    }
+                }
+                /* Else? What to do about other ACEs?*/
+            }
+            else
+            {
+                /* Handle Error */
+                secure = false;
+            }
+        }
+    } while (0);
+
     SecureZeroMemory(mySidStr, strlen(mySidStr));
     safe_Free(mySidStr);
     if (mySid)
