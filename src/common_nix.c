@@ -107,7 +107,129 @@ fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
     return uniqueID;
 }
 
+//If multiple environment variables with the same name exist, consider this a tampered environment and insecure
+static bool multiple_env_vars_with_same_name(void)
+{
+    static bool multiplevars = false;
+    static bool envEvaluated = false;
+    if (envEvaluated == false)
+    {
+        size_t k = 0;
+        size_t l = 0;
+        size_t len_i = 0;
+        size_t len_j = 0;
+
+        for (size_t i = 0; environ[i] != M_NULLPTR; i++)
+        {
+            for (size_t j = i; environ[j] != M_NULLPTR; j++)
+            {
+                if (i != j)
+                {
+                    k = 0;
+                    l = 0;
+
+                    len_i = strlen(environ[i]);
+                    len_j = strlen(environ[j]);
+
+                    while (k < len_i && l < len_j)
+                    {
+                        if (environ[i][k] != environ[j][l])
+                        {
+                            break;
+                        }
+
+                        if (environ[i][k] == '=')
+                        {
+                            envEvaluated = true;
+                            multiplevars = true;
+                            return multiplevars;
+                        }
+
+                        k++;
+                        l++;
+                    }
+                }
+            }
+        }
+        envEvaluated = true;
+    }
+    return multiplevars;
+}
+
 #define MAX_SYMLINKS_IN_PATH 5
+
+//This function reads the environment variable SUDO_UID to determine
+//if the user used "sudo" to execute the program
+//on error, uid returned will be zero
+static uid_t get_sudo_uid(void)
+{
+    static uid_t sudouid = ROOT_UID_VAL;
+    static bool gotsudouid = false;
+    if (!gotsudouid)
+    {
+        char* uidstr = M_NULLPTR;
+#if defined (HAVE_GETENV_S) || (defined (_WIN32) && defined (_MSC_VER) && defined(__STDC_SECURE_LIB__)) || (defined (__STDC_LIB_EXT1__) && defined (__STDC_WANT_LIB_EXT1__))
+        /* MSFT/C11 annex K adds getenv_s, so use it when available to check if this exists */
+        size_t size = 0;
+        if (getenv_s(&size, NULL, 0, "SUDO_UID") == 0 && size > 0 && size < SIZE_MAX)
+        {
+            size += 1;//make sure there is room for NULL
+            uidstr = C_CAST(char*, calloc(size, sizeof(char)));
+            if (uidstr)
+            {
+                if (getenv_s(M_NULLPTR, uidstr, size, "SUDO_UID") != 0)
+                {
+                    //error, so free this before moving on
+                    safe_Free(uidstr)
+                }
+            }
+        }
+#elif defined (HAVE_SECURE_GETENV) && !defined (DISABLE_SECURE_GETENV)
+        /*
+        * Use secure_getenv, unless the DISABLE_SECURE_GETENV is defined
+        * secure_getenv (when available) is used by default unless DISABLE_SECURE_GETENV is defined
+        * by the person building this library.
+        * See https://linux.die.net/man/3/secure_getenv for reasons to disable it.
+        */
+        char *temp = secure_getenv("SUDO_UID");
+        if (temp != M_NULLPTR)
+        {
+            uidstr = strdup(temp);
+        }
+#elif defined (HAVE___SECURE_GETENV) && !defined (DISABLE_SECURE_GETENV)
+        /*
+        * Use __secure_getenv, unless the DISABLE_SECURE_GETENV is defined
+        * __secure_getenv (when available) is used by default unless DISABLE_SECURE_GETENV is defined
+        * by the person building this library.
+        * See https://linux.die.net/man/3/secure_getenv for reasons to disable it.
+        */
+        char *temp = __secure_getenv("SUDO_UID");
+        if (temp != M_NULLPTR)
+        {
+            uidstr = strdup(temp);
+        }
+#else
+        char *temp = getenv("SUDO_UID");
+        if (temp != M_NULLPTR)
+        {
+            uidstr = strdup(temp);
+        }
+#endif
+        if (uidstr != M_NULLPTR)
+        {
+            char* endptr = M_NULLPTR;
+            //convert this to uid_t
+            unsigned long temp = strtoul(uidstr, &endptr, 10);
+            if (!(temp == ULONG_MAX && errno == ERANGE) && !(temp == 0 && endptr == M_NULLPTR))
+            {
+                sudouid = C_CAST(uid_t, temp);
+            }
+            safe_Free(uidstr)
+        }
+        gotsudouid = true;
+    }
+    return sudouid;
+}
 
 static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int num_symlinks)
 {
@@ -125,6 +247,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     if (!fullpath || fullpath[0] != '/')
     {
         /* Handle error */
+#if defined (_DEBUG)
+        printf("Full path does not start with /\n");
+#endif
         return false;
     }
 
@@ -132,12 +257,18 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     {
         /* Could be a symlink loop */
         /* Handle error */
+#if defined (_DEBUG)
+        printf("Too many symlinks\n");
+#endif
         return false;
     }
 
     if (!(path_copy = strdup(fullpath)))
     {
         /* Handle error */
+#if defined (_DEBUG)
+        printf("Cannot dup path\n");
+#endif
         return false;
     }
 
@@ -158,6 +289,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     if (num_of_dirs == SSIZE_MAX)
     {
         /* out of room to compare this many directories deep */
+#if defined (_DEBUG)
+        printf("Too many directories deep\n");
+#endif
         return false;
     }
     /* Now num_of_dirs indicates # of dirs we must check */
@@ -166,12 +300,18 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     if (!(dirs = C_CAST(char**, malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)))))
     {
         /* Handle error */
+#if defined (_DEBUG)
+        printf("Cannot malloc dirs array\n");
+#endif
         return false;
     }
 
     if (!(dirs[num_of_dirs - 1] = strdup(fullpath)))
     {
         /* Handle error */
+#if defined (_DEBUG)
+        printf("Cannot dup fullpath into dirs array\n");
+#endif
         safe_Free(dirs)
         return false;
     }
@@ -179,6 +319,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     if (!(path_copy = strdup(fullpath)))
     {
         /* Handle error */
+#if defined (_DEBUG)
+        printf("Cannot dup fullpath to path copy\n");
+#endif
         safe_Free(dirs)
         return false;
     }
@@ -191,6 +334,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         if (!(dirs[i] = strdup(path_parent)))
         {
             /* Handle error */
+#if defined (_DEBUG)
+            printf("Cannot dup path parent\n");
+#endif
             secure = false;
             break;
         }
@@ -217,9 +363,15 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     {
         ssize_t linksize = 0;
         char* link = M_NULLPTR;
+#if defined (_DEBUG)
+        printf("Checking \"%s\"\n", dirs[i]);
+#endif
         if (lstat(dirs[i], &buf) != 0)
         {
             /* Handle error */
+#if defined (_DEBUG)
+            printf("lstat failed\n");
+#endif
             secure = false;
             break;
         }
@@ -231,6 +383,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             {
                 /* Handle error */
                 secure = false;
+#if defined (_DEBUG)
+                printf("Bad link size\n");
+#endif
                 break;
             }
             linksize = buf.st_size + 1;
@@ -238,6 +393,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             {
                 /* Handle error */
                 secure = false;
+#if defined (_DEBUG)
+                printf("link cannot allocate\n");
+#endif
                 break;
             }
 
@@ -245,6 +403,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             if (r == -1)
             {
                 /* Handle error */
+#if defined (_DEBUG)
+                printf("readlink failed\n");
+#endif
                 secure = false;
                 safe_Free(link)
                 break;
@@ -252,6 +413,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             else if (r >= linksize)
             {
                 /* Handle truncation error */
+#if defined (_DEBUG)
+                printf("link truncated\n");
+#endif
                 secure = false;
                 safe_Free(link)
                 break;
@@ -264,6 +428,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
             if (!recurseSecure)
             {
+#if defined (_DEBUG)
+                printf("recursive link check failed\n");
+#endif
                 secure = false;
                 safe_Free(link)
                 break;
@@ -275,21 +442,48 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         if (!S_ISDIR(buf.st_mode))
         {
             /* Not a directory */
+#if defined (_DEBUG)
+            printf("not a directory\n");
+#endif
             secure = false;
             break;
         }
 
-        if ((buf.st_uid != my_uid) && (buf.st_uid != 0))
+        if ((buf.st_uid != my_uid) && (buf.st_uid != ROOT_UID_VAL))
         {
-            /* Directory is owned by someone besides user or root */
-            secure = false;
-            break;
+            /* Before we assume insecure, check if this was executed as sudo by the user as this directory may be the user's directory and ok to access */
+            /* Only do this if the euid read above is set to zero */
+            if (my_uid == ROOT_UID_VAL && !multiple_env_vars_with_same_name())
+            {
+                uid_t sudouid = get_sudo_uid();
+                if (sudouid != ROOT_UID_VAL && buf.st_uid != sudouid)
+                {
+                    /* Directory is owned by someone besides user or root */
+                    secure = false;
+#if defined (_DEBUG)
+                    printf("Directory owned by someone other than user or root: %u my_uid: %u\n", buf.st_uid, my_uid);
+#endif
+                    break;
+                }
+            }
+            else
+            {
+                /* Directory is owned by someone besides user or root */
+                secure = false;
+#if defined (_DEBUG)
+                printf("Directory owned by someone other than user or root: %u my_uid: %u\n", buf.st_uid, my_uid);
+#endif
+                break;
+            }
         }
 
         if (buf.st_mode & (S_IWGRP | S_IWOTH))
         {
             /* dir is writable by others */
             secure = false;
+#if defined (_DEBUG)
+            printf("Directory writable by others\n");
+#endif
             break;
         }
     }
