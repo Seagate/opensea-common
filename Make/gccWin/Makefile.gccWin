@@ -61,7 +61,8 @@ endif
 LIB_SRC_FILES = \
     $(SRC_DIR)common.c\
     $(SRC_DIR)common_platform.c\
-    $(SRC_DIR)common_windows.c
+    $(SRC_DIR)common_windows.c\
+	$(SRC_DIR)validate_format.c
 
 PROJECT_DEFINES += -DENABLE_CSMI
 PROJECT_DEFINES += -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D__USE_MINGW_ANSI_STDIO

@@ -31,7 +31,8 @@ LFLAGS ?= -Wall
 LIB_SRC_FILES = \
     $(SRC_DIR)common.c\
     $(SRC_DIR)common_platform.c\
-    $(SRC_DIR)common_nix.c
+    $(SRC_DIR)common_nix.c\
+	$(SRC_DIR)validate_format.c
 
 #NOTE -Wsign-conversion can be useful but warns way too much by default. Only enable it if debugging specific problems
 COMPILER_VERSION := $(shell $(CC) --version)

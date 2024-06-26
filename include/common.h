@@ -1883,7 +1883,6 @@ extern "C"
         OPENSEA_COMPILER_IBM_SYSTEMZ_C_CPP,
         OPENSEA_COMPILER_HP_A_CPP,
         /*Add other compilers here if we ever add more than those above (which not all listed above are supported!)*/
-        OPENSEA_COMPILER_RESERVED
     )
 
     typedef struct _compilerVersion
@@ -2361,16 +2360,29 @@ extern "C"
         #define SSIZE_T_DEFINED
     #endif  //SSIZE_MAX && _MSC_VER
 
+    #if defined (__clang__)
+        #define M_FUNC_ATTR_MALLOC __attribute__((malloc))
+    #elif defined (__GNUC__)
+        //GCC 4.1.3 added attribute for malloc
+        #if __GNUC__ > 4 || (defined (__GNUC_MINOR__) && __GNUC__ >=4 && __GNUC_MINOR__ >= 1)
+            #define M_FUNC_ATTR_MALLOC __attribute__((malloc))
+        #else
+            #define M_FUNC_ATTR_MALLOC /* this function allocates memory and returns the pointer to you */
+        #endif
+    #else
+        #define M_FUNC_ATTR_MALLOC /* this function allocates memory and returns the pointer to you */
+    #endif
+
 
 #if !defined (__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined (USING_C23)
     //define strndup
     //NOTE: Not defining strdup since this may be available in the OS's that need this definition already (Windows currently)
-    char* strndup(const char* src, size_t size);
+    M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size);
 
     //Need getline and getdelim functions since they are not available.
-    ssize_t getline(char** lineptr, size_t* n, FILE* stream);
+    M_FUNC_ATTR_MALLOC ssize_t getline(char** lineptr, size_t* n, FILE* stream);
 
-    ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream);
+    M_FUNC_ATTR_MALLOC ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream);
 #endif //!__STDC_ALLOC_LIB__ && (POSIX < 2008)
 
 
@@ -2411,6 +2423,8 @@ extern "C"
     bool get_Bytes_To_32(uint8_t *dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint32_t *out);
 
     bool get_Bytes_To_64(uint8_t *dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t *out);
+
+    size_t string_n_length(const char* string, size_t n);
 
     //This is available in Windows and linux/unix-like systems
 #include <sys/types.h>
@@ -2469,6 +2483,7 @@ extern "C"
 #else
     //using our own "type" to make sure we can get as much of the filesize as possible..and workaround Windows issues with off_t -TJE
     typedef off_t offset_t;//to deal with windows differences in off_t definitions in stat
+    typedef int errno_t;
 #endif //_WIN32
 
     #define FILE_UNIQUE_ID_ARR_MAX (16)
@@ -2557,6 +2572,7 @@ extern "C"
         SEC_FILE_WRITE_DISK_FULL, /*cannot write any more data due to an error from running out of space*/
         SEC_FILE_SEEK_FAILURE, /*Cannot seek to the specified offset in the file*/
         SEC_FILE_FLUSH_FAILURE,
+        SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN, /* the ability to call a function like POSIX's unlink is not possible as there is no such function to provide this behavior */
         SEC_FILE_FAILURE /*generic undefinable error*/
     )
 
@@ -2600,15 +2616,21 @@ extern "C"
     //      Since the low-level APIs need a file name rather than FILE *, this takes the same kind of input.
     //eSecureFileError secure_Rename_File_By_Name(const char* filename, eSecureFileRename renameInfo);
 
-    //NOTE: This will convert the filename into a canonical path internally to ensure a valid path is provided.
-    //      Low-level APIs need the filename to do this, so using the same type of input.
-    //eSecureFileError secure_Delete_File_By_Name(const char* filename);
-
-    M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* fileInfo, void* M_RESTRICT buffer, size_t buffersize, size_t elementsize, size_t count, size_t* numberread/*optional*/);
-    M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* fileInfo, void* M_RESTRICT buffer, size_t buffersize, size_t elementsize, size_t count, size_t* numberwritten/*optional*/);
+    M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInfo, void* M_RESTRICT buffer, size_t buffersize, size_t elementsize, size_t count, size_t* numberread/*optional*/);
+    M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileInfo, void* M_RESTRICT buffer, size_t buffersize, size_t elementsize, size_t count, size_t* numberwritten/*optional*/);
     M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, offset_t offset, int initialPosition);
     M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo);
     M_NODISCARD offset_t secure_Tell_File(secureFileInfo* fileInfo);
+
+    //This function will unlink the file if it is still open, otherwise it will remove it.
+    M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo);
+
+    M_DECLARE_ENUM(eSecureFileDeleteNameAction,
+        SEC_DELETE_NAME_FAIL_IF_OPEN,
+        SEC_DELETE_NAME_UNLINK_IF_OPEN
+    )
+    
+    M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eSecureFileDeleteNameAction deleteAction);
 
     eSecureFileError secure_Flush_File(secureFileInfo* fileInfo);
 
@@ -2616,7 +2638,21 @@ extern "C"
 
     eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos);
 
-    //need secure_fprintf_File to write formatted data to a file
+#if defined (__GNUC__)
+    //This attribute was first suppored in GCC 2.5
+    //Not doing a version check with how old that is at this time.
+    //If we need to add a version check in the future for other compilers that have some GCC support, we can - TJE
+    //Varargpos should be set to zero when used with functions like vfprintf
+    #define FUNC_ATTR_PRINTF(formatargpos, varargpos) __attribute__((format(printf, formatargpos, varargpos)))
+#else //!__GNUC__
+    #define FUNC_ATTR_PRINTF(formatargpos, varargpos) /* this is a printf/fprintf/etc style function. Please use a user defined constant string for the format! */
+#endif //__GNUC__
+
+    FUNC_ATTR_PRINTF(2, 0) eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, va_list args);
+
+    FUNC_ATTR_PRINTF(2, 3) eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, ...);
+
+    int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formatargs);
 
 #if defined (__cplusplus)
 } //extern "C"
@@ -2627,7 +2663,7 @@ extern "C"
 
 #if defined (__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnottic ignored "-Wc++0x-compat" //treated as synonymn for Wc++11-compat, so use this for compatibility to old versions
+#pragma clang diagnostic ignored "-Wc++0x-compat" //treated as synonymn for Wc++11-compat, so use this for compatibility to old versions
 //gcc 4.7.x - present calls it c++11-compat
 //4.3.6 - 4.6.4 calls it c++0x-compat
 #elif defined (__GNUC__)
@@ -2660,7 +2696,7 @@ extern "C"
     #pragma clang diagnostic pop
 #elif defined (__GNUC__)
     //the pop can be simplified
-    #if (defined (__GNUC_MINOR__) && __GNUC__ >=4 && __GNUC_MINOR__ >= 3)
+    #if __GNUC__ > 4 || (defined (__GNUC_MINOR__) && __GNUC__ >=4 && __GNUC_MINOR__ >= 3)
         #pragma GCC diagnostic pop
     #endif 
 #endif

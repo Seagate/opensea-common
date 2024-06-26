@@ -15,6 +15,7 @@
 //
 #include "common.h"
 #include <ctype.h>
+#include <stdarg.h>
 
 #if defined (_WIN32)
 #include <windows.h> //used for setting color output to the command prompt and Sleep()
@@ -1849,7 +1850,6 @@ void print_Compiler(eCompiler compilerUsed)
         printf("HP aCC");
         break;
     case OPENSEA_COMPILER_UNKNOWN:
-    case OPENSEA_COMPILER_RESERVED:
     //default:
         printf("Unknown Compiler");
         break;
@@ -3799,6 +3799,7 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
         char *internalmode = C_CAST(char*, mode);//we will dup mode if we need to modify it later, so this cast is to get rid of a warning
         bool duplicatedModeForInternalUse = false;
         char* intFileName = M_NULLPTR;//allocated/dup'd later
+        fileInfo->file = M_NULLPTR;
         if (strchr(internalmode, 'w') || strchr(internalmode, 'a'))
         {
             //file is being created and does not exist yet.
@@ -4074,7 +4075,7 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
         {
             pathOnly = C_CAST(char*, fileInfo->fullpath);
         }
-        
+        printf("Checking directory security\n");
         //Check for secure directory - This code must traverse the full path and validate permissions of the directories.
         if (os_Is_Directory_Secure(pathOnly))
         {
@@ -4110,7 +4111,7 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                         return fileInfo;
                     }
                 }
-                fileInfo->attributes = os_Get_File_Attributes_By_Name(fileInfo->fullpath);
+                fileInfo->attributes = os_Get_File_Attributes_By_File(fileInfo->file);
                 //compare to user provided attributes
                 if (expectedFileInfo)
                 {
@@ -4166,6 +4167,7 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 fileInfo->fileSize = int64_to_sizet(fileInfo->attributes->filesize);
 #endif
                 fileInfo->fileno = fileno(fileInfo->file);
+                printf("Filesize set to %zu\n", fileInfo->fileSize);
             }
             else
             {
@@ -4185,6 +4187,11 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 
             }
         }
+        else
+        {
+            fileInfo->error = SEC_FILE_INSECURE_PATH;
+            printf("Insecure path\n");
+        }
         if (pathOnly && allocatedLocalPathOnly)
         {
             safe_Free(pathOnly)
@@ -4195,6 +4202,11 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
         }
         safe_Free(intFileName)
     }
+    else if (fileInfo)
+    {
+        fileInfo->file = M_NULLPTR;
+        fileInfo->error = SEC_FILE_FAILURE;
+    }
     return fileInfo;
 }
 
@@ -4204,12 +4216,12 @@ eSecureFileError secure_Close_File(secureFileInfo* fileInfo)
     if (fileInfo)
     {
         fileInfo->error = SEC_FILE_INVALID_FILE;
-        if (fileInfo->file)
+        if (fileInfo->file != M_NULLPTR)
         {
             int closeres = fclose(fileInfo->file);
             if (closeres == 0)
             {
-                fileInfo->file = NULL;
+                fileInfo->file = M_NULLPTR;
                 fileInfo->error = SEC_FILE_SUCCESS;
             }
             else if (closeres == EOF)
@@ -4222,15 +4234,24 @@ eSecureFileError secure_Close_File(secureFileInfo* fileInfo)
                 fileInfo->error = SEC_FILE_FAILURE;
             }
         }
+        else if (fileInfo->error != SEC_FILE_FAILURE_CLOSING_FILE)
+        {
+            //File was never opened, so return no error
+            fileInfo->error = SEC_FILE_SUCCESS;
+        }
         return fileInfo->error;
     }
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
-M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* fileInfo, void* M_RESTRICT buffer, size_t buffersize, size_t elementsize, size_t count, size_t* numberread/*optional*/)
+M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInfo, void* M_RESTRICT buffer, size_t buffersize, size_t elementsize, size_t count, size_t* numberread/*optional*/)
 {
     if (fileInfo)
     {
+        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        {
+            return SEC_FILE_FAILURE_CLOSING_FILE;
+        }
         fileInfo->error = SEC_FILE_INVALID_FILE;
         if (fileInfo->file)
         {
@@ -4297,10 +4318,14 @@ M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* fileInfo, void* M_
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
-M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* fileInfo, void* M_RESTRICT buffer, size_t buffersize, size_t elementsize, size_t count, size_t* numberwritten/*optional*/)
+M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileInfo, void* M_RESTRICT buffer, size_t buffersize, size_t elementsize, size_t count, size_t* numberwritten/*optional*/)
 {
     if (fileInfo)
     {
+        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        {
+            return SEC_FILE_FAILURE_CLOSING_FILE;
+        }
         fileInfo->error = SEC_FILE_INVALID_FILE;
         if (fileInfo->file)
         {
@@ -4362,6 +4387,10 @@ eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, offset_t offset, int
 {
     if (fileInfo)
     {
+        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        {
+            return SEC_FILE_FAILURE_CLOSING_FILE;
+        }
         fileInfo->error = SEC_FILE_INVALID_FILE;
         if (fileInfo->file)
         {
@@ -4393,6 +4422,10 @@ eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
 {
     if (fileInfo)
     {
+        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        {
+            return SEC_FILE_FAILURE_CLOSING_FILE;
+        }
         fileInfo->error = SEC_FILE_INVALID_FILE;
         if (fileInfo->file)
         {
@@ -4412,6 +4445,10 @@ offset_t secure_Tell_File(secureFileInfo* fileInfo)
 {
     if (fileInfo)
     {
+        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        {
+            return SEC_FILE_FAILURE_CLOSING_FILE;
+        }
         fileInfo->error = SEC_FILE_INVALID_FILE;
         if (fileInfo->file)
         {
@@ -4444,6 +4481,10 @@ eSecureFileError secure_Flush_File(secureFileInfo* fileInfo)
 {
     if (fileInfo)
     {
+        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        {
+            return SEC_FILE_FAILURE_CLOSING_FILE;
+        }
         fileInfo->error = SEC_FILE_INVALID_FILE;
         if (fileInfo->file)
         {
@@ -4466,10 +4507,143 @@ eSecureFileError secure_Flush_File(secureFileInfo* fileInfo)
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
+eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
+{
+    if (fileInfo)
+    {
+        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        {
+            return SEC_FILE_FAILURE_CLOSING_FILE;
+        }
+        fileInfo->error = SEC_FILE_INVALID_PATH;
+        if (fileInfo->file && strlen(fileInfo->fullpath) > 0)
+        {
+            //unlink the file is possible
+#if defined (_WIN32)
+            if (0 != _unlink(fileInfo->fullpath))
+            {
+                fileInfo->error = SEC_FILE_FAILURE;
+            }
+#elif defined (POSIX_2001) || defined (BSD4_3) || defined (__svr4__)
+            if (0 != unlink(fileInfo->fullpath))
+            {
+                fileInfo->error = SEC_FILE_FAILURE;
+            }
+#else
+            fileInfo->error = SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN;
+#endif
+        }
+        else if (strlen(fileInfo->fullpath) > 0)
+        {
+            //remove the file
+            if (0 != remove(fileInfo->fullpath))
+            {
+                fileInfo->error = SEC_FILE_FAILURE;
+            }
+        }
+        return fileInfo->error;
+    }
+    return SEC_FILE_INVALID_SECURE_FILE;
+}
+
+eSecureFileError secure_Delete_File_By_Name(const char* filename, eSecureFileDeleteNameAction deleteAction)
+{
+    if (filename)
+    {
+        //first get cannonical name
+        char fullpath[4096] = { 0 };
+        if (SUCCESS != get_Full_Path(filename, C_CAST(char*, fullpath)))
+        {
+            //unable to get the full path to this file.
+            //This means something went wrong, and we need to return an error.
+            return SEC_FILE_INVALID_PATH;
+        }
+        char* lastsep = strrchr(fullpath, '/');
+#if defined (_WIN32)
+        //In Windows, we need to determine if the final seperator is a / or \.
+        //So also check for \ and figure out which was the last one.
+        //A user can pass a path with both and it can be accepted by Windows, which is why we validate both of these.
+        char* lastwinsep = strrchr(fullpath, '\\');
+        if (C_CAST(uintptr_t, lastwinsep) > C_CAST(uintptr_t, lastsep))
+        {
+            //backslash was detected last, so change to this pointer instead for strndup
+            lastsep = lastwinsep;
+        }
+#endif//_WIN32
+        //Check for secure directory - This code must traverse the full path and validate permissions of the directories.
+        char *pathOnly = strndup(fullpath, C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, fullpath));//path only. No file name
+        if (!pathOnly)
+        {
+            pathOnly = C_CAST(char*, fullpath);
+        }        
+        if (!os_Is_Directory_Secure(pathOnly))
+        {
+            safe_Free(pathOnly)
+            return SEC_FILE_INSECURE_PATH;
+        }
+        safe_Free(pathOnly)
+        //Check if the file is already open before attempting to remove it
+        errno_t fileerror = 0;
+        FILE* checkExist = M_NULLPTR;
+#if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
+        fileerror = fopen_s(&checkExist, fullpath, "r");
+#else
+        errno = 0;
+        checkExist = fopen(fullpath, "r");
+        fileerror = errno;
+#endif
+        
+        if (checkExist != M_NULLPTR && fileerror == 0)
+        {
+            fclose(checkExist);
+            checkExist = M_NULLPTR;
+            if (0 == remove(fullpath))
+            {
+                return SEC_FILE_SUCCESS;
+            }
+            else
+            {
+                return SEC_FILE_FAILURE;
+            }
+        }
+        else if (os_File_Exists(fullpath))
+        {
+            switch (deleteAction)
+            {
+            case SEC_DELETE_NAME_FAIL_IF_OPEN:
+                return SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN;
+            case SEC_DELETE_NAME_UNLINK_IF_OPEN:
+                //File cannot be opened, so we must assume something else has it open, so unlink instead-TJE
+#if defined (_WIN32)
+                if (0 != _unlink(fullpath))
+                {
+                    return SEC_FILE_FAILURE;
+                }
+                return SEC_FILE_SUCCESS;
+#elif defined (POSIX_2001) || defined (BSD4_3) || defined (__svr4__)
+                if (0 != unlink(fullpath))
+                {
+                    return SEC_FILE_FAILURE;
+                }
+                return SEC_FILE_SUCCESS;
+#else
+                return SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN;
+#endif
+            }
+        }
+        return SEC_FILE_FAILURE;
+    }
+    return SEC_FILE_INVALID_PATH;
+}
+
 eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT fileInfo, fpos_t* M_RESTRICT pos)
 {
     if (fileInfo && pos)
     {
+        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        {
+            return SEC_FILE_FAILURE_CLOSING_FILE;
+        }
         fileInfo->error = SEC_FILE_INVALID_FILE;
         if (fileInfo->file)
         {
@@ -4498,6 +4672,10 @@ eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos)
 {
     if (fileInfo && pos)
     {
+        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        {
+            return SEC_FILE_FAILURE_CLOSING_FILE;
+        }
         fileInfo->error = SEC_FILE_INVALID_FILE;
         if (fileInfo->file)
         {
@@ -4517,6 +4695,99 @@ eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos)
     {
         //pos is invalid
         fileInfo->error = SEC_FILE_INVALID_PARAMETER;
+        return fileInfo->error;
+    }
+    return SEC_FILE_INVALID_SECURE_FILE;
+}
+
+size_t string_n_length(const char* string, size_t n)
+{
+#if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
+    return strnlen_s(string, n);
+#else
+    //implement this ourselves with memchr after making sure string is not a null pointer
+    if (string != M_NULLPTR)
+    {
+        const char* found = memchr(string, '\0', n);
+        if (found != M_NULLPTR)
+        {
+            return C_CAST(size_t, found - string);
+        }
+        else
+        {
+            return n;
+        }
+    }
+    return 0;
+#endif
+}
+
+eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, va_list args)
+{
+    if (fileInfo && fileInfo->file)
+    {
+        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        {
+            return SEC_FILE_FAILURE_CLOSING_FILE;
+        }
+        if (format)
+        {
+            int vfprintfresult = 0;
+#if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
+            vfprintfresult = vfprintf_s(fileInfo->file, format, args);
+#else
+            va_list verifyargs;
+            va_copy(verifyargs, args);
+            if (verify_Format_String_And_Args(format, args) > 0)
+            {
+                vfprintfresult = vfprintf(fileInfo->file, format, args);
+            }
+            else
+            {
+                vfprintfresult = -1;
+            }
+            va_end(verifyargs);
+#endif
+            if (vfprintfresult < 0 || ferror(fileInfo->file))
+            {
+                fileInfo->error = SEC_FILE_READ_WRITE_ERROR;
+            }
+            else
+            {
+                fileInfo->error = SEC_FILE_SUCCESS;
+            }
+        }
+        else
+        {
+            //NULL pointer for the format string
+            fileInfo->error = SEC_FILE_INVALID_PARAMETER;
+        }
+        return fileInfo->error;
+    }
+    return SEC_FILE_INVALID_SECURE_FILE;
+}
+
+eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, ...)
+{
+    if (fileInfo && fileInfo->file)
+    {
+        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        {
+            return SEC_FILE_FAILURE_CLOSING_FILE;
+        }
+        if (format)
+        {
+            va_list args;
+            va_start(args, format);
+            eSecureFileError result = secure_vfprintf_File(fileInfo, format, args);
+            va_end(args);
+            return result;
+        }
+        else
+        {
+            //NULL pointer for the format string
+            fileInfo->error = SEC_FILE_INVALID_PARAMETER;
+        }
         return fileInfo->error;
     }
     return SEC_FILE_INVALID_SECURE_FILE;

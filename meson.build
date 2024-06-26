@@ -205,7 +205,21 @@ if get_option('username').enabled()
   global_cpp_args += ['-DENABLE_READ_USERNAME']
 endif
 
-src_files = ['src/common.c', 'src/common_platform.c']
+src_files = ['src/common.c', 'src/common_platform.c', 'src/validate_format.c']
+
+if c.has_header_symbol('stdlib.h', '__STDC_LIB_EXT1__')
+  add_project_arguments(['-D__STDC_WANT_LIB_EXT1__=1'], language : 'c')
+endif
+
+if c.has_function('getenv_s', prefix : '#define __STDC_WANT_LIB_EXT1__ 1\n#include <stdlib.h>\n')
+  add_project_arguments(['-DHAVE_GETENV_S'], language : 'c')
+elif c.has_function('secure_getenv', prefix : '#define _GNU_SOURCE\n#include <stdlib.h>\n')
+  #TODO: check if user has disabled using this function through compile option
+  add_project_arguments(['-D_GNU_SOURCE', '-DHAVE_SECURE_GETENV'], language : 'c')
+elif c.has_function('__secure_getenv', prefix : '#define _GNU_SOURCE\n#include <stdlib.h>\n')
+  #TODO: check if user has disabled using this function through compile option
+  add_project_arguments(['-D_GNU_SOURCE', '-DHAVE___SECURE_GETENV'], language : 'c')
+endif
 
 #check which memset/bzero is available that will not be optimized out in case we do not have the ability to check via preprocessor in the code.
 if c.has_function('memset_explicit', prefix : '#include <string.h>')
