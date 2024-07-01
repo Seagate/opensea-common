@@ -26,7 +26,7 @@
 #include <sddl.h>
 
 #include <sys/types.h>
-#include <sys/stat.h>   
+#include <sys/stat.h>
 
 #if defined (HAVE_NTIFS)
 #include <ntifs.h>
@@ -1739,6 +1739,20 @@ bool is_Windows_10_Version_21H2_Or_Higher(void)
     return isWindows10_21H2OrHigher;
 }
 
+bool is_Windows_10_Version_22H2_Or_Higher(void)
+{
+    bool isWindows10_22H2OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 19045)
+    {
+        //Win10 or higher
+        isWindows10_22H2OrHigher = true;
+    }
+    return isWindows10_22H2OrHigher;
+}
+
 bool is_Windows_11_Version_21H2_Or_Higher(void)
 {
     bool isWindows10_21H2OrHigher = false;
@@ -1753,30 +1767,62 @@ bool is_Windows_11_Version_21H2_Or_Higher(void)
     return isWindows10_21H2OrHigher;
 }
 
+bool is_Windows_11_Version_22H2_Or_Higher(void)
+{
+    bool isWindows11_22H2OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 22621)
+    {
+        isWindows11_22H2OrHigher = true;
+    }
+    return isWindows11_22H2OrHigher;
+}
+
+bool is_Windows_11_Version_23H2_Or_Higher(void)
+{
+    bool isWindows11_23H2OrHigher = false;
+    OSVersionNumber windowsVersion;
+    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    get_Operating_System_Version_And_Name(&windowsVersion, NULL);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 22631)
+    {
+        isWindows11_23H2OrHigher = true;
+    }
+    return isWindows11_23H2OrHigher;
+}
+
 bool is_Windows_Server_OS(void)
 {
-    bool isWindowsServer = false;
-    OSVERSIONINFOEX windowsVersionInfo;
-    DWORDLONG conditionMask = 0;
-    memset(&windowsVersionInfo, 0, sizeof(OSVERSIONINFOEX));
-    windowsVersionInfo.wProductType = VER_NT_WORKSTATION;
-    conditionMask = VerSetConditionMask(conditionMask, VER_PRODUCT_TYPE, VER_EQUAL);//checking for equality on the workstation attribute
-    if (VerifyVersionInfo(&windowsVersionInfo, VER_PRODUCT_TYPE, conditionMask))
+    static bool checkedForServer = false;
+    static bool isWindowsServer = false;
+    if (!checkedForServer)
     {
-        //Windows workstation/desktop
-        isWindowsServer = false;
-    }
-    else
-    {
-        //Windows server/domain controller (which is a windows server version)
-        isWindowsServer = true;
+        OSVERSIONINFOEX windowsVersionInfo;
+        DWORDLONG conditionMask = 0;
+        memset(&windowsVersionInfo, 0, sizeof(OSVERSIONINFOEX));
+        windowsVersionInfo.wProductType = VER_NT_WORKSTATION;
+        conditionMask = VerSetConditionMask(conditionMask, VER_PRODUCT_TYPE, VER_EQUAL);//checking for equality on the workstation attribute
+        if (VerifyVersionInfo(&windowsVersionInfo, VER_PRODUCT_TYPE, conditionMask))
+        {
+            //Windows workstation/desktop
+            isWindowsServer = false;
+        }
+        else
+        {
+            //Windows server/domain controller (which is a windows server version)
+            isWindowsServer = true;
+        }
+        checkedForServer = true;
     }
     return isWindowsServer;
 }
 //Consider checking for multiple keys in the future.
 bool is_Windows_PE(void)
 {
-    bool isWindowsPE = false;
+    static bool regread = false;
+    static bool isWindowsPE = false;
     //To figure out if running in PE requires checking the registry. There is not another known way to look for this.
     //All other functions to read or check versions will return build numbers that match the equivalent non-PE version of windows, which can still be useful for determining supported APIs
     //We will be looking for one of these keys:
@@ -1789,33 +1835,37 @@ bool is_Windows_PE(void)
     -HKEY_LOCAL_MACHINE\system\currentcontrolset\control\PEFirmwareType (PE4)
     -HKEY_LOCAL_MACHINE\System\Setup\SystemSetupInProgress
     */
-    HKEY keyHandle;
-    if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WinPE"), 0, KEY_READ, &keyHandle))
+    if (!regread)
     {
-#if defined (_DEBUG)
-        printf("Found HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WinPE\n");
-#endif
-        isWindowsPE = true;
-        RegCloseKey(keyHandle);
-        keyHandle = 0;
-    }
-    if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\CurrentControlSet\\Control\\MiniNT"), 0, KEY_READ, &keyHandle))
-    {
-#if defined (_DEBUG)
-        printf("Found HKLM\\SYSTEM\\CurrentControlSet\\Control\\MiniNT\n");
-#endif
-        isWindowsPE = true;
-        RegCloseKey(keyHandle);
-        keyHandle = 0;
-    }
-    if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\ControlSet001\\Control\\MiniNT"), 0, KEY_READ, &keyHandle))
-    {
-#if defined (_DEBUG)
-        printf("Found HKLM\\SYSTEM\\ControlSet001\\Control\\MiniNT\n");
-#endif
-        isWindowsPE = true;
-        RegCloseKey(keyHandle);
-        keyHandle = 0;
+        HKEY keyHandle;
+        if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WinPE"), 0, KEY_READ, &keyHandle))
+        {
+    #if defined (_DEBUG)
+            printf("Found HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WinPE\n");
+    #endif
+            isWindowsPE = true;
+            RegCloseKey(keyHandle);
+            keyHandle = 0;
+        }
+        if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\CurrentControlSet\\Control\\MiniNT"), 0, KEY_READ, &keyHandle))
+        {
+    #if defined (_DEBUG)
+            printf("Found HKLM\\SYSTEM\\CurrentControlSet\\Control\\MiniNT\n");
+    #endif
+            isWindowsPE = true;
+            RegCloseKey(keyHandle);
+            keyHandle = 0;
+        }
+        if (!isWindowsPE && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\ControlSet001\\Control\\MiniNT"), 0, KEY_READ, &keyHandle))
+        {
+    #if defined (_DEBUG)
+            printf("Found HKLM\\SYSTEM\\ControlSet001\\Control\\MiniNT\n");
+    #endif
+            isWindowsPE = true;
+            RegCloseKey(keyHandle);
+            keyHandle = 0;
+        }
+        regread = true;
     }
     return isWindowsPE;
 }
@@ -1828,81 +1878,88 @@ bool is_Windows_PE(void)
 //https://msdn.microsoft.com/en-us/library/windows/desktop/ms724358(v=vs.85).aspx
 //https://msdn.microsoft.com/en-us/library/windows/desktop/ms647003(v=vs.85).aspx //Used this one since it is supposed to work!
 //From MSDN: To obtain the full version number for the operating system, call the GetFileVersionInfo function on one of the system DLLs, such as Kernel32.dll, then call VerQueryValue to obtain the \\StringFileInfo\\<lang><codepage>\\ProductVersion subblock of the file version information.
+//NOTE: Changed from GetFileVersionInfo as it did not report the correct up to date information that was expected.
+//      Using RtlGetVersion from ntdll.dll instead
+typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(POSVERSIONINFOEXW);
+
 eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char *operatingSystemName)
 {
     eReturnValues ret = SUCCESS;
+    static DWORD winMajor = 0;
+    static DWORD winMinor = 0;
+    static DWORD winBuild = 0;
+    static bool readVersionFromNTDLL = false;
     bool isWindowsServer = is_Windows_Server_OS();
     bool isWindowsPE = is_Windows_PE();
     memset(versionNumber, 0, sizeof(OSVersionNumber));
     versionNumber->osVersioningIdentifier = OS_WINDOWS;
-    //start getting the Windows version using the verifyVersionInfo call. I'm doing it this way since the "version helpers" are essentially doing the same thing but are not available to minGW
     
-    static CONST TCHAR kernel32DLL[] = TEXT("\\kernel32.dll");
-    TCHAR *systemPathBuf = C_CAST(TCHAR*, calloc(OPENSEA_PATH_MAX, sizeof(TCHAR)));
-    CONST TCHAR *systemPath = &systemPathBuf[0];
-    CONST TCHAR *subblock = TEXT(SYSTEM_PATH_SEPARATOR_STR);
+    if (!readVersionFromNTDLL)
+    {
+        static CONST TCHAR ntdll[] = TEXT("\\ntdll.dll");
+        TCHAR *systemPathBuf = C_CAST(TCHAR*, calloc(OPENSEA_PATH_MAX, sizeof(TCHAR)));
+        CONST TCHAR *systemPath = &systemPathBuf[0];
 
-    if(!systemPath)
-    {
-        return MEMORY_FAILURE;
-    }
-
-    UINT directoryStringLength = GetSystemDirectory(systemPathBuf, OPENSEA_PATH_MAX);
-    if (directoryStringLength > OPENSEA_PATH_MAX || directoryStringLength == 0 || directoryStringLength > OPENSEA_PATH_MAX - sizeof(kernel32DLL) / sizeof(*kernel32DLL))
-    {
-        //error
-        safe_Free(systemPathBuf)
-        systemPath = NULL;
-        return FAILURE;
-    }
-    //I'm using this Microsoft provided call to concatenate strings since it will concatenate properly for ansi or wide strings depending on whether UNICODE is set or not - TJE
-    if (S_OK != StringCchCat(systemPathBuf, OPENSEA_PATH_MAX, kernel32DLL))
-    {
-        return FAILURE;
-    }
-
-    DWORD versionInfoSize = GetFileVersionInfoSize(systemPath, NULL);
-    if (versionInfoSize > 0)
-    {
-        LPVOID ver = malloc(versionInfoSize);
-        if (!ver)
+        if (!systemPath)
         {
-            safe_Free(systemPathBuf)
-            systemPath = NULL;
             return MEMORY_FAILURE;
         }
-        if (GetFileVersionInfo(systemPathBuf, 0, versionInfoSize, ver))
+
+        UINT directoryStringLength = GetSystemDirectory(systemPathBuf, OPENSEA_PATH_MAX);
+        if (directoryStringLength > OPENSEA_PATH_MAX || directoryStringLength == 0 || directoryStringLength > OPENSEA_PATH_MAX - sizeof(ntdll) / sizeof(*ntdll))
         {
-            LPVOID block = NULL;
-            UINT blockSize = sizeof(VS_FIXEDFILEINFO);//start with this size...should get at least this
-            VS_FIXEDFILEINFO *versionFileInfo = NULL;
-            if (VerQueryValue(C_CAST(LPCVOID, ver), subblock, &block, &blockSize) || blockSize < sizeof(VS_FIXEDFILEINFO))//this should run the first function before performing the comparison
+            //error
+            safe_Free(systemPathBuf)
+            systemPath = NULL;
+            return FAILURE;
+        }
+        //I'm using this Microsoft provided call to concatenate strings since it will concatenate properly for ansi or wide strings depending on whether UNICODE is set or not - TJE
+        if (S_OK != StringCchCat(systemPathBuf, OPENSEA_PATH_MAX, ntdll))
+        {
+            return FAILURE;
+        }
+
+        HMODULE hMod = INVALID_HANDLE_VALUE;
+        if (TRUE == GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, systemPathBuf, &hMod))
+        {
+            if (hMod != INVALID_HANDLE_VALUE)
             {
-                versionFileInfo = C_CAST(VS_FIXEDFILEINFO*, block);
-                versionNumber->versionType.windowsVersion.majorVersion = HIWORD(versionFileInfo->dwProductVersionMS);
-                versionNumber->versionType.windowsVersion.minorVersion = LOWORD(versionFileInfo->dwProductVersionMS);
-                versionNumber->versionType.windowsVersion.buildNumber = HIWORD(versionFileInfo->dwProductVersionLS);
+                RtlGetVersionPtr rtlgetverptr = C_CAST(RtlGetVersionPtr, GetProcAddress(hMod, "RtlGetVersion"));
+                if (rtlgetverptr != M_NULLPTR)
+                {
+                    OSVERSIONINFOEXW osInfo = { 0 };
+                    osInfo.dwOSVersionInfoSize = sizeof(osInfo);
+                    if (0 == rtlgetverptr(&osInfo))
+                    {
+                        versionNumber->versionType.windowsVersion.majorVersion = osInfo.dwMajorVersion;
+                        versionNumber->versionType.windowsVersion.minorVersion = osInfo.dwMinorVersion;
+                        versionNumber->versionType.windowsVersion.buildNumber = osInfo.dwBuildNumber;
+                        winMajor = osInfo.dwMajorVersion;
+                        winMinor = osInfo.dwMinorVersion;
+                        winBuild = osInfo.dwBuildNumber;
+                        ret = SUCCESS;
+                        readVersionFromNTDLL = true;
+                    }
+                }
+                else
+                {
+                    ret = FAILURE;
+                }
             }
             else
             {
-                //error
                 ret = FAILURE;
             }
         }
-        else
-        {
-            //error
-            ret = FAILURE;
-        }
-        safe_Free(ver)
+        safe_Free(systemPathBuf)
+        systemPath = NULL;
     }
     else
     {
-        //error
-        ret = FAILURE;
+        versionNumber->versionType.windowsVersion.majorVersion = winMajor;
+        versionNumber->versionType.windowsVersion.minorVersion = winMinor;
+        versionNumber->versionType.windowsVersion.buildNumber  = winBuild;
     }
-    safe_Free(systemPathBuf)
-    systemPath = NULL;
 
     if (ret == SUCCESS)
     {
@@ -1919,11 +1976,11 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
                     {
                         switch (versionNumber->versionType.windowsVersion.buildNumber)
                         {
-                        case 17763:
-                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2019");
-                            break;
                         case 14393:
                             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2016");
+                            break;
+                        case 17763:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2019");
                             break;
                         case 18362:
                             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 1903");
@@ -1988,8 +2045,17 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
                         case 19044:
                             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 21H2");
                             break;
+                        case 19045:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 22H2");
+                            break;
                         case 22000:
                             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 11, version 21H2");
+                            break;
+                        case 22621:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 11, version 22H2");
+                            break;
+                        case 22631:
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Windows 11, version 23H2");
                             break;
                         default:
                             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows 10/11 version");

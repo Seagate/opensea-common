@@ -148,9 +148,12 @@ extern "C"
     bool is_Windows_10_Version_20H2_Or_Higher(void);
     bool is_Windows_10_Version_21H1_Or_Higher(void);
     bool is_Windows_10_Version_21H2_Or_Higher(void);
+    bool is_Windows_10_Version_22H2_Or_Higher(void);
     
     //Windows 11 check below
     bool is_Windows_11_Version_21H2_Or_Higher(void);
+    bool is_Windows_11_Version_22H2_Or_Higher(void);
+    bool is_Windows_11_Version_23H2_Or_Higher(void);
 
     //-----------------------------------------------------------------------------
     //
