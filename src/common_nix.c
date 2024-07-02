@@ -787,7 +787,7 @@ static void get_Console_Color_Capabilities(ptrConsoleColorCap colorCapabilities)
         case TERM_LINUX_256COLOR:
             colorCapabilities->useIntensityBitFormat = true;
             colorCapabilities->eightBackgroundColorsOnly = true;
-            M_FALLTHROUGH
+            M_FALLTHROUGH;
         case TERM_XTERM_256COLOR:
         case TERM_GENERIC_256COLOR:
         case TERM_SUN_COLOR:
@@ -799,7 +799,7 @@ static void get_Console_Color_Capabilities(ptrConsoleColorCap colorCapabilities)
         case TERM_LINUX_COLOR:
             colorCapabilities->useIntensityBitFormat = true;
             colorCapabilities->eightBackgroundColorsOnly = true;
-            M_FALLTHROUGH
+            M_FALLTHROUGH;
         case TERM_XTERM:
         case TERM_AIXTERM:
         case TERM_GNOME_COLOR:

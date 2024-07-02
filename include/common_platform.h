@@ -98,7 +98,7 @@ extern "C"
         CONSOLE_COLOR_BRIGHT_CYAN,
         CONSOLE_COLOR_BRIGHT_WHITE,
         CONSOLE_COLOR_CURRENT
-    )
+    );
 
     ////////////////////////////////////////////////////////////////////////////////////////////
     //// Functions below have specific implementations for OS's in the files included above ////
@@ -156,7 +156,7 @@ extern "C"
         OPENSEA_ARCH_MIPS,
         /*Add more architectures here as we support them*/
         OPENSEA_ARCH_RESERVED
-    )
+    );
 
     //-----------------------------------------------------------------------------
     //
@@ -193,7 +193,7 @@ extern "C"
         OPENSEA_LITTLE_WORD_ENDIAN,/*uncommon, probably won't be found/used*/
         OPENSEA_BIG_WORD_ENDIAN,/*uncommon, probably won't be found/used*/
         OPENSEA_UNKNOWN_ENDIAN /*if this is returned, then __LITTLE_ENDIAN__ or __BIG_ENDIAN__ needs to be defined for the compilation. Or you can ignore this and assume little endian - TJE*/
-    )
+    );
 
     //-----------------------------------------------------------------------------
     //
@@ -243,16 +243,16 @@ extern "C"
         OS_HPUX,
         OS_ESX,
         /*Add more operating systems here as we add support for them in our libraries*/
-        )
+        );
 
     //https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
     //http://blogs.msdn.com/b/chuckw/archive/2010/02/24/what-s-in-a-version-number.aspx
     //http://blogs.msdn.com/b/chuckw/archive/2013/09/10/manifest-madness.aspx
     typedef struct _WindowsVersionNumber
     {
-        uint16_t majorVersion;
-        uint16_t minorVersion;
-        uint16_t buildNumber;
+        uint32_t majorVersion;
+        uint32_t minorVersion;
+        uint32_t buildNumber;
     }WindowsVersionNumber;
 
     //https://en.wikipedia.org/wiki/Linux_kernel#Version_numbering

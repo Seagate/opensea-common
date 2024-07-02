@@ -465,7 +465,20 @@ static eValidateFormatResult validate_Format_Char(const char* format, char** off
     {
         if (lenmods->l == true)
         {
-            wint_t character = va_arg(*args, wint_t);
+            wint_t character = 0;
+            //wint_t's size it platform dependent
+            //because of this, we need to check how to read the value from the va_args
+            //based on what size it is.
+            //va_args promote smaller types to int, but wint_t may be smaller or the same size
+            //which is why this check is here.
+            if (sizeof(wint_t) < sizeof(int))
+            {
+                character = C_CAST(wint_t, va_arg(*args, int));
+            }
+            else
+            {
+                character = va_arg(*args, wint_t);
+            }
             result = validate_Wchar_Conversion(character);
         }
         else
@@ -648,7 +661,7 @@ static eValidateFormatResult validate_Format_Specifier(const char* format, char*
                                 break;                          \
                             case VALIDATE_FORMAT_COMPLETE:      \
                                 exitloop = true;                \
-                                M_FALLTHROUGH                   \
+                                M_FALLTHROUGH;                  \
                             case VALIDATE_FORMAT_CONTINUE:      \
                                 continue;                       \
                             case VALIDATE_FORMAT_INVALID_FORMAT:\

@@ -606,16 +606,16 @@ extern "C"
         #if defined __has_cpp_attribute
             #if __has_cpp_attribute(fallthrough)
                 //This is the standardized way intriduced in C++17
-                #define M_FALLTHROUGH [[fallthrough]];
+                #define M_FALLTHROUGH [[fallthrough]]
             #endif
         #endif
     #elif defined __has_c_attribute
         #if __has_c_attribute(fallthrough)
             //C23 style
-            #define M_FALLTHROUGH [[fallthrough]];
+            #define M_FALLTHROUGH [[fallthrough]]
         #elif __has_c_attribute(__fallthrough__)
             //C23 style
-            #define M_FALLTHROUGH [[__fallthrough__]];
+            #define M_FALLTHROUGH [[__fallthrough__]]
         #endif
     #endif
     #if !defined (M_FALLTHROUGH)
@@ -623,14 +623,14 @@ extern "C"
         #if defined __has_attribute
             //GCC type compiler check
             #if __has_attribute(fallthrough)
-                #define M_FALLTHROUGH do { } while (0); __attribute__((fallthrough));
+                #define M_FALLTHROUGH do { } while (0); __attribute__((fallthrough))
             #endif
         #endif
         #if !defined M_FALLTHROUGH
             #if (defined (__GNUC__) && __GNUC__ >= 7) || (defined __clang__ && defined (__clang_major__) && defined (__clang_minor__) && (__clang_major__ > 3 || (__clang_major__ >=3 && __clang_minor__ >= 9)))
                 //GCC 7+ support the fallthrough attribute.
                 //Clang 3.9+ has similar fallthrough support.
-                #define M_FALLTHROUGH do { } while (0); __attribute__((fallthrough));
+                #define M_FALLTHROUGH do { } while (0); __attribute__((fallthrough))
             #else
                 //Insert a comment instead since other methods were not detected.
                 #define M_FALLTHROUGH /*FALLTHRU*/
@@ -871,26 +871,26 @@ extern "C"
     //Use this macro to declare enums for C and enum classes for C++11 and later.
     //Without enum classes there are a lot of excess warnings and this will make it easier to resolve all warnings.
     #if defined (USING_CPP11)
-        #define M_DECLARE_ENUM(name, ...) enum class name { __VA_ARGS__ };
+        #define M_DECLARE_ENUM(name, ...) enum class name { __VA_ARGS__ }
     #elif defined (USING_CPP98)
-        #define M_DECLARE_ENUM(name, ...) enum name { __VA_ARGS__ };
+        #define M_DECLARE_ENUM(name, ...) enum name { __VA_ARGS__ }
     #else //!CPP11
-        #define M_DECLARE_ENUM(name, ...) typedef enum _ ## name { __VA_ARGS__ }name;
+        #define M_DECLARE_ENUM(name, ...) typedef enum _ ## name { __VA_ARGS__ }name
     #endif //CPP11
 
     //If you want a specific type underlying the enum, use M_DECLAR_ENUM_TYPE to specify it.
     //This can be something like M_DECLARE_ENUM_TYPE(myEnum, uint32_t, ...)
     //If you set type to "int" then it's the same as M_DECLARE_ENUM
     #if defined (USING_CPP11)
-        #define M_DECLARE_ENUM_TYPE(name, type, ...) enum class name : type { __VA_ARGS__ };
+        #define M_DECLARE_ENUM_TYPE(name, type, ...) enum class name : type { __VA_ARGS__ }
     #elif defined (USING_CPP98)
-        #define M_DECLARE_ENUM_TYPE(name, type, ...) enum name { __VA_ARGS__ };
+        #define M_DECLARE_ENUM_TYPE(name, type, ...) enum name { __VA_ARGS__ }
     #else//!CPP11...old CPP or C
         #if defined (USING_C23)
-            #define M_DECLARE_ENUM_TYPE(name, type, ...) typedef enum _ ## name : type { __VA_ARGS__ }name;
+            #define M_DECLARE_ENUM_TYPE(name, type, ...) typedef enum _ ## name : type { __VA_ARGS__ }name
         #else
             /*cannot specify the type, so just ignore the input for now-TJE*/
-            #define M_DECLARE_ENUM_TYPE(name, type, ...) typedef enum _ ## name { __VA_ARGS__ }name;
+            #define M_DECLARE_ENUM_TYPE(name, type, ...) typedef enum _ ## name { __VA_ARGS__ }name
         #endif
     #endif//CPP11 
 
@@ -938,7 +938,7 @@ extern "C"
         MISSING_INFORMATION = 33,  /* file is missing information inorder to be parsed correctly */
         TRUNCATED_FILE = 34,       /* file is truncated and might be missing data for parsing it correctly */
         UNKNOWN
-    )
+    );
 
     M_DECLARE_ENUM(eDataTransferDirection,
         XFER_NO_DATA,
@@ -946,7 +946,7 @@ extern "C"
         XFER_DATA_OUT,    /* Transfer from host to target                             */
         XFER_DATA_OUT_IN, /* Transfer from host to target, followed by target to host */
         XFER_DATA_IN_OUT, /* Transfer from target to host, followed by host to target */
-    )
+    );
 
     M_DECLARE_ENUM(eVerbosityLevels,
         VERBOSITY_QUIET             = 0,
@@ -955,12 +955,13 @@ extern "C"
         VERBOSITY_COMMAND_VERBOSE   = 3,
         VERBOSITY_BUFFERS           = 4,
         VERBOSITY_MAX /*This should always be at the end of this list. This allows for a function to use this to check bounds even if we add more levels ahead of this. -TJE*/
-    )
+    );
+
     // json data type sets. used for formating data to a customer demands 
     M_DECLARE_ENUM(eDataFormat,
         JSON_DATA = 0,   /*default*/
         PREPYTHON_DATA = 1,
-        )
+        );
 
     // Max & Min Helpers
     #define  M_Min(a,b)    (((a)<(b))?(a):(b))
@@ -977,7 +978,7 @@ extern "C"
         /*TODO: add other output formats as we want to support them*/
         SEAC_OUTPUT_CSV, /*just an idea...isn't implemented now*/
         SEAC_OUTPUT_XML, /*just an idea...isn't implemented now*/
-        )
+        );
 
 
     //NOTE: I don't like how this is done right now...the hardcoded path and filename lengths are the same as OPENSEA_PATH_MAX, but I cannot use that definition due to include structure at this time...
@@ -1535,7 +1536,7 @@ extern "C"
     {                       \
         free(mem);          \
         (mem) = NULL;       \
-    }                       \
+    }
 
     //-----------------------------------------------------------------------------
     //
@@ -1590,7 +1591,7 @@ extern "C"
         ALLOW_UNIT_VOLTS,/*v, mv*/
         ALLOW_UNIT_AMPS, /*a, ma*/
         ALLOW_UNIT_TEMPERATURE/*f, c, k*/
-    )
+    );
 
     M_NODISCARD bool get_And_Validate_Integer_Input_Uint64(const char * strToConvert, char** unit, eAllowedUnitInput unittype, uint64_t * outputInteger);
     M_NODISCARD bool get_And_Validate_Integer_Input_Uint32(const char * strToConvert, char** unit, eAllowedUnitInput unittype, uint32_t * outputInteger);
@@ -1883,7 +1884,7 @@ extern "C"
         OPENSEA_COMPILER_IBM_SYSTEMZ_C_CPP,
         OPENSEA_COMPILER_HP_A_CPP,
         /*Add other compilers here if we ever add more than those above (which not all listed above are supported!)*/
-    )
+    );
 
     typedef struct _compilerVersion
     {
@@ -2033,7 +2034,7 @@ extern "C"
     {                       \
         free_aligned(mem);          \
         mem = NULL;         \
-    }                       \
+    }
 
     //-----------------------------------------------------------------------------
     //
@@ -2130,7 +2131,7 @@ extern "C"
     {                       \
         free_page_aligned(mem);          \
         mem = NULL;         \
-    }                       \
+    }
 
 
     //-----------------------------------------------------------------------------
@@ -2345,6 +2346,10 @@ extern "C"
     //If an error occurs, returns zero
     uint64_t get_Milliseconds_Since_Unix_Epoch(void);
 
+#if defined (_WIN32)
+#include <BaseTsd.h> //for MAXSSIZE_T
+#endif //_WIN32
+
     #if !defined (SSIZE_MAX) && !defined (SSIZE_T_DEFINED)
         //assume ssize_t is not defined
         #if defined (_MSC_VER) && defined (MAXSSIZE_T)
@@ -2380,9 +2385,9 @@ extern "C"
     M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size);
 
     //Need getline and getdelim functions since they are not available.
-    M_FUNC_ATTR_MALLOC ssize_t getline(char** lineptr, size_t* n, FILE* stream);
+    ssize_t getline(char** lineptr, size_t* n, FILE* stream);
 
-    M_FUNC_ATTR_MALLOC ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream);
+    ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream);
 #endif //!__STDC_ALLOC_LIB__ && (POSIX < 2008)
 
 
@@ -2574,7 +2579,7 @@ extern "C"
         SEC_FILE_FLUSH_FAILURE,
         SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN, /* the ability to call a function like POSIX's unlink is not possible as there is no such function to provide this behavior */
         SEC_FILE_FAILURE /*generic undefinable error*/
-    )
+    );
 
     typedef struct _secureFileInfo
     {
@@ -2610,7 +2615,7 @@ extern "C"
     M_DECLARE_ENUM(eSecureFileRename,
         SEC_RENAME_DO_NOT_REPLACE_EXISTING,
         SEC_RENAME_REPLACE_EXISTING
-    )
+    );
 
     //NOTE: This will convert the filename into a canonical path internally to ensure a valid path is provided.
     //      Since the low-level APIs need a file name rather than FILE *, this takes the same kind of input.
@@ -2628,7 +2633,7 @@ extern "C"
     M_DECLARE_ENUM(eSecureFileDeleteNameAction,
         SEC_DELETE_NAME_FAIL_IF_OPEN,
         SEC_DELETE_NAME_UNLINK_IF_OPEN
-    )
+    );
     
     M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eSecureFileDeleteNameAction deleteAction);
 
