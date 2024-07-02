@@ -626,7 +626,7 @@ void byte_Swap_String(char *stringToChange)
         }
         memset(stringToChange, 0, stringlen);
         memcpy(stringToChange, swappedString, stringlen);
-        safe_Free(swappedString);
+        safe_Free(C_CAST(void**, &swappedString));
     }
 }
 void remove_Whitespace_Left(char *stringToChange)
@@ -1381,7 +1381,7 @@ eReturnValues fill_Random_Pattern_In_Buffer(uint8_t *ptrData, uint32_t dataLengt
         localPtr[iter] = xorshiftplus32();
     }
     memcpy(ptrData, localPtr, dataLength);//copy only the length of the original pointer since we may have overallocated and rounded up earlier.
-    safe_Free(localPtr)
+    safe_Free(C_CAST(void**, &localPtr));
     return SUCCESS;
 }
 
@@ -1398,7 +1398,7 @@ eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t *ptrData, 
         localPtr[iter] = hexPattern;
     }
     memcpy(ptrData, localPtr, dataLength);//copy only the length of the original pointer since we may have overallocated and rounded up earlier.
-    safe_Free(localPtr)
+    safe_Free(C_CAST(void**, &localPtr));
     return SUCCESS;
 }
 
@@ -1549,7 +1549,7 @@ char * get_Time_String_From_TM_Structure(const struct tm * timeptr, char *buffer
         {
             setlocale(LC_TIME, currentLocale);
         }
-        safe_Free(currentLocale);
+        safe_Free(C_CAST(void**, &currentLocale));
         #endif //!C11 annex k or MSFT secure lib for asctime
     }
     return buffer;
@@ -2768,7 +2768,7 @@ void print_Errno_To_Screen(int error)
     {
         printf("%d - <Unable to convert error to string>\n", error);
     }
-    safe_Free(errorString)
+    safe_Free(C_CAST(void**, &errorString));
 #elif defined (__STDC_SECURE_LIB__) //This is a MSFT definition for their original _s functions that sometimes differ from the C11 standard
     char errorString[1024] = { 0 };
     if (0 == strerror_s(errorString, 1024, error))
@@ -2961,7 +2961,7 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
                 //add null terminator to the destination, overwriting last byte written to stay in bounds -TJE
                 destination[destinationSizeBytes - int_to_sizet(1)] = '\0';
             }
-            safe_Free(dup)
+            safe_Free(C_CAST(void**, &dup));
             return destination;
         }
 #elif (defined (__FreeBSD__) && __FreeBSD__ >= 4) || (defined (__OpenBSD__) && defined(OpenBSD2_4)) || (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 1040000300L)
@@ -2984,7 +2984,7 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
 #else
             snprintf(destination, destinationSizeBytes, "%s%s", dup, source);
 #endif
-            safe_Free(dup)
+            safe_Free(C_CAST(void**, &dup));
             return destination;
         }
 #endif   
@@ -3015,7 +3015,7 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
                     destination[destinationSizeBytes - destinationSizeBytesAvailable + int_to_sizet(sourceLength)] = '\0';
                 }
             }
-            safe_Free(dup)
+            safe_Free(C_CAST(void**, &dup));
             return destination;
         }
 #elif (defined (__FreeBSD__) && __FreeBSD__ >= 4) || (defined (__OpenBSD__) && defined(OpenBSD2_4)) || (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 1040000300L)
@@ -3028,7 +3028,7 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
         {
             strlcpy(dup, source, sourceLength);
             strlcat(destination, dup, destinationSizeBytes);
-            safe_Free(dup)
+            safe_Free(C_CAST(void**, &dup));
             return destination;
         }
 #else //memccpy, strlcat/strcpy not available
@@ -3044,7 +3044,7 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
 #else
             snprintf(destination, destinationSizeBytes, "%s%.*s", dup, sourceLength, source);
 #endif
-            safe_Free(dup)
+            safe_Free(C_CAST(void**, &dup));
             return destination;
         }
 #endif
@@ -3752,12 +3752,12 @@ void free_File_Attributes(fileAttributes** attributes)
         if ((*attributes)->winSecurityDescriptor)
         {
             explicit_zeroes((*attributes)->winSecurityDescriptor, (*attributes)->securityDescriptorStringLength);
-            safe_Free((*attributes)->winSecurityDescriptor);
+            safe_Free(C_CAST(void**, &(*attributes)->winSecurityDescriptor));
             (*attributes)->securityDescriptorStringLength = 0;
         }
 #endif //_WIN32
         explicit_zeroes(*attributes, sizeof(fileAttributes));
-        safe_Free(*attributes)
+        safe_Free(C_CAST(void**, attributes));
     }
 }
 
@@ -3773,10 +3773,10 @@ void free_Secure_File_Info(secureFileInfo** fileInfo)
         if ((*fileInfo)->uniqueID)
         {
             explicit_zeroes((*fileInfo)->uniqueID, sizeof(fileUniqueIDInfo));
-            safe_Free((*fileInfo)->uniqueID)
+            safe_Free(C_CAST(void**, &(*fileInfo)->uniqueID));
         }
         explicit_zeroes(*fileInfo, sizeof(secureFileInfo));
-        safe_Free(*fileInfo)
+        safe_Free(C_CAST(void**, fileInfo));
     }
 }
 
@@ -3924,9 +3924,9 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 fileInfo->error = SEC_FILE_FILE_ALREADY_EXISTS;
                 if (duplicatedModeForInternalUse)
                 {
-                    safe_Free(internalmode)
+                    safe_Free(C_CAST(void**, &internalmode));
                 }
-                safe_Free(intFileName)
+                safe_Free(C_CAST(void**, &intFileName));
                 return fileInfo;
             }
             else if (!creatingFile && !fileexists)
@@ -3934,9 +3934,9 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 fileInfo->error = SEC_FILE_INVALID_FILE;
                 if (duplicatedModeForInternalUse)
                 {
-                    safe_Free(internalmode)
+                    safe_Free(C_CAST(void**, &internalmode));
                 }
-                safe_Free(intFileName)
+                safe_Free(C_CAST(void**, &intFileName));
                 return fileInfo;
             }
         }
@@ -4000,10 +4000,10 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 }
                 if (!foundValidExtension)
                 {
-                    safe_Free(intFileName)
+                    safe_Free(C_CAST(void**, &intFileName));
                     if (duplicatedModeForInternalUse)
                     {
-                        safe_Free(internalmode)
+                        safe_Free(C_CAST(void**, &internalmode));
                     }
                     fileInfo->error = SEC_FILE_INVALID_FILE_EXTENSION;
                     return fileInfo;
@@ -4023,11 +4023,11 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                     )
                 {
                     fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
-                    safe_Free(intFileName)
+                    safe_Free(C_CAST(void**, &intFileName));
                     free_File_Attributes(&beforeattrs);
                     if (duplicatedModeForInternalUse)
                     {
-                        safe_Free(internalmode)
+                        safe_Free(C_CAST(void**, &internalmode));
                     }
                     return fileInfo;
                 }
@@ -4038,10 +4038,10 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 if (!exact_Compare_SIDS_And_DACL_Strings(beforeattrs->winSecurityDescriptor, expectedFileInfo->winSecurityDescriptor))
                 {
                     fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
-                    safe_Free(intFileName)
+                    safe_Free(C_CAST(void**, &intFileName));
                     if (duplicatedModeForInternalUse)
                     {
-                        safe_Free(internalmode)
+                        safe_Free(C_CAST(void**, &internalmode));
                     }
                     free_File_Attributes(&beforeattrs);
                     return fileInfo;
@@ -4099,14 +4099,14 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                         fclose(fileInfo->file);
                         fileInfo->file = NULL;
                         fileInfo->error = SEC_FILE_INVALID_FILE_UNIQUE_ID;
-                        safe_Free(intFileName)
+                        safe_Free(C_CAST(void**, &intFileName));
                         if (duplicatedModeForInternalUse)
                         {
-                            safe_Free(internalmode)
+                            safe_Free(C_CAST(void**, &internalmode));
                         }
                         if (pathOnly && allocatedLocalPathOnly)
                         {
-                            safe_Free(pathOnly)
+                            safe_Free(C_CAST(void**, &pathOnly));
                         }
                         return fileInfo;
                     }
@@ -4125,14 +4125,14 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                         fclose(fileInfo->file);
                         fileInfo->file = NULL;
                         fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
-                        safe_Free(intFileName)
+                        safe_Free(C_CAST(void**, &intFileName));
                         if (duplicatedModeForInternalUse)
                         {
-                            safe_Free(internalmode)
+                            safe_Free(C_CAST(void**, &internalmode));
                         }
                         if (pathOnly && allocatedLocalPathOnly)
                         {
-                            safe_Free(pathOnly)
+                            safe_Free(C_CAST(void**, &pathOnly));
                         }
                         return fileInfo;
                     }
@@ -4145,14 +4145,14 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                         fclose(fileInfo->file);
                         fileInfo->file = NULL;
                         fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
-                        safe_Free(intFileName)
+                        safe_Free(C_CAST(void**, &intFileName));
                         if (duplicatedModeForInternalUse)
                         {
-                            safe_Free(internalmode)
+                            safe_Free(C_CAST(void**, &internalmode));
                         }
                         if (pathOnly && allocatedLocalPathOnly)
                         {
-                            safe_Free(pathOnly)
+                            safe_Free(C_CAST(void**, &pathOnly));
                         }
                         return fileInfo;
                     }
@@ -4194,13 +4194,13 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
         }
         if (pathOnly && allocatedLocalPathOnly)
         {
-            safe_Free(pathOnly)
+            safe_Free(C_CAST(void**, &pathOnly));
         }
         if (duplicatedModeForInternalUse)
         {
-            safe_Free(internalmode)
+            safe_Free(C_CAST(void**, &internalmode));
         }
-        safe_Free(intFileName)
+        safe_Free(C_CAST(void**, &intFileName));
     }
     else if (fileInfo)
     {
@@ -4578,10 +4578,10 @@ eSecureFileError secure_Delete_File_By_Name(const char* filename, eSecureFileDel
         }        
         if (!os_Is_Directory_Secure(pathOnly))
         {
-            safe_Free(pathOnly)
+            safe_Free(C_CAST(void**, &pathOnly));
             return SEC_FILE_INSECURE_PATH;
         }
-        safe_Free(pathOnly)
+        safe_Free(C_CAST(void**, &pathOnly));
         //Check if the file is already open before attempting to remove it
         errno_t fileerror = 0;
         FILE* checkExist = M_NULLPTR;

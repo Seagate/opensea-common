@@ -180,7 +180,7 @@ static uid_t get_sudo_uid(void)
                 if (getenv_s(M_NULLPTR, uidstr, size, "SUDO_UID") != 0)
                 {
                     //error, so free this before moving on
-                    safe_Free(uidstr)
+                    safe_Free(C_CAST(void**, &uidstr));
                 }
             }
         }
@@ -224,7 +224,7 @@ static uid_t get_sudo_uid(void)
             {
                 sudouid = C_CAST(uid_t, temp);
             }
-            safe_Free(uidstr)
+            safe_Free(C_CAST(void**, &uidstr));
         }
         gotsudouid = true;
     }
@@ -295,7 +295,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         return false;
     }
     /* Now num_of_dirs indicates # of dirs we must check */
-    safe_Free(path_copy)
+    safe_Free(C_CAST(void**, &path_copy));
 
     if (!(dirs = C_CAST(char**, malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)))))
     {
@@ -312,7 +312,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 #if defined (_DEBUG)
         printf("Cannot dup fullpath into dirs array\n");
 #endif
-        safe_Free(dirs)
+        safe_Free(C_CAST(void**, &dirs));
         return false;
     }
 
@@ -322,7 +322,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 #if defined (_DEBUG)
         printf("Cannot dup fullpath to path copy\n");
 #endif
-        safe_Free(dirs)
+        safe_Free(C_CAST(void**, &dirs));
         return false;
     }
 
@@ -341,7 +341,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             break;
         }
     }
-    safe_Free(path_copy);
+    safe_Free(C_CAST(void**, &path_copy));
     if (!secure)
     {
         //cleanup dirs before returning error
@@ -349,9 +349,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         //so use it + 1 as the starting point to go through and cleanup the stored directories to free up memory
         for (ssize_t cleanup = i + 1; cleanup <= num_of_dirs; cleanup++)
         {
-            safe_Free(dirs[cleanup])
+            safe_Free(C_CAST(void**, &dirs[cleanup]));
         }
-        safe_Free(dirs)
+        safe_Free(C_CAST(void**, &dirs));
         return secure;
     }
 
@@ -407,7 +407,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 printf("readlink failed\n");
 #endif
                 secure = false;
-                safe_Free(link)
+                safe_Free(C_CAST(void**, &link));
                 break;
             }
             else if (r >= linksize)
@@ -417,7 +417,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 printf("link truncated\n");
 #endif
                 secure = false;
-                safe_Free(link)
+                safe_Free(C_CAST(void**, &link));
                 break;
             }
             link[r] = '\0';
@@ -432,10 +432,10 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 printf("recursive link check failed\n");
 #endif
                 secure = false;
-                safe_Free(link)
+                safe_Free(C_CAST(void**, &link));
                 break;
             }
-            safe_Free(link)
+            safe_Free(C_CAST(void**, &link));
             continue;
         }
 
@@ -490,10 +490,10 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
     for (i = 0; i < num_of_dirs; i++)
     {
-        safe_Free(dirs[i])
+        safe_Free(C_CAST(void**, &dirs[i]));
     }
 
-    safe_Free(dirs)
+    safe_Free(C_CAST(void**, &dirs));
     return secure;
 }
 
@@ -509,7 +509,7 @@ bool os_Directory_Exists(const char * const pathToCheck)
     if (attrs != M_NULLPTR)
     {
         bool result = M_ToBool(S_ISDIR(attrs->filemode));
-        safe_Free(attrs);
+        safe_Free(C_CAST(void**, &attrs));
         return result;
     }
     else
@@ -524,7 +524,7 @@ bool os_File_Exists(const char* const filetoCheck)
     if (attrs != M_NULLPTR)
     {
         bool result = M_ToBool(S_ISREG(attrs->filemode));
-        safe_Free(attrs);
+        safe_Free(C_CAST(void**, &attrs));
         return result;
     }
     else
@@ -710,7 +710,7 @@ static eKnownTERM get_Terminal_Type(void)
         {
             terminalType = TERM_GENERIC_COLOR;
         }
-        safe_Free(termEnv)
+        safe_Free(C_CAST(void**, &termEnv));
     }
     if (!haveCompleteMatch)
     {
@@ -748,7 +748,7 @@ static eKnownTERM get_Terminal_Type(void)
                 terminalType = TERM_GENERIC_COLOR;
             }
         }
-        safe_Free(termEnv)
+        safe_Free(C_CAST(void**, &termEnv));
     }
     if (!haveCompleteMatch)
     {
@@ -758,7 +758,7 @@ static eKnownTERM get_Terminal_Type(void)
             //this environment variable is found in kde for forground and background terminal colors
             //This is probably good enough to say "it has some color" support at this point, but no further indication of what color support is available
             terminalType = TERM_GENERIC_COLOR;
-            safe_Free(termEnv)
+            safe_Free(C_CAST(void**, &termEnv));
         }
     }
     return terminalType;
@@ -1282,7 +1282,7 @@ static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
                 }
             }
         }
-        safe_Free(filename)
+        safe_Free(C_CAST(void**, &filename));
     }
     return match;
 }
@@ -1347,7 +1347,7 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
                                 tok = common_String_Token(NULL, &releaselen, "\n", &saveptr);
                             }
                         }
-                        safe_Free(releaseMemory)
+                        safe_Free(C_CAST(void**, &releaseMemory));
                     }
                 }
                 fclose(release);
@@ -1387,14 +1387,14 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
                             if (fread(etcFileMem, sizeof(char), C_CAST(size_t, releaseSize), release) != C_CAST(size_t, releaseSize) || ferror(release))
                             {
                                 //some error occurred reading the file, so free this memory to return a checkable null pointer.
-                                safe_Free(etcFileMem);
+                                safe_Free(C_CAST(void**, &etcFileMem));
                             }
                         }
                     }
                     fclose(release);
                 }
             }
-            safe_Free(fileName)
+            safe_Free(C_CAST(void**, &fileName));
         }
     }
     return etcFileMem;
@@ -1432,7 +1432,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
                         {
                             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(releaseFile)), releaseFile);
                         }
-                        safe_Free(releaseFile);
+                        safe_Free(C_CAST(void**, &releaseFile));
                     }
                 }
                 if (gotLinuxInfo)
@@ -1453,7 +1453,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
                 {
                     snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(versionFile)), versionFile);
                 }
-                safe_Free(versionFile);
+                safe_Free(C_CAST(void**, &versionFile));
             }
         }
         if (!gotLinuxInfo && lsbReleaseOffset >= 0)
@@ -1469,20 +1469,20 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
                 {
                     snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(lsbreleaseFile)), lsbreleaseFile);
                 }
-                safe_Free(lsbreleaseFile);
+                safe_Free(C_CAST(void**, &lsbreleaseFile));
             }
         }
         //clean up the memory allocated for the list of version files and release files.
         for (int iter = 0; iter < releaseFileCount; ++iter)
         {
-            safe_Free(osrelease[iter])
+            safe_Free(C_CAST(void**, &osrelease[iter]));
         }
         for (int iter = 0; iter < versionFileCount; ++iter)
         {
-            safe_Free(osversion[iter])
+            safe_Free(C_CAST(void**, &osversion[iter]));
         }
-        safe_Free(osrelease)
-        safe_Free(osversion)
+        safe_Free(C_CAST(void**, &osrelease));
+        safe_Free(C_CAST(void**, &osversion));
         if (gotLinuxInfo)
         {
             //remove any control characters from the string. We don't need them for what we're doing
@@ -1525,7 +1525,7 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
                             gotLinuxInfo = true;
                             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, issueSize), issueMemory);
                         }
-                        safe_Free(issueMemory)
+                        safe_Free(C_CAST(void**, &issueMemory));
                     }
                 }
                 fclose(issue);
@@ -2096,7 +2096,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                     temp = realloc(rawBuffer, dataSize);
                     if(!temp)
                     {
-                        safe_Free(rawBuffer)
+                        safe_Free(C_CAST(void**, &rawBuffer));
                         break;
                     }
                     rawBuffer = temp;
@@ -2117,7 +2117,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                     }
                 }
                 explicit_zeroes(rawBuffer, dataSize);
-                safe_Free(rawBuffer)
+                safe_Free(C_CAST(void**, &rawBuffer));
             }
             explicit_zeroes(userInfo, sizeof(struct passwd));
         #else //defined (POSIX_2001) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)

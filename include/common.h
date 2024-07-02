@@ -268,13 +268,49 @@ extern "C"
         #error "Need string case compare definition."
     #endif // __unix__, POSIX, WIN32
 
+    //Microsoft doesn't have snprintf compliant with C99 until VS2015, so make our own definition using what microsoft does have available.
+    #if defined (_MSC_VER) && _MSC_VER <= 1800 && defined _WIN32
+    int snprintf(char *buffer, size_t bufsz, const char *format, ...);
+    #endif
+
     //Macro to help make casts more clear and searchable. Can be very helpful while debugging.
     //If using C++, use static_cast, reinterpret_cast, dynamic_cast before trying a C_CAST.
     #define C_CAST(type, val) (type)(val)
 
-    //Microsoft doesn't have snprintf compliant with C99 until VS2015, so make our own definition using what microsoft does have available.
-    #if defined (_MSC_VER) && _MSC_VER <= 1800 && defined _WIN32
-    int snprintf(char *buffer, size_t bufsz, const char *format, ...);
+    #if defined (USING_CPP98)
+        #define M_STATIC_CAST(type, val) static_cast<type>(val)
+    #else //C
+        #define M_STATIC_CAST(type, val) C_CAST(type, val)
+    #endif
+
+    #if defined (USING_CPP98)
+        #define M_INLINE inline
+    #else //C
+        #if defined (USING_C99)
+            #define M_INLINE inline
+        #elif defined (_MSC_VER) //version check? It's not clear when this was first supported
+            #define M_INLINE __inline
+        #elif defined (__GNUC__) || defined (__clang__)
+            #define M_INLINE __inline__
+        #else
+            #define M_INLINE /*inline support not available*/
+        #endif
+    #endif //C++/C check
+
+    #if defined (__GNUC__) || defined (__clang__)
+        #define M_NOINLINE __attribute__((noinline))
+    #elif defined (_MSC_VER) //version check? It's not clear when this was first supported
+        #define M_NOINLINE __declspec(noinline)
+    #else 
+        #define M_NOINLINE /*no support for noinline*/
+    #endif
+
+    #if defined (__GNUC__) || defined (__clang__)
+        #define M_FORCEINLINE static M_INLINE __attribute__((always_inline))
+    #elif defined (_MSC_VER) //version check? It's not clear when this was first supported
+        #define M_FORCEINLINE __forceinline
+    #else
+        #define M_FORCEINLINE /*no support for forcing inline*/
     #endif
 
 #if defined (__cplusplus)
@@ -1526,16 +1562,18 @@ extern "C"
     //! \brief   Description:  Safely free dynamically allocated memory. This checks for a valid pointer, then frees it and set's it to NULL.
     //
     //  Entry:
-    //!   \param[in] mem - heap memory you want to free.
+    //!   \param[in] mem - pointer to heap memory you want to free. Uses double pointer so that upon completion it will automatically be set to NULL
     //!
     //  Exit:
     //
     //-----------------------------------------------------------------------------
-    #define safe_Free(mem)  \
-    if (mem)                \
-    {                       \
-        free(mem);          \
-        (mem) = NULL;       \
+    static M_INLINE void safe_Free(void** mem)
+    {
+        if (mem && *mem)
+        {
+            free(*mem);
+            (*mem) = M_NULLPTR;
+        }
     }
 
     //-----------------------------------------------------------------------------
@@ -2021,19 +2059,21 @@ extern "C"
     //
     //  safe_Free_aligned()
     //
-    //! \brief   Description:  Safely free dynamically alligned allocated memory. This checks for a valid pointer, then frees it and set's it to NULL.
+    //! \brief   Description:  Safely free dynamically aligned allocated memory. This checks for a valid pointer, then frees it and set's it to NULL.
     //
     //  Entry:
-    //!   \param[in] mem - heap memory you want to free.
+    //!   \param[in] mem - pointer to heap memory you want to free. Uses double pointer so that upon completion it will automatically be set to NULL
     //!
     //  Exit:
     //
     //-----------------------------------------------------------------------------
-    #define safe_Free_aligned(mem)  \
-    if(mem)                 \
-    {                       \
-        free_aligned(mem);          \
-        mem = NULL;         \
+    static M_INLINE void safe_Free_aligned(void** mem)
+    {
+        if (mem && *mem)
+        {
+            free_aligned(*mem);
+            (*mem) = M_NULLPTR;
+        }
     }
 
     //-----------------------------------------------------------------------------
@@ -2121,18 +2161,19 @@ extern "C"
     //! \brief   Description:  Safely free dynamically page alligned allocated memory. This checks for a valid pointer, then frees it and set's it to NULL.
     //
     //  Entry:
-    //!   \param[in] mem - heap memory you want to free.
+    //!   \param[in] mem - pointer to heap memory you want to free. Uses double pointer so that upon completion it will automatically be set to NULL
     //!
     //  Exit:
     //
     //-----------------------------------------------------------------------------
-    #define safe_Free_page_aligned(mem)  \
-    if(mem)                 \
-    {                       \
-        free_page_aligned(mem);          \
-        mem = NULL;         \
+    static M_INLINE void safe_Free_page_aligned(void** mem)
+    {
+        if (mem && *mem)
+        {
+            free_page_aligned(*mem);
+            (*mem) = M_NULLPTR;
+        }
     }
-
 
     //-----------------------------------------------------------------------------
     //

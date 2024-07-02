@@ -88,7 +88,7 @@ static bool win_File_Attributes_By_Name(const char* const filename, LPWIN32_FILE
         {
             success = true;
         }
-        safe_Free(localPathToCheckBuf)
+        safe_Free(C_CAST(void**, &localPathToCheckBuf));
         localPathToCheck = NULL;
     }
     return success;
@@ -349,7 +349,7 @@ static char* get_Current_User_SID(void)
                 }
             }
             explicit_zeroes(pUser, dwSize);
-            safe_Free(pUser);
+            safe_Free(C_CAST(void**, &pUser));
         }
         CloseHandle(hToken);
     }
@@ -563,7 +563,7 @@ static bool is_Folder_Secure(const char *securityDescriptorString)
     } while (0);
 
     SecureZeroMemory(mySidStr, strlen(mySidStr));
-    safe_Free(mySidStr);
+    safe_Free(C_CAST(void**, &mySidStr));
     if (mySid)
     {
         SecureZeroMemory(mySid, GetLengthSid(mySid));
@@ -636,7 +636,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         return false;
     }
     /* Now num_of_dirs indicates # of dirs we must check */
-    safe_Free(path_copy)
+    safe_Free(C_CAST(void**, &path_copy));
     dirs = C_CAST(char**, malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)));
     if (!dirs)
     {
@@ -647,14 +647,14 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     if (!dirs[num_of_dirs - 1])
     {
         /* Handle error */
-        safe_Free(dirs)
+        safe_Free(C_CAST(void**, &dirs));
         return false;
     }
     path_copy = strdup(fullpath);
     if (!path_copy)
     {
         /* Handle error */
-        safe_Free(dirs)
+        safe_Free(C_CAST(void**, &dirs));
         return false;
     }
 
@@ -671,7 +671,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             break;
         }
     }
-    safe_Free(path_copy);
+    safe_Free(C_CAST(void**, &path_copy));
     if (!secure)
     {
         //cleanup dirs before returning error
@@ -679,9 +679,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         //so use it + 1 as the starting point to go through and cleanup the stored directories to free up memory
         for (ssize_t cleanup = i + 1; cleanup <= num_of_dirs; cleanup++)
         {
-            safe_Free(dirs[cleanup])
+            safe_Free(C_CAST(void**, &dirs[cleanup]));
         }
-        safe_Free(dirs)
+        safe_Free(C_CAST(void**, &dirs));
         return secure;
     }
 
@@ -717,7 +717,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             secure = false;
             if (appendedTrailingSlash)
             {
-                safe_Free(dirptr)
+                safe_Free(C_CAST(void**, &dirptr));
             }
             break;
         }
@@ -728,7 +728,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             free_File_Attributes(&attrs);
             if (appendedTrailingSlash)
             {
-                safe_Free(dirptr)
+                safe_Free(C_CAST(void**, &dirptr));
             }
             break;
         }
@@ -770,7 +770,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                                 {
                                     secure = false;
                                 }
-                                safe_Free(reparsePath)
+                                safe_Free(C_CAST(void**, &reparsePath));
                             }
                             else
                             {
@@ -786,7 +786,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                     {
                         secure = false;
                     }
-                    safe_Free(reparseData)
+                    safe_Free(C_CAST(void**, &reparseData));
                 }
                 else
                 {
@@ -801,7 +801,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 {
                     if (appendedTrailingSlash)
                     {
-                        safe_Free(dirptr)
+                        safe_Free(C_CAST(void**, &dirptr));
                     }
                     break;
                 }
@@ -812,7 +812,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 free_File_Attributes(&attrs);
                 if (appendedTrailingSlash)
                 {
-                    safe_Free(dirptr)
+                    safe_Free(C_CAST(void**, &dirptr));
                 }
                 break;
             }
@@ -820,7 +820,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
         if (appendedTrailingSlash)
         {
-            safe_Free(dirptr)
+            safe_Free(C_CAST(void**, &dirptr));
         }
 
         if (!(attrs->fileFlags & FILE_ATTRIBUTE_DIRECTORY))
@@ -838,10 +838,10 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
     for (i = 0; i < num_of_dirs; i++)
     {
-        safe_Free(dirs[i])
+        safe_Free(C_CAST(void**, &dirs[i]));
     }
 
-    safe_Free(dirs)
+    safe_Free(C_CAST(void**, &dirs));
     return secure;
 }
 
@@ -1909,7 +1909,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
         if (directoryStringLength > OPENSEA_PATH_MAX || directoryStringLength == 0 || directoryStringLength > OPENSEA_PATH_MAX - sizeof(ntdll) / sizeof(*ntdll))
         {
             //error
-            safe_Free(systemPathBuf)
+            safe_Free(C_CAST(void**, &systemPathBuf));
             systemPath = NULL;
             return FAILURE;
         }
@@ -1951,7 +1951,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
                 ret = FAILURE;
             }
         }
-        safe_Free(systemPathBuf)
+        safe_Free(C_CAST(void**, &systemPathBuf));
         systemPath = NULL;
     }
     else
@@ -2318,14 +2318,14 @@ eReturnValues get_Current_User_Name(char **userName)
                 //convert output to a char string
                 if (wcstombs_s(&charsConverted, *userName, usernameLength, localName, usernameLength))
                 {
-                    safe_Free(*userName)
+                    safe_Free(C_CAST(void**, userName));
                     ret = FAILURE;
                 }
 #else
                 //just copy it over after allocating
                 if (strcpy_s(*userName, usernameLength, localName))
                 {
-                    safe_Free(*userName)
+                    safe_Free(C_CAST(void**, userName));
                     return FAILURE;
                 }
 #endif
@@ -2333,7 +2333,7 @@ eReturnValues get_Current_User_Name(char **userName)
                 {
                     if (strcat_s(*userName, usernameLength, isAdmin))
                     {
-                        safe_Free(*userName)
+                        safe_Free(C_CAST(void**, userName));
                         return FAILURE;
                     }
                 }
