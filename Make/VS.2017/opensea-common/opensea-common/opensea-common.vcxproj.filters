@@ -50,5 +50,8 @@
     <ClCompile Include="..\..\..\..\src\common_uefi.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\src\validate_format.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
