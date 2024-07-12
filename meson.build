@@ -56,8 +56,6 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
   '-Wenum-conversion',
   '-Wfloat-conversion',
   '-Wimplicit-fallthrough',
-  '-U_FORTIFY_SOURCE',
-  '-D_FORTIFY_SOURCE=3',
   '-D_GLIBCXX_ASSERTIONS',
   '-fstrict-flex-arrays=1', #NOTE: Using level 1 since Windows often uses [1] at the end of it's structures. opensea-*libs has used this in a few places too.
   '-fstack-protector-strong',
@@ -103,6 +101,16 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
     '-Wl,-z,relro',
     '-Wl,-z,now'
   ]
+
+  fortifytest = ''' #include <stdio.h>
+                      int main() {
+                          return 0;
+                      }
+                  '''
+  fortifyresult = c.compiles(fortifytest, name : '_FORTIFY_OVERRIDE', args : ['-U_FORTIFY_SOURCE', '-D_FORTIFY_SOURCE=5', '-Werror'])
+  if fortifyresult == true
+    warning_flags += ['-U_FORTIFY_SOURCE', '-D_FORTIFY_SOURCE=3']
+  endif
 
 elif c.get_id().contains('msvc')
   #See here for enabling/disabling msvc warnings:
@@ -250,6 +258,13 @@ elif c.has_function('explicit_memset', prefix : '#include <string.h>')
   global_cpp_args += ['-DHAVE_EXPLICIT_MEMSET']
 elif c.has_function('SecureZeroMemory', prefix : '#include <windows.h>')
   global_cpp_args += ['-DHAVE_MSFT_SECURE_ZERO_MEMORY']
+endif
+
+#test if setting _FORTIFY_SOURCE higher than default generates a warning
+#this issue showed up on Rocky Linux 8 and we don't want to generate extra noise
+#due to trying to follow openssf best practices
+if target_machine.system() != 'windows'
+    
 endif
 
 #check which version of strerror_r is available, posix or GNU
