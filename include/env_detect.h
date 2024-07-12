@@ -2,7 +2,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012-2023 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,136 +10,20 @@
 //
 // ******************************************************************************************
 // 
-// \file common_platform.h
-// \brief Includes OS specific files and defines functions that will be implemented specific to an OS
+// \file env_detect.h
+// \brief Detects the compilation environment for standards, extensions, etc. Also detects CPU type and endianness
+//
 
 #pragma once
 
-#include "common.h"
-
-//This file's sole purpose is to include the correct common_<os/platform>.h/.c files for common things we may want to do -TJE
-//Currently everything is being done in common_nix.h. If something begins to get too specific to linux vs freebsd, then we'll need common_linux and common_freebsd files.
-#if defined (UEFI_C_SOURCE)
-#include "common_uefi.h"
-#elif defined (__linux__) 
-#include "common_nix.h"
-//#include "common_linux.h"
-#elif defined (__DragonFly__)
-//#error "Need a DragonFly BSD common file"
-#include "common_nix.h"
-#elif defined (__FreeBSD__)
-//#error "Need a FreeBSD common file"
-#include "common_nix.h"
-#elif defined (__NetBSD__)
-#include "common_nix.h"
-//#error "Need a NetBSD common file"
-#elif defined (__OpenBSD__)
-#include "common_nix.h"
-//#error "Need a OpenBSD common file"
-#elif defined (__sun)
-#include "common_nix.h"
-
-#elif defined (_WIN32)
-#include "common_windows.h"
-#elif defined (_AIX)//IBM Unix
-#include "common_nix.h"
-//#error "Need a AIX common file"
-#elif defined (__hpux)//HP Unix
-#include "common_nix.h"
-//#error "Need a HP UX common file"
-#elif defined (__APPLE__)
-#include "common_nix.h"
-#include <TargetConditionals.h>
-#if defined (TARGET_OS_MAC)
-//#error "Need a Apple common file"
-#include "common_nix.h"
-#include <TargetConditionals.h>
-#else
-#error "Need Apple embedded common file"
-#endif
-#elif defined (__digital__) //tru64 unix
-#include "common_nix.h"
-//#error "Need a TRU64 common file"
-#elif defined (__CYGWIN__) && !defined (_WIN32)
-//this is using CYGWIN with POSIX under Windows. This means that the Win API is not available, so use unix/linux common includes
-#include "common_nix.h"
-//#include "common_linux.h"
-#else
-#error "Unknown OS. Need to specify a common_<os>.h  file to use\n"
-#endif
+#include "predef_env_detect.h"
+#include "code_attributes.h"
+#include "common_types.h"
 
 #if defined (__cplusplus)
-#ifndef __STDC_FORMAT_MACROS
-#define __STDC_FORMAT_MACROS
-#endif
 extern "C"
 {
-#endif
-
-    //NOTE: This is taken from this list: https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
-    //      These may appear slightly different in each console, but will be close to the requested color
-    M_DECLARE_ENUM(eConsoleColors,
-        CONSOLE_COLOR_DEFAULT,
-        CONSOLE_COLOR_BLACK,
-        CONSOLE_COLOR_RED,
-        CONSOLE_COLOR_GREEN,
-        CONSOLE_COLOR_YELLOW,
-        CONSOLE_COLOR_BLUE,
-        CONSOLE_COLOR_MAGENTA,
-        CONSOLE_COLOR_CYAN,
-        CONSOLE_COLOR_WHITE,
-        CONSOLE_COLOR_GRAY,
-        CONSOLE_COLOR_BRIGHT_BLACK = CONSOLE_COLOR_GRAY,
-        CONSOLE_COLOR_BRIGHT_RED,
-        CONSOLE_COLOR_BRIGHT_GREEN,
-        CONSOLE_COLOR_BRIGHT_YELLOW,
-        CONSOLE_COLOR_BRIGHT_BLUE,
-        CONSOLE_COLOR_BRIGHT_MAGENTA,
-        CONSOLE_COLOR_BRIGHT_CYAN,
-        CONSOLE_COLOR_BRIGHT_WHITE,
-        CONSOLE_COLOR_CURRENT
-    );
-
-    ////////////////////////////////////////////////////////////////////////////////////////////
-    //// Functions below have specific implementations for OS's in the files included above ////
-    ////////////////////////////////////////////////////////////////////////////////////////////
-
-
-    //-----------------------------------------------------------------------------
-    //
-    //  set_Console_Colors() OBSOLETE
-    //
-    //! \brief   Description:  Recommend using set_Console_Foreground_Background_Colors() instead!
-    //!                        Set the foreground or background color in the console output
-    //
-    //  Entry:
-    //!   \param[in] foregroundBackground - true = foreground, false = background
-    //!   \param[in] consoleColor = one of the enum values defined in this header for which color you want.
-    //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor);
-
-    //-----------------------------------------------------------------------------
-    //
-    //  set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eConsoleColors backgroundColor)
-    //
-    //! \brief   Description:  Set the foreground and background color in the console output. MUST USE CONSOLE_COLOR_... types!
-    //
-    //  Entry:
-    //!   \param[in] foregroundColor = requested foreground color.
-    //!   \param[in] backgroundColor = requested background color.
-    //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eConsoleColors backgroundColor);
-
-    //windows and 'nix require a file to use for finding a path as far as I can tell.-TJE
-    eReturnValues get_Full_Path(const char * pathAndFile, char fullPath[OPENSEA_PATH_MAX]);
-
-    eReturnValues replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char *newFileName);
+#endif //__cplusplus
 
     M_DECLARE_ENUM(eArchitecture,
         OPENSEA_ARCH_UNKNOWN,
@@ -373,7 +257,7 @@ extern "C"
     //
     // Entry:
     //      \param[out] versionNumber - pointer to the OSVersionNumber struct. This will be filled in with version information upon SUCCESSful completion.
-    //      \param[out] operatingSystemName - (optional, set to NULL if not being used) This will be a string with the friendly, human readable name of the OS. This will likely be the name of the release as it was announced. IE: Windows 6.2 = Windows 8.
+    //      \param[out] operatingSystemName - (optional, set to M_NULLPTR if not being used) This will be a string with the friendly, human readable name of the OS. This will likely be the name of the release as it was announced. IE: Windows 6.2 = Windows 8.
     //
     // Exit:
     //      \return SUCCESS = got version information, !SUCCESS = failure getting version information.
@@ -411,116 +295,70 @@ extern "C"
     //-----------------------------------------------------------------------------
     void print_OS_Version(ptrOSVersionNumber versionNumber);
 
-    //-----------------------------------------------------------------------------
-    //
-    // int64_t os_Get_File_Size(FILE *filePtr)
-    //
-    // \brief   Description: returns the size of the file pointer to by the incoming file pointer. This uses GetFileSizeEx in Windows and fstat64 in nix systems.
-    //
-    // Entry:
-    //      \param[in] filePtr - pointer to a file that you wish to get the size of
-    //
-    // Exit:
-    //      \return int64_t file size in bytes. -1 is returned if there is an error.
-    //
-    //-----------------------------------------------------------------------------
-    int64_t os_Get_File_Size(FILE *filePtr);
+    M_DECLARE_ENUM(eCompiler,
+        OPENSEA_COMPILER_UNKNOWN,
+        OPENSEA_COMPILER_MICROSOFT_VISUAL_C_CPP,
+        OPENSEA_COMPILER_GCC,
+        OPENSEA_COMPILER_CLANG,
+        OPENSEA_COMPILER_MINGW,
+        OPENSEA_COMPILER_INTEL_C_CPP,
+        OPENSEA_COMPILER_SUNPRO_C_CPP,
+        OPENSEA_COMPILER_IBM_XL_C_CPP,
+        OPENSEA_COMPILER_IBM_SYSTEMZ_C_CPP,
+        OPENSEA_COMPILER_HP_A_CPP,
+        /*Add other compilers here if we ever add more than those above (which not all listed above are supported!)*/
+        );
 
-    typedef struct _seatimer_t
+    typedef struct _compilerVersion
     {
-        uint64_t timerStart;//system specific count value. May need to do a calculation with this value so using it directly doesn't make sense.
-        uint64_t timerStop;//system specific count value. May need to do a calculation with this value so using it directly doesn't make sense.
-    }seatimer_t;
+        uint16_t major;
+        uint16_t minor;
+        uint16_t patch;
+    }compilerVersion, * ptrCompilerVersion;
 
     //-----------------------------------------------------------------------------
     //
-    // void start_Timer(seatimer_t *timer)
+    //  get_Compiler_Info(eCompiler *compilerUsed, ptrCompilerVersion compilerVersionInfo)
     //
-    // \brief   Description: set's timerStart in a seatimer_t structure that will be used later when calculating how long the timer ran for.
+    //! \brief   Description:  This call will return which compiled and version of that compiler was used when compiling opensea-common (and likely the rest of opensea-* libs) 
     //
-    // Entry:
-    //      \param[in,out] timer - pointer to a seatimer_t structure that will be used for the timer.
-    //
-    // Exit:
-    //      \return VOID
+    //  Entry:
+    //!   \param[out] compilerUsed = pointer to a eCompiler type that will be set with an enum value representing the compiler that was used on successful completion..
+    //!   \param[out] compilerVersionInfo = pointer to the compilerVersion struct. This will be filled in with version information on successful completion.
+    //!
+    //  Exit:
+    //!   \return SUCCESS on successful completion, !SUCCESS if problems encountered
     //
     //-----------------------------------------------------------------------------
-    void start_Timer(seatimer_t *timer);
+    eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion compilerVersionInfo);
 
     //-----------------------------------------------------------------------------
     //
-    // void stop_Timer(seatimer_t *timer)
+    //  print_Compiler(eCompiler compilerUsed)
     //
-    // \brief   Description: set's timerStop in a seatimer_t structure that will be used later when calculating how long the timer ran for.
+    //! \brief   Description:  This takes an eCompiler type and prints out the name of the compiler.
     //
-    // Entry:
-    //      \param[in,out] timer - pointer to a seatimer_t structure that will be used for the timer.
-    //
-    // Exit:
-    //      \return VOID
+    //  Entry:
+    //!   \param[in] compilerUsed = eCompiler type that will be printed to the screen in human readable form
+    //!
+    //  Exit:
     //
     //-----------------------------------------------------------------------------
-    void stop_Timer(seatimer_t *timer);
+    void print_Compiler(eCompiler compilerUsed);
 
     //-----------------------------------------------------------------------------
     //
-    // uint64_t get_Nano_Seconds(seatimer_t timer)
+    //  print_Compiler_Version_Info(ptrCompilerVersion compilerVersionInfo)
     //
-    // \brief   Description: Gets the number of nano seconds elapsed between timerStart and timerStop
+    //! \brief   Description:  prints out the compiler version information in the form major.minor.patch from the compilerVersion struct
     //
-    // Entry:
-    //      \param[in] timer - pointer to a seatimer_t structure that will be used for the timer.
-    //
-    // Exit:
-    //      \return uint64_t value representing the number of nanoseconds elapsed.
-    //
-    //-----------------------------------------------------------------------------
-    uint64_t get_Nano_Seconds(seatimer_t timer);
-
-    //-----------------------------------------------------------------------------
-    //
-    // double get_Micro_Seconds(seatimer_t timer)
-    //
-    // \brief   Description: Gets the number of micro seconds elapsed between timerStart and timerStop
-    //
-    // Entry:
-    //      \param[in] timer - pointer to a seatimer_t structure that will be used for the timer.
-    //
-    // Exit:
-    //      \return double value representing the number of microseconds elapsed.
+    //  Entry:
+    //!   \param[in] compilerVersionInfo = pointer to the compilerVersion struct that holds the compiler version information.
+    //!
+    //  Exit:
     //
     //-----------------------------------------------------------------------------
-    double get_Micro_Seconds(seatimer_t timer);
-
-    //-----------------------------------------------------------------------------
-    //
-    // double get_Milli_Seconds(seatimer_t timer)
-    //
-    // \brief   Description: Gets the number of milli seconds elapsed between timerStart and timerStop
-    //
-    // Entry:
-    //      \param[in] timer - pointer to a seatimer_t structure that will be used for the timer.
-    //
-    // Exit:
-    //      \return double value representing the number of milliseconds elapsed.
-    //
-    //-----------------------------------------------------------------------------
-    double get_Milli_Seconds(seatimer_t timer);
-
-    //-----------------------------------------------------------------------------
-    //
-    // double get_Seconds(seatimer_t timer)
-    //
-    // \brief   Description: Gets the number of seconds elapsed between timerStart and timerStop
-    //
-    // Entry:
-    //      \param[in] timer - pointer to a seatimer_t structure that will be used for the timer.
-    //
-    // Exit:
-    //      \return double value representing the number of seconds elapsed.
-    //
-    //-----------------------------------------------------------------------------
-    double get_Seconds(seatimer_t timer);
+    void print_Compiler_Version_Info(ptrCompilerVersion compilerVersionInfo);
 
     //-----------------------------------------------------------------------------
     //
@@ -535,8 +373,15 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     bool is_Running_Elevated(void);
-    
+
 #if defined (ENABLE_READ_USERNAME)
+    #if defined (_WIN32)
+    //This pragma is needed to tell a library including opensea-common to look for Version.lib for the version helping information in the .c file.
+    //NOTE: ARM requires 10.0.16299.0 API to get this library!
+    #if !defined (__MINGW32__) && !defined (__MINGW64__)
+        #pragma comment(lib,"Advapi32.lib")//for checking for "run as administrator". May not be necessary to build some tools, but putting this here to prevent problems.
+    #endif
+#endif //_WIN32
     //This flag is required to enable this functionality.
     // A customer reported concerns about this reading the /etc/passwd file in Linux...the only way to map a UID to a username string
     // So the solution to this problem is to flag this capability to being off by default.
@@ -554,21 +399,9 @@ extern "C"
     //!   \return SUCCESS = no errors, userName allocated and ready to be user, BAD_PARAMTER = bas pointer, FAILURE = could not determine user name.
     //
     //-----------------------------------------------------------------------------
-    eReturnValues get_Current_User_Name(char **userName);
+    eReturnValues get_Current_User_Name(char** userName);
 #endif //ENABLE_READ_USERNAME
 
-    //This should be used after prompting the user to enter data.
-    //The echo of the typed characters is disabled while reading input with this function.
-    //Once the reading is complete, the echo is restored to normal.
-    //If you wish to confirm the user input, call this again after asking for confirmation and compare the strings.
-    //this will allocate memory to be free'd with free().
-    //NOTE: Recommend calling explicit_zeroes before freeing to ensure data is securely removed.
-    //NOTE: inputDataLen is the allocated buffer size, not necessarily how many characters were typed.
-    //      this can vary depending on the low-level OS's implementation of getting a password without echoing.
-    //NOTE: On really old systems, this may be limited to 8 characters. Most modern systems should allow at least 128 characters
-    //      As long as POSIX2001 is supported, there should be no limitation to number of characters read from this function-TJE
-    eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen);
-
 #if defined (__cplusplus)
-} //extern "C"
-#endif
+}
+#endif //__cplusplus

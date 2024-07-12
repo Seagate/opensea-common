@@ -14,11 +14,18 @@
 // \brief Performs validation for format strings according to MSFT _s or C11 Annex-K requirements
 //
 
-#include "common.h"
+#include "common_types.h"
+#include "type_conversion.h"
+#include "code_attributes.h"
+#include "string_utils.h"
+#include "memory_safety.h"
+#include "io_utils.h"
+
 #include <stdarg.h>
 #include <wchar.h> //Testing for conversion failures
 #include <limits.h>
 #include <stddef.h>
+#include <string.h>
 
 typedef enum _eValidateFormatResult
 {
@@ -234,44 +241,35 @@ static eValidateFormatResult validate_Format_Length_Modifier(const char* format,
         case 'j':
             //check if long or long long and set ll to true/false based on this check
             lmods->j = true;
-            if (sizeof(intmax_t) == sizeof(long))
-            {
-                lmods->l = true;
-                lmods->ll = false;
-            }
-            else
-            {
-                lmods->l = false;
-                lmods->ll = true;
-            }
+#if defined (INTMAX_MAX) && defined (LONG_MAX) && INTMAX_MAX == LONG_MAX
+            lmods->l = true;
+            lmods->ll = false;
+#else
+            lmods->l = false;
+            lmods->ll = true;
+#endif
             break;
         case 'z':
             //check if long or long long and set ll to true/false based on this check
             lmods->z = true;
-            if (sizeof(size_t) == sizeof(long))
-            {
-                lmods->l = true;
-                lmods->ll = false;
-            }
-            else
-            {
-                lmods->l = false;
-                lmods->ll = true;
-            }
+#if defined (SIZE_MAX) && defined (ULONG_MAX) && SIZE_MAX == ULONG_MAX
+            lmods->l = true;
+            lmods->ll = false;
+#else
+            lmods->l = false;
+            lmods->ll = true;
+#endif
             break;
         case 't':
             //check if long or long long and set ll to true/false based on this check
             lmods->t = true;
-            if (sizeof(ptrdiff_t) == sizeof(long))
-            {
-                lmods->l = true;
-                lmods->ll = false;
-            }
-            else
-            {
-                lmods->l = false;
-                lmods->ll = true;
-            }
+#if defined (PTRDIFF_MAX) && defined (LONG_MAX) && PTRDIFF_MAX == LONG_MAX
+            lmods->l = true;
+            lmods->ll = false;
+#else
+            lmods->l = false;
+            lmods->ll = true;
+#endif
             break;
         case 'L':
             lmods->L = true;
@@ -422,13 +420,13 @@ static eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
     memset(&state, 0, sizeof(mbstate_t));
 #if defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
     //wcrtombs_s
-    if (wcrtomb_s(&charArrayLen, NULL, 0, character, &state) != 0)
+    if (wcrtomb_s(&charArrayLen, M_NULLPTR, 0, character, &state) != 0)
     {
         return VALIDATE_FORMAT_INVALID_FORMAT;
     }
 #else
     //wcrtomb
-    charArrayLen = wcrtomb(NULL, character, &state);
+    charArrayLen = wcrtomb(M_NULLPTR, character, &state);
 #endif
     if (charArrayLen == SIZE_MAX || charArrayLen == 0)
     {
@@ -471,14 +469,11 @@ static eValidateFormatResult validate_Format_Char(const char* format, char** off
             //based on what size it is.
             //va_args promote smaller types to int, but wint_t may be smaller or the same size
             //which is why this check is here.
-            if (sizeof(wint_t) < sizeof(int))
-            {
-                character = C_CAST(wint_t, va_arg(*args, int));
-            }
-            else
-            {
-                character = va_arg(*args, wint_t);
-            }
+#if defined (WINT_MAX) && defined (INT_MAX) && WINT_MAX < INT_MAX
+            character = C_CAST(wint_t, va_arg(*args, int));
+#else
+            character = va_arg(*args, wint_t);
+#endif
             result = validate_Wchar_Conversion(character);
         }
         else
@@ -524,19 +519,19 @@ static eValidateFormatResult validate_WStr_Conversion(const wchar_t* string)
         //get allocation size first
 #if 0//defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
         //wcsrtombs_s
-        if (wcsrtombs_s(&charStrSize, NULL, 0, &string, 0, &state) != 0)
+        if (wcsrtombs_s(&charStrSize, M_NULLPTR, 0, &string, 0, &state) != 0)
         {
             return VALIDATE_FORMAT_INVALID_FORMAT;
         }
 #else
         //wcsrtombs
-        charStrSize = wcsrtombs(NULL, &string, 0, &state);
+        charStrSize = wcsrtombs(M_NULLPTR, &string, 0, &state);
 #endif
         if (charStrSize == SIZE_MAX || charStrSize == 0)
         {
             return VALIDATE_FORMAT_INVALID_FORMAT;//Should this be a different error for encoding failure???
         }
-        charStr = C_CAST(char*, calloc(charStrSize + 1, sizeof(char)));//add room for NULL terminator
+        charStr = C_CAST(char*, calloc(charStrSize + 1, sizeof(char)));//add room for M_NULLPTR terminator
         if (charStr == M_NULLPTR)
         {
             return VALIDATE_FORMAT_INVALID_FORMAT;//Should this be a different error for encoding failure???
@@ -669,7 +664,7 @@ static eValidateFormatResult validate_Format_Specifier(const char* format, char*
                             }
 
 //This function attempts to verify a format string for valid formatting as C11 annex K and Microsoft _s functions do.
-//Format must be non-NULL, %n is considered insecure and not allowed (we don't use it anyways), and all arguments to strings must be non-NULL.
+//Format must be non-M_NULLPTR, %n is considered insecure and not allowed (we don't use it anyways), and all arguments to strings must be non-M_NULLPTR.
 //Checking for encoding errors would also be good, but not sure the best way to do this right now. -TJE
 int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formatargs)
 {
@@ -700,7 +695,7 @@ int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formata
         #endif
             formatoffset = C_CAST(uintptr_t, offsetToSpecifier) - C_CAST(uintptr_t, format);
             formatLength = string_n_length(format, C_STR_LITERAL_LIMIT);
-            //check at least the strings to make sure they are non-NULL.
+            //check at least the strings to make sure they are non-M_NULLPTR.
             //checking for other encoding errors may be more difficult to detect in here -TJE
             bool exitloop = false;
             while (offsetToSpecifier != M_NULLPTR && formatoffset < formatLength && exitloop == false)

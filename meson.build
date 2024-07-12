@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-project('opensea-common', 'c', license: 'MPL-2.0', version: '1.21.2', default_options : ['warning_level=2'])
+project('opensea-common', 'c', license: 'MPL-2.0', version: '4.0.0', default_options : ['warning_level=2'])
 
 c = meson.get_compiler('c')
 
@@ -73,7 +73,8 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
   '-Wnewline-eof',
   '-Wno-c23-extensions', #We do not want this warning since we are already checking for when C23 extensions are available before we use them. If not, we use a compiler specific definition, or make it an empty definition.
   '-Wparentheses',
-  '-Wextra-semi'
+  '-Wextra-semi',
+  '-Wcast-qual'
   ]
 
   if c.get_id().contains('gcc') and target_machine.system() == 'windows'
@@ -205,7 +206,24 @@ if get_option('username').enabled()
   global_cpp_args += ['-DENABLE_READ_USERNAME']
 endif
 
-src_files = ['src/common.c', 'src/common_platform.c', 'src/validate_format.c']
+src_files = ['src/bit_manip.c', 
+            'src/env_detect.c', 
+            'src/error_translation.c',
+            'src/io_utils.c',
+            'src/math_utils.c',
+            'src/memory_safety.c',
+            'src/pattern_utils.c',
+            'src/precision_timer.c',
+            'src/prng.c',
+            'src/secure_file.c',
+            'src/secured_env_vars.c',
+            'src/sleep.c',
+            'src/string_utils.c',
+            'src/time_utils.c',
+            'src/type_conversion.c',
+            'src/unit_conversion.c',
+            'src/validate_format.c',
+            ]
 
 if c.has_header_symbol('stdlib.h', '__STDC_LIB_EXT1__')
   add_project_arguments(['-D__STDC_WANT_LIB_EXT1__=1'], language : 'c')
@@ -224,21 +242,37 @@ endif
 #check which memset/bzero is available that will not be optimized out in case we do not have the ability to check via preprocessor in the code.
 if c.has_function('memset_explicit', prefix : '#include <string.h>')
   global_cpp_args += ['-DHAVE_MEMSET_EXPLICIT']
-elif c.has_header_symbol('stdlib.h', '__STDC_LIB_EXT1__') and c.has_function('memset_s', prefix : '#define __STDC_WANT_LIB_EXT1__ 1\n#include <string.h>\n')
+elif c.has_function('memset_s', prefix : '#define __STDC_WANT_LIB_EXT1__ 1\n#include <string.h>\n')
   global_cpp_args += ['-DHAVE_MEMSET_S']
 elif c.has_function('explicit_bzero', prefix : '#include <strings.h>') or c.has_function('explicit_bzero', prefix : '#include <string.h>')
   global_cpp_args += ['-DHAVE_EXPLICIT_BZERO']
 elif c.has_function('explicit_memset', prefix : '#include <string.h>')
   global_cpp_args += ['-DHAVE_EXPLICIT_MEMSET']
-elif c.has_function('SecureZeroMemory', prefix : '#include <Windows.h>')
+elif c.has_function('SecureZeroMemory', prefix : '#include <windows.h>')
   global_cpp_args += ['-DHAVE_MSFT_SECURE_ZERO_MEMORY']
+endif
+
+#check which version of strerror_r is available, posix or GNU
+if c.has_function('strerror_r', prefix : '#include <string.h>')
+  posix_strerror_r_check_code = ''' #include <string.h>
+              int main() {
+                  int result = strerror_r(0, M_NULLPTR, 0);
+                  return 0;
+              }
+              '''
+  posix_strerror_r_result = c.compiles(posix_strerror_r_check_code, name : 'POSIX strerror_r')
+  if posix_strerror_r_result == true
+    global_cpp_args += ['-DHAVE_POSIX_STRERR_R']
+  else
+    global_cpp_args += ['-DHAVE_GNU_STRERR_R']
+  endif
 endif
 
 deps = []
 
 # Opensea common defines the nvme header globally and opensea-transport, opensea-operations and openseachest itself include this, so only need to declare it here
 if target_machine.system() == 'linux'
-  src_files += ['src/common_nix.c']
+  src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']
   if c.check_header('linux/nvme_ioctl.h')
 	  global_cpp_args += ['-DSEA_NVME_IOCTL_H']
   elif c.check_header('linux/nvme.h')
@@ -249,20 +283,20 @@ if target_machine.system() == 'linux'
 	  global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
   endif
 elif target_machine.system() == 'freebsd'
-  src_files += ['src/common_nix.c']
+  src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']
   if not c.check_header('dev/nvme/nvme.h')
 	  global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
   endif
 elif target_machine.system() == 'sunos'
-  src_files += ['src/common_nix.c']
+  src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']
   global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
 elif target_machine.system() == 'aix'
-  src_files += ['src/common_nix.c']
+  src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']
   if not c.check_header('sys/nvme.h')
     global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
   endif
 elif target_machine.system() == 'windows'
-  src_files += ['src/common_windows.c']
+  src_files += ['src/windows_env_detect.c', 'src/windows_secure_file.c', 'src/windows_version_detect.c']
   if c.get_define('__MINGW32__') != ''
 	  global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH', '-DSTRSAFE_NO_DEPRECATE']
 	  win32_version = c.find_library('version')
