@@ -271,7 +271,7 @@ endif
 if c.has_function('strerror_r', prefix : '#include <string.h>')
   posix_strerror_r_check_code = ''' #include <string.h>
               int main() {
-                  int result = strerror_r(0, M_NULLPTR, 0);
+                  int result = strerror_r(0, NULL, 0);
                   return 0;
               }
               '''
