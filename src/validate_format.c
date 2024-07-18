@@ -114,6 +114,7 @@ static eValidateFormatResult validate_Format_Width(const char* format, char** of
         }
         else
         {
+            errno = 0;//ISO secure coding standard recommends this to ensure errno is interpretted correctly after this call
             char* endptr = M_NULLPTR;
             long lwidth = strtol(*offsetToSpecifier, &endptr, 10);
             if (lwidth == 0 && endptr == M_NULLPTR)
@@ -168,6 +169,7 @@ static eValidateFormatResult validate_Format_Precision(const char* format, char*
             }
             else
             {
+                errno = 0;//ISO secure coding standard recommends this to ensure errno is interpretted correctly after this call
                 char* endptr = M_NULLPTR;
                 long lprecision = strtol(*offsetToSpecifier, &endptr, 10);
                 if (lprecision == 0 && endptr == M_NULLPTR)
@@ -418,6 +420,7 @@ static eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
     size_t conversionresult = 0;
     mbstate_t state;
     memset(&state, 0, sizeof(mbstate_t));
+    errno = 0;//ISO C security standard does not say this is necessary, but going to make sure it is zero before moving on anyways - TJE
 #if defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
     //wcrtombs_s
     if (wcrtomb_s(&charArrayLen, M_NULLPTR, 0, character, &state) != 0)
@@ -428,7 +431,7 @@ static eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
     //wcrtomb
     charArrayLen = wcrtomb(M_NULLPTR, character, &state);
 #endif
-    if (charArrayLen == SIZE_MAX || charArrayLen == 0)
+    if ((charArrayLen == SIZE_MAX && errno == EILSEQ) || charArrayLen == 0)
     {
         return VALIDATE_FORMAT_INVALID_FORMAT;//Should this be a different error for encoding failure???
     }
@@ -437,6 +440,7 @@ static eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
     {
         return VALIDATE_FORMAT_INVALID_FORMAT;//Should this be a different error for encoding failure???
     }
+    errno = 0;//ISO C does not show this as necessary, but doing to set this to zero anyways
 #if defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
     //wcrtombs_s
     if (wcrtomb_s(&conversionresult, convertedChar, charArrayLen, character, &state) != 0)
@@ -515,9 +519,9 @@ static eValidateFormatResult validate_WStr_Conversion(const wchar_t* string)
         size_t conversionResult = 0;
         mbstate_t state;
         memset(&state, 0, sizeof(mbstate_t));
-
+        errno = 0;//ISO C does not show this as necessary, but doing to set this to zero anyways
         //get allocation size first
-#if 0//defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
+#if defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
         //wcsrtombs_s
         if (wcsrtombs_s(&charStrSize, M_NULLPTR, 0, &string, 0, &state) != 0)
         {
@@ -527,7 +531,7 @@ static eValidateFormatResult validate_WStr_Conversion(const wchar_t* string)
         //wcsrtombs
         charStrSize = wcsrtombs(M_NULLPTR, &string, 0, &state);
 #endif
-        if (charStrSize == SIZE_MAX || charStrSize == 0)
+        if ((charStrSize == SIZE_MAX && errno == EILSEQ) || charStrSize == 0)
         {
             return VALIDATE_FORMAT_INVALID_FORMAT;//Should this be a different error for encoding failure???
         }
@@ -536,7 +540,8 @@ static eValidateFormatResult validate_WStr_Conversion(const wchar_t* string)
         {
             return VALIDATE_FORMAT_INVALID_FORMAT;//Should this be a different error for encoding failure???
         }
-#if 0//defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
+        errno = 0;//ISO C does not show this as necessary, but doing to set this to zero anyways
+#if defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
         //wcsrtombs_s
         if (wcsrtombs_s(&conversionResult, charStr, charStrSize, &string, 0, &state) != 0)
         {
@@ -547,7 +552,7 @@ static eValidateFormatResult validate_WStr_Conversion(const wchar_t* string)
         //wcsrtombs
         conversionResult = wcsrtombs(charStr, &string, charStrSize, &state);
 #endif
-        if (conversionResult == SIZE_MAX || conversionResult == 0)
+        if ((conversionResult == SIZE_MAX && errno == EILSEQ) || conversionResult == 0)
         {
             result = VALIDATE_FORMAT_INVALID_FORMAT;
         }

@@ -763,6 +763,7 @@ offset_t secure_Tell_File(secureFileInfo* fileInfo)
             offset_t tellres = 0;
             //Windows has _fseeki64, which may be better to use instead for larger files or to be compatible with larger files.
             //Linux/posix have fseeko and ftello which use off_t which can be wider as well. (POSIX 2001)
+            errno = 0;//ISO secure coding standard recommends this to ensure errno is interpretted correctly after this call
 #if defined (_WIN32) /*version check for this function?*/
             tellres = _ftelli64(fileInfo->file);
 #elif defined (POSIX_2001)
@@ -962,6 +963,7 @@ eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT fileInfo, fpos_t*
             }
             else
             {
+                //TODO: inspect errno - ISO C security recommendation
                 fileInfo->error = SEC_FILE_FAILURE;
             }
         }
@@ -994,6 +996,7 @@ eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos)
             }
             else
             {
+                //TODO: inspect errno - ISO C security recommendation
                 fileInfo->error = SEC_FILE_FAILURE;
             }
         }

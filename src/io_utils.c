@@ -1319,6 +1319,7 @@ bool get_And_Validate_Integer_Input_ULL(const char* strToConvert, char** unit, e
         //If everything is a valid hex digit. 
         if (ret)
         {
+            errno = 0;//ISO secure coding standard recommends this to ensure errno is interpretted correctly after this call
             if (hex)
             {
                 *outputInteger = strtoull(strToConvert, endPtrToUse, 16);
@@ -1385,6 +1386,7 @@ bool get_And_Validate_Integer_Input_UL(const char* strToConvert, char** unit, eA
         //If everything is a valid hex digit. 
         if (ret)
         {
+            errno = 0;//ISO secure coding standard recommends this to ensure errno is interpretted correctly after this call
             if (hex)
             {
                 *outputInteger = strtoul(strToConvert, endPtrToUse, 16);
@@ -1516,6 +1518,7 @@ bool get_And_Validate_Integer_Input_LL(const char* strToConvert, char** unit, eA
         //If everything is a valid hex digit. 
         if (ret)
         {
+            errno = 0;//ISO secure coding standard recommends this to ensure errno is interpretted correctly after this call
             if (hex)
             {
                 *outputInteger = strtoll(strToConvert, endPtrToUse, 16);
@@ -1582,6 +1585,7 @@ bool get_And_Validate_Integer_Input_L(const char* strToConvert, char** unit, eAl
         //If everything is a valid hex digit. 
         if (ret)
         {
+            errno = 0;//ISO secure coding standard recommends this to ensure errno is interpretted correctly after this call
             if (hex)
             {
                 *outputInteger = strtol(strToConvert, endPtrToUse, 16);
@@ -1738,6 +1742,7 @@ bool get_And_Validate_Float_Input(const char* strToConvert, char** unit, eAllowe
         {
             endPtrToUse = unit;
         }
+        errno = 0;//ISO secure coding standard recommends this to ensure errno is interpretted correctly after this call
         *outputFloat = strtof(strToConvert, endPtrToUse);
         if ((*outputFloat >= HUGE_VALF && errno == ERANGE) || strToConvert == *endPtrToUse)
         {
@@ -1783,6 +1788,7 @@ bool get_And_Validate_Double_Input(const char* strToConvert, char** unit, eAllow
         {
             endPtrToUse = unit;
         }
+        errno = 0;//ISO secure coding standard recommends this to ensure errno is interpretted correctly after this call
         *outputFloat = strtod(strToConvert, endPtrToUse);
         if ((*outputFloat >= HUGE_VAL && errno == ERANGE) || strToConvert == *endPtrToUse)
         {
@@ -1828,6 +1834,7 @@ bool get_And_Validate_LDouble_Input(const char* strToConvert, char** unit, eAllo
         {
             endPtrToUse = unit;
         }
+        errno = 0;//ISO secure coding standard recommends this to ensure errno is interpretted correctly after this call
         *outputFloat = strtold(strToConvert, unit);
         if ((*outputFloat >= HUGE_VALL && errno == ERANGE) || strToConvert == *endPtrToUse)
         {

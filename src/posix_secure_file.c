@@ -141,6 +141,7 @@ static uid_t get_sudo_uid(void)
         {
             char* endptr = M_NULLPTR;
             //convert this to uid_t
+            errno = 0;//clear before calling this function as recommended by ISO C secure coding
             unsigned long temp = strtoul(uidstr, &endptr, 10);
             if (!(temp == ULONG_MAX && errno == ERANGE) && !(temp == 0 && endptr == M_NULLPTR))
             {

@@ -341,9 +341,9 @@ static bool get_Version_From_Uname_Str(const char *verStr, const char* prefix /*
             //move the pointer past the prefix.
             strscan += strlen(prefix);
         }
-        errno = 0;//clear this before we begin to make sure it isn't holding some previous error-TJE
         while (success && versionoffset < versionCount && strscan)
         {
+            errno = 0;//clear this before we begin to make sure it isn't holding some previous error-TJE
             unsigned long value = strtoul(strscan, &endptr, 10);
             if (strscan == endptr)
             {
