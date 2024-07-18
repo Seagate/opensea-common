@@ -57,6 +57,7 @@
 #include <stdbool.h>
 #include <limits.h>
 #include <errno.h> //for errno_t if it is available
+#include <stddef.h>
 
 #if defined (__cplusplus)
 extern "C"
@@ -195,14 +196,13 @@ extern "C"
         //This requires C99 to use, but that is the lowest C version we are using anyways
         #define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) \
             type_name array_name[size] = {[0 ... (size - 1)] = 0}
-        //#define DECLARE_ZERO_INIT_ARR(size) [size] = {[0 ... (size - 1)] = 0}
     #else
         //This is not exactly the same, but what we have done for years and usually works out ok...
         //The only way to make this work for old standards 100% is a memset, but we don't want to
-        //do that because C89 requires variable declarations before functions are run, so
+        //do that because C89 requires variable declarations before functions are run, so defining like this.
+        //Some compilers will interpret this to mean zero initialize the array, but it is not guaranteed.
         #define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) \
             type_name array_name[size] = { 0 }
-        //#define DECLARE_ZERO_INIT_ARR(size) [size] = { 0 }
     #endif
 
     #if defined (MAX_PATH)
