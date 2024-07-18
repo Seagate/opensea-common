@@ -27,8 +27,19 @@ extern "C"
 #endif
 
     //get a specific double word
-    #define M_DoubleWord0(l) ( M_STATIC_CAST(uint32_t, ( ( (l) & UINT64_C(0x00000000FFFFFFFF) ) >>  0 ) ) )
-    #define M_DoubleWord1(l) ( M_STATIC_CAST(uint32_t, ( ( (l) & UINT64_C(0xFFFFFFFF00000000) ) >> 32 ) ) )
+    M_INLINE uint32_t get_DWord0(uint64_t value)
+    {
+        return M_STATIC_CAST(uint32_t, value & UINT64_C(0x00000000FFFFFFFF));
+    }
+
+    #define M_DoubleWord0(l) get_DWord0(l)
+
+    M_INLINE uint32_t get_DWord1(uint64_t value)
+    {
+        return M_STATIC_CAST(uint32_t, (value & UINT64_C(0xFFFFFFFF00000000)) >> 32);
+    }
+
+    #define M_DoubleWord1(l) get_DWord1(l)
 
     //get a specific double word
     #define M_DoubleWordInt0(l) ( M_STATIC_CAST(int32_t, ( ( (l) & UINT64_C(0x00000000FFFFFFFF) ) >>  0 ) ) )
@@ -88,42 +99,59 @@ extern "C"
     #define M_Nibble14(l) M_STATIC_CAST(uint8_t, ( ( M_STATIC_CAST(uint64_t,l) & UINT64_C(0x0F00000000000000) ) >> 56 ) )
     #define M_Nibble15(l) M_STATIC_CAST(uint8_t, ( ( M_STATIC_CAST(uint64_t,l) & UINT64_C(0xF000000000000000) ) >> 60 ) )
 
-    #define M_NibblesTo1ByteValue(n1, n0) ( \
-    M_STATIC_CAST(uint8_t, ( (M_STATIC_CAST(uint8_t, ((n1) & 0x0F) << 4) | (M_STATIC_CAST(uint8_t, ((n0) & 0x0F) << 0)) \
-                                           ) ) ) )
+    M_INLINE uint8_t nibbles_To_Byte(uint8_t upperNibble, uint8_t lowerNibble)
+    {
+        return (((upperNibble) & 0x0F) << 4) | (((lowerNibble) & 0x0F) << 0);
+    }
 
-    // Big endian parameter order, little endian value
-    #define M_BytesTo4ByteValue(b3, b2, b1, b0)                    (        \
-    M_STATIC_CAST(uint32_t, (  (M_STATIC_CAST(uint32_t, b3) << 24) | (M_STATIC_CAST(uint32_t, b2) << 16) |          \
-                 (M_STATIC_CAST(uint32_t, b1) <<  8) | (M_STATIC_CAST(uint32_t, b0) <<  0)  )         \
-                                                                   ) )
-    // Big endian parameter order, little endian value
-    #define M_BytesTo8ByteValue(b7, b6, b5, b4, b3, b2, b1, b0)    (        \
-    M_STATIC_CAST(uint64_t, ( (M_STATIC_CAST(uint64_t, b7) << 56) | (M_STATIC_CAST(uint64_t, b6) << 48) |           \
-                (M_STATIC_CAST(uint64_t, b5) << 40) | (M_STATIC_CAST(uint64_t, b4) << 32) |           \
-                (M_STATIC_CAST(uint64_t, b3) << 24) | (M_STATIC_CAST(uint64_t, b2) << 16) |           \
-                (M_STATIC_CAST(uint64_t, b1) <<  8) | (M_STATIC_CAST(uint64_t, b0) <<  0)  )          \
-                                                                   ) )
+    #define M_NibblesTo1ByteValue(n1, n0) nibbles_To_Byte(n1, n0)
 
-    // Big endian parameter order, little endian value
-    #define M_BytesTo2ByteValue(b1, b0)                            (        \
-    M_STATIC_CAST(uint16_t, (  (M_STATIC_CAST(uint16_t, b1) << 8) | (M_STATIC_CAST(uint16_t, b0) <<  0)  )          \
-                                                                   ) )
+    M_INLINE uint16_t bytes_To_Uint16(uint8_t msb, uint8_t lsb)
+    {
+        return (M_STATIC_CAST(uint16_t, msb) <<  8) | (M_STATIC_CAST(uint16_t, lsb) <<  0);
+    }
 
-    // Big endian parameter order, little endian value
-    #define M_WordsTo4ByteValue(w1, w0)                            (        \
-    M_STATIC_CAST(uint32_t, (  (M_STATIC_CAST(uint32_t, w1) << 16) | (M_STATIC_CAST(uint32_t, w0) <<  0)  )         \
-                                                                   ) )
+    #define M_BytesTo2ByteValue(b1, b0) bytes_To_Uint16(b1, b0)
 
-    #define M_WordsTo8ByteValue(w3, w2, w1, w0)                    (   \
-    M_STATIC_CAST(uint64_t, (  (M_STATIC_CAST(uint64_t, w3) << 48) | (M_STATIC_CAST(uint64_t, w2) << 32) |     \
-                 (M_STATIC_CAST(uint64_t, w1) << 16) | (M_STATIC_CAST(uint64_t, w0) <<  0)  )    \
-                                                                   ) )
+    M_INLINE uint32_t bytes_To_Uint32(uint8_t msb, uint8_t byte2, uint8_t byte1, uint8_t lsb)
+    {
+        return (M_STATIC_CAST(uint32_t, msb) << 24) | (M_STATIC_CAST(uint32_t, byte2) << 16) | 
+                 (M_STATIC_CAST(uint32_t, byte1) <<  8) | (M_STATIC_CAST(uint32_t, lsb) <<  0);
+    }
 
-    // Big endian parameter order, little endian value
-    #define M_DWordsTo8ByteValue(d1, d0)                           (        \
-    M_STATIC_CAST(uint64_t, (  (M_STATIC_CAST(uint64_t, d1) << 32) | (M_STATIC_CAST(uint64_t, d0) <<  0)  )         \
-                                                                   ) )
+    #define M_BytesTo4ByteValue(b3, b2, b1, b0) bytes_To_Uint32(b3, b2, b1, b0)
+
+    M_INLINE uint64_t bytes_To_Uint64(uint8_t msb, uint8_t byte6, uint8_t byte5, uint8_t byte4, uint8_t byte3, uint8_t byte2, uint8_t byte1, uint8_t lsb)
+    {
+        return (M_STATIC_CAST(uint64_t, msb) << 56) | (M_STATIC_CAST(uint64_t, byte6) << 48) |
+                (M_STATIC_CAST(uint64_t, byte5) << 40) | (M_STATIC_CAST(uint64_t, byte4) << 32) |
+                (M_STATIC_CAST(uint64_t, byte3) << 24) | (M_STATIC_CAST(uint64_t, byte2) << 16) |
+                (M_STATIC_CAST(uint64_t, byte1) <<  8) | (M_STATIC_CAST(uint64_t, lsb) <<  0);
+    }
+
+    #define M_BytesTo8ByteValue(b7, b6, b5, b4, b3, b2, b1, b0) bytes_To_Uint64(b7, b6, b5, b4, b3, b2, b1, b0)
+
+    M_INLINE uint32_t words_To_Uint32(uint16_t msw, uint16_t lsw)
+    {
+        return (M_STATIC_CAST(uint32_t, msw) <<  16) | (M_STATIC_CAST(uint32_t, lsw) <<  0);
+    }
+
+    #define M_WordsTo4ByteValue(w1, w0) words_To_Uint32(w0, w1)
+
+    M_INLINE uint64_t words_To_Uint64(uint16_t msw, uint16_t word2, uint16_t word1, uint16_t lsw)
+    {
+        return (M_STATIC_CAST(uint64_t, msw) <<  48) | (M_STATIC_CAST(uint64_t, word2) <<  32) |
+                (M_STATIC_CAST(uint64_t, word1) <<  16) | (M_STATIC_CAST(uint64_t, lsw) <<  0);
+    }
+
+    #define M_WordsTo8ByteValue(w3, w2, w1, w0) words_To_Uint64(w3, w2, w1, w0)
+
+    M_INLINE uint64_t dwords_To_Uint64(uint32_t msdw, uint32_t lsdw)
+    {
+        return (M_STATIC_CAST(uint64_t, msdw) <<  32) | (M_STATIC_CAST(uint64_t, lsdw) <<  0);
+    }
+
+    #define M_DWordsTo8ByteValue(d1, d0) dwords_To_Uint64(d1, d0)
 
     // MACRO to round the number of x so that it will not round up when formating the float
     #define ROUNDF(f, c) M_STATIC_CAST(float, (M_STATIC_CAST(int, (f) * (c))) / (c))
@@ -211,21 +239,64 @@ extern "C"
 
 #endif //UEFI_C_SOURCE
 
-    //set a bit to 1 within a value
+    //set a bit to 1 within a value. NOTE: it is recommended to use the inline functions or type width specific macros instead
     #define M_SET_BIT(val, bitNum) (val |= M_BitN(bitNum))
-
-    #define M_SET_BIT8(val, bitNum) (val |= M_BitN8(bitNum))
-    #define M_SET_BIT16(val, bitNum) (val |= M_BitN16(bitNum))
-    #define M_SET_BIT32(val, bitNum) (val |= M_BitN32(bitNum))
-    #define M_SET_BIT64(val, bitNum) (val |= M_BitN64(bitNum))
-
-    //clear a bit to 0 within a value
+  
+    //clear a bit to 0 within a value. NOTE: it is recommended to use the inline functions or type width specific macros instead
     #define M_CLEAR_BIT(val, bitNum) (val &= (~M_BitN(bitNum)))
 
-    #define M_CLEAR_BIT8(val, bitNum) (val &= C_CAST(uint8_t, (~M_BitN8(bitNum)))) //Cast added because UINT8_C() macro most of the time does not add additional qualifiers, so it ends up thinking this is a sign conversion issue.-TJE
-    #define M_CLEAR_BIT16(val, bitNum) (val &= C_CAST(uint16_t, (~M_BitN16(bitNum)))) //Cast added because UINT16_C() macro most of the time does not add additional qualifiers, so it ends up thinking this is a sign conversion issue.-TJE
-    #define M_CLEAR_BIT32(val, bitNum) (val &= (~M_BitN32(bitNum)))
-    #define M_CLEAR_BIT64(val, bitNum) (val &= (~M_BitN64(bitNum)))
+    // Inline functions for setting a bit
+    static M_INLINE uint8_t set_uint8_bit(uint8_t val, uint8_t bitNum) 
+    {
+        return val | M_STATIC_CAST(uint8_t, UINT8_C(1) << bitNum);
+    }
+
+    static M_INLINE uint16_t set_uint16_bit(uint16_t val, uint16_t bitNum) 
+    {
+        return val | M_STATIC_CAST(uint16_t, UINT16_C(1) << bitNum);
+    }
+
+    static M_INLINE uint32_t set_uint32_bit(uint32_t val, uint32_t bitNum) 
+    {
+        return val | M_STATIC_CAST(uint32_t, UINT32_C(1) << bitNum);
+    }
+
+    static M_INLINE uint64_t set_uint64_bit(uint64_t val, uint64_t bitNum) 
+    {
+        return val | M_STATIC_CAST(uint64_t, UINT64_C(1) << bitNum);
+    }
+
+    // Inline functions for clearing a bit
+    static M_INLINE uint8_t clear_uint8_bit(uint8_t val, uint8_t bitNum) 
+    {
+        return val & M_STATIC_CAST(uint8_t, ~(UINT8_C(1) << bitNum));
+    }
+
+    static M_INLINE uint16_t clear_uint16_bit(uint16_t val, uint16_t bitNum) 
+    {
+        return val & M_STATIC_CAST(uint16_t, ~(UINT16_C(1) << bitNum));
+    }
+
+    static M_INLINE uint32_t clear_uint32_bit(uint32_t val, uint32_t bitNum) 
+    {
+        return val & M_STATIC_CAST(uint32_t, ~(UINT32_C(1) << bitNum));
+    }
+
+    static M_INLINE uint64_t clear_uint64_bit(uint64_t val, uint64_t bitNum) 
+    {
+        return val & M_STATIC_CAST(uint64_t, ~(UINT64_C(1) << bitNum));
+    }
+
+    #define M_CLEAR_BIT8(val, bitNum) (val = clear_uint8_bit(val, bitNum))
+    #define M_CLEAR_BIT16(val, bitNum) (val = clear_uint16_bit(val, bitNum))
+    #define M_CLEAR_BIT32(val, bitNum) (val = clear_uint32_bit(val, bitNum))
+    #define M_CLEAR_BIT64(val, bitNum) (val = clear_uint64_bit(val, bitNum))
+
+    #define M_SET_BIT8(val, bitNum) (val = set_uint8_bit(val, bitNum))
+    #define M_SET_BIT16(val, bitNum) (val = set_uint16_bit(val, bitNum))
+    #define M_SET_BIT32(val, bitNum) (val = set_uint32_bit(val, bitNum))
+    #define M_SET_BIT64(val, bitNum) (val = set_uint64_bit(val, bitNum))
+
 
     //-----------------------------------------------------------------------------
     //
