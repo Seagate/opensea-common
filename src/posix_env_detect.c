@@ -436,7 +436,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
             versionNumber->osVersioningIdentifier = OS_LINUX;
             //linux kernels are versioned as kernel.major.minor-securityAndBugFixes-SomeString
             //older linux kernels don't have the -securityAndBugFixes on the end
-            uint16_t list[4] = { 0 };
+            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 4);
             if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".-", list, 4))
             {
                 versionNumber->versionType.linuxVersion.kernelVersion = list[0];
@@ -485,7 +485,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
         {
             versionNumber->osVersioningIdentifier = OS_FREEBSD;
             //FreeBSD version is stored as Major.Minor-SomeString
-            uint16_t list[2] = { 0 };
+            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
             if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".", list, 2))
             {
                 versionNumber->versionType.freeBSDVersion.majorVersion = list[0];
@@ -512,7 +512,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
         {
             versionNumber->osVersioningIdentifier = OS_SOLARIS;
             //Solaris stores the SunOS version in release
-            uint16_t list[3] = { 0 };
+            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
             if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".", list, 3))
             {
                 versionNumber->versionType.solarisVersion.sunOSMajorVersion = list[0];
@@ -543,7 +543,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
         else if (strcmp("DARWIN", unixUname.sysname) == 0)//Mac OSX
         {
             versionNumber->osVersioningIdentifier = OS_MACOSX;
-            uint16_t list[3] = { 0 };
+            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
             if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".", list, 3))
             {
                 versionNumber->versionType.macOSVersion.majorVersion = list[0];
@@ -612,7 +612,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
         else if (strcmp("DRAGONFLY", unixUname.sysname) == 0)
         {
             versionNumber->osVersioningIdentifier = OS_DRAGONFLYBSD;
-            uint16_t list[2] = { 0 };
+            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
             if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".", list, 2))
             {
                 versionNumber->versionType.dragonflyVersion.majorVersion = list[0];
@@ -644,7 +644,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
         else if (strcmp("NETBSD", unixUname.sysname) == 0)
         {
             versionNumber->osVersioningIdentifier = OS_NETBSD;
-            uint16_t list[3] = { 0 };
+            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
             if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".", list, 3))
             {
                 versionNumber->versionType.netBSDVersion.majorVersion = list[0];
@@ -667,7 +667,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
         else if (strcmp("OSF1", unixUname.sysname) == 0)
         {
             versionNumber->osVersioningIdentifier = OS_TRU64;
-            uint16_t list[2] = { 0 };
+            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
             if (get_Version_From_Uname_Str(unixUname.release, "V", ".", list, 2))
             {
                 versionNumber->versionType.tru64Version.majorVersion = list[0];
@@ -689,7 +689,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
         else if (strcmp("HP-UX", unixUname.sysname) == 0)
         {
             versionNumber->osVersioningIdentifier = OS_HPUX;
-            uint16_t list[2] = { 0 };
+            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
             if (get_Version_From_Uname_Str(unixUname.release, "B.", ".", list, 2))
             {
                 versionNumber->versionType.hpuxVersion.majorVersion = list[0];
@@ -711,7 +711,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
         else if (strcmp("VMKERNEL", unixUname.sysname) == 0)
         {
             versionNumber->osVersioningIdentifier = OS_ESX;
-            uint16_t list[3] = { 0 };
+            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
             if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".", list, 3))
             {
                 versionNumber->versionType.esxiVersion.majorVersion = list[0];

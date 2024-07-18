@@ -2327,7 +2327,7 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
             printf("%" PRIX32 "  ", printIter);
         }
     }
-    char lineBuff[18] = { 0 };
+    DECLARE_ZERO_INIT_ARRAY(char, lineBuff, 18);
     uint8_t lineBuffIter = 0;
     for (printIter = 0, offset = 0; printIter < bufferLen; ++printIter, ++lineBuffIter)
     {

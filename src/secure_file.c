@@ -860,7 +860,7 @@ eSecureFileError secure_Delete_File_By_Name(const char* filename, eSecureFileDel
     if (filename)
     {
         //first get cannonical name
-        char fullpath[4096] = { 0 };
+        DECLARE_ZERO_INIT_ARRAY(char, fullpath, 4096);
         if (SUCCESS != get_Full_Path(filename, C_CAST(char*, fullpath)))
         {
             //unable to get the full path to this file.

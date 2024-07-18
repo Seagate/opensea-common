@@ -363,9 +363,9 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
 #define MS_VERSION_STRING_LENGTH 10
     char msVersion[MS_VERSION_STRING_LENGTH] = { 0 };
     snprintf(msVersion, MS_VERSION_STRING_LENGTH, "%u", _MSC_FULL_VER);
-    char msMajor[3] = { 0 };
-    char msMinor[3] = { 0 };
-    char msPatch[6] = { 0 };
+    DECLARE_ZERO_INIT_ARRAY(char, msMajor, 3);
+    DECLARE_ZERO_INIT_ARRAY(char, msMinor, 3);
+    DECLARE_ZERO_INIT_ARRAY(char, msPatch, 6);
     snprintf(msMajor, 3, "%.2s", &msVersion[0]);
     snprintf(msMinor, 3, "%.2s", &msVersion[2]);
     snprintf(msPatch, 6, "%.5s", &msVersion[4]);
@@ -393,9 +393,9 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
 #define HP_ACC_VERSION_STRING_LENGTH 7
     char hpVersion[HP_ACC_VERSION_STRING_LENGTH] = { 0 };
     snprintf(hpVersion, HP_ACC_VERSION_STRING_LENGTH, "%u", __HP_aCC);
-    char hpMajor[3] = { 0 };
-    char hpMinor[3] = { 0 };
-    char hpPatch[3] = { 0 };
+    DECLARE_ZERO_INIT_ARRAY(char, hpMajor, 3);
+    DECLARE_ZERO_INIT_ARRAY(char, hpMinor, 3);
+    DECLARE_ZERO_INIT_ARRAY(char, hpPatch, 3);
     snprintf(hpMajor, 3, "%.2s", &hpVersion[0]);
     snprintf(hpMinor, 3, "%.2s", &hpVersion[2]);
     snprintf(hpPatch, 3, "%.2s", &hpVersion[4]);
@@ -420,11 +420,11 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     //untested
     * compilerUsed = OPENSEA_COMPILER_INTEL_C_CPP;
 #define INTEL_VERSION_STRING_MAX_LENGTH 4;
-    char intelVersion[4] = { 0 };
+    DECLARE_ZERO_INIT_ARRAY(char, intelVersion, 4);
     snprintf(intelVersion, INTEL_VERSION_STRING_MAX_LENGTH, "%u", __INTEL_COMPILER);
-    char intelMajor[2] = { 0 };
-    char intelMinor[2] = { 0 };
-    char intelPatch[2] = { 0 };
+    DECLARE_ZERO_INIT_ARRAY(char, intelMajor, 2);
+    DECLARE_ZERO_INIT_ARRAY(char, intelMinor, 2);
+    DECLARE_ZERO_INIT_ARRAY(char, intelPatch, 2);
     snprintf(intelMajor, 2, "%.1s", &intelVersion[0]);
     snprintf(intelMinor, 2, "%.1s", &intelVersion[1]);
     snprintf(intelPatch, 2, "%.1s", &intelVersion[2]);
