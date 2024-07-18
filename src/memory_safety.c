@@ -22,13 +22,13 @@
 #include <string.h>
 
 #if defined (VMK_CROSS_COMP)
-#include <mm_malloc.h> //doing this to shut up warnings about posix_memalign not available despite stdlib include  TJE
+    #include <mm_malloc.h> //doing this to shut up warnings about posix_memalign not available despite stdlib include  TJE
 #endif //VMK_CROSS_COMP
 
 #if defined (_WIN32)
-#include <windows.h>
+    #include <windows.h>
 #else
-#include <unistd.h>
+    #include <unistd.h>
 #endif
 
 size_t get_System_Pagesize(void)
@@ -46,7 +46,7 @@ size_t get_System_Pagesize(void)
     SYSTEM_INFO winSysInfo;
     memset(&winSysInfo, 0, sizeof(SYSTEM_INFO));
     GetSystemInfo(&winSysInfo);
-    return C_CAST(size_t, winSysInfo.dwPageSize);
+    return ulong_to_sizet(winSysInfo.dwPageSize);
 #else
     return 4096;//most CPUs use a 4KiB page size. We can detect specific architectures using something different if we need to here-TJE
 #endif
@@ -73,7 +73,7 @@ void* malloc_aligned(size_t size, size_t alignment)
     if (0 != posix_memalign(&temp, alignment, size))
     {
         temp = M_NULLPTR;//make sure the system we are running didn't change this.
-}
+    }
     return temp;
 #elif !defined(UEFI_C_SOURCE) && (defined (__INTEL_COMPILER) || defined (__ICC))
     //_mm_malloc
@@ -170,7 +170,6 @@ void* calloc_aligned(size_t num, size_t size, size_t alignment)
     if (numSize)
     {
         zeroedMem = malloc_aligned(numSize, alignment);
-
         if (zeroedMem)
         {
             memset(zeroedMem, 0, numSize);
@@ -334,4 +333,370 @@ void* explicit_zeroes(void* dest, size_t count)
     {
         return M_NULLPTR;
     }
+}
+
+//malloc in standards leaves malloc'ing size 0 as a undefined behavior.
+//this version will always return a null pointer if the size is zero
+void *safe_malloc(size_t size)
+{
+    if (size == 0)
+    {
+        return M_NULLPTR;
+    }
+    else
+    {
+        return malloc(size);
+    }
+}
+
+//avoiding undefined behavior allocing zero size and avoiding alloc'ing less memory due to an overflow
+//If alloc'ing zero or alloc would overflow size_t from count * size, then return a null pointer
+void * safe_calloc(size_t count, size_t size)
+{
+    if (count == 0 || size == 0)
+    {
+        //do not alloc size zero
+        return M_NULLPTR;
+    }
+    else if (count > (SIZE_MAX / size))
+    {
+        //avoid overflow due to inputs
+        return M_NULLPTR;
+    }
+    else
+    {
+        return calloc(count, size);
+    }
+}
+
+//if passed a null pointer, behaves as safe_Malloc
+//if size is zero, will perform free and return NULL ptr
+void * safe_realloc(void *block, size_t size)
+{
+    if (block == M_NULLPTR)
+    {
+        return safe_malloc(size);
+    }
+    else if (size == 0)
+    {
+        free(block);
+        return M_NULLPTR;
+    }
+    else
+    {
+        //While using a temporary pointer here does not do anything different than
+        //a simple return realloc, the purpose of this is to help reduce false positives
+        //with SAST tools.
+        void *newblock = realloc(block, size);
+        if (newblock == M_NULLPTR)
+        {
+            return M_NULLPTR;
+        }
+        else
+        {
+            return newblock;
+        }
+    }
+}
+
+//if pointer to block is NULL, returns NULL
+//if pointer to block is passed as a null pointer, behaves as safe_Malloc
+//if size is zero, will perform free and return NULL ptr
+//if realloc fails, free's original block
+//free's original block if realloc fails
+void * safe_reallocf(void **block, size_t size)
+{
+    if (block == M_NULLPTR)
+    {
+        return M_NULLPTR;
+    }
+    else if (*block == M_NULLPTR)
+    {
+        return safe_malloc(size);
+    }
+    else if (size == 0)
+    {
+        free(*block);
+        *block = M_NULLPTR;
+        return M_NULLPTR;
+    }
+    else
+    {
+        void *newblock = realloc(*block, size);
+        if (newblock == M_NULLPTR)
+        {
+            free(*block);
+            *block = M_NULLPTR;
+        }
+        return newblock;
+    }
+}
+
+//This rounds up to the neareset power of 2 to ensure memory is aligned as expected
+//and conforms with API requirements
+static size_t alignment_Round_Up(size_t alignment)
+{
+    //first make sure the alignment is at least sizeof(void*), anything lower than this doesn't make sense to align memory for as anything less will also be compatible with void*
+    if (alignment < sizeof(void*)) 
+    {
+       alignment = sizeof(void*);
+    }
+    //round up to next power of 2 if necessary
+    if ((alignment & (alignment - 1)) != 0) 
+    {
+       size_t rounded_alignment = sizeof(void *);
+       while (rounded_alignment < alignment) 
+       {
+           rounded_alignment <<= 1;
+       }
+       alignment = rounded_alignment;
+    }
+    return alignment;
+}
+
+//to be used after rounding up the alignment so that all allocations are multiples of the alignment
+//which most, if not all, of the aligned allocation functions require
+static size_t aligned_Size_Round_Up(size_t size, size_t alignment)
+{
+    //do not round up if it would cause an overflow of the size value
+    if (size > (SIZE_MAX - alignment + 1))
+    {
+        return size;
+    }
+    //round to nearest multiple of alignment
+    size_t remainder = size % alignment;
+    if (remainder != 0) 
+    {
+        size += alignment - remainder;
+    }
+    return size;
+}
+
+//malloc in standards leaves malloc'ing size 0 as a undefined behavior.
+//this version will always return a null pointer if the size is zero
+void *safe_malloc_aligned(size_t size, size_t alignment)
+{
+    if (size == 0)
+    {
+        return M_NULLPTR;
+    }
+    else
+    {
+        alignment = alignment_Round_Up(alignment);
+        size = aligned_Size_Round_Up(size, alignment);
+        return malloc_aligned(size, alignment);
+    }
+}
+
+//avoiding undefined behavior allocing zero size and avoiding alloc'ing less memory due to an overflow
+//If alloc'ing zero or alloc would overflow size_t from count * size, then return a null pointer
+void * safe_calloc_aligned(size_t count, size_t size, size_t alignment)
+{
+    if (count == 0 || size == 0)
+    {
+        //do not alloc size zero
+        return M_NULLPTR;
+    }
+    if (count > (SIZE_MAX / size))
+    {
+        //avoid overflow due to inputs
+        return M_NULLPTR;
+    }
+    else
+    {
+        //instead of calling calloc_aligned, call safe_Malloc_aligned since it will round alignment and size for us.
+        void* zeroedMem = M_NULLPTR;
+        size_t numSize = count * size;
+        zeroedMem = safe_malloc_aligned(numSize, alignment);
+        if (zeroedMem != M_NULLPTR)
+        {
+            memset(zeroedMem, 0, numSize);
+        }
+        return zeroedMem;
+    }
+}
+
+//if passed a null pointer, behaves as safe_Malloc
+//if size is zero, will perform free and return NULL ptr
+void * safe_realloc_aligned(void *block, size_t originalSize, size_t size, size_t alignment)
+{
+    if (block == M_NULLPTR)
+    {
+        return safe_malloc_aligned(size, alignment);
+    }
+    else if (size == 0)
+    {
+        free_aligned(block);
+        return M_NULLPTR;
+    }
+    else
+    {
+        alignment = alignment_Round_Up(alignment);
+        size = aligned_Size_Round_Up(size, alignment);
+        //While using a temporary pointer here does not do anything different than
+        //a simple return realloc, the purpose of this is to help reduce false positives
+        //with SAST tools.
+        void *newblock = realloc_aligned(block, originalSize, size, alignment);
+        if (newblock == M_NULLPTR)
+        {
+            return M_NULLPTR;
+        }
+        else
+        {
+            return newblock;
+        }
+    }
+}
+
+//if pointer to block is NULL, returns NULL
+//if pointer to block is passed as a null pointer, behaves as safe_Malloc
+//if size is zero, will perform free and return NULL ptr
+//if realloc fails, free's original block
+//free's original block if realloc fails
+void * safe_reallocf_aligned(void **block, size_t originalSize, size_t size, size_t alignment)
+{
+    if (block == M_NULLPTR)
+    {
+        return M_NULLPTR;
+    }
+    else if (*block == M_NULLPTR)
+    {
+        return safe_malloc_aligned(size, alignment);
+    }
+    else if (size == 0)
+    {
+        free_aligned(*block);
+        *block = M_NULLPTR;
+        return M_NULLPTR;
+    }
+    else
+    {
+        alignment = alignment_Round_Up(alignment);
+        size = aligned_Size_Round_Up(size, alignment);
+        void *newblock = realloc_aligned(*block, originalSize, size, alignment);
+        if (newblock == M_NULLPTR)
+        {
+            free_aligned(*block);
+            *block = M_NULLPTR;
+        }
+        return newblock;
+    }
+}
+
+//malloc in standards leaves malloc'ing size 0 as a undefined behavior.
+//this version will always return a null pointer if the size is zero
+void *safe_malloc_page_aligned(size_t size)
+{
+    return safe_malloc_aligned(size, get_System_Pagesize());
+}
+
+//avoiding undefined behavior allocing zero size and avoiding alloc'ing less memory due to an overflow
+//If alloc'ing zero or alloc would overflow size_t from count * size, then return a null pointer
+void * safe_calloc_page_aligned(size_t count, size_t size)
+{
+    return safe_calloc_aligned(count, size, get_System_Pagesize());
+}
+
+//if passed a null pointer, behaves as safe_Malloc
+//if size is zero, will perform free and return NULL ptr
+void * safe_realloc_page_aligned(void *block, size_t originalSize, size_t size)
+{
+    return safe_realloc_aligned(block, originalSize, size, get_System_Pagesize());
+}
+
+//if pointer to block is NULL, returns NULL
+//if pointer to block is passed as a null pointer, behaves as safe_Malloc
+//if size is zero, will perform free and return NULL ptr
+//if realloc fails, free's original block
+//free's original block if realloc fails
+void * safe_reallocf_page_aligned(void **block, size_t originalSize, size_t size)
+{
+    return safe_reallocf_aligned(block, originalSize, size, get_System_Pagesize());
+}
+
+//Calls memmove_s if available, otherwise performs all checks that memmove_s does before calling memmove
+errno_t safe_memmove(void *dest, rsize_t destsz, const void *src, rsize_t count)
+{
+#if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
+    return memmove_s(dest, destsz, src, count);
+#else
+    //Don't have memmove_s, so do the necessary checks first, then call memmove
+    if (dest && src && destsz <= RSIZE_MAX && count <= RSIZE_MAX && count <= destsz)
+    {
+        if (destsz > 0 && count > 0)
+        {
+            memmove(dest, src, count);
+        }
+        errno = 0;
+        return 0;
+    }
+    else
+    {
+        //https://en.cppreference.com/w/c/string/byte/memmove for what to do on error
+        if (dest && destsz > 0 && destsz <= RSIZE_MAX)
+        {
+            memset(dest, 0, destsz);
+        }
+        if (destsz >= count)
+        {
+            errno = ERANGE;
+            return ERANGE;
+        }
+        else
+        {
+            #if defined (EINVAL)
+                errno = EINVAL;
+                return EINVAL;
+            #else
+                errno = 1;
+                return 1;//just need to be positive to indicate an error
+            #endif
+        }
+    }
+#endif
+}
+
+//calls memcpy_s if available, otherwise performs all checks that memcpy_s does before calling memcpy
+errno_t safe_memcpy(void *M_RESTRICT dest, rsize_t destsz, const void *M_RESTRICT src, rsize_t count)
+{
+#if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
+    return memcpy_s(dest, destsz, src, count);
+    strcat_s
+#else
+    //Don't have memcpy_s, so do the necessary checks first, then call memmove
+    //make sure all parameters match the spec requirements, including detection of an overlapping range.
+    //if the range overlaps, then memmove should be used instead.
+    if (dest && src && destsz <= RSIZE_MAX && count <= RSIZE_MAX && count <= destsz && !(src <= dest && (src + count) > dest))
+    {
+        if (destsz > 0 && count > 0)
+        {
+            memcpy(dest, src, count);
+        }
+        errno = 0;
+        return 0;
+    }
+    else
+    {
+        //https://en.cppreference.com/w/c/string/byte/memcpy for what to do on error
+        if (dest && destsz > 0 && destsz <= RSIZE_MAX)
+        {
+            memset(dest, 0, destsz);
+        }
+        if (destsz >= count)
+        {
+            errno = ERANGE;
+            return ERANGE;
+        }
+        else
+        {
+            #if defined (EINVAL)
+                errno = EINVAL;
+                return EINVAL;
+            #else
+                errno = 1;
+                return 1;//just need to be positive to indicate an error
+            #endif
+        }
+    }
+#endif
 }

@@ -25,6 +25,25 @@ extern "C"
 {
 #endif
 
+    //malloc in standards leaves malloc'ing size 0 as a undefined behavior.
+    //this version will always return a null pointer if the size is zero
+    M_FUNC_ATTR_MALLOC void *safe_malloc(size_t size);
+
+    //avoiding undefined behavior allocing zero size and avoiding alloc'ing less memory due to an overflow
+    //If alloc'ing zero or alloc would overflow size_t from count * size, then return a null pointer
+    M_FUNC_ATTR_MALLOC void * safe_calloc(size_t count, size_t size);
+
+    //if passed a null pointer, behaves as safe_Malloc
+    //if size is zero, will perform free and return NULL ptr
+    M_FUNC_ATTR_MALLOC void * safe_realloc(void *block, size_t size);
+
+    //if pointer to block is NULL, returns NULL
+    //if pointer to block is passed as a null pointer, behaves as safe_Malloc
+    //if size is zero, will perform free and return NULL ptr
+    //if realloc fails, free's original block
+    //free's original block if realloc fails
+    M_FUNC_ATTR_MALLOC void * safe_reallocf(void **block, size_t size);
+
     //-----------------------------------------------------------------------------
     //
     //  safe_Free()
@@ -92,7 +111,7 @@ extern "C"
     //!   \return ptrToAlignedMemory
     //
     //-----------------------------------------------------------------------------
-    void* malloc_aligned(size_t size, size_t alignment);
+    M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment);
 
     //-----------------------------------------------------------------------------
     //
@@ -144,7 +163,7 @@ extern "C"
     //!   \return ptrToAlignedMemory
     //
     //-----------------------------------------------------------------------------
-    void* calloc_aligned(size_t num, size_t size, size_t alignment);
+    M_FUNC_ATTR_MALLOC void* calloc_aligned(size_t num, size_t size, size_t alignment);
 
     //-----------------------------------------------------------------------------
     //
@@ -162,7 +181,26 @@ extern "C"
     //!   \return ptrToAlignedMemory
     //
     //-----------------------------------------------------------------------------
-    void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t alignment);
+    M_FUNC_ATTR_MALLOC void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t alignment);
+
+    //malloc in standards leaves malloc'ing size 0 as a undefined behavior.
+    //this version will always return a null pointer if the size is zero
+    M_FUNC_ATTR_MALLOC void *safe_malloc_aligned(size_t size, size_t alignment);
+
+    //avoiding undefined behavior allocing zero size and avoiding alloc'ing less memory due to an overflow
+    //If alloc'ing zero or alloc would overflow size_t from count * size, then return a null pointer
+    M_FUNC_ATTR_MALLOC void * safe_calloc_aligned(size_t count, size_t size, size_t alignment);
+
+    //if passed a null pointer, behaves as safe_Malloc
+    //if size is zero, will perform free and return NULL ptr
+    M_FUNC_ATTR_MALLOC void * safe_realloc_aligned(void *block, size_t originalSize, size_t size, size_t alignment);
+
+    //if pointer to block is NULL, returns NULL
+    //if pointer to block is passed as a null pointer, behaves as safe_Malloc
+    //if size is zero, will perform free and return NULL ptr
+    //if realloc fails, free's original block
+    //free's original block if realloc fails
+    M_FUNC_ATTR_MALLOC void * safe_reallocf_aligned(void **block, size_t originalSize, size_t size, size_t alignment);
 
     //-----------------------------------------------------------------------------
     //
@@ -191,7 +229,7 @@ extern "C"
     //!   \return ptrToAlignedMemory
     //
     //-----------------------------------------------------------------------------
-    void* malloc_page_aligned(size_t size);
+    M_FUNC_ATTR_MALLOC void* malloc_page_aligned(size_t size);
 
     //-----------------------------------------------------------------------------
     //
@@ -242,7 +280,7 @@ extern "C"
     //!   \return ptrToAlignedMemory
     //
     //-----------------------------------------------------------------------------
-    void* calloc_page_aligned(size_t num, size_t size);
+    M_FUNC_ATTR_MALLOC void* calloc_page_aligned(size_t num, size_t size);
 
     //-----------------------------------------------------------------------------
     //
@@ -259,7 +297,32 @@ extern "C"
     //!   \return ptrToAlignedMemory
     //
     //-----------------------------------------------------------------------------
-    void* realloc_page_aligned(void* alignedPtr, size_t originalSize, size_t size);
+    M_FUNC_ATTR_MALLOC void* realloc_page_aligned(void* alignedPtr, size_t originalSize, size_t size);
+
+    //malloc in standards leaves malloc'ing size 0 as a undefined behavior.
+    //this version will always return a null pointer if the size is zero
+    M_FUNC_ATTR_MALLOC void *safe_malloc_page_aligned(size_t size);
+
+    //avoiding undefined behavior allocing zero size and avoiding alloc'ing less memory due to an overflow
+    //If alloc'ing zero or alloc would overflow size_t from count * size, then return a null pointer
+    M_FUNC_ATTR_MALLOC void * safe_calloc_page_aligned(size_t count, size_t size);
+
+    //if passed a null pointer, behaves as safe_Malloc
+    //if size is zero, will perform free and return NULL ptr
+    M_FUNC_ATTR_MALLOC void * safe_realloc_page_aligned(void *block, size_t originalSize, size_t size);
+
+    //if pointer to block is NULL, returns NULL
+    //if pointer to block is passed as a null pointer, behaves as safe_Malloc
+    //if size is zero, will perform free and return NULL ptr
+    //if realloc fails, free's original block
+    //free's original block if realloc fails
+    M_FUNC_ATTR_MALLOC void * safe_reallocf_page_aligned(void **block, size_t originalSize, size_t size);
+
+    //Calls memmove_s if available, otherwise performs all checks that memmove_s does before calling memmove
+    errno_t safe_memmove(void *dest, rsize_t destsz, const void *src, rsize_t count);
+
+    //calls memcpy_s if available, otherwise performs all checks that memcpy_s does before calling memcpy
+    errno_t safe_memcpy(void *M_RESTRICT dest, rsize_t destsz, const void *M_RESTRICT src, rsize_t count);
 
 #if defined (__cplusplus)
 }
