@@ -16,25 +16,56 @@
 #include "bit_manip.h"
 #include "type_conversion.h"
 #include <math.h>
+#include <stdlib.h>
 
 //MSVC has built-in byte swapping which may be more efficient here: https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/byteswap-uint64-byteswap-ulong-byteswap-ushort?view=msvc-170
 //GCC 4.8 and Clang 3.2 and later have some built-ins: https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
 //Otherwise rely on our own bit shifting.
 
+#if defined (_MSC_VER) && !defined (HAVE_WIN_BSWAP)
+    //Unknown if added to specific _MSC_VER.
+    //Will need to add this check if we ever run into an issue with this -TJE
+    #define HAVE_WIN_BSWAP
+#elif defined (__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)) && !defined (HAVE_BUILTIN_BSWAP)
+    #define HAVE_BUILTIN_BSWAP
+#elif defined(__has_builtin) && __has_builtin(__builtin_bswap64) && !defined (HAVE_BUILTIN_BSWAP)
+    #define HAVE_BUILTIN_BSWAP
+#endif
 
 void nibble_Swap(uint8_t* byteToSwap)
 {
-    *byteToSwap = C_CAST(uint8_t, ((*byteToSwap & UINT8_C(0x0F)) << 4)) | C_CAST(uint8_t, ((*byteToSwap & UINT8_C(0xF0)) >> 4));
+    if (byteToSwap)
+    {
+        *byteToSwap = C_CAST(uint8_t, ((*byteToSwap & UINT8_C(0x0F)) << 4)) | C_CAST(uint8_t, ((*byteToSwap & UINT8_C(0xF0)) >> 4));
+    }
+}
+
+static uint16_t byteswap_uint16(uint16_t word)
+{
+    #if defined (HAVE_BUILTIN_BSWAP)
+        return __builtin_bswap16(word);
+    #elif defined (HAVE_WIN_BSWAP)
+        return _byteswap_ushort(word);
+    #else
+        return (((word & UINT16_C(0x00FF)) << 8) | 
+                ((word & UINT16_C(0xFF00)) >> 8));
+    #endif
 }
 
 void byte_Swap_16(uint16_t* wordToSwap)
 {
-    *wordToSwap = C_CAST(uint16_t, ((*wordToSwap & UINT16_C(0x00FF)) << 8)) | C_CAST(uint16_t, ((*wordToSwap & UINT16_C(0xFF00)) >> 8));
+    if (*wordToSwap)
+    {
+        *wordToSwap = byteswap_uint16(*wordToSwap);
+    }
 }
 
 void byte_Swap_Int16(int16_t* signedWordToSwap)
 {
-    *signedWordToSwap = C_CAST(int16_t, ((*signedWordToSwap & UINT16_C(0x00FF)) << 8)) | C_CAST(int16_t, ((*signedWordToSwap & UINT16_C(0xFF00)) >> 8));
+    if (signedWordToSwap)
+    {
+        *signedWordToSwap = C_CAST(int16_t, ((*signedWordToSwap & UINT16_C(0x00FF)) << 8)) | C_CAST(int16_t, ((*signedWordToSwap & UINT16_C(0xFF00)) >> 8));
+    }
 }
 
 void big_To_Little_Endian_16(uint16_t* wordToSwap)
@@ -45,20 +76,42 @@ void big_To_Little_Endian_16(uint16_t* wordToSwap)
     }
 }
 
+static uint32_t byteswap_uint32(uint32_t dword)
+{
+    #if defined (HAVE_BUILTIN_BSWAP)
+        return __builtin_bswap32(dword);
+    #elif defined (HAVE_WIN_BSWAP) && defined (UINT_MAX) && defined (ULONG_MAX) && UINT_MAX == ULONG_MAX
+        //Windows defines uint32 as unsigned int, not unsigned long as this function expects.
+        //So we have a more elaborate check in order to make sure these have the same range before casting and returning that result
+        //It is unlikely this will change in Windows, but it does not hurt to be safe and verify everything before casting types that can de defined as different widths-TJE
+        return C_CAST(uint32_t, _byteswap_ulong(C_CAST(unsigned long, dword)));
+    #else
+        return ((dword & UINT32_C(0xFF000000) >> 24) |
+                (dword & UINT32_C(0x00FF0000) >> 8)  |
+                (dword & UINT32_C(0x0000FF00) << 8)  |
+                (dword & UINT32_C(0x000000FF) << 24));
+    #endif
+}
+
 void byte_Swap_32(uint32_t* doubleWordToSwap)
 {
-    *doubleWordToSwap = C_CAST(uint32_t, ((*doubleWordToSwap & UINT32_C(0x0000FFFF)) << 16)) | C_CAST(uint32_t, ((*doubleWordToSwap & UINT32_C(0xFFFF0000)) >> 16));
-    *doubleWordToSwap = C_CAST(uint32_t, ((*doubleWordToSwap & UINT32_C(0x00FF00FF)) << 8)) | C_CAST(uint32_t, ((*doubleWordToSwap & UINT32_C(0xFF00FF00)) >> 8));
+    if (doubleWordToSwap)
+    {
+        *doubleWordToSwap = byteswap_uint32(*doubleWordToSwap);
+    }
 }
 
 void byte_Swap_Int32(int32_t* signedDWord)
 {
-    // uint32_t temp = C_CAST(uint32_t, *signedDWord);
-    // byte_Swap_32(&temp);
-    // *signedDWord = C_CAST(int32_t, temp);
+    if (signedDWord)
+    {
+        // uint32_t temp = C_CAST(uint32_t, *signedDWord);
+        // byte_Swap_32(&temp);
+        // *signedDWord = C_CAST(int32_t, temp);
 
-    *signedDWord = C_CAST(int32_t, ((*signedDWord & C_CAST(int32_t, INT32_C(0x0000FFFF))) << 16)) | C_CAST(int32_t, ((*signedDWord & C_CAST(int32_t, INT32_C(0xFFFF0000))) >> 16));
-    *signedDWord = C_CAST(int32_t, ((*signedDWord & C_CAST(int32_t, INT32_C(0x00FF00FF))) << 8)) | C_CAST(int32_t, ((*signedDWord & C_CAST(int32_t, INT32_C(0xFF00FF00))) >> 8));
+        *signedDWord = C_CAST(int32_t, ((*signedDWord & C_CAST(int32_t, INT32_C(0x0000FFFF))) << 16)) | C_CAST(int32_t, ((*signedDWord & C_CAST(int32_t, INT32_C(0xFFFF0000))) >> 16));
+        *signedDWord = C_CAST(int32_t, ((*signedDWord & C_CAST(int32_t, INT32_C(0x00FF00FF))) << 8)) | C_CAST(int32_t, ((*signedDWord & C_CAST(int32_t, INT32_C(0xFF00FF00))) >> 8));
+    }
 }
 void big_To_Little_Endian_32(uint32_t* doubleWordToSwap)
 {
@@ -70,25 +123,54 @@ void big_To_Little_Endian_32(uint32_t* doubleWordToSwap)
 
 void word_Swap_32(uint32_t* doubleWordToSwap)
 {
-    *doubleWordToSwap = ((*doubleWordToSwap & UINT32_C(0x0000FFFF)) << 16) | ((*doubleWordToSwap & UINT32_C(0xFFFF0000)) >> 16);
+    if (doubleWordToSwap)
+    {
+        *doubleWordToSwap = ((*doubleWordToSwap & UINT32_C(0x0000FFFF)) << 16) | ((*doubleWordToSwap & UINT32_C(0xFFFF0000)) >> 16);
+    }
 }
+
+static uint64_t byteswap_uint64(uint64_t qword)
+{
+    #if defined (HAVE_BUILTIN_BSWAP)
+        return __builtin_bswap64(qword);
+    #elif defined (HAVE_WIN_BSWAP)
+        return _byteswap_uint64(qword);
+    #else
+        return ((qword & UINT64_C(0xFF00000000000000) >> 56) |
+                (qword & UINT64_C(0x00FF000000000000) >> 40) |
+                (qword & UINT64_C(0x0000FF0000000000) >> 24) |
+                (qword & UINT64_C(0x000000FF00000000) >> 8)  |
+                (qword & UINT64_C(0x00000000FF000000) << 8)  |
+                (qword & UINT64_C(0x0000000000FF0000) << 24) |
+                (qword & UINT64_C(0x000000000000FF00) << 40) |
+                (qword & UINT64_C(0x00000000000000FF) << 56));
+    #endif
+}
+
 
 void byte_Swap_64(uint64_t* quadWordToSwap)
 {
-    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) | ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
-    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x0000FFFF0000FFFF)) << 16) | ((*quadWordToSwap & UINT64_C(0xFFFF0000FFFF0000)) >> 16);
-    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00FF00FF00FF00FF)) << 8) | ((*quadWordToSwap & UINT64_C(0xFF00FF00FF00FF00)) >> 8);
+    if (quadWordToSwap)
+    {
+        *quadWordToSwap = byteswap_uint64(*quadWordToSwap);
+    }
 }
 
 void word_Swap_64(uint64_t* quadWordToSwap)
 {
-    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) | ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
-    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x0000FFFF0000FFFF)) << 16) | ((*quadWordToSwap & UINT64_C(0xFFFF0000FFFF0000)) >> 16);
+    if (quadWordToSwap)
+    {
+        *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) | ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
+        *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x0000FFFF0000FFFF)) << 16) | ((*quadWordToSwap & UINT64_C(0xFFFF0000FFFF0000)) >> 16);
+    }
 }
 
 void double_Word_Swap_64(uint64_t* quadWordToSwap)
 {
-    *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) | ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
+    if (quadWordToSwap)
+    {
+        *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) | ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
+    }
 }
 
 static size_t get_Bytes_Abs_Range(size_t msb, size_t lsb)
