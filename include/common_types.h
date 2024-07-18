@@ -58,6 +58,7 @@
 #include <limits.h>
 #include <errno.h> //for errno_t if it is available
 #include <stddef.h>
+#include <string.h> //memset
 
 #if defined (__cplusplus)
 extern "C"
@@ -100,23 +101,27 @@ extern "C"
         #if defined (_WIN64) || defined (_M_IA64) || defined (_M_ALPHA) || defined (_M_X64) || defined (_M_AMD64) || defined (__alpha__) || defined (__amd64__) || defined (__x86_64__) || defined (__aarch64__) || defined (__ia64__) || defined (__IA64__) || defined (__powerpc64__) || defined (__PPC64__) || defined (__ppc64__) || defined (_ARCH_PPC64)//64bit
             typedef int64_t intptr_t;
             #define INTPTR_MAX INT64_MAX
+            #define INTMAX_MIN INT64_MIN
         #else //assuming 32bit
             typedef int32_t intptr_t;
             #define INTPTR_MAX INT32_MAX
+            #define INTMAX_MIN INT32_MIN
         #endif
     #endif
 
-    #if !defined (SSIZE_MAX) && !defined (SSIZE_T_DEFINED)
+    #if !defined (SSIZE_MAX) && !defined (SSIZE_MIN) && !defined (SSIZE_T_DEFINED)
         //assume ssize_t is not defined
-        #if defined (_MSC_VER) && defined (MAXSSIZE_T)
+        #if defined (_MSC_VER) && defined (MAXSSIZE_T) && defined (MINSSIZE_T)
             //MSFT defined this as SSIZE_T, so just make it lowercase to match POSIX
             //NOTE: reviewing MSFT's headers shows this is the same as intptr_t definitions as well
             typedef SSIZE_T ssize_t;
             #define SSIZE_MAX MAXSSIZE_T
+            #define SSIZE_MIN MINSSIZE_T
         #else
             //using intptr_t since it has the same range.
             typedef intptr_t ssize_t;
             #define SSIZE_MAX INTPTR_MAX
+            #define SSIZE_MIN INTPTR_MIN
         #endif
         #define SSIZE_T_DEFINED
     #endif  //SSIZE_MAX && _MSC_VER
@@ -151,7 +156,11 @@ extern "C"
 
     //define SIZE_MAX if not defined...probably not needed since we are expecting at least C99
     #if !defined (SIZE_MAX)
-        #define SIZE_MAX UINTMAX_MAX
+        #if defined (UINTPTR_MAX)
+            #define SIZE_MAX UINTPTR_MAX
+        #else
+            #define SIZE_MAX (size_t)(~((size_t)0))
+        #endif
     #endif
 
     #if !defined (RSIZE_MAX)
@@ -192,17 +201,32 @@ extern "C"
         #define M_ACCESS_ENUM(type, val) val
     #endif
 
-    #if defined (USING_C99) || defined (USING_CPP98)
-        //This requires C99 to use, but that is the lowest C version we are using anyways
+    #if defined (__GNUC__)
+        //This is a GNU extension to zero initialize the array
         #define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) \
             type_name array_name[size] = {[0 ... (size - 1)] = 0}
     #else
-        //This is not exactly the same, but what we have done for years and usually works out ok...
-        //The only way to make this work for old standards 100% is a memset, but we don't want to
-        //do that because C89 requires variable declarations before functions are run, so defining like this.
-        //Some compilers will interpret this to mean zero initialize the array, but it is not guaranteed.
-        #define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) \
-            type_name array_name[size] = { 0 }
+        #if defined (USING_CPP98) || defined (USING_C99)
+            // Define a function for zero-initialization to be compatible with other C99 compilers where we can call a function after defining the type
+            // without generating compiler warnings or errors.
+            // NOTE: Not using M_INLINE macro here because including that code_attributes.h will generate a circular include issue
+            // Since we are already checking for C99 support here, we can use inline since it's part of C99
+            static inline void zero_init_array(void* array, size_t element_size, size_t element_count)
+            {
+                memset(array, 0, element_size * element_count);
+            }
+
+            #define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) \
+                type_name array_name[size]; \
+                zero_init_array(array_name, sizeof(type_name), size)
+        #else
+            //This is not exactly the same, but what we have done for years and usually works out ok...
+            //The only way to make this work for old standards 100% is a memset, but we don't want to
+            //do that because C89 requires variable declarations before functions are run, so defining like this.
+            //Some compilers will interpret this to mean zero initialize the array, but it is not guaranteed.
+            #define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) \
+                type_name array_name[size] = { 0 }
+        #endif
     #endif
 
     #if defined (MAX_PATH)
