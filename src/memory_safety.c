@@ -661,7 +661,6 @@ errno_t safe_memcpy(void *M_RESTRICT dest, rsize_t destsz, const void *M_RESTRIC
 {
 #if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
     return memcpy_s(dest, destsz, src, count);
-    strcat_s
 #else
     //Don't have memcpy_s, so do the necessary checks first, then call memmove
     //make sure all parameters match the spec requirements, including detection of an overlapping range.
