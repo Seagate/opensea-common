@@ -23,17 +23,253 @@
 
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
+#include <stdio.h>
 
 //making it look similar to a std lib function like isPrint.
 int is_ASCII(int c)
 {
-    if (c >= 0x7F || c < 0)
+    //this should be even faster than the if/else approach in CPU cycles
+    //instead of branching, this bit manipulation will operate quicker.
+    //Basically it will check for any bits outside of 7F being set to 1 returning a positive value if they are-TJE
+    return !(c & ~0x7F);
+}
+
+//This is good for checks on "is<>", not for "to<>"
+static int handle_eof(int result)
+{
+    if (result == EOF)
     {
-        return 0;//false
+        errno = 0;
+        return 0;
+    }
+    return result;
+}
+
+static int is_valid_unsigned_char_range(int c)
+{
+    return (c >= 0 && c <= UCHAR_MAX);
+}
+
+int safe_isascii(int c)
+{
+    if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return handle_eof(is_ASCII(C_CAST(unsigned char, c)));
     }
     else
     {
-        return 1;//true
+        errno = ERANGE;
+        return 0;
+    }
+}
+
+int safe_isalnum(int c)
+{
+    if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return handle_eof(isalnum(C_CAST(unsigned char, c)));
+    }
+    else
+    {
+        errno = ERANGE;
+        return 0;
+    }
+}
+
+int safe_isalpha(int c)
+{
+    if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return handle_eof(isalpha(C_CAST(unsigned char, c)));
+    }
+    else
+    {
+        errno = ERANGE;
+        return 0;
+    }
+}
+
+int safe_islower(int c)
+{
+    if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return handle_eof(islower(C_CAST(unsigned char, c)));
+    }
+    else
+    {
+        errno = ERANGE;
+        return 0;
+    }
+}
+
+int safe_tolower(int c)
+{
+    if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return tolower(C_CAST(unsigned char, c));
+    }
+    else if (c == EOF)
+    {
+        errno = 0;
+        return EOF;
+    }
+    else
+    {
+        errno = ERANGE;
+        return c;
+    }
+}
+
+int safe_isupper(int c)
+{
+    if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return handle_eof(isupper(C_CAST(unsigned char, c)));
+    }
+    else
+    {
+        errno = ERANGE;
+        return 0;
+    }
+}
+
+int safe_toupper(int c)
+{
+    if (c >= 0 && c <= UCHAR_MAX)
+    {
+        errno = 0;
+        return toupper(C_CAST(unsigned char, c));
+    }
+    else if (c == EOF)
+    {
+        errno = 0;
+        return EOF;
+    }
+    else
+    {
+        errno = ERANGE;
+        return c;
+    }
+}
+
+int safe_isdigit(int c)
+{
+    if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return handle_eof(isdigit(C_CAST(unsigned char, c)));
+    }
+    else
+    {
+        errno = ERANGE;
+        return 0;
+    }
+}
+
+int safe_isxdigit(int c)
+{
+    if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return handle_eof(isxdigit(C_CAST(unsigned char, c)));
+    }
+    else
+    {
+        errno = ERANGE;
+        return 0;
+    }
+}
+
+int safe_iscntrl(int c)
+{
+    if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return handle_eof(iscntrl(C_CAST(unsigned char, c)));
+    }
+    else
+    {
+        errno = ERANGE;
+        return 0;
+    }
+}
+
+int safe_isgraph(int c)
+{
+    if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return handle_eof(isgraph(C_CAST(unsigned char, c)));
+    }
+    else
+    {
+        errno = ERANGE;
+        return 0;
+    }
+}
+
+int safe_isspace(int c)
+{
+    if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return handle_eof(isspace(C_CAST(unsigned char, c)));
+    }
+    else
+    {
+        errno = ERANGE;
+        return 0;
+    }
+}
+
+//isblank added in C99
+//May need version check if we run into an environment that does not support this check-TJE
+int safe_isblank(int c)
+{
+    if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return handle_eof(isblank(C_CAST(unsigned char, c)));
+    }
+    else
+    {
+        errno = ERANGE;
+        return 0;
+    }
+}
+
+int safe_isprint(int c)
+{
+    if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return handle_eof(isprint(C_CAST(unsigned char, c)));
+    }
+    else
+    {
+        errno = ERANGE;
+        return 0;
+    }
+}
+
+int safe_ispunct(int c)
+{
+    if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return handle_eof(ispunct(C_CAST(unsigned char, c)));
+    }
+    else
+    {
+        errno = ERANGE;
+        return 0;
     }
 }
 
@@ -287,7 +523,7 @@ size_t string_n_length(const char* string, size_t n)
 #if !defined (__STDC_ALLOC_LIB__) && !defined (POSIX_2008) && !defined (USING_C23)
 char* strndup(const char* src, size_t size)
 {
-    size_t length = string_n_length(src, size);//NOTE: Windows has this so not defining it. POSIX defines this in 2008. May need to define this if not available for an os that needs strndup
+    size_t length = string_n_length(src, size);
     if (length > 0)
     {
         char* dupstr = C_CAST(char*, malloc(length + 1));
@@ -306,34 +542,40 @@ char* strndup(const char* src, size_t size)
 }
 #endif //checks for strndup
 
+void byte_Swap_String_Len(char* stringToChange, size_t stringlen)
+{
+    if (stringlen > 1) // Check if the string has more than one character
+    {
+        for (size_t stringIter = 0; stringIter < stringlen - 1; stringIter += 2)
+        {
+            // Swap the characters
+            char temp = stringToChange[stringIter];
+            stringToChange[stringIter] = stringToChange[stringIter + 1];
+            stringToChange[stringIter + 1] = temp;
+        }
+    }
+}
+
 //use this to swap the bytes in a string...useful for ATA strings
 void byte_Swap_String(char* stringToChange)
 {
-    size_t stringlen = strlen(stringToChange) + 1;
-    if (stringlen > 1)//greater than 1 since we append 1 for a null
+    size_t stringlen = strlen(stringToChange);
+    if (stringlen > 1) // Check if the string has more than one character
     {
-        char* swappedString = C_CAST(char*, calloc(stringlen, sizeof(char)));
-        if (swappedString == M_NULLPTR)
+        for (size_t stringIter = 0; stringIter < stringlen - 1; stringIter += 2)
         {
-            return;
+            // Swap the characters
+            char temp = stringToChange[stringIter];
+            stringToChange[stringIter] = stringToChange[stringIter + 1];
+            stringToChange[stringIter + 1] = temp;
         }
-
-        for (size_t stringIter = 0; stringIter < (stringlen - 1); stringIter += 2)//strlen - 1 to make sure M_NULLPTR terminator will not be touched with other changes made in this function -TJE
-        {
-            swappedString[stringIter] = stringToChange[stringIter + 1];
-            if (stringIter + 1 < stringlen)
-            {
-                swappedString[stringIter + 1] = stringToChange[stringIter];
-            }
-        }
-        memset(stringToChange, 0, stringlen);
-        memcpy(stringToChange, swappedString, stringlen);
-        safe_Free(C_CAST(void**, &swappedString));
     }
 }
+
 void remove_Whitespace_Left(char* stringToChange)
 {
-    size_t iter = 0, len = 0;
+    size_t iter = 0;
+    size_t len = 0;
     if (stringToChange == M_NULLPTR)
     {
         return;
@@ -350,6 +592,7 @@ void remove_Whitespace_Left(char* stringToChange)
         iter++;
     }
 }
+
 void remove_Trailing_Whitespace(char* stringToChange)
 {
     size_t iter = 0;
@@ -362,22 +605,38 @@ void remove_Trailing_Whitespace(char* stringToChange)
     {
         return;
     }
-    while (iter > 0 && is_ASCII(stringToChange[iter - 1]) && isspace(stringToChange[iter - 1]))
+    while (iter > 0 && safe_isascii(stringToChange[iter - 1]) && safe_isspace(stringToChange[iter - 1]))
     {
-        stringToChange[iter - 1] = '\0'; //replace spaces with M_NULLPTR terminators
+        stringToChange[iter - 1] = '\0'; //replace spaces with null terminators
+        iter--;
+    }
+}
+
+void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
+{
+    if (stringToChange == M_NULLPTR || stringlen == 0)
+    {
+        return;
+    }
+
+    size_t iter = stringlen;
+    while (iter > 0 && safe_isascii(stringToChange[iter - 1]) && safe_isspace(stringToChange[iter - 1]))
+    {
+        stringToChange[iter - 1] = '\0'; // Replace spaces with null terminators
         iter--;
     }
 }
 
 void remove_Leading_Whitespace(char* stringToChange)
 {
-    size_t iter = 0, stringToChangeLen = 0;
+    size_t iter = 0;
+    size_t stringToChangeLen = 0;
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
     stringToChangeLen = strlen(stringToChange);
-    while (is_ASCII(stringToChange[iter]) && isspace(stringToChange[iter]) && iter < stringToChangeLen)
+    while (safe_isascii(stringToChange[iter]) && safe_isspace(stringToChange[iter]) && iter < stringToChangeLen)
     {
         iter++;
     }
@@ -388,112 +647,227 @@ void remove_Leading_Whitespace(char* stringToChange)
     }
 }
 
-void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
+void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
 {
-    remove_Leading_Whitespace(stringToChange);
-    remove_Trailing_Whitespace(stringToChange);
+    if (stringToChange == M_NULLPTR || stringlen == 0)
+    {
+        return;
+    }
+
+    size_t iter = 0;
+    while (iter < stringlen && safe_isascii(stringToChange[iter]) && safe_isspace(stringToChange[iter]))
+    {
+        iter++;
+    }
+
+    if (iter > 0)
+    {
+        memmove(stringToChange, &stringToChange[iter], stringlen - iter);
+        memset(&stringToChange[stringlen - iter], 0, iter); // Null-terminate the shifted string
+    }
 }
 
-void convert_String_To_Upper_Case(char* stringToChange)
+void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
 {
-    size_t stringLen = 0, iter = 0;
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    stringLen = strlen(stringToChange);
-    if (stringLen == 0)
+
+    size_t stringlen = strlen(stringToChange);
+    if (stringlen == 0)
     {
         return;
     }
-    while (iter <= stringLen)
+
+    // Remove leading whitespace (calculate for memmove later)
+    size_t start = 0;
+    while (start < stringlen && safe_isascii(stringToChange[start]) && safe_isspace(stringToChange[start]))
     {
-        stringToChange[iter] = C_CAST(char, toupper(stringToChange[iter]));
-        iter++;
+        start++;
+    }
+
+    // Remove trailing whitespace
+    size_t end = stringlen;
+    while (end > start && safe_isascii(stringToChange[end - 1]) && safe_isspace(stringToChange[end - 1]))
+    {
+        end--;
+    }
+
+    // Calculate new length after removing whitespace
+    size_t newlen = end - start;
+
+    // If there's leading whitespace, shift the string to the start
+    if (start > 0)
+    {
+        memmove(stringToChange, &stringToChange[start], newlen);
+    }
+
+    // Null-terminate the string after the last non-whitespace character
+    stringToChange[newlen] = '\0';
+}
+
+void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
+{
+    if (stringToChange == M_NULLPTR || stringlen == 0)
+    {
+        return;
+    }
+
+    // Remove leading whitespace (calculate for memmove later)
+    size_t start = 0;
+    while (start < stringlen && safe_isascii(stringToChange[start]) && safe_isspace(stringToChange[start]))
+    {
+        start++;
+    }
+
+    // Remove trailing whitespace
+    size_t end = stringlen;
+    while (end > start && safe_isascii(stringToChange[end - 1]) && safe_isspace(stringToChange[end - 1]))
+    {
+        end--;
+    }
+
+    // Calculate new length after removing whitespace
+    size_t newlen = end - start;
+
+    // If there's leading whitespace, shift the string to the start
+    if (start > 0)
+    {
+        memmove(stringToChange, &stringToChange[start], newlen);
+    }
+
+    // Null-terminate the string after the last non-whitespace character
+    stringToChange[newlen] = '\0';
+}
+
+void convert_String_To_Upper_Case(char* stringToChange)
+{
+    if (stringToChange == M_NULLPTR)
+    {
+        return;
+    }
+    for (size_t iter = 0; stringToChange[iter] != '\0'; iter++)
+    {
+        stringToChange[iter] = C_CAST(char, safe_toupper(stringToChange[iter]));
+    }
+}
+
+void convert_String_To_Upper_Case_Len(char* stringToChange, size_t stringlen)
+{
+    if (stringToChange == M_NULLPTR)
+    {
+        return;
+    }
+    for (size_t iter = 0; iter < stringlen; iter++)
+    {
+        stringToChange[iter] = C_CAST(char, safe_toupper(stringToChange[iter]));
     }
 }
 
 void convert_String_To_Lower_Case(char* stringToChange)
 {
-    size_t stringLen = 0, iter = 0;
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    stringLen = strlen(stringToChange);
-    if (stringLen == 0)
+    for (size_t iter = 0; stringToChange[iter] != '\0'; iter++)
+    {
+        stringToChange[iter] = C_CAST(char, safe_tolower(stringToChange[iter]));
+    }
+}
+
+void convert_String_To_Lower_Case_Len(char* stringToChange, size_t stringlen)
+{
+    if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    while (iter <= stringLen)
+    for (size_t iter = 0; iter < stringlen; iter++)
     {
-        stringToChange[iter] = C_CAST(char, tolower(stringToChange[iter]));
-        iter++;
+        stringToChange[iter] = C_CAST(char, safe_tolower(stringToChange[iter]));
     }
 }
 
 void convert_String_To_Inverse_Case(char* stringToChange)
 {
-    size_t stringLen = 0, iter = 0;
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    stringLen = strlen(stringToChange);
-    if (stringLen == 0)
+    for (size_t iter = 0; stringToChange[iter] != '\0'; iter++)
+    {
+        if (safe_islower(stringToChange[iter]))
+        {
+            stringToChange[iter] = C_CAST(char, safe_toupper(stringToChange[iter]));
+        }
+        else if (safe_isupper(stringToChange[iter]))
+        {
+            stringToChange[iter] = C_CAST(char, safe_tolower(stringToChange[iter]));
+        }
+    }
+}
+
+void convert_String_To_Inverse_Case_Len(char* stringToChange, size_t stringlen)
+{
+    if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    while (iter <= stringLen)
+    for (size_t iter = 0; iter < stringlen; iter++)
     {
-        if (islower(stringToChange[iter]))
+        if (safe_islower(stringToChange[iter]))
         {
-            stringToChange[iter] = C_CAST(char, tolower(stringToChange[iter]));
+            stringToChange[iter] = C_CAST(char, safe_toupper(stringToChange[iter]));
         }
-        else if (isupper(stringToChange[iter]))
+        else if (safe_isupper(stringToChange[iter]))
         {
-            stringToChange[iter] = C_CAST(char, toupper(stringToChange[iter]));
+            stringToChange[iter] = C_CAST(char, safe_tolower(stringToChange[iter]));
         }
-        iter++;
     }
 }
 
 size_t find_last_occurrence_in_string(const char* originalString, const char* stringToFind)
 {
-    char* stringToCompare = M_CONST_CAST(char*, originalString);//need to start at the beginning of this, but update stringToCompare as we work through the string, hence disregarding const-TJE
-    size_t last_occurrence = strlen(originalString);
-
-    while (stringToCompare != M_NULLPTR)
+    if (originalString == M_NULLPTR || stringToFind == M_NULLPTR)
     {
-        char* partialString = strstr(stringToCompare, stringToFind);
-        if (partialString != M_NULLPTR)
-        {
-            last_occurrence = strlen(partialString);
-            partialString += strlen(stringToFind);
-            stringToCompare = strstr(partialString, stringToFind);
-        }
-        else
-        {
-            break;
-        }
+        return SIZE_MAX;
     }
 
-    return last_occurrence;
+    size_t last_occurrence = SIZE_MAX;
+    size_t stringToFindLen = strlen(stringToFind);
+    if (stringToFindLen == 0)
+    {
+        return SIZE_MAX; // Searching for an empty string is undefined
+    }
+
+    const char* stringToCompare = originalString;
+    while ((stringToCompare = strstr(stringToCompare, stringToFind)) != M_NULLPTR)
+    {
+        last_occurrence = C_CAST(uintptr_t, stringToCompare) - C_CAST(uintptr_t, originalString);
+        stringToCompare += stringToFindLen; // Move past the current found substring
+    }
+
+    return (last_occurrence != SIZE_MAX) ? last_occurrence : strlen(originalString);
 }
 
 size_t find_first_occurrence_in_string(const char* originalString, const char* stringToFind)
 {
-    char* partialString = strstr(originalString, stringToFind);
-    if (partialString != M_NULLPTR)
+    if (originalString == M_NULLPTR || stringToFind == M_NULLPTR)
     {
-        return C_CAST(size_t, partialString - originalString);
+        return SIZE_MAX;
     }
 
-    return strlen(originalString);
+    const char* partialString = strstr(originalString, stringToFind);
+    return (partialString != M_NULLPTR) ? (C_CAST(uintptr_t, partialString) - C_CAST(uintptr_t, originalString)) : SIZE_MAX;
 }
 
 bool wildcard_Match(const char* pattern, const char* data)
 {
+    if (pattern == M_NULLPTR || data == M_NULLPTR)
+    {
+        return false;
+    }
     if (*pattern == '\0' && *data == '\0')
     {
         return true;

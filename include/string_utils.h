@@ -56,6 +56,27 @@ extern "C"
     //-----------------------------------------------------------------------------
     int is_ASCII(int c);
 
+    //All of these functions work just like the standard, but guard from undefined behavior.
+    //If a value (c) is not in range of unsigned char and is not EOF, then it is returned and errno is set to ERANGE
+    //If a value (c) is equal to EOF, 0 is returned (for is functions) or EOF is returned (for to functions) and errno is not set.
+    //All of these functions will set errno to zero before calling the standard librarie's implementation of these functions,
+    //only setting errno to ERANGE when outside of unsigned char's range. Any other errno value comes from the standard library.
+    int safe_isascii(int c);
+    int safe_isalnum(int c);
+    int safe_isalpha(int c);
+    int safe_islower(int c);
+    int safe_isupper(int c);
+    int safe_isdigit(int c);
+    int safe_isxdigit(int c);
+    int safe_iscntrl(int c);
+    int safe_isgraph(int c);
+    int safe_isspace(int c);
+    int safe_isblank(int c);
+    int safe_isprint(int c);
+    int safe_ispunct(int c);
+    int safe_tolower(int c);
+    int safe_toupper(int c);
+
     size_t string_n_length(const char* string, size_t n);
 
     //-----------------------------------------------------------------------------
@@ -134,6 +155,8 @@ extern "C"
     //-----------------------------------------------------------------------------
     void byte_Swap_String(char* stringToChange);
 
+    void byte_Swap_String_Len(char* stringToChange, size_t stringlen);
+
     //-----------------------------------------------------------------------------
     //
     //  remove_Whitespace_Left()
@@ -162,6 +185,8 @@ extern "C"
     //-----------------------------------------------------------------------------
     void remove_Trailing_Whitespace(char* stringToChange);
 
+    void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen);
+
     //-----------------------------------------------------------------------------
     //
     //  remove_Leading_Whitespace()
@@ -175,6 +200,8 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void remove_Leading_Whitespace(char* stringToChange);
+
+    void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen);
 
     //-----------------------------------------------------------------------------
     //
@@ -190,6 +217,8 @@ extern "C"
     //-----------------------------------------------------------------------------
     void remove_Leading_And_Trailing_Whitespace(char* stringToChange);
 
+    void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen);
+
     //-----------------------------------------------------------------------------
     //
     //  convert_String_To_Upper_Case()
@@ -203,6 +232,8 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void convert_String_To_Upper_Case(char* stringToChange);
+
+    void convert_String_To_Upper_Case_Len(char* stringToChange, size_t stringlen);
 
     //-----------------------------------------------------------------------------
     //
@@ -218,6 +249,8 @@ extern "C"
     //-----------------------------------------------------------------------------
     void convert_String_To_Lower_Case(char* stringToChange);
 
+    void convert_String_To_Lower_Case_Len(char* stringToChange, size_t stringlen);
+
     //-----------------------------------------------------------------------------
     //
     //   convert_String_To_Inverse_Case(char *stringToChange)
@@ -231,6 +264,8 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void convert_String_To_Inverse_Case(char* stringToChange);
+
+    void convert_String_To_Inverse_Case_Len(char* stringToChange, size_t stringlen);
 
     //-----------------------------------------------------------------------------
     //
