@@ -134,20 +134,18 @@ extern "C"
     //While M_NULLPTR should be defined as nullptr in C23, adding this definition to remove ambiguity
     //when we are checking for valid pointers in our code. This will use a proper type depending on the standard detected at compile time
     //https://stackoverflow.com/questions/1282295/what-is-the-nullptr-keyword-and-why-is-it-better-than-null
-    #if defined (USING_CPP11)
-        #define M_NULLPTR nullptr
-    #elif defined (USING_CPP98)
+    #if defined (USING_CPP98)
         //NOTE: This is declared at the bottom of the file outside of the extern C to avoid warnings/errors
     #else //C
         #if defined (USING_C23)
             #define M_NULLPTR nullptr
-        #elif defined (M_NULLPTR)
-            //use M_NULLPTR since this is commonly available and likely to be safe for the environment we are in.
+        #elif defined (NULL)
+            //use NULL since this is commonly available and likely to be safe for the environment we are in.
             //NOTE: If this is ever an issue, consider improving this check to fall into the #else below
             //      instead where it is defined as a void* of 0 which should work most of the time unless
             //      the platform is doing something funky.
             //      https://stackoverflow.com/questions/2597142/when-was-the-null-macro-not-0
-            #define M_NULLPTR M_NULLPTR
+            #define M_NULLPTR NULL
         #else
             //for unknown reasons M_NULLPTR was not defined so define it the most common way we can to be safe
             #define M_NULLPTR ((void *)0)
@@ -201,31 +199,35 @@ extern "C"
         #define M_ACCESS_ENUM(type, val) val
     #endif
 
-    #if defined (__GNUC__)
-        //This is a GNU extension to zero initialize the array
-        #define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) \
-            type_name array_name[size] = {[0 ... (size - 1)] = 0}
-    #else
-        #if defined (USING_CPP98) || defined (USING_C99)
-            // Define a function for zero-initialization to be compatible with other C99 compilers where we can call a function after defining the type
-            // without generating compiler warnings or errors.
-            // NOTE: Not using M_INLINE macro here because including that code_attributes.h will generate a circular include issue
-            // Since we are already checking for C99 support here, we can use inline since it's part of C99
-            static inline void zero_init_array(void* array, size_t element_size, size_t element_count)
-            {
-                memset(array, 0, element_size * element_count);
-            }
-
+    #if !defined (USING_CPP98)
+        //only use these methods in C
+        //The C++ version is at the end of this file outside of the extern "C"
+        #if defined (__GNUC__)
+            //This is a GNU extension to zero initialize the array
             #define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) \
-                type_name array_name[size]; \
-                zero_init_array(array_name, sizeof(type_name), size)
+                type_name array_name[size] = {[0 ... (size - 1)] = 0}
         #else
-            //This is not exactly the same, but what we have done for years and usually works out ok...
-            //The only way to make this work for old standards 100% is a memset, but we don't want to
-            //do that because C89 requires variable declarations before functions are run, so defining like this.
-            //Some compilers will interpret this to mean zero initialize the array, but it is not guaranteed.
-            #define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) \
-                type_name array_name[size] = { 0 }
+            #if defined (USING_C99)
+                // Define a function for zero-initialization to be compatible with other C99 compilers where we can call a function after defining the type
+                // without generating compiler warnings or errors.
+                // NOTE: Not using M_INLINE macro here because including that code_attributes.h will generate a circular include issue
+                // Since we are already checking for C99 support here, we can use inline since it's part of C99
+                static inline void zero_init_array(void* array, size_t element_size, size_t element_count)
+                {
+                    memset(array, 0, element_size * element_count);
+                }
+
+                #define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) \
+                    type_name array_name[size]; \
+                    zero_init_array(array_name, sizeof(type_name), size)
+            #else
+                //This is not exactly the same, but what we have done for years and usually works out ok...
+                //The only way to make this work for old standards 100% is a memset, but we don't want to
+                //do that because C89 requires variable declarations before functions are run, so defining like this.
+                //Some compilers will interpret this to mean zero initialize the array, but it is not guaranteed.
+                #define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) \
+                    type_name array_name[size] = { 0 }
+            #endif
         #endif
     #endif
 
@@ -352,46 +354,63 @@ extern "C"
 #endif
 
 //This has to live here to avoid errors about C linkage in older GCC in C++98 mode
-#if defined (USING_CPP98) && !defined M_NULLPTR
+#if defined (USING_CPP98) && !defined (M_NULLPTR)
+    #if defined (USING_CPP11)
+        #define M_NULLPTR nullptr
+    #else
+        #if defined (__clang__)
+            #pragma clang diagnostic push
+            #pragma clang diagnostic ignored "-Wc++0x-compat" //treated as synonymn for Wc++11-compat, so use this for compatibility to old versions
+            //gcc 4.7.x - present calls it c++11-compat
+            //4.3.6 - 4.6.4 calls it c++0x-compat
+        #elif defined (__GNUC__)
+            #if (defined (__GNUC__) && (__GNUC__ > 4) || (defined (__GNUC_MINOR__) && __GNUC__ >=4 && __GNUC_MINOR__ >= 7))
+                #pragma GCC diagnostic push
+                #pragma GCC diagnostic ignored "-Wc++11-compat"
+            #elif (defined (__GNUC_MINOR__) && __GNUC__ >=4 && __GNUC_MINOR__ >= 3)
+                #pragma GCC diagnostic push
+                #pragma GCC diagnostic ignored "-Wc++0x-compat"
+            #endif //no need to disable on older GCC as this warning didn't exist
+        #endif//GCC or Clang
+            //NOTE: G++ defines M_NULLPTR as __null which should be safe
+            //      https://gcc.gnu.org/onlinedocs/gcc-4.9.2/libstdc++/manual/manual/support.html#std.support.types.null
+            //      Can add a special case to use M_NULLPTR macro instead if this template class doesn't work as expected
+            const class nullptr_t
+            {
+            public:
+                template<class T>
+                operator T*() const
+                    { return 0; }
 
-#if defined (__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc++0x-compat" //treated as synonymn for Wc++11-compat, so use this for compatibility to old versions
-//gcc 4.7.x - present calls it c++11-compat
-//4.3.6 - 4.6.4 calls it c++0x-compat
-#elif defined (__GNUC__)
-    #if (defined (__GNUC__) && (__GNUC__ > 4) || (defined (__GNUC_MINOR__) && __GNUC__ >=4 && __GNUC_MINOR__ >= 7))
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wc++11-compat"
-    #elif (defined (__GNUC_MINOR__) && __GNUC__ >=4 && __GNUC_MINOR__ >= 3)
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wc++0x-compat"
-    #endif //no need to disable on older GCC as this warning didn't exist
-#endif//GCC or Clang
-    //NOTE: G++ defines M_NULLPTR as __null which should be safe
-    //      https://gcc.gnu.org/onlinedocs/gcc-4.9.2/libstdc++/manual/manual/support.html#std.support.types.null
-    //      Can add a special case to use M_NULLPTR macro instead if this template class doesn't work as expected
-    const class nullptr_t
-    {
-    public:
-        template<class T>
-        operator T*() const
-            { return 0; }
-
-        template<class C, class T>
-            operator T C::*() const
-            { return 0; }
-    private:
-        void operator&() const;
-    } nullptr = {};
-    #define M_NULLPTR nullptr
-#if defined (__clang__)
-    #pragma clang diagnostic pop
-#elif defined (__GNUC__)
-    //the pop can be simplified
-    #if __GNUC__ > 4 || (defined (__GNUC_MINOR__) && __GNUC__ >=4 && __GNUC_MINOR__ >= 3)
-        #pragma GCC diagnostic pop
-    #endif 
-#endif
-
+                template<class C, class T>
+                    operator T C::*() const
+                    { return 0; }
+            private:
+                void operator&() const;
+            } nullptr = {};
+            #define M_NULLPTR nullptr
+        #if defined (__clang__)
+            #pragma clang diagnostic pop
+        #elif defined (__GNUC__)
+            //the pop can be simplified
+            #if __GNUC__ > 4 || (defined (__GNUC_MINOR__) && __GNUC__ >=4 && __GNUC_MINOR__ >= 3)
+                #pragma GCC diagnostic pop
+            #endif 
+        #endif
+    #endif //C++11 check for nullptr
 #endif //c++98 and no M_NULLPTR
+
+#if defined (USING_CPP98) && !defined (DECLARE_ZERO_INIT_ARRAY)
+    //NOTE: This does not use memset to handle non-trivial types.
+    //      A compiler may optimize this to memset though if it detects that this is a zero initialization of the data -TJE
+    template<typename T, size_t N>
+    void zero_init_array(T (&array)[N])
+    {
+        for (size_t i = 0; i < N; ++i) {
+            array[i] = 0;
+        }
+    }
+    #define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) \
+        type_name array_name[size]; \
+        zero_init_array(array_name)
+#endif //C++98 and no DECLARE_ZERO_INIT_ARRAY
