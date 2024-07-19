@@ -435,7 +435,7 @@ static eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
     {
         return VALIDATE_FORMAT_INVALID_FORMAT;//Should this be a different error for encoding failure???
     }
-    convertedChar = C_CAST(char*, calloc(charArrayLen + 1, sizeof(char)));
+    convertedChar = C_CAST(char*, safe_calloc(charArrayLen + 1, sizeof(char)));
     if (convertedChar == M_NULLPTR)
     {
         return VALIDATE_FORMAT_INVALID_FORMAT;//Should this be a different error for encoding failure???
@@ -535,7 +535,7 @@ static eValidateFormatResult validate_WStr_Conversion(const wchar_t* string)
         {
             return VALIDATE_FORMAT_INVALID_FORMAT;//Should this be a different error for encoding failure???
         }
-        charStr = C_CAST(char*, calloc(charStrSize + 1, sizeof(char)));//add room for M_NULLPTR terminator
+        charStr = C_CAST(char*, safe_calloc(charStrSize + 1, sizeof(char)));//add room for M_NULLPTR terminator
         if (charStr == M_NULLPTR)
         {
             return VALIDATE_FORMAT_INVALID_FORMAT;//Should this be a different error for encoding failure???

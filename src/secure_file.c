@@ -99,7 +99,7 @@ void free_Secure_File_Info(secureFileInfo** fileInfo)
 // that a file has not changed in some unexpected way.-TJE
 secureFileInfo* secure_Open_File(const char* filename, const char* mode, const fileExt* extList, fileAttributes* expectedFileInfo, fileUniqueIDInfo* uniqueIdInfo /*optional*/)
 {
-    secureFileInfo* fileInfo = C_CAST(secureFileInfo*, calloc(1, sizeof(secureFileInfo)));
+    secureFileInfo* fileInfo = C_CAST(secureFileInfo*, safe_calloc(1, sizeof(secureFileInfo)));
     if (fileInfo && filename && mode) /* Not checking extList and outInfo because it is optional */
     {
         bool creatingFile = false;
@@ -184,7 +184,7 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 //      While this is convenient, we are not using this to make sure behavior is as expected according to POSIX
                 //NOTE: Windows can also use https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcurrentdirectory
                 //need to allocate and call again
-                char* workingdir = malloc(OPENSEA_PATH_MAX);
+                char* workingdir = safe_malloc(OPENSEA_PATH_MAX);
                 if (workingdir == M_NULLPTR)
                 {
                     //return an error for invalid path

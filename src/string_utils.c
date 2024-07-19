@@ -306,7 +306,7 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
         return destination;
 #else //memccpy, strlcat/strcpy not available
         size_t duplen = strlen(destination);
-        char* dup = C_CAST(char*, calloc(duplen + 1, sizeof(char)));
+        char* dup = C_CAST(char*, safe_calloc(duplen + 1, sizeof(char)));
         if (dup)
         {
             memcpy(dup, destination, duplen + 1);
@@ -356,7 +356,7 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
         //FreeBSD 3.3 and later
         //openBSD 2.4 and later
         //netbsd  1.4.3
-        char* dup = C_CAST(char*, calloc(sourceLength + 1, sizeof(char)));
+        char* dup = C_CAST(char*, safe_calloc(sourceLength + 1, sizeof(char)));
         if (dup)
         {
             strlcpy(dup, source, sourceLength);
@@ -366,7 +366,7 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
         }
 #else //memccpy, strlcat/strcpy not available
         size_t duplen = strlen(destination);
-        char* dup = C_CAST(char*, calloc(duplen + 1, sizeof(char)));
+        char* dup = C_CAST(char*, safe_calloc(duplen + 1, sizeof(char)));
         if (dup)
         {
             memcpy(dup, destination, duplen + 1);
@@ -526,7 +526,7 @@ char* strndup(const char* src, size_t size)
     size_t length = string_n_length(src, size);
     if (length > 0)
     {
-        char* dupstr = C_CAST(char*, malloc(length + 1));
+        char* dupstr = C_CAST(char*, safe_malloc(length + 1));
         if (dupstr == M_NULLPTR)
         {
             errno = ENOMEM;
@@ -642,7 +642,7 @@ void remove_Leading_Whitespace(char* stringToChange)
     }
     if (iter > 0)
     {
-        memmove(&stringToChange[0], &stringToChange[iter], stringToChangeLen - iter);
+        safe_memmove(&stringToChange[0], stringToChangeLen, &stringToChange[iter], stringToChangeLen - iter);
         memset(&stringToChange[stringToChangeLen - iter], 0, iter);//should this be a null? Or a space? Leaving as null for now since it seems to work...
     }
 }
@@ -662,7 +662,7 @@ void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
 
     if (iter > 0)
     {
-        memmove(stringToChange, &stringToChange[iter], stringlen - iter);
+        safe_memmove(stringToChange, stringlen, &stringToChange[iter], stringlen - iter);
         memset(&stringToChange[stringlen - iter], 0, iter); // Null-terminate the shifted string
     }
 }
@@ -700,7 +700,7 @@ void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
     // If there's leading whitespace, shift the string to the start
     if (start > 0)
     {
-        memmove(stringToChange, &stringToChange[start], newlen);
+        safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
     }
 
     // Null-terminate the string after the last non-whitespace character
@@ -734,7 +734,7 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
     // If there's leading whitespace, shift the string to the start
     if (start > 0)
     {
-        memmove(stringToChange, &stringToChange[start], newlen);
+        safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
     }
 
     // Null-terminate the string after the last non-whitespace character

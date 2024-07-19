@@ -36,7 +36,7 @@ void print_Errno_To_Screen(errno_t error)
     size_t errorStringLen = strerrorlen_s(error);
     if (errorStringLen > 0 && errorStringLen < RSIZE_MAX)
     {
-        char *errorString = C_CAST(char*, calloc(errorStringLen + 1, sizeof(char)));
+        char *errorString = C_CAST(char*, safe_calloc(errorStringLen + 1, sizeof(char)));
         if (errorString)
         {
             errno_t truncated = strerror_s(errorString, errorStringLen + 1, error);
@@ -60,7 +60,7 @@ void print_Errno_To_Screen(errno_t error)
         printf("%d - <Unable to convert error to string>\n", error);
     }
 #elif defined (__STDC_SECURE_LIB__) //This is a MSFT definition for their original _s functions that sometimes differ from the C11 standard
-    char errorString[ERROR_STRING_BUFFER_LENGTH] = { 0 };
+    DECLARE_ZERO_INIT_ARRAY(char, errorString, ERROR_STRING_BUFFER_LENGTH);
     if (0 == strerror_s(errorString, ERROR_STRING_BUFFER_LENGTH, error))
     {
         printf("%d - %s\n", error, errorString);
@@ -82,7 +82,7 @@ void print_Errno_To_Screen(errno_t error)
     //There is brief mention of xstrerror, but I cannot find any documentation on it anywhere.-TJE
     #if (defined (POSIX_2001) && !defined (_GNU_SOURCE)) || defined (HAVE_POSIX_STRERR_R)
         //POSIX version
-        char errorString[ERROR_STRING_BUFFER_LENGTH] = { 0 };
+        DECLARE_ZERO_INIT_ARRAY(char, errorString, ERROR_STRING_BUFFER_LENGTH);
         if (0 == strerror_r(error, errorString, ERROR_STRING_BUFFER_LENGTH))
         {
             errorString[ERROR_STRING_BUFFER_LENGTH - 1] = '\0';//While it should be null terminated, there are known bugs on some systems where it is not!
@@ -94,7 +94,7 @@ void print_Errno_To_Screen(errno_t error)
         }
     #elif defined (HAVE_GNU_STRERR_R) || defined (_GNU_SOURCE)
         //GNU version
-        char errorString[ERROR_STRING_BUFFER_LENGTH] = { 0 };
+        DECLARE_ZERO_INIT_ARRAY(char, errorString, ERROR_STRING_BUFFER_LENGTH);
         char *errmsg = strerror_r(error, errorString, ERROR_STRING_BUFFER_LENGTH);
         if (errmsg != M_NULLPTR)
         {

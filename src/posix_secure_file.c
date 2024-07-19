@@ -40,7 +40,7 @@ fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
     memset(&st, 0, sizeof(struct stat));
     if (filetoCheck && stat(filetoCheck, &st) == 0)
     {
-        attrs = C_CAST(fileAttributes*, calloc(1, sizeof(fileAttributes)));
+        attrs = C_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
         if (attrs != M_NULLPTR)
         {
 #if defined (UEFI_C_SOURCE)
@@ -76,7 +76,7 @@ fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
     memset(&st, 0, sizeof(struct stat));
     if (file && fstat(fileno(file), &st) == 0)
     {
-        attrs = C_CAST(fileAttributes*, calloc(1, sizeof(fileAttributes)));
+        attrs = C_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
         if (attrs != M_NULLPTR)
         {
 #if defined (UEFI_C_SOURCE)
@@ -116,7 +116,7 @@ fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
     if (file && fstat(fileno(file), &st))
     {
         //device ID and inode
-        uniqueID = C_CAST(fileUniqueIDInfo*, calloc(1, sizeof(fileUniqueIDInfo)));
+        uniqueID = C_CAST(fileUniqueIDInfo*, safe_calloc(1, sizeof(fileUniqueIDInfo)));
         if (uniqueID != M_NULLPTR)
         {
             uniqueID->deviceid = st.st_dev;
@@ -224,7 +224,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     /* Now num_of_dirs indicates # of dirs we must check */
     safe_Free(C_CAST(void**, &path_copy));
 
-    if (!(dirs = C_CAST(char**, malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)))))
+    if (!(dirs = C_CAST(char**, safe_malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)))))
     {
         /* Handle error */
 #if defined (_DEBUG)
@@ -317,7 +317,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 break;
             }
             linksize = buf.st_size + 1;
-            if (!(link = C_CAST(char*, malloc(C_CAST(size_t, linksize)))))
+            if (!(link = C_CAST(char*, safe_malloc(C_CAST(size_t, linksize)))))
             {
                 /* Handle error */
                 secure = false;

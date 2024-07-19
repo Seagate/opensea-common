@@ -170,7 +170,7 @@ M_NODISCARD eEnvVarResult get_Environment_Variable(const char* environmentVariab
         if (getenv_s(&size, M_NULLPTR, 0, environmentVariableName) == 0 && size > 0 && size < SIZE_MAX)
         {
             size += 1;//make sure there is room for M_NULLPTR
-            *envVar = C_CAST(char*, calloc(size, sizeof(char)));
+            *envVar = C_CAST(char*, safe_calloc(size, sizeof(char)));
             if (*envVar != M_NULLPTR)
             {
                 if (getenv_s(M_NULLPTR, *envVar, size, environmentVariableName) != 0)

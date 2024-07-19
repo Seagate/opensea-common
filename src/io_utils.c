@@ -1118,8 +1118,8 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     //use readpassphrase instead
     //use BUFSIZ buffer as that should be more than enough to read this
     //NOTE: Linux's libbsd also provides this, but termios method above is still preferred-TJE
-    * inputDataLen = BUFSIZ;
-    *userInput = C_CAST(char*, calloc(*inputDataLen, sizeof(char)));
+    *inputDataLen = BUFSIZ;
+    *userInput = C_CAST(char*, safe_calloc(*inputDataLen, sizeof(char)));
     if (*userInput)
     {
         if (!readpassphrase(prompt, *userInput, *inputDataLen, 0))
@@ -1294,12 +1294,12 @@ bool get_And_Validate_Integer_Input_ULL(const char* strToConvert, char** unit, e
         }
         while (*tmp != '\0')
         {
-            if ((!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
+            if ((!safe_isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
             {
                 ret = false;
                 break;
             }
-            else if (!isdigit(*tmp))
+            else if (!safe_isdigit(*tmp))
             {
                 hex = true;
             }
@@ -1361,12 +1361,12 @@ bool get_And_Validate_Integer_Input_UL(const char* strToConvert, char** unit, eA
         }
         while (*tmp != '\0')
         {
-            if ((!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
+            if ((!safe_isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
             {
                 ret = false;
                 break;
             }
-            else if (!isdigit(*tmp))
+            else if (!safe_isdigit(*tmp))
             {
                 hex = true;
             }
@@ -1493,12 +1493,13 @@ bool get_And_Validate_Integer_Input_LL(const char* strToConvert, char** unit, eA
         }
         while (*tmp != '\0')
         {
-            if ((!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
+
+            if ((!safe_isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
             {
                 ret = false;
                 break;
             }
-            else if (!isdigit(*tmp))
+            else if (!safe_isdigit(*tmp))
             {
                 hex = true;
             }
@@ -1560,12 +1561,12 @@ bool get_And_Validate_Integer_Input_L(const char* strToConvert, char** unit, eAl
         }
         while (*tmp != '\0')
         {
-            if ((!isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
+            if ((!safe_isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
             {
                 ret = false;
                 break;
             }
-            else if (!isdigit(*tmp))
+            else if (!safe_isdigit(*tmp))
             {
                 hex = true;
             }
@@ -2147,7 +2148,7 @@ ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter,
                 return -1;
             }
 #endif //SSIZE_MAX
-            temp = realloc(*lineptr, newsize);
+            temp = safe_reallocf(C_CAST(void**, lineptr), newsize);
             if (temp == M_NULLPTR)
             {
                 errno = ENOMEM;
@@ -2298,6 +2299,7 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
 {
     uint32_t printIter = 0, offset = 0;
     uint32_t offsetWidth = 2;//used to figure out how wide we need to pad with 0's for consistent output, 2 is the minimum width
+    printf("data buffer length = %" PRIu32 "\n", bufferLen);
     if (showOffset)
     {
         if (bufferLen <= UINT8_MAX)
@@ -2367,7 +2369,7 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
         printf("%02"PRIX8" ", dataBuffer[printIter]);
         if (showPrint)
         {
-            if (is_ASCII(dataBuffer[printIter]) && isprint(C_CAST(int, dataBuffer[printIter])))
+            if (safe_isascii(dataBuffer[printIter]) && safe_isprint(C_CAST(int, dataBuffer[printIter])))
             {
                 lineBuff[lineBuffIter] = C_CAST(char, dataBuffer[printIter]);
             }

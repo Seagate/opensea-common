@@ -361,7 +361,7 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     //Microsoft Visual C/C++ compiler (code is written to use the _MSC_FULL_VER from 2003 and later and we only really support 2013 and higher due to C99 usage)-TJE
     * compilerUsed = OPENSEA_COMPILER_MICROSOFT_VISUAL_C_CPP;
 #define MS_VERSION_STRING_LENGTH 10
-    char msVersion[MS_VERSION_STRING_LENGTH] = { 0 };
+    DECLARE_ZERO_INIT_ARRAY(char, msVersion, MS_VERSION_STRING_LENGTH);
     snprintf(msVersion, MS_VERSION_STRING_LENGTH, "%u", _MSC_FULL_VER);
     DECLARE_ZERO_INIT_ARRAY(char, msMajor, 3);
     DECLARE_ZERO_INIT_ARRAY(char, msMinor, 3);
@@ -391,7 +391,7 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     //untested
     * compilerUsed = OPENSEA_COMPILER_HP_A_CPP;
 #define HP_ACC_VERSION_STRING_LENGTH 7
-    char hpVersion[HP_ACC_VERSION_STRING_LENGTH] = { 0 };
+    DECLARE_ZERO_INIT_ARRAY(char, hpVersion, HP_ACC_VERSION_STRING_LENGTH);
     snprintf(hpVersion, HP_ACC_VERSION_STRING_LENGTH, "%u", __HP_aCC);
     DECLARE_ZERO_INIT_ARRAY(char, hpMajor, 3);
     DECLARE_ZERO_INIT_ARRAY(char, hpMinor, 3);

@@ -37,7 +37,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
     versionNumber->versionType.uefiVersion.minorVersion = M_Word0(gST->Hdr.Revision);
     //gST->FirmwareVendor and gST->FirmwareRevision should be part of the operating system name!
     //The FirmwareVendor is a CHAR16 string, so it needs conversion. The revision is a UINT32 and stores some vendor specific version data (display as hex)
-    char firmwareVendorASCII[UEFI_FW_VENDOR_STR_LEN] = { 0 };
+    DECLARE_ZERO_INIT_ARRAY(char, firmwareVendorASCII, UEFI_FW_VENDOR_STR_LEN);
     AsciiSPrintUnicodeFormat(firmwareVendorASCII, UEFI_FW_VENDOR_STR_LEN, L"%s", gST->FirmwareVendor);
     if (strlen(firmwareVendorASCII) == 0)
     {
@@ -67,7 +67,7 @@ eReturnValues get_Current_User_Name(char **userName)
     {
         //while unix functions are there, they are all stubs, so we're just going to return "efi" as the username.
 #define UEFI_USER_NAME_LENGTH 4
-        *userName = C_CAST(char*, calloc(UEFI_USER_NAME_LENGTH, sizeof(char)));
+        *userName = C_CAST(char*, safe_calloc(UEFI_USER_NAME_LENGTH, sizeof(char)));
         if (*userName)
         {
             snprintf(*userName, UEFI_USER_NAME_LENGTH, "efi");

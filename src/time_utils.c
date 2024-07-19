@@ -17,6 +17,7 @@
 #include "type_conversion.h"
 #include "io_utils.h"
 #include "memory_safety.h"
+#include "common_types.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -25,7 +26,9 @@
 #include <math.h>
 
 time_t CURRENT_TIME = 0;
-char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH] = { 0 };
+//NOTE: Do not use the DECLAR_ZERO_INIT_ARRAY here as it will not compile correctly for a global variable like this.
+//      Instead we are manually setting all bytes to zero the old fashioned way - TJE
+char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 bool get_current_timestamp(void)
 {

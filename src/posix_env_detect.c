@@ -35,7 +35,7 @@ static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
 {
     int match = 0;
     size_t filenameLength = strlen(entry->d_name) + strlen("/etc/") + 1;
-    char *filename = C_CAST(char*, calloc(filenameLength, sizeof(char)));
+    char *filename = C_CAST(char*, safe_calloc(filenameLength, sizeof(char)));
     if (filename)
     {
         struct stat s;
@@ -84,7 +84,7 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
         if (etcRelease || usrLibRelease)//available on newer OS's
         {
             #define RELEASE_FILE_NAME_LENGTH 21
-            char releasefile[RELEASE_FILE_NAME_LENGTH] = { 0 };
+            DECLARE_ZERO_INIT_ARRAY(char, releasefile, RELEASE_FILE_NAME_LENGTH);
             //read this file and get the linux name
             FILE* release = M_NULLPTR;
             if (etcRelease)
@@ -107,7 +107,7 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
                     off_t releaseSize = releasestat.st_size;
                     if (releaseSize > 0)
                     {
-                        char* releaseMemory = C_CAST(char*, calloc(C_CAST(size_t, releaseSize), sizeof(char)));
+                        char* releaseMemory = C_CAST(char*, safe_calloc(C_CAST(size_t, releaseSize), sizeof(char)));
                         if (fread(releaseMemory, sizeof(char), C_CAST(size_t, releaseSize), release) == C_CAST(size_t, releaseSize) && !ferror(release))
                         {
                             //Use the "PRETTY_NAME" field
@@ -144,7 +144,7 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
     if (dirent_entry_name)
     {
         size_t fileNameLength = strlen(dirent_entry_name) + strlen("/etc/") + 1;
-        char* fileName = C_CAST(char*, calloc(fileNameLength, sizeof(char)));
+        char* fileName = C_CAST(char*, safe_calloc(fileNameLength, sizeof(char)));
         FILE* release = M_NULLPTR;
         if (fileName)
         {
@@ -161,7 +161,7 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
                     off_t releaseSize = direntfilestat.st_size;
                     if (releaseSize > 0)
                     {
-                        etcFileMem = C_CAST(char*, calloc(C_CAST(size_t, releaseSize), sizeof(char)));
+                        etcFileMem = C_CAST(char*, safe_calloc(C_CAST(size_t, releaseSize), sizeof(char)));
                         if (etcFileMem)
                         {
                             if (fread(etcFileMem, sizeof(char), C_CAST(size_t, releaseSize), release) != C_CAST(size_t, releaseSize) || ferror(release))
@@ -268,7 +268,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
             //remove any control characters from the string. We don't need them for what we're doing
             for (size_t iter = 0; iter < strlen(operatingSystemName); ++iter)
             {
-                if (iscntrl(operatingSystemName[iter]))
+                if (safe_iscntrl(operatingSystemName[iter]))
                 {
                     operatingSystemName[iter] = ' ';
                 }
@@ -298,7 +298,7 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
                 off_t issueSize = issuestat.st_size;
                 if (issueSize > 0)
                 {
-                    char* issueMemory = C_CAST(char*, calloc(C_CAST(size_t, issueSize), sizeof(char)));
+                    char* issueMemory = C_CAST(char*, safe_calloc(C_CAST(size_t, issueSize), sizeof(char)));
                     if (issueMemory)
                     {
                         if (fread(issueMemory, sizeof(char), C_CAST(size_t, issueSize), issue) == C_CAST(size_t, issueSize) && !ferror(issue))
@@ -529,7 +529,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
                 snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Solaris %s", unixUname.version);
             }
             //The Solaris Version/name is stored in version
-            if (strlen(unixUname.version) > 0 && isdigit(unixUname.version[0]))
+            if (strlen(unixUname.version) > 0 && safe_isdigit(unixUname.version[0]))
             {
                 //set OS name as Solaris x.x
                 if (get_Version_From_Uname_Str(unixUname.version, M_NULLPTR, ".", list, 3))
@@ -796,7 +796,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                 //some linux man pages suggest 16384
                 dataSize = 1024;//start with this, will increment it below if it fails to read
             }
-            rawBuffer = C_CAST(char*, calloc(dataSize, sizeof(char)));
+            rawBuffer = C_CAST(char*, safe_calloc(dataSize, sizeof(char)));
             if (rawBuffer)
             {
                 while (ERANGE == (error = getpwuid_r(userID, &userInfoBuf, rawBuffer, dataSize, &userInfo)))
@@ -805,7 +805,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                     //realloc with more memory and try again
                     char *temp = M_NULLPTR;
                     dataSize *= 2;
-                    temp = realloc(rawBuffer, dataSize);
+                    temp = safe_realloc(rawBuffer, dataSize);
                     if(!temp)
                     {
                         safe_Free(C_CAST(void**, &rawBuffer));
@@ -820,7 +820,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                     size_t userNameLength = strlen(userInfo->pw_name) + 1;//add 1 to ensure room for M_NULLPTR termination
                     if (userNameLength > 1 && (userNameLength - 1) <= get_Sys_Username_Max_Length())//make sure userNameLength is valid and not too large
                     {
-                        *userName = C_CAST(char*, calloc(userNameLength, sizeof(char)));
+                        *userName = C_CAST(char*, safe_calloc(userNameLength, sizeof(char)));
                         if (*userName)
                         {
                             snprintf(*userName, userNameLength, "%s", userInfo->pw_name);
@@ -839,7 +839,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                 size_t userNameLength = strlen(userInfo->pw_name) + 1;//add 1 to ensure room for M_NULLPTR termination
                 if (userNameLength > 1 && (userNameLength - 1) <= get_Sys_Username_Max_Length())//make sure userNameLength is valid and not too large
                 {
-                    *userName = C_CAST(char*, calloc(userNameLength, sizeof(char)));
+                    *userName = C_CAST(char*, safe_calloc(userNameLength, sizeof(char)));
                     if (*userName)
                     {
                         snprintf(*userName, userNameLength, "%s", userInfo->pw_name);

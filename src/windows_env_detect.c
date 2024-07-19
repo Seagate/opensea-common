@@ -279,12 +279,12 @@ eReturnValues get_Current_User_Name(char **userName)
     if (userName)
     {
         DWORD localNameLength = UNLEN + 1;//start with this for input
-        TCHAR localName[UNLEN + 1] = { 0 };
+        DECLARE_ZERO_INIT_ARRAY(TCHAR, localName, UNLEN + 1);
         if (TRUE == GetUserName(localName, &localNameLength))
         {
             const char *isAdmin = " (admin)";//This will be concatenated to the string if running as administrator since we only get the user's name in Windows.
             size_t usernameLength = _tcslen(localName) + strlen(isAdmin) + 1;
-            *userName = C_CAST(char*, calloc(usernameLength, sizeof(char)));
+            *userName = C_CAST(char*, safe_calloc(usernameLength, sizeof(char)));
             if (*userName)
             {
 #if defined UNICODE

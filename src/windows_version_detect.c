@@ -50,7 +50,7 @@ eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
     if (!readVersionFromNTDLL)
     {
         static CONST TCHAR ntdll[] = TEXT("\\ntdll.dll");
-        TCHAR* systemPathBuf = C_CAST(TCHAR*, calloc(OPENSEA_PATH_MAX, sizeof(TCHAR)));
+        TCHAR* systemPathBuf = C_CAST(TCHAR*, safe_calloc(OPENSEA_PATH_MAX, sizeof(TCHAR)));
         CONST TCHAR* systemPath = &systemPathBuf[0];
 
         if (!systemPath)
