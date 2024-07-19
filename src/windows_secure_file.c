@@ -92,7 +92,7 @@ static bool win_File_Attributes_By_Name(const char* const filename, LPWIN32_FILE
     bool success = false;
     if (filename && attributes)
     {
-        size_t pathCheckLength = (strlen(filename) + 1) * sizeof(TCHAR);
+        size_t pathCheckLength = (safe_strlen(filename) + 1) * sizeof(TCHAR);
         TCHAR* localPathToCheckBuf = C_CAST(TCHAR*, safe_calloc(pathCheckLength, sizeof(TCHAR)));
         if (!localPathToCheckBuf)
         {
@@ -140,7 +140,7 @@ static bool win_Get_File_Security_Info_By_Name(const char* const filename, fileA
     bool success = false;
     if (filename && attrs)
     {
-        size_t pathCheckLength = (strlen(filename) + 1) * sizeof(TCHAR);
+        size_t pathCheckLength = (safe_strlen(filename) + 1) * sizeof(TCHAR);
         TCHAR* localPathToCheckBuf = C_CAST(TCHAR*, safe_calloc(pathCheckLength, sizeof(TCHAR)));
         if (!localPathToCheckBuf)
         {
@@ -381,7 +381,7 @@ static bool is_Root_Path(const char* path)
     {
         //Check is for a drive letter + :
         //trailing \ is not checked because it is stripped off by win_dirname function when this is used to figure out number of directories to validate.
-        if (strlen(path) == 2 && safe_isascii(path[0]) && path[1] == ':')
+        if (safe_strlen(path) == 2 && safe_isascii(path[0]) && path[1] == ':')
         {
             isroot = true;
         }
@@ -580,7 +580,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString)
         }
     } while (0);
 
-    SecureZeroMemory(mySidStr, strlen(mySidStr));
+    SecureZeroMemory(mySidStr, safe_strlen(mySidStr));
     safe_Free(C_CAST(void**, &mySidStr));
     if (mySid)
     {
@@ -715,7 +715,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         if (is_Root_Path(dirptr))
         {
             //append a trailing \ to the end before attempting to get the attributes
-            size_t newlen = strlen(dirptr) + 2;
+            size_t newlen = safe_strlen(dirptr) + 2;
             dirptr = C_CAST(char*, safe_calloc(newlen, sizeof(char)));
             if (dirptr)
             {
@@ -894,7 +894,7 @@ bool os_Directory_Exists(const char* const pathToCheck)
 eReturnValues os_Create_Directory(const char* filePath)
 {
     BOOL returnValue;
-    size_t filePathLength = (strlen(filePath) + 1) * sizeof(TCHAR);
+    size_t filePathLength = (safe_strlen(filePath) + 1) * sizeof(TCHAR);
     TCHAR* pathNameBuf = C_CAST(TCHAR*, safe_calloc(filePathLength, sizeof(TCHAR)));
     if (pathNameBuf)
     {
@@ -947,7 +947,7 @@ eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_
     {
         return BAD_PARAMETER;
     }
-    size_t localPathAndFileLength = (strlen(pathAndFile) + 1) * sizeof(TCHAR);
+    size_t localPathAndFileLength = (safe_strlen(pathAndFile) + 1) * sizeof(TCHAR);
     TCHAR* localpathAndFileBuf = C_CAST(TCHAR*, safe_calloc(localPathAndFileLength, sizeof(TCHAR)));
     DECLARE_ZERO_INIT_ARRAY(TCHAR, fullPathOutput, OPENSEA_PATH_MAX);
     if (!localpathAndFileBuf)

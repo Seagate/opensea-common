@@ -34,7 +34,7 @@
 static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
 {
     int match = 0;
-    size_t filenameLength = strlen(entry->d_name) + strlen("/etc/") + 1;
+    size_t filenameLength = safe_strlen(entry->d_name) + safe_strlen("/etc/") + 1;
     char *filename = C_CAST(char*, safe_calloc(filenameLength, sizeof(char)));
     if (filename)
     {
@@ -50,8 +50,8 @@ static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
                 {
                     //found a file!
                     //make sure the string to match is at the end of the entry's name!
-                    size_t nameLen = strlen(entry->d_name);
-                    size_t matchLen = strlen(stringMatch);
+                    size_t nameLen = safe_strlen(entry->d_name);
+                    size_t matchLen = safe_strlen(stringMatch);
                     if (0 == strncmp(entry->d_name + nameLen - matchLen, stringMatch, matchLen))
                     {
                         match = 1;
@@ -112,14 +112,14 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
                         {
                             //Use the "PRETTY_NAME" field
                             char *saveptr = M_NULLPTR;
-                            rsize_t releaselen = strlen(releaseMemory);
+                            rsize_t releaselen = safe_strlen(releaseMemory);
                             char* tok = common_String_Token(releaseMemory, &releaselen, "\n", &saveptr);
                             while (tok != M_NULLPTR)
                             {
-                                if (strncmp(tok, "PRETTY_NAME=", strlen("PRETTY_NAME=")) == 0)
+                                if (strncmp(tok, "PRETTY_NAME=", safe_strlen("PRETTY_NAME=")) == 0)
                                 {
                                     gotLinuxInfo = true;
-                                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(tok) - 1 - strlen("PRETTY_NAME=\"")), tok + strlen("PRETTY_NAME=\""));
+                                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, safe_strlen(tok) - 1 - safe_strlen("PRETTY_NAME=\"")), tok + safe_strlen("PRETTY_NAME=\""));
                                     break;
                                 }
                                 tok = common_String_Token(M_NULLPTR, &releaselen, "\n", &saveptr);
@@ -143,7 +143,7 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
     char* etcFileMem = M_NULLPTR;
     if (dirent_entry_name)
     {
-        size_t fileNameLength = strlen(dirent_entry_name) + strlen("/etc/") + 1;
+        size_t fileNameLength = safe_strlen(dirent_entry_name) + safe_strlen("/etc/") + 1;
         char* fileName = C_CAST(char*, safe_calloc(fileNameLength, sizeof(char)));
         FILE* release = M_NULLPTR;
         if (fileName)
@@ -210,7 +210,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
                         gotLinuxInfo = true;
                         if (operatingSystemName)
                         {
-                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(releaseFile)), releaseFile);
+                            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, safe_strlen(releaseFile)), releaseFile);
                         }
                         safe_Free(C_CAST(void**, &releaseFile));
                     }
@@ -231,7 +231,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
                 gotLinuxInfo = true;
                 if (operatingSystemName)
                 {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(versionFile)), versionFile);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, safe_strlen(versionFile)), versionFile);
                 }
                 safe_Free(C_CAST(void**, &versionFile));
             }
@@ -247,7 +247,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
                 gotLinuxInfo = true;
                 if (operatingSystemName)
                 {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, strlen(lsbreleaseFile)), lsbreleaseFile);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, safe_strlen(lsbreleaseFile)), lsbreleaseFile);
                 }
                 safe_Free(C_CAST(void**, &lsbreleaseFile));
             }
@@ -266,7 +266,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
         if (gotLinuxInfo)
         {
             //remove any control characters from the string. We don't need them for what we're doing
-            for (size_t iter = 0; iter < strlen(operatingSystemName); ++iter)
+            for (size_t iter = 0; iter < safe_strlen(operatingSystemName); ++iter)
             {
                 if (safe_iscntrl(operatingSystemName[iter]))
                 {
@@ -335,11 +335,11 @@ static bool get_Version_From_Uname_Str(const char *verStr, const char* prefix /*
         char* endptr = M_NULLPTR;
         char* strscan = M_CONST_CAST(char*, verStr);//removing const in order to allow changing strscan pointer as we iterate through the string.
         uint16_t versionoffset = 0;
-        size_t verseplen = strlen(validVerSeperators);
+        size_t verseplen = safe_strlen(validVerSeperators);
         if (prefix)
         {
             //move the pointer past the prefix.
-            strscan += strlen(prefix);
+            strscan += safe_strlen(prefix);
         }
         while (success && versionoffset < versionCount && strscan)
         {
@@ -529,7 +529,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
                 snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Solaris %s", unixUname.version);
             }
             //The Solaris Version/name is stored in version
-            if (strlen(unixUname.version) > 0 && safe_isdigit(unixUname.version[0]))
+            if (safe_strlen(unixUname.version) > 0 && safe_isdigit(unixUname.version[0]))
             {
                 //set OS name as Solaris x.x
                 if (get_Version_From_Uname_Str(unixUname.version, M_NULLPTR, ".", list, 3))
@@ -817,7 +817,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                 if (error == 0 && userInfo && rawBuffer)
                 {
                     //success
-                    size_t userNameLength = strlen(userInfo->pw_name) + 1;//add 1 to ensure room for M_NULLPTR termination
+                    size_t userNameLength = safe_strlen(userInfo->pw_name) + 1;//add 1 to ensure room for M_NULLPTR termination
                     if (userNameLength > 1 && (userNameLength - 1) <= get_Sys_Username_Max_Length())//make sure userNameLength is valid and not too large
                     {
                         *userName = C_CAST(char*, safe_calloc(userNameLength, sizeof(char)));
@@ -836,7 +836,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
             struct passwd *userInfo = getpwuid(userID);
             if (userInfo)
             {
-                size_t userNameLength = strlen(userInfo->pw_name) + 1;//add 1 to ensure room for M_NULLPTR termination
+                size_t userNameLength = safe_strlen(userInfo->pw_name) + 1;//add 1 to ensure room for M_NULLPTR termination
                 if (userNameLength > 1 && (userNameLength - 1) <= get_Sys_Username_Max_Length())//make sure userNameLength is valid and not too large
                 {
                     *userName = C_CAST(char*, safe_calloc(userNameLength, sizeof(char)));

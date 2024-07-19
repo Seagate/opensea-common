@@ -43,10 +43,10 @@ eReturnValues replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char* n
     {
         return FAILURE;
     }
-    ptrLen = strlen(ptr);
+    ptrLen = safe_strlen(ptr);
     //now that we have a valid pointer, set all the remaining characters to null, then set the new file name in place.
     memset(ptr, 0, ptrLen);
-    fullLength = (OPENSEA_PATH_MAX - strlen(fullPath));
+    fullLength = (OPENSEA_PATH_MAX - safe_strlen(fullPath));
     snprintf(ptr, fullLength, "%s", newFileName);
     return SUCCESS;
 }
@@ -128,9 +128,9 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
             if (thex)
             {
                 //remove it since it is not supported outside C11 and a few \libraries that use it as an extension
-                if (strlen(thex) > 1)
+                if (safe_strlen(thex) > 1)
                 {
-                    size_t lenx = strlen(thex);
+                    size_t lenx = safe_strlen(thex);
                     memmove(thex, thex + 1, lenx - 1);
                     thex[lenx] = '\0';
                 }
@@ -825,7 +825,7 @@ eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
             return SEC_FILE_FAILURE_CLOSING_FILE;
         }
         fileInfo->error = SEC_FILE_INVALID_PATH;
-        if (fileInfo->file && strlen(fileInfo->fullpath) > 0)
+        if (fileInfo->file && safe_strlen(fileInfo->fullpath) > 0)
         {
             //unlink the file is possible
 #if defined (_WIN32)
@@ -842,7 +842,7 @@ eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
             fileInfo->error = SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN;
 #endif
         }
-        else if (strlen(fileInfo->fullpath) > 0)
+        else if (safe_strlen(fileInfo->fullpath) > 0)
         {
             //remove the file
             if (0 != remove(fileInfo->fullpath))

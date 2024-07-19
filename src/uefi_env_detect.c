@@ -39,7 +39,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
     //The FirmwareVendor is a CHAR16 string, so it needs conversion. The revision is a UINT32 and stores some vendor specific version data (display as hex)
     DECLARE_ZERO_INIT_ARRAY(char, firmwareVendorASCII, UEFI_FW_VENDOR_STR_LEN);
     AsciiSPrintUnicodeFormat(firmwareVendorASCII, UEFI_FW_VENDOR_STR_LEN, L"%s", gST->FirmwareVendor);
-    if (strlen(firmwareVendorASCII) == 0)
+    if (safe_strlen(firmwareVendorASCII) == 0)
     {
         snprintf(firmwareVendorASCII, UEFI_FW_VENDOR_STR_LEN, "Unknown Firmware Vendor");
     }

@@ -305,7 +305,7 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
         strlcat(destination, source, destinationSizeBytes);
         return destination;
 #else //memccpy, strlcat/strcpy not available
-        size_t duplen = strlen(destination);
+        size_t duplen = safe_strlen(destination);
         char* dup = C_CAST(char*, safe_calloc(duplen + 1, sizeof(char)));
         if (dup)
         {
@@ -365,7 +365,7 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
             return destination;
         }
 #else //memccpy, strlcat/strcpy not available
-        size_t duplen = strlen(destination);
+        size_t duplen = safe_strlen(destination);
         char* dup = C_CAST(char*, safe_calloc(duplen + 1, sizeof(char)));
         if (dup)
         {
@@ -430,7 +430,7 @@ char* common_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, cons
         }
         else
         {
-            *strmax -= strlen(token);
+            *strmax -= safe_strlen(token);
         }
     }
     return token;
@@ -458,7 +458,7 @@ char* common_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, cons
             return M_NULLPTR;
         }
         *saveptr = str;
-        *strmax = strlen(str);
+        *strmax = safe_strlen(str);
     }
     token = *saveptr;
     end = *saveptr + *strmax;
@@ -493,7 +493,7 @@ size_t string_n_length(const char* string, size_t n)
 {
 #if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
     return strnlen_s(string, n);
-#elif defined (POSIX_2008) || defined (USING_SUS4) || defined (HAVE_STRNLEN) //also glibc 2.0, openbsd 4.8
+#elif defined (POSIX_2008) || defined (USING_SUS4) || defined (HAVE_STRNLEN) /*also glibc 2.0, openbsd 4.8*/
     if (string != M_NULLPTR)
     {
         return strnlen(string, n);
@@ -509,7 +509,7 @@ size_t string_n_length(const char* string, size_t n)
         const char* found = memchr(string, '\0', n);
         if (found != M_NULLPTR)
         {
-            return C_CAST(size_t, found - string);
+            return C_CAST(size_t, C_CAST(uintptr_t, found) - C_CAST(uintptr_t, string));
         }
         else
         {
@@ -559,7 +559,7 @@ void byte_Swap_String_Len(char* stringToChange, size_t stringlen)
 //use this to swap the bytes in a string...useful for ATA strings
 void byte_Swap_String(char* stringToChange)
 {
-    size_t stringlen = strlen(stringToChange);
+    size_t stringlen = safe_strlen(stringToChange);
     if (stringlen > 1) // Check if the string has more than one character
     {
         for (size_t stringIter = 0; stringIter < stringlen - 1; stringIter += 2)
@@ -586,7 +586,7 @@ void remove_Whitespace_Left(char* stringToChange)
         return;
     }
 
-    while ((iter < (strlen(stringToChange) - 1) && stringToChange[iter]))  // having issues with the isspace command leaving extra chars in the string
+    while ((iter < (safe_strlen(stringToChange) - 1) && stringToChange[iter]))  // having issues with the isspace command leaving extra chars in the string
     {
         stringToChange[iter] = stringToChange[iter + len];
         iter++;
@@ -600,7 +600,7 @@ void remove_Trailing_Whitespace(char* stringToChange)
     {
         return;
     }
-    iter = (strlen(stringToChange));
+    iter = (safe_strlen(stringToChange));
     if (iter == 0)
     {
         return;
@@ -635,7 +635,7 @@ void remove_Leading_Whitespace(char* stringToChange)
     {
         return;
     }
-    stringToChangeLen = strlen(stringToChange);
+    stringToChangeLen = safe_strlen(stringToChange);
     while (safe_isascii(stringToChange[iter]) && safe_isspace(stringToChange[iter]) && iter < stringToChangeLen)
     {
         iter++;
@@ -674,7 +674,7 @@ void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
         return;
     }
 
-    size_t stringlen = strlen(stringToChange);
+    size_t stringlen = safe_strlen(stringToChange);
     if (stringlen == 0)
     {
         return;
@@ -835,7 +835,7 @@ size_t find_last_occurrence_in_string(const char* originalString, const char* st
     }
 
     size_t last_occurrence = SIZE_MAX;
-    size_t stringToFindLen = strlen(stringToFind);
+    size_t stringToFindLen = safe_strlen(stringToFind);
     if (stringToFindLen == 0)
     {
         return SIZE_MAX; // Searching for an empty string is undefined
@@ -848,7 +848,7 @@ size_t find_last_occurrence_in_string(const char* originalString, const char* st
         stringToCompare += stringToFindLen; // Move past the current found substring
     }
 
-    return (last_occurrence != SIZE_MAX) ? last_occurrence : strlen(originalString);
+    return (last_occurrence != SIZE_MAX) ? last_occurrence : safe_strlen(originalString);
 }
 
 size_t find_first_occurrence_in_string(const char* originalString, const char* stringToFind)

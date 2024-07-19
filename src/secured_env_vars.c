@@ -108,8 +108,8 @@ static bool is_Environment_Variable_List_Tampered(void)
                     k = 0;
                     l = 0;
 
-                    len_i = strlen(environ[i]);
-                    len_j = strlen(environ[j]);
+                    len_i = safe_strlen(environ[i]);
+                    len_j = safe_strlen(environ[j]);
 
                     while (k < len_i && l < len_j)
                     {

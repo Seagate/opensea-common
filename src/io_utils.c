@@ -515,7 +515,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         else
         {
             //remove newline from the end...convert to a null.
-            size_t endofinput = strlen(*userInput);
+            size_t endofinput = safe_strlen(*userInput);
             if ((*userInput)[endofinput - 1] == '\n')
             {
                 (*userInput)[endofinput - 1] = '\0';
@@ -1093,7 +1093,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     {
         //check if newline was read (it likely will be there) and remove it
         //remove newline from the end...convert to a null.
-        size_t endofinput = strlen(*userInput);
+        size_t endofinput = safe_strlen(*userInput);
         if ((*userInput)[endofinput - 1] == '\n')
         {
             (*userInput)[endofinput - 1] = '\0';
@@ -1141,7 +1141,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     }
     else
     {
-        *inputDataLen = strlen(*userInput) + 1;//add one since this adds to the buffer size and that is what we are returning in all other cases-TJE
+        *inputDataLen = safe_strlen(*userInput) + 1;//add one since this adds to the buffer size and that is what we are returning in all other cases-TJE
     }
 #elif defined (__sun) && defined(__SunOS_5_6)
     //use getpassphrase since it can return longer passwords than getpass
@@ -1150,14 +1150,14 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     {
         *userInput = strdup(eraseme);
         //immediately clear the original buffer to make sure it cannot be accessed again
-        explicit_zeroes(eraseme, strlen(eraseme));
+        explicit_zeroes(eraseme, safe_strlen(eraseme));
         if (*userInput == M_NULLPTR)
         {
             ret = FAILURE;
         }
         else
         {
-            *inputDataLen = strlen(*userInput) + 1;//add one since this adds to the buffer size and that is what we are returning in all other cases-TJE
+            *inputDataLen = safe_strlen(*userInput) + 1;//add one since this adds to the buffer size and that is what we are returning in all other cases-TJE
         }
     }
     else
@@ -1171,14 +1171,14 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     {
         *userInput = strdup(eraseme);
         //immediately clear the original buffer to make sure it cannot be accessed again
-        explicit_zeroes(eraseme, strlen(eraseme));
+        explicit_zeroes(eraseme, safe_strlen(eraseme));
         if (*userInput == M_NULLPTR)
         {
             ret = FAILURE;
         }
         else
         {
-            *inputDataLen = strlen(*userInput) + 1;//add one since this adds to the buffer size and that is what we are returning in all other cases-TJE
+            *inputDataLen = safe_strlen(*userInput) + 1;//add one since this adds to the buffer size and that is what we are returning in all other cases-TJE
         }
     }
     else

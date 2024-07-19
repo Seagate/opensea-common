@@ -283,7 +283,7 @@ eReturnValues get_Current_User_Name(char **userName)
         if (TRUE == GetUserName(localName, &localNameLength))
         {
             const char *isAdmin = " (admin)";//This will be concatenated to the string if running as administrator since we only get the user's name in Windows.
-            size_t usernameLength = _tcslen(localName) + strlen(isAdmin) + 1;
+            size_t usernameLength = _tcslen(localName) + safe_strlen(isAdmin) + 1;
             *userName = C_CAST(char*, safe_calloc(usernameLength, sizeof(char)));
             if (*userName)
             {
