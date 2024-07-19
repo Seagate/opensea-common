@@ -79,6 +79,12 @@ extern "C"
 
     size_t string_n_length(const char* string, size_t n);
 
+    //if str is a null pointer, returns 0. Internally calls string_n_length with size set to SIZE_MAX
+    M_INLINE size_t safe_strlen(const char* string)
+    {
+        return string_n_length(string, SIZE_MAX);
+    }
+
     //-----------------------------------------------------------------------------
     //
     //  char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source);
