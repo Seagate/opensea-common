@@ -121,6 +121,16 @@ extern "C"
     ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream);
 #endif //!__STDC_ALLOC_LIB__ && (POSIX < 2008)
 
+//Defining asprintf ans vasprintf for all systems that do not have these already
+//asprintf and vaspritnf were in GNU C library, added in FreeBSD 2.2, and OpenBSD 2.3
+#if !defined (__STDC_ALLOC_LIB__) && !defined (_GNU_SOURCE) && !(defined (__FreeBSD__) && __FreeBSD > 3) && !(defined (__OpenBSD__) && defined (OpenBSD2_3)) && !defined (HAVE_VASPRINTF)
+    
+    M_NODISCARD FUNC_ATTR_PRINTF(2, 3) int asprintf(char **M_RESTRICT strp, const char *M_RESTRICT fmt, ...);
+
+    M_NODISCARD int vasprintf(char **M_RESTRICT strp, const char *M_RESTRICT fmt, va_list arg);
+
+#endif //asprintf, vasprintf
+
     int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formatargs);
 
     //This should be used after prompting the user to enter data.

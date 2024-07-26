@@ -24,6 +24,7 @@
 #include <string.h>
 #include <math.h> //HUGE_VALF, HUGE_VAL, HUGE_VALL
 #include <ctype.h>
+#include <stdarg.h> //asprintf/vasprintf
 
 #if defined (UEFI_C_SOURCE)
 #include <Uefi.h>
@@ -2169,6 +2170,61 @@ ssize_t getline(char** lineptr, size_t* n, FILE* stream)
 
 #endif //__STDC_ALLOC_LIB__
 
+#if !defined (__STDC_ALLOC_LIB__) && !defined (_GNU_SOURCE) && !(defined (__FreeBSD__) && __FreeBSD > 3) && !defined (HAVE_VASPRINTF)
+
+FUNC_ATTR_PRINTF(2, 3) int asprintf(char **M_RESTRICT strp, const char *M_RESTRICT fmt, ...)
+{
+    //call vasprintf
+    va_list args;
+    va_start(args, fmt);
+    int result = vasprintf(strp, fmt, args);
+    va_end(args);
+    return result;
+}
+
+int vasprintf(char **M_RESTRICT strp, const char *M_RESTRICT fmt, va_list arg)
+{
+    va_list copyarg;
+    #if defined (va_copy)
+    va_copy(copyarg, arg);
+    #elif defined (__va_copy)
+    __va_copy(copyarg, arg);
+    #else
+    copyarg = arg;
+    #endif
+    //_vscprintf existed in Windows to get format string len before vsnprintf
+    #if defined (USING_C99) || defined (BSD4_4)/*or have VSNPRINTF?*/
+    int len = vsnprintf(M_NULLPTR, 0, fmt, copyarg);
+    #elif defined (_WIN32)
+    int len = _vscprintf(fmt, copyarg);
+    #else
+    int len = -1;//error, cannot get count
+    #endif
+    va_end(copyarg);
+
+    if (len < 0)
+    {
+        *strp = M_NULLPTR;
+        return -1;
+    }
+
+    *strp = C_CAST(char *, malloc(int_to_sizet(len) + 1));
+    if (*strp == M_NULLPTR)
+    {
+        return -1;
+    }
+
+    #if defined (USING_C99) || defined (BSD4_4)/*or have VSNPRINTF?*/
+    vsnprintf(*strp, int_to_sizet(len) + 1, fmt, arg);
+    #else /*don't have vsnprintf, but we allocated a buffer big enough for this and a NULL terminator, so vsprintf will be safe*/
+    vsprintf(*strp, fmt, arg);
+    #endif
+
+    return len;
+}
+
+#endif //asprintf, vasprintf
+
 void print_Return_Enum(const char* funcName, eReturnValues ret)
 {
     if (M_NULLPTR == funcName)
@@ -2299,7 +2355,6 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
 {
     uint32_t printIter = 0, offset = 0;
     uint32_t offsetWidth = 2;//used to figure out how wide we need to pad with 0's for consistent output, 2 is the minimum width
-    printf("data buffer length = %" PRIu32 "\n", bufferLen);
     if (showOffset)
     {
         if (bufferLen <= UINT8_MAX)
