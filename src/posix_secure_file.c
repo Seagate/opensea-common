@@ -379,13 +379,22 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         }
 
 #if !defined (UEFI_C_SOURCE)
+#if defined (_DEBUG)
+        printf("Checking UIDs\n");
+#endif
         if ((buf.st_uid != my_uid) && (buf.st_uid != ROOT_UID_VAL))
         {
             /* Before we assume insecure, check if this was executed as sudo by the user as this directory may be the user's directory and ok to access */
             /* Only do this if the euid read above is set to zero */
             if (my_uid == ROOT_UID_VAL)
             {
+#if defined (_DEBUG)
+                printf("root UID detected, getting user's ID\n");
+#endif
                 uid_t sudouid = get_sudo_uid();
+#if defined (_DEBUG)
+                printf("UID detected: %u\n", sudouid);
+#endif
                 if (sudouid != ROOT_UID_VAL && buf.st_uid != sudouid)
                 {
                     /* Directory is owned by someone besides user or root */
