@@ -284,19 +284,14 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
     if (destination && source && destinationSizeBytes > 0)
     {
 #if defined (POSIX_2001) || defined (_MSC_VER) || defined (__MINGW32__) || defined (USING_C23) || defined (BSD4_4)
-        char* dup = strdup(destination);
-        if (dup)
+        char* p = C_CAST(char*, destination + safe_strnlen(destination, destinationSizeBytes));
+        size_t destinationSizeBytesAvailable = destinationSizeBytes - (C_CAST(uintptr_t, p) - C_CAST(uintptr_t, destination));
+        if (M_NULLPTR == memccpy(p, source, '\0', destinationSizeBytesAvailable))
         {
-            char* p = C_CAST(char*, memccpy(destination, dup, '\0', destinationSizeBytes));
-            size_t destinationSizeBytesAvailable = destinationSizeBytes - (C_CAST(uintptr_t, p) - C_CAST(uintptr_t, destination) - int_to_sizet(1));
-            if (M_NULLPTR == memccpy(p - 1, source, '\0', destinationSizeBytesAvailable))
-            {
-                //add null terminator to the destination, overwriting last byte written to stay in bounds -TJE
-                destination[destinationSizeBytes - int_to_sizet(1)] = '\0';
-            }
-            safe_Free(C_CAST(void**, &dup));
-            return destination;
+            //add null terminator to the destination, overwriting last byte written to stay in bounds -TJE
+            destination[destinationSizeBytes - int_to_sizet(1)] = '\0';
         }
+        return destination;
 #elif (defined (__FreeBSD__) && __FreeBSD__ >= 4) || (defined (__OpenBSD__) && defined(OpenBSD2_4)) || (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 1040000300L)
         //use strlcat
         //FreeBSD 3.3 and later
@@ -304,6 +299,15 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
         //netbsd  1.4.3
         strlcat(destination, source, destinationSizeBytes);
         return destination;
+#elif defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
+        if (0 == strcat_s(destination, destinationSizeBytes, source))
+        {
+            return destination;
+        }
+        else
+        {
+            return M_NULLPTR;
+        }
 #else //memccpy, strlcat/strcpy not available
         size_t duplen = safe_strlen(destination);
         char* dup = C_CAST(char*, safe_calloc(duplen + 1, sizeof(char)));
@@ -330,39 +334,37 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
     if (destination && source && destinationSizeBytes > 0 && sourceLength > 0)
     {
 #if defined (POSIX_2001) || defined (_MSC_VER) || defined (__MINGW32__) || defined (USING_C23)
-        char* dup = strdup(destination);
-        if (dup)
+        char* p = C_CAST(char*, destination + safe_strnlen(destination, destinationSizeBytes));
+        size_t destinationSizeBytesAvailable = destinationSizeBytes - (C_CAST(uintptr_t, p) - C_CAST(uintptr_t, destination));
+        if (M_NULLPTR == memccpy(p, source, '\0', M_Min(destinationSizeBytesAvailable, int_to_sizet(sourceLength))))
         {
-            char* p = C_CAST(char*, memccpy(destination, dup, '\0', destinationSizeBytes));
-            size_t destinationSizeBytesAvailable = destinationSizeBytes - (C_CAST(uintptr_t, p) - C_CAST(uintptr_t, destination) - int_to_sizet(1));
-            if (M_NULLPTR == memccpy(p - 1, source, '\0', M_Min(destinationSizeBytesAvailable, int_to_sizet(sourceLength))))
+            if (int_to_sizet(sourceLength) >= destinationSizeBytesAvailable)
             {
-                if (int_to_sizet(sourceLength) >= destinationSizeBytesAvailable)
-                {
-                    //add null terminator to the destination, overwriting last byte written to stay in bounds -TJE
-                    destination[destinationSizeBytes - int_to_sizet(1)] = '\0';
-                }
-                else
-                {
-                    //append a null terminator after the last written byte of the string - TJE
-                    destination[destinationSizeBytes - destinationSizeBytesAvailable + int_to_sizet(sourceLength)] = '\0';
-                }
+                //add null terminator to the destination, overwriting last byte written to stay in bounds -TJE
+                destination[destinationSizeBytes - int_to_sizet(1)] = '\0';
             }
-            safe_Free(C_CAST(void**, &dup));
-            return destination;
+            else
+            {
+                //append a null terminator after the last written byte of the string - TJE
+                destination[destinationSizeBytes - destinationSizeBytesAvailable + int_to_sizet(sourceLength)] = '\0';
+            }
         }
+        return destination;
 #elif (defined (__FreeBSD__) && __FreeBSD__ >= 4) || (defined (__OpenBSD__) && defined(OpenBSD2_4)) || (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 1040000300L)
         //use strlcat
         //FreeBSD 3.3 and later
         //openBSD 2.4 and later
         //netbsd  1.4.3
-        char* dup = C_CAST(char*, safe_calloc(sourceLength + 1, sizeof(char)));
-        if (dup)
+        strlcat(destination, source, M_Min(destinationSizeBytesAvailable, int_to_sizet(sourceLength)));
+        return destination;
+#elif defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
+        if (0 == strncat_s(destination, destinationSizeBytes, source, sourceLength))
         {
-            strlcpy(dup, source, sourceLength);
-            strlcat(destination, dup, destinationSizeBytes);
-            safe_Free(C_CAST(void**, &dup));
             return destination;
+        }
+        else
+        {
+            return M_NULLPTR;
         }
 #else //memccpy, strlcat/strcpy not available
         size_t duplen = safe_strlen(destination);
@@ -385,7 +387,7 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
     return M_NULLPTR;
 }
 
-char* common_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, const char* M_RESTRICT delim, char** M_RESTRICT saveptr)
+char* safe_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, const char* M_RESTRICT delim, char** M_RESTRICT saveptr)
 {
 #if defined (HAVE_C11_ANNEX_K)
     return strtok_s(str, strmax, delim, saveptr);
@@ -420,7 +422,7 @@ char* common_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, cons
 #elif defined (__STDC_SECURE_LIB__)
     token = strtok_s(str, delim, saveptr);
 #else
-#error "Missing strtok_r equivalent function for emulation of C11 strtok_s behavior"
+    #error "Missing strtok_r equivalent function for emulation of C11 strtok_s behavior"
 #endif
     if (token)
     {
@@ -489,7 +491,7 @@ char* common_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, cons
 #endif
 }
 
-size_t string_n_length(const char* string, size_t n)
+size_t safe_strnlen(const char* string, size_t n)
 {
 #if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
     return strnlen_s(string, n);
@@ -523,7 +525,7 @@ size_t string_n_length(const char* string, size_t n)
 #if !defined (__STDC_ALLOC_LIB__) && !defined (POSIX_2008) && !defined (USING_C23)
 char* strndup(const char* src, size_t size)
 {
-    size_t length = string_n_length(src, size);
+    size_t length = safe_strnlen(src, size);
     if (length > 0)
     {
         char* dupstr = C_CAST(char*, safe_malloc(length + 1));

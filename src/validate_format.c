@@ -59,7 +59,7 @@ static eValidateFormatResult update_Format_Offset(const char* format, char* offs
 static eValidateFormatResult check_For_Litteral_Precent(const char* format, char** offsetToSpecifier, size_t* formatoffset, size_t formatLength)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
-    if (format && offsetToSpecifier && formatoffset && string_n_length(*offsetToSpecifier, 2) >= 2)
+    if (format && offsetToSpecifier && formatoffset && safe_strnlen(*offsetToSpecifier, 2) >= 2)
     {
         if (strncmp(*offsetToSpecifier, "%%", 2) == 0)
         {
@@ -699,7 +699,7 @@ int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formata
             args = formatargs;
         #endif
             formatoffset = C_CAST(uintptr_t, offsetToSpecifier) - C_CAST(uintptr_t, format);
-            formatLength = string_n_length(format, C_STR_LITERAL_LIMIT);
+            formatLength = safe_strnlen(format, C_STR_LITERAL_LIMIT);
             //check at least the strings to make sure they are non-M_NULLPTR.
             //checking for other encoding errors may be more difficult to detect in here -TJE
             bool exitloop = false;

@@ -18,7 +18,8 @@
 
 #include "env_detect.h"
 #include "code_attributes.h"
-
+#include "common_types.h"
+#include "type_conversion.h"
 
 #if defined (__cplusplus)
 extern "C"
@@ -77,12 +78,30 @@ extern "C"
     int safe_tolower(int c);
     int safe_toupper(int c);
 
-    size_t string_n_length(const char* string, size_t n);
+    size_t safe_strnlen(const char* string, size_t n);
 
-    //if str is a null pointer, returns 0. Internally calls string_n_length with size set to SIZE_MAX
-    M_INLINE size_t safe_strlen(const char* string)
+    //if str is a null pointer, returns 0. Internally calls safe_strnlen with size set to RSIZE_MAX
+    //If __builtin_object_size can determine the amount of memory allocated for the string, the limit is set to this limit, otherwise RSIZE_MAX
+    M_FORCEINLINE size_t safe_strlen(const char* string)
     {
-        return string_n_length(string, SIZE_MAX);
+        #if defined (__GNUC__) && (__GNUC__ > 4 || (defined (__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 1))
+            //since this is being forced inline, using __builtin_object_size should allow the compiler to detect the
+            //amount of memory space allocated for the string to limit how far to check for a length.
+            //__builtin_object_size was added to GCC 4.1.0
+            return safe_strnlen(string, __builtin_object_size(string, 0) != SIZE_MAX ? __builtin_object_size(string, 0) : RSIZE_MAX);
+        #elif defined __has_builtin
+            //If the compiler does not defined __GNUC__ to 4.1.0 or higher, we can check if it has the built-in function with this macro
+            //instead. This was added to GCC 10, but other GCC compatible compilers may use this if not defining a compatible GCC version
+            #if __has_builtin(__builtin_object_size)
+                return safe_strnlen(string, __builtin_object_size(string, 0) != SIZE_MAX ? __builtin_object_size(string, 0) : RSIZE_MAX);
+            #else
+                return safe_strnlen(string, RSIZE_MAX);
+            #endif
+        #else 
+            //NOTE: MSVC has _msize, but it only works on malloc'd memory, not constant strings which may be sent to this function as well!
+            //no built-in way to limit length based on memory size so limit to RSIZE_MAX
+            return safe_strnlen(string, RSIZE_MAX);
+        #endif
     }
 
     //-----------------------------------------------------------------------------
@@ -122,7 +141,7 @@ extern "C"
 
     //-----------------------------------------------------------------------------
     //
-    //  char *common_String_Token(char *str, const char *delim, char **saveptr)
+    //  char *safe_String_Token(char *str, const char *delim, char **saveptr)
     //
     //! \brief   Description:  To be used in place of strtok. This tries to wrap thread safe versions of strtok when possible.
     //!                        If a thread safe version is not available, then it uses the strtok() function
@@ -139,7 +158,9 @@ extern "C"
     //!   \return pointer to destination
     //
     //-----------------------------------------------------------------------------
-    char* common_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, const char* M_RESTRICT delim, char** M_RESTRICT saveptr);
+    char* safe_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, const char* M_RESTRICT delim, char** M_RESTRICT saveptr);
+
+    #define common_String_Token(str, strmax, delim, saveptr) safe_String_Token(str, strmax, delim, saveptr)
 
 #if !defined (__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined (USING_C23)
     //define strndup
