@@ -65,7 +65,8 @@ extern "C"
     #elif defined (_MSC_VER) //version check? It's not clear when this was first supported
         #define M_FORCEINLINE __forceinline
     #else
-        #define M_FORCEINLINE /*no support for forcing inline*/
+        /*Support for forcing inline is not present, however lets try the "normal" inline option to suggest it at least*/
+        #define M_FORCEINLINE M_INLINE
     #endif
 
     //Defining the M_FALLTHROUGH macro to make it easy to correctly specify when to fallthrough on switch-case statements without extra warnings.
