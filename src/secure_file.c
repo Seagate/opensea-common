@@ -71,19 +71,22 @@ void free_File_Attributes(fileAttributes** attributes)
 
 void free_Secure_File_Info(secureFileInfo** fileInfo)
 {
-    if (fileInfo)
+    if (fileInfo != M_NULLPTR)
     {
-        if ((*fileInfo)->attributes)
+        if (*fileInfo != M_NULLPTR)
         {
-            free_File_Attributes(&(*fileInfo)->attributes);
-            (*fileInfo)->attributes = M_NULLPTR;
+            if ((*fileInfo)->attributes != M_NULLPTR)
+            {
+                free_File_Attributes(&(*fileInfo)->attributes);
+                (*fileInfo)->attributes = M_NULLPTR;
+            }
+            if ((*fileInfo)->uniqueID != M_NULLPTR)
+            {
+                explicit_zeroes((*fileInfo)->uniqueID, sizeof(fileUniqueIDInfo));
+                safe_Free(C_CAST(void**, &(*fileInfo)->uniqueID));
+            }
+            explicit_zeroes(*fileInfo, sizeof(secureFileInfo));
         }
-        if ((*fileInfo)->uniqueID)
-        {
-            explicit_zeroes((*fileInfo)->uniqueID, sizeof(fileUniqueIDInfo));
-            safe_Free(C_CAST(void**, &(*fileInfo)->uniqueID));
-        }
-        explicit_zeroes(*fileInfo, sizeof(secureFileInfo));
         safe_Free(C_CAST(void**, fileInfo));
     }
 }
@@ -383,7 +386,9 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
         {
             pathOnly = M_CONST_CAST(char*, fileInfo->fullpath);
         }
-        printf("Checking directory security\n");
+#if defined (_DEBUG)
+        printf("Checking directory security: %s\n", pathOnly);
+#endif
         //Check for secure directory - This code must traverse the full path and validate permissions of the directories.
         if (os_Is_Directory_Secure(pathOnly))
         {
@@ -475,7 +480,9 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 fileInfo->fileSize = int64_to_sizet(fileInfo->attributes->filesize);
 #endif
                 fileInfo->fileno = fileno(fileInfo->file);
+#if defined (_DEBUG)
                 printf("Filesize set to %zu\n", fileInfo->fileSize);
+#endif
             }
             else
             {
