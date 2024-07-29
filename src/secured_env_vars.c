@@ -173,7 +173,8 @@ M_NODISCARD eEnvVarResult get_Environment_Variable(const char* environmentVariab
             *envVar = C_CAST(char*, safe_calloc(size, sizeof(char)));
             if (*envVar != M_NULLPTR)
             {
-                if (getenv_s(M_NULLPTR, *envVar, size, environmentVariableName) != 0)
+                size_t test = 0;//this is needed to make Windows happy.-TJE
+                if (getenv_s(&test, *envVar, size, environmentVariableName) != 0)
                 {
                     //error, so free this before moving on
                     safe_Free(C_CAST(void**, envVar));
