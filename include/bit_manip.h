@@ -27,14 +27,14 @@ extern "C"
 #endif
 
     //get a specific double word
-    M_INLINE uint32_t get_DWord0(uint64_t value)
+    static M_INLINE uint32_t get_DWord0(uint64_t value)
     {
         return M_STATIC_CAST(uint32_t, value & UINT64_C(0x00000000FFFFFFFF));
     }
 
     #define M_DoubleWord0(l) get_DWord0(l)
 
-    M_INLINE uint32_t get_DWord1(uint64_t value)
+    static M_INLINE uint32_t get_DWord1(uint64_t value)
     {
         return M_STATIC_CAST(uint32_t, (value & UINT64_C(0xFFFFFFFF00000000)) >> 32);
     }
@@ -99,21 +99,21 @@ extern "C"
     #define M_Nibble14(l) M_STATIC_CAST(uint8_t, ( ( M_STATIC_CAST(uint64_t,l) & UINT64_C(0x0F00000000000000) ) >> 56 ) )
     #define M_Nibble15(l) M_STATIC_CAST(uint8_t, ( ( M_STATIC_CAST(uint64_t,l) & UINT64_C(0xF000000000000000) ) >> 60 ) )
 
-    M_INLINE uint8_t nibbles_To_Byte(uint8_t upperNibble, uint8_t lowerNibble)
+    static M_INLINE uint8_t nibbles_To_Byte(uint8_t upperNibble, uint8_t lowerNibble)
     {
         return (((upperNibble) & 0x0F) << 4) | (((lowerNibble) & 0x0F) << 0);
     }
 
     #define M_NibblesTo1ByteValue(n1, n0) nibbles_To_Byte(n1, n0)
 
-    M_INLINE uint16_t bytes_To_Uint16(uint8_t msb, uint8_t lsb)
+    static M_INLINE uint16_t bytes_To_Uint16(uint8_t msb, uint8_t lsb)
     {
         return (M_STATIC_CAST(uint16_t, msb) <<  8) | (M_STATIC_CAST(uint16_t, lsb) <<  0);
     }
 
     #define M_BytesTo2ByteValue(b1, b0) bytes_To_Uint16(b1, b0)
 
-    M_INLINE uint32_t bytes_To_Uint32(uint8_t msb, uint8_t byte2, uint8_t byte1, uint8_t lsb)
+    static M_INLINE uint32_t bytes_To_Uint32(uint8_t msb, uint8_t byte2, uint8_t byte1, uint8_t lsb)
     {
         return (M_STATIC_CAST(uint32_t, msb) << 24) | (M_STATIC_CAST(uint32_t, byte2) << 16) | 
                  (M_STATIC_CAST(uint32_t, byte1) <<  8) | (M_STATIC_CAST(uint32_t, lsb) <<  0);
@@ -121,7 +121,7 @@ extern "C"
 
     #define M_BytesTo4ByteValue(b3, b2, b1, b0) bytes_To_Uint32(b3, b2, b1, b0)
 
-    M_INLINE uint64_t bytes_To_Uint64(uint8_t msb, uint8_t byte6, uint8_t byte5, uint8_t byte4, uint8_t byte3, uint8_t byte2, uint8_t byte1, uint8_t lsb)
+    static M_INLINE uint64_t bytes_To_Uint64(uint8_t msb, uint8_t byte6, uint8_t byte5, uint8_t byte4, uint8_t byte3, uint8_t byte2, uint8_t byte1, uint8_t lsb)
     {
         return (M_STATIC_CAST(uint64_t, msb) << 56) | (M_STATIC_CAST(uint64_t, byte6) << 48) |
                 (M_STATIC_CAST(uint64_t, byte5) << 40) | (M_STATIC_CAST(uint64_t, byte4) << 32) |
@@ -131,14 +131,14 @@ extern "C"
 
     #define M_BytesTo8ByteValue(b7, b6, b5, b4, b3, b2, b1, b0) bytes_To_Uint64(b7, b6, b5, b4, b3, b2, b1, b0)
 
-    M_INLINE uint32_t words_To_Uint32(uint16_t msw, uint16_t lsw)
+    static M_INLINE uint32_t words_To_Uint32(uint16_t msw, uint16_t lsw)
     {
         return (M_STATIC_CAST(uint32_t, msw) <<  16) | (M_STATIC_CAST(uint32_t, lsw) <<  0);
     }
 
     #define M_WordsTo4ByteValue(w1, w0) words_To_Uint32(w0, w1)
 
-    M_INLINE uint64_t words_To_Uint64(uint16_t msw, uint16_t word2, uint16_t word1, uint16_t lsw)
+    static M_INLINE uint64_t words_To_Uint64(uint16_t msw, uint16_t word2, uint16_t word1, uint16_t lsw)
     {
         return (M_STATIC_CAST(uint64_t, msw) <<  48) | (M_STATIC_CAST(uint64_t, word2) <<  32) |
                 (M_STATIC_CAST(uint64_t, word1) <<  16) | (M_STATIC_CAST(uint64_t, lsw) <<  0);
@@ -146,7 +146,7 @@ extern "C"
 
     #define M_WordsTo8ByteValue(w3, w2, w1, w0) words_To_Uint64(w3, w2, w1, w0)
 
-    M_INLINE uint64_t dwords_To_Uint64(uint32_t msdw, uint32_t lsdw)
+    static M_INLINE uint64_t dwords_To_Uint64(uint32_t msdw, uint32_t lsdw)
     {
         return (M_STATIC_CAST(uint64_t, msdw) <<  32) | (M_STATIC_CAST(uint64_t, lsdw) <<  0);
     }
