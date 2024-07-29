@@ -54,18 +54,21 @@ eReturnValues replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char* n
 
 void free_File_Attributes(fileAttributes** attributes)
 {
-    if (attributes)
+    if (attributes != M_NULLPTR)
     {
-#if defined (_WIN32)
-        if ((*attributes)->winSecurityDescriptor)
+        if (*attributes != M_NULLPTR)
         {
-            explicit_zeroes((*attributes)->winSecurityDescriptor, (*attributes)->securityDescriptorStringLength);
-            safe_Free(C_CAST(void**, &(*attributes)->winSecurityDescriptor));
-            (*attributes)->securityDescriptorStringLength = 0;
-        }
+#if defined (_WIN32)
+            if ((*attributes)->winSecurityDescriptor)
+            {
+                explicit_zeroes((*attributes)->winSecurityDescriptor, (*attributes)->securityDescriptorStringLength);
+                safe_Free(C_CAST(void**, &(*attributes)->winSecurityDescriptor));
+                (*attributes)->securityDescriptorStringLength = 0;
+            }
 #endif //_WIN32
-        explicit_zeroes(*attributes, sizeof(fileAttributes));
-        safe_Free(C_CAST(void**, attributes));
+            explicit_zeroes(*attributes, sizeof(fileAttributes));
+            safe_Free(C_CAST(void**, attributes));
+        }
     }
 }
 
@@ -122,7 +125,7 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
         if (strchr(internalmode, 'w') && strchr(internalmode, 'x'))
         {
             exclusiveFlag = true;
-#if !defined (USING_C11) || (defined (_MSC_VER) && _MSC_VER < 1800) || !(defined (__GLIBC__) || defined (__GNU_LIBRARY__)) || !(defined (USING_MUSL_LIBC) && USING_MUSL_LIBC > 0)//Glibc supports x. VS2013+ support x
+#if !defined (USING_C11) && !(defined (_MSC_VER) && _MSC_VER < 1800) && !(defined (__GLIBC__) || defined (__GNU_LIBRARY__)) && !(defined (USING_MUSL_LIBC) && USING_MUSL_LIBC > 0)//Glibc supports x. VS2013+ support x
             //For systems that do not support 'x' need to adjust the mode manually so that we do not pass an invalid 'x' flag when it is not supported.
             //      While this can always be done regardless of standard/library, it is better to pass flags onwards when they are supported for additional verification by the library/system - TJE
             duplicatedModeForInternalUse = true;
@@ -135,7 +138,7 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 {
                     size_t lenx = safe_strlen(thex);
                     memmove(thex, thex + 1, lenx - 1);
-                    thex[lenx] = '\0';
+                    thex[lenx - 1] = '\0';
                 }
                 else
                 {
@@ -169,7 +172,7 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 //So also check for \ and figure out which was the last one.
                 //A user can pass a path with both and it can be accepted by Windows, which is why we validate both of these.
                 char* lastwinsep = strrchr(filename, '\\');
-                if (C_CAST(uintptr_t, lastwinsep) > C_CAST(uintptr_t, lastsep))
+                if (lastsep == M_NULLPTR || C_CAST(uintptr_t, lastwinsep) > C_CAST(uintptr_t, lastsep))
                 {
                     //backslash was detected last, so change to this pointer instead for strndup
                     lastsep = lastwinsep;
@@ -222,9 +225,6 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
             fileInfo->error = SEC_FILE_INVALID_PATH;
             return fileInfo;
         }
-
-        //Canonical path will already have the proper system path separator in it. No need to search / in Windows
-        fileInfo->filename = strrchr(fileInfo->fullpath, SYSTEM_PATH_SEPARATOR) + 1;//plus 1 to get past final seperator
 
         bool fileexists = false;
         if (!creatingFile || exclusiveFlag)
@@ -361,6 +361,9 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
             }
         }
         free_File_Attributes(&beforeattrs);
+
+        //Canonical path will already have the proper system path separator in it. No need to search / in Windows
+        fileInfo->filename = strrchr(fileInfo->fullpath, SYSTEM_PATH_SEPARATOR) + 1;//plus 1 to get past final seperator
 
         //Need to verify only the path. Passing the file in with it will cause it to fail since it is not a directory
         char* pathOnly = M_CONST_CAST(char*, fileInfo->fullpath);

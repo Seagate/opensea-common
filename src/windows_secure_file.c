@@ -27,6 +27,7 @@
 #include "memory_safety.h"
 #include "string_utils.h"
 #include "error_translation.h"
+#include "secured_env_vars.h"
 
 #if defined (HAVE_NTIFS)
 #include <ntifs.h>
@@ -416,7 +417,7 @@ static char* win_dirname(char* path)
 }
 
 //https://learn.microsoft.com/en-us/windows/win32/secauthz/well-known-sids
-static bool is_Secure_Well_Known_SID(PSID sid)
+static bool is_Secure_Well_Known_SID(PSID sid, bool allowUsersAndAuthenticatedUsers)
 {
     bool secure = false;
     if (sid && IsValidSid(sid))
@@ -424,12 +425,13 @@ static bool is_Secure_Well_Known_SID(PSID sid)
         if (IsWellKnownSid(sid, WinAccountAdministratorSid)
             || IsWellKnownSid(sid, WinLocalSystemSid)
             || IsWellKnownSid(sid, WinNtAuthoritySid)
-            || IsWellKnownSid(sid, WinLocalSid)
-            || IsWellKnownSid(sid, WinBuiltinAdministratorsSid)
+            || IsWellKnownSid(sid, WinBuiltinAdministratorsSid
+            )
             )
         {
             //Do we need to check any of these other SIDs for admins?
             // POSIX validates user or root. Do any of these others below in the if above as accepted???
+            //WinLocalSid
             //WinBuiltinAdministratorsSid ??
             //WinAccountDomainAdminsSid ??
             //WinAccountCertAdminsSid ??
@@ -443,25 +445,91 @@ static bool is_Secure_Well_Known_SID(PSID sid)
             //WinAccountEnterpriseKeyAdminsSid ??
             secure = true;
         }
+        else if (allowUsersAndAuthenticatedUsers &&
+                    (IsWellKnownSid(sid, WinBuiltinUsersSid)
+                    || IsWellKnownSid(sid, WinAuthenticatedUserSid)
+                    )
+                )
+        {
+            //This is a special case for C: and C:\Users where these accounts/groups also has permission and must be trusted.
+            secure = true;
+        }
     }
     return secure;
 }
 
-static bool is_Folder_Secure(const char* securityDescriptorString)
+static bool get_System_Volume(char *winSysVol, size_t winSysVolLen)
+{
+    //Need to read the system drive's info so we can setup specific permissions allowed for specific directories.-TJE
+    static bool validsystemvol = false;
+    static DECLARE_ZERO_INIT_ARRAY(char, windowsSystemVolume, MAX_PATH);
+    if (validsystemvol && safe_strnlen(windowsSystemVolume, MAX_PATH) > 0)
+    {
+        memset(winSysVol, 0, winSysVolLen);
+        common_String_Concat(winSysVol, winSysVolLen, windowsSystemVolume);
+    }
+    else
+    {
+        if (GetWindowsDirectoryA(windowsSystemVolume, MAX_PATH) == 0)
+        {
+            //This function failed so try reading this environment variable instead
+            char* systemDrive = M_NULLPTR;
+            memset(windowsSystemVolume, 0, MAX_PATH);
+            if (ENV_VAR_SUCCESS != get_Environment_Variable("SystemDrive", &systemDrive))
+            {
+#if defined (_DEBUG)
+                printf("Failed reading the system drive environment variable.\n");
+#endif //_DEBUG
+            }
+            else
+            {
+                common_String_Concat(windowsSystemVolume, MAX_PATH, systemDrive);
+                if (M_NULLPTR == strchr(windowsSystemVolume, '\\'))
+                {
+                    common_String_Concat(windowsSystemVolume, MAX_PATH, "\\");
+                }
+            }
+            safe_Free(C_CAST(void**, &systemDrive));
+        }
+        if (safe_strnlen(windowsSystemVolume, MAX_PATH) > 0)
+        {
+            //modify this info to be just the volume as we need to know this, not C:\Windows.
+            //It MAY already be set to C:\, but it may not.
+            char* slashPointer = strchr(windowsSystemVolume, '\\');
+            if (slashPointer && safe_strnlen(slashPointer + 1, MAX_PATH - (C_CAST(uintptr_t, slashPointer) - C_CAST(uintptr_t, windowsSystemVolume))))
+            {
+                //need to add a null after this backslash so it's set to only the volume in the path.
+                //This root directory is necessary to know to properly validate other permissions.
+                *(slashPointer + 1) = '\0';
+            }
+            validsystemvol = true;
+            memset(winSysVol, 0, winSysVolLen);
+            common_String_Concat(winSysVol, winSysVolLen, windowsSystemVolume);
+        }
+    }
+    return validsystemvol;
+}
+
+static bool is_Folder_Secure(const char* securityDescriptorString, const char* dirptr)
 {
     bool secure = true;
-    if (!securityDescriptorString)
+    if (securityDescriptorString == M_NULLPTR || dirptr == M_NULLPTR)
     {
         return false;
     }
+    DECLARE_ZERO_INIT_ARRAY(char, windowsSystemVolume, MAX_PATH);
     char* mySidStr = get_Current_User_SID();
     PSID mySid = M_NULLPTR;
+    PSID winTI = M_NULLPTR;//To check for Windows trusted installer SID
+    PSID everyoneGroupSID = M_NULLPTR;//for C:\\Users directory
     PSECURITY_DESCRIPTOR secdesc = M_NULLPTR;
     ULONG secdesclen = 0;
     PSID userSid = M_NULLPTR;
     BOOL defaultOwner = FALSE;
     PACL dacl = M_NULLPTR;
     BOOL daclPresent = FALSE, daclDefault = FALSE;
+    bool allowUsersAndAuthenticatedUsers = false;
+    bool allowEveryoneGroup = false;
     do
     {
         if (FALSE == ConvertStringSidToSidA(mySidStr, &mySid))
@@ -500,11 +568,104 @@ static bool is_Folder_Secure(const char* securityDescriptorString)
             secure = false;
             break;
         }
-        if (!EqualSid(mySid, userSid) && is_Secure_Well_Known_SID(userSid))
+        if (!EqualSid(mySid, userSid) && !is_Secure_Well_Known_SID(userSid, false))
         {
-            /* Directory is owned by someone besides user/system/administrator */
-            secure = false;
-            break;
+            if (get_System_Volume(windowsSystemVolume, MAX_PATH))
+            {
+                //Need to check for the system directory
+                if (strstr(dirptr, windowsSystemVolume) == dirptr)
+                {
+                    const char* WindowsTrustedInstallSID = "S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464";
+                    if (FALSE == ConvertStringSidToSidA(WindowsTrustedInstallSID, &winTI))
+                    {
+                        secure = false;
+                        break;
+                    }
+#if defined (_DEBUG)
+                    printf("This path is on the system drive. Set flags for only specific folders to validate permissions correctly\n");
+#endif //_DEBUG
+                    //Set the isWindowsSystemDir to allow specific owners/groups for specific folders to trust them.
+                    //These are specific cases due to how Windows sets permissions for these folders.
+                    //Specifically, the root volume for Windows allows all local users access. This is normally a security issue in this code, however this is how Windows
+                    //sets the permissions itself, so allow it in this case.
+                    //C:\, C:\Users\ allow this permission
+                    //C:\ also allows the NT installer user.
+                    //NOTE: This is not a complete list of all the specific cases for all Windows systems paths at this time.
+                    //      Generally software using this is not accessing these Windows specific folders like C:\Windows\System32, etc so these are not listed here.
+                    if (strcmp(dirptr, windowsSystemVolume) == 0)
+                    {
+                        if (EqualSid(userSid, winTI))
+                        {
+                            //This case the Windows trusted installer is found and can be trusted.
+                            //This should only happen on the system root directory (C:) in Windows
+    #if defined (_DEBUG)
+                            printf("Detected Windows trusted installer as owner of this directory and allowed to trust it.\n");
+    #endif //_DEBUG
+                            allowUsersAndAuthenticatedUsers = true;//S-1-5-11 and S-1-5-32-545
+                        }
+                        else
+                        {
+                            /* Directory is owned by someone besides user/system/administrator */
+                            secure = false;
+#if defined (_DEBUG)
+                            char* sidString = M_NULLPTR;
+                            if (ConvertSidToStringSidA(userSid, &sidString))
+                            {
+                                printf("Untrusted Owner SID: %s\n", sidString);
+                            }
+#endif //_DEBUG
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    /* Directory is owned by someone besides user/system/administrator */
+                    secure = false;
+#if defined (_DEBUG)
+                    char* sidString = M_NULLPTR;
+                    if (ConvertSidToStringSidA(userSid, &sidString))
+                    {
+                        printf("Untrusted Owner SID: %s\n", sidString);
+                    }
+#endif //_DEBUG
+                    break;
+                }
+            }
+            else
+            {
+                /* Directory is owned by someone besides user/system/administrator */
+                secure = false;
+#if defined (_DEBUG)
+                char* sidString = M_NULLPTR;
+                if (ConvertSidToStringSidA(userSid, &sidString))
+                {
+                    printf("Untrusted Owner SID: %s\n", sidString);
+                }
+#endif //_DEBUG
+                break;
+            }
+        }
+        else
+        {
+            //work around specific directories
+            if (get_System_Volume(windowsSystemVolume, MAX_PATH))
+            {
+                //Need to check for the system directory
+                if (strstr(dirptr, windowsSystemVolume) == dirptr)
+                {
+                    //need to construct the paths to allow based on the windows volume path read earlier
+                    //Using MAX_PATH for each of these for simplicity. Can reduce memory by shortening, but this is fine for now on this limited list.
+                    DECLARE_ZERO_INIT_ARRAY(char, usersdir, MAX_PATH);
+                    common_String_Concat(usersdir, MAX_PATH, windowsSystemVolume);
+                    common_String_Concat(usersdir, MAX_PATH, "Users");//no trailing slash as the paths passed in are not completed with a slash
+                    if (strcmp(dirptr, usersdir) == 0)
+                    {
+                        allowUsersAndAuthenticatedUsers = true;//S-1-5-11 and S-1-5-32-545
+                        allowEveryoneGroup = true;//S-1-1-0
+                    }
+                }
+            }
         }
 
         if (FALSE == GetSecurityDescriptorDacl(secdesc, &daclPresent, &dacl, &daclDefault))
@@ -542,15 +703,34 @@ static bool is_Folder_Secure(const char* securityDescriptorString)
                     if (IsValidSid(aceSID))
                     {
                         if (accessMask & (FILE_GENERIC_WRITE | FILE_APPEND_DATA) &&
-                            (!EqualSid(mySid, aceSID) && !is_Secure_Well_Known_SID(aceSID))
+                            (!EqualSid(mySid, aceSID) && !is_Secure_Well_Known_SID(aceSID, allowUsersAndAuthenticatedUsers))
                             )
                         {
-                            secure = false;
-#if defined (_DEBUG)
-                            char* sidString = M_NULLPTR;
-                            if (ConvertSidToStringSidA(aceSID, &sidString))
+                            LPCSTR everyoneGroup = "S-1-1-0";
+                            if (allowEveryoneGroup && everyoneGroupSID == M_NULLPTR)
                             {
-                                printf("Untrusted SID: %s\n", sidString);
+                                ConvertStringSidToSidA(everyoneGroup, &everyoneGroupSID);
+                            }
+
+                            if (!(allowEveryoneGroup && everyoneGroupSID != M_NULLPTR && EqualSid(aceSID, everyoneGroupSID)))
+                            {
+                                secure = false;
+#if defined (_DEBUG)
+                                char* sidString = M_NULLPTR;
+                                if (ConvertSidToStringSidA(aceSID, &sidString))
+                                {
+                                    printf("Untrusted SID: %s\n", sidString);
+                                }
+#endif //_DEBUG
+                            }
+#if defined (_DEBUG)
+                            else
+                            {
+                                char* sidString = M_NULLPTR;
+                                if (ConvertSidToStringSidA(aceSID, &sidString))
+                                {
+                                    printf("Trusted SID: %s\n", sidString);
+                                }
                             }
 #endif //_DEBUG
                         }
@@ -582,13 +762,25 @@ static bool is_Folder_Secure(const char* securityDescriptorString)
 
     SecureZeroMemory(mySidStr, safe_strlen(mySidStr));
     safe_Free(C_CAST(void**, &mySidStr));
-    if (mySid)
+    if (mySid != M_NULLPTR)
     {
         SecureZeroMemory(mySid, GetLengthSid(mySid));
         LocalFree(mySid);
         mySid = M_NULLPTR;
     }
-    if (secdesc)
+    if (winTI != M_NULLPTR)
+    {
+        SecureZeroMemory(winTI, GetLengthSid(winTI));
+        LocalFree(winTI);
+        winTI = M_NULLPTR;
+    }
+    if (everyoneGroupSID != M_NULLPTR)
+    {
+        SecureZeroMemory(everyoneGroupSID, GetLengthSid(everyoneGroupSID));
+        LocalFree(everyoneGroupSID);
+        everyoneGroupSID = M_NULLPTR;
+    }
+    if (secdesc != M_NULLPTR)
     {
         SecureZeroMemory(secdesc, secdesclen);
         LocalFree(secdesc);
@@ -707,7 +899,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
      * Traverse from the root to the fullpath,
      * checking permissions along the way.
      */
-    for (i = 0; i < num_of_dirs; i++)
+    for (i = 0; i < num_of_dirs && secure; i++)
     {
         fileAttributes* attrs = M_NULLPTR;
         char* dirptr = dirs[i];
@@ -728,6 +920,10 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 dirptr = dirs[i];
             }
         }
+#if defined (_DEBUG)
+        printf("dirptr = %s\n", dirptr);
+#endif //_DEBUG
+
         attrs = os_Get_File_Attributes_By_Name(dirptr);
         if (!attrs)
         {
@@ -836,20 +1032,23 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             }
         }
 
-        if (appendedTrailingSlash)
-        {
-            safe_Free(C_CAST(void**, &dirptr));
-        }
-
         if (!(attrs->fileFlags & FILE_ATTRIBUTE_DIRECTORY))
         {
             /* Not a directory */
             secure = false;
             free_File_Attributes(&attrs);
+            if (appendedTrailingSlash)
+            {
+                safe_Free(C_CAST(void**, &dirptr));
+            }
             break;
         }
 
-        secure = is_Folder_Secure(attrs->winSecurityDescriptor);
+        secure = is_Folder_Secure(attrs->winSecurityDescriptor, dirptr);
+        if (appendedTrailingSlash)
+        {
+            safe_Free(C_CAST(void**, &dirptr));
+        }
 
         free_File_Attributes(&attrs);
     }
@@ -863,7 +1062,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     return secure;
 }
 
-bool os_Is_Directory_Secure(const char* fullpath)
+M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath)
 {
     //This was implemented as close as possible to https://wiki.sei.cmu.edu/confluence/display/c/FIO15-C.+Ensure+that+file+operations+are+performed+in+a+secure+directory
     unsigned int num_symlinks = 0;
@@ -974,7 +1173,7 @@ eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_
     snprintf(fullPath, OPENSEA_PATH_MAX, "%hs", fullPathOutput);
 #endif
     //Check if this file even exists to make this more like the behavior of the POSIX realpath function.
-    if (!os_File_Exists(fullPath))
+    if (!os_File_Exists(fullPath) && !os_Directory_Exists(fullPath))
     {
         memset(fullPath, 0, OPENSEA_PATH_MAX);
         return FAILURE;
