@@ -28,8 +28,10 @@
     #define HAVE_WIN_BSWAP
 #elif defined (__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)) && !defined (HAVE_BUILTIN_BSWAP)
     #define HAVE_BUILTIN_BSWAP
-#elif defined(__has_builtin) && __has_builtin(__builtin_bswap64) && !defined (HAVE_BUILTIN_BSWAP)
-    #define HAVE_BUILTIN_BSWAP
+#elif !defined (HAVE_BUILTIN_BSWAP) && defined(__has_builtin)
+    #if __has_builtin(__builtin_bswap64)
+        #define HAVE_BUILTIN_BSWAP
+    #endif
 #endif
 
 void nibble_Swap(uint8_t* byteToSwap)
