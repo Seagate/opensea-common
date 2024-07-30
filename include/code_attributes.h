@@ -343,6 +343,18 @@ extern "C"
 
         //_Printf_format_string_impl_ for SAL. Not sure how to use it yet so not defined currently
 
+    #if defined (_WIN32)
+        #define DLL_EXPORT __declspec(dllexport)
+        #define DLL_IMPORT __declspec(dllimport)
+    #elif defined (__GNUC__) && __GNUC__ >= 4
+        //See https://gcc.gnu.org/wiki/Visibility
+        #define DLL_EXPORT __attribute__((visibility("default")))
+        #define DLL_IMPORT /*no gcc equivalent*/
+    #else
+        #define DLL_EXPORT /* no equivalent */
+        #define DLL_IMPORT /* no equivalent */
+    #endif
+
 #if defined (__cplusplus)
 }
 #endif
