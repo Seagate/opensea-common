@@ -285,35 +285,10 @@ endif
 
 deps = []
 
-# Opensea common defines the nvme header globally and opensea-transport, opensea-operations and openseachest itself include this, so only need to declare it here
-if target_machine.system() == 'linux'
-  src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']
-  if c.check_header('linux/nvme_ioctl.h')
-	  global_cpp_args += ['-DSEA_NVME_IOCTL_H']
-  elif c.check_header('linux/nvme.h')
-	  global_cpp_args += ['-DSEA_NVME_H']
-  elif c.check_header('uapi/nvme.h')
-	  global_cpp_args += ['-DSEA_UAPI_NVME_H']
-  else
-	  global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
-  endif
-elif target_machine.system() == 'freebsd'
-  src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']
-  if not c.check_header('dev/nvme/nvme.h')
-	  global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
-  endif
-elif target_machine.system() == 'sunos'
-  src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']
-  global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
-elif target_machine.system() == 'aix'
-  src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']
-  if not c.check_header('sys/nvme.h')
-    global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
-  endif
-elif target_machine.system() == 'windows'
+if target_machine.system() == 'windows'
   src_files += ['src/windows_env_detect.c', 'src/windows_secure_file.c', 'src/windows_version_detect.c']
   if c.get_define('__MINGW32__') != ''
-	  global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH', '-DSTRSAFE_NO_DEPRECATE']
+	  global_cpp_args += ['-DSTRSAFE_NO_DEPRECATE']
 	  win32_version = c.find_library('version')
 	  advapi32 = c.find_library('advapi32')
 	  deps += [win32_version, advapi32]
@@ -322,8 +297,10 @@ elif target_machine.system() == 'windows'
     global_cpp_args += ['-DHAVE_NTIFS']
   endif
   global_cpp_args += ['-D_CRT_NONSTDC_NO_DEPRECATE', '-D_CRT_SECURE_NO_WARNINGS']
-  global_cpp_args += ['-DENABLE_CSMI']
-endif # TODO UEFI and vmware
+else
+  # assuming POSIX if not windows for now.
+  src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']
+endif
 
 m_dep = c.find_library('m', required : false)
 
