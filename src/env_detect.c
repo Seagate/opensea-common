@@ -179,47 +179,47 @@ void print_OS_Version(ptrOSVersionNumber versionNumber)
     switch (versionNumber->osVersioningIdentifier)
     {
     case OS_WINDOWS:
-        printf("%"PRIu16".%"PRIu16".%"PRIu16"", versionNumber->versionType.windowsVersion.majorVersion, versionNumber->versionType.windowsVersion.minorVersion, versionNumber->versionType.windowsVersion.buildNumber);
+        printf("%" PRIu16 ".%" PRIu16 ".%" PRIu16 "", versionNumber->versionType.windowsVersion.majorVersion, versionNumber->versionType.windowsVersion.minorVersion, versionNumber->versionType.windowsVersion.buildNumber);
         break;
     case OS_LINUX:
-        printf("%"PRIu16".%"PRIu16".%"PRIu16"-%"PRIu16"", versionNumber->versionType.linuxVersion.kernelVersion, versionNumber->versionType.linuxVersion.majorVersion, versionNumber->versionType.linuxVersion.minorVersion, versionNumber->versionType.linuxVersion.securityAndBugFixesNumber);
+        printf("%" PRIu16 ".%" PRIu16 ".%" PRIu16 "-%" PRIu16 "", versionNumber->versionType.linuxVersion.kernelVersion, versionNumber->versionType.linuxVersion.majorVersion, versionNumber->versionType.linuxVersion.minorVersion, versionNumber->versionType.linuxVersion.securityAndBugFixesNumber);
         break;
     case OS_FREEBSD:
-        printf("%"PRIu16".%"PRIu16"", versionNumber->versionType.freeBSDVersion.majorVersion, versionNumber->versionType.freeBSDVersion.minorVersion);
+        printf("%" PRIu16 ".%" PRIu16 "", versionNumber->versionType.freeBSDVersion.majorVersion, versionNumber->versionType.freeBSDVersion.minorVersion);
         break;
     case OS_SOLARIS:
-        printf("%"PRIu16".%"PRIu16".%"PRIu16"", versionNumber->versionType.solarisVersion.sunOSMajorVersion, versionNumber->versionType.solarisVersion.sunOSMinorVersion, versionNumber->versionType.solarisVersion.sunOSRevision);
+        printf("%" PRIu16 ".%" PRIu16 ".%" PRIu16 "", versionNumber->versionType.solarisVersion.sunOSMajorVersion, versionNumber->versionType.solarisVersion.sunOSMinorVersion, versionNumber->versionType.solarisVersion.sunOSRevision);
         if (versionNumber->versionType.solarisVersion.solarisMajorVersion > 0)
         {
-            printf("-%"PRIu16".%"PRIu16".%"PRIu16"", versionNumber->versionType.solarisVersion.solarisMajorVersion, versionNumber->versionType.solarisVersion.solarisMinorVersion, versionNumber->versionType.solarisVersion.solarisRevision);
+            printf("-%" PRIu16 ".%" PRIu16 ".%" PRIu16 "", versionNumber->versionType.solarisVersion.solarisMajorVersion, versionNumber->versionType.solarisVersion.solarisMinorVersion, versionNumber->versionType.solarisVersion.solarisRevision);
         }
         break;
     case OS_MACOSX:
-        printf("%"PRIu16".%"PRIu16".%"PRIu16"", versionNumber->versionType.macOSVersion.majorVersion, versionNumber->versionType.macOSVersion.minorVersion, versionNumber->versionType.macOSVersion.revision);
+        printf("%" PRIu16 ".%" PRIu16 ".%" PRIu16 "", versionNumber->versionType.macOSVersion.majorVersion, versionNumber->versionType.macOSVersion.minorVersion, versionNumber->versionType.macOSVersion.revision);
         break;
     case OS_AIX:
-        printf("%"PRIu16".%"PRIu16"", versionNumber->versionType.aixVersion.majorVersion, versionNumber->versionType.aixVersion.minorVersion);
+        printf("%" PRIu16 ".%" PRIu16 "", versionNumber->versionType.aixVersion.majorVersion, versionNumber->versionType.aixVersion.minorVersion);
         break;
     case OS_OPENBSD:
-        printf("%"PRIu16".%"PRIu16"", versionNumber->versionType.openBSDVersion.majorVersion, versionNumber->versionType.openBSDVersion.minorVersion);
+        printf("%" PRIu16 ".%" PRIu16 "", versionNumber->versionType.openBSDVersion.majorVersion, versionNumber->versionType.openBSDVersion.minorVersion);
         break;
     case OS_NETBSD:
-        printf("%"PRIu16".%"PRIu16".%"PRIu16"", versionNumber->versionType.netBSDVersion.majorVersion, versionNumber->versionType.netBSDVersion.minorVersion, versionNumber->versionType.netBSDVersion.revision);
+        printf("%" PRIu16 ".%" PRIu16 ".%" PRIu16 "", versionNumber->versionType.netBSDVersion.majorVersion, versionNumber->versionType.netBSDVersion.minorVersion, versionNumber->versionType.netBSDVersion.revision);
         break;
     case OS_DRAGONFLYBSD:
-        printf("%"PRIu16".%"PRIu16"", versionNumber->versionType.dragonflyVersion.majorVersion, versionNumber->versionType.dragonflyVersion.minorVersion);
+        printf("%" PRIu16 ".%" PRIu16 "", versionNumber->versionType.dragonflyVersion.majorVersion, versionNumber->versionType.dragonflyVersion.minorVersion);
         break;
     case OS_HPUX:
-        printf("%"PRIu16".%"PRIu16"", versionNumber->versionType.hpuxVersion.majorVersion, versionNumber->versionType.hpuxVersion.minorVersion);
+        printf("%" PRIu16 ".%" PRIu16 "", versionNumber->versionType.hpuxVersion.majorVersion, versionNumber->versionType.hpuxVersion.minorVersion);
         break;
     case OS_TRU64:
-        printf("%"PRIu16".%"PRIu16"", versionNumber->versionType.tru64Version.majorVersion, versionNumber->versionType.tru64Version.minorVersion);
+        printf("%" PRIu16 ".%" PRIu16 "", versionNumber->versionType.tru64Version.majorVersion, versionNumber->versionType.tru64Version.minorVersion);
         break;
     case OS_ESX:
-        printf("%"PRIu16".%"PRIu16".%"PRIu16"", versionNumber->versionType.esxiVersion.majorVersion, versionNumber->versionType.esxiVersion.minorVersion, versionNumber->versionType.esxiVersion.revision);
+        printf("%" PRIu16 ".%" PRIu16 ".%" PRIu16 "", versionNumber->versionType.esxiVersion.majorVersion, versionNumber->versionType.esxiVersion.minorVersion, versionNumber->versionType.esxiVersion.revision);
         break;
     case OS_UEFI:
-        printf("%"PRIu16".%"PRIu16"", versionNumber->versionType.uefiVersion.majorVersion, versionNumber->versionType.uefiVersion.minorVersion);
+        printf("%" PRIu16 ".%" PRIu16 "", versionNumber->versionType.uefiVersion.majorVersion, versionNumber->versionType.uefiVersion.minorVersion);
         break;
     case OS_UNKNOWN:
     default:
@@ -490,5 +490,5 @@ void print_Compiler(eCompiler compilerUsed)
 
 void print_Compiler_Version_Info(ptrCompilerVersion compilerVersionInfo)
 {
-    printf("%"PRIu16".%"PRIu16".%"PRIu16"", compilerVersionInfo->major, compilerVersionInfo->minor, compilerVersionInfo->patch);
+    printf("%" PRIu16 ".%" PRIu16 ".%" PRIu16 "", compilerVersionInfo->major, compilerVersionInfo->minor, compilerVersionInfo->patch);
 }

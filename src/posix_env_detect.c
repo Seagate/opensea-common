@@ -500,7 +500,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
             {
                 if (ret != FAILURE)
                 {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "FreeBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.freeBSDVersion.majorVersion, versionNumber->versionType.freeBSDVersion.minorVersion);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "FreeBSD %" PRIu16 ".%" PRIu16 "", versionNumber->versionType.freeBSDVersion.majorVersion, versionNumber->versionType.freeBSDVersion.minorVersion);
                 }
                 else
                 {
@@ -606,7 +606,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
             versionNumber->versionType.aixVersion.minorVersion = C_CAST(uint16_t, strtoul(unixUname.release, M_NULLPTR, 10));
             if (operatingSystemName)
             {
-                snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "AIX %"PRIu16".%"PRIu16"", versionNumber->versionType.aixVersion.majorVersion, versionNumber->versionType.aixVersion.minorVersion);
+                snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "AIX %" PRIu16 ".%" PRIu16 "", versionNumber->versionType.aixVersion.majorVersion, versionNumber->versionType.aixVersion.minorVersion);
             }
         }
         else if (strcmp("DRAGONFLY", unixUname.sysname) == 0)
@@ -619,7 +619,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
                 versionNumber->versionType.dragonflyVersion.minorVersion = list[1];
                 if (operatingSystemName)
                 {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Dragonfly BSD %"PRIu16".%"PRIu16"", versionNumber->versionType.dragonflyVersion.majorVersion, versionNumber->versionType.dragonflyVersion.minorVersion);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "Dragonfly BSD %" PRIu16 ".%" PRIu16 "", versionNumber->versionType.dragonflyVersion.majorVersion, versionNumber->versionType.dragonflyVersion.minorVersion);
                 }
             }
             else
@@ -638,7 +638,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
             versionNumber->versionType.openBSDVersion.minorVersion = C_CAST(uint16_t, strtoul(unixUname.release, M_NULLPTR, 10));
             if (operatingSystemName)
             {
-                snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "OpenBSD %"PRIu16".%"PRIu16"", versionNumber->versionType.openBSDVersion.majorVersion, versionNumber->versionType.openBSDVersion.minorVersion);
+                snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "OpenBSD %" PRIu16 ".%" PRIu16 "", versionNumber->versionType.openBSDVersion.majorVersion, versionNumber->versionType.openBSDVersion.minorVersion);
             }
         }
         else if (strcmp("NETBSD", unixUname.sysname) == 0)
@@ -696,7 +696,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
                 versionNumber->versionType.hpuxVersion.minorVersion = list[1];
                 if (operatingSystemName)
                 {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "HP-UX %"PRIu16".%"PRIu16"", versionNumber->versionType.hpuxVersion.majorVersion, versionNumber->versionType.hpuxVersion.minorVersion);
+                    snprintf(&operatingSystemName[0], OS_NAME_SIZE,  "HP-UX %" PRIu16 ".%" PRIu16 "", versionNumber->versionType.hpuxVersion.majorVersion, versionNumber->versionType.hpuxVersion.minorVersion);
                 }
             }
             else
