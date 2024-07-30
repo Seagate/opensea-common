@@ -153,7 +153,8 @@ static bool win_Get_File_Security_Info_By_Name(const char* const filename, fileA
         //Do not need SACL since it may not be available and is about triggering audits instead of a dacl which defines who has access to a file.
         SECURITY_INFORMATION secInfo = OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION;
         PSECURITY_DESCRIPTOR secDescriptor = M_NULLPTR;
-        PSID owner = M_NULLPTR, group = M_NULLPTR;
+        PSID owner = M_NULLPTR;
+        PSID group = M_NULLPTR;
         PACL dacl = M_NULLPTR;
         if (ERROR_SUCCESS == GetNamedSecurityInfo(localPathToCheck, SE_FILE_OBJECT, secInfo, &owner, &group, &dacl, M_NULLPTR, &secDescriptor))
         {
@@ -189,7 +190,8 @@ static bool win_Get_File_Security_Info_By_File(FILE* file, fileAttributes* attrs
         //Do not need SACL since it may not be available and is about triggering audits instead of a dacl which defines who has access to a file.
         SECURITY_INFORMATION secInfo = OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION;
         PSECURITY_DESCRIPTOR secDescriptor = M_NULLPTR;
-        PSID owner = M_NULLPTR, group = M_NULLPTR;
+        PSID owner = M_NULLPTR;
+        PSID group = M_NULLPTR;
         PACL dacl = M_NULLPTR;
         HANDLE msftHandle = INVALID_HANDLE_VALUE;
         int fd = _fileno(file);
@@ -527,7 +529,8 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
     PSID userSid = M_NULLPTR;
     BOOL defaultOwner = FALSE;
     PACL dacl = M_NULLPTR;
-    BOOL daclPresent = FALSE, daclDefault = FALSE;
+    BOOL daclPresent = FALSE;
+    BOOL daclDefault = FALSE;
     bool allowUsersAndAuthenticatedUsers = false;
     bool allowEveryoneGroup = false;
     do
@@ -1232,19 +1235,32 @@ bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char
     //convert these back to the raw structures, then compare them.
     if (sidsAndDACLstr1 && sidsAndDACLstr2)
     {
-        PSECURITY_DESCRIPTOR secDesc1 = M_NULLPTR, secDesc2 = M_NULLPTR;
-        ULONG secDesc1len = 0, secDesc2len = 0;
-        PSID owner1 = M_NULLPTR, owner2 = M_NULLPTR;
-        PSID group1 = M_NULLPTR, group2 = M_NULLPTR;
-        PACL dacl1 = M_NULLPTR, dacl2 = M_NULLPTR;
-        BOOL validdesc1 = FALSE, validdesc2 = FALSE;
-        BOOL validown1 = FALSE, validown2 = FALSE;
-        BOOL validgroup1 = FALSE, validgroup2 = FALSE;
-        BOOL validdacl1 = FALSE, validdacl2 = FALSE;
-        BOOL defaultown1 = FALSE, defaultown2 = FALSE;
-        BOOL defaultgroup1 = FALSE, defaultgroup2 = FALSE;
-        BOOL defaultdacl1 = FALSE, defaultdacl2 = FALSE;
-        BOOL dacl1present = FALSE, dacl2present = FALSE;
+        PSECURITY_DESCRIPTOR secDesc1 = M_NULLPTR;
+        PSECURITY_DESCRIPTOR secDesc2 = M_NULLPTR;
+        ULONG secDesc1len = 0;
+        ULONG secDesc2len = 0;
+        PSID owner1 = M_NULLPTR;
+        PSID owner2 = M_NULLPTR;
+        PSID group1 = M_NULLPTR;
+        PSID group2 = M_NULLPTR;
+        PACL dacl1 = M_NULLPTR;
+        PACL dacl2 = M_NULLPTR;
+        BOOL validdesc1 = FALSE;
+        BOOL validdesc2 = FALSE;
+        BOOL validown1 = FALSE;
+        BOOL validown2 = FALSE;
+        BOOL validgroup1 = FALSE;
+        BOOL validgroup2 = FALSE;
+        BOOL validdacl1 = FALSE;
+        BOOL validdacl2 = FALSE;
+        BOOL defaultown1 = FALSE;
+        BOOL defaultown2 = FALSE;
+        BOOL defaultgroup1 = FALSE;
+        BOOL defaultgroup2 = FALSE;
+        BOOL defaultdacl1 = FALSE;
+        BOOL defaultdacl2 = FALSE;
+        BOOL dacl1present = FALSE;
+        BOOL dacl2present = FALSE;
         if (TRUE == ConvertStringSecurityDescriptorToSecurityDescriptorA(sidsAndDACLstr1, SDDL_REVISION, &secDesc1, &secDesc1len))
         {
             validdesc1 = IsValidSecurityDescriptor(secDesc1);

@@ -34,7 +34,8 @@
 eReturnValues replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char* newFileName)
 {
     char* ptr = M_NULLPTR;
-    size_t ptrLen = 0, fullLength = 0;
+    size_t ptrLen = 0;
+    size_t fullLength = 0;
     if (M_NULLPTR != (ptr = strrchr(fullPath, SYSTEM_PATH_SEPARATOR)))
     {
         ptr += 1;

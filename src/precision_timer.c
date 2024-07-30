@@ -60,7 +60,8 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
 {
     LARGE_INTEGER frequency;//clock ticks per second
     uint64_t ticksPerNanosecond = UINT64_C(1000000000);//start with a count of nanoseconds per second
-    uint64_t seconds = 0, nanoSeconds = 0;
+    uint64_t seconds = 0;
+    uint64_t nanoSeconds = 0;
     memset(&frequency, 0, sizeof(LARGE_INTEGER));
     if (TRUE == QueryPerformanceFrequency(&frequency))
     {
