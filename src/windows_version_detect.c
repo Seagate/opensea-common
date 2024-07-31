@@ -80,7 +80,8 @@ eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
                 RtlGetVersionPtr rtlgetverptr = C_CAST(RtlGetVersionPtr, GetProcAddress(hMod, "RtlGetVersion"));
                 if (rtlgetverptr != M_NULLPTR)
                 {
-                    OSVERSIONINFOEXW osInfo = { 0 };
+                    OSVERSIONINFOEXW osInfo;
+                    memset(&osInfo, 0, sizeof(OSVERSIONINFOEXW));
                     osInfo.dwOSVersionInfoSize = sizeof(osInfo);
                     if (0 == rtlgetverptr(&osInfo))
                     {
