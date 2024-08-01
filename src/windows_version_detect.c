@@ -77,13 +77,13 @@ eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
         {
             if (hMod != INVALID_HANDLE_VALUE)
             {
-                RtlGetVersionPtr rtlgetverptr = C_CAST(RtlGetVersionPtr, GetProcAddress(hMod, "RtlGetVersion"));
+                RtlGetVersionPtr rtlgetverptr = C_CAST(RtlGetVersionPtr, C_CAST(void*, GetProcAddress(hMod, "RtlGetVersion")));
                 if (rtlgetverptr != M_NULLPTR)
                 {
                     OSVERSIONINFOEXW osInfo;
                     memset(&osInfo, 0, sizeof(OSVERSIONINFOEXW));
                     osInfo.dwOSVersionInfoSize = sizeof(osInfo);
-                    if (0 == rtlgetverptr(&osInfo))
+                    if (rtlgetverptr(&osInfo) >= 0)//not using NT_SUCCESS from ntdef.h because it causes lots or redefinition errors, but this is all that macro does
                     {
                         versionNumber->versionType.windowsVersion.majorVersion = osInfo.dwMajorVersion;
                         versionNumber->versionType.windowsVersion.minorVersion = osInfo.dwMinorVersion;

@@ -1171,9 +1171,17 @@ eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_
         return FAILURE;
     }
 #if defined (UNICODE)
-    snprintf(fullPath, OPENSEA_PATH_MAX, "%ws", fullPathOutput);
+    //NOTE: Microsoft accepts either ls (standard) or ws (microsoft specific).
+    //      If this causes any warnings in MSVC, add an ifdef to use ws for that compiler.-TJE
+    //      Microsoft also has a S extension for strings to specify single char with wprintf and wide char for printf that may also be used as needed-TJE
+    snprintf(fullPath, OPENSEA_PATH_MAX, "%ls", fullPathOutput);
 #else
+#if defined (_MSC_VER)
+    //Microsoft uses hs but this is not standard and using %s is the standard
     snprintf(fullPath, OPENSEA_PATH_MAX, "%hs", fullPathOutput);
+#else
+    snprintf(fullPath, OPENSEA_PATH_MAX, "%s", fullPathOutput);
+#endif
 #endif
     //Check if this file even exists to make this more like the behavior of the POSIX realpath function.
     if (!os_File_Exists(fullPath) && !os_Directory_Exists(fullPath))
