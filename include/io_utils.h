@@ -127,7 +127,7 @@ extern "C"
     
     M_NODISCARD FUNC_ATTR_PRINTF(2, 3) int asprintf(char **M_RESTRICT strp, const char *M_RESTRICT fmt, ...);
 
-    M_NODISCARD int vasprintf(char **M_RESTRICT strp, const char *M_RESTRICT fmt, va_list arg);
+    M_NODISCARD FUNC_ATTR_PRINTF(2, 0) int vasprintf(char **M_RESTRICT strp, const char *M_RESTRICT fmt, va_list arg);
 
 #endif //asprintf, vasprintf
 
