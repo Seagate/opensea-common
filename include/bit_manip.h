@@ -156,9 +156,274 @@ extern "C"
     // MACRO to round the number of x so that it will not round up when formating the float
     #define ROUNDF(f, c) M_STATIC_CAST(float, (M_STATIC_CAST(int, (f) * (c))) / (c))
 
-    #define M_GETBITRANGE(input, msb, lsb) (((input) >> (lsb)) & ~(~UINT64_C(0) << ((msb) - (lsb) + 1)))
+    typedef struct _genericint_t
+    {
+        bool issigned;/*is this from a signed integer or not*/
+        size_t sizeoftype;/*set to sizzeof(var) when using this structure*/
+        union
+        {
+            uint8_t  u8;
+            uint16_t u16;
+            uint32_t u32;
+            uint64_t u64;
+            int8_t  i8;
+            int16_t i16;
+            int32_t i32;
+            int64_t i64;
+        };
+    }genericint_t;
+
+    static M_INLINE bool is_generic_int_valid(genericint_t genint)
+    {
+        bool good = false;
+        switch (genint.sizeoftype)
+        {
+        case sizeof(uint8_t):
+        case sizeof(uint16_t):
+        case sizeof(uint32_t):
+        case sizeof(uint64_t):
+            good = true;
+            break;
+        }
+        return good;
+    }
+
+    genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb);
+
+    static M_INLINE uint8_t get_bit_range_uint8(uint8_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = false;
+        genint.u8 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(uint8_t), msb, lsb);
+        return genint.u8;
+    }
+
+    static M_INLINE uint16_t get_bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = false;
+        genint.u16 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(uint16_t), msb, lsb);
+        return genint.u16;
+    }
+
+    static M_INLINE uint8_t get_8bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = false;
+        genint.u16 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(uint8_t), msb, lsb);
+        return genint.u8;
+    }
+
+    static M_INLINE uint32_t get_bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = false;
+        genint.u32 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(uint32_t), msb, lsb);
+        return genint.u32;
+    }
+
+    static M_INLINE uint8_t get_8bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = false;
+        genint.u32 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(uint8_t), msb, lsb);
+        return genint.u8;
+    }
+
+    static M_INLINE uint16_t get_16bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = false;
+        genint.u32 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(uint16_t), msb, lsb);
+        return genint.u16;
+    }
+
+    static M_INLINE uint64_t get_bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = false;
+        genint.u64 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(uint64_t), msb, lsb);
+        return genint.u64;
+    }
+
+    static M_INLINE uint8_t get_8bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = false;
+        genint.u64 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(uint8_t), msb, lsb);
+        return genint.u8;
+    }
+
+    static M_INLINE uint16_t get_16bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = false;
+        genint.u64 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(uint16_t), msb, lsb);
+        return genint.u16;
+    }
+
+    static M_INLINE uint32_t get_32bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = false;
+        genint.u64 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(uint32_t), msb, lsb);
+        return genint.u32;
+    }
+
+    static M_INLINE int8_t get_bit_range_int8(int8_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = true;
+        genint.i8 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(int8_t), msb, lsb);
+        return genint.i8;
+    }
+
+    static M_INLINE int16_t get_bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = true;
+        genint.i16 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(int16_t), msb, lsb);
+        return genint.i16;
+    }
+
+    static M_INLINE int8_t get_8bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = true;
+        genint.i16 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(int8_t), msb, lsb);
+        return genint.i8;
+    }
+
+    static M_INLINE int32_t get_bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = true;
+        genint.i32 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(int32_t), msb, lsb);
+        return genint.i32;
+    }
+
+    static M_INLINE int8_t get_8bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = true;
+        genint.i32 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(int8_t), msb, lsb);
+        return genint.i8;
+    }
+
+    static M_INLINE int16_t get_16bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = true;
+        genint.i32 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(int16_t), msb, lsb);
+        return genint.i16;
+    }
+
+    static M_INLINE int64_t get_bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = true;
+        genint.i64 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(int64_t), msb, lsb);
+        return genint.i64;
+    }
+
+    static M_INLINE int8_t get_8bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = true;
+        genint.i64 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(int8_t), msb, lsb);
+        return genint.i8;
+    }
+
+    static M_INLINE int16_t get_16bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = true;
+        genint.i64 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(int16_t), msb, lsb);
+        return genint.i16;
+    }
+
+    static M_INLINE int32_t get_32bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
+    {
+        genericint_t genint;
+        memset(&genint, 0, sizeof(genericint_t));
+        genint.issigned = true;
+        genint.i64 = value;
+        genint.sizeoftype = sizeof(value);
+        genint = generic_Get_Bit_Range(genint, sizeof(int32_t), msb, lsb);
+        return genint.i32;
+    }
+
+    //recommend using the inlines above when possible, but this will work as the macro always did in the past -TJE
+    #define M_GETBITRANGE(input, msb, lsb) \
+        (((msb) - (lsb) + 1) <= 8 ? get_8bit_range_uint64(input, msb, lsb) : \
+        (((msb) - (lsb) + 1) <= 16 ? get_16bit_range_uint64(input, msb, lsb) : \
+        (((msb) - (lsb) + 1) <= 32 ? get_32bit_range_uint64(input, msb, lsb) : \
+        (((msb) - (lsb) + 1) <= 64 ? get_bit_range_uint64(input, msb, lsb) : UINTMAX_MAX))))
+
     // get bit range for signed values
-    #define M_IGETBITRANGE(input, msb, lsb) M_STATIC_CAST(int64_t, M_GETBITRANGE(input, msb, lsb))
+    #define M_IGETBITRANGE(input, msb, lsb) \
+        (((msb) - (lsb) + 1) <= 8 ? get_8bit_range_int64(input, msb, lsb) : \
+        (((msb) - (lsb) + 1) <= 16 ? get_16bit_range_int64(input, msb, lsb) : \
+        (((msb) - (lsb) + 1) <= 32 ? get_32bit_range_int64(input, msb, lsb) : \
+        (((msb) - (lsb) + 1) <= 64 ? get_bit_range_int64(input, msb, lsb) : INTMAX_MAX))))
+
 
     // Bit access macros
 

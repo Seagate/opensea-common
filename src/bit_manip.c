@@ -253,3 +253,152 @@ bool get_Bytes_To_16(uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, 
         return false;
     }
 }
+
+genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
+{
+    genericint_t out;
+    memset(&out, 0, sizeof(genericint_t));
+    errno = 0;//clear out any errors first
+    if (msb > 63 || lsb > 63)
+    {
+        errno = ERANGE;
+    }
+    else if (!is_generic_int_valid(input))
+    {
+        errno = EINVAL;
+    }
+    else
+    {
+        switch (input.sizeoftype)
+        {
+        case sizeof(uint8_t):
+            if (msb > 7 || lsb > 7)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                //output size is not used in this case since a uint8_t can only ever output a uint8_t
+                out.sizeoftype = sizeof(uint8_t);
+                out.u8 = ((input.u8) >> (lsb)) & ~(~UINT32_C(0) << ((msb)-(lsb)+UINT8_C(1)));//starting with UINT32_C to resolve warning about signed int since UINT8_C() does not apply U
+                out.issigned = input.issigned;
+            }
+            break;
+        case sizeof(uint16_t):
+            if (msb > 15 || lsb > 15)
+            {
+                errno = ERANGE;
+            }
+            else if (outputsize == sizeof(uint8_t))
+            {
+                if ((msb - lsb + 1) > 8)
+                {
+                    errno = ERANGE;
+                }
+                else
+                {
+                    out.sizeoftype = sizeof(uint8_t);
+                    out.u8 = C_CAST(uint8_t, ((input.u16) >> (lsb)) & ~(~UINT32_C(0) << ((msb)-(lsb)+UINT8_C(1))));//starting with UINT32_C to resolve warning about signed int since UINT16_C() does not apply U
+                    out.issigned = input.issigned;
+                }
+            }
+            else //default case where outputsize is not less than uint16
+            {
+                out.sizeoftype = sizeof(uint16_t);
+                out.u16 = ((input.u16) >> (lsb)) & ~(~UINT32_C(0) << ((msb)-(lsb)+UINT8_C(1)));//starting with UINT32_C to resolve warning about signed int since UINT16_C() does not apply U
+                out.issigned = input.issigned;
+            }
+            break;
+        case sizeof(uint32_t):
+            if (msb > 31 || lsb > 31)
+            {
+                errno = ERANGE;
+            }
+            else if (outputsize == sizeof(uint8_t))
+            {
+                if ((msb - lsb + 1) > 8)
+                {
+                    errno = ERANGE;
+                }
+                else
+                {
+                    out.sizeoftype = sizeof(uint8_t);
+                    out.u8 = C_CAST(uint8_t, ((input.u32) >> (lsb)) & ~(~UINT32_C(0) << ((msb)-(lsb)+UINT8_C(1))));//starting with UINT32_C to resolve warning about signed int since UINT16_C() does not apply U
+                    out.issigned = input.issigned;
+                }
+            }
+            else if (outputsize == sizeof(uint16_t))
+            {
+                if ((msb - lsb + 1) > 16)
+                {
+                    errno = ERANGE;
+                }
+                else
+                {
+                    out.sizeoftype = sizeof(uint16_t);
+                    out.u16 = C_CAST(uint16_t, ((input.u32) >> (lsb)) & ~(~UINT32_C(0) << ((msb)-(lsb)+UINT8_C(1))));//starting with UINT32_C to resolve warning about signed int since UINT16_C() does not apply U
+                    out.issigned = input.issigned;
+                }
+            }
+            else //default case where outputsize is not less than uint32
+            {
+                out.sizeoftype = sizeof(uint16_t);
+                out.u32 = ((input.u32) >> (lsb)) & ~(~UINT32_C(0) << ((msb)-(lsb)+UINT8_C(1)));
+                out.issigned = input.issigned;
+            }
+            break;
+        case sizeof(uint64_t):
+            if (msb > 63 || lsb > 63)
+            {
+                errno = ERANGE;
+            }
+            else if (outputsize == sizeof(uint8_t))
+            {
+                if ((msb - lsb + 1) > 8)
+                {
+                    errno = ERANGE;
+                }
+                else
+                {
+                    out.sizeoftype = sizeof(uint8_t);
+                    out.u8 = ((input.u64) >> (lsb)) & ~(~UINT64_C(0) << ((msb)-(lsb)+UINT8_C(1)));//starting with UINT32_C to resolve warning about signed int since UINT16_C() does not apply U
+                    out.issigned = input.issigned;
+                }
+            }
+            else if (outputsize == sizeof(uint16_t))
+            {
+                if ((msb - lsb + 1) > 16)
+                {
+                    errno = ERANGE;
+                }
+                else
+                {
+                    out.sizeoftype = sizeof(uint16_t);
+                    out.u16 = ((input.u64) >> (lsb)) & ~(~UINT64_C(0) << ((msb)-(lsb)+UINT8_C(1)));//starting with UINT32_C to resolve warning about signed int since UINT16_C() does not apply U
+                    out.issigned = input.issigned;
+                }
+            }
+            else if (outputsize == sizeof(uint32_t))
+            {
+                if ((msb - lsb + 1) > 32)
+                {
+                    errno = ERANGE;
+                }
+                else
+                {
+                    out.sizeoftype = sizeof(uint16_t);
+                    out.u32 = ((input.u64) >> (lsb)) & ~(~UINT64_C(0) << ((msb)-(lsb)+UINT8_C(1)));//starting with UINT32_C to resolve warning about signed int since UINT16_C() does not apply U
+                    out.issigned = input.issigned;
+                }
+            }
+            else //default case where outputsize is not less than uint64
+            {
+                out.sizeoftype = sizeof(uint64_t);
+                out.u64 = ((input.u64) >> (lsb)) & ~(~UINT64_C(0) << ((msb)-(lsb)+UINT8_C(1)));
+                out.issigned = input.issigned;
+            }
+            break;
+        }
+    }
+    return out;
+}
