@@ -123,7 +123,7 @@ extern "C"
 
 //Defining asprintf ans vasprintf for all systems that do not have these already
 //asprintf and vaspritnf were in GNU C library, added in FreeBSD 2.2, and OpenBSD 2.3
-#if !defined (__STDC_ALLOC_LIB__) && !defined (_GNU_SOURCE) && !(defined (__FreeBSD__) && __FreeBSD > 3) && !(defined (__OpenBSD__) && defined (OpenBSD2_3)) && !defined (HAVE_VASPRINTF)
+#if !defined (__STDC_ALLOC_LIB__) && !defined (_GNU_SOURCE) && !(defined (__FreeBSD__) && __FreeBSD__ > 3) && !(defined (__OpenBSD__) && defined (OpenBSD2_3)) && !defined (HAVE_VASPRINTF)
     
     M_NODISCARD FUNC_ATTR_PRINTF(2, 3) int asprintf(char **M_RESTRICT strp, const char *M_RESTRICT fmt, ...);
 

@@ -2170,7 +2170,7 @@ ssize_t getline(char** lineptr, size_t* n, FILE* stream)
 
 #endif //__STDC_ALLOC_LIB__
 
-#if !defined (__STDC_ALLOC_LIB__) && !defined (_GNU_SOURCE) && !(defined (__FreeBSD__) && __FreeBSD > 3) && !defined (HAVE_VASPRINTF)
+#if !defined (__STDC_ALLOC_LIB__) && !defined (_GNU_SOURCE) && !(defined (__FreeBSD__) && __FreeBSD__ > 3) && !defined (HAVE_VASPRINTF)
 
 FUNC_ATTR_PRINTF(2, 3) int asprintf(char **M_RESTRICT strp, const char *M_RESTRICT fmt, ...)
 {
