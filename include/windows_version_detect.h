@@ -1,7 +1,8 @@
+// SPDX-License-Identifier: MPL-2.0
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012-2023 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,10 +10,12 @@
 //
 // ******************************************************************************************
 // 
-// \file common_windows.h
+// \file windows_version_detect.h
 // \brief Definitions and Windows specific functions
 
 #pragma once
+
+#include "env_detect.h"
 
 #if defined (__cplusplus)
 extern "C"
@@ -22,23 +25,16 @@ extern "C"
     //This pragma is needed to tell a library including opensea-common to look for Version.lib for the version helping information in the .c file.
     //NOTE: ARM requires 10.0.16299.0 API to get this library!
     #if !defined (__MINGW32__) && !defined (__MINGW64__)
-    #pragma comment(lib,"Version.lib")//for getting Windows system versions
-    #pragma comment(lib,"Advapi32.lib")//for checking for "run as administrator". May not be necessary to build some tools, but putting this here to prevent problems.
+        #pragma comment(lib,"Version.lib")//for getting Windows system versions
     #endif
 
     #include <sdkddkver.h>
     #include <winsdkver.h>
     #include <windows.h>
-#if !defined(NTDDSCSI_INCLUDED)
-    #include <ntddscsi.h>
-    #define NTDDSCSI_INCLUDED
-#endif
-    //more info on max path in Windows
-    //https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd
-    #define OPENSEA_PATH_MAX MAX_PATH
-
-    #define SYSTEM_PATH_SEPARATOR '\\'
-    #define SYSTEM_PATH_SEPARATOR_STR "\\"
+// #if !defined(NTDDSCSI_INCLUDED)
+//     #include <ntddscsi.h>
+//     #define NTDDSCSI_INCLUDED
+// #endif
 
     //  
     // _WIN32_WINNT version constants  
@@ -73,19 +69,11 @@ extern "C"
     #define SEA_MSC_VER_VS2019_16_2 1922
     #define SEA_MSC_VER_VS2019_16_3 1923
 
-    //-----------------------------------------------------------------------------
-    //
-    //  os_Create_Directory()
-    //
-    //! \brief   Description:  Creates a new directory in Windows
-    //
-    //  Entry:
-    //!
-    //  Exit:
-    //!   \return SUCCESS on successful directory creation and FAILURE when directory creation fails
-    //
-    //-----------------------------------------------------------------------------
-    int os_Create_Directory(const char* filePath);
+    eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber);
+
+    bool is_Windows_Vista_Or_Higher(void);
+
+    bool is_Windows_7_Or_Higher(void);
 
     //-----------------------------------------------------------------------------
     //
@@ -143,9 +131,12 @@ extern "C"
     bool is_Windows_10_Version_20H2_Or_Higher(void);
     bool is_Windows_10_Version_21H1_Or_Higher(void);
     bool is_Windows_10_Version_21H2_Or_Higher(void);
+    bool is_Windows_10_Version_22H2_Or_Higher(void);
     
     //Windows 11 check below
     bool is_Windows_11_Version_21H2_Or_Higher(void);
+    bool is_Windows_11_Version_22H2_Or_Higher(void);
+    bool is_Windows_11_Version_23H2_Or_Higher(void);
 
     //-----------------------------------------------------------------------------
     //
@@ -162,19 +153,6 @@ extern "C"
     bool is_Windows_PE(void);
 
     bool is_Windows_Server_OS(void);
-
-    //-----------------------------------------------------------------------------
-    //
-    //  print_Windows_Error_To_Screen(unsigned int windowsError)
-    //
-    //! \brief   Description:  Prints the error number and it's meaning to the screen followed by a newline character
-    //
-    //  Entry:
-    //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void print_Windows_Error_To_Screen(unsigned int windowsError);
 
     //The macros for NTDDI_VERSION & _WIN32_WINNT & WINVER are rarely checked once in Win 10 since they all get set to the same thing, so the below targets should also be defined in the preprocessor
     //so that we know which version of the WIN10 SDK is being targeted.
@@ -202,6 +180,8 @@ extern "C"
         #define WIN_API_TARGET_VERSION NTDDI_WIN6SP2
     #elif defined (NTDDI_WIN6SP1)
         #define WIN_API_TARGET_VERSION NTDDI_WIN6SP1
+    #elif defined (NTDDI_WIN6)
+        #define WIN_API_TARGET_VERSION NTDDI_WIN6
     #elif defined (NTDDI_WS03SP4)
         #define WIN_API_TARGET_VERSION NTDDI_WS03SP4
     #elif defined (NTDDI_WS03SP3)

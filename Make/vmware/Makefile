@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 #
 # Do NOT modify or remove this copyright and license
 #
@@ -413,7 +414,8 @@ LFLAGS = -Wall $(VMW_LINK_FLAGS)
 LIB_SRC_FILES = \
     $(SRC_DIR)common.c\
     $(SRC_DIR)common_platform.c\
-    $(SRC_DIR)common_nix.c
+    $(SRC_DIR)common_nix.c\
+	 $(SRC_DIR)validate_format.c
 
 PROJECT_DEFINES += $(VMW_EXTRA_DEFS)#-DDISABLE_NVME_PASSTHROUGH  #-D_DEBUG
 

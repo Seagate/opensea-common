@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 //
 // Do NOT modify or remove this copyright and license
 //
@@ -23,7 +24,7 @@ extern "C"
 #define COMBINE_COMMON_VERSIONS_(x,y,z) #x "." #y "." #z
 #define COMBINE_COMMON_VERSIONS(x,y,z) COMBINE_COMMON_VERSIONS_(x,y,z)
 
-#define OPENSEA_COMMON_MAJOR_VERSION    2
+#define OPENSEA_COMMON_MAJOR_VERSION    4
 #define OPENSEA_COMMON_MINOR_VERSION    0
 #define OPENSEA_COMMON_PATCH_VERSION    0
 
