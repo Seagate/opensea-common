@@ -2,6 +2,7 @@
 project('opensea-common', 'c', license: 'MPL-2.0', version: '4.0.0', default_options : ['warning_level=2'])
 
 c = meson.get_compiler('c')
+cpp = meson.get_compiler('cpp')
 
 global_cpp_args = []
 
@@ -18,6 +19,18 @@ if not (target_machine.system() == 'sunos') and c.get_id().contains('gcc')
     endif
   endif
 endif
+
+if cpp.get_id().contains('gcc')
+  if cpp.version().version_compare('<5.0')
+    if cpp.has_argument('-std=gnu++11')
+      # Add this argument to the list since C++11 is a minimum required C++ compiler standard
+      add_project_arguments('-std=gnu++11', language: 'cpp')
+    else
+      error('C++11/GNU++11 standard is required but was not able to be set!')
+    endif
+  endif
+endif
+
 
 warning_flags = [ ]
 linker_flags = [ ] #additional linker flags to add per-compiler for hardening.
