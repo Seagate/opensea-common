@@ -80,14 +80,11 @@ static bool is_Environment_Variable_List_Tampered(void)
     }
     return tampered;
 }
-#elif defined (POSIX_1993) || defined (environ)
-    #if defined (_GNU_SOURCE)
-        /*When _GNU_SOURCE is defined, this is already available and defined in unistd.h*/
-        #include <unistd.h>
-    #elif !defined (environ)
-        /*POSIX standard requires us to define this otherwise*/
-        extern char** environ;
-    #endif
+#elif defined (POSIX_1993)
+
+/*POSIX standard requires us to define this before using it*/
+extern char** environ;
+
 static bool is_Environment_Variable_List_Tampered(void)
 {
     static bool tampered = false;
