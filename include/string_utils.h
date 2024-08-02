@@ -80,26 +80,28 @@ extern "C"
 
     size_t safe_strnlen(const char* string, size_t n);
 
+#if defined (__GNUC__) && (__GNUC__ > 4 || (defined (__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 1))
+    //__builtin_object_size was added to GCC 4.1.0
+    #define HAVE_BUILT_IN_OBJ_SIZE
+#elif defined __has_builtin
+    // If the compiler does not defined __GNUC__ to 4.1.0 or higher, we can check if it has the built - in function with this macro
+    //instead. This was added to GCC 10, but other GCC compatible compilers may use this if not defining a compatible GCC versio
+    #if __has_builtin(__builtin_object_size)
+        #define HAVE_BUILT_IN_OBJ_SIZE
+    #endif
+#endif
+
     //if str is a null pointer, returns 0. Internally calls safe_strnlen with size set to RSIZE_MAX
     //If __builtin_object_size can determine the amount of memory allocated for the string, the limit is set to this limit, otherwise RSIZE_MAX
     M_FORCEINLINE size_t safe_strlen(const char* string)
     {
-        #if defined (__GNUC__) && (__GNUC__ > 4 || (defined (__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 1))
-            //since this is being forced inline, using __builtin_object_size should allow the compiler to detect the
-            //amount of memory space allocated for the string to limit how far to check for a length.
-            //__builtin_object_size was added to GCC 4.1.0
+        #if defined (HAVE_BUILT_IN_OBJ_SIZE)
             return safe_strnlen(string, __builtin_object_size(string, 0) != SIZE_MAX ? __builtin_object_size(string, 0) : RSIZE_MAX);
-        #elif defined __has_builtin
-            //If the compiler does not defined __GNUC__ to 4.1.0 or higher, we can check if it has the built-in function with this macro
-            //instead. This was added to GCC 10, but other GCC compatible compilers may use this if not defining a compatible GCC version
-            #if __has_builtin(__builtin_object_size)
-                return safe_strnlen(string, __builtin_object_size(string, 0) != SIZE_MAX ? __builtin_object_size(string, 0) : RSIZE_MAX);
-            #else
-                return safe_strnlen(string, RSIZE_MAX);
-            #endif
         #else 
             //NOTE: MSVC has _msize, but it only works on malloc'd memory, not constant strings which may be sent to this function as well!
             //no built-in way to limit length based on memory size so limit to RSIZE_MAX
+            //MSFT also has the heapapi with the HeapSize function, however I cannot get it to work. It is always crashing internally, so we are not
+            //going to use it to try and make sure the maximum is restricted at this time -TJE
             return safe_strnlen(string, RSIZE_MAX);
         #endif
     }
