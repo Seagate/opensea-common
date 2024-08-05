@@ -356,6 +356,7 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
     {
         if (destsz == 0 || count == 0)
         {
+            errno = 0;
             return 0;
         }
 #if defined (USING_C23) || defined (HAVE_MEMSET_EXPLICIT)
@@ -407,6 +408,7 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
         no_optimize_memset(dest, ch, count);
     #endif
 #endif
+        errno = 0;
         return 0;
     }
     else
@@ -414,10 +416,12 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
         //set an error
         if (dest == M_NULLPTR)
         {
+            errno = EINVAL;
             return EINVAL;
         }
         else
         {
+            errno = ERANGE;
             return ERANGE;
         }
     }
