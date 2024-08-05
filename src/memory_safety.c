@@ -27,6 +27,8 @@
 
 #if defined (_WIN32)
     #include <windows.h>
+    #include <WinBase.h>
+    #include "windows_version_detect.h"
 #else
     #include <unistd.h>
 #endif
@@ -57,7 +59,7 @@ size_t get_System_Pagesize(void)
 //      NOTE: There may also be other functions to do this for other compilers or systems, but they are not known today. Add them as necessary
 //      NOTE: some systems may have memalign instead of the posix definition, but it is not clear how to detect that implementation with feature test macros.
 //      NOTE: In UEFI, using the EDK2, malloc will provide an 8-byte alignment, so it may be possible to do some aligned allocations using it without extra work. but we can revist that later.
-void* malloc_aligned(size_t size, size_t alignment)
+M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment)
 {
 #if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined (USING_C11) && !defined(_MSC_VER)
     //C11 added an aligned alloc function we can use
@@ -162,7 +164,7 @@ void free_aligned(void* ptr)
 #endif //UEFI vs compiler/OS specific capabilities check
 }
 
-void* calloc_aligned(size_t num, size_t size, size_t alignment)
+M_FUNC_ATTR_MALLOC void* calloc_aligned(size_t num, size_t size, size_t alignment)
 {
     //call malloc aligned and memset
     void* zeroedMem = M_NULLPTR;
@@ -178,7 +180,7 @@ void* calloc_aligned(size_t num, size_t size, size_t alignment)
     return zeroedMem;
 }
 
-void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t alignment)
+M_FUNC_ATTR_MALLOC void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t alignment)
 {
     void* temp = M_NULLPTR;
     if (originalSize == 0)//if this is zero, they don't want or care to keep the data
@@ -202,7 +204,7 @@ void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t
     return temp;
 }
 
-void* malloc_page_aligned(size_t size)
+M_FUNC_ATTR_MALLOC void* malloc_page_aligned(size_t size)
 {
     size_t pageSize = get_System_Pagesize();
     if (pageSize)
@@ -220,7 +222,7 @@ void free_page_aligned(void* ptr)
     free_aligned(ptr);
 }
 
-void* calloc_page_aligned(size_t num, size_t size)
+M_FUNC_ATTR_MALLOC void* calloc_page_aligned(size_t num, size_t size)
 {
     size_t pageSize = get_System_Pagesize();
     if (pageSize)
@@ -233,7 +235,7 @@ void* calloc_page_aligned(size_t num, size_t size)
     }
 }
 
-void* realloc_page_aligned(void* alignedPtr, size_t originalSize, size_t size)
+M_FUNC_ATTR_MALLOC void* realloc_page_aligned(void* alignedPtr, size_t originalSize, size_t size)
 {
     size_t pageSize = get_System_Pagesize();
     if (pageSize)
@@ -288,6 +290,12 @@ bool is_Empty(const void* ptrData, size_t lengthBytes)
     return false;
 }
 
+#if defined (__has_builtin)
+    #if __has_builtin(__builtin___clear_cache)
+        #define HAS_BUILT_IN_CLEAR_CACHE
+    #endif
+#endif
+
 void* explicit_zeroes(void* dest, size_t count)
 {
     if (dest && count > 0)
@@ -304,9 +312,15 @@ void* explicit_zeroes(void* dest, size_t count)
         {
             return M_NULLPTR;
         }
-#elif (defined (_WIN32) && defined (_MSC_VER)) || defined (HAVE_MSFT_SECURE_ZERO_MEMORY)
+#elif (defined (_WIN32) && defined (_MSC_VER)) || defined (HAVE_MSFT_SECURE_ZERO_MEMORY) || defined (HAVE_MSFT_SECURE_ZERO_MEMORY2)
+    #if !defined (NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) && (defined (HAVE_MSFT_SECURE_ZERO_MEMORY2) || (defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_22621))
+        //use secure zero memory 2
+        //Cast is to remove warning about different volatile qualifiers
+        return C_CAST(void*, SecureZeroMemory2(dest, count));
+    #else
         //use microsoft's SecureZeroMemory function
         return SecureZeroMemory(dest, count);
+    #endif
 #elif (defined (__FreeBSD__) && __FreeBSD__ >= 11) || (defined (__OpenBSD__) && defined(OpenBSD5_5)) || (defined (__GLIBC__) && defined (__GLIBC_MINOR__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 25) || defined (HAVE_EXPLICIT_BZERO)
         //https://elixir.bootlin.com/musl/latest/source/src/string/explicit_bzero.c <- seems to appear first in 1.1.20
         //https://man.freebsd.org/cgi/man.cgi?query=explicit_bzero
@@ -323,10 +337,26 @@ void* explicit_zeroes(void* dest, size_t count)
         //      Illumos does not list this, but lists explicit_bzero in their manual. Not sure what version to use, so letting meson detect and set the HAVE_...macros
         return explicit_memset(dest, 0, count);
 #else
+        //last attempts to prevent optimization as best we can
+    #if (HAS_BUILT_IN_CLEAR_CACHE)
+        void* res = memset(dest, 0, count);
+        __builtin___clear_cache(dest, dest + count);
+        return res;
+    #elif defined (_MSC_VER)
+        /*if you hit this case for some reason, you will need to add an include for <intrin.h>. Not currently done as SecureZeroMemory is used instead*/
+        /* https://learn.microsoft.com/en-us/cpp/intrinsics/readwritebarrier?view=msvc-170 */
+        void* res = memset(dest, 0, count);
+        _ReadWriteBarrier();
+        return res;
+    #elif defined (__GNUC__) || defined(__clang__)
+        void* res = memset(dest, 0, count);
+        asm volatile ("" ::: "memory");
+        return res;
+    #else /* compiler does not support a method above as a barrier, so use this as a final way to try and prevent optimization */
         //one idea on the web is this ugly volatile function pointer to memset to stop the compiler optimization
-        //so doing this so I don't need to make more per-compiler ifdefs for other solutions
         void* (* const volatile no_optimize_memset) (void*, int, size_t) = memset;
         return no_optimize_memset(dest, 0, count);
+    #endif
 #endif
     }
     else
@@ -337,7 +367,7 @@ void* explicit_zeroes(void* dest, size_t count)
 
 //malloc in standards leaves malloc'ing size 0 as a undefined behavior.
 //this version will always return a null pointer if the size is zero
-void *safe_malloc(size_t size)
+M_FUNC_ATTR_MALLOC void *safe_malloc(size_t size)
 {
     if (size == 0)
     {
@@ -351,7 +381,7 @@ void *safe_malloc(size_t size)
 
 //avoiding undefined behavior allocing zero size and avoiding alloc'ing less memory due to an overflow
 //If alloc'ing zero or alloc would overflow size_t from count * size, then return a null pointer
-void * safe_calloc(size_t count, size_t size)
+M_FUNC_ATTR_MALLOC void * safe_calloc(size_t count, size_t size)
 {
     if (count == 0 || size == 0)
     {
@@ -371,7 +401,7 @@ void * safe_calloc(size_t count, size_t size)
 
 //if passed a null pointer, behaves as safe_Malloc
 //if size is zero, will perform free and return NULL ptr
-void * safe_realloc(void *block, size_t size)
+M_FUNC_ATTR_MALLOC void * safe_realloc(void *block, size_t size)
 {
     if (block == M_NULLPTR)
     {
@@ -404,7 +434,7 @@ void * safe_realloc(void *block, size_t size)
 //if size is zero, will perform free and return NULL ptr
 //if realloc fails, free's original block
 //free's original block if realloc fails
-void * safe_reallocf(void **block, size_t size)
+M_FUNC_ATTR_MALLOC void * safe_reallocf(void **block, size_t size)
 {
     if (block == M_NULLPTR)
     {
@@ -474,7 +504,7 @@ static size_t aligned_Size_Round_Up(size_t size, size_t alignment)
 
 //malloc in standards leaves malloc'ing size 0 as a undefined behavior.
 //this version will always return a null pointer if the size is zero
-void *safe_malloc_aligned(size_t size, size_t alignment)
+M_FUNC_ATTR_MALLOC void *safe_malloc_aligned(size_t size, size_t alignment)
 {
     if (size == 0)
     {
@@ -490,7 +520,7 @@ void *safe_malloc_aligned(size_t size, size_t alignment)
 
 //avoiding undefined behavior allocing zero size and avoiding alloc'ing less memory due to an overflow
 //If alloc'ing zero or alloc would overflow size_t from count * size, then return a null pointer
-void * safe_calloc_aligned(size_t count, size_t size, size_t alignment)
+M_FUNC_ATTR_MALLOC void * safe_calloc_aligned(size_t count, size_t size, size_t alignment)
 {
     if (count == 0 || size == 0)
     {
@@ -518,7 +548,7 @@ void * safe_calloc_aligned(size_t count, size_t size, size_t alignment)
 
 //if passed a null pointer, behaves as safe_Malloc
 //if size is zero, will perform free and return NULL ptr
-void * safe_realloc_aligned(void *block, size_t originalSize, size_t size, size_t alignment)
+M_FUNC_ATTR_MALLOC void * safe_realloc_aligned(void *block, size_t originalSize, size_t size, size_t alignment)
 {
     if (block == M_NULLPTR)
     {
@@ -553,7 +583,7 @@ void * safe_realloc_aligned(void *block, size_t originalSize, size_t size, size_
 //if size is zero, will perform free and return NULL ptr
 //if realloc fails, free's original block
 //free's original block if realloc fails
-void * safe_reallocf_aligned(void **block, size_t originalSize, size_t size, size_t alignment)
+M_FUNC_ATTR_MALLOC void * safe_reallocf_aligned(void **block, size_t originalSize, size_t size, size_t alignment)
 {
     if (block == M_NULLPTR)
     {
@@ -585,21 +615,21 @@ void * safe_reallocf_aligned(void **block, size_t originalSize, size_t size, siz
 
 //malloc in standards leaves malloc'ing size 0 as a undefined behavior.
 //this version will always return a null pointer if the size is zero
-void *safe_malloc_page_aligned(size_t size)
+M_FUNC_ATTR_MALLOC void *safe_malloc_page_aligned(size_t size)
 {
     return safe_malloc_aligned(size, get_System_Pagesize());
 }
 
 //avoiding undefined behavior allocing zero size and avoiding alloc'ing less memory due to an overflow
 //If alloc'ing zero or alloc would overflow size_t from count * size, then return a null pointer
-void * safe_calloc_page_aligned(size_t count, size_t size)
+M_FUNC_ATTR_MALLOC void * safe_calloc_page_aligned(size_t count, size_t size)
 {
     return safe_calloc_aligned(count, size, get_System_Pagesize());
 }
 
 //if passed a null pointer, behaves as safe_Malloc
 //if size is zero, will perform free and return NULL ptr
-void * safe_realloc_page_aligned(void *block, size_t originalSize, size_t size)
+M_FUNC_ATTR_MALLOC void * safe_realloc_page_aligned(void *block, size_t originalSize, size_t size)
 {
     return safe_realloc_aligned(block, originalSize, size, get_System_Pagesize());
 }
@@ -609,7 +639,7 @@ void * safe_realloc_page_aligned(void *block, size_t originalSize, size_t size)
 //if size is zero, will perform free and return NULL ptr
 //if realloc fails, free's original block
 //free's original block if realloc fails
-void * safe_reallocf_page_aligned(void **block, size_t originalSize, size_t size)
+M_FUNC_ATTR_MALLOC void * safe_reallocf_page_aligned(void **block, size_t originalSize, size_t size)
 {
     return safe_reallocf_aligned(block, originalSize, size, get_System_Pagesize());
 }

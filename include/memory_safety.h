@@ -20,6 +20,10 @@
 #include <stdlib.h>
 #include <string.h> //to pull in memset for anything that includes this file
 
+#if defined (_WIN32)
+#include "windows_version_detect.h" //for determining if securezeromemory2 is available and setting the pragma to include the required library.
+#endif
+
 #if defined (__cplusplus)
 extern "C"
 {
@@ -96,6 +100,10 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     void* explicit_zeroes(void* dest, size_t count);
+
+#if defined (_MSC_VER) && !defined (NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) && (defined (HAVE_MSFT_SECURE_ZERO_MEMORY2) || (defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_22621))
+    #pragma comment(lib, "volatileaccessu.lib")//for VS to pick up this dependency when SecureZeroMemory2 is available
+#endif
 
     //-----------------------------------------------------------------------------
     //

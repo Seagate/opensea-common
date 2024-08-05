@@ -4,6 +4,7 @@ project('opensea-common', 'c', license: 'MPL-2.0', version: '4.0.0', default_opt
 c = meson.get_compiler('c')
 
 global_cpp_args = []
+deps = []
 
 #if GCC less than 5, need to set -std=gnu99 at minimum. gnu11 became the default in 5, 17 default in 7 or 8.
 #TODO: May be able to move to c11/gnu11 instead, but will need to do a lot of testing first
@@ -257,8 +258,11 @@ elif c.has_function('explicit_bzero', prefix : '#include <strings.h>') or c.has_
   global_cpp_args += ['-DHAVE_EXPLICIT_BZERO']
 elif c.has_function('explicit_memset', prefix : '#include <string.h>')
   global_cpp_args += ['-DHAVE_EXPLICIT_MEMSET']
+elif c.has_function('SecureZeroMemory2', prefix : ['#include <windows.h>', '#include <winbase.h>'], dependencies : c.find_library('volatileaccessu', required : false) )
+  global_cpp_args += ['-DHAVE_MSFT_SECURE_ZERO_MEMORY2']
+  deps += [c.find_library('volatileaccessu', required : false)]
 elif c.has_function('SecureZeroMemory', prefix : '#include <windows.h>')
-  global_cpp_args += ['-DHAVE_MSFT_SECURE_ZERO_MEMORY']
+  global_cpp_args += ['-DHAVE_MSFT_SECURE_ZERO_MEMORY', '-DNO_HAVE_MSFT_SECURE_ZERO_MEMORY2']
 endif
 
 #test if setting _FORTIFY_SOURCE higher than default generates a warning
@@ -283,8 +287,6 @@ if c.has_function('strerror_r', prefix : '#include <string.h>')
     global_cpp_args += ['-DHAVE_GNU_STRERR_R']
   endif
 endif
-
-deps = []
 
 if target_machine.system() == 'windows'
   src_files += ['src/windows_env_detect.c', 'src/windows_secure_file.c', 'src/windows_version_detect.c']
