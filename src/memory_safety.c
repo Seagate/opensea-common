@@ -302,7 +302,7 @@ void* explicit_zeroes(void* dest, size_t count)
     {
 #if defined (USING_C23) || defined (HAVE_MEMSET_EXPLICIT)
         return memset_explicit(dest, 0, count);
-#elif defined (__STDC_LIB_EXT1__) || defined (HAVE_MEMSET_S)
+#elif defined (HAVE_C11_ANNEX_K) || defined (HAVE_MEMSET_S)
         //use memset_s since it cannot be optimized out
         if (0 == memset_s(dest, count, 0, count))
         {
@@ -316,7 +316,7 @@ void* explicit_zeroes(void* dest, size_t count)
     #if !defined (NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) && (defined (HAVE_MSFT_SECURE_ZERO_MEMORY2) || (defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_22621))
         //use secure zero memory 2
         //Cast is to remove warning about different volatile qualifiers
-        return C_CAST(void*, SecureZeroMemory2(dest, count));
+        return M_CONST_CAST(void*, SecureZeroMemory2(dest, count));
     #else
         //use microsoft's SecureZeroMemory function
         return SecureZeroMemory(dest, count);
@@ -337,32 +337,91 @@ void* explicit_zeroes(void* dest, size_t count)
         //      Illumos does not list this, but lists explicit_bzero in their manual. Not sure what version to use, so letting meson detect and set the HAVE_...macros
         return explicit_memset(dest, 0, count);
 #else
-        //last attempts to prevent optimization as best we can
-    #if (HAS_BUILT_IN_CLEAR_CACHE)
-        void* res = memset(dest, 0, count);
-        __builtin___clear_cache(dest, dest + count);
-        return res;
-    #elif defined (_MSC_VER)
-        /*if you hit this case for some reason, you will need to add an include for <intrin.h>. Not currently done as SecureZeroMemory is used instead*/
-        /* https://learn.microsoft.com/en-us/cpp/intrinsics/readwritebarrier?view=msvc-170 */
-        void* res = memset(dest, 0, count);
-        _ReadWriteBarrier();
-        return res;
-    #elif defined (__GNUC__) || defined(__clang__)
-        void* res = memset(dest, 0, count);
-        asm volatile ("" ::: "memory");
-        return res;
-    #else /* compiler does not support a method above as a barrier, so use this as a final way to try and prevent optimization */
-        //one idea on the web is this ugly volatile function pointer to memset to stop the compiler optimization
-        void* (* const volatile no_optimize_memset) (void*, int, size_t) = memset;
-        return no_optimize_memset(dest, 0, count);
-    #endif
+        safe_memset(dest, count, 0, count);
+        return dest;
 #endif
     }
     else
     {
         return M_NULLPTR;
     }
+}
+
+errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
+{
+#if defined (HAVE_C11_ANNEX_K) || defined (HAVE_MEMSET_S)
+    return memset_s(dest, destsz, ch, count);
+#else
+    if (dest != M_NULLPTR && destsz <= RSIZE_MAX && count <= RSIZE_MAX && count <= destsz)
+    {
+        if (destsz == 0 || count == 0)
+        {
+            return 0;
+        }
+#if defined (USING_C23) || defined (HAVE_MEMSET_EXPLICIT)
+        memset_explicit(dest, ch, count);
+#elif (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 7000000000L /* net bsd version 7.0 and up*/) || defined (HAVE_EXPLICIT_MEMSET)
+        //https://man.netbsd.org/NetBSD-8.0/explicit_memset.3
+        //https://docs.oracle.com/cd/E88353_01/html/E37843/explicit-memset-3c.html
+        //NOTE: Solaris 11.4.12 added this, but I cannot find it in illumos based distributions
+        //      Illumos does not list this, but lists explicit_bzero in their manual. Not sure what version to use, so letting meson detect and set the HAVE_...macros
+        explicit_memset(dest, ch, count);
+#else
+        //last attempts to prevent optimization as best we can
+    #if defined (__GNUC__) || defined(__clang__)
+        memset(dest, ch, count);
+        asm volatile ("" ::: "memory");
+    #elif defined (HAS_BUILT_IN_CLEAR_CACHE)
+        memset(dest, ch, count);
+        __builtin___clear_cache(dest, dest + count);
+    #elif defined (_MSC_VER)
+        #if !defined (NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) && (defined (HAVE_MSFT_SECURE_ZERO_MEMORY2) || (defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_22621))
+            //SecureZeroMemory2 calls FillVolatileMemory which we can use here to do the same thing
+            FillVolatileMemory(dest, count, ch);
+        #elif defined (_M_AMD64) || (!defined(_M_CEE) && defined (_M_ARM) || defined (_M_ARM64) || defined (_M_ARM64EC))
+            //NOTE: Using the securezeromemory implementation in this case
+            volatile char* vptr = (volatile char*)dest;
+            #if defined(_M_AMD64) && !defined(_M_ARM64EC)
+                __stosb((unsigned char*)((unsigned __int64)vptr), ch, count);
+            #else
+                while (count) 
+                {
+            #if !defined(_M_CEE) && (defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
+                    __iso_volatile_store8(vptr, ch);
+            #else
+                    * vptr = ch;
+            #endif
+                    vptr++;
+                    count--;
+                }
+            #endif
+        #else
+            /*if you hit this case for some reason, you will need to add an include for <intrin.h>. Not currently done as SecureZeroMemory is used instead*/
+            /* https://learn.microsoft.com/en-us/cpp/intrinsics/readwritebarrier?view=msvc-170 */
+            memset(dest, ch, count);
+            _ReadWriteBarrier();
+        #endif
+    #else /* compiler does not support a method above as a barrier, so use this as a final way to try and prevent optimization */
+        //one idea on the web is this ugly volatile function pointer to memset to stop the compiler optimization
+        void* (* const volatile no_optimize_memset) (void*, int, size_t) = memset;
+        no_optimize_memset(dest, ch, count);
+    #endif
+#endif
+        return 0;
+    }
+    else
+    {
+        //set an error
+        if (dest == M_NULLPTR)
+        {
+            return EINVAL;
+        }
+        else
+        {
+            return ERANGE;
+        }
+    }
+#endif
 }
 
 //malloc in standards leaves malloc'ing size 0 as a undefined behavior.

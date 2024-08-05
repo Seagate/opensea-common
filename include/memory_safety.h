@@ -87,6 +87,25 @@ extern "C"
 
     //-----------------------------------------------------------------------------
     //
+    //  errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
+    //
+    //! \brief   Description: Works like memset_s from C11 annex K. This will check parameters for errors and write count chars to dest without being optimized away.
+    //!                       the function explicit_zeroes may be better in some cases where you want to zero out memory, whereas this can be used to memset any character.
+    //
+    //  Entry:
+    //!   \param[in] dest = pointer to memory to write
+    //!   \param[in] destsz = size of dest in bytes
+    //!   \param[in] ch = value to write to memory
+    //!   \param[in] count = number of bytes to write
+    //!
+    //  Exit:
+    //!   \return M_NULLPTR = error occurred otherwise returns pointer to dest
+    //
+    //-----------------------------------------------------------------------------
+    errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count);
+
+    //-----------------------------------------------------------------------------
+    //
     //  void* explicit_zeroes(void* dest, size_t count)
     //
     //! \brief   Description:  Write zeroes to memory pointer that will not be optimized out by the compiler. 
