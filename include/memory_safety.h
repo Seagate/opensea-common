@@ -120,7 +120,7 @@ extern "C"
     //-----------------------------------------------------------------------------
     void* explicit_zeroes(void* dest, size_t count);
 
-#if defined (_MSC_VER) && !defined (NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) && (defined (HAVE_MSFT_SECURE_ZERO_MEMORY2) || (defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_22621))
+#if defined (_MSC_VER) && !defined (NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) && (defined (HAVE_MSFT_SECURE_ZERO_MEMORY2) || (defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
     #pragma comment(lib, "volatileaccessu.lib")//for VS to pick up this dependency when SecureZeroMemory2 is available
 #endif
 

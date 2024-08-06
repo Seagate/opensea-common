@@ -313,7 +313,7 @@ void* explicit_zeroes(void* dest, size_t count)
             return M_NULLPTR;
         }
 #elif (defined (_WIN32) && defined (_MSC_VER)) || defined (HAVE_MSFT_SECURE_ZERO_MEMORY) || defined (HAVE_MSFT_SECURE_ZERO_MEMORY2)
-    #if !defined (NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) && (defined (HAVE_MSFT_SECURE_ZERO_MEMORY2) || (defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_22621))
+    #if !defined (NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) && (defined (HAVE_MSFT_SECURE_ZERO_MEMORY2) || (defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
         //use secure zero memory 2
         //Cast is to remove warning about different volatile qualifiers
         return M_CONST_CAST(void*, SecureZeroMemory2(dest, count));
@@ -376,21 +376,21 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
         memset(dest, ch, count);
         __builtin___clear_cache(dest, dest + count);
     #elif defined (_MSC_VER)
-        #if !defined (NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) && (defined (HAVE_MSFT_SECURE_ZERO_MEMORY2) || (defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_22621))
+        #if !defined (NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) && (defined (HAVE_MSFT_SECURE_ZERO_MEMORY2) || (defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
             //SecureZeroMemory2 calls FillVolatileMemory which we can use here to do the same thing
             FillVolatileMemory(dest, count, ch);
         #elif defined (_M_AMD64) || (!defined(_M_CEE) && defined (_M_ARM) || defined (_M_ARM64) || defined (_M_ARM64EC))
             //NOTE: Using the securezeromemory implementation in this case
             volatile char* vptr = (volatile char*)dest;
             #if defined(_M_AMD64) && !defined(_M_ARM64EC)
-                __stosb((unsigned char*)((unsigned __int64)vptr), ch, count);
+                __stosb((unsigned char*)((unsigned __int64)vptr), C_CAST(unsigned char, ch), count);
             #else
                 while (count) 
                 {
             #if !defined(_M_CEE) && (defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
-                    __iso_volatile_store8(vptr, ch);
+                    __iso_volatile_store8(vptr, C_CAST(unsigned char, ch));
             #else
-                    * vptr = ch;
+                    * vptr = C_CAST(unsigned char, ch);
             #endif
                     vptr++;
                     count--;
