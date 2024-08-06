@@ -281,6 +281,7 @@ int safe_ispunct(int c)
 //https://developers.redhat.com/blog/2019/08/12/efficient-string-copying-and-concatenation-in-c#
 char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source)
 {
+    //TODO: Overlapping range detection
     if (destination && source && destinationSizeBytes > 0)
     {
 #if defined (POSIX_2001) || defined (_MSC_VER) || defined (__MINGW32__) || defined (USING_C23) || defined (BSD4_4)

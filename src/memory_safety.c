@@ -753,12 +753,25 @@ errno_t safe_memmove(void *dest, rsize_t destsz, const void *src, rsize_t count)
 errno_t safe_memcpy(void *M_RESTRICT dest, rsize_t destsz, const void *M_RESTRICT src, rsize_t count)
 {
 #if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
-    return memcpy_s(dest, destsz, src, count);
+    #if defined (__STDC_SECURE_LIB__)
+        //add detection for overlapped range and destsz & count <= RSIZE_MAX since MSFT's implementation does not do this
+        if (destsz <= RSIZE_MAX && count <= RSIZE_MAX && !(src <= dest && C_CAST(void*, C_CAST(uintptr_t, src) + count) > dest))
+        {
+            return memcpy_s(dest, destsz, src, count);
+        }
+        else
+        {
+            errno = ERANGE;
+            return ERANGE;
+        }
+    #else
+        return memcpy_s(dest, destsz, src, count);
+    #endif
 #else
     //Don't have memcpy_s, so do the necessary checks first, then call memmove
     //make sure all parameters match the spec requirements, including detection of an overlapping range.
     //if the range overlaps, then memmove should be used instead.
-    if (dest && src && destsz <= RSIZE_MAX && count <= RSIZE_MAX && count <= destsz && !(src <= dest && (src + count) > dest))
+    if (dest && src && destsz <= RSIZE_MAX && count <= RSIZE_MAX && count <= destsz && !(src <= dest && C_CAST(void*, C_CAST(uintptr_t, src) + count) > dest))
     {
         if (destsz > 0 && count > 0)
         {

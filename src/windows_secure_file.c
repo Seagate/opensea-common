@@ -409,7 +409,8 @@ static char* win_dirname(char* path)
         }
         else
         {
-            return ".";
+            //previously returned ".", but this case does not appear to be hit so changing to NULLPTR so that we do not need a const_cast-TJE
+            return M_NULLPTR;
         }
     }
     else
