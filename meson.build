@@ -280,9 +280,9 @@ elif c.has_function('explicit_bzero', prefix : '#include <strings.h>') or c.has_
   global_cpp_args += ['-DHAVE_EXPLICIT_BZERO']
 elif c.has_function('explicit_memset', prefix : '#include <string.h>')
   global_cpp_args += ['-DHAVE_EXPLICIT_MEMSET']
-elif c.has_function('SecureZeroMemory2', prefix : ['#include <windows.h>', '#include <winbase.h>'], dependencies : c.find_library('volatileaccessu', required : false) )
+elif c.has_function('SecureZeroMemory2', prefix : '#include <windows.h>\n#include <winbase.h>', dependencies : c.find_library('volatileaccessu', required : false) )
   global_cpp_args += ['-DHAVE_MSFT_SECURE_ZERO_MEMORY2']
-  deps += [c.find_library('volatileaccessu', required : false)]
+  deps += [c.find_library('volatileaccessu', required : true)]
 elif c.has_function('SecureZeroMemory', prefix : '#include <windows.h>')
   global_cpp_args += ['-DHAVE_MSFT_SECURE_ZERO_MEMORY', '-DNO_HAVE_MSFT_SECURE_ZERO_MEMORY2']
 endif
