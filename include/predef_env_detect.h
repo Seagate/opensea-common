@@ -35,6 +35,13 @@
 
 #if defined (_WIN32)
     #include <windows.h>
+    //This pragma is needed to tell a library including opensea-common to look for Version.lib for the version helping information
+    // This only works in MSVC which is why mingw gets filtered out below. Meson/makefile projects will need to link these manually.
+    //NOTE: ARM requires 10.0.16299.0 API to get this library!
+    #if !defined (__MINGW32__) && !defined (__MINGW64__)
+        #pragma comment(lib,"Version.lib")//for getting Windows system versions
+        #pragma comment(lib,"Advapi32.lib")//WinPE check and windows 10 version check
+    #endif
 #endif //_WIN32
 
 #if defined (__cplusplus)
