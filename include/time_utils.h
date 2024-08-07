@@ -10,7 +10,7 @@
 //
 // ******************************************************************************************
 // 
-// \file common_time.h
+// \file time_utils.h
 // \brief Implements best practices for working with time functions in stdc library
 
 #pragma once
