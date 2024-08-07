@@ -61,7 +61,7 @@ size_t get_System_Pagesize(void)
 //      NOTE: In UEFI, using the EDK2, malloc will provide an 8-byte alignment, so it may be possible to do some aligned allocations using it without extra work. but we can revist that later.
 M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment)
 {
-#if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined (USING_C11) && !defined(_MSC_VER)
+#if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined (USING_C11) && !defined(_MSC_VER) && (!defined (__GLIBC__) || (defined(__GLIBC__) && ((__GLIBC__ > 2) || (defined(__GLIBC_MINOR__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 16))))
     //C11 added an aligned alloc function we can use
     //One additional requirement of this function is that the size must be a multiple of alignment, so we will check and round up the size to make this easy.
     if (size % alignment)
