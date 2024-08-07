@@ -166,8 +166,8 @@ extern "C"
             #endif
         #endif
         #if !defined (M_ATTR_UNUSED)/*__has_attribute is available, but doesn't have what we need-TJE*/
-            #if (defined (__GNUC__) && (__GNUC__ > 4) || (defined (__GNUC_MINOR__) && __GNUC__ >=4 && __GNUC_MINOR__ >= 9)) || defined (__clang__)
-                /*GCC 4.9 added unused attribute.*/
+            #if (defined (__GNUC__) || defined (__clang__)
+                /* GCC as far back as 2.95.3's online manual supports unused on variables */
                 #define M_ATTR_UNUSED __attribute__((unused))
             #elif defined (_MSC_VER)
                 #define M_ATTR_UNUSED __pragma(warning(suppress:4100 4101)) /*4102?*/
