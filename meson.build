@@ -234,6 +234,10 @@ if get_option('username').enabled()
   global_cpp_args += ['-DENABLE_READ_USERNAME']
 endif
 
+if get_option('directorysecurity').disabled()
+  global_cpp_args += ['-DDISABLE_SECURE_FILE_PATH_CHECK']
+endif
+
 src_files = ['src/bit_manip.c', 
             'src/env_detect.c', 
             'src/error_translation.c',
