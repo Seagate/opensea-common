@@ -296,6 +296,11 @@ elif c.has_function('SecureZeroMemory', prefix : '#include <windows.h>')
   global_cpp_args += ['-DHAVE_MSFT_SECURE_ZERO_MEMORY', '-DNO_HAVE_MSFT_SECURE_ZERO_MEMORY2']
 endif
 
+if c.has_header_symbol('stddef.h', '_Generic')
+  global_cpp_args += ['-DHAVE_C11_GENERIC_SELECTION']
+endif
+
+
 #test if setting _FORTIFY_SOURCE higher than default generates a warning
 #this issue showed up on Rocky Linux 8 and we don't want to generate extra noise
 #due to trying to follow openssf best practices

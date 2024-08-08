@@ -91,7 +91,7 @@ extern "C"
     M_NODISCARD bool get_And_Validate_Double_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, double * outputFloat);
     M_NODISCARD bool get_And_Validate_LDouble_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, long double * outputFloat);
 
-    #if defined(USING_C11)
+    #if defined(USING_C11) && defined (HAVE_C11_GENERIC_SELECTION)
     //This is a generic selection macro.
     //so based on the type of X, it will call the appropriate function for that type.
     //similar to an overloaded function in C++ for different types.

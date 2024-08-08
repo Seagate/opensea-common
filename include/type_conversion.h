@@ -88,7 +88,7 @@ extern "C"
     size_t longlong_to_sizet(long long val);
     size_t ulonglong_to_sizet(unsigned long long val);
 
-    #if defined(USING_C11)
+    #if defined(USING_C11) && defined (HAVE_C11_GENERIC_SELECTION)
     //This is a generic selection macro.
     //so based on the type of X, it will call the appropriate function for that type.
     //similar to an overloaded function in C++ for different types.

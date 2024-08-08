@@ -272,6 +272,19 @@ extern "C"
         #define SYSTEM_UNKNOWN
     #endif
 
+    #if defined (USING_C11) && !defined (HAVE_C11_GENERIC_SELECTION)
+        //workaround for early C11 compilers that may still be used with this code to disable generic selection when not supported
+        #if defined (__clang__) && __clang__ > 3 || (defined(__clang_minor__) && __clang__ == 3 && __clang_minor__ >= 3 )
+            #define HAVE_C11_GENERIC_SELECTION
+        #elif defined (__GNUC__) && (__GNUC__ >= 5 || (defined(__GNUC_MINOR__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 9))
+            #define HAVE_C11_GENERIC_SELECTION
+        #elif defined (_MSC_VER) && _MSC_VER >= 1928 
+            /* SDK version 10.0.20348.0 is technically when it arrived, but you also need VS2019 16.8 and later */
+            /*TODO: Move the Windows SDK version detection to this file and add that check to the ifdef above */
+            #define HAVE_C11_GENERIC_SELECTION
+        #endif
+    #endif//
+
 #if defined (__cplusplus)
 }
 #endif
