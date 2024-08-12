@@ -70,6 +70,11 @@ static eValidateFormatResult check_For_Litteral_Precent(const char* format, char
                 result = VALIDATE_FORMAT_CONTINUE;
             }
         }
+        else
+        {
+            *offsetToSpecifier += 1;
+            result = update_Format_Offset(format, *offsetToSpecifier, formatoffset, formatLength);
+        }
     }
     else
     {
@@ -395,12 +400,12 @@ static eValidateFormatResult validate_Format_Float(const char* format, char** of
         //NOTE: lowercase l is also allowed but only means double which is why it is not being checked here
         if (lenmods->L == true)
         {
-            double floatval = va_arg(*args, double);
+            long double floatval = va_arg(*args, long double);
             M_USE_UNUSED(floatval);
         }
         else
         {
-            long double floatval = va_arg(*args, long double);
+            double floatval = va_arg(*args, double);
             M_USE_UNUSED(floatval);
         }
     }
@@ -598,7 +603,7 @@ static eValidateFormatResult validate_Format_String(const char* format, char** o
     return result;
 }
 
-static eValidateFormatResult validate_Format_Specifier(const char* format, char** offsetToSpecifier, size_t* formatoffset, ptrVerifyFormatLengthModifiers lenmods, va_list *args)
+static eValidateFormatResult validate_Format_Specifier(const char* format, char** offsetToSpecifier, size_t* formatoffset, size_t formatlength, ptrVerifyFormatLengthModifiers lenmods, va_list *args)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     if (format && offsetToSpecifier && formatoffset && lenmods && args)
@@ -645,6 +650,11 @@ static eValidateFormatResult validate_Format_Specifier(const char* format, char*
             //For example, if it is Windows unique, it should only be allowed in Windows, POSIX unique = only POSIX, etc
             result = VALIDATE_FORMAT_INVALID_FORMAT;
             break;
+        }
+        if (result != VALIDATE_FORMAT_INVALID_FORMAT)
+        {
+            *offsetToSpecifier += 1;
+            result = update_Format_Offset(format, *offsetToSpecifier, formatoffset, formatlength);
         }
     }
     else
@@ -727,10 +737,10 @@ int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formata
                 //finally the specifier to check the arg for
                 //NOTE: Using if-else instead of a switch because of how the M_VALIDATE_FORMAT_RETURN_VAL works it may not exit a switch-case
                 //      the way we want. It will process as expected for if-else though which is why we are doing this.-TJE
-                M_VALIDATE_FORMAT_RETURN_VAL(validate_Format_Specifier(format, &offsetToSpecifier, &formatoffset, &lenmods, &args))
+                M_VALIDATE_FORMAT_RETURN_VAL(validate_Format_Specifier(format, &offsetToSpecifier, &formatoffset, formatLength, &lenmods, &args))
 
                 //get next specifier, if any
-                offsetToSpecifier = strstr(format, "%");
+                offsetToSpecifier = strstr(offsetToSpecifier, "%");
                 if (offsetToSpecifier)
                 {
                     M_VALIDATE_FORMAT_RETURN_VAL(update_Format_Offset(format, offsetToSpecifier, &formatoffset, formatLength))
