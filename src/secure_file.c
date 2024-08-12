@@ -394,7 +394,7 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
         printf("Checking directory security: %s\n", pathOnly);
 #endif
 #if defined (DISABLE_SECURE_FILE_PATH_CHECK)
-#pragma message "WARNING: Disabling Cert-C directory security check. This is not recommended for production level code."
+#pragma message ("WARNING: Disabling Cert-C directory security check. This is not recommended for production level code.")
         if (true)
 #else
         //Check for secure directory - This code must traverse the full path and validate permissions of the directories.
