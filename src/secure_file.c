@@ -393,8 +393,13 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char* filename, const char* m
 #if defined (_DEBUG)
         printf("Checking directory security: %s\n", pathOnly);
 #endif
+#if defined (DISABLE_SECURE_FILE_PATH_CHECK)
+#pragma message ("WARNING: Disabling Cert-C directory security check. This is not recommended for production level code.")
+        if (true)
+#else
         //Check for secure directory - This code must traverse the full path and validate permissions of the directories.
         if (os_Is_Directory_Secure(pathOnly))
+#endif
         {
             fileInfo->file = M_NULLPTR;
 #if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
