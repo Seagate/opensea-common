@@ -2343,6 +2343,9 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
     case TRUNCATED_FILE:
         printf("TRUNCATED FILE\n");
         break;
+    case INSECURE_PATH:
+        printf("INSECURE PATH\n");
+        break;
     case UNKNOWN:
         printf("UNKNOWN\n");
         break;

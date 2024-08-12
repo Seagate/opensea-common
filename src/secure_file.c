@@ -514,7 +514,9 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
         else
         {
             fileInfo->error = SEC_FILE_INSECURE_PATH;
+#if defined (_DEBUG)
             printf("Insecure path\n");
+#endif
         }
         if (pathOnly && allocatedLocalPathOnly)
         {

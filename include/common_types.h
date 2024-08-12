@@ -298,6 +298,7 @@ extern "C"
         NOT_PARSED = 32,           /* File was not parsed */
         MISSING_INFORMATION = 33,  /* file is missing information inorder to be parsed correctly */
         TRUNCATED_FILE = 34,       /* file is truncated and might be missing data for parsing it correctly */
+        INSECURE_PATH = 35,
         UNKNOWN
     );
 
