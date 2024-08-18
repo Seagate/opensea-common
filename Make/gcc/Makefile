@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 #
 # Do NOT modify or remove this copyright and license
 #
@@ -14,11 +15,11 @@
 
 NAME=opensea-common
 #Change the Major version when major interface changes are made. E.g. tDevice changes
-MAJOR=1
+MAJOR=4
 #Change the Minor version when new features are added. 
-MINOR=21
+MINOR=0
 #Change the patch version when only bug fixes are made.
-PATCH=2
+PATCH=0
 VERSION=$(MAJOR).$(MINOR).$(PATCH)
 SRC_DIR=../../src/
 INC_DIR=-I../../include
@@ -28,9 +29,25 @@ CFLAGS ?= -Wall -Wextra -c -fPIC -I.
 CFLAGS += -c -fPIC -I.
 LFLAGS ?= -Wall
 LIB_SRC_FILES = \
-    $(SRC_DIR)common.c\
-    $(SRC_DIR)common_platform.c\
-    $(SRC_DIR)common_nix.c
+    $(SRC_DIR)bit_manip.c\
+    $(SRC_DIR)env_detect.c\
+    $(SRC_DIR)error_translation.c\
+	$(SRC_DIR)io_utils.c\
+	$(SRC_DIR)math_utils.c\
+	$(SRC_DIR)memory_safety.c\
+	$(SRC_DIR)pattern_utils.c\
+	$(SRC_DIR)posix_env_detect.c\
+	$(SRC_DIR)posix_secure_file.c\
+	$(SRC_DIR)precision_timer.c\
+	$(SRC_DIR)prng.c\
+	$(SRC_DIR)secure_file.c\
+	$(SRC_DIR)secured_env_vars.c\
+	$(SRC_DIR)sleep.c\
+	$(SRC_DIR)string_utils.c\
+	$(SRC_DIR)time_utils.c\
+	$(SRC_DIR)type_conversion.c\
+	$(SRC_DIR)unit_conversion.c\
+	$(SRC_DIR)validate_format.c
 
 #NOTE -Wsign-conversion can be useful but warns way too much by default. Only enable it if debugging specific problems
 COMPILER_VERSION := $(shell $(CC) --version)
@@ -96,6 +113,10 @@ else
 		
 		CFLAGS += -Wvla -Wfloat-equal -Wjump-misses-init -Wlogical-op -Wdouble-promotion -Wformat-security\
 			-Wold-style-definition -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes
+	else
+		#CFLAGS += -std=gnu99
+		CFLAGS += -Wvla -Wfloat-equal -Wjump-misses-init -Wlogical-op -Wdouble-promotion -Wformat-security\
+				-Wold-style-definition -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes
 	endif
 endif
     

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 #
 # Do NOT modify or remove this copyright and license
 #
@@ -426,9 +427,25 @@ CFLAGS += -DVMK_CROSS_COMP
 #CFLAGS += -c -fPIC -I.#-std=gnu99
 LFLAGS = -Wall $(VMW_LINK_FLAGS)
 LIB_SRC_FILES = \
-    $(SRC_DIR)common.c\
-    $(SRC_DIR)common_platform.c\
-    $(SRC_DIR)common_nix.c
+	$(SRC_DIR)bit_manip.c\
+	$(SRC_DIR)env_detect.c\
+	$(SRC_DIR)error_translation.c\
+	$(SRC_DIR)io_utils.c\
+	$(SRC_DIR)math_utils.c\
+	$(SRC_DIR)memory_safety.c\
+	$(SRC_DIR)pattern_utils.c\
+	$(SRC_DIR)posix_env_detect.c\
+	$(SRC_DIR)posix_secure_file.c\
+	$(SRC_DIR)precision_timer.c\
+	$(SRC_DIR)prng.c\
+	$(SRC_DIR)secure_file.c\
+	$(SRC_DIR)secured_env_vars.c\
+	$(SRC_DIR)sleep.c\
+	$(SRC_DIR)string_utils.c\
+	$(SRC_DIR)time_utils.c\
+	$(SRC_DIR)type_conversion.c\
+	$(SRC_DIR)unit_conversion.c\
+	$(SRC_DIR)validate_format.c
 
 PROJECT_DEFINES += $(VMW_EXTRA_DEFS)#-DDISABLE_NVME_PASSTHROUGH  #-D_DEBUG
 

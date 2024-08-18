@@ -1,3 +1,8 @@
+# SPDX-License-Identifier: MPL-2.0
 #opensea-common can get the current username, however this reads the /etc/passwd file in linux/unix systems
 #because of this and it possibly being a security concern, this is now off by default.
 option('username', type : 'feature', value : 'disabled')
+#It is strongly recommended that directory security is left enabled, however if this is unable to work
+#correctly in your environment, you can disable it, although you will get a warning message by doing so.
+#Directory security is implemented to https://wiki.sei.cmu.edu/confluence/display/c/FIO15-C.+Ensure+that+file+operations+are+performed+in+a+secure+directory
+option('directorysecurity', type : 'feature', value : 'enabled')
