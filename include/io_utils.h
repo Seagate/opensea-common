@@ -18,6 +18,7 @@
 #pragma once
 
 #include "env_detect.h"
+#include "common_types.h"
 #include "code_attributes.h"
 #include <stdio.h>
 

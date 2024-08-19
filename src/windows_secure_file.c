@@ -230,7 +230,7 @@ static bool win_Get_File_Security_Info_By_File(FILE* file, fileAttributes* attrs
     return success;
 }
 
-fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
+M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64 st;
@@ -264,7 +264,7 @@ fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
 }
 
 
-fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
+M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64 st;
@@ -298,7 +298,7 @@ fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
 }
 
 
-fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
+M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
 {
     if (file)
     {

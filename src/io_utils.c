@@ -1280,7 +1280,7 @@ static bool is_Allowed_Unit_For_Get_And_Validate_Input(const char* unit, eAllowe
     return allowed;
 }
 
-bool get_And_Validate_Integer_Input_ULL(const char* strToConvert, char** unit, eAllowedUnitInput unittype, unsigned long long* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char* strToConvert, char** unit, eAllowedUnitInput unittype, unsigned long long* outputInteger)
 {
     if (strToConvert && outputInteger)
     {
@@ -1347,7 +1347,7 @@ bool get_And_Validate_Integer_Input_ULL(const char* strToConvert, char** unit, e
     }
 }
 
-bool get_And_Validate_Integer_Input_UL(const char* strToConvert, char** unit, eAllowedUnitInput unittype, unsigned long* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char* strToConvert, char** unit, eAllowedUnitInput unittype, unsigned long* outputInteger)
 {
     if (strToConvert && outputInteger)
     {
@@ -1414,7 +1414,7 @@ bool get_And_Validate_Integer_Input_UL(const char* strToConvert, char** unit, eA
     }
 }
 
-bool get_And_Validate_Integer_Input_UI(const char* strToConvert, char** unit, eAllowedUnitInput unittype, unsigned int* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_UI(const char* strToConvert, char** unit, eAllowedUnitInput unittype, unsigned int* outputInteger)
 {
     unsigned long temp = 0;
     bool ret = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
@@ -1435,7 +1435,8 @@ bool get_And_Validate_Integer_Input_UI(const char* strToConvert, char** unit, eA
     }
     return ret;
 }
-bool get_And_Validate_Integer_Input_US(const char* strToConvert, char** unit, eAllowedUnitInput unittype, unsigned short* outputInteger)
+
+M_NODISCARD bool get_And_Validate_Integer_Input_US(const char* strToConvert, char** unit, eAllowedUnitInput unittype, unsigned short* outputInteger)
 {
     unsigned long temp = 0;
     bool ret = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
@@ -1457,7 +1458,7 @@ bool get_And_Validate_Integer_Input_US(const char* strToConvert, char** unit, eA
     return ret;
 }
 
-bool get_And_Validate_Integer_Input_UC(const char* strToConvert, char** unit, eAllowedUnitInput unittype, unsigned char* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_UC(const char* strToConvert, char** unit, eAllowedUnitInput unittype, unsigned char* outputInteger)
 {
     unsigned long temp = 0;
     bool ret = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
@@ -1479,7 +1480,7 @@ bool get_And_Validate_Integer_Input_UC(const char* strToConvert, char** unit, eA
     return ret;
 }
 
-bool get_And_Validate_Integer_Input_LL(const char* strToConvert, char** unit, eAllowedUnitInput unittype, long long* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char* strToConvert, char** unit, eAllowedUnitInput unittype, long long* outputInteger)
 {
     if (strToConvert && outputInteger)
     {
@@ -1547,7 +1548,7 @@ bool get_And_Validate_Integer_Input_LL(const char* strToConvert, char** unit, eA
     }
 }
 
-bool get_And_Validate_Integer_Input_L(const char* strToConvert, char** unit, eAllowedUnitInput unittype, long* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_L(const char* strToConvert, char** unit, eAllowedUnitInput unittype, long* outputInteger)
 {
     if (strToConvert && outputInteger)
     {
@@ -1614,7 +1615,7 @@ bool get_And_Validate_Integer_Input_L(const char* strToConvert, char** unit, eAl
     }
 }
 
-bool get_And_Validate_Integer_Input_I(const char* strToConvert, char** unit, eAllowedUnitInput unittype, int* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_I(const char* strToConvert, char** unit, eAllowedUnitInput unittype, int* outputInteger)
 {
     long temp = 0;
     bool ret = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
@@ -1642,7 +1643,7 @@ bool get_And_Validate_Integer_Input_I(const char* strToConvert, char** unit, eAl
     return ret;
 }
 
-bool get_And_Validate_Integer_Input_S(const char* strToConvert, char** unit, eAllowedUnitInput unittype, short* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_S(const char* strToConvert, char** unit, eAllowedUnitInput unittype, short* outputInteger)
 {
     long temp = 0;
     bool ret = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
@@ -1670,7 +1671,7 @@ bool get_And_Validate_Integer_Input_S(const char* strToConvert, char** unit, eAl
     return ret;
 }
 
-bool get_And_Validate_Integer_Input_C(const char* strToConvert, char** unit, eAllowedUnitInput unittype, char* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_C(const char* strToConvert, char** unit, eAllowedUnitInput unittype, char* outputInteger)
 {
     long temp = 0;
     bool ret = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
@@ -1698,7 +1699,7 @@ bool get_And_Validate_Integer_Input_C(const char* strToConvert, char** unit, eAl
     return ret;
 }
 
-bool get_And_Validate_Integer_Input_Uint64(const char* strToConvert, char** unit, eAllowedUnitInput unittype, uint64_t* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_Uint64(const char* strToConvert, char** unit, eAllowedUnitInput unittype, uint64_t* outputInteger)
 {
 #if defined(USING_C11) && defined (get_Valid_Integer_Input)
     //let the generic selection macro do this
@@ -1734,7 +1735,7 @@ bool get_And_Validate_Integer_Input_Uint64(const char* strToConvert, char** unit
 #endif
 }
 
-bool get_And_Validate_Float_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, float* outputFloat)
+M_NODISCARD bool get_And_Validate_Float_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, float* outputFloat)
 {
     if (strToConvert && outputFloat)
     {
@@ -1780,7 +1781,7 @@ bool get_And_Validate_Float_Input(const char* strToConvert, char** unit, eAllowe
     }
 }
 
-bool get_And_Validate_Double_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, double* outputFloat)
+M_NODISCARD bool get_And_Validate_Double_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, double* outputFloat)
 {
     if (strToConvert && outputFloat)
     {
@@ -1826,7 +1827,7 @@ bool get_And_Validate_Double_Input(const char* strToConvert, char** unit, eAllow
     }
 }
 
-bool get_And_Validate_LDouble_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, long double* outputFloat)
+M_NODISCARD bool get_And_Validate_LDouble_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, long double* outputFloat)
 {
     if (strToConvert && outputFloat)
     {
@@ -1873,12 +1874,12 @@ bool get_And_Validate_LDouble_Input(const char* strToConvert, char** unit, eAllo
 }
 
 //NOTE: This function is deprecated as you should use the one that matches your integer type instead for best error handling.
-bool get_And_Validate_Integer_Input(const char* strToConvert, uint64_t* outputInteger)
+M_DEPRECATED bool get_And_Validate_Integer_Input(const char* strToConvert, uint64_t* outputInteger)
 {
     return get_And_Validate_Integer_Input_Uint64(strToConvert, M_NULLPTR, ALLOW_UNIT_NONE, outputInteger);
 }
 
-bool get_And_Validate_Integer_Input_Uint32(const char* strToConvert, char** unit, eAllowedUnitInput unittype, uint32_t* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_Uint32(const char* strToConvert, char** unit, eAllowedUnitInput unittype, uint32_t* outputInteger)
 {
 #if defined(USING_C11) && defined (get_Valid_Integer_Input)
     //let the generic selection macro do this
@@ -1900,7 +1901,7 @@ bool get_And_Validate_Integer_Input_Uint32(const char* strToConvert, char** unit
 #endif
 }
 
-bool get_And_Validate_Integer_Input_Uint16(const char* strToConvert, char** unit, eAllowedUnitInput unittype, uint16_t* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_Uint16(const char* strToConvert, char** unit, eAllowedUnitInput unittype, uint16_t* outputInteger)
 {
     if (strToConvert && outputInteger)
     {
@@ -1924,7 +1925,7 @@ bool get_And_Validate_Integer_Input_Uint16(const char* strToConvert, char** unit
     }
 }
 
-bool get_And_Validate_Integer_Input_Uint8(const char* strToConvert, char** unit, eAllowedUnitInput unittype, uint8_t* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_Uint8(const char* strToConvert, char** unit, eAllowedUnitInput unittype, uint8_t* outputInteger)
 {
     if (strToConvert && outputInteger)
     {
@@ -1948,7 +1949,7 @@ bool get_And_Validate_Integer_Input_Uint8(const char* strToConvert, char** unit,
     }
 }
 
-bool get_And_Validate_Integer_Input_Int64(const char* strToConvert, char** unit, eAllowedUnitInput unittype, int64_t* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_Int64(const char* strToConvert, char** unit, eAllowedUnitInput unittype, int64_t* outputInteger)
 {
 #if defined(USING_C11) && defined (get_Valid_Integer_Input)
     //let the generic selection macro do this
@@ -2002,7 +2003,7 @@ bool get_And_Validate_Integer_Input_Int64(const char* strToConvert, char** unit,
 #endif
 }
 
-bool get_And_Validate_Integer_Input_Int32(const char* strToConvert, char** unit, eAllowedUnitInput unittype, int32_t* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_Int32(const char* strToConvert, char** unit, eAllowedUnitInput unittype, int32_t* outputInteger)
 {
 #if defined(USING_C11) && defined (get_Valid_Integer_Input)
     //let the generic selection macro do this
@@ -2033,7 +2034,7 @@ bool get_And_Validate_Integer_Input_Int32(const char* strToConvert, char** unit,
 #endif
 }
 
-bool get_And_Validate_Integer_Input_Int16(const char* strToConvert, char** unit, eAllowedUnitInput unittype, int16_t* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_Int16(const char* strToConvert, char** unit, eAllowedUnitInput unittype, int16_t* outputInteger)
 {
     if (strToConvert && outputInteger)
     {
@@ -2056,7 +2057,7 @@ bool get_And_Validate_Integer_Input_Int16(const char* strToConvert, char** unit,
     }
 }
 
-bool get_And_Validate_Integer_Input_Int8(const char* strToConvert, char** unit, eAllowedUnitInput unittype, int8_t* outputInteger)
+M_NODISCARD bool get_And_Validate_Integer_Input_Int8(const char* strToConvert, char** unit, eAllowedUnitInput unittype, int8_t* outputInteger)
 {
     if (strToConvert && outputInteger)
     {
@@ -2172,7 +2173,7 @@ ssize_t getline(char** lineptr, size_t* n, FILE* stream)
 
 #if !defined (__STDC_ALLOC_LIB__) && !defined (_GNU_SOURCE) && !(defined (__FreeBSD__) && __FreeBSD__ > 3) && !defined (HAVE_VASPRINTF)
 
-FUNC_ATTR_PRINTF(2, 3) int asprintf(char **M_RESTRICT strp, const char *M_RESTRICT fmt, ...)
+M_NODISCARD FUNC_ATTR_PRINTF(2, 3) int asprintf(char **M_RESTRICT strp, const char *M_RESTRICT fmt, ...)
 {
     //call vasprintf
     va_list args;
@@ -2182,7 +2183,7 @@ FUNC_ATTR_PRINTF(2, 3) int asprintf(char **M_RESTRICT strp, const char *M_RESTRI
     return result;
 }
 
-int vasprintf(char **M_RESTRICT strp, const char *M_RESTRICT fmt, va_list arg)
+M_NODISCARD FUNC_ATTR_PRINTF(2, 0) int vasprintf(char **M_RESTRICT strp, const char *M_RESTRICT fmt, va_list arg)
 {
     va_list copyarg;
     #if defined (va_copy)
@@ -2356,6 +2357,8 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
     uint32_t printIter = 0;
     uint32_t offset = 0;
     uint32_t offsetWidth = 2;//used to figure out how wide we need to pad with 0's for consistent output, 2 is the minimum width
+    DECLARE_ZERO_INIT_ARRAY(char, lineBuff, 18);
+    uint8_t lineBuffIter = 0;
     if (showOffset)
     {
         if (bufferLen <= UINT8_MAX)
@@ -2385,8 +2388,6 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
             printf("%" PRIX32 "  ", printIter);
         }
     }
-    DECLARE_ZERO_INIT_ARRAY(char, lineBuff, 18);
-    uint8_t lineBuffIter = 0;
     for (printIter = 0, offset = 0; printIter < bufferLen; ++printIter, ++lineBuffIter)
     {
         if (lineBuffIter > sizeof(lineBuff))

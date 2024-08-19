@@ -104,7 +104,7 @@ void free_Secure_File_Info(secureFileInfo** fileInfo)
 // If reopening a file used earlier, it is recommended to provide this info so it can be validated as the same file
 // It is recommended to not reopen files, but that may not always be possible. So this exists to help validate
 // that a file has not changed in some unexpected way.-TJE
-secureFileInfo* secure_Open_File(const char* filename, const char* mode, const fileExt* extList, fileAttributes* expectedFileInfo, fileUniqueIDInfo* uniqueIdInfo /*optional*/)
+M_NODISCARD secureFileInfo* secure_Open_File(const char* filename, const char* mode, const fileExt* extList, fileAttributes* expectedFileInfo, fileUniqueIDInfo* uniqueIdInfo /*optional*/)
 {
     secureFileInfo* fileInfo = C_CAST(secureFileInfo*, safe_calloc(1, sizeof(secureFileInfo)));
     if (fileInfo && filename && mode) /* Not checking extList and outInfo because it is optional */
@@ -530,7 +530,7 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
 }
 
 //We can add additional things to do before closing the file to validate things, flush, etc as needed to make this better.
-eSecureFileError secure_Close_File(secureFileInfo* fileInfo)
+M_NODISCARD eSecureFileError secure_Close_File(secureFileInfo* fileInfo)
 {
     if (fileInfo)
     {
@@ -702,7 +702,7 @@ M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileIn
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
-eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, offset_t offset, int initialPosition)
+M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, offset_t offset, int initialPosition)
 {
     if (fileInfo)
     {
@@ -737,7 +737,7 @@ eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, offset_t offset, int
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
-eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
+M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
 {
     if (fileInfo)
     {
@@ -760,7 +760,7 @@ eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
-offset_t secure_Tell_File(secureFileInfo* fileInfo)
+M_NODISCARD offset_t secure_Tell_File(secureFileInfo* fileInfo)
 {
     if (fileInfo)
     {
@@ -827,7 +827,7 @@ eSecureFileError secure_Flush_File(secureFileInfo* fileInfo)
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
-eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
+M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
 {
     if (fileInfo)
     {
@@ -866,7 +866,7 @@ eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
-eSecureFileError secure_Delete_File_By_Name(const char* filename, eSecureFileDeleteNameAction deleteAction)
+M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eSecureFileDeleteNameAction deleteAction)
 {
     if (filename)
     {
@@ -1022,7 +1022,7 @@ eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos)
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
-eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, va_list args)
+FUNC_ATTR_PRINTF(2, 0) eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, va_list args)
 {
     if (fileInfo && fileInfo->file)
     {
@@ -1067,7 +1067,7 @@ eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
-eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, ...)
+FUNC_ATTR_PRINTF(2, 3) eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, ...)
 {
     if (fileInfo && fileInfo->file)
     {

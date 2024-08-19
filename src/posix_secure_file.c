@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
+M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct stat st;
@@ -69,7 +69,7 @@ fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
     return attrs;
 }
 
-fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
+M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct stat st;
@@ -105,7 +105,7 @@ fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
     return attrs;
 }
 
-fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
+M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
 {
     fileUniqueIDInfo* uniqueID = M_NULLPTR;
 #if defined (UEFI_C_SOURCE)
