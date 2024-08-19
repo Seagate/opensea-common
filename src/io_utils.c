@@ -2352,12 +2352,14 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
     printf("\n");
 }
 
+#define LINE_BUF_STR_LEN 18
+#define LINE_WIDTH 16
 static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset)
 {
     uint32_t printIter = 0;
     uint32_t offset = 0;
     uint32_t offsetWidth = 2;//used to figure out how wide we need to pad with 0's for consistent output, 2 is the minimum width
-    DECLARE_ZERO_INIT_ARRAY(char, lineBuff, 18);
+    DECLARE_ZERO_INIT_ARRAY(char, lineBuff, LINE_BUF_STR_LEN);
     uint8_t lineBuffIter = 0;
     if (showOffset)
     {
@@ -2371,7 +2373,7 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
             offsetWidth = 4;
             printf("\n          "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
         }
-        else if (bufferLen <= 0xFFFFFF)
+        else if (bufferLen <= UINT32_C(0xFFFFFF))
         {
             offsetWidth = 6;
             printf("\n            "); //0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  ");
@@ -2383,37 +2385,37 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
         }
         //we print out 2 (0x) + printf formatting width + 2 (spaces) then the offsets
 
-        for (printIter = 0; printIter < 16 && printIter < bufferLen; printIter++)
+        for (printIter = 0; printIter < LINE_WIDTH && printIter < bufferLen; printIter++)
         {
             printf("%" PRIX32 "  ", printIter);
         }
     }
     for (printIter = 0, offset = 0; printIter < bufferLen; ++printIter, ++lineBuffIter)
     {
-        if (lineBuffIter > sizeof(lineBuff))
+        if (lineBuffIter >= LINE_BUF_STR_LEN)
         {
             lineBuffIter = 0;
         }
 
         //for every 16 bytes we print, we need to make a newline, then print the offset (hex) before we print the data again
-        if (printIter % 16 == 0)
+        if (printIter % LINE_WIDTH == 0)
         {
             if (showOffset)
             {
                 switch (offsetWidth)
                 {
                 case 4:
-                    printf("\n  0x%04"PRIX32" ", offset);
+                    printf("\n  0x%04" PRIX32 " ", offset);
                     break;
                 case 6:
-                    printf("\n  0x%06"PRIX32" ", offset);
+                    printf("\n  0x%06" PRIX32 " ", offset);
                     break;
                 case 8:
-                    printf("\n  0x%08"PRIX32" ", offset);
+                    printf("\n  0x%08" PRIX32 " ", offset);
                     break;
                 case 2:
                 default:
-                    printf("\n  0x%02"PRIX32" ", offset);
+                    printf("\n  0x%02" PRIX32 " ", offset);
                     break;
                 }
             }
@@ -2421,9 +2423,9 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
             {
                 printf("\n  ");
             }
-            offset += 16;
+            offset += LINE_WIDTH;
         }
-        printf("%02"PRIX8" ", dataBuffer[printIter]);
+        printf("%02" PRIX8 " ", dataBuffer[printIter]);
         if (showPrint)
         {
             if (safe_isascii(dataBuffer[printIter]) && safe_isprint(C_CAST(int, dataBuffer[printIter])))
@@ -2435,16 +2437,15 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
                 lineBuff[lineBuffIter] = '.';
             }
         }
-        if (showPrint && ((printIter + 1) % 16 == 0 || printIter + 1 == bufferLen))
+        if (showPrint && ((printIter + 1) % LINE_WIDTH == 0 || printIter + 1 == bufferLen))
         {
-            lineBuff[17] = '\0';
+            uint32_t spacePadding = (printIter + 1) % LINE_WIDTH;
+            lineBuff[LINE_BUF_STR_LEN - 1] = '\0';
             lineBuffIter = UINT8_MAX;//this is done to cause an overflow when the ++happens during the loop
-            //need to calculate if padding is needed before printing character translations...but how...
-            uint32_t spacePadding = (printIter + 1) % 16;
             if (spacePadding)
             {
                 uint32_t counter = 0;
-                while (counter < ((16 - spacePadding)))
+                while (counter < ((LINE_WIDTH - spacePadding)))
                 {
                     printf("   ");
                     counter++;
@@ -2453,7 +2454,7 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
             //space after last printed hex 
             printf("  ");
             printf("%s", lineBuff);
-            memset(lineBuff, 0, sizeof(lineBuff) / sizeof(*lineBuff));
+            memset(lineBuff, 0, LINE_BUF_STR_LEN);
         }
     }
     printf("\n\n");
