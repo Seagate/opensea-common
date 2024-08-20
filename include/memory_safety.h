@@ -17,6 +17,7 @@
 
 #include "code_attributes.h"
 #include "common_types.h"
+#include "type_conversion.h"
 #include <stdlib.h>
 #include <string.h> //to pull in memset for anything that includes this file
 
@@ -68,6 +69,108 @@ extern "C"
             (*mem) = M_NULLPTR;
         }
     }
+
+    static M_INLINE void safe_Free_char(char** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_schar(signed char** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_uchar(unsigned char** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_wchar(wchar_t** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_short(signed short** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_ushort(unsigned short** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_int(signed int** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_uint(unsigned int** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_long(signed long** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_ulong(unsigned long** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_longlong(signed long long** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_ulonglong(unsigned long long** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_float(float** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_double(double** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_longdouble(long double** mem)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    #if defined(USING_C11) && defined (HAVE_C11_GENERIC_SELECTION)
+    //This is a generic selection macro.
+    //so based on the type of X, it will call the appropriate function for that type.
+    //similar to an overloaded function in C++ for different types.
+    //NOTE: Not using intX_t or uintX_t since these are type defs to one of the types in the macro below.
+    //NOTE: No default case so we can get a warning when this doesn't expand correctly.
+    #define safe_free(mem) _Generic((mem), \
+                        char**: safe_Free_char,\
+                        unsigned char**: safe_Free_uchar,\
+                        signed short**: safe_Free_short,\
+                        unsigned short**: safe_Free_ushort,\
+                        signed int**: safe_Free_int,\
+                        unsigned int**: safe_Free_uint,\
+                        signed long**: safe_Free_long,\
+                        unsigned long**: safe_Free_ulong,\
+                        signed long long**: safe_Free_longlong,\
+                        unsigned long long**: safe_Free_ulonglong,\
+                        float**: safe_Free_float,\
+                        double**: safe_Free_double,\
+                        long double**: safe_Free_longdouble,\
+                        void **: safe_Free, \
+                        default: safe_Free\
+                        )(mem)
+    #elif !defined (__cplusplus)
+    #define safe_free(mem) safe_Free(M_REINTERPRET_CAST(void**, mem))
+    #endif //C11
 
     //-----------------------------------------------------------------------------
     //
@@ -175,6 +278,108 @@ extern "C"
         }
     }
 
+    static M_INLINE void safe_Free_aligned_char(char** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_aligned_wchar(wchar_t** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_aligned_schar(signed char** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_aligned_uchar(unsigned char** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_aligned_short(signed short** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_aligned_ushort(unsigned short** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_aligned_int(signed int** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_aligned_uint(unsigned int** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_aligned_long(signed long** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_aligned_ulong(unsigned long** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_aligned_longlong(signed long long** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_aligned_ulonglong(unsigned long long** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_aligned_float(float** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_aligned_double(double** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    static M_INLINE void safe_Free_aligned_longdouble(long double** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
+
+    #if defined(USING_C11) && defined (HAVE_C11_GENERIC_SELECTION)
+    //This is a generic selection macro.
+    //so based on the type of X, it will call the appropriate function for that type.
+    //similar to an overloaded function in C++ for different types.
+    //NOTE: Not using intX_t or uintX_t since these are type defs to one of the types in the macro below.
+    //NOTE: No default case so we can get a warning when this doesn't expand correctly.
+    #define safe_free_aligned(mem) _Generic((mem), \
+                        char**: safe_Free_aligned_char,\
+                        unsigned char**: safe_Free_aligned_uchar,\
+                        signed short**: safe_Free_aligned_short,\
+                        unsigned short**: safe_Free_aligned_ushort,\
+                        signed int**: safe_Free_aligned_int,\
+                        unsigned int**: safe_Free_aligned_uint,\
+                        signed long**: safe_Free_aligned_long,\
+                        unsigned long**: safe_Free_aligned_ulong,\
+                        signed long long**: safe_Free_aligned_longlong,\
+                        unsigned long long**: safe_Free_aligned_ulonglong,\
+                        float**: safe_Free_aligned_float,\
+                        double**: safe_Free_aligned_double,\
+                        long double**: safe_Free_aligned_longdouble,\
+                        void **: safe_Free_aligned, \
+                        default: safe_Free_aligned\
+                        )(mem)
+    #elif !defined (__cplusplus)
+    #define safe_free_aligned(mem) safe_Free_aligned(M_REINTERPRET_CAST(void**, mem))
+    #endif //C11
+
     //-----------------------------------------------------------------------------
     //
     //  calloc_aligned(size_t num, size_t size, size_t alignment)
@@ -270,7 +475,10 @@ extern "C"
     //  Exit:
     //
     //-----------------------------------------------------------------------------
-    void free_page_aligned(void* ptr);
+    static M_INLINE void free_page_aligned(void* ptr)
+    {
+        free_aligned(ptr);
+    }
 
     //-----------------------------------------------------------------------------
     //
@@ -292,6 +500,33 @@ extern "C"
             (*mem) = M_NULLPTR;
         }
     }
+
+    #if defined(USING_C11) && defined (HAVE_C11_GENERIC_SELECTION)
+    //This is a generic selection macro.
+    //so based on the type of X, it will call the appropriate function for that type.
+    //similar to an overloaded function in C++ for different types.
+    //NOTE: Not using intX_t or uintX_t since these are type defs to one of the types in the macro below.
+    //NOTE: No default case so we can get a warning when this doesn't expand correctly.
+    #define safe_free_page_aligned(mem) _Generic((mem), \
+                        char**: safe_Free_aligned_char,\
+                        unsigned char**: safe_Free_aligned_uchar,\
+                        signed short**: safe_Free_aligned_short,\
+                        unsigned short**: safe_Free_aligned_ushort,\
+                        signed int**: safe_Free_aligned_int,\
+                        unsigned int**: safe_Free_aligned_uint,\
+                        signed long**: safe_Free_aligned_long,\
+                        unsigned long**: safe_Free_aligned_ulong,\
+                        signed long long**: safe_Free_aligned_longlong,\
+                        unsigned long long**: safe_Free_aligned_ulonglong,\
+                        float**: safe_Free_aligned_float,\
+                        double**: safe_Free_aligned_double,\
+                        long double**: safe_Free_aligned_longdouble,\
+                        void **: safe_Free_aligned, \
+                        default: safe_Free_aligned\
+                        )(mem)
+    #elif !defined (__cplusplus)
+    #define safe_free_page_aligned(mem) safe_Free_page_aligned(M_REINTERPRET_CAST(void**, mem))
+    #endif //C11
 
     //-----------------------------------------------------------------------------
     //
@@ -353,4 +588,29 @@ extern "C"
 
 #if defined (__cplusplus)
 }
+
+#if !defined (safe_free)
+template <typename T>
+M_INLINE void safe_free(T** mem)
+{
+    safe_Free(reinterpret_cast<void**>(mem));
+}
+#endif //safe_free
+
+#if !defined (safe_free_aligned)
+template <typename T>
+M_INLINE void safe_free_aligned(T** mem)
+{
+    safe_Free_aligned(reinterpret_cast<void**>(mem));
+}
+#endif //safe_free_aligned
+
+#if !defined (safe_free_page_aligned)
+template <typename T>
+M_INLINE void safe_free_page_aligned(T** mem)
+{
+    safe_Free_aligned(reinterpret_cast<void**>(mem));
+}
+#endif //safe_free_page_aligned
+
 #endif

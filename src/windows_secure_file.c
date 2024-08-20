@@ -107,7 +107,7 @@ static bool win_File_Attributes_By_Name(const char* const filename, LPWIN32_FILE
         {
             success = true;
         }
-        safe_Free(C_CAST(void**, &localPathToCheckBuf));
+        safe_free(&localPathToCheckBuf);
         localPathToCheck = M_NULLPTR;
     }
     return success;
@@ -370,7 +370,7 @@ static char* get_Current_User_SID(void)
                 }
             }
             explicit_zeroes(pUser, dwSize);
-            safe_Free(C_CAST(void**, &pUser));
+            safe_free(&pUser);
         }
         CloseHandle(hToken);
     }
@@ -492,7 +492,7 @@ static bool get_System_Volume(char *winSysVol, size_t winSysVolLen)
                     common_String_Concat(windowsSystemVolume, MAX_PATH, "\\");
                 }
             }
-            safe_Free(C_CAST(void**, &systemDrive));
+            safe_free(&systemDrive);
         }
         if (safe_strnlen(windowsSystemVolume, MAX_PATH) > 0)
         {
@@ -765,7 +765,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
     } while (0);
 
     SecureZeroMemory(mySidStr, safe_strlen(mySidStr));
-    safe_Free(C_CAST(void**, &mySidStr));
+    safe_free(&mySidStr);
     if (mySid != M_NULLPTR)
     {
         SecureZeroMemory(mySid, GetLengthSid(mySid));
@@ -850,7 +850,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         return false;
     }
     /* Now num_of_dirs indicates # of dirs we must check */
-    safe_Free(C_CAST(void**, &path_copy));
+    safe_free(&path_copy);
     dirs = C_CAST(char**, safe_malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)));
     if (!dirs)
     {
@@ -861,14 +861,14 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     if (!dirs[num_of_dirs - 1])
     {
         /* Handle error */
-        safe_Free(C_CAST(void**, &dirs));
+        safe_free(&dirs);
         return false;
     }
     path_copy = strdup(fullpath);
     if (!path_copy)
     {
         /* Handle error */
-        safe_Free(C_CAST(void**, &dirs));
+        safe_free(&dirs);
         return false;
     }
 
@@ -885,7 +885,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             break;
         }
     }
-    safe_Free(C_CAST(void**, &path_copy));
+    safe_free(&path_copy);
     if (!secure)
     {
         //cleanup dirs before returning error
@@ -895,7 +895,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         {
             safe_Free(C_CAST(void**, &dirs[cleanup]));
         }
-        safe_Free(C_CAST(void**, &dirs));
+        safe_free(&dirs);
         return secure;
     }
 
@@ -935,7 +935,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             secure = false;
             if (appendedTrailingSlash)
             {
-                safe_Free(C_CAST(void**, &dirptr));
+                safe_free(&dirptr);
             }
             break;
         }
@@ -946,7 +946,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             free_File_Attributes(&attrs);
             if (appendedTrailingSlash)
             {
-                safe_Free(C_CAST(void**, &dirptr));
+                safe_free(&dirptr);
             }
             break;
         }
@@ -988,7 +988,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                                 {
                                     secure = false;
                                 }
-                                safe_Free(C_CAST(void**, &reparsePath));
+                                safe_free(&reparsePath);
                             }
                             else
                             {
@@ -1004,7 +1004,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                     {
                         secure = false;
                     }
-                    safe_Free(C_CAST(void**, &reparseData));
+                    safe_free(&reparseData);
                 }
                 else
                 {
@@ -1019,7 +1019,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 {
                     if (appendedTrailingSlash)
                     {
-                        safe_Free(C_CAST(void**, &dirptr));
+                        safe_free(&dirptr);
                     }
                     break;
                 }
@@ -1030,7 +1030,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 free_File_Attributes(&attrs);
                 if (appendedTrailingSlash)
                 {
-                    safe_Free(C_CAST(void**, &dirptr));
+                    safe_free(&dirptr);
                 }
                 break;
             }
@@ -1043,7 +1043,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             free_File_Attributes(&attrs);
             if (appendedTrailingSlash)
             {
-                safe_Free(C_CAST(void**, &dirptr));
+                safe_free(&dirptr);
             }
             break;
         }
@@ -1051,7 +1051,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         secure = is_Folder_Secure(attrs->winSecurityDescriptor, dirptr);
         if (appendedTrailingSlash)
         {
-            safe_Free(C_CAST(void**, &dirptr));
+            safe_free(&dirptr);
         }
 
         free_File_Attributes(&attrs);
@@ -1062,7 +1062,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         safe_Free(C_CAST(void**, &dirs[i]));
     }
 
-    safe_Free(C_CAST(void**, &dirs));
+    safe_free(&dirs);
     return secure;
 }
 

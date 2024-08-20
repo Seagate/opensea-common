@@ -217,11 +217,6 @@ M_FUNC_ATTR_MALLOC void* malloc_page_aligned(size_t size)
     }
 }
 
-void free_page_aligned(void* ptr)
-{
-    free_aligned(ptr);
-}
-
 M_FUNC_ATTR_MALLOC void* calloc_page_aligned(size_t num, size_t size)
 {
     size_t pageSize = get_System_Pagesize();

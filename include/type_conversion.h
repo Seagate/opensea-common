@@ -40,7 +40,7 @@ extern "C"
     #if defined (USING_CPP98)
         #define M_REINTERPRET_CAST(type, ptr) reinterpret_cast<type>(ptr)
     #else //C
-        #define M_REINTERPRET_CAST(type, ptr) (*((type *)&(ptr)))
+        #define M_REINTERPRET_CAST(type, ptr) C_CAST(type, ptr)
     #endif
 
     #if defined (USING_CPP98)

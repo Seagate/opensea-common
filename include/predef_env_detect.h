@@ -73,7 +73,7 @@ extern "C"
                 #define USING_C23
             #endif //__STDC_VERSION__ >= 202311L
         #endif //__STDC_VERSION__
-    #elif defined (_MSC_VER)
+    #elif defined (_MSC_VER) && !defined (__cplusplus)
             //Set an approximate standard based on MSVC_VER
             //https://learn.microsoft.com/en-us/cpp/overview/compiler-versions?view=msvc-170#service-releases-starting-with-visual-studio-2017
             //https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B

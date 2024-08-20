@@ -38,7 +38,7 @@ eReturnValues fill_Random_Pattern_In_Buffer(uint8_t* ptrData, uint32_t dataLengt
         localPtr[iter] = xorshiftplus32();
     }
     memcpy(ptrData, localPtr, dataLength);//copy only the length of the original pointer since we may have overallocated and rounded up earlier.
-    safe_Free(C_CAST(void**, &localPtr));
+    safe_free(&localPtr);
     return SUCCESS;
 }
 
@@ -55,7 +55,7 @@ eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* ptrData, 
         localPtr[iter] = hexPattern;
     }
     memcpy(ptrData, localPtr, dataLength);//copy only the length of the original pointer since we may have overallocated and rounded up earlier.
-    safe_Free(C_CAST(void**, &localPtr));
+    safe_free(&localPtr);
     return SUCCESS;
 }
 

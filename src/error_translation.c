@@ -53,7 +53,7 @@ void print_Errno_To_Screen(errno_t error)
         {
             printf("%d - <Unable to convert error to string>\n", error);
         }
-        safe_Free(C_CAST(void**, &errorString));
+        safe_free(&errorString);
     }
     else
     {

@@ -450,14 +450,14 @@ static eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
     //wcrtombs_s
     if (wcrtomb_s(&conversionresult, convertedChar, charArrayLen, character, &state) != 0)
     {
-        safe_Free(C_CAST(void**, &convertedChar));
+        safe_free(&convertedChar);
         return VALIDATE_FORMAT_INVALID_FORMAT;
     }
 #else
     //wcrtomb
     conversionresult = wcrtomb(convertedChar, character, &state);
 #endif
-    safe_Free(C_CAST(void**, &convertedChar));
+    safe_free(&convertedChar);
     if (conversionresult == SIZE_MAX || conversionresult == 0)
     {
         result = VALIDATE_FORMAT_INVALID_FORMAT;
@@ -550,7 +550,7 @@ static eValidateFormatResult validate_WStr_Conversion(const wchar_t* string)
         //wcsrtombs_s
         if (wcsrtombs_s(&conversionResult, charStr, charStrSize, &string, 0, &state) != 0)
         {
-            safe_Free(C_CAST(void**, &charStr));
+            safe_free(&charStr);
             return VALIDATE_FORMAT_INVALID_FORMAT;//Should this be a different error for encoding failure???
         }
 #else
@@ -561,7 +561,7 @@ static eValidateFormatResult validate_WStr_Conversion(const wchar_t* string)
         {
             result = VALIDATE_FORMAT_INVALID_FORMAT;
         }
-        safe_Free(C_CAST(void**, &charStr));
+        safe_free(&charStr);
     }
     else
     {

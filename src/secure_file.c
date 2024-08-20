@@ -236,9 +236,9 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 fileInfo->error = SEC_FILE_FILE_ALREADY_EXISTS;
                 if (duplicatedModeForInternalUse)
                 {
-                    safe_Free(C_CAST(void**, &internalmode));
+                    safe_free(&internalmode);
                 }
-                safe_Free(C_CAST(void**, &intFileName));
+                safe_free(&intFileName);
                 return fileInfo;
             }
             else if (!creatingFile && !fileexists)
@@ -246,9 +246,9 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 fileInfo->error = SEC_FILE_INVALID_FILE;
                 if (duplicatedModeForInternalUse)
                 {
-                    safe_Free(C_CAST(void**, &internalmode));
+                    safe_free(&internalmode);
                 }
-                safe_Free(C_CAST(void**, &intFileName));
+                safe_free(&intFileName);
                 return fileInfo;
             }
         }
@@ -312,10 +312,10 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 }
                 if (!foundValidExtension)
                 {
-                    safe_Free(C_CAST(void**, &intFileName));
+                    safe_free(&intFileName);
                     if (duplicatedModeForInternalUse)
                     {
-                        safe_Free(C_CAST(void**, &internalmode));
+                        safe_free(&internalmode);
                     }
                     fileInfo->error = SEC_FILE_INVALID_FILE_EXTENSION;
                     return fileInfo;
@@ -335,11 +335,11 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                     )
                 {
                     fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
-                    safe_Free(C_CAST(void**, &intFileName));
+                    safe_free(&intFileName);
                     free_File_Attributes(&beforeattrs);
                     if (duplicatedModeForInternalUse)
                     {
-                        safe_Free(C_CAST(void**, &internalmode));
+                        safe_free(&internalmode);
                     }
                     return fileInfo;
                 }
@@ -350,10 +350,10 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                 if (!exact_Compare_SIDS_And_DACL_Strings(beforeattrs->winSecurityDescriptor, expectedFileInfo->winSecurityDescriptor))
                 {
                     fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
-                    safe_Free(C_CAST(void**, &intFileName));
+                    safe_free(&intFileName);
                     if (duplicatedModeForInternalUse)
                     {
-                        safe_Free(C_CAST(void**, &internalmode));
+                        safe_free(&internalmode);
                     }
                     free_File_Attributes(&beforeattrs);
                     return fileInfo;
@@ -421,14 +421,14 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                         fclose(fileInfo->file);
                         fileInfo->file = M_NULLPTR;
                         fileInfo->error = SEC_FILE_INVALID_FILE_UNIQUE_ID;
-                        safe_Free(C_CAST(void**, &intFileName));
+                        safe_free(&intFileName);
                         if (duplicatedModeForInternalUse)
                         {
-                            safe_Free(C_CAST(void**, &internalmode));
+                            safe_free(&internalmode);
                         }
                         if (pathOnly && allocatedLocalPathOnly)
                         {
-                            safe_Free(C_CAST(void**, &pathOnly));
+                            safe_free(&pathOnly);
                         }
                         return fileInfo;
                     }
@@ -447,14 +447,14 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                         fclose(fileInfo->file);
                         fileInfo->file = M_NULLPTR;
                         fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
-                        safe_Free(C_CAST(void**, &intFileName));
+                        safe_free(&intFileName);
                         if (duplicatedModeForInternalUse)
                         {
-                            safe_Free(C_CAST(void**, &internalmode));
+                            safe_free(&internalmode);
                         }
                         if (pathOnly && allocatedLocalPathOnly)
                         {
-                            safe_Free(C_CAST(void**, &pathOnly));
+                            safe_free(&pathOnly);
                         }
                         return fileInfo;
                     }
@@ -467,14 +467,14 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
                         fclose(fileInfo->file);
                         fileInfo->file = M_NULLPTR;
                         fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
-                        safe_Free(C_CAST(void**, &intFileName));
+                        safe_free(&intFileName);
                         if (duplicatedModeForInternalUse)
                         {
-                            safe_Free(C_CAST(void**, &internalmode));
+                            safe_free(&internalmode);
                         }
                         if (pathOnly && allocatedLocalPathOnly)
                         {
-                            safe_Free(C_CAST(void**, &pathOnly));
+                            safe_free(&pathOnly);
                         }
                         return fileInfo;
                     }
@@ -520,13 +520,13 @@ secureFileInfo* secure_Open_File(const char* filename, const char* mode, const f
         }
         if (pathOnly && allocatedLocalPathOnly)
         {
-            safe_Free(C_CAST(void**, &pathOnly));
+            safe_free(&pathOnly);
         }
         if (duplicatedModeForInternalUse)
         {
-            safe_Free(C_CAST(void**, &internalmode));
+            safe_free(&internalmode);
         }
-        safe_Free(C_CAST(void**, &intFileName));
+        safe_free(&intFileName);
     }
     else if (fileInfo)
     {
@@ -905,10 +905,10 @@ eSecureFileError secure_Delete_File_By_Name(const char* filename, eSecureFileDel
         }
         if (!os_Is_Directory_Secure(pathOnly))
         {
-            safe_Free(C_CAST(void**, &pathOnly));
+            safe_free(&pathOnly);
             return SEC_FILE_INSECURE_PATH;
         }
-        safe_Free(C_CAST(void**, &pathOnly));
+        safe_free(&pathOnly);
         //Check if the file is already open before attempting to remove it
         errno_t fileerror = 0;
         FILE* checkExist = M_NULLPTR;

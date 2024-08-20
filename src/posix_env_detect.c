@@ -59,7 +59,7 @@ static int lin_file_filter(const struct dirent *entry, const char *stringMatch)
                 }
             }
         }
-        safe_Free(C_CAST(void**, &filename));
+        safe_free(&filename);
     }
     return match;
 }
@@ -125,7 +125,7 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
                                 tok = common_String_Token(M_NULLPTR, &releaselen, "\n", &saveptr);
                             }
                         }
-                        safe_Free(C_CAST(void**, &releaseMemory));
+                        safe_free(&releaseMemory);
                     }
                 }
                 fclose(release);
@@ -167,14 +167,14 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
                             if (fread(etcFileMem, sizeof(char), C_CAST(size_t, releaseSize), release) != C_CAST(size_t, releaseSize) || ferror(release))
                             {
                                 //some error occurred reading the file, so free this memory to return a checkable null pointer.
-                                safe_Free(C_CAST(void**, &etcFileMem));
+                                safe_free(&etcFileMem);
                             }
                         }
                     }
                     fclose(release);
                 }
             }
-            safe_Free(C_CAST(void**, &fileName));
+            safe_free(&fileName);
         }
     }
     return etcFileMem;
@@ -212,7 +212,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
                         {
                             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, safe_strlen(releaseFile)), releaseFile);
                         }
-                        safe_Free(C_CAST(void**, &releaseFile));
+                        safe_free(&releaseFile);
                     }
                 }
                 if (gotLinuxInfo)
@@ -233,7 +233,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
                 {
                     snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, safe_strlen(versionFile)), versionFile);
                 }
-                safe_Free(C_CAST(void**, &versionFile));
+                safe_free(&versionFile);
             }
         }
         if (!gotLinuxInfo && lsbReleaseOffset >= 0)
@@ -249,7 +249,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
                 {
                     snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, safe_strlen(lsbreleaseFile)), lsbreleaseFile);
                 }
-                safe_Free(C_CAST(void**, &lsbreleaseFile));
+                safe_free(&lsbreleaseFile);
             }
         }
         //clean up the memory allocated for the list of version files and release files.
@@ -306,7 +306,7 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
                             gotLinuxInfo = true;
                             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, issueSize), issueMemory);
                         }
-                        safe_Free(C_CAST(void**, &issueMemory));
+                        safe_free(&issueMemory);
                     }
                 }
                 fclose(issue);
@@ -808,7 +808,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                     temp = safe_realloc(rawBuffer, dataSize);
                     if(!temp)
                     {
-                        safe_Free(C_CAST(void**, &rawBuffer));
+                        safe_free(&rawBuffer);
                         break;
                     }
                     rawBuffer = temp;
@@ -829,7 +829,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                     }
                 }
                 explicit_zeroes(rawBuffer, dataSize);
-                safe_Free(C_CAST(void**, &rawBuffer));
+                safe_free(&rawBuffer);
             }
             explicit_zeroes(userInfo, sizeof(struct passwd));
         #else //defined (POSIX_2001) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
