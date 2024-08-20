@@ -322,7 +322,7 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
 #else
             snprintf(destination, destinationSizeBytes, "%s%s", dup, source);
 #endif
-            safe_Free(C_CAST(void**, &dup));
+            safe_free(&dup);
             return destination;
         }
 #endif   
@@ -380,7 +380,7 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
 #else
             snprintf(destination, destinationSizeBytes, "%s%.*s", dup, sourceLength, source);
 #endif
-            safe_Free(C_CAST(void**, &dup));
+            safe_free(&dup);
             return destination;
         }
 #endif

@@ -62,7 +62,7 @@ eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
         if (directoryStringLength > OPENSEA_PATH_MAX || directoryStringLength == 0 || directoryStringLength > OPENSEA_PATH_MAX - sizeof(ntdll) / sizeof(*ntdll))
         {
             //error
-            safe_Free(C_CAST(void**, &systemPathBuf));
+            safe_free(&systemPathBuf);
             systemPath = M_NULLPTR;
             return FAILURE;
         }
@@ -105,7 +105,7 @@ eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
                 ret = FAILURE;
             }
         }
-        safe_Free(C_CAST(void**, &systemPathBuf));
+        safe_free(&systemPathBuf);
         systemPath = M_NULLPTR;
     }
     else

@@ -681,7 +681,7 @@ static eKnownTERM get_Terminal_Type(void)
             terminalType = TERM_GENERIC_COLOR;
         }
     }
-    safe_Free(C_CAST(void**, &termEnv));
+    safe_free(&termEnv);
     return terminalType;
 }
 

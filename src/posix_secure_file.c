@@ -147,7 +147,7 @@ static uid_t get_sudo_uid(void)
             {
                 sudouid = C_CAST(uid_t, temp);
             }
-            safe_Free(C_CAST(void**, &uidstr));
+            safe_free(&uidstr);
         }
         gotsudouid = true;
     }
@@ -222,7 +222,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         return false;
     }
     /* Now num_of_dirs indicates # of dirs we must check */
-    safe_Free(C_CAST(void**, &path_copy));
+    safe_free(&path_copy);
 
     if (!(dirs = C_CAST(char**, safe_malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)))))
     {
@@ -239,7 +239,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 #if defined (_DEBUG)
         printf("Cannot dup fullpath into dirs array\n");
 #endif
-        safe_Free(C_CAST(void**, &dirs));
+        safe_free(dirs);
         return false;
     }
 
@@ -249,7 +249,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 #if defined (_DEBUG)
         printf("Cannot dup fullpath to path copy\n");
 #endif
-        safe_Free(C_CAST(void**, &dirs));
+        safe_free(dirs);
         return false;
     }
 
@@ -268,7 +268,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             break;
         }
     }
-    safe_Free(C_CAST(void**, &path_copy));
+    safe_free(&path_copy);
     if (!secure)
     {
         //cleanup dirs before returning error
@@ -278,7 +278,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         {
             safe_Free(C_CAST(void**, &dirs[cleanup]));
         }
-        safe_Free(C_CAST(void**, &dirs));
+        safe_free(dirs);
         return secure;
     }
 
@@ -335,7 +335,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 printf("readlink failed\n");
 #endif
                 secure = false;
-                safe_Free(C_CAST(void**, &link));
+                safe_free(&link);
                 break;
             }
             else if (r >= linksize)
@@ -345,7 +345,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 printf("link truncated\n");
 #endif
                 secure = false;
-                safe_Free(C_CAST(void**, &link));
+                safe_free(&link);
                 break;
             }
             link[r] = '\0';
@@ -360,10 +360,10 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 printf("recursive link check failed\n");
 #endif
                 secure = false;
-                safe_Free(C_CAST(void**, &link));
+                safe_free(&link);
                 break;
             }
-            safe_Free(C_CAST(void**, &link));
+            safe_free(&link);
             continue;
         }
 #endif //S_ISLNK - if this macro does not exist, then cannot check for links
@@ -433,7 +433,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         safe_Free(C_CAST(void**, &dirs[i]));
     }
 
-    safe_Free(C_CAST(void**, &dirs));
+    safe_free(dirs);
     return secure;
 }
 

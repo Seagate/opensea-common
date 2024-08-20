@@ -396,7 +396,7 @@ char* get_Time_String_From_TM_Structure(const struct tm* timeptr, char* buffer, 
         {
             setlocale(LC_TIME, currentLocale);
         }
-        safe_Free(C_CAST(void**, &currentLocale));
+        safe_free(&currentLocale);
 #endif //!C11 annex k or MSFT secure lib for asctime
     }
     return buffer;
