@@ -61,6 +61,11 @@ typedef struct _REPARSE_DATA_BUFFER {
 } REPARSE_DATA_BUFFER, * PREPARSE_DATA_BUFFER;
 #endif //HAVE_NTIFS
 
+static M_INLINE void safe_free_reparse_data_buf(REPARSE_DATA_BUFFER **reparse)
+{
+    safe_Free(M_REINTERPRET_CAST(void**, reparse));
+}
+
 int64_t os_Get_File_Size(FILE* filePtr)
 {
     LARGE_INTEGER fileSize;
@@ -348,6 +353,11 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
     return M_NULLPTR;
 }
 
+static M_INLINE void safe_free_token_user(TOKEN_USER **user)
+{
+    safe_Free(M_REINTERPRET_CAST(void**, user));
+}
+
 static char* get_Current_User_SID(void)
 {
     char* sidAsString = M_NULLPTR;
@@ -370,7 +380,7 @@ static char* get_Current_User_SID(void)
                 }
             }
             explicit_zeroes(pUser, dwSize);
-            safe_free(&pUser);
+            safe_free_token_user(&pUser);
         }
         CloseHandle(hToken);
     }
@@ -861,14 +871,14 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     if (!dirs[num_of_dirs - 1])
     {
         /* Handle error */
-        safe_free(&dirs);
+        safe_free(dirs);
         return false;
     }
     path_copy = strdup(fullpath);
     if (!path_copy)
     {
         /* Handle error */
-        safe_free(&dirs);
+        safe_free(dirs);
         return false;
     }
 
@@ -895,7 +905,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         {
             safe_free(&dirs[cleanup]);
         }
-        safe_free(&dirs);
+        safe_free(dirs);
         return secure;
     }
 
@@ -1004,7 +1014,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                     {
                         secure = false;
                     }
-                    safe_free(&reparseData);
+                    safe_free_reparse_data_buf(&reparseData);
                 }
                 else
                 {
@@ -1062,7 +1072,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         safe_free(&dirs[i]);
     }
 
-    safe_free(&dirs);
+    safe_free(dirs);
     return secure;
 }
 
