@@ -17,6 +17,8 @@
 #pragma once
 
 #include "common_types.h"
+#include "code_attributes.h"
+#include "memory_safety.h"
 
 #if defined (__cplusplus)
 extern "C"
@@ -28,6 +30,11 @@ extern "C"
         uint64_t timerStart;//system specific count value. Do not use directly. May be NS, CPU ticks, or some other system specific value
         uint64_t timerStop;//system specific count value. Do not use directly. May be NS, CPU ticks, or some other system specific value
     }seatimer_t;
+
+    static M_INLINE void safe_free_seatimer(seatimer_t **timer)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, timer));
+    }
 
     //-----------------------------------------------------------------------------
     //

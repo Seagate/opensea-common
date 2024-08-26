@@ -23,6 +23,8 @@
 
 #if defined (_WIN32)
 #include "windows_version_detect.h" //for determining if securezeromemory2 is available and setting the pragma to include the required library.
+#elif defined (POSIX_1990) || defined (BSD4_2)
+#include <dirent.h>
 #endif
 
 #if defined (__cplusplus)
@@ -171,6 +173,14 @@ extern "C"
     #elif !defined (__cplusplus)
     #define safe_free(mem) safe_Free(M_REINTERPRET_CAST(void**, mem))
     #endif //C11
+
+    #if defined (POSIX_1990) || defined(BSD4_2)
+    //special function for struct dirent since it is used often in the libs
+    static M_INLINE void safe_free_dirent(struct dirent **ent)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, ent));
+    }
+    #endif
 
     //-----------------------------------------------------------------------------
     //

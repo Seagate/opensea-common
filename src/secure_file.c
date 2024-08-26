@@ -68,7 +68,7 @@ void free_File_Attributes(fileAttributes** attributes)
             }
 #endif //_WIN32
             explicit_zeroes(*attributes, sizeof(fileAttributes));
-            safe_Free(C_CAST(void**, attributes));
+            safe_Free(M_REINTERPRET_CAST(void**, attributes));
         }
     }
 }

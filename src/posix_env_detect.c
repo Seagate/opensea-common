@@ -255,14 +255,14 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
         //clean up the memory allocated for the list of version files and release files.
         for (int iter = 0; iter < releaseFileCount; ++iter)
         {
-            safe_Free(C_CAST(void**, &osrelease[iter]));
+            safe_free_dirent(&osrelease[iter]);
         }
         for (int iter = 0; iter < versionFileCount; ++iter)
         {
-            safe_Free(C_CAST(void**, &osversion[iter]));
+            safe_free_dirent(&osversion[iter]);
         }
-        safe_Free(C_CAST(void**, &osrelease));
-        safe_Free(C_CAST(void**, &osversion));
+        safe_free_dirent(osrelease);
+        safe_free_dirent(osversion);
         if (gotLinuxInfo)
         {
             //remove any control characters from the string. We don't need them for what we're doing

@@ -174,7 +174,7 @@ M_NODISCARD eEnvVarResult get_Environment_Variable(const char* environmentVariab
                 if (getenv_s(&test, *envVar, size, environmentVariableName) != 0)
                 {
                     //error, so free this before moving on
-                    safe_Free(C_CAST(void**, envVar));
+                    safe_free(envVar);
                 }
             }
         }

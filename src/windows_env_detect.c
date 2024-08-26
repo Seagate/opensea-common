@@ -292,14 +292,14 @@ eReturnValues get_Current_User_Name(char **userName)
                 //convert output to a char string
                 if (wcstombs_s(&charsConverted, *userName, usernameLength, localName, usernameLength))
                 {
-                    safe_Free(C_CAST(void**, userName));
+                    safe_free(userName);
                     ret = FAILURE;
                 }
 #else
                 //just copy it over after allocating
                 if (strcpy_s(*userName, usernameLength, localName))
                 {
-                    safe_Free(C_CAST(void**, userName));
+                    safe_free(userName);
                     return FAILURE;
                 }
 #endif
@@ -307,7 +307,7 @@ eReturnValues get_Current_User_Name(char **userName)
                 {
                     if (strcat_s(*userName, usernameLength, isAdmin))
                     {
-                        safe_Free(C_CAST(void**, userName));
+                        safe_free(userName);
                         return FAILURE;
                     }
                 }

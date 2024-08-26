@@ -893,7 +893,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         //so use it + 1 as the starting point to go through and cleanup the stored directories to free up memory
         for (ssize_t cleanup = i + 1; cleanup <= num_of_dirs; cleanup++)
         {
-            safe_Free(C_CAST(void**, &dirs[cleanup]));
+            safe_free(&dirs[cleanup]);
         }
         safe_free(&dirs);
         return secure;
@@ -1059,7 +1059,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
     for (i = 0; i < num_of_dirs; i++)
     {
-        safe_Free(C_CAST(void**, &dirs[i]));
+        safe_free(&dirs[i]);
     }
 
     safe_free(&dirs);

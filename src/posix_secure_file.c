@@ -276,7 +276,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         //so use it + 1 as the starting point to go through and cleanup the stored directories to free up memory
         for (ssize_t cleanup = i + 1; cleanup <= num_of_dirs; cleanup++)
         {
-            safe_Free(C_CAST(void**, &dirs[cleanup]));
+            safe_free(&dirs[cleanup]);
         }
         safe_free(dirs);
         return secure;
@@ -430,7 +430,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
     for (i = 0; i < num_of_dirs; i++)
     {
-        safe_Free(C_CAST(void**, &dirs[i]));
+        safe_free(&dirs[i]);
     }
 
     safe_free(dirs);
@@ -449,7 +449,7 @@ bool os_Directory_Exists(const char* const pathToCheck)
     if (attrs != M_NULLPTR)
     {
         bool result = M_ToBool(S_ISDIR(attrs->filemode));
-        safe_Free(C_CAST(void**, &attrs));
+        free_File_Attributes(&attrs);
         return result;
     }
     else
@@ -464,7 +464,7 @@ bool os_File_Exists(const char* const filetoCheck)
     if (attrs != M_NULLPTR)
     {
         bool result = M_ToBool(S_ISREG(attrs->filemode));
-        safe_Free(C_CAST(void**, &attrs));
+        free_File_Attributes(&attrs);
         return result;
     }
     else
