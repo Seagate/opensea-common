@@ -15,11 +15,11 @@
 
 NAME=opensea-common
 #Change the Major version when major interface changes are made. E.g. tDevice changes
-MAJOR=1
+MAJOR=4
 #Change the Minor version when new features are added. 
-MINOR=21
+MINOR=1
 #Change the patch version when only bug fixes are made.
-PATCH=2
+PATCH=0
 
 DESC_ACCEPTANCE_LEVEL=certified
 
