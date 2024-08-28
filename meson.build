@@ -1,51 +1,147 @@
-project('opensea-common', 'c', license: 'MPL-2.0', version: '1.21.2', default_options : ['warning_level=2'])
+# SPDX-License-Identifier: MPL-2.0
+project('opensea-common', 'c', license: 'MPL-2.0', version: '4.1.0', default_options : ['warning_level=2'])
 
 c = meson.get_compiler('c')
 
 global_cpp_args = []
+deps = []
 
-#if GCC less than 5, need to set -std=gnu99 at minimum. gnu11 became the default in 5, 17 default in 7 or 8.
-#TODO: May be able to move to c11/gnu11 instead, but will need to do a lot of testing first
-#skipping sunos since this was a compatibility issue that was reported earlier. May be able to find a better way to handle this in the future.
 if not (target_machine.system() == 'sunos') and c.get_id().contains('gcc')
   if c.version().version_compare('<5.0')
-    if c.has_argument('-std=gnu99')
-      #Add this argument to the list since C99 is a minimum required C compiler standard
-      add_global_arguments('-std=gnu99', language: 'c',)
-    else
-      error('C99/GNU99 standard is required but was not able to be set!')
-    endif
+  #4.7.4+ has C11 support, but c89 is the default standard so we need to change it.
+    if c.has_argument('-std=gnu11')
+        c_std = 'gnu11'
+        if meson.version().version_compare('<1.0.0')
+          add_project_arguments('-std=gnu11', language : 'c')
+        endif
+      elif c.has_argument('-std=gnu99')
+        #Add this argument to the list since C99 is a minimum required C compiler standard
+        c_std = 'gnu99'
+        if meson.version().version_compare('<1.0.0')
+          add_project_arguments('-std=gnu99', language : 'c')
+        endif
+      else
+        error('C99/GNU99 standard is required but was not able to be set!')
+      endif
   endif
 endif
 
 warning_flags = [ ]
+linker_flags = [ ] #additional linker flags to add per-compiler for hardening.
 
 if c.get_id().contains('gcc') or c.get_id().contains('clang')
   #TODO: Add -Wcast-align=strict and fix these issues to help ensure better portability
   #NOTE: -Wsign-conversion can be useful while debugging, but there are numerous places this shows up
   #      and it is not useful, so only add it while debugging.
+  #NOTE: 4/4/2024 - adding flags from https://best.openssf.org/Compiler-Hardening-Guides/Compiler-Options-Hardening-Guide-for-C-and-C++
   warning_flags = [
   #	'-Wcast-align=strict',
-  #	'-Wsign-conversion',
-	'-Wshadow=compatible-local',
-	'-Wvla',
-	'-Wfloat-equal',
-	'-Wnull-dereference',
-	'-Wunused-const-variable',
-	'-Wduplicated-cond',
-	'-Wjump-misses-init',
-	'-Wstringop-overflow',
-	'-Wlogical-op',
-	'-Wshift-overflow=2',
-	'-Wdouble-promotion',
-	'-Wformat-security',
+  '-Wshadow=compatible-local',
+  '-Wvla',
+  '-Wfloat-equal',
+  '-Wnull-dereference',
+  '-Wunused-const-variable',
+  '-Wunused-parameter',
+  '-Wunused-value',
+  '-Wduplicated-cond',
+  '-Wjump-misses-init',
+  '-Wstringop-overflow',
+  '-Wlogical-op',
+  '-Wshift-overflow',
+  '-Wshift-overflow=1',
+  '-Wshift-overflow=2',
+  '-Wdouble-promotion',
+  '-Wformat-security',
   '-Wold-style-definition',
   '-Wstrict-prototypes',
   '-Wmissing-declarations',
   '-Wmissing-prototypes',
   '-Wchar-subscripts',
-  '-Wundef'
+  '-Wundef',
+  '-Wformat',
+  '-Wformat=2',
+  '-Wint-conversion',#-Warith-conversion
+  '-Wenum-conversion',
+  '-Wfloat-conversion',
+  '-Wint-to-pointer-cast',
+  '-Wimplicit-fallthrough',
+  '-D_GLIBCXX_ASSERTIONS',
+  '-fstrict-flex-arrays=1', #NOTE: Using level 1 since Windows often uses [1] at the end of it's structures. opensea-*libs has used this in a few places too.
+  '-fstack-protector-strong',
+  '-fno-delete-null-pointer-checks',
+  '-fno-strict-overflow',
+  '-fno-strict-aliasing',
+  '-ftrivial-auto-var-init=zero',
+  '-Wtrampolines', #GCC only at this time
+  '-Werror=implicit',
+  '-Werror=incompatible-pointer-types',
+  '-Wincompatible-pointer-types-discards-qualifiers',
+  '-Werror=int-conversion',
+  '-Werror=implicit-int',
+  '-Woverlength-strings',
+  '-Wnewline-eof',
+  '-Wno-c23-extensions', #We do not want this warning since we are already checking for when C23 extensions are available before we use them. If not, we use a compiler specific definition, or make it an empty definition.
+  '-Wparentheses',
+  '-Wextra-semi',
+  '-Wcast-qual',
+  '-Werror=sometimes-uninitialized',
+  '-Wuninitialized',
+  '-Wunevaluated-expression',
+  '-Wunsequenced',
+  '-Wvarargs',
+  '-Wwrite-strings',
+  '-Wrestrict',
+  '-Wstringop-truncation',
+  '-Werror=trigraphs',
+  '-Wunreachable-code',
+  '-Wcomment',
+  '-Wsequence-point',
+  '-Wreturn-type',
+  '-fvisibility=hidden', #to work similarly to Window's DLL import/export
   ]
+
+  if c.get_id().contains('gcc') and c.version().version_compare('>=10.0')
+    #only enable the sign conversion warning on versions 10 and up because it is way too noisy on earlier GCC versions than it is useful-TJE
+    warning_flags += '-Wsign-conversion'
+  endif
+
+  if c.get_id().contains('gcc') and target_machine.system() == 'windows'
+    #According to the link below, this is not needed in Windows...it also causes a bug in some versions of GCC for Windows.
+    #https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90458
+    #NOTE: While this appears to be fixed for versions 11 and 12, the current CI is failing on this with
+    #      version 12.2. If we want to or need to enable this, it should be done based on which versions we
+    #      know have been patched for this. -TJE
+  else
+    warning_flags += '-fstack-clash-protection'
+  endif
+
+  if target_machine.cpu_family() == 'ppc64'
+    #power pc builds generate a lot of warnings/notes about ABI changes since GCC-5
+    #this flag is disabling them because this is way too noisy.
+    warning_flags += ['-Wno-psabi']
+  elif target_machine.cpu_family() == 'x86_64'
+    warning_flags += ['-fcf-protection=full'] #this may be linux only at this time.
+  elif target_machine.cpu_family() == 'aarch64'
+    warning_flags += ['-mbranch-protection=standard']
+  endif
+
+  linker_flags += [
+    '-Wl,-z,nodlopen',
+    '-Wl,-z,noexecstack',
+    '-Wl,-z,relro',
+    '-Wl,-z,now'
+  ]
+
+  fortifytest = ''' #include <stdio.h>
+                      int main() {
+                          return 0;
+                      }
+                  '''
+  fortifyresult = c.compiles(fortifytest, name : '_FORTIFY_OVERRIDE', args : ['-U_FORTIFY_SOURCE', '-D_FORTIFY_SOURCE=5', '-Werror'])
+  if fortifyresult == true
+    warning_flags += ['-U_FORTIFY_SOURCE', '-D_FORTIFY_SOURCE=3']
+  endif
+
 elif c.get_id().contains('msvc')
   #See here for enabling/disabling msvc warnings:
   #https://learn.microsoft.com/en-us/cpp/build/reference/compiler-option-warning-level?view=msvc-170
@@ -58,13 +154,11 @@ elif c.get_id().contains('msvc')
     '/wd4668', # 'symbol' is not defined as a preprocessor macro, replacing with '0' for 'directives'. While like -Wundef, this creates too many warnings in system headers to use
     '/wd4820', # 'bytes' bytes padding added after construct 'member_name'
     '/wd4710', # 'function' : function not inlined
-    #'/wd4255', # 'function' : no function prototype given: converting '()' to '(void)' #NOTE: Only needed for /Wall, otherwise enabling can be good-TJE
     '/wd5045', # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
     '/wd4711', # function 'function' selected for inline expansion
     '/wd4324', # 'struct_name' : structure was padded due to __declspec(align())
     '/wd4221', # nonstandard extension used : 'identifier' : cannot be initialized using address of automatic variable
     '/wd4204', # nonstandard extension used : non-constant aggregate initializer
-    '/wd4061', # enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label
     '/wd5105', # macro expansion producing 'defined' has undefined behavior
     '/wd4746', # volatile access of '<expression>' is subject to /volatile:[iso|ms] setting; consider using __iso_volatile_load/store intrinsic functions.
     #Turn on the following warnings to make the output more useful or like GCC/clang
@@ -75,11 +169,59 @@ elif c.get_id().contains('msvc')
     '/w15031', # #pragma warning(pop): likely mismatch, popping warning state pushed in different file
     '/w15032', # detected #pragma warning(push) with no corresponding #pragma warning(pop)
     '/w15262', # implicit fall-through occurs here; are you missing a break statement? Use [[fallthrough]] when a break statement is intentionally omitted between cases
+    '/w14255', # 'function' : no function prototype given: converting '()' to '(void)' #NOTE: Only needed for /Wall, otherwise enabling can be good-TJE
+    '/w14242', # identifier conversion from type 1 to type 2, possible loss of data (matches -wconversion above)
+    '/w14254', # operator conversion from type 1 to type 2, possible loss of data (matches -wconversion above)
+    '/w14287', # operator: unsigned/negative constant mismatch (matches -wconversion above)
+    '/w14296', # operator: expression is always false
+    '/w14365', # action: conversion from type 1 to type 2, signed/unsigned mismatch (matches -wconversion above)
+    '/w14388', # implicit conversion warning during a comparison (matches -wconversion above)
+    '/w14545', # expression before comma evaluates to a function which is missing an argument list
+    '/w14546', # function call before comma missing argument list
+    '/w14547', # 'operator' : operator before comma has no effect; expected operator with side-effect
+    '/w14548', # expression before comma has no effect; expected expression with side-effect
+    '/w14549', # 'operator1': operator before comma has no effect; did you intend 'operator2'?
+    '/w14574', # 'identifier' is defined to be '0': did you mean to use '#if identifier'?
+    '/w14605', # 	'/Dmacro' specified on current command line, but was not specified when precompiled header was built
+    '/w14555', # expression has no effect; expected expression with side-effect
+    '/w14774', # 'string' : format string expected in argument number is not a string literal
+    '/w14777', # 'function' : format string 'string' requires an argument of type 'type1', but variadic argument number has type 'type2'
+    '/w14826', # Conversion from 'type1' to 'type2' is sign-extended. This may cause unexpected runtime behavior (more -wconversion)
+    '/w15219', # implicit conversion from 'type-1' to 'type-2', possible loss of data (-wconversion)
+    '/w15240', # 'attribute-name': attribute is ignored in this syntactic position 
+    '/w15245', # 'function': unreferenced function with internal linkage has been removed
+    '/w14555', # expression has no effect; expected expression with side-effect
+    '/w15264', # 'variable-name': 'const' variable is not used
+    '/w24302', # 'conversion': truncation from 'type1' to 'type2'
+    '/w14311', # 'variable': pointer truncation from 'type' to 'type'
+    '/w14312', # 'operation': conversion from 'type1' to 'type2' of greater size
+    '/w14319', # 'operator': zero extending 'type1' to 'type2' of greater size
     #Treat the following as errors
+    '/we4431', # missing type specifier - int assumed. Note: C no longer supports default-int
+    '/we4905', # wide string literal cast to 'LPSTR'
+    '/we4906', # string literal cast to 'LPWSTR'
     '/we4837', # trigraph detected: '??character' replaced by 'character'
     '/we4628', # digraphs not supported with -Ze. Character sequence 'digraph' not interpreted as alternate token for 'char'
     '/we4289', # nonstandard extension used : 'var' : loop control variable declared in the for-loop is used outside the for-loop scope
+    '/we4464', # relative include path contains '..'
+    '/GS', #security cookie for stack protection
+    '/sdl', #adds recommended security development lifecycle checks
+    '/Qspectre',
+    '/guard:cf', #control flow guard
+    '/d2guard4', #control flow guard
   ]
+
+  if c.has_argument('/std:c17')
+    c_std = 'c17'
+  endif
+
+  linker_flags += [
+    '/guard:cf', #control flow guard
+    '/SafeSEH', #on by default in x64 so it is unrecognized otherwise.
+    '/NXCOMPAT', #data execution prevention
+    '/dynamicbase', #address space randomization
+  ]
+
   #TODO: check compiler version to handle warnings that were off by default in earlier versions
   #ex: C4431 (level 4)	missing type specifier - int assumed. Note: C no longer supports default-int
   #    This was off by default in compilers before VS2012.
@@ -94,6 +236,7 @@ elif c.get_id().contains('xlc')
 endif
 
 add_project_arguments(c.get_supported_arguments(warning_flags), language : 'c')
+add_project_link_arguments(c.get_supported_link_arguments(linker_flags), language : 'c')
 
 
 if get_option('debug')
@@ -101,49 +244,102 @@ if get_option('debug')
 endif
 
 if get_option('username').enabled()
-  add_global_arguments('-DENABLE_READ_USERNAME', language : 'c')
+  global_cpp_args += ['-DENABLE_READ_USERNAME']
 endif
 
-src_files = ['src/common.c', 'src/common_platform.c']
+src_files = ['src/bit_manip.c', 
+            'src/env_detect.c', 
+            'src/error_translation.c',
+            'src/io_utils.c',
+            'src/math_utils.c',
+            'src/memory_safety.c',
+            'src/pattern_utils.c',
+            'src/precision_timer.c',
+            'src/prng.c',
+            'src/secure_file.c',
+            'src/secured_env_vars.c',
+            'src/sleep.c',
+            'src/string_utils.c',
+            'src/time_utils.c',
+            'src/type_conversion.c',
+            'src/unit_conversion.c',
+            'src/validate_format.c',
+            ]
 
-deps = []
+if c.has_header_symbol('stdlib.h', '__STDC_LIB_EXT1__')
+  add_project_arguments(['-D__STDC_WANT_LIB_EXT1__=1'], language : 'c')
+endif
 
-# Opensea common defines the nvme header globally and opensea-transport, opensea-operations and openseachest itself include this, so only need to declare it here
-if target_machine.system() == 'linux'
-  src_files += ['src/common_nix.c']
-  if c.check_header('linux/nvme_ioctl.h')
-	  global_cpp_args += ['-DSEA_NVME_IOCTL_H']
-  elif c.check_header('linux/nvme.h')
-	  global_cpp_args += ['-DSEA_NVME_H']
-  elif c.check_header('uapi/nvme.h')
-	  global_cpp_args += ['-DSEA_UAPI_NVME_H']
+if c.has_function('getenv_s', prefix : '#define __STDC_WANT_LIB_EXT1__ 1\n#include <stdlib.h>\n')
+  add_project_arguments(['-DHAVE_GETENV_S'], language : 'c')
+elif c.has_function('secure_getenv', prefix : '#define _GNU_SOURCE\n#include <stdlib.h>\n')
+  #TODO: check if user has disabled using this function through compile option
+  add_project_arguments(['-D_GNU_SOURCE', '-DHAVE_SECURE_GETENV'], language : 'c')
+elif c.has_function('__secure_getenv', prefix : '#define _GNU_SOURCE\n#include <stdlib.h>\n')
+  #TODO: check if user has disabled using this function through compile option
+  add_project_arguments(['-D_GNU_SOURCE', '-DHAVE___SECURE_GETENV'], language : 'c')
+endif
+
+#check which memset/bzero is available that will not be optimized out in case we do not have the ability to check via preprocessor in the code.
+if c.has_function('memset_explicit', prefix : '#include <string.h>')
+  global_cpp_args += ['-DHAVE_MEMSET_EXPLICIT']
+elif c.has_function('memset_s', prefix : '#define __STDC_WANT_LIB_EXT1__ 1\n#include <string.h>\n')
+  global_cpp_args += ['-DHAVE_MEMSET_S']
+elif c.has_function('explicit_bzero', prefix : '#include <strings.h>') or c.has_function('explicit_bzero', prefix : '#include <string.h>')
+  global_cpp_args += ['-DHAVE_EXPLICIT_BZERO']
+elif c.has_function('explicit_memset', prefix : '#include <string.h>')
+  global_cpp_args += ['-DHAVE_EXPLICIT_MEMSET']
+elif c.has_function('SecureZeroMemory2', prefix : '#include <windows.h>\n#include <winbase.h>', dependencies : c.find_library('volatileaccessu', required : false) )
+  global_cpp_args += ['-DHAVE_MSFT_SECURE_ZERO_MEMORY2']
+  deps += [c.find_library('volatileaccessu', required : true)]
+elif c.has_function('SecureZeroMemory', prefix : '#include <windows.h>')
+  global_cpp_args += ['-DHAVE_MSFT_SECURE_ZERO_MEMORY', '-DNO_HAVE_MSFT_SECURE_ZERO_MEMORY2']
+endif
+
+if c.has_header_symbol('stddef.h', '_Generic')
+  global_cpp_args += ['-DHAVE_C11_GENERIC_SELECTION']
+endif
+
+
+#test if setting _FORTIFY_SOURCE higher than default generates a warning
+#this issue showed up on Rocky Linux 8 and we don't want to generate extra noise
+#due to trying to follow openssf best practices
+if target_machine.system() != 'windows'
+    
+endif
+
+#check which version of strerror_r is available, posix or GNU
+if c.has_function('strerror_r', prefix : '#include <string.h>')
+  posix_strerror_r_check_code = ''' #include <string.h>
+              int main() {
+                  int result = strerror_r(0, NULL, 0);
+                  return 0;
+              }
+              '''
+  posix_strerror_r_result = c.compiles(posix_strerror_r_check_code, name : 'POSIX strerror_r')
+  if posix_strerror_r_result == true
+    global_cpp_args += ['-DHAVE_POSIX_STRERR_R']
   else
-	  global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
+    global_cpp_args += ['-DHAVE_GNU_STRERR_R']
   endif
-elif target_machine.system() == 'freebsd'
-  src_files += ['src/common_nix.c']
-  if not c.check_header('dev/nvme/nvme.h')
-	  global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
-  endif
-elif target_machine.system() == 'sunos'
-  src_files += ['src/common_nix.c']
-  global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
-elif target_machine.system() == 'aix'
-  src_files += ['src/common_nix.c']
-  if not c.check_header('sys/nvme.h')
-    global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH']
-  endif
-elif target_machine.system() == 'windows'
-  src_files += ['src/common_windows.c']
+endif
+
+if target_machine.system() == 'windows'
+  src_files += ['src/windows_env_detect.c', 'src/windows_secure_file.c', 'src/windows_version_detect.c']
   if c.get_define('__MINGW32__') != ''
-	  global_cpp_args += ['-DDISABLE_NVME_PASSTHROUGH', '-DSTRSAFE_NO_DEPRECATE']
-	  win32_version = c.find_library('version')
-	  advapi32 = c.find_library('advapi32')
-	  deps += [win32_version, advapi32]
+    global_cpp_args += ['-DSTRSAFE_NO_DEPRECATE']
+    win32_version = c.find_library('version')
+    advapi32 = c.find_library('advapi32')
+    deps += [win32_version, advapi32]
+  endif
+  if c.check_header('ntifs.h')
+    global_cpp_args += ['-DHAVE_NTIFS']
   endif
   global_cpp_args += ['-D_CRT_NONSTDC_NO_DEPRECATE', '-D_CRT_SECURE_NO_WARNINGS']
-  global_cpp_args += ['-DENABLE_CSMI']
-endif # TODO UEFI and vmware
+else
+  # assuming POSIX if not windows for now.
+  src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']
+endif
 
 m_dep = c.find_library('m', required : false)
 

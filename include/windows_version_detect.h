@@ -1,7 +1,8 @@
+// SPDX-License-Identifier: MPL-2.0
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012-2023 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,36 +10,21 @@
 //
 // ******************************************************************************************
 // 
-// \file common_windows.h
+// \file windows_version_detect.h
 // \brief Definitions and Windows specific functions
 
 #pragma once
+
+#include "env_detect.h"
 
 #if defined (__cplusplus)
 extern "C"
 {
 #endif
 
-    //This pragma is needed to tell a library including opensea-common to look for Version.lib for the version helping information in the .c file.
-    //NOTE: ARM requires 10.0.16299.0 API to get this library!
-    #if !defined (__MINGW32__) && !defined (__MINGW64__)
-    #pragma comment(lib,"Version.lib")//for getting Windows system versions
-    #pragma comment(lib,"Advapi32.lib")//for checking for "run as administrator". May not be necessary to build some tools, but putting this here to prevent problems.
-    #endif
-
     #include <sdkddkver.h>
     #include <winsdkver.h>
     #include <windows.h>
-#if !defined(NTDDSCSI_INCLUDED)
-    #include <ntddscsi.h>
-    #define NTDDSCSI_INCLUDED
-#endif
-    //more info on max path in Windows
-    //https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd
-    #define OPENSEA_PATH_MAX MAX_PATH
-
-    #define SYSTEM_PATH_SEPARATOR '\\'
-    #define SYSTEM_PATH_SEPARATOR_STR "\\"
 
     //  
     // _WIN32_WINNT version constants  
@@ -59,33 +45,46 @@ extern "C"
 
     //Visual studio MSVC versions that are easy to check for.
     //values come from here:https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
-    #define SEA_MSC_VER_VS2013      1800
-    #define SEA_MSC_VER_VS2015      1900
-    #define SEA_MSC_VER_VS2017_RTW  1910
-    #define SEA_MSC_VER_VS2017_15_3 1911
-    #define SEA_MSC_VER_VS2017_15_5 1912
-    #define SEA_MSC_VER_VS2017_15_6 1913
-    #define SEA_MSC_VER_VS2017_15_7 1914
-    #define SEA_MSC_VER_VS2017_15_8 1915
-    #define SEA_MSC_VER_VS2017_15_9 1916
-    #define SEA_MSC_VER_VS2019_RTW  1920
-    #define SEA_MSC_VER_VS2019_16_1 1921
-    #define SEA_MSC_VER_VS2019_16_2 1922
-    #define SEA_MSC_VER_VS2019_16_3 1923
+    //https://learn.microsoft.com/en-us/cpp/overview/compiler-versions?view=msvc-170
+    //Compare these to _MSC_VER
+    #define SEA_MSC_VER_VS2013          1800
+    #define SEA_MSC_VER_VS2015          1900
+    #define SEA_MSC_VER_VS2017_RTW      1910
+    #define SEA_MSC_VER_VS2017_15_3     1911
+    #define SEA_MSC_VER_VS2017_15_5     1912
+    #define SEA_MSC_VER_VS2017_15_6     1913
+    #define SEA_MSC_VER_VS2017_15_7     1914
+    #define SEA_MSC_VER_VS2017_15_8     1915
+    #define SEA_MSC_VER_VS2017_15_9     1916
+    #define SEA_MSC_VER_VS2019_RTW      1920
+    #define SEA_MSC_VER_VS2019_16_1     1921
+    #define SEA_MSC_VER_VS2019_16_2     1922
+    #define SEA_MSC_VER_VS2019_16_3     1923
+    #define SEA_MSC_VER_VS2019_16_4     1924
+    #define SEA_MSC_VER_VS2019_16_5     1925
+    #define SEA_MSC_VER_VS2019_16_6     1926
+    #define SEA_MSC_VER_VS2019_16_7     1927
+    #define SEA_MSC_VER_VS2019_16_8     1928 //_MSC_FULL_VER needed to distinguish 16.8 and 16.9: 2019 16.8 is 192829333, 2019 16.9 is 192829910
+    #define SEA_MSC_VER_VS2019_16_9     1928
+    #define SEA_MSC_VER_VS2019_16_10    1929 //_MSC_FULL_VER needed to distinguish 16.8 and 16.9: 2019 16.10 is 192929917, 2019 16.11 is 192930129
+    #define SEA_MSC_VER_VS2019_16_11    1929
+    #define SEA_MSC_VER_VS2022_17       1930
+    #define SEA_MSC_VER_VS2019_17_1     1931
+    #define SEA_MSC_VER_VS2019_17_2     1932
+    #define SEA_MSC_VER_VS2019_17_3     1933
+    #define SEA_MSC_VER_VS2019_17_4     1934
+    #define SEA_MSC_VER_VS2019_17_5     1935
+    #define SEA_MSC_VER_VS2019_17_6     1936
+    #define SEA_MSC_VER_VS2019_17_7     1937
+    #define SEA_MSC_VER_VS2019_17_8     1938
+    #define SEA_MSC_VER_VS2019_17_9     1939
+    #define SEA_MSC_VER_VS2019_17_10    1940
 
-    //-----------------------------------------------------------------------------
-    //
-    //  os_Create_Directory()
-    //
-    //! \brief   Description:  Creates a new directory in Windows
-    //
-    //  Entry:
-    //!
-    //  Exit:
-    //!   \return SUCCESS on successful directory creation and FAILURE when directory creation fails
-    //
-    //-----------------------------------------------------------------------------
-    int os_Create_Directory(const char* filePath);
+    eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber);
+
+    bool is_Windows_Vista_Or_Higher(void);
+
+    bool is_Windows_7_Or_Higher(void);
 
     //-----------------------------------------------------------------------------
     //
@@ -143,9 +142,12 @@ extern "C"
     bool is_Windows_10_Version_20H2_Or_Higher(void);
     bool is_Windows_10_Version_21H1_Or_Higher(void);
     bool is_Windows_10_Version_21H2_Or_Higher(void);
+    bool is_Windows_10_Version_22H2_Or_Higher(void);
     
     //Windows 11 check below
     bool is_Windows_11_Version_21H2_Or_Higher(void);
+    bool is_Windows_11_Version_22H2_Or_Higher(void);
+    bool is_Windows_11_Version_23H2_Or_Higher(void);
 
     //-----------------------------------------------------------------------------
     //
@@ -162,19 +164,6 @@ extern "C"
     bool is_Windows_PE(void);
 
     bool is_Windows_Server_OS(void);
-
-    //-----------------------------------------------------------------------------
-    //
-    //  print_Windows_Error_To_Screen(unsigned int windowsError)
-    //
-    //! \brief   Description:  Prints the error number and it's meaning to the screen followed by a newline character
-    //
-    //  Entry:
-    //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void print_Windows_Error_To_Screen(unsigned int windowsError);
 
     //The macros for NTDDI_VERSION & _WIN32_WINNT & WINVER are rarely checked once in Win 10 since they all get set to the same thing, so the below targets should also be defined in the preprocessor
     //so that we know which version of the WIN10 SDK is being targeted.
@@ -202,6 +191,8 @@ extern "C"
         #define WIN_API_TARGET_VERSION NTDDI_WIN6SP2
     #elif defined (NTDDI_WIN6SP1)
         #define WIN_API_TARGET_VERSION NTDDI_WIN6SP1
+    #elif defined (NTDDI_WIN6)
+        #define WIN_API_TARGET_VERSION NTDDI_WIN6
     #elif defined (NTDDI_WS03SP4)
         #define WIN_API_TARGET_VERSION NTDDI_WS03SP4
     #elif defined (NTDDI_WS03SP3)
@@ -286,6 +277,11 @@ extern "C"
     #define WIN_API_TARGET_WIN10_19041      0x0A000009     //10.0.19041.0 //Win 10 API, build 19041
     #define WIN_API_TARGET_WIN10_20348      0x0A00000A     //10.0.20348.0 //Win 10 API, build 20348
     #define WIN_API_TARGET_WIN10_22000      0x0A00000B     //10.0.22000.0 //Win 10 API, build 22000
+    #define WIN_API_TARGET_WIN11_22621      0x0A00000C     //10.0.22621.755 //Win 11 API, build 22621
+    #define WIN_API_TARGET_WIN11_22621_1778 0x0A00000D     //10.0.22621.1778
+    #define WIN_API_TARGET_WIN11_22621_2428 0x0A00000E     //10.0.22621.2428
+    #define WIN_API_TARGET_WIN11_22621_3235 0x0A00000F     //10.0.22621.3235
+    #define WIN_API_TARGET_WIN11_26100      0x0A000010     //10.0.26100.0 //Win 11 API, build 26100
         
 #if defined (__cplusplus)
 }
