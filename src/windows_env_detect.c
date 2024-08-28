@@ -2,7 +2,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012-2023 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -292,14 +292,14 @@ eReturnValues get_Current_User_Name(char **userName)
                 //convert output to a char string
                 if (wcstombs_s(&charsConverted, *userName, usernameLength, localName, usernameLength))
                 {
-                    safe_Free(C_CAST(void**, userName));
+                    safe_free(userName);
                     ret = FAILURE;
                 }
 #else
                 //just copy it over after allocating
                 if (strcpy_s(*userName, usernameLength, localName))
                 {
-                    safe_Free(C_CAST(void**, userName));
+                    safe_free(userName);
                     return FAILURE;
                 }
 #endif
@@ -307,7 +307,7 @@ eReturnValues get_Current_User_Name(char **userName)
                 {
                     if (strcat_s(*userName, usernameLength, isAdmin))
                     {
-                        safe_Free(C_CAST(void**, userName));
+                        safe_free(userName);
                         return FAILURE;
                     }
                 }

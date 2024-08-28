@@ -2,7 +2,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -174,7 +174,7 @@ M_NODISCARD eEnvVarResult get_Environment_Variable(const char* environmentVariab
                 if (getenv_s(&test, *envVar, size, environmentVariableName) != 0)
                 {
                     //error, so free this before moving on
-                    safe_Free(C_CAST(void**, envVar));
+                    safe_free(envVar);
                 }
             }
         }

@@ -2,7 +2,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -337,6 +337,8 @@ extern "C"
         //If we need to add a version check in the future for other compilers that have some GCC support, we can - TJE
         //Varargpos should be set to zero when used with functions like vfprintf
         #define FUNC_ATTR_PRINTF(formatargpos, varargpos) __attribute__((format(printf, formatargpos, varargpos)))
+    #elif defined (_Format_string_impl_)
+        #define FUNC_ATTR_PRINTF(formatargpos, varargpos) _Format_string_impl_("printf", formatargpos)
     #else //!__GNUC__
         #define FUNC_ATTR_PRINTF(formatargpos, varargpos) /* this is a printf/fprintf/etc style function. Please use a user defined constant string for the format! */
     #endif //__GNUC__

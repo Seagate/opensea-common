@@ -2,7 +2,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -101,14 +101,14 @@ extern "C"
 
     static M_INLINE uint8_t nibbles_To_Byte(uint8_t upperNibble, uint8_t lowerNibble)
     {
-        return (((upperNibble) & 0x0F) << 4) | (((lowerNibble) & 0x0F) << 0);
+        return M_STATIC_CAST(uint8_t, (((upperNibble) & M_STATIC_CAST(uint8_t, 0x0F)) << 4) | (((lowerNibble) & M_STATIC_CAST(uint8_t, 0x0F)) << 0));
     }
 
     #define M_NibblesTo1ByteValue(n1, n0) nibbles_To_Byte(n1, n0)
 
     static M_INLINE uint16_t bytes_To_Uint16(uint8_t msb, uint8_t lsb)
     {
-        return (M_STATIC_CAST(uint16_t, msb) <<  8) | (M_STATIC_CAST(uint16_t, lsb) <<  0);
+        return M_STATIC_CAST(uint16_t, (M_STATIC_CAST(uint16_t, msb) <<  8) | (M_STATIC_CAST(uint16_t, lsb) <<  0));
     }
 
     #define M_BytesTo2ByteValue(b1, b0) bytes_To_Uint16(b1, b0)
@@ -513,12 +513,12 @@ extern "C"
     // Inline functions for setting a bit
     static M_INLINE uint8_t set_uint8_bit(uint8_t val, uint8_t bitNum) 
     {
-        return val | M_STATIC_CAST(uint8_t, UINT8_C(1) << bitNum);
+        return M_STATIC_CAST(uint8_t, val | M_STATIC_CAST(uint8_t, UINT8_C(1) << bitNum));
     }
 
     static M_INLINE uint16_t set_uint16_bit(uint16_t val, uint16_t bitNum) 
     {
-        return val | M_STATIC_CAST(uint16_t, UINT16_C(1) << bitNum);
+        return M_STATIC_CAST(uint16_t, val | M_STATIC_CAST(uint16_t, UINT16_C(1) << bitNum));
     }
 
     static M_INLINE uint32_t set_uint32_bit(uint32_t val, uint32_t bitNum) 
@@ -534,12 +534,12 @@ extern "C"
     // Inline functions for clearing a bit
     static M_INLINE uint8_t clear_uint8_bit(uint8_t val, uint8_t bitNum) 
     {
-        return val & M_STATIC_CAST(uint8_t, ~(UINT8_C(1) << bitNum));
+        return M_STATIC_CAST(uint8_t, val & M_STATIC_CAST(uint8_t, ~(UINT8_C(1) << bitNum)));
     }
 
     static M_INLINE uint16_t clear_uint16_bit(uint16_t val, uint16_t bitNum) 
     {
-        return val & M_STATIC_CAST(uint16_t, ~(UINT16_C(1) << bitNum));
+        return M_STATIC_CAST(uint16_t, val & M_STATIC_CAST(uint16_t, ~(UINT16_C(1) << bitNum)));
     }
 
     static M_INLINE uint32_t clear_uint32_bit(uint32_t val, uint32_t bitNum) 

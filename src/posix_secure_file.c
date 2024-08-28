@@ -2,7 +2,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
+M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct stat st;
@@ -69,7 +69,7 @@ fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
     return attrs;
 }
 
-fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
+M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct stat st;
@@ -105,7 +105,7 @@ fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
     return attrs;
 }
 
-fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
+M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
 {
     fileUniqueIDInfo* uniqueID = M_NULLPTR;
 #if defined (UEFI_C_SOURCE)
@@ -276,7 +276,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         //so use it + 1 as the starting point to go through and cleanup the stored directories to free up memory
         for (ssize_t cleanup = i + 1; cleanup <= num_of_dirs; cleanup++)
         {
-            safe_Free(C_CAST(void**, &dirs[cleanup]));
+            safe_free(&dirs[cleanup]);
         }
         safe_free(dirs);
         return secure;
@@ -430,7 +430,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
     for (i = 0; i < num_of_dirs; i++)
     {
-        safe_Free(C_CAST(void**, &dirs[i]));
+        safe_free(&dirs[i]);
     }
 
     safe_free(dirs);
@@ -449,7 +449,7 @@ bool os_Directory_Exists(const char* const pathToCheck)
     if (attrs != M_NULLPTR)
     {
         bool result = M_ToBool(S_ISDIR(attrs->filemode));
-        safe_Free(C_CAST(void**, &attrs));
+        free_File_Attributes(&attrs);
         return result;
     }
     else
@@ -464,7 +464,7 @@ bool os_File_Exists(const char* const filetoCheck)
     if (attrs != M_NULLPTR)
     {
         bool result = M_ToBool(S_ISREG(attrs->filemode));
-        safe_Free(C_CAST(void**, &attrs));
+        free_File_Attributes(&attrs);
         return result;
     }
     else

@@ -2,7 +2,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -524,7 +524,7 @@ size_t safe_strnlen(const char* string, size_t n)
 }
 
 #if !defined (__STDC_ALLOC_LIB__) && !defined (POSIX_2008) && !defined (USING_C23)
-char* strndup(const char* src, size_t size)
+M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size)
 {
     size_t length = safe_strnlen(src, size);
     if (length > 0)

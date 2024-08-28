@@ -2,7 +2,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -60,6 +60,11 @@ typedef struct _REPARSE_DATA_BUFFER {
     } DUMMYUNIONNAME;
 } REPARSE_DATA_BUFFER, * PREPARSE_DATA_BUFFER;
 #endif //HAVE_NTIFS
+
+static M_INLINE void safe_free_reparse_data_buf(REPARSE_DATA_BUFFER **reparse)
+{
+    safe_Free(M_REINTERPRET_CAST(void**, reparse));
+}
 
 int64_t os_Get_File_Size(FILE* filePtr)
 {
@@ -230,7 +235,7 @@ static bool win_Get_File_Security_Info_By_File(FILE* file, fileAttributes* attrs
     return success;
 }
 
-fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
+M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64 st;
@@ -264,7 +269,7 @@ fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
 }
 
 
-fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
+M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64 st;
@@ -298,7 +303,7 @@ fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
 }
 
 
-fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
+M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
 {
     if (file)
     {
@@ -348,6 +353,11 @@ fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
     return M_NULLPTR;
 }
 
+static M_INLINE void safe_free_token_user(TOKEN_USER **user)
+{
+    safe_Free(M_REINTERPRET_CAST(void**, user));
+}
+
 static char* get_Current_User_SID(void)
 {
     char* sidAsString = M_NULLPTR;
@@ -370,7 +380,7 @@ static char* get_Current_User_SID(void)
                 }
             }
             explicit_zeroes(pUser, dwSize);
-            safe_free(&pUser);
+            safe_free_token_user(&pUser);
         }
         CloseHandle(hToken);
     }
@@ -861,14 +871,14 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     if (!dirs[num_of_dirs - 1])
     {
         /* Handle error */
-        safe_free(&dirs);
+        safe_free(dirs);
         return false;
     }
     path_copy = strdup(fullpath);
     if (!path_copy)
     {
         /* Handle error */
-        safe_free(&dirs);
+        safe_free(dirs);
         return false;
     }
 
@@ -893,9 +903,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         //so use it + 1 as the starting point to go through and cleanup the stored directories to free up memory
         for (ssize_t cleanup = i + 1; cleanup <= num_of_dirs; cleanup++)
         {
-            safe_Free(C_CAST(void**, &dirs[cleanup]));
+            safe_free(&dirs[cleanup]);
         }
-        safe_free(&dirs);
+        safe_free(dirs);
         return secure;
     }
 
@@ -1004,7 +1014,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                     {
                         secure = false;
                     }
-                    safe_free(&reparseData);
+                    safe_free_reparse_data_buf(&reparseData);
                 }
                 else
                 {
@@ -1059,10 +1069,10 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
     for (i = 0; i < num_of_dirs; i++)
     {
-        safe_Free(C_CAST(void**, &dirs[i]));
+        safe_free(&dirs[i]);
     }
 
-    safe_free(&dirs);
+    safe_free(dirs);
     return secure;
 }
 

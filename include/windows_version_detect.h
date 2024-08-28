@@ -2,7 +2,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -45,19 +45,40 @@ extern "C"
 
     //Visual studio MSVC versions that are easy to check for.
     //values come from here:https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
-    #define SEA_MSC_VER_VS2013      1800
-    #define SEA_MSC_VER_VS2015      1900
-    #define SEA_MSC_VER_VS2017_RTW  1910
-    #define SEA_MSC_VER_VS2017_15_3 1911
-    #define SEA_MSC_VER_VS2017_15_5 1912
-    #define SEA_MSC_VER_VS2017_15_6 1913
-    #define SEA_MSC_VER_VS2017_15_7 1914
-    #define SEA_MSC_VER_VS2017_15_8 1915
-    #define SEA_MSC_VER_VS2017_15_9 1916
-    #define SEA_MSC_VER_VS2019_RTW  1920
-    #define SEA_MSC_VER_VS2019_16_1 1921
-    #define SEA_MSC_VER_VS2019_16_2 1922
-    #define SEA_MSC_VER_VS2019_16_3 1923
+    //https://learn.microsoft.com/en-us/cpp/overview/compiler-versions?view=msvc-170
+    //Compare these to _MSC_VER
+    #define SEA_MSC_VER_VS2013          1800
+    #define SEA_MSC_VER_VS2015          1900
+    #define SEA_MSC_VER_VS2017_RTW      1910
+    #define SEA_MSC_VER_VS2017_15_3     1911
+    #define SEA_MSC_VER_VS2017_15_5     1912
+    #define SEA_MSC_VER_VS2017_15_6     1913
+    #define SEA_MSC_VER_VS2017_15_7     1914
+    #define SEA_MSC_VER_VS2017_15_8     1915
+    #define SEA_MSC_VER_VS2017_15_9     1916
+    #define SEA_MSC_VER_VS2019_RTW      1920
+    #define SEA_MSC_VER_VS2019_16_1     1921
+    #define SEA_MSC_VER_VS2019_16_2     1922
+    #define SEA_MSC_VER_VS2019_16_3     1923
+    #define SEA_MSC_VER_VS2019_16_4     1924
+    #define SEA_MSC_VER_VS2019_16_5     1925
+    #define SEA_MSC_VER_VS2019_16_6     1926
+    #define SEA_MSC_VER_VS2019_16_7     1927
+    #define SEA_MSC_VER_VS2019_16_8     1928 //_MSC_FULL_VER needed to distinguish 16.8 and 16.9: 2019 16.8 is 192829333, 2019 16.9 is 192829910
+    #define SEA_MSC_VER_VS2019_16_9     1928
+    #define SEA_MSC_VER_VS2019_16_10    1929 //_MSC_FULL_VER needed to distinguish 16.8 and 16.9: 2019 16.10 is 192929917, 2019 16.11 is 192930129
+    #define SEA_MSC_VER_VS2019_16_11    1929
+    #define SEA_MSC_VER_VS2022_17       1930
+    #define SEA_MSC_VER_VS2019_17_1     1931
+    #define SEA_MSC_VER_VS2019_17_2     1932
+    #define SEA_MSC_VER_VS2019_17_3     1933
+    #define SEA_MSC_VER_VS2019_17_4     1934
+    #define SEA_MSC_VER_VS2019_17_5     1935
+    #define SEA_MSC_VER_VS2019_17_6     1936
+    #define SEA_MSC_VER_VS2019_17_7     1937
+    #define SEA_MSC_VER_VS2019_17_8     1938
+    #define SEA_MSC_VER_VS2019_17_9     1939
+    #define SEA_MSC_VER_VS2019_17_10    1940
 
     eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber);
 

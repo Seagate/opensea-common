@@ -2,7 +2,7 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,6 +18,7 @@
 #pragma once
 
 #include "env_detect.h"
+#include "common_types.h"
 #include "code_attributes.h"
 #include <stdio.h>
 
@@ -91,7 +92,7 @@ extern "C"
     M_NODISCARD bool get_And_Validate_Double_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, double * outputFloat);
     M_NODISCARD bool get_And_Validate_LDouble_Input(const char* strToConvert, char** unit, eAllowedUnitInput unittype, long double * outputFloat);
 
-    #if defined(USING_C11)
+    #if defined(USING_C11) && defined (HAVE_C11_GENERIC_SELECTION)
     //This is a generic selection macro.
     //so based on the type of X, it will call the appropriate function for that type.
     //similar to an overloaded function in C++ for different types.
