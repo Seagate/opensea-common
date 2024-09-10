@@ -325,7 +325,9 @@ extern "C"
         #else
             #define M_FUNC_ATTR_MALLOC /* this function allocates memory and returns the pointer to you */
         #endif
-    #elif defined (_Ret_opt_valid_) /* from SAL. Not exactly right, but closer to how this works for clang and gcc. There is a similar SAL annotation where you name the parameter specifying the size, but I didn't want to change on the other attributes for now - TJE */
+    #elif defined (_MSC_VER) && (_MSC_VER >= 1900) /*vs2015+*/
+        #define M_FUNC_ATTR_MALLOC __declspec(allocator)
+    #elif defined (_Ret_opt_valid_) /*sal*/
         #define M_FUNC_ATTR_MALLOC _Ret_opt_valid_
     #else
         #define M_FUNC_ATTR_MALLOC /* this function allocates memory and returns the pointer to you */
