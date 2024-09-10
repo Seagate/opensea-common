@@ -42,7 +42,7 @@ typedef enum _eValidateFormatResult
     #define C_STR_LITERAL_LIMIT 509U
 #endif
 
-static eValidateFormatResult update_Format_Offset(const char* format, char* offsetToSpecifier, size_t* formatoffset, size_t formatLength)
+static M_INLINE eValidateFormatResult update_Format_Offset(const char* format, char* offsetToSpecifier, size_t* formatoffset, size_t formatLength)
 {
     if (format && offsetToSpecifier && formatoffset)
     {
@@ -56,7 +56,7 @@ static eValidateFormatResult update_Format_Offset(const char* format, char* offs
     return VALIDATE_FORMAT_INVALID_FORMAT;
 }
 
-static eValidateFormatResult check_For_Litteral_Precent(const char* format, char** offsetToSpecifier, size_t* formatoffset, size_t formatLength)
+static M_INLINE eValidateFormatResult check_For_Litteral_Precent(const char* format, char** offsetToSpecifier, size_t* formatoffset, size_t formatLength)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     if (format && offsetToSpecifier && formatoffset && safe_strnlen(*offsetToSpecifier, 2) >= 2)
@@ -83,7 +83,7 @@ static eValidateFormatResult check_For_Litteral_Precent(const char* format, char
     return result;
 }
 
-static eValidateFormatResult validate_Format_Flags(const char* format, char** offsetToSpecifier, size_t* formatoffset, size_t formatLength)
+static M_INLINE eValidateFormatResult validate_Format_Flags(const char* format, char** offsetToSpecifier, size_t* formatoffset, size_t formatLength)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     if (format && offsetToSpecifier && formatoffset)
@@ -106,7 +106,7 @@ static eValidateFormatResult validate_Format_Flags(const char* format, char** of
     return result;
 }
 
-static eValidateFormatResult validate_Format_Width(const char* format, char** offsetToSpecifier, size_t* formatoffset, int* width, va_list *args, size_t formatLength)
+static M_INLINE eValidateFormatResult validate_Format_Width(const char* format, char** offsetToSpecifier, size_t* formatoffset, int* width, va_list *args, size_t formatLength)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     if (format && offsetToSpecifier && formatoffset && width && args)
@@ -148,7 +148,7 @@ static eValidateFormatResult validate_Format_Width(const char* format, char** of
     return result;
 }
 
-static eValidateFormatResult validate_Format_Precision(const char* format, char** offsetToSpecifier, size_t* formatoffset, int* precision, va_list *args, size_t formatLength)
+static M_INLINE eValidateFormatResult validate_Format_Precision(const char* format, char** offsetToSpecifier, size_t* formatoffset, int* precision, va_list *args, size_t formatLength)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     if (format && offsetToSpecifier && formatoffset && precision && args)
@@ -220,7 +220,7 @@ typedef struct _verifyFormatLengthModifiers
     bool L;
 }verifyFormatLengthModifiers, * ptrVerifyFormatLengthModifiers;
 
-static eValidateFormatResult validate_Format_Length_Modifier(const char* format, char** offsetToSpecifier, size_t* formatoffset, ptrVerifyFormatLengthModifiers lmods, size_t formatLength)
+static M_INLINE eValidateFormatResult validate_Format_Length_Modifier(const char* format, char** offsetToSpecifier, size_t* formatoffset, ptrVerifyFormatLengthModifiers lmods, size_t formatLength)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     if (format && offsetToSpecifier && formatoffset && lmods)
@@ -291,7 +291,7 @@ static eValidateFormatResult validate_Format_Length_Modifier(const char* format,
     return result;
 }
 
-static eValidateFormatResult validate_Format_Integer(const char* format, char** offsetToSpecifier, size_t* formatoffset, ptrVerifyFormatLengthModifiers lenmods, va_list* args)
+static M_INLINE eValidateFormatResult validate_Format_Integer(const char* format, char** offsetToSpecifier, size_t* formatoffset, ptrVerifyFormatLengthModifiers lenmods, va_list* args)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     if (format && offsetToSpecifier && formatoffset && lenmods && args)
@@ -392,15 +392,19 @@ static eValidateFormatResult validate_Format_Integer(const char* format, char** 
     return result;
 }
 
-static eValidateFormatResult validate_Format_Float(const char* format, char** offsetToSpecifier, size_t* formatoffset, ptrVerifyFormatLengthModifiers lenmods, va_list* args)
+static M_INLINE eValidateFormatResult validate_Format_Float(const char* format, char** offsetToSpecifier, size_t* formatoffset, ptrVerifyFormatLengthModifiers lenmods, va_list* args)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     if (format && offsetToSpecifier && formatoffset && lenmods && args)
     {
-        //NOTE: lowercase l is also allowed but only means double which is why it is not being checked here
         if (lenmods->L == true)
         {
             long double floatval = va_arg(*args, long double);
+            M_USE_UNUSED(floatval);
+        }
+        else if (lenmods->l == true)
+        {
+            double floatval = va_arg(*args, double);
             M_USE_UNUSED(floatval);
         }
         else
@@ -416,7 +420,7 @@ static eValidateFormatResult validate_Format_Float(const char* format, char** of
     return result;
 }
 
-static eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
+static M_INLINE eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     wchar_t character = C_CAST(wchar_t, widechar);
@@ -465,7 +469,7 @@ static eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
     return result;
 }
 
-static eValidateFormatResult validate_Format_Char(const char* format, char** offsetToSpecifier, size_t* formatoffset, ptrVerifyFormatLengthModifiers lenmods, va_list* args)
+static M_INLINE eValidateFormatResult validate_Format_Char(const char* format, char** offsetToSpecifier, size_t* formatoffset, ptrVerifyFormatLengthModifiers lenmods, va_list* args)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     if (format && offsetToSpecifier && formatoffset && lenmods && args)
@@ -498,7 +502,7 @@ static eValidateFormatResult validate_Format_Char(const char* format, char** off
     return result;
 }
 
-static eValidateFormatResult validate_Format_Pointer(const char* format, char** offsetToSpecifier, size_t* formatoffset, ptrVerifyFormatLengthModifiers lenmods, va_list* args)
+static M_INLINE eValidateFormatResult validate_Format_Pointer(const char* format, char** offsetToSpecifier, size_t* formatoffset, ptrVerifyFormatLengthModifiers lenmods, va_list* args)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     if (format && offsetToSpecifier && formatoffset && lenmods && args)
@@ -514,7 +518,7 @@ static eValidateFormatResult validate_Format_Pointer(const char* format, char** 
 }
 
 //NOTE: Conversion uses wcrtombs to make sure we avoid any potential issues with the conversion state across threads.
-static eValidateFormatResult validate_WStr_Conversion(const wchar_t* string)
+static M_INLINE eValidateFormatResult validate_WStr_Conversion(const wchar_t* string)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     if (string)
@@ -570,7 +574,7 @@ static eValidateFormatResult validate_WStr_Conversion(const wchar_t* string)
     return result;
 }
 
-static eValidateFormatResult validate_Format_String(const char* format, char** offsetToSpecifier, size_t* formatoffset, ptrVerifyFormatLengthModifiers lenmods, va_list* args)
+static M_INLINE eValidateFormatResult validate_Format_String(const char* format, char** offsetToSpecifier, size_t* formatoffset, ptrVerifyFormatLengthModifiers lenmods, va_list* args)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     if (format && offsetToSpecifier && formatoffset && lenmods && args)
@@ -603,7 +607,7 @@ static eValidateFormatResult validate_Format_String(const char* format, char** o
     return result;
 }
 
-static eValidateFormatResult validate_Format_Specifier(const char* format, char** offsetToSpecifier, size_t* formatoffset, size_t formatlength, ptrVerifyFormatLengthModifiers lenmods, va_list *args)
+static M_INLINE eValidateFormatResult validate_Format_Specifier(const char* format, char** offsetToSpecifier, size_t* formatoffset,  size_t formatlength, ptrVerifyFormatLengthModifiers lenmods, va_list *args)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     if (format && offsetToSpecifier && formatoffset && lenmods && args)
