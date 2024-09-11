@@ -83,6 +83,7 @@
     <ClInclude Include="..\..\..\..\include\secured_env_vars.h" />
     <ClInclude Include="..\..\..\..\include\secure_file.h" />
     <ClInclude Include="..\..\..\..\include\sleep.h" />
+    <ClInclude Include="..\..\..\..\include\sort_and_search.h" />
     <ClInclude Include="..\..\..\..\include\string_utils.h" />
     <ClInclude Include="..\..\..\..\include\time_utils.h" />
     <ClInclude Include="..\..\..\..\include\type_conversion.h" />
@@ -99,9 +100,13 @@
     <ClCompile Include="..\..\..\..\src\pattern_utils.c" />
     <ClCompile Include="..\..\..\..\src\precision_timer.c" />
     <ClCompile Include="..\..\..\..\src\prng.c" />
+    <ClCompile Include="..\..\..\..\src\safe_bsearch.c" />
+    <ClCompile Include="..\..\..\..\src\safe_lsearch.c" />
+    <ClCompile Include="..\..\..\..\src\safe_qsort.c" />
     <ClCompile Include="..\..\..\..\src\secured_env_vars.c" />
     <ClCompile Include="..\..\..\..\src\secure_file.c" />
     <ClCompile Include="..\..\..\..\src\sleep.c" />
+    <ClCompile Include="..\..\..\..\src\sort_and_search.c" />
     <ClCompile Include="..\..\..\..\src\string_utils.c" />
     <ClCompile Include="..\..\..\..\src\time_utils.c" />
     <ClCompile Include="..\..\..\..\src\type_conversion.c" />

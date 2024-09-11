@@ -846,6 +846,7 @@
     <ClInclude Include="..\..\..\..\include\math_utils.h" />
     <ClInclude Include="..\..\..\..\include\pattern_utils.h" />
     <ClInclude Include="..\..\..\..\include\predef_env_detect.h" />
+    <ClInclude Include="..\..\..\..\include\sort_and_search.h" />
     <ClInclude Include="..\..\..\..\include\time_utils.h" />
     <ClInclude Include="..\..\..\..\include\common_types.h" />
     <ClInclude Include="..\..\..\..\include\windows_version_detect.h" />
@@ -889,6 +890,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='InSecure-Static-Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\math_utils.c" />
+    <ClCompile Include="..\..\..\..\src\safe_bsearch.c" />
+    <ClCompile Include="..\..\..\..\src\safe_lsearch.c" />
+    <ClCompile Include="..\..\..\..\src\safe_qsort.c" />
+    <ClCompile Include="..\..\..\..\src\sort_and_search.c" />
     <ClCompile Include="..\..\..\..\src\time_utils.c" />
     <ClCompile Include="..\..\..\..\src\uefi_env_detect.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
