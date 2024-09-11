@@ -695,11 +695,8 @@ int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formata
         {
             va_list args;
             size_t formatLength = 0;
-            if (strstr(format, "%n") != M_NULLPTR)
-            {
-                //Exit quickly if %n is used anywhere in the format string to save some time evaluating anything else
-                return -1;
-            }
+            //removed early %n detection since it would incorrectly catch %%n which is a valid sequence.
+            //The rest of the code does catch %n and modifiers to it, so it is safe to let it proceed.
             //see answer from S.S. Anne here for why it is necessary to make a copy of the args: https://stackoverflow.com/questions/3369588/pass-va-list-or-pointer-to-va-list
         #if defined (va_copy)
             va_copy(args, formatargs);
