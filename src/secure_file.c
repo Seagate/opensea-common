@@ -393,8 +393,18 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char* filename, const char* m
 #if defined (_DEBUG)
         printf("Checking directory security: %s\n", pathOnly);
 #endif
+//This flag can disable the file path security check.
+//NOTE: Currently disabling _WIN32 due to new Windows security feature breaking how current code works.
+//      This will be reenabled once we have resolved the low-level issue.
+#if defined (DISABLE_SECURE_FILE_PATH_CHECK) || defined (_WIN32)
+    #if !defined (_WIN32)
+        #pragma message ("WARNING: Disabling Cert-C directory security check. This is not recommended for production level code.")
+    #endif //!_WIN32
+        if (true)
+#else
         //Check for secure directory - This code must traverse the full path and validate permissions of the directories.
         if (os_Is_Directory_Secure(pathOnly))
+#endif //DISABLE_SECURE_FILE_PATH_CHECK || _WIN32
         {
             fileInfo->file = M_NULLPTR;
 #if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
@@ -509,7 +519,9 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char* filename, const char* m
         else
         {
             fileInfo->error = SEC_FILE_INSECURE_PATH;
+#if defined (_DEBUG)
             printf("Insecure path\n");
+#endif
         }
         if (pathOnly && allocatedLocalPathOnly)
         {
