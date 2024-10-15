@@ -807,13 +807,16 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
 #define MAX_SYMLINKS_IN_PATH 5
 
 /* This function requires Windows style seperators (\) to function properly! */
-static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int num_symlinks)
+static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int num_symlinks, char **outputError)
 {
     char* path_copy = M_NULLPTR;
     char** dirs = M_NULLPTR;
     ssize_t num_of_dirs = 1;
     bool secure = true;
     ssize_t i = 0;
+
+    //TODO: Set error message appropriate for Windows errors detected
+    M_USE_UNUSED(outputError);
 
     if (!fullpath || fullpath[0] == '\0')
     {
@@ -992,7 +995,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                                 wcstombs(reparsePath, C_CAST(wchar_t*, reparseData->SymbolicLinkReparseBuffer.PathBuffer), bufferSize);
 #endif
                                 num_symlinks++;
-                                bool recurseSecure = internal_OS_Is_Directory_Secure(reparsePath, num_symlinks);
+                                bool recurseSecure = internal_OS_Is_Directory_Secure(reparsePath, num_symlinks, outputError);
                                 num_symlinks--;
                                 if (!recurseSecure)
                                 {
@@ -1076,11 +1079,11 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     return secure;
 }
 
-M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath)
+M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath, char **outputError)
 {
     //This was implemented as close as possible to https://wiki.sei.cmu.edu/confluence/display/c/FIO15-C.+Ensure+that+file+operations+are+performed+in+a+secure+directory
     unsigned int num_symlinks = 0;
-    return internal_OS_Is_Directory_Secure(fullpath, num_symlinks);
+    return internal_OS_Is_Directory_Secure(fullpath, num_symlinks, outputError);
 }
 
 bool os_Directory_Exists(const char* const pathToCheck)

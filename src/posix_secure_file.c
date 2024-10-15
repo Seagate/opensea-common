@@ -32,6 +32,7 @@
 #include <libgen.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
 {
@@ -154,9 +155,24 @@ static uid_t get_sudo_uid(void)
     return sudouid;
 }
 
+FUNC_ATTR_PRINTF(2, 3) static void set_dir_security_output_error_message(char **outputError, const char* format, ...)
+{
+    if (outputError != M_NULLPTR)
+    {
+        va_list args;
+        va_start(args, format);
+        int result = vasprintf(outputError, format, args);
+        va_end(args);
+        if (result < 0 && *outputError != M_NULLPTR)
+        {
+            safe_free(outputError);
+        }
+    }
+}
+
 #define MAX_SYMLINKS_IN_PATH 5
 
-static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int num_symlinks)
+static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int num_symlinks, char **outputError)
 {
     char* path_copy = M_NULLPTR;
     char** dirs = M_NULLPTR;
@@ -174,9 +190,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     if (!fullpath || fullpath[0] != '/')
     {
         /* Handle error */
-#if defined (_DEBUG)
-        printf("Full path does not start with /\n");
-#endif
+        set_dir_security_output_error_message(outputError, "Full path does not start with /\n");
         return false;
     }
 
@@ -184,18 +198,14 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     {
         /* Could be a symlink loop */
         /* Handle error */
-#if defined (_DEBUG)
-        printf("Too many symlinks\n");
-#endif
+        set_dir_security_output_error_message(outputError, "Too many symlinks (must be less than %d links)\n", MAX_SYMLINKS_IN_PATH);
         return false;
     }
 
     if (!(path_copy = strdup(fullpath)))
     {
         /* Handle error */
-#if defined (_DEBUG)
-        printf("Cannot dup path\n");
-#endif
+        set_dir_security_output_error_message(outputError, "Cannot strdup path (out of memory?)\n");
         return false;
     }
 
@@ -216,9 +226,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     if (num_of_dirs == SSIZE_MAX)
     {
         /* out of room to compare this many directories deep */
-#if defined (_DEBUG)
-        printf("Too many directories deep\n");
-#endif
+        set_dir_security_output_error_message(outputError, "Too many directories deep to check permissions\n");
         return false;
     }
     /* Now num_of_dirs indicates # of dirs we must check */
@@ -227,18 +235,14 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     if (!(dirs = C_CAST(char**, safe_malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)))))
     {
         /* Handle error */
-#if defined (_DEBUG)
-        printf("Cannot malloc dirs array\n");
-#endif
+        set_dir_security_output_error_message(outputError, "Cannot allocate memory for all directories needed to be checked\n");
         return false;
     }
 
     if (!(dirs[num_of_dirs - 1] = strdup(fullpath)))
     {
         /* Handle error */
-#if defined (_DEBUG)
-        printf("Cannot dup fullpath into dirs array\n");
-#endif
+        set_dir_security_output_error_message(outputError, "Cannot strdup fullpath into dirs array: %s\n", fullpath);
         safe_free(dirs);
         return false;
     }
@@ -246,9 +250,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     if (!(path_copy = strdup(fullpath)))
     {
         /* Handle error */
-#if defined (_DEBUG)
-        printf("Cannot dup fullpath to path copy\n");
-#endif
+        set_dir_security_output_error_message(outputError, "Cannot strdup fullpath to path copy: %s\n", fullpath);
         safe_free(dirs);
         return false;
     }
@@ -261,9 +263,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         if (!(dirs[i] = strdup(path_parent)))
         {
             /* Handle error */
-#if defined (_DEBUG)
-            printf("Cannot dup path parent\n");
-#endif
+            set_dir_security_output_error_message(outputError, "Cannot dup path parent: %s\n", path_parent);
             secure = false;
             break;
         }
@@ -296,9 +296,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         if (lstat(dirs[i], &buf) != 0)
         {
             /* Handle error */
-#if defined (_DEBUG)
-            printf("lstat failed\n");
-#endif
+            set_dir_security_output_error_message(outputError, "lstat failed for %s\n", dirs[i]);
             secure = false;
             break;
         }
@@ -311,9 +309,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             {
                 /* Handle error */
                 secure = false;
-#if defined (_DEBUG)
-                printf("Bad link size\n");
-#endif
+                set_dir_security_output_error_message(outputError, "Bad link size for %s\n", dirs[i]);
                 break;
             }
             linksize = buf.st_size + 1;
@@ -321,9 +317,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             {
                 /* Handle error */
                 secure = false;
-#if defined (_DEBUG)
-                printf("link cannot allocate\n");
-#endif
+                set_dir_security_output_error_message(outputError, "link cannot allocate to read origin\n");
                 break;
             }
 
@@ -331,9 +325,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             if (r == -1)
             {
                 /* Handle error */
-#if defined (_DEBUG)
-                printf("readlink failed\n");
-#endif
+                set_dir_security_output_error_message(outputError, "readlink failed: %s\n", dirs[i]);
                 secure = false;
                 safe_free(&link);
                 break;
@@ -341,9 +333,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             else if (r >= linksize)
             {
                 /* Handle truncation error */
-#if defined (_DEBUG)
-                printf("link truncated\n");
-#endif
+                set_dir_security_output_error_message(outputError, "link truncated: %s\n", dirs[i]);
                 secure = false;
                 safe_free(&link);
                 break;
@@ -351,7 +341,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             link[r] = '\0';
 
             num_symlinks++;
-            bool recurseSecure = internal_OS_Is_Directory_Secure(link, num_symlinks);
+            bool recurseSecure = internal_OS_Is_Directory_Secure(link, num_symlinks, outputError);
             num_symlinks--;
 
             if (!recurseSecure)
@@ -371,9 +361,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         if (!S_ISDIR(buf.st_mode))
         {
             /* Not a directory */
-#if defined (_DEBUG)
-            printf("not a directory\n");
-#endif
+            set_dir_security_output_error_message(outputError, "not a directory, cannot verify %s \n", dirs[i]);
             secure = false;
             break;
         }
@@ -399,9 +387,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 {
                     /* Directory is owned by someone besides user or root */
                     secure = false;
-#if defined (_DEBUG)
-                    printf("Directory owned by someone other than user or root: %u my_uid: %u\n", buf.st_uid, my_uid);
-#endif
+                    set_dir_security_output_error_message(outputError, "Directory (%s) owned by someone other than user or root. Owner: %u Current User: %u\n", dirs[i], buf.st_uid, sudouid);
                     break;
                 }
             }
@@ -409,9 +395,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             {
                 /* Directory is owned by someone besides user or root */
                 secure = false;
-#if defined (_DEBUG)
-                printf("Directory owned by someone other than user or root: %u my_uid: %u\n", buf.st_uid, my_uid);
-#endif
+                set_dir_security_output_error_message(outputError, "Directory (%s) owned by someone other than user or root. Owner: %u Current User: %u\n", dirs[i], buf.st_uid, my_uid);
                 break;
             }
         }
@@ -421,9 +405,14 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         {
             /* dir is writable by others */
             secure = false;
-#if defined (_DEBUG)
-            printf("Directory writable by others\n");
-#endif
+            if (buf.st_mode & S_IWGRP)
+            {
+                set_dir_security_output_error_message(outputError, "Directory (%s) writable by others. Disable write permissions for groups\n", dirs[i]);
+            }
+            else
+            {
+                set_dir_security_output_error_message(outputError, "Directory (%s) writable by others. Disable write permissions for others\n", dirs[i]);
+            }
             break;
         }
     }
@@ -437,10 +426,10 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     return secure;
 }
 
-bool os_Is_Directory_Secure(const char* fullpath)
+bool os_Is_Directory_Secure(const char* fullpath, char **outputError)
 {
     unsigned int num_symlinks = 0;
-    return internal_OS_Is_Directory_Secure(fullpath, num_symlinks);
+    return internal_OS_Is_Directory_Secure(fullpath, num_symlinks, outputError);
 }
 
 bool os_Directory_Exists(const char* const pathToCheck)
