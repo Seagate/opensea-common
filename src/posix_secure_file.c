@@ -296,7 +296,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         if (lstat(dirs[i], &buf) != 0)
         {
             /* Handle error */
-            set_dir_security_output_error_message(outputError, "lstat failed for %s\n", dirs[i]);
+            set_dir_security_output_error_message(outputError, "Failed to read file status for %s\n", dirs[i]);
             secure = false;
             break;
         }
@@ -317,7 +317,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             {
                 /* Handle error */
                 secure = false;
-                set_dir_security_output_error_message(outputError, "link cannot allocate to read origin\n");
+                set_dir_security_output_error_message(outputError, "link cannot allocate to read origin location\n");
                 break;
             }
 
@@ -361,7 +361,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         if (!S_ISDIR(buf.st_mode))
         {
             /* Not a directory */
-            set_dir_security_output_error_message(outputError, "not a directory, cannot verify %s \n", dirs[i]);
+            set_dir_security_output_error_message(outputError, "not a directory, cannot verify %s for secure path\n", dirs[i]);
             secure = false;
             break;
         }
