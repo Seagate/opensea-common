@@ -45,14 +45,9 @@ void delay_Milliseconds(uint32_t milliseconds)
             //C23, so use definitions from C23
             delayTime.tv_sec = C_CAST(long, milliseconds / UINT32_C(1000));
             delayTime.tv_nsec = C_CAST(long long, UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
-        #elif defined (__clang__)  
-            //Use __typeof__
-            delayTime.tv_sec = C_CAST(__typeof__(delayTime.tv_sec), milliseconds / UINT32_C(1000));
-            delayTime.tv_nsec = C_CAST(__typeof__(delayTime.tv_nsec), UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
-        #elif defined (__GNUC__)
-            //Use typeof
-            delayTime.tv_sec = C_CAST(typeof(delayTime.tv_sec), milliseconds / UINT32_C(1000));
-            delayTime.tv_nsec = C_CAST(typeof(delayTime.tv_nsec), UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
+        #elif !defined (NO_TYPEOF)
+            delayTime.tv_sec = C_CAST(M_TYPEOF(delayTime.tv_sec), milliseconds / UINT32_C(1000));
+            delayTime.tv_nsec = C_CAST(M_TYPEOF(delayTime.tv_nsec), UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
         #elif defined (USING_C11)
             //Use long and long int as a best guess or most likely correct case
             delayTime.tv_sec = C_CAST(long, milliseconds / UINT32_C(1000));
