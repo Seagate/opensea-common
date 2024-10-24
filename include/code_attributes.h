@@ -359,6 +359,26 @@ extern "C"
         #define DLL_IMPORT /* no equivalent */
     #endif
 
+    #if defined (USING_CPP11) || defined (USING_C23)
+        #define M_ALIGNOF(x) alignof(x)
+        #define M_ALIGNAS(x) alignas(x)
+    #elif defined (USING_C11)
+        #define M_ALIGNOF(x) _Alignof(x)
+        #define M_ALIGNAS(x) _Alignas(x)
+    #else
+        //compiler unique before C11/C++11
+        #if defined (__GNUC__) && ((__GNUC__) > 2 || (defined(__GNUC_MINOR__) && __GNUC__ == 2 && __GNUC_MINOR__ >= 7))
+            #define M_ALIGNOF(x) __alignof__(x)
+            #define M_ALIGNAS(x) __attribute__((aligned(x)))
+        #elif defined (_MSC_VER) && _MSC_VER >= 1400 /*vs2005 and later*/
+            #define M_ALIGNOF(x) __alignof(x)
+            #define M_ALIGNAS(x) __declspec(align(x))
+        #else
+            #define NO_ALIGNOF
+            #define NO_ALIGNAS
+        #endif
+    #endif
+
 #if defined (__cplusplus)
 }
 #endif
