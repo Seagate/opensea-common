@@ -31,6 +31,13 @@ extern "C"
         uint64_t timerStop;//system specific count value. Do not use directly. May be NS, CPU ticks, or some other system specific value
     }seatimer_t;
 
+        //This macro is helpful if declaring seatimer on the stack to initialize it to zero
+    #define DECLARE_SEATIMER(name) seatimer_t name = { UINT64_C(0), UINT64_C(0)}
+
+    //This macro is helpful if declaring seatimer on the heap to initialize it to zero. You must check if this is null after this macro!
+    #define NEW_SEATIMER(name) seatimer_t *name = M_REINTERPRET_CAST(seatimer_t*, safe_calloc(1, sizeof(seatimer_t)))
+
+
     static M_INLINE void safe_free_seatimer(seatimer_t **timer)
     {
         safe_Free(M_REINTERPRET_CAST(void**, timer));
