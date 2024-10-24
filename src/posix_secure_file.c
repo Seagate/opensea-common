@@ -37,7 +37,7 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* const fil
 {
     fileAttributes* attrs = M_NULLPTR;
     struct stat st;
-    memset(&st, 0, sizeof(struct stat));
+    safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
     if (filetoCheck && stat(filetoCheck, &st) == 0)
     {
         attrs = C_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
@@ -73,7 +73,7 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct stat st;
-    memset(&st, 0, sizeof(struct stat));
+    safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
     if (file && fstat(fileno(file), &st) == 0)
     {
         attrs = C_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
@@ -112,7 +112,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
     M_USE_UNUSED(file);
 #else
     struct stat st;
-    memset(&st, 0, sizeof(struct stat));
+    safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
     if (file && fstat(fileno(file), &st))
     {
         //device ID and inode
@@ -169,7 +169,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     uid_t my_uid = geteuid();
 #endif
 
-    memset(&buf, 0, sizeof(struct stat));
+    safe_memset(&buf, sizeof(struct stat), 0, sizeof(struct stat));
 
     if (!fullpath || fullpath[0] != '/')
     {
@@ -476,7 +476,7 @@ bool os_File_Exists(const char* const filetoCheck)
 int64_t os_Get_File_Size(FILE* filePtr)
 {
     struct stat st;
-    memset(&st, 0, sizeof(struct stat));
+    safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
     if (0 == fstat(fileno(filePtr), &st))
     {
         return st.st_size;

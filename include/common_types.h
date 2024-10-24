@@ -242,9 +242,26 @@ extern "C"
                 // without generating compiler warnings or errors.
                 // NOTE: Not using M_INLINE macro here because including that code_attributes.h will generate a circular include issue
                 // Since we are already checking for C99 support here, we can use inline since it's part of C99
+                //NOTE: Cannot call safe_memset within opensea-common at the moment because of circular include so this version has a lot of the same ifdefs at the moment.
+                //TODO: cleanup how we implement safe_memset to make that easier to call or explicit_zeroes to reduce the amount of ifdefs in here.
                 static inline void zero_init_array(void* array, size_t element_size, size_t element_count)
                 {
-                    memset(array, 0, element_size * element_count);
+                    #if defined (USING_C23) || defined (HAVE_MEMSET_EXPLICIT)
+                        memset_explicit(array, 0, element_size * element_count);
+                    #elif defined (HAVE_C11_ANNEX_K) || defined (HAVE_MEMSET_S)
+                        memset_s(array, element_size * element_count, 0, element_size * element_count);
+                    #elif (defined (_WIN32) && defined (_MSC_VER)) || defined (HAVE_MSFT_SECURE_ZERO_MEMORY) || defined (HAVE_MSFT_SECURE_ZERO_MEMORY2)
+                        #if !defined (NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) && (defined (HAVE_MSFT_SECURE_ZERO_MEMORY2) || (defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
+                            //use secure zero memory 2
+                            //Cast is to remove warning about different volatile qualifiers
+                            SecureZeroMemory2(array, element_size * element_count);
+                        #else
+                            //use microsoft's SecureZeroMemory function
+                            SecureZeroMemory(array, element_size * element_count);
+                        #endif
+                    #else
+                        memset(array, 0, element_size * element_count);
+                    #endif
                 }
 
                 #define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) \
@@ -306,6 +323,28 @@ extern "C"
     #endif
 
     #define ROOT_UID_VAL (0)
+
+    //Typeof or decltype can be helpful, but was added in newer standards.
+    //some compilers have it as an extension, so define a macro to make it usable when it is available
+    //if not available, add the definition NO_TYPEOF
+    #if defined (USING_C23)
+        #define M_TYPEOF(var) typeof(var)
+    #elif defined (USING_CPP11)
+        //one web comment mentions this is closer: std::decay<decltype((X))>::type
+        //but this may be situational. Not sure...-TJE
+        #define M_TYPEOF(var) decltype(var)
+    #elif defined (_MSC_VER) && _MSC_VER >= 1939
+        // added in Visual Studio 2022 version 17.9 and later
+        #define M_TYPEOF(var) __typeof__(var)
+    #elif defined (__clang__) || defined (__GNUC__)
+        // GCC 2 and later have typeof support so not even checking the version in this case
+        #define M_TYPEOF(var) __typeof__(var)
+    #else
+        //This is not available in the current compiler/environment
+        //If this is defined then M_TYPEOF will not be available to use
+        #define NO_TYPEOF
+    #endif
+
 
     M_DECLARE_ENUM(eReturnValues,
         SUCCESS = 0,

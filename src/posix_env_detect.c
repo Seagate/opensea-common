@@ -101,7 +101,7 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
             {
                 int releasefileno = fileno(release);
                 struct stat releasestat;
-                memset(&releasestat, 0, sizeof(struct stat));
+                safe_memset(&releasestat, sizeof(struct stat), 0, sizeof(struct stat));
                 if (releasefileno >= 0 && 0 == fstat(releasefileno, &releasestat))
                 {
                     off_t releaseSize = releasestat.st_size;
@@ -154,7 +154,7 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
             {
                 int releaseFileno = fileno(release);
                 struct stat direntfilestat;
-                memset(&direntfilestat, 0, sizeof(struct stat));
+                safe_memset(&direntfilestat, sizeof(struct stat), 0, sizeof(struct stat));
                 if (releaseFileno >= 0 && 0 == fstat(releaseFileno, &direntfilestat))
                 {
                     //read it
@@ -291,7 +291,7 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
         {
             int issueFileno = fileno(issue);
             struct stat issuestat;
-            memset(&issuestat, 0, sizeof(struct stat));
+            safe_memset(&issuestat, sizeof(struct stat), 0, sizeof(struct stat));
             if (issueFileno >= 0 && 0 == fstat(issueFileno, &issuestat))
             {
                 //read it
@@ -424,7 +424,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
     eReturnValues ret = SUCCESS;
     //check what is filled in by the uname call in the utsname struct (BUT DON"T CHECK THE DOMAIN NAME since that is GNU specific)
     struct utsname unixUname;
-    memset(&unixUname, 0, sizeof(struct utsname));
+    safe_memset(&unixUname, sizeof(struct utsname), 0, sizeof(struct utsname));
     if (0 == uname(&unixUname))
     {
         convert_String_To_Upper_Case(unixUname.sysname);
@@ -812,7 +812,7 @@ static bool get_User_Name_From_ID(uid_t userID, char **userName)
                         break;
                     }
                     rawBuffer = temp;
-                    memset(rawBuffer, 0, dataSize);
+                    safe_memset(rawBuffer, dataSize, 0, dataSize);
                 }
                 if (error == 0 && userInfo && rawBuffer)
                 {

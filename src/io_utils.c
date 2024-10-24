@@ -296,7 +296,7 @@ static uint16_t get_Console_Default_Color(void)
     if (defaultConsoleAttributes == UINT16_MAX)
     {
         CONSOLE_SCREEN_BUFFER_INFO defaultInfo;
-        memset(&defaultInfo, 0, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
+        safe_memset(&defaultInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO), 0, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
         if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &defaultInfo))
         {
             defaultConsoleAttributes = defaultInfo.wAttributes;
@@ -314,7 +314,7 @@ static uint16_t get_Console_Current_Color(void)
 {
     uint16_t currentConsoleAttributes = UINT16_MAX;
     CONSOLE_SCREEN_BUFFER_INFO currentInfo;
-    memset(&currentInfo, 0, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
+    safe_memset(&currentInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO), 0, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
     if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &currentInfo))
     {
         currentConsoleAttributes = currentInfo.wAttributes;
@@ -606,7 +606,7 @@ static eKnownTERM get_Terminal_Type(void)
             //alpine linux does not set COLORTERM or anything else, so this would be complete there, but let the other checks run too
             //linux kernel 3.16 and earlier do not support "truecolor" and will be more limited, but this may be ok since we are not using rgb format. Only 16 different colors-TJE
             OSVersionNumber linVer;
-            memset(&linVer, 0, sizeof(OSVersionNumber));
+            safe_memset(&linVer, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
             if (SUCCESS == get_Operating_System_Version_And_Name(&linVer, M_NULLPTR))
             {
                 if (linVer.versionType.linuxVersion.majorVersion >= 4 || (linVer.versionType.linuxVersion.majorVersion >= 3 && linVer.versionType.linuxVersion.minorVersion > 16))
@@ -702,7 +702,7 @@ static void get_Console_Color_Capabilities(ptrConsoleColorCap colorCapabilities)
     if (colorCapabilities)
     {
         eKnownTERM term = get_Terminal_Type();
-        memset(colorCapabilities, 0, sizeof(consoleColorCap));
+        safe_memset(colorCapabilities, sizeof(consoleColorCap), 0, sizeof(consoleColorCap));
         switch (term)
         {
         case TERM_LINUX_256COLOR:
@@ -1051,11 +1051,12 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
 {
     eReturnValues ret = SUCCESS;
 #if defined (POSIX_2001)
-    struct termios defaultterm, currentterm;
+    struct termios defaultterm;
+    struct termios currentterm;
     FILE* term = fopen("/dev/tty", "r");//use /dev/tty instead of stdin to get the terminal controlling the process.
     bool devtty = true;
-    memset(&defaultterm, 0, sizeof(struct termios));
-    memset(&currentterm, 0, sizeof(struct termios));
+    safe_memset(&defaultterm, sizeof(struct termios), 0, sizeof(struct termios));
+    safe_memset(&currentterm, sizeof(struct termios), 0, sizeof(struct termios));
     if (!term)
     {
         term = stdin;//fallback to stdin I guess...
@@ -1070,7 +1071,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         }
         return FAILURE;
     }
-    memcpy(&currentterm, &defaultterm, sizeof(struct termios));
+    safe_memcpy(&currentterm, sizeof(struct termios), &defaultterm, sizeof(struct termios));
     //print the prompt
     printf("%s", prompt);
     fflush(stdout);
@@ -2457,7 +2458,7 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
             //space after last printed hex 
             printf("  ");
             printf("%s", lineBuff);
-            memset(lineBuff, 0, LINE_BUF_STR_LEN);
+            safe_memset(lineBuff, LINE_BUF_STR_LEN, 0, LINE_BUF_STR_LEN);
         }
     }
     printf("\n\n");

@@ -172,7 +172,7 @@ static bool win_Get_File_Security_Info_By_Name(const char* const filename, fileA
                 if (attrs->winSecurityDescriptor)
                 {
                     attrs->securityDescriptorStringLength = tempLen;
-                    memcpy_s(attrs->winSecurityDescriptor, attrs->securityDescriptorStringLength, temp, tempLen);
+                    safe_memcpy(attrs->winSecurityDescriptor, attrs->securityDescriptorStringLength, temp, tempLen);
                     success = true;
                 }
                 SecureZeroMemory(temp, tempLen);
@@ -220,7 +220,7 @@ static bool win_Get_File_Security_Info_By_File(FILE* file, fileAttributes* attrs
                 if (attrs->winSecurityDescriptor)
                 {
                     attrs->securityDescriptorStringLength = tempLen;
-                    memcpy_s(attrs->winSecurityDescriptor, attrs->securityDescriptorStringLength, temp, tempLen);
+                    safe_memcpy(attrs->winSecurityDescriptor, attrs->securityDescriptorStringLength, temp, tempLen);
                     success = true;
                 }
                 SecureZeroMemory(temp, attrs->securityDescriptorStringLength);
@@ -239,14 +239,14 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* const fil
 {
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64 st;
-    memset(&st, 0, sizeof(struct _stat64));
+    safe_memset(&st, sizeof(struct _stat64), 0, sizeof(struct _stat64));
     if (filetoCheck && _stat64(filetoCheck, &st) == 0)
     {
         attrs = C_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
         if (attrs)
         {
             WIN32_FILE_ATTRIBUTE_DATA winAttributes;
-            memset(&winAttributes, 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
+            safe_memset(&winAttributes, sizeof(WIN32_FILE_ATTRIBUTE_DATA), 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
             attrs->deviceID = st.st_dev;
             attrs->inode = st.st_ino;
             attrs->filemode = st.st_mode;
@@ -273,14 +273,14 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64 st;
-    memset(&st, 0, sizeof(struct _stat64));
+    safe_memset(&st, sizeof(struct _stat64), 0, sizeof(struct _stat64));
     if (file && _fstat64(_fileno(file), &st) == 0)
     {
         attrs = C_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
         if (attrs)
         {
             BY_HANDLE_FILE_INFORMATION winAttributes;
-            memset(&winAttributes, 0, sizeof(BY_HANDLE_FILE_INFORMATION));
+            safe_memset(&winAttributes, sizeof(BY_HANDLE_FILE_INFORMATION), 0, sizeof(BY_HANDLE_FILE_INFORMATION));
             attrs->deviceID = st.st_dev;
             attrs->inode = st.st_ino;
             attrs->filemode = st.st_mode;
@@ -322,7 +322,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
         {
             //try to get ex file info, then if it fails (shouldn't happen) then fall back to old method to get this
             FILE_ID_INFO winfileid;
-            memset(&winfileid, 0, sizeof(FILE_ID_INFO));
+            safe_memset(&winfileid, sizeof(FILE_ID_INFO), 0, sizeof(FILE_ID_INFO));
             if (TRUE == GetFileInformationByHandleEx(msftHandle, FileIdInfo, &winfileid, sizeof(FILE_ID_INFO)))
             {
                 //full 128bit identifier available
@@ -330,22 +330,22 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
                 if (fileId)
                 {
                     fileId->volsn = winfileid.VolumeSerialNumber;
-                    memcpy(&fileId->fileid[0], &winfileid.FileId.Identifier[0], FILE_UNIQUE_ID_ARR_MAX);
+                    safe_memcpy(&fileId->fileid[0], FILE_UNIQUE_ID_ARR_MAX, &winfileid.FileId.Identifier[0], FILE_UNIQUE_ID_ARR_MAX);
                 }
                 return fileId;
             }
         }
 #endif //Windows vista API
         BY_HANDLE_FILE_INFORMATION winfileinfo;
-        memset(&winfileinfo, 0, sizeof(BY_HANDLE_FILE_INFORMATION));
+        safe_memset(&winfileinfo, sizeof(BY_HANDLE_FILE_INFORMATION), 0, sizeof(BY_HANDLE_FILE_INFORMATION));
         if (TRUE == GetFileInformationByHandle(msftHandle, &winfileinfo))
         {
             fileUniqueIDInfo* fileId = C_CAST(fileUniqueIDInfo*, safe_calloc(1, sizeof(fileUniqueIDInfo)));
             if (fileId)
             {
                 fileId->volsn = winfileinfo.dwVolumeSerialNumber;
-                memcpy(&fileId->fileid[0], &winfileinfo.nFileIndexHigh, sizeof(DWORD));
-                memcpy(&fileId->fileid[sizeof(DWORD)], &winfileinfo.nFileIndexLow, sizeof(DWORD));
+                safe_memcpy(&fileId->fileid[0], FILE_UNIQUE_ID_ARR_MAX, &winfileinfo.nFileIndexHigh, sizeof(DWORD));
+                safe_memcpy(&fileId->fileid[sizeof(DWORD)], FILE_UNIQUE_ID_ARR_MAX - sizeof(DWORD), &winfileinfo.nFileIndexLow, sizeof(DWORD));
             }
             return fileId;
         }
@@ -369,7 +369,7 @@ static char* get_Current_User_SID(void)
         PTOKEN_USER pUser = C_CAST(PTOKEN_USER, safe_malloc(dwSize));
         if (pUser)
         {
-            memset(pUser, 0, dwSize);
+            safe_memset(pUser, dwSize, 0, dwSize);
             if (GetTokenInformation(hToken, TokenUser, pUser, dwSize, &dwSize))
             {
                 LPSTR pSidString = M_NULLPTR;
@@ -478,7 +478,7 @@ static bool get_System_Volume(char *winSysVol, size_t winSysVolLen)
     static DECLARE_ZERO_INIT_ARRAY(char, windowsSystemVolume, MAX_PATH);
     if (validsystemvol && safe_strnlen(windowsSystemVolume, MAX_PATH) > 0)
     {
-        memset(winSysVol, 0, winSysVolLen);
+        safe_memset(winSysVol, winSysVolLen, 0, winSysVolLen);
         common_String_Concat(winSysVol, winSysVolLen, windowsSystemVolume);
     }
     else
@@ -487,7 +487,7 @@ static bool get_System_Volume(char *winSysVol, size_t winSysVolLen)
         {
             //This function failed so try reading this environment variable instead
             char* systemDrive = M_NULLPTR;
-            memset(windowsSystemVolume, 0, MAX_PATH);
+            safe_memset(windowsSystemVolume, MAX_PATH, 0, MAX_PATH);
             if (ENV_VAR_SUCCESS != get_Environment_Variable("SystemDrive", &systemDrive))
             {
 #if defined (_DEBUG)
@@ -516,7 +516,7 @@ static bool get_System_Volume(char *winSysVol, size_t winSysVolLen)
                 *(slashPointer + 1) = '\0';
             }
             validsystemvol = true;
-            memset(winSysVol, 0, winSysVolLen);
+            safe_memset(winSysVol, winSysVolLen, 0, winSysVolLen);
             common_String_Concat(winSysVol, winSysVolLen, windowsSystemVolume);
         }
     }
@@ -925,7 +925,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             dirptr = C_CAST(char*, safe_calloc(newlen, sizeof(char)));
             if (dirptr)
             {
-                memcpy(dirptr, dirs[i], newlen - 2);
+                safe_memcpy(dirptr, newlen, dirs[i], newlen - 2);
                 common_String_Concat(dirptr, newlen, "\\");
                 appendedTrailingSlash = true;
             }
@@ -971,7 +971,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 if (reparseData)
                 {
                     DWORD bytesRead = 0;
-                    memset(reparseData, 0, sizeof(REPARSE_DATA_BUFFER) + MAX_PATH);
+                    safe_memset(reparseData, sizeof(REPARSE_DATA_BUFFER) + MAX_PATH, 0, sizeof(REPARSE_DATA_BUFFER) + MAX_PATH);
                     if (DeviceIoControl(link, FSCTL_GET_REPARSE_POINT, M_NULLPTR, 0, &reparseData, sizeof(reparseData), &bytesRead, M_NULLPTR))
                     {
                         size_t bufferSize = 0;
@@ -1086,7 +1086,7 @@ M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath)
 bool os_Directory_Exists(const char* const pathToCheck)
 {
     WIN32_FILE_ATTRIBUTE_DATA fileAttributes;
-    memset(&fileAttributes, 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
+    safe_memset(&fileAttributes, sizeof(WIN32_FILE_ATTRIBUTE_DATA), 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
     if (win_File_Attributes_By_Name(pathToCheck, &fileAttributes))
     {
         if (fileAttributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
@@ -1136,7 +1136,7 @@ eReturnValues os_Create_Directory(const char* filePath)
 bool os_File_Exists(const char* const filetoCheck)
 {
     WIN32_FILE_ATTRIBUTE_DATA fileAttributes;
-    memset(&fileAttributes, 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
+    safe_memset(&fileAttributes, sizeof(WIN32_FILE_ATTRIBUTE_DATA), 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
     if (win_File_Attributes_By_Name(filetoCheck, &fileAttributes))
     {
         if (!(fileAttributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
@@ -1197,7 +1197,7 @@ eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_
     //Check if this file even exists to make this more like the behavior of the POSIX realpath function.
     if (!os_File_Exists(fullPath) && !os_Directory_Exists(fullPath))
     {
-        memset(fullPath, 0, OPENSEA_PATH_MAX);
+        safe_memset(fullPath, OPENSEA_PATH_MAX, 0, OPENSEA_PATH_MAX);
         return FAILURE;
     }
     //Future work, use this API instead??? https://learn.microsoft.com/en-us/windows/win32/api/pathcch/nf-pathcch-pathcchcanonicalizeex

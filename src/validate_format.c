@@ -428,7 +428,7 @@ static M_INLINE eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
     size_t charArrayLen = 0;
     size_t conversionresult = 0;
     mbstate_t state;
-    memset(&state, 0, sizeof(mbstate_t));
+    safe_memset(&state, sizeof(mbstate_t), 0, sizeof(mbstate_t));
     errno = 0;//ISO C security standard does not say this is necessary, but going to make sure it is zero before moving on anyways - TJE
 #if defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
     //wcrtombs_s
@@ -527,7 +527,7 @@ static M_INLINE eValidateFormatResult validate_WStr_Conversion(const wchar_t* st
         size_t charStrSize = 0;
         size_t conversionResult = 0;
         mbstate_t state;
-        memset(&state, 0, sizeof(mbstate_t));
+        safe_memset(&state, sizeof(mbstate_t), 0, sizeof(mbstate_t));
         errno = 0;//ISO C does not show this as necessary, but doing to set this to zero anyways
         //get allocation size first
 #if defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)

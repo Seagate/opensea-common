@@ -37,7 +37,7 @@ eReturnValues fill_Random_Pattern_In_Buffer(uint8_t* ptrData, uint32_t dataLengt
     {
         localPtr[iter] = xorshiftplus32();
     }
-    memcpy(ptrData, localPtr, dataLength);//copy only the length of the original pointer since we may have overallocated and rounded up earlier.
+    safe_memcpy(ptrData, dataLength, localPtr, dataLength);//copy only the length of the original pointer since we may have overallocated and rounded up earlier.
     safe_free(&localPtr);
     return SUCCESS;
 }
@@ -54,7 +54,7 @@ eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* ptrData, 
     {
         localPtr[iter] = hexPattern;
     }
-    memcpy(ptrData, localPtr, dataLength);//copy only the length of the original pointer since we may have overallocated and rounded up earlier.
+    safe_memcpy(ptrData, dataLength, localPtr, dataLength);//copy only the length of the original pointer since we may have overallocated and rounded up earlier.
     safe_free(&localPtr);
     return SUCCESS;
 }
@@ -80,7 +80,7 @@ eReturnValues fill_ASCII_Pattern_In_Buffer(const char* asciiPattern, uint32_t pa
     }
     for (uint32_t iter = 0; iter < dataLength; iter += patternLength)
     {
-        memcpy(&ptrData[iter], asciiPattern, M_Min(patternLength, dataLength - iter));
+        safe_memcpy(&ptrData[iter], dataLength, asciiPattern, M_Min(patternLength, dataLength - iter));
     }
     return SUCCESS;
 }
@@ -93,7 +93,7 @@ eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t* inPattern, uint32
     }
     for (uint32_t iter = 0; iter < dataLength; iter += inpatternLength)
     {
-        memcpy(&ptrData[iter], inPattern, M_Min(inpatternLength, dataLength - iter));
+        safe_memcpy(&ptrData[iter], dataLength, inPattern, M_Min(inpatternLength, dataLength - iter));
     }
     return SUCCESS;
 }

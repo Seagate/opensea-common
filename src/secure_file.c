@@ -34,10 +34,10 @@
 
 eReturnValues replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char* newFileName)
 {
-    char* ptr = M_NULLPTR;
+    char* ptr = strrchr(fullPath, SYSTEM_PATH_SEPARATOR);
     size_t ptrLen = 0;
     size_t fullLength = 0;
-    if (M_NULLPTR != (ptr = strrchr(fullPath, SYSTEM_PATH_SEPARATOR)))
+    if (M_NULLPTR != ptr)
     {
         ptr += 1;
     }
@@ -47,7 +47,7 @@ eReturnValues replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char* n
     }
     ptrLen = safe_strlen(ptr);
     //now that we have a valid pointer, set all the remaining characters to null, then set the new file name in place.
-    memset(ptr, 0, ptrLen);
+    safe_memset(ptr, ptrLen + 1, 0, ptrLen);//destsz has + 1 for null terminator not included in strlen.
     fullLength = (OPENSEA_PATH_MAX - safe_strlen(fullPath));
     snprintf(ptr, fullLength, "%s", newFileName);
     return SUCCESS;

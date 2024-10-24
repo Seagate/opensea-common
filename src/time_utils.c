@@ -26,7 +26,7 @@
 #include <math.h>
 
 time_t CURRENT_TIME = 0;
-//NOTE: Do not use the DECLAR_ZERO_INIT_ARRAY here as it will not compile correctly for a global variable like this.
+//NOTE: Do not use the DECLARE_ZERO_INIT_ARRAY here as it will not compile correctly for a global variable like this.
 //      Instead we are manually setting all bytes to zero the old fashioned way - TJE
 char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -36,9 +36,9 @@ bool get_current_timestamp(void)
     if (strcmp(CURRENT_TIME_STRING, "") == 0)
     {
         struct tm logTime;
-        memset(&logTime, 0, sizeof(struct tm));
+        safe_memset(&logTime, sizeof(struct tm), 0, sizeof(struct tm));
         CURRENT_TIME = time(M_NULLPTR);
-        memset(CURRENT_TIME_STRING, 0, sizeof(CURRENT_TIME_STRING) / sizeof(*CURRENT_TIME_STRING));
+        safe_memset(CURRENT_TIME_STRING, sizeof(CURRENT_TIME_STRING) / sizeof(*CURRENT_TIME_STRING), 0, sizeof(CURRENT_TIME_STRING) / sizeof(*CURRENT_TIME_STRING));
         retStatus = strftime(CURRENT_TIME_STRING, CURRENT_TIME_STRING_LENGTH, "%Y%m%dT%H%M%S", get_Localtime(&CURRENT_TIME, &logTime));
     }
     return retStatus;
@@ -53,7 +53,7 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
     //This apparently causes an error in mingww64 environment in msys2 since this function is missing, but C11 is defined.
 #if defined(USING_C11) && defined (TIME_UTC)
     struct timespec now;
-    memset(&now, 0, sizeof(struct timespec));
+    safe_memset(&now, sizeof(struct timespec), 0, sizeof(struct timespec));
     if (0 != timespec_get(&now, TIME_UTC))
     {
         //NOTE: Technically this is a time since the system's epoch as C standard does not set an epoch.
@@ -67,7 +67,7 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
         //POSIX gettimeofday() or clock_gettime(CLOCK_REALTIME, ts) https://pubs.opengroup.org/onlinepubs/9699919799/functions/clock_getres.html 
         //NOTE: Using clock_gettime since it's more accurate and not affected by time-skew
         struct timespec posixnow;
-        memset(&posixnow, 0, sizeof(struct timespec));
+        safe_memset(&posixnow, sizeof(struct timespec), 0, sizeof(struct timespec));
         if (0 == clock_gettime(CLOCK_REALTIME, &posixnow))
         {
             msSinceJan1970 = (C_CAST(uint64_t, posixnow.tv_sec) * UINT64_C(1000)) + (C_CAST(uint64_t, posixnow.tv_nsec) / UINT64_C(1000000));
@@ -81,20 +81,20 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
         SYSTEMTIME epoch;
         ULARGE_INTEGER nowAsInt;
         ULARGE_INTEGER epochAsInt;
-        memset(&ftnow, 0, sizeof(FILETIME));
-        memset(&epochfile, 0, sizeof(FILETIME));
-        memset(&epoch, 0, sizeof(SYSTEMTIME));
-        memset(&nowAsInt, 0, sizeof(ULARGE_INTEGER));
-        memset(&epochAsInt, 0, sizeof(ULARGE_INTEGER));
+        safe_memset(&ftnow, sizeof(FILETIME), 0, sizeof(FILETIME));
+        safe_memset(&epochfile, sizeof(FILETIME), 0, sizeof(FILETIME));
+        safe_memset(&epoch, sizeof(SYSTEMTIME), 0, sizeof(SYSTEMTIME));
+        safe_memset(&nowAsInt, sizeof(ULARGE_INTEGER), 0, sizeof(ULARGE_INTEGER));
+        safe_memset(&epochAsInt, sizeof(ULARGE_INTEGER), 0, sizeof(ULARGE_INTEGER));
         epoch.wYear = 1970;
         epoch.wMonth = 1;
         epoch.wSecond = 0;//MSFT says to set to first second.
         epoch.wDayOfWeek = 4;//Thursday
         epoch.wDay = 1;
         GetSystemTimeAsFileTime(&ftnow);
-        memcpy(&nowAsInt, &ftnow, sizeof(ULARGE_INTEGER));//these are both 8 bytes in size, so it SHOULD be fine and MSFT says to do this-TJE
+        safe_memcpy(&nowAsInt, sizeof(ULARGE_INTEGER), &ftnow, sizeof(FILETIME));//these are both 8 bytes in size, so it SHOULD be fine and MSFT says to do this-TJE
         SystemTimeToFileTime(&epoch, &epochfile);
-        memcpy(&epochAsInt, &epochfile, sizeof(ULARGE_INTEGER));//these are both 8 bytes in size, so it SHOULD be fine and MSFT says to do this-TJE
+        safe_memcpy(&epochAsInt, sizeof(ULARGE_INTEGER), &epochfile, sizeof(FILETIME));//these are both 8 bytes in size, so it SHOULD be fine and MSFT says to do this-TJE
         if (nowAsInt.QuadPart >= epochAsInt.QuadPart)//this should always be true, but seems like microsoft is likely checking this, so checking this as well-TJE
         {
             msSinceJan1970 = C_CAST(uint64_t, (nowAsInt.QuadPart - epochAsInt.QuadPart)) / UINT64_C(10000);//subtracting the 2 large integers gives 100 nanosecond intervals since jan 1, 1970, so divide by 10000 to get milliseconds (divide by 10000000 to get seconds)
@@ -113,7 +113,7 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
             //      This is not currently taken into account -TJE
             struct tm nowstruct;
             time_t currentTime = time(M_NULLPTR);
-            memset(&nowstruct, 0, sizeof(struct tm));
+            safe_memset(&nowstruct, sizeof(struct tm), 0, sizeof(struct tm));
             //to get the milliseconds, need to convert this to struct tm, then calculate this.
             get_UTCtime(&currentTime, &nowstruct);
             uint64_t currentyear = (C_CAST(uint64_t, nowstruct.tm_year) + UINT64_C(1900));
@@ -325,7 +325,7 @@ struct tm* get_UTCtime(const time_t* timer, struct tm* buf)
         //There may be better options beyond what is done below, but it may be a per-system implementation or something like that
         //      So there is room for improvement in this fallback function
         //Last thing we can do is use the unsafe version and copy it immediately to our own buffer if nothing else is possible
-        memcpy(buf, gmtime(timer), sizeof(struct tm));
+        safe_memcpy(buf, sizeof(struct tm), gmtime(timer), sizeof(struct tm));
 #endif
     }
     return buf;
@@ -353,7 +353,7 @@ struct tm* get_Localtime(const time_t* timer, struct tm* buf)
         //There may be better options beyond what is done below, but it may be a per-system implementation or something like that
         //      So there is room for improvement in this fallback function
         //Last thing we can do is use the unsafe version and copy it immediately to our own buffer if nothing else is possible
-        memcpy(buf, localtime(timer), sizeof(struct tm));
+        safe_memcpy(buf, sizeof(struct tm), localtime(timer), sizeof(struct tm));
 #endif
     }
     return buf;
@@ -364,14 +364,18 @@ char* get_Time_String_From_TM_Structure(const struct tm* timeptr, char* buffer, 
     if (timeptr && buffer && bufferSize >= TIME_STRING_LENGTH)
     {
         //start with a known zeroed buffer
-        memset(buffer, 0, bufferSize);
+        safe_memset(buffer, bufferSize, 0, bufferSize);
 #if defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
         if (0 != asctime_s(buffer, bufferSize, timeptr))
         {
             //error
-            memset(buffer, 0, bufferSize);
+            safe_memset(buffer, bufferSize, 0, bufferSize);
         }
-#else
+        else
+        {
+            return buffer;
+        }
+#endif //__STDC_SECURE_LIB__ || HAVE_C11_ANNEX_K
         //strftime is recommended to be used. Using format %c will return the matching output for this function
         //asctime (which this replaces uses the format: Www Mmm dd hh:mm:ss yyyy\n)
         //NOTE: %e is C99. C89's closest is %d which has a leading zero.
@@ -390,14 +394,13 @@ char* get_Time_String_From_TM_Structure(const struct tm* timeptr, char* buffer, 
 #endif
         {
             //This means the array was too small...which shouldn't happen...but in case it does, zero out the memory
-            memset(buffer, 0, bufferSize);
+            safe_memset(buffer, bufferSize, 0, bufferSize);
         }
         if (restoreLocale)
         {
             setlocale(LC_TIME, currentLocale);
         }
         safe_free(&currentLocale);
-#endif //!C11 annex k or MSFT secure lib for asctime
     }
     return buffer;
 }
@@ -408,7 +411,7 @@ char* get_Current_Time_String(const time_t* timer, char* buffer, size_t bufferSi
     if (timer && buffer && bufferSize >= CURRENT_TIME_STRING_LENGTH)
     {
         struct tm cTimeBuf;
-        memset(&cTimeBuf, 0, sizeof(struct tm));
+        safe_memset(&cTimeBuf, sizeof(struct tm), 0, sizeof(struct tm));
         get_Time_String_From_TM_Structure(get_Localtime(timer, &cTimeBuf), buffer, bufferSize);
     }
     return buffer;
@@ -419,7 +422,7 @@ time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
     uint16_t days = 0;
     uint8_t years = 0, months = 0, hours = 0, minutes = 0, seconds = 0;
     struct tm futureTime;
-    memset(&futureTime, 0, sizeof(struct tm));
+    safe_memset(&futureTime, sizeof(struct tm), 0, sizeof(struct tm));
     get_Localtime(C_CAST(const time_t*, &inputTime), &futureTime);
     //first break the input time into seperate units
     convert_Seconds_To_Displayable_Time(secondsInTheFuture, &years, &days, &hours, &minutes, &seconds);

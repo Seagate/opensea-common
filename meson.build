@@ -252,6 +252,7 @@ if get_option('directorysecurity').disabled()
 endif
 
 src_files = ['src/bit_manip.c', 
+            'src/constraint_handling.c',
             'src/env_detect.c', 
             'src/error_translation.c',
             'src/io_utils.c',

@@ -44,7 +44,7 @@ eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
     static DWORD winMinor = 0;
     static DWORD winBuild = 0;
     static bool readVersionFromNTDLL = false;
-    memset(versionNumber, 0, sizeof(OSVersionNumber));
+    safe_memset(versionNumber, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     versionNumber->osVersioningIdentifier = OS_WINDOWS;
 
     if (!readVersionFromNTDLL)
@@ -81,7 +81,7 @@ eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
                 if (rtlgetverptr != M_NULLPTR)
                 {
                     OSVERSIONINFOEXW osInfo;
-                    memset(&osInfo, 0, sizeof(OSVERSIONINFOEXW));
+                    safe_memset(&osInfo, sizeof(OSVERSIONINFOEXW), 0, sizeof(OSVERSIONINFOEXW));
                     osInfo.dwOSVersionInfoSize = sizeof(osInfo);
                     if (rtlgetverptr(&osInfo) >= 0)//not using NT_SUCCESS from ntdef.h because it causes lots or redefinition errors, but this is all that macro does
                     {
@@ -122,7 +122,7 @@ bool is_Windows_Vista_Or_Higher(void)
     bool isWindowsVistaOrHigher = false;
     OSVERSIONINFOEX windowsVersionInfo;
     DWORDLONG conditionMask = 0;
-    memset(&windowsVersionInfo, 0, sizeof(OSVERSIONINFOEX));
+    safe_memset(&windowsVersionInfo, sizeof(OSVERSIONINFOEX), 0, sizeof(OSVERSIONINFOEX));
     conditionMask = 0;
     //Now get the actual version of the OS...start at windows vista and work forward from there.
     windowsVersionInfo.dwMajorVersion = 6;
@@ -141,7 +141,7 @@ bool is_Windows_7_Or_Higher(void)
     bool isWindows7OrHigher = false;
     OSVERSIONINFOEX windowsVersionInfo;
     DWORDLONG conditionMask = 0;
-    memset(&windowsVersionInfo, 0, sizeof(OSVERSIONINFOEX));
+    safe_memset(&windowsVersionInfo, sizeof(OSVERSIONINFOEX), 0, sizeof(OSVERSIONINFOEX));
     conditionMask = 0;
     //Now get the actual version of the OS...start at windows vista and work forward from there.
     windowsVersionInfo.dwMajorVersion = 6;
@@ -160,7 +160,7 @@ bool is_Windows_8_Or_Higher(void)
     bool isWindows8OrHigher = false;
     OSVERSIONINFOEX windowsVersionInfo;
     DWORDLONG conditionMask = 0;
-    memset(&windowsVersionInfo, 0, sizeof(OSVERSIONINFOEX));
+    safe_memset(&windowsVersionInfo, sizeof(OSVERSIONINFOEX), 0, sizeof(OSVERSIONINFOEX));
     conditionMask = 0;
     //Now get the actual version of the OS...start at windows vista and work forward from there.
     windowsVersionInfo.dwMajorVersion = 6;
@@ -181,7 +181,7 @@ bool is_Windows_8_One_Or_Higher(void)
     /*
     OSVERSIONINFOEX windowsVersionInfo;
     DWORDLONG conditionMask = 0;
-    memset(&windowsVersionInfo, 0, sizeof(OSVERSIONINFOEX));
+    safe_memset(&windowsVersionInfo, sizeof(OSVERSIONINFOEX), 0, sizeof(OSVERSIONINFOEX));
     conditionMask = 0;
     //Now get the actual version of the OS...start at windows vista and work forward from there.
     windowsVersionInfo.dwMajorVersion = 6;
@@ -195,7 +195,7 @@ bool is_Windows_8_One_Or_Higher(void)
     /*/
     //This uses our method below that checks the version from kernel.dll
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion > 6)
     {
@@ -217,7 +217,7 @@ bool is_Windows_10_Or_Higher(void)
     /*
     OSVERSIONINFOEX windowsVersionInfo;
     DWORDLONG conditionMask = 0;
-    memset(&windowsVersionInfo, 0, sizeof(OSVERSIONINFOEX));
+    safe_memset(&windowsVersionInfo, sizeof(OSVERSIONINFOEX), 0, sizeof(OSVERSIONINFOEX));
     conditionMask = 0;
     //Now get the actual version of the OS...start at windows vista and work forward from there.
     windowsVersionInfo.dwMajorVersion = 10;
@@ -231,7 +231,7 @@ bool is_Windows_10_Or_Higher(void)
     /*/
     //This uses our method below that checks the version from kernel.dll
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10)
     {
@@ -246,7 +246,7 @@ bool is_Windows_10_Version_1507_Or_Higher(void)
 {
     bool isWindows10_1507OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 10240)
     {
@@ -260,7 +260,7 @@ bool is_Windows_10_Version_1511_Or_Higher(void)
 {
     bool isWindows10_1511OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 10586)
     {
@@ -274,7 +274,7 @@ bool is_Windows_10_Version_1607_Or_Higher(void)
 {
     bool isWindows10_1607OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 14393)
     {
@@ -288,7 +288,7 @@ bool is_Windows_10_Version_1703_Or_Higher(void)
 {
     bool isWindows10_1703OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 15063)
     {
@@ -302,7 +302,7 @@ bool is_Windows_10_Version_1709_Or_Higher(void)
 {
     bool isWindows10_1709OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 16299)
     {
@@ -316,7 +316,7 @@ bool is_Windows_10_Version_1803_Or_Higher(void)
 {
     bool isWindows10_1803OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 17134)
     {
@@ -330,7 +330,7 @@ bool is_Windows_10_Version_1809_Or_Higher(void)
 {
     bool isWindows10_1809OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 17763)
     {
@@ -344,7 +344,7 @@ bool is_Windows_10_Version_1903_Or_Higher(void)
 {
     bool isWindows10_1903OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 18362)
     {
@@ -358,7 +358,7 @@ bool is_Windows_10_Version_1909_Or_Higher(void)
 {
     bool isWindows10_1909OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 18363)
     {
@@ -372,7 +372,7 @@ bool is_Windows_10_Version_2004_Or_Higher(void)
 {
     bool isWindows10_2004OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 19041)
     {
@@ -386,7 +386,7 @@ bool is_Windows_10_Version_20H2_Or_Higher(void)
 {
     bool isWindows10_20H2OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 19042)
     {
@@ -400,7 +400,7 @@ bool is_Windows_10_Version_21H1_Or_Higher(void)
 {
     bool isWindows10_21H1OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 19043)
     {
@@ -414,7 +414,7 @@ bool is_Windows_10_Version_21H2_Or_Higher(void)
 {
     bool isWindows10_21H2OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 19044)
     {
@@ -428,7 +428,7 @@ bool is_Windows_10_Version_22H2_Or_Higher(void)
 {
     bool isWindows10_22H2OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 19045)
     {
@@ -442,7 +442,7 @@ bool is_Windows_11_Version_21H2_Or_Higher(void)
 {
     bool isWindows10_21H2OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 22000)
     {
@@ -456,7 +456,7 @@ bool is_Windows_11_Version_22H2_Or_Higher(void)
 {
     bool isWindows11_22H2OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 22621)
     {
@@ -469,7 +469,7 @@ bool is_Windows_11_Version_23H2_Or_Higher(void)
 {
     bool isWindows11_23H2OrHigher = false;
     OSVersionNumber windowsVersion;
-    memset(&windowsVersion, 0, sizeof(OSVersionNumber));
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
     if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 22631)
     {
@@ -486,7 +486,7 @@ bool is_Windows_Server_OS(void)
     {
         OSVERSIONINFOEX windowsVersionInfo;
         DWORDLONG conditionMask = 0;
-        memset(&windowsVersionInfo, 0, sizeof(OSVERSIONINFOEX));
+        safe_memset(&windowsVersionInfo, sizeof(OSVERSIONINFOEX), 0, sizeof(OSVERSIONINFOEX));
         windowsVersionInfo.wProductType = VER_NT_WORKSTATION;
         conditionMask = VerSetConditionMask(conditionMask, VER_PRODUCT_TYPE, VER_EQUAL);//checking for equality on the workstation attribute
         if (VerifyVersionInfo(&windowsVersionInfo, VER_PRODUCT_TYPE, conditionMask))

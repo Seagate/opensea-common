@@ -25,6 +25,7 @@
 #include "sort_and_search.h"
 #include "common_types.h"
 #include "type_conversion.h"
+#include "memory_safety.h"
 
 /*
  * Initial implementation:
@@ -80,7 +81,7 @@ static void *safe_lwork(const void *key, const void *base, size_t *nelp, size_t 
         * lsearch() adds the key to the end of the table and increments
         * the number of elements.
         */
-        memcpy(endp, key, width);
+        safe_memcpy(endp, width, key, width);
         ++*nelp;
 
         return (endp);
@@ -136,7 +137,7 @@ static void *safe_lwork_context(const void *key, const void *base, size_t *nelp,
         * lsearch() adds the key to the end of the table and increments
         * the number of elements.
         */
-        memcpy(endp, key, width);
+        safe_memcpy(endp, width, key, width);
         ++*nelp;
 
         return (endp);

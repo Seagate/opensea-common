@@ -355,7 +355,7 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     eReturnValues ret = SUCCESS;//should always return this unless we don't find a compiler we support.
     //make sure we set unknown and clear out version info before we continue.
     *compilerUsed = OPENSEA_COMPILER_UNKNOWN;
-    memset(compilerVersionInfo, 0, sizeof(compilerVersion));
+    safe_memset(compilerVersionInfo, sizeof(compilerVersion), 0, sizeof(compilerVersion));
     //Time to start checking predefined compiler macros
 #if defined _MSC_VER
     //Microsoft Visual C/C++ compiler (code is written to use the _MSC_FULL_VER from 2003 and later and we only really support 2013 and higher due to C99 usage)-TJE

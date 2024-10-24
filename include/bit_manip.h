@@ -19,7 +19,7 @@
 #include "code_attributes.h"
 #include "common_types.h"
 #include "type_conversion.h"
-
+#include "memory_safety.h"
 
 #if defined (__cplusplus)
 extern "C"
@@ -193,7 +193,7 @@ extern "C"
     static M_INLINE uint8_t get_bit_range_uint8(uint8_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = false;
         genint.u8 = value;
         genint.sizeoftype = sizeof(value);
@@ -204,7 +204,7 @@ extern "C"
     static M_INLINE uint16_t get_bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = false;
         genint.u16 = value;
         genint.sizeoftype = sizeof(value);
@@ -215,7 +215,7 @@ extern "C"
     static M_INLINE uint8_t get_8bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = false;
         genint.u16 = value;
         genint.sizeoftype = sizeof(value);
@@ -226,7 +226,7 @@ extern "C"
     static M_INLINE uint32_t get_bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = false;
         genint.u32 = value;
         genint.sizeoftype = sizeof(value);
@@ -237,7 +237,7 @@ extern "C"
     static M_INLINE uint8_t get_8bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = false;
         genint.u32 = value;
         genint.sizeoftype = sizeof(value);
@@ -248,7 +248,7 @@ extern "C"
     static M_INLINE uint16_t get_16bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = false;
         genint.u32 = value;
         genint.sizeoftype = sizeof(value);
@@ -259,7 +259,7 @@ extern "C"
     static M_INLINE uint64_t get_bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = false;
         genint.u64 = value;
         genint.sizeoftype = sizeof(value);
@@ -270,7 +270,7 @@ extern "C"
     static M_INLINE uint8_t get_8bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = false;
         genint.u64 = value;
         genint.sizeoftype = sizeof(value);
@@ -281,7 +281,7 @@ extern "C"
     static M_INLINE uint16_t get_16bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = false;
         genint.u64 = value;
         genint.sizeoftype = sizeof(value);
@@ -292,7 +292,7 @@ extern "C"
     static M_INLINE uint32_t get_32bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = false;
         genint.u64 = value;
         genint.sizeoftype = sizeof(value);
@@ -303,7 +303,7 @@ extern "C"
     static M_INLINE int8_t get_bit_range_int8(int8_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = true;
         genint.i8 = value;
         genint.sizeoftype = sizeof(value);
@@ -314,7 +314,7 @@ extern "C"
     static M_INLINE int16_t get_bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = true;
         genint.i16 = value;
         genint.sizeoftype = sizeof(value);
@@ -325,7 +325,7 @@ extern "C"
     static M_INLINE int8_t get_8bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = true;
         genint.i16 = value;
         genint.sizeoftype = sizeof(value);
@@ -336,7 +336,7 @@ extern "C"
     static M_INLINE int32_t get_bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = true;
         genint.i32 = value;
         genint.sizeoftype = sizeof(value);
@@ -347,7 +347,7 @@ extern "C"
     static M_INLINE int8_t get_8bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = true;
         genint.i32 = value;
         genint.sizeoftype = sizeof(value);
@@ -358,7 +358,7 @@ extern "C"
     static M_INLINE int16_t get_16bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = true;
         genint.i32 = value;
         genint.sizeoftype = sizeof(value);
@@ -369,7 +369,7 @@ extern "C"
     static M_INLINE int64_t get_bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = true;
         genint.i64 = value;
         genint.sizeoftype = sizeof(value);
@@ -380,7 +380,7 @@ extern "C"
     static M_INLINE int8_t get_8bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = true;
         genint.i64 = value;
         genint.sizeoftype = sizeof(value);
@@ -391,7 +391,7 @@ extern "C"
     static M_INLINE int16_t get_16bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = true;
         genint.i64 = value;
         genint.sizeoftype = sizeof(value);
@@ -402,7 +402,7 @@ extern "C"
     static M_INLINE int32_t get_32bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        memset(&genint, 0, sizeof(genericint_t));
+        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned = true;
         genint.i64 = value;
         genint.sizeoftype = sizeof(value);
