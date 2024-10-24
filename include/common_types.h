@@ -199,6 +199,36 @@ extern "C"
         #define M_ACCESS_ENUM(type, val) val
     #endif
 
+    //A macro to help define packed structures in a way that best works with different compilers
+    #if defined(_MSC_VER)
+        #define M_PACK_ALIGN_STRUCT(name, alignmentval, ...) \
+            __pragma(pack(push, alignmentval));\
+            typedef struct _ ## name { __VA_ARGS__ }name; \
+            __pragma(pack(pop))
+    #elif defined(__GNUC__) || defined(__clang__) || defined (__MINGW32__) || defined (__MINGW64__)
+        #define M_PACK_ALIGN_STRUCT(name, alignmentval, ...) \
+            typedef struct _ ## name { __VA_ARGS__ }__attribute__((packed, aligned(alignmentval))) name
+    #else
+        #define M_PACK_ALIGN_STRUCT(name, alignmentval, ...) \
+            typedef struct _ ## name { __VA_ARGS__ }name
+    #endif
+
+    //same idea as above but without providing a specific alignment requirement, just to pack as small as "possible"
+    //This is not exactly the same as providing an alignment of 1 in GCC, but it is as close as MSVC can get to the same behavior
+    #if defined(_MSC_VER)
+        #define M_PACKED_STRUCT(name, ...) \
+            __pragma(pack(push, 1));\
+            typedef struct _ ## name { __VA_ARGS__ }name; \
+            __pragma(pack(pop))
+    #elif defined(__GNUC__) || defined(__clang__) || defined (__MINGW32__) || defined (__MINGW64__)
+        #define M_PACKED_STRUCT(name, ...) \
+            typedef struct _ ## name { __VA_ARGS__ }__attribute__((packed)) name
+    #else
+        #define M_PACKED_STRUCT(name, ...) \
+            typedef struct _ ## name { __VA_ARGS__ }name
+    #endif
+
+
     #if !defined (USING_CPP98)
         //only use these methods in C
         //The C++ version is at the end of this file outside of the extern "C"
@@ -229,6 +259,21 @@ extern "C"
                     type_name array_name[size] = { 0 }
             #endif
         #endif
+    #endif
+
+    //Setup a way to do static-assertions
+    //NOTE: Do not pass a quoted string for backwards compatibility with the fallback case.
+    //example: M_STATIC_ASSET(condition, this_is_my_example_error)
+    #if defined (USING_CPP11) && defined (__cpp_static_assert)
+        #define M_STATIC_ASSERT(condition, message) static_assert(condition, #message)
+    #elif defined (USING_C23)
+        #define M_STATIC_ASSERT(condition, message) static_assert(condition, #message)
+    #elif defined (USING_C11)
+        #include <assert.h>
+        #define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #message)
+    #else
+        //Generic way to do this. Not as good messaging but should work about the same
+        #define M_STATIC_ASSERT(condition, message) typedef char static_assertion_##message[(condition) ? 1 : -1] //M_ATTR_UNUSED
     #endif
 
     #if defined (MAX_PATH)
