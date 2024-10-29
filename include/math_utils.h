@@ -113,21 +113,25 @@ extern "C"
 //      Since there is not a standard way in C to note a value as a char or short like there is with long and long long
 //      this cast is required.
 
-#define INT_ROUND_UP(value, roundto) _Generic((value), \
-    unsigned char: (((value) + (roundto) - M_STATIC_CAST(unsigned char, 1)) & ~((roundto) - M_STATIC_CAST(unsigned char, 1))), \
-    unsigned short: (((value) + (roundto) - M_STATIC_CAST(unsigned short, 1)) & ~((roundto) - M_STATIC_CAST(unsigned short, 1))), \
-    unsigned int: (((value) + (roundto) - 1U) & ~((roundto) - 1U)), \
-    unsigned long: (((value) + (roundto) - 1UL) & ~((roundto) - 1UL)), \
-    unsigned long long: (((value) + (roundto) - 1ULL) & ~((roundto) - 1ULL)), \
-    default: (((value) % (roundto)) ? ((value) + (roundto) - ((value) % (roundto))) : (value)))
+#define INT_ROUND_UP(value, roundto)                                                                                   \
+    _Generic((value),                                                                                                  \
+     unsigned char:                                                                                                    \
+            (((value) + (roundto) - M_STATIC_CAST(unsigned char, 1)) & ~((roundto) - M_STATIC_CAST(unsigned char, 1))),\
+     unsigned short:                                                                                                   \
+          (((value) + (roundto) - M_STATIC_CAST(unsigned short, 1)) & ~((roundto) - M_STATIC_CAST(unsigned short, 1))),\
+     unsigned int: (((value) + (roundto) - 1U) & ~((roundto) - 1U)),                                                   \
+     unsigned long: (((value) + (roundto) - 1UL) & ~((roundto) - 1UL)),                                                \
+     unsigned long long: (((value) + (roundto) - 1ULL) & ~((roundto) - 1ULL)),                                         \
+     default: (((value) % (roundto)) ? ((value) + (roundto) - ((value) % (roundto))) : (value)))
 
-#define INT_ROUND_DOWN(value, roundto) _Generic((value), \
-    unsigned char: ((value) & ~((roundto) - M_STATIC_CAST(unsigned char, 1))), \
-    unsigned short: ((value) & ~((roundto) - M_STATIC_CAST(unsigned short, 1))), \
-    unsigned int: ((value) & ~((roundto) - 1U)), \
-    unsigned long: ((value) & ~((roundto) - 1UL)), \
-    unsigned long long: ((value) & ~((roundto) - 1ULL)), \
-    default: (((value) % (roundto)) ? ((value) - ((value) % (roundto))) : (value)))
+#define INT_ROUND_DOWN(value, roundto)                                                                                 \
+    _Generic((value),                                                                                                  \
+     unsigned char: ((value) & ~((roundto) - M_STATIC_CAST(unsigned char, 1))),                                        \
+     unsigned short: ((value) & ~((roundto) - M_STATIC_CAST(unsigned short, 1))),                                      \
+     unsigned int: ((value) & ~((roundto) - 1U)),                                                                      \
+     unsigned long: ((value) & ~((roundto) - 1UL)),                                                                    \
+     unsigned long long: ((value) & ~((roundto) - 1ULL)),                                                              \
+     default: (((value) % (roundto)) ? ((value) - ((value) % (roundto))) : (value)))
 
 #else
 // Max & Min Helpers (signed and unsigned)
