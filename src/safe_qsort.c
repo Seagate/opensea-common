@@ -2,34 +2,38 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights
+// Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-// 
+//
 // \file safe_qsort.c
-// \brief Defines safe_qsort_context which behaves similarly to qsort_s with a context parameter.
+// \brief Defines safe_qsort_context which behaves similarly to qsort_s with a
+// context parameter.
 //        This code is adapted from FreeBSD's qsort.c under BSD 3-clause license
 //        Modifications are licensed under MPL 2.0
 
-//Modifications: instead of ifdefs around how this is implemented, this is a standalone implementation of safe_qsort
-//               setting order of compare func to match C11
-//               Variables renamed to match standard (as needed)
-//               Compare function order matches standard
-//               return errno_t instead of void
-//               Any other modifications are from security recommendations(initializing variables, variables declared on separate lines, etc)
-//               Change casts to C_CAST macro
-//               Added goto exit if error occurs during recursion
-//               uintptr/intptr casts to resolve sign conversion warnings as needed
+// Modifications: instead of ifdefs around how this is implemented, this is a
+// standalone implementation of safe_qsort
+//                setting order of compare func to match C11
+//                Variables renamed to match standard (as needed)
+//                Compare function order matches standard
+//                return errno_t instead of void
+//                Any other modifications are from security
+//                recommendations(initializing variables, variables declared on
+//                separate lines, etc) Change casts to C_CAST macro Added goto
+//                exit if error occurs during recursion uintptr/intptr casts to
+//                resolve sign conversion warnings as needed
 
-#include "sort_and_search.h"
 #include "code_attributes.h"
 #include "common_types.h"
-#include "type_conversion.h"
 #include "math_utils.h"
+#include "sort_and_search.h"
+#include "type_conversion.h"
 
 /*-
  * SPDX-License-Identifier: BSD-3-Clause
@@ -71,20 +75,20 @@ static M_INLINE void swapfunc(char* a, char* b, size_t es)
     char t = 0;
     do
     {
-        t = *a;
+        t    = *a;
         *a++ = *b;
         *b++ = t;
     } while (--es > 0);
 }
 
-#define	vecswap(a, b, n) \
-	if ((n) > 0) swapfunc(a, b, n)
+#define vecswap(a, b, n)                                                                                               \
+    if ((n) > 0)                                                                                                       \
+    swapfunc(a, b, n)
 
 static M_INLINE char* med3(char* a, char* b, char* c, ctxcomparefn cmp, void* thunk)
 {
-    return cmp(a, b, thunk) < 0 ?
-        (cmp(b, c, thunk) < 0 ? b : (cmp(a, c, thunk) < 0 ? c : a))
-        : (cmp(b, c, thunk) > 0 ? b : (cmp(a, c, thunk) < 0 ? a : c));
+    return cmp(a, b, thunk) < 0 ? (cmp(b, c, thunk) < 0 ? b : (cmp(a, c, thunk) < 0 ? c : a))
+                                : (cmp(b, c, thunk) > 0 ? b : (cmp(a, c, thunk) < 0 ? a : c));
 }
 
 errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn compare, void* context)
@@ -102,23 +106,25 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
     else
     {
         errno_t error = 0;
-        errno = 0;
+        errno         = 0;
         if (count > 0)
         {
-            char* pa = M_NULLPTR;
-            char* pb = M_NULLPTR;
-            char* pc = M_NULLPTR;
-            char* pd = M_NULLPTR;
-            char* pl = M_NULLPTR;
-            char* pm = M_NULLPTR;
-            char* pn = M_NULLPTR;
-            size_t d1 = 0;
-            size_t d2 = 0;
-            int cmp_result = 0;
-            int swap_cnt = 0;
+            char*  pa         = M_NULLPTR;
+            char*  pb         = M_NULLPTR;
+            char*  pc         = M_NULLPTR;
+            char*  pd         = M_NULLPTR;
+            char*  pl         = M_NULLPTR;
+            char*  pm         = M_NULLPTR;
+            char*  pn         = M_NULLPTR;
+            size_t d1         = 0;
+            size_t d2         = 0;
+            int    cmp_result = 0;
+            int    swap_cnt   = 0;
 
             /* if there are less than 2 elements, then sorting is not needed */
-            if (count < 2) //This had __predict_false which is not available here in cross-platform code. TODO: predictfalse attribute type macro
+            if (count < 2) // This had __predict_false which is not available
+                           // here in cross-platform code. TODO: predictfalse
+                           // attribute type macro
             {
                 errno = error;
                 return error;
@@ -129,9 +135,7 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
             {
                 for (pm = C_CAST(char*, ptr) + size; pm < C_CAST(char*, ptr) + count * size; pm += size)
                 {
-                    for (pl = pm;
-                        pl > C_CAST(char*, ptr) && compare(pl - size, pl, context) > 0;
-                        pl -= size)
+                    for (pl = pm; pl > C_CAST(char*, ptr) && compare(pl - size, pl, context) > 0; pl -= size)
                     {
                         swapfunc(pl, pl - size, size);
                     }
@@ -194,9 +198,7 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
                 /* Switch to insertion sort */
                 for (pm = C_CAST(char*, ptr) + size; pm < C_CAST(char*, ptr) + count * size; pm += size)
                 {
-                    for (pl = pm;
-                        pl > C_CAST(char*, ptr) && compare(pl - size, pl, context) > 0;
-                        pl -= size)
+                    for (pl = pm; pl > C_CAST(char*, ptr) && compare(pl - size, pl, context) > 0; pl -= size)
                     {
                         swapfunc(pl, pl - size, size);
                     }
@@ -210,12 +212,16 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
             vecswap(ptr, pb - d1, d1);
             /*
              * Cast size to preserve signedness of right-hand side of MIN()
-             * expression, to avoid sign ambiguity in the implied comparison.  size
-             * is safely within [0, SSIZE_MAX].
+             * expression, to avoid sign ambiguity in the implied comparison.
+             * size is safely within [0, SSIZE_MAX].
              */
-            //Seagate note: Added casts to ensure both sides of M_Min are treated as signed to prevent sign-comparison warning, then cast result to size_t for assignment to prevent conversion warning.
-            //              The comment above is from the original source and seems reasonable to support adding these casts-TJE
-            d1 = C_CAST(size_t, M_Min(C_CAST(intptr_t, pd) - C_CAST(intptr_t, pc), C_CAST(intptr_t, pn) - C_CAST(intptr_t, pd) - C_CAST(ssize_t, size)));
+            // Seagate note: Added casts to ensure both sides of M_Min are
+            // treated as signed to prevent sign-comparison warning, then cast
+            // result to size_t for assignment to prevent conversion warning.
+            //               The comment above is from the original source and
+            //               seems reasonable to support adding these casts-TJE
+            d1 = C_CAST(size_t, M_Min(C_CAST(intptr_t, pd) - C_CAST(intptr_t, pc),
+                                      C_CAST(intptr_t, pn) - C_CAST(intptr_t, pd) - C_CAST(ssize_t, size)));
             vecswap(pb, pn - d1, d1);
 
             d1 = C_CAST(uintptr_t, pb) - C_CAST(uintptr_t, pa);
@@ -235,7 +241,7 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
                 {
                     /* Iterate rather than recurse to save stack space */
                     /* qsort(pn - d2, d2 / size, size, cmp); */
-                    ptr = pn - d2;
+                    ptr   = pn - d2;
                     count = d2 / size;
                     goto loop;
                 }
@@ -260,7 +266,7 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
                 }
             }
         }
-ret_error:
+    ret_error:
         errno = error;
         return error;
     }

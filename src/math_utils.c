@@ -2,14 +2,15 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All
+// Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-// 
+//
 // \file math_utils.c
 // \brief Defines functions and macros for some basic math operations
 //
@@ -111,10 +112,11 @@ uint64_t power_Of_Two(uint16_t exponent)
     default:
         result = UINT64_C(2) << (exponent - 1);
         //{
-        //    //Since this case is 31 or higher, we can start with the value above to reduce how long this loop runs
-        //    uint32_t shiftCounter = UINT64_C(30);//uint32 in case we do hit something huge in this loop and roll all the way around a uint16
-        //    result = UINT64_C(268435456);
-        //    while (shiftCounter < exponent)
+        //    //Since this case is 31 or higher, we can start with the value
+        //    above to reduce how long this loop runs uint32_t shiftCounter =
+        //    UINT64_C(30);//uint32 in case we do hit something huge in this
+        //    loop and roll all the way around a uint16 result =
+        //    UINT64_C(268435456); while (shiftCounter < exponent)
         //    {
         //        result = result << UINT64_C(1); //multiply by 2
         //        ++shiftCounter;
@@ -127,7 +129,7 @@ uint64_t power_Of_Two(uint16_t exponent)
 
 double raise_to_power(double number, double power)
 {
-    double result = 1.0;
+    double  result     = 1.0;
     int64_t localPower = C_CAST(int64_t, power);
     if (localPower == INT64_C(0))
     {

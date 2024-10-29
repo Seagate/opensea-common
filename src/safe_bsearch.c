@@ -2,28 +2,30 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights
+// Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-// 
+//
 // \file safe_bsearch.c
-// \brief Defines safe_bsearch_context which behaves similarly to bsearch_s with a context parameter.
+// \brief Defines safe_bsearch_context which behaves similarly to bsearch_s with
+// a context parameter.
 //        This code is adapted from FreeBSD's qsort.c under BSD 3-clause license
 //        Modifications are licensed under MPL 2.0
-//Modifications:
+// Modifications:
 //             checks for null, sizes as required for C11 annex k bsearch_s
 //             set errno as needed
 //             change to comparison function with context parameter
 //             casts changed to M_CONST_CAST to resolve warnings
 //             variable scope changed to within for loop for lim and cmp
 
-#include "sort_and_search.h"
 #include "code_attributes.h"
 #include "common_types.h"
+#include "sort_and_search.h"
 #include "type_conversion.h"
 
 /*-
@@ -89,13 +91,13 @@ void* safe_bsearch_context(const void* key, void* ptr, rsize_t count, rsize_t si
     else
     {
         const char* base = ptr;
-        const void* p = M_NULLPTR;
+        const void* p    = M_NULLPTR;
 
         errno = 0;
 
         for (size_t lim = count; lim != 0; lim >>= 1)
         {
-            p = base + (lim >> 1) * size;
+            p       = base + (lim >> 1) * size;
             int cmp = compare(key, p, context);
             if (cmp == 0)
             {
@@ -106,7 +108,7 @@ void* safe_bsearch_context(const void* key, void* ptr, rsize_t count, rsize_t si
                 /* key > p: move right */
                 base = C_CAST(const char*, p) + size;
                 lim--;
-            }		/* else move left */
+            } /* else move left */
         }
     }
     return M_NULLPTR;

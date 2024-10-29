@@ -2,27 +2,29 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All
+// Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-// 
+//
 // \file highrestimer.c
-// \brief Defines functions to time operations using a high resolution timer in a cross-platform way
+// \brief Defines functions to time operations using a high resolution timer in
+// a cross-platform way
 //
 
-#include "env_detect.h"
 #include "precision_timer.h"
-#include "type_conversion.h"
+#include "env_detect.h"
 #include "memory_safety.h"
 #include "string_utils.h"
+#include "type_conversion.h"
 
 #include <string.h>
 
-#if defined (_WIN32)
+#if defined(_WIN32)
 #include <windows.h>
 void start_Timer(seatimer_t* timer)
 {
@@ -30,7 +32,8 @@ void start_Timer(seatimer_t* timer)
     {
         LARGE_INTEGER tempLargeInt;
         tempLargeInt.QuadPart = 0;
-        if (TRUE == QueryPerformanceCounter(&tempLargeInt))//according to MSDN this will always return success on XP and later systems
+        if (TRUE == QueryPerformanceCounter(&tempLargeInt)) // according to MSDN this will always return
+                                                            // success on XP and later systems
         {
             if (tempLargeInt.QuadPart >= 0)
             {
@@ -46,7 +49,8 @@ void stop_Timer(seatimer_t* timer)
     {
         LARGE_INTEGER tempLargeInt;
         safe_memset(&tempLargeInt, sizeof(LARGE_INTEGER), 0, sizeof(LARGE_INTEGER));
-        if (TRUE == QueryPerformanceCounter(&tempLargeInt))//according to MSDN this will always return success on XP and later systems
+        if (TRUE == QueryPerformanceCounter(&tempLargeInt)) // according to MSDN this will always return
+                                                            // success on XP and later systems
         {
             if (tempLargeInt.QuadPart >= 0)
             {
@@ -58,18 +62,22 @@ void stop_Timer(seatimer_t* timer)
 
 uint64_t get_Nano_Seconds(seatimer_t timer)
 {
-    LARGE_INTEGER frequency;//clock ticks per second
-    uint64_t ticksPerNanosecond = UINT64_C(1000000000);//start with a count of nanoseconds per second
-    uint64_t seconds = 0;
-    uint64_t nanoSeconds = 0;
+    LARGE_INTEGER frequency;                                 // clock ticks per second
+    uint64_t      ticksPerNanosecond = UINT64_C(1000000000); // start with a count of nanoseconds per second
+    uint64_t      seconds            = 0;
+    uint64_t      nanoSeconds        = 0;
     safe_memset(&frequency, sizeof(LARGE_INTEGER), 0, sizeof(LARGE_INTEGER));
     if (TRUE == QueryPerformanceFrequency(&frequency))
     {
-        if (frequency.QuadPart > 0)//no equals since this is used in division and don't want to divide by zero
+        if (frequency.QuadPart > 0) // no equals since this is used in division
+                                    // and don't want to divide by zero
         {
             ticksPerNanosecond /= C_CAST(uint64_t, frequency.QuadPart);
-            seconds = (timer.timerStop - timer.timerStart) / C_CAST(uint64_t, frequency.QuadPart);//converted to nanoseconds later
-            nanoSeconds = ((timer.timerStop - timer.timerStart) % C_CAST(uint64_t, frequency.QuadPart)) * ticksPerNanosecond;
+            seconds =
+                (timer.timerStop - timer.timerStart) / C_CAST(uint64_t,
+                                                              frequency.QuadPart); // converted to nanoseconds later
+            nanoSeconds =
+                ((timer.timerStop - timer.timerStart) % C_CAST(uint64_t, frequency.QuadPart)) * ticksPerNanosecond;
             return ((seconds * UINT64_C(1000000000)) + nanoSeconds);
         }
         else
@@ -86,26 +94,29 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-//Always prefers CLOCK_MONOTONIC
-//may want to consider CLOCK_REALTIME as an alternative when not supported (this will be affected just like gettimeofday function)
-//other clocks that may work: CLOCK_TAI (linux),  CLOCK_MONOTONIC_RAW  (linux), CLOCK_BOOTTIME (linux)
-//https://www.man7.org/linux/man-pages/man3/clock_gettime.3.html
+// Always prefers CLOCK_MONOTONIC
+// may want to consider CLOCK_REALTIME as an alternative when not supported
+// (this will be affected just like gettimeofday function) other clocks that may
+// work: CLOCK_TAI (linux),  CLOCK_MONOTONIC_RAW  (linux), CLOCK_BOOTTIME
+// (linux) https://www.man7.org/linux/man-pages/man3/clock_gettime.3.html
 void start_Timer(seatimer_t* timer)
 {
     if (timer)
     {
         struct timespec startTimespec;
-        int ret = 0;
+        int             ret = 0;
         safe_memset(&startTimespec, sizeof(struct timespec), 0, sizeof(struct timespec));
-#if !defined (UEFI_C_SOURCE) && defined (POSIX_1993) && defined (_POSIX_TIMERS) && defined _POSIX_MONOTONIC_CLOCK
+#if !defined(UEFI_C_SOURCE) && defined(POSIX_1993) && defined(_POSIX_TIMERS) && defined _POSIX_MONOTONIC_CLOCK
         ret = clock_gettime(CLOCK_MONOTONIC, &startTimespec);
-#else //this function is older and more likely available if we don't have the support we need/want
+#else // this function is older and more likely available if we don't have
+      // the support we need/want
         ret = gettimeofday(&startTimespec, M_NULLPTR);
 #endif
-        if (0 == ret)//hopefully this always works...-TJE
+        if (0 == ret) // hopefully this always works...-TJE
         {
             //        printf("Start Time:  %lu\n", startTimespec.tv_nsec);
-            timer->timerStart = (C_CAST(uint64_t, startTimespec.tv_sec) * UINT64_C(1000000000)) + C_CAST(uint64_t, startTimespec.tv_nsec);
+            timer->timerStart = (C_CAST(uint64_t, startTimespec.tv_sec) * UINT64_C(1000000000)) +
+                                C_CAST(uint64_t, startTimespec.tv_nsec);
         }
         //    else
         //    {
@@ -119,17 +130,19 @@ void stop_Timer(seatimer_t* timer)
     if (timer)
     {
         struct timespec stopTimespec;
-        int ret = 0;
+        int             ret = 0;
         safe_memset(&stopTimespec, sizeof(struct timespec), 0, sizeof(struct timespec));
-#if !defined (UEFI_C_SOURCE) && defined (POSIX_1993) && defined (_POSIX_TIMERS) && defined _POSIX_MONOTONIC_CLOCK
+#if !defined(UEFI_C_SOURCE) && defined(POSIX_1993) && defined(_POSIX_TIMERS) && defined _POSIX_MONOTONIC_CLOCK
         ret = clock_gettime(CLOCK_MONOTONIC, &stopTimespec);
-#else //this function is older and more likely available if we don't have the support we need/want
+#else // this function is older and more likely available if we don't have
+      // the support we need/want
         ret = gettimeofday(&stopTimespec, M_NULLPTR);
 #endif
-        if (0 == ret)//hopefully this always works...-TJE
+        if (0 == ret) // hopefully this always works...-TJE
         {
             //        printf("Stop Time:  %lu\n", stopTimespec.tv_nsec);
-            timer->timerStop = (C_CAST(uint64_t, stopTimespec.tv_sec) * UINT64_C(1000000000)) + C_CAST(uint64_t, stopTimespec.tv_nsec);
+            timer->timerStop =
+                (C_CAST(uint64_t, stopTimespec.tv_sec) * UINT64_C(1000000000)) + C_CAST(uint64_t, stopTimespec.tv_nsec);
         }
         //    else
         //    {
@@ -142,7 +155,7 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
 {
     return timer.timerStop - timer.timerStart;
 }
-#endif //platform check
+#endif // platform check
 
 double get_Micro_Seconds(seatimer_t timer)
 {
