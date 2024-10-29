@@ -406,7 +406,7 @@ typedef off_t offset_t; // to deal with windows differences in off_t definitions
 // when it is available if not available, add the definition NO_TYPEOF
 #if defined(USING_C23)
 #define M_TYPEOF(var) typeof(var)
-#elif defined(USING_CPP11) //one web comment mentions this is closer:
+#elif defined(USING_CPP11) // one web comment mentions this is closer:
                         // std::decay<decltype((X))>::type but this may be
                         // situational. Not sure...-TJE
 #define M_TYPEOF(var) decltype(var)

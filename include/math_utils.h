@@ -143,7 +143,7 @@ extern "C"
 #define INT_ROUND_DOWN(value, roundto) (((value) % (roundto)) ? ((value) - ((value) % (roundto))) : (value) )
 #endif //C11 generic selection detection
 
-// clang-format on
+    // clang-format on
 
 #define M_2sCOMPLEMENT(val) (~(val) + 1)
 

@@ -115,7 +115,7 @@ extern "C"
              unsigned long long : ulonglong_to_sizet                                                                   \
             )(X)
 #endif // C11
-// clang-format on
+    // clang-format on
 
     bool is_size_t_max(size_t val);
 
