@@ -443,7 +443,7 @@ extern "C"
 
     // Bit access macros
 
-#define M_BitN(n) (UINT64_C(1) << (n))
+#define M_BitN(n)   (UINT64_C(1) << (n))
 
 #define M_BitN8(n)  (UINT8_C(1) << (n))
 #define M_BitN16(n) (UINT16_C(1) << (n))
@@ -576,10 +576,10 @@ extern "C"
 #define M_CLEAR_BIT32(val, bitNum) ((val) = clear_uint32_bit(val, bitNum))
 #define M_CLEAR_BIT64(val, bitNum) ((val) = clear_uint64_bit(val, bitNum))
 
-#define M_SET_BIT8(val, bitNum)  ((val) = set_uint8_bit(val, bitNum))
-#define M_SET_BIT16(val, bitNum) ((val) = set_uint16_bit(val, bitNum))
-#define M_SET_BIT32(val, bitNum) ((val) = set_uint32_bit(val, bitNum))
-#define M_SET_BIT64(val, bitNum) ((val) = set_uint64_bit(val, bitNum))
+#define M_SET_BIT8(val, bitNum)    ((val) = set_uint8_bit(val, bitNum))
+#define M_SET_BIT16(val, bitNum)   ((val) = set_uint16_bit(val, bitNum))
+#define M_SET_BIT32(val, bitNum)   ((val) = set_uint32_bit(val, bitNum))
+#define M_SET_BIT64(val, bitNum)   ((val) = set_uint64_bit(val, bitNum))
 
     //-----------------------------------------------------------------------------
     //

@@ -11,3 +11,4 @@ AlignConsecutiveMacros: true
 AlignAfterOpenBracket: true
 BinPackParameters: false
 AllowAllParametersOfDeclarationOnNextLine: false
+AlignConsecutiveMacros: 'AcrossEmptyLines'

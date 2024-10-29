@@ -108,10 +108,10 @@ extern "C"
         default: (((a) > (b)) ? (a) : (b))), \
     default: (((a) > (b)) ? (a) : (b)))
 
-//NOTE: On the int rounding macros for unsigned char and unsigned short, the 1 is cast to those types to avoid
-//      making the type wider and generating a truncation error at assignment.
-//      Since there is not a standard way in C to note a value as a char or short like there is with long and long long
-//      this cast is required.
+// NOTE: On the int rounding macros for unsigned char and unsigned short, the 1 is cast to those types to avoid
+//       making the type wider and generating a truncation error at assignment.
+//       Since there is not a standard way in C to note a value as a char or short like there is with long and long long
+//       this cast is required.
 
 #define INT_ROUND_UP(value, roundto)                                                                                   \
     _Generic((value),                                                                                                  \
@@ -138,9 +138,9 @@ extern "C"
 #define  M_Min(a,b)    (((a)<(b))?(a):(b))
 #define  M_Max(a,b)    (((a)>(b))?(a):(b))
 
-//round an integer up to nearest multiple
-//NOTE: It is recommended to use the type specific inline versions below for type enforcement by the compiler
-//Example: Need to round up to nearest 512B for a data transfer
+// round an integer up to nearest multiple
+// NOTE: It is recommended to use the type specific inline versions below for type enforcement by the compiler
+// Example: Need to round up to nearest 512B for a data transfer
 #define INT_ROUND_UP(value, roundto) (((value) % (roundto)) ? ((value) + (roundto) - ((value) % (roundto))) : (value) )
 
 //round an integer down to nearest multiple
