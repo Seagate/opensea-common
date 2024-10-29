@@ -100,19 +100,22 @@ extern "C"
 // using intX_t or uintX_t since these are type defs to one of the types in the
 // macro below. NOTE: No default case so we can get a warning when this doesn't
 // expand correctly.
+// clang-format off
 #define to_sizet(X)                                                                                                    \
-    _Generic((X), signed char                                                                                          \
-             : schar_to_sizet, unsigned char                                                                           \
-             : uchar_to_sizet, short                                                                                   \
-             : short_to_sizet, unsigned short                                                                          \
-             : ushort_to_sizet, int                                                                                    \
-             : int_to_sizet, unsigned int                                                                              \
-             : uint_to_sizet, long                                                                                     \
-             : long_to_sizet, unsigned long                                                                            \
-             : ulong_to_sizet, long long                                                                               \
-             : longlong_to_sizet, unsigned long long                                                                   \
-             : ulonglong_to_sizet)(X)
+    _Generic((X),                                                                                                      \
+             signed char        : schar_to_sizet,                                                                      \
+             unsigned char      : uchar_to_sizet,                                                                      \
+             short              : short_to_sizet,                                                                      \
+             unsigned short     : ushort_to_sizet,                                                                     \
+             int                : int_to_sizet,                                                                        \
+             unsigned int       : uint_to_sizet,                                                                       \
+             long               : long_to_sizet,                                                                       \
+             unsigned long      : ulong_to_sizet,                                                                      \
+             long long          : longlong_to_sizet,                                                                   \
+             unsigned long long : ulonglong_to_sizet                                                                   \
+            )(X)
 #endif // C11
+// clang-format on
 
     bool is_size_t_max(size_t val);
 

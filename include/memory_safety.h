@@ -159,24 +159,26 @@ extern "C"
 // using intX_t or uintX_t since these are type defs to one of the types in the
 // macro below. NOTE: No default case so we can get a warning when this doesn't
 // expand correctly.
+// clang-format off
 #define safe_free(mem)                                                                                                 \
-    _Generic((mem), \
-                        char**: safe_Free_char,\
-                        unsigned char**: safe_Free_uchar,\
-                        signed short**: safe_Free_short,\
-                        unsigned short**: safe_Free_ushort,\
-                        signed int**: safe_Free_int,\
-                        unsigned int**: safe_Free_uint,\
-                        signed long**: safe_Free_long,\
-                        unsigned long**: safe_Free_ulong,\
-                        signed long long**: safe_Free_longlong,\
-                        unsigned long long**: safe_Free_ulonglong,\
-                        float**: safe_Free_float,\
-                        double**: safe_Free_double,\
-                        long double**: safe_Free_longdouble,\
-                        void **: safe_Free, \
-                        default: safe_Free\
-                        )(mem)
+    _Generic((mem),                                                                                                    \
+             char**                  : safe_Free_char,                                                                 \
+             unsigned char**         : safe_Free_uchar,                                                                \
+             signed short**          : safe_Free_short,                                                                \
+             unsigned short**        : safe_Free_ushort,                                                               \
+             signed int**            : safe_Free_int,                                                                  \
+             unsigned int**          : safe_Free_uint,                                                                 \
+             signed long**           : safe_Free_long,                                                                 \
+             unsigned long**         : safe_Free_ulong,                                                                \
+             signed long long**      : safe_Free_longlong,                                                             \
+             unsigned long long**    : safe_Free_ulonglong,                                                            \
+             float**                 : safe_Free_float,                                                                \
+             double**                : safe_Free_double,                                                               \
+             long double**           : safe_Free_longdouble,                                                           \
+             void **                 : safe_Free,                                                                      \
+             default                 : safe_Free                                                                       \
+            )(mem)
+// clang-format on
 #elif !defined(__cplusplus)
 #define safe_free(mem) safe_Free(M_REINTERPRET_CAST(void**, mem))
 #endif // C11
@@ -391,24 +393,26 @@ extern "C"
 // using intX_t or uintX_t since these are type defs to one of the types in the
 // macro below. NOTE: No default case so we can get a warning when this doesn't
 // expand correctly.
+// clang-format off
 #define safe_free_aligned(mem)                                                                                         \
-    _Generic((mem), \
-                        char**: safe_Free_aligned_char,\
-                        unsigned char**: safe_Free_aligned_uchar,\
-                        signed short**: safe_Free_aligned_short,\
-                        unsigned short**: safe_Free_aligned_ushort,\
-                        signed int**: safe_Free_aligned_int,\
-                        unsigned int**: safe_Free_aligned_uint,\
-                        signed long**: safe_Free_aligned_long,\
-                        unsigned long**: safe_Free_aligned_ulong,\
-                        signed long long**: safe_Free_aligned_longlong,\
-                        unsigned long long**: safe_Free_aligned_ulonglong,\
-                        float**: safe_Free_aligned_float,\
-                        double**: safe_Free_aligned_double,\
-                        long double**: safe_Free_aligned_longdouble,\
-                        void **: safe_Free_aligned, \
-                        default: safe_Free_aligned\
-                        )(mem)
+    _Generic((mem),                                                                                                    \
+             char**                 : safe_Free_aligned_char,                                                          \
+             unsigned char**        : safe_Free_aligned_uchar,                                                         \
+             signed short**         : safe_Free_aligned_short,                                                         \
+             unsigned short**       : safe_Free_aligned_ushort,                                                        \
+             signed int**           : safe_Free_aligned_int,                                                           \
+             unsigned int**         : safe_Free_aligned_uint,                                                          \
+             signed long**          : safe_Free_aligned_long,                                                          \
+             unsigned long**        : safe_Free_aligned_ulong,                                                         \
+             signed long long**     : safe_Free_aligned_longlong,                                                      \
+             unsigned long long**   : safe_Free_aligned_ulonglong,                                                     \
+             float**                : safe_Free_aligned_float,                                                         \
+             double**               : safe_Free_aligned_double,                                                        \
+             long double**          : safe_Free_aligned_longdouble,                                                    \
+             void **                : safe_Free_aligned,                                                               \
+             default                : safe_Free_aligned                                                                \
+            )(mem)
+// clang-format on
 #elif !defined(__cplusplus)
 #define safe_free_aligned(mem) safe_Free_aligned(M_REINTERPRET_CAST(void**, mem))
 #endif // C11
@@ -553,24 +557,26 @@ extern "C"
 // using intX_t or uintX_t since these are type defs to one of the types in the
 // macro below. NOTE: No default case so we can get a warning when this doesn't
 // expand correctly.
+// clang-format off
 #define safe_free_page_aligned(mem)                                                                                    \
-    _Generic((mem), \
-                        char**: safe_Free_aligned_char,\
-                        unsigned char**: safe_Free_aligned_uchar,\
-                        signed short**: safe_Free_aligned_short,\
-                        unsigned short**: safe_Free_aligned_ushort,\
-                        signed int**: safe_Free_aligned_int,\
-                        unsigned int**: safe_Free_aligned_uint,\
-                        signed long**: safe_Free_aligned_long,\
-                        unsigned long**: safe_Free_aligned_ulong,\
-                        signed long long**: safe_Free_aligned_longlong,\
-                        unsigned long long**: safe_Free_aligned_ulonglong,\
-                        float**: safe_Free_aligned_float,\
-                        double**: safe_Free_aligned_double,\
-                        long double**: safe_Free_aligned_longdouble,\
-                        void **: safe_Free_aligned, \
-                        default: safe_Free_aligned\
-                        )(mem)
+    _Generic((mem),                                                                                                    \
+             char**                 : safe_Free_aligned_char,                                                          \
+             unsigned char**        : safe_Free_aligned_uchar,                                                         \
+             signed short**         : safe_Free_aligned_short,                                                         \
+             unsigned short**       : safe_Free_aligned_ushort,                                                        \
+             signed int**           : safe_Free_aligned_int,                                                           \
+             unsigned int**         : safe_Free_aligned_uint,                                                          \
+             signed long**          : safe_Free_aligned_long,                                                          \
+             unsigned long**        : safe_Free_aligned_ulong,                                                         \
+             signed long long**     : safe_Free_aligned_longlong,                                                      \
+             unsigned long long**   : safe_Free_aligned_ulonglong,                                                     \
+             float**                : safe_Free_aligned_float,                                                         \
+             double**               : safe_Free_aligned_double,                                                        \
+             long double**          : safe_Free_aligned_longdouble,                                                    \
+             void **                : safe_Free_aligned,                                                               \
+             default                : safe_Free_aligned                                                                \
+            )(mem)
+// clang-format on
 #elif !defined(__cplusplus)
 #define safe_free_page_aligned(mem) safe_Free_page_aligned(M_REINTERPRET_CAST(void**, mem))
 #endif // C11

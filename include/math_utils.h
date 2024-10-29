@@ -26,298 +26,124 @@ extern "C"
 {
 #endif
 
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+// clang-format off
+#if defined(USING_C11) && defined (HAVE_C11_GENERIC_SELECTION)
 // Using generic selection to change behavior on when to use
 // a specific way to evaluate these macros
 // This allows turnary for signed types to avoid undefined behavior
 // and bitwise operations on unsigned types for fewer branch conditions.
-#define M_Min(a, b)                                                                                                    \
-    _Generic(                                                                                                          \
-        (a), unsigned char                                                                                             \
-        : _Generic(                                                                                                    \
-              (b), unsigned char                                                                                       \
-              : M_STATIC_CAST(unsigned char,                                                                           \
-                              M_STATIC_CAST(unsigned char, b) ^                                                        \
-                                  ((M_STATIC_CAST(unsigned char, a) ^ M_STATIC_CAST(unsigned char, b)) &               \
-                                   -M_STATIC_CAST(unsigned char, (a) < (b)))),                                         \
-                unsigned short                                                                                         \
-              : M_STATIC_CAST(unsigned short,                                                                          \
-                              M_STATIC_CAST(unsigned short, b) ^                                                       \
-                                  ((M_STATIC_CAST(unsigned short, a) ^ M_STATIC_CAST(unsigned short, b)) &             \
-                                   -M_STATIC_CAST(unsigned short, (a) < (b)))),                                        \
-                unsigned int                                                                                           \
-              : (M_STATIC_CAST(unsigned int, b) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & \
-                                                   -M_STATIC_CAST(unsigned int, (a) < (b)))),                          \
-                unsigned long                                                                                          \
-              : (M_STATIC_CAST(unsigned long, b) ^                                                                     \
-                 ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) &                                \
-                  -M_STATIC_CAST(unsigned long, (a) < (b)))),                                                          \
-                unsigned long long                                                                                     \
-              : (M_STATIC_CAST(unsigned long long, b) ^                                                                \
-                 ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                      \
-                  -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                     \
-                default                                                                                                \
-              : (((a) < (b)) ? (a) : (b))),                                                                            \
-          unsigned short                                                                                               \
-        : _Generic(                                                                                                    \
-              (b), unsigned char                                                                                       \
-              : M_STATIC_CAST(unsigned short,                                                                          \
-                              M_STATIC_CAST(unsigned short, b) ^                                                       \
-                                  ((M_STATIC_CAST(unsigned short, a) ^ M_STATIC_CAST(unsigned short, b)) &             \
-                                   -M_STATIC_CAST(unsigned short, (a) < (b)))),                                        \
-                unsigned short                                                                                         \
-              : M_STATIC_CAST(unsigned short,                                                                          \
-                              M_STATIC_CAST(unsigned short, b) ^                                                       \
-                                  ((M_STATIC_CAST(unsigned short, a) ^ M_STATIC_CAST(unsigned short, b)) &             \
-                                   -M_STATIC_CAST(unsigned short, (a) < (b)))),                                        \
-                unsigned int                                                                                           \
-              : (M_STATIC_CAST(unsigned int, b) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & \
-                                                   -M_STATIC_CAST(unsigned int, (a) < (b)))),                          \
-                unsigned long                                                                                          \
-              : (M_STATIC_CAST(unsigned long, b) ^                                                                     \
-                 ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) &                                \
-                  -M_STATIC_CAST(unsigned long, (a) < (b)))),                                                          \
-                unsigned long long                                                                                     \
-              : (M_STATIC_CAST(unsigned long long, b) ^                                                                \
-                 ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                      \
-                  -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                     \
-                default                                                                                                \
-              : (((a) < (b)) ? (a) : (b))),                                                                            \
-          unsigned int                                                                                                 \
-        : _Generic(                                                                                                    \
-              (b),                                                                                                     \
-              unsigned char                                                                                            \
-              : (M_STATIC_CAST(unsigned int, b) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & \
-                                                   -M_STATIC_CAST(unsigned int, (a) < (b)))),                          \
-                unsigned short                                                                                         \
-              : (M_STATIC_CAST(unsigned int, b) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & \
-                                                   -M_STATIC_CAST(unsigned int, (a) < (b)))),                          \
-                unsigned int                                                                                           \
-              : (M_STATIC_CAST(unsigned int, b) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & \
-                                                   -M_STATIC_CAST(unsigned int, (a) < (b)))),                          \
-                unsigned long                                                                                          \
-              : (M_STATIC_CAST(unsigned long, b) ^                                                                     \
-                 ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) &                                \
-                  -M_STATIC_CAST(unsigned long, (a) < (b)))),                                                          \
-                unsigned long long                                                                                     \
-              : (M_STATIC_CAST(unsigned long long, b) ^                                                                \
-                 ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                      \
-                  -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                     \
-                default                                                                                                \
-              : (((a) < (b)) ? (a) : (b))),                                                                            \
-          unsigned long                                                                                                \
-        : _Generic((b), unsigned char                                                                                  \
-                   : (M_STATIC_CAST(unsigned long, b) ^                                                                \
-                      ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) &                           \
-                       -M_STATIC_CAST(unsigned long, (a) < (b)))),                                                     \
-                     unsigned short                                                                                    \
-                   : (M_STATIC_CAST(unsigned long, b) ^                                                                \
-                      ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) &                           \
-                       -M_STATIC_CAST(unsigned long, (a) < (b)))),                                                     \
-                     unsigned int                                                                                      \
-                   : (M_STATIC_CAST(unsigned long, b) ^                                                                \
-                      ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) &                           \
-                       -M_STATIC_CAST(unsigned long, (a) < (b)))),                                                     \
-                     unsigned long                                                                                     \
-                   : (M_STATIC_CAST(unsigned long, b) ^                                                                \
-                      ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) &                           \
-                       -M_STATIC_CAST(unsigned long, (a) < (b)))),                                                     \
-                     unsigned long long                                                                                \
-                   : (M_STATIC_CAST(unsigned long long, b) ^                                                           \
-                      ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                 \
-                       -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                \
-                     default                                                                                           \
-                   : (((a) < (b)) ? (a) : (b))),                                                                       \
-          unsigned long long                                                                                           \
-        : _Generic((b), unsigned char                                                                                  \
-                   : (M_STATIC_CAST(unsigned long long, b) ^                                                           \
-                      ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                 \
-                       -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                \
-                     unsigned short                                                                                    \
-                   : (M_STATIC_CAST(unsigned long long, b) ^                                                           \
-                      ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                 \
-                       -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                \
-                     unsigned int                                                                                      \
-                   : (M_STATIC_CAST(unsigned long long, b) ^                                                           \
-                      ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                 \
-                       -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                \
-                     unsigned long                                                                                     \
-                   : (M_STATIC_CAST(unsigned long long, b) ^                                                           \
-                      ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                 \
-                       -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                \
-                     unsigned long long                                                                                \
-                   : (M_STATIC_CAST(unsigned long long, b) ^                                                           \
-                      ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                 \
-                       -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                \
-                     default                                                                                           \
-                   : (((a) < (b)) ? (a) : (b))),                                                                       \
-          default                                                                                                      \
-        : (((a) < (b)) ? (a) : (b)))
+#define M_Min(a, b) _Generic((a), \
+    unsigned char: _Generic((b), \
+        unsigned char: M_STATIC_CAST(unsigned char, M_STATIC_CAST(unsigned char, b) ^ ((M_STATIC_CAST(unsigned char, a) ^ M_STATIC_CAST(unsigned char, b)) & -M_STATIC_CAST(unsigned char, (a) < (b)))), \
+        unsigned short: M_STATIC_CAST(unsigned short, M_STATIC_CAST(unsigned short, b) ^ ((M_STATIC_CAST(unsigned short, a) ^ M_STATIC_CAST(unsigned short, b)) & -M_STATIC_CAST(unsigned short, (a) < (b)))), \
+        unsigned int: (M_STATIC_CAST(unsigned int, b) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & -M_STATIC_CAST(unsigned int, (a) < (b)))), \
+        unsigned long: (M_STATIC_CAST(unsigned long, b) ^ ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) & -M_STATIC_CAST(unsigned long, (a) < (b)))), \
+        unsigned long long: (M_STATIC_CAST(unsigned long long, b) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        default: (((a) < (b)) ? (a) : (b))), \
+    unsigned short: _Generic((b), \
+        unsigned char: M_STATIC_CAST(unsigned short, M_STATIC_CAST(unsigned short, b) ^ ((M_STATIC_CAST(unsigned short, a) ^ M_STATIC_CAST(unsigned short, b)) & -M_STATIC_CAST(unsigned short, (a) < (b)))), \
+        unsigned short: M_STATIC_CAST(unsigned short, M_STATIC_CAST(unsigned short, b) ^ ((M_STATIC_CAST(unsigned short, a) ^ M_STATIC_CAST(unsigned short, b)) & -M_STATIC_CAST(unsigned short, (a) < (b)))), \
+        unsigned int: (M_STATIC_CAST(unsigned int, b) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & -M_STATIC_CAST(unsigned int, (a) < (b)))), \
+        unsigned long: (M_STATIC_CAST(unsigned long, b) ^ ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) & -M_STATIC_CAST(unsigned long, (a) < (b)))), \
+        unsigned long long: (M_STATIC_CAST(unsigned long long, b) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        default: (((a) < (b)) ? (a) : (b))), \
+    unsigned int: _Generic((b), \
+        unsigned char: (M_STATIC_CAST(unsigned int, b) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & -M_STATIC_CAST(unsigned int, (a) < (b)))), \
+        unsigned short: (M_STATIC_CAST(unsigned int, b) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & -M_STATIC_CAST(unsigned int, (a) < (b)))), \
+        unsigned int: (M_STATIC_CAST(unsigned int, b) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & -M_STATIC_CAST(unsigned int, (a) < (b)))), \
+        unsigned long: (M_STATIC_CAST(unsigned long, b) ^ ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) & -M_STATIC_CAST(unsigned long, (a) < (b)))), \
+        unsigned long long: (M_STATIC_CAST(unsigned long long, b) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        default: (((a) < (b)) ? (a) : (b))), \
+    unsigned long: _Generic((b), \
+        unsigned char: (M_STATIC_CAST(unsigned long, b) ^ ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) & -M_STATIC_CAST(unsigned long, (a) < (b)))), \
+        unsigned short: (M_STATIC_CAST(unsigned long, b) ^ ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) & -M_STATIC_CAST(unsigned long, (a) < (b)))), \
+        unsigned int: (M_STATIC_CAST(unsigned long, b) ^ ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) & -M_STATIC_CAST(unsigned long, (a) < (b)))), \
+        unsigned long: (M_STATIC_CAST(unsigned long, b) ^ ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) & -M_STATIC_CAST(unsigned long, (a) < (b)))), \
+        unsigned long long: (M_STATIC_CAST(unsigned long long, b) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        default: (((a) < (b)) ? (a) : (b))), \
+    unsigned long long: _Generic((b), \
+        unsigned char: (M_STATIC_CAST(unsigned long long, b) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        unsigned short: (M_STATIC_CAST(unsigned long long, b) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        unsigned int: (M_STATIC_CAST(unsigned long long, b) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        unsigned long: (M_STATIC_CAST(unsigned long long, b) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        unsigned long long: (M_STATIC_CAST(unsigned long long, b) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        default: (((a) < (b)) ? (a) : (b))), \
+    default: (((a) < (b)) ? (a) : (b)))
 
-#define M_Max(a, b)                                                                                                    \
-    _Generic(                                                                                                          \
-        (a), unsigned char                                                                                             \
-        : _Generic(                                                                                                    \
-              (b), unsigned char                                                                                       \
-              : M_STATIC_CAST(unsigned char,                                                                           \
-                              M_STATIC_CAST(unsigned char, a) ^                                                        \
-                                  ((M_STATIC_CAST(unsigned char, a) ^ M_STATIC_CAST(unsigned char, b)) &               \
-                                   -M_STATIC_CAST(unsigned char, (a) < (b)))),                                         \
-                unsigned short                                                                                         \
-              : M_STATIC_CAST(unsigned short,                                                                          \
-                              M_STATIC_CAST(unsigned short, a) ^                                                       \
-                                  ((M_STATIC_CAST(unsigned short, a) ^ M_STATIC_CAST(unsigned short, b)) &             \
-                                   -M_STATIC_CAST(unsigned short, (a) < (b)))),                                        \
-                unsigned int                                                                                           \
-              : (M_STATIC_CAST(unsigned int, a) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & \
-                                                   -M_STATIC_CAST(unsigned int, (a) < (b)))),                          \
-                unsigned long                                                                                          \
-              : (M_STATIC_CAST(unsigned long, a) ^                                                                     \
-                 ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) &                                \
-                  -M_STATIC_CAST(unsigned long, (a) < (b)))),                                                          \
-                unsigned long long                                                                                     \
-              : (M_STATIC_CAST(unsigned long long, a) ^                                                                \
-                 ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                      \
-                  -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                     \
-                default                                                                                                \
-              : (((a) > (b)) ? (a) : (b))),                                                                            \
-          unsigned short                                                                                               \
-        : _Generic(                                                                                                    \
-              (b), unsigned char                                                                                       \
-              : M_STATIC_CAST(unsigned short,                                                                          \
-                              M_STATIC_CAST(unsigned short, a) ^                                                       \
-                                  ((M_STATIC_CAST(unsigned short, a) ^ M_STATIC_CAST(unsigned short, b)) &             \
-                                   -M_STATIC_CAST(unsigned short, (a) < (b)))),                                        \
-                unsigned short                                                                                         \
-              : M_STATIC_CAST(unsigned short,                                                                          \
-                              M_STATIC_CAST(unsigned short, a) ^                                                       \
-                                  ((M_STATIC_CAST(unsigned short, a) ^ M_STATIC_CAST(unsigned short, b)) &             \
-                                   -M_STATIC_CAST(unsigned short, (a) < (b)))),                                        \
-                unsigned int                                                                                           \
-              : (M_STATIC_CAST(unsigned int, a) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & \
-                                                   -M_STATIC_CAST(unsigned int, (a) < (b)))),                          \
-                unsigned long                                                                                          \
-              : (M_STATIC_CAST(unsigned long, a) ^                                                                     \
-                 ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) &                                \
-                  -M_STATIC_CAST(unsigned long, (a) < (b)))),                                                          \
-                unsigned long long                                                                                     \
-              : (M_STATIC_CAST(unsigned long long, a) ^                                                                \
-                 ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                      \
-                  -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                     \
-                default                                                                                                \
-              : (((a) > (b)) ? (a) : (b))),                                                                            \
-          unsigned int                                                                                                 \
-        : _Generic(                                                                                                    \
-              (b),                                                                                                     \
-              unsigned char                                                                                            \
-              : (M_STATIC_CAST(unsigned int, a) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & \
-                                                   -M_STATIC_CAST(unsigned int, (a) < (b)))),                          \
-                unsigned short                                                                                         \
-              : (M_STATIC_CAST(unsigned int, a) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & \
-                                                   -M_STATIC_CAST(unsigned int, (a) < (b)))),                          \
-                unsigned int                                                                                           \
-              : (M_STATIC_CAST(unsigned int, a) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & \
-                                                   -M_STATIC_CAST(unsigned int, (a) < (b)))),                          \
-                unsigned long                                                                                          \
-              : (M_STATIC_CAST(unsigned long, a) ^                                                                     \
-                 ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) &                                \
-                  -M_STATIC_CAST(unsigned long, (a) < (b)))),                                                          \
-                unsigned long long                                                                                     \
-              : (M_STATIC_CAST(unsigned long long, a) ^                                                                \
-                 ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                      \
-                  -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                     \
-                default                                                                                                \
-              : (((a) > (b)) ? (a) : (b))),                                                                            \
-          unsigned long                                                                                                \
-        : _Generic((b), unsigned char                                                                                  \
-                   : (M_STATIC_CAST(unsigned long, a) ^                                                                \
-                      ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) &                           \
-                       -M_STATIC_CAST(unsigned long, (a) < (b)))),                                                     \
-                     unsigned short                                                                                    \
-                   : (M_STATIC_CAST(unsigned long, a) ^                                                                \
-                      ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) &                           \
-                       -M_STATIC_CAST(unsigned long, (a) < (b)))),                                                     \
-                     unsigned int                                                                                      \
-                   : (M_STATIC_CAST(unsigned long, a) ^                                                                \
-                      ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) &                           \
-                       -M_STATIC_CAST(unsigned long, (a) < (b)))),                                                     \
-                     unsigned long                                                                                     \
-                   : (M_STATIC_CAST(unsigned long, a) ^                                                                \
-                      ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) &                           \
-                       -M_STATIC_CAST(unsigned long, (a) < (b)))),                                                     \
-                     unsigned long long                                                                                \
-                   : (M_STATIC_CAST(unsigned long long, a) ^                                                           \
-                      ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                 \
-                       -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                \
-                     default                                                                                           \
-                   : (((a) > (b)) ? (a) : (b))),                                                                       \
-          unsigned long long                                                                                           \
-        : _Generic((b), unsigned char                                                                                  \
-                   : (M_STATIC_CAST(unsigned long long, a) ^                                                           \
-                      ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                 \
-                       -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                \
-                     unsigned short                                                                                    \
-                   : (M_STATIC_CAST(unsigned long long, a) ^                                                           \
-                      ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                 \
-                       -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                \
-                     unsigned int                                                                                      \
-                   : (M_STATIC_CAST(unsigned long long, a) ^                                                           \
-                      ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                 \
-                       -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                \
-                     unsigned long                                                                                     \
-                   : (M_STATIC_CAST(unsigned long long, a) ^                                                           \
-                      ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                 \
-                       -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                \
-                     unsigned long long                                                                                \
-                   : (M_STATIC_CAST(unsigned long long, a) ^                                                           \
-                      ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) &                 \
-                       -M_STATIC_CAST(unsigned long long, (a) < (b)))),                                                \
-                     default                                                                                           \
-                   : (((a) > (b)) ? (a) : (b))),                                                                       \
-          default                                                                                                      \
-        : (((a) > (b)) ? (a) : (b)))
+#define M_Max(a, b) _Generic((a), \
+    unsigned char: _Generic((b), \
+        unsigned char: M_STATIC_CAST(unsigned char, M_STATIC_CAST(unsigned char, a) ^ ((M_STATIC_CAST(unsigned char, a) ^ M_STATIC_CAST(unsigned char, b)) & -M_STATIC_CAST(unsigned char, (a) < (b)))), \
+        unsigned short: M_STATIC_CAST(unsigned short, M_STATIC_CAST(unsigned short, a) ^ ((M_STATIC_CAST(unsigned short, a) ^ M_STATIC_CAST(unsigned short, b)) & -M_STATIC_CAST(unsigned short, (a) < (b)))), \
+        unsigned int: (M_STATIC_CAST(unsigned int, a) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & -M_STATIC_CAST(unsigned int, (a) < (b)))), \
+        unsigned long: (M_STATIC_CAST(unsigned long, a) ^ ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) & -M_STATIC_CAST(unsigned long, (a) < (b)))), \
+        unsigned long long: (M_STATIC_CAST(unsigned long long, a) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        default: (((a) > (b)) ? (a) : (b))), \
+    unsigned short: _Generic((b), \
+        unsigned char: M_STATIC_CAST(unsigned short, M_STATIC_CAST(unsigned short, a) ^ ((M_STATIC_CAST(unsigned short, a) ^ M_STATIC_CAST(unsigned short, b)) & -M_STATIC_CAST(unsigned short, (a) < (b)))), \
+        unsigned short: M_STATIC_CAST(unsigned short, M_STATIC_CAST(unsigned short, a) ^ ((M_STATIC_CAST(unsigned short, a) ^ M_STATIC_CAST(unsigned short, b)) & -M_STATIC_CAST(unsigned short, (a) < (b)))), \
+        unsigned int: (M_STATIC_CAST(unsigned int, a) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & -M_STATIC_CAST(unsigned int, (a) < (b)))), \
+        unsigned long: (M_STATIC_CAST(unsigned long, a) ^ ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) & -M_STATIC_CAST(unsigned long, (a) < (b)))), \
+        unsigned long long: (M_STATIC_CAST(unsigned long long, a) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        default: (((a) > (b)) ? (a) : (b))), \
+    unsigned int: _Generic((b), \
+        unsigned char: (M_STATIC_CAST(unsigned int, a) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & -M_STATIC_CAST(unsigned int, (a) < (b)))), \
+        unsigned short: (M_STATIC_CAST(unsigned int, a) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & -M_STATIC_CAST(unsigned int, (a) < (b)))), \
+        unsigned int: (M_STATIC_CAST(unsigned int, a) ^ ((M_STATIC_CAST(unsigned int, a) ^ M_STATIC_CAST(unsigned int, b)) & -M_STATIC_CAST(unsigned int, (a) < (b)))), \
+        unsigned long: (M_STATIC_CAST(unsigned long, a) ^ ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) & -M_STATIC_CAST(unsigned long, (a) < (b)))), \
+        unsigned long long: (M_STATIC_CAST(unsigned long long, a) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        default: (((a) > (b)) ? (a) : (b))), \
+    unsigned long: _Generic((b), \
+        unsigned char: (M_STATIC_CAST(unsigned long, a) ^ ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) & -M_STATIC_CAST(unsigned long, (a) < (b)))), \
+        unsigned short: (M_STATIC_CAST(unsigned long, a) ^ ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) & -M_STATIC_CAST(unsigned long, (a) < (b)))), \
+        unsigned int: (M_STATIC_CAST(unsigned long, a) ^ ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) & -M_STATIC_CAST(unsigned long, (a) < (b)))), \
+        unsigned long: (M_STATIC_CAST(unsigned long, a) ^ ((M_STATIC_CAST(unsigned long, a) ^ M_STATIC_CAST(unsigned long, b)) & -M_STATIC_CAST(unsigned long, (a) < (b)))), \
+        unsigned long long: (M_STATIC_CAST(unsigned long long, a) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        default: (((a) > (b)) ? (a) : (b))), \
+    unsigned long long: _Generic((b), \
+        unsigned char: (M_STATIC_CAST(unsigned long long, a) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        unsigned short: (M_STATIC_CAST(unsigned long long, a) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        unsigned int: (M_STATIC_CAST(unsigned long long, a) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        unsigned long: (M_STATIC_CAST(unsigned long long, a) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        unsigned long long: (M_STATIC_CAST(unsigned long long, a) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
+        default: (((a) > (b)) ? (a) : (b))), \
+    default: (((a) > (b)) ? (a) : (b)))
 
-    // NOTE: On the int rounding macros for unsigned char and unsigned short, the 1
-    // is cast to those types to avoid
-    //       making the type wider and generating a truncation error at assignment.
-    //       Since there is not a standard way in C to note a value as a char or
-    //       short like there is with long and long long this cast is required.
+//NOTE: On the int rounding macros for unsigned char and unsigned short, the 1 is cast to those types to avoid
+//      making the type wider and generating a truncation error at assignment.
+//      Since there is not a standard way in C to note a value as a char or short like there is with long and long long
+//      this cast is required.
 
-#define INT_ROUND_UP(value, roundto)                                                                                   \
-    _Generic(                                                                                                          \
-        (value), unsigned char                                                                                         \
-        : (((value) + (roundto)-M_STATIC_CAST(unsigned char, 1)) & ~((roundto)-M_STATIC_CAST(unsigned char, 1))),      \
-          unsigned short                                                                                               \
-        : (((value) + (roundto)-M_STATIC_CAST(unsigned short, 1)) & ~((roundto)-M_STATIC_CAST(unsigned short, 1))),    \
-          unsigned int                                                                                                 \
-        : (((value) + (roundto)-1U) & ~((roundto)-1U)), unsigned long                                                  \
-        : (((value) + (roundto)-1UL) & ~((roundto)-1UL)), unsigned long long                                           \
-        : (((value) + (roundto)-1ULL) & ~((roundto)-1ULL)), default                                                    \
-        : (((value) % (roundto)) ? ((value) + (roundto) - ((value) % (roundto))) : (value)))
+#define INT_ROUND_UP(value, roundto) _Generic((value), \
+    unsigned char: (((value) + (roundto) - M_STATIC_CAST(unsigned char, 1)) & ~((roundto) - M_STATIC_CAST(unsigned char, 1))), \
+    unsigned short: (((value) + (roundto) - M_STATIC_CAST(unsigned short, 1)) & ~((roundto) - M_STATIC_CAST(unsigned short, 1))), \
+    unsigned int: (((value) + (roundto) - 1U) & ~((roundto) - 1U)), \
+    unsigned long: (((value) + (roundto) - 1UL) & ~((roundto) - 1UL)), \
+    unsigned long long: (((value) + (roundto) - 1ULL) & ~((roundto) - 1ULL)), \
+    default: (((value) % (roundto)) ? ((value) + (roundto) - ((value) % (roundto))) : (value)))
 
-#define INT_ROUND_DOWN(value, roundto)                                                                                 \
-    _Generic((value), unsigned char                                                                                    \
-             : ((value) & ~((roundto)-M_STATIC_CAST(unsigned char, 1))), unsigned short                                \
-             : ((value) & ~((roundto)-M_STATIC_CAST(unsigned short, 1))), unsigned int                                 \
-             : ((value) & ~((roundto)-1U)), unsigned long                                                              \
-             : ((value) & ~((roundto)-1UL)), unsigned long long                                                        \
-             : ((value) & ~((roundto)-1ULL)), default                                                                  \
-             : (((value) % (roundto)) ? ((value) - ((value) % (roundto))) : (value)))
+#define INT_ROUND_DOWN(value, roundto) _Generic((value), \
+    unsigned char: ((value) & ~((roundto) - M_STATIC_CAST(unsigned char, 1))), \
+    unsigned short: ((value) & ~((roundto) - M_STATIC_CAST(unsigned short, 1))), \
+    unsigned int: ((value) & ~((roundto) - 1U)), \
+    unsigned long: ((value) & ~((roundto) - 1UL)), \
+    unsigned long long: ((value) & ~((roundto) - 1ULL)), \
+    default: (((value) % (roundto)) ? ((value) - ((value) % (roundto))) : (value)))
 
 #else
 // Max & Min Helpers (signed and unsigned)
-#define M_Min(a, b)                    (((a) < (b)) ? (a) : (b))
-#define M_Max(a, b)                    (((a) > (b)) ? (a) : (b))
+#define  M_Min(a,b)    (((a)<(b))?(a):(b))
+#define  M_Max(a,b)    (((a)>(b))?(a):(b))
 
-// round an integer up to nearest multiple
-// NOTE: It is recommended to use the type specific inline versions below for
-// type enforcement by the compiler Example: Need to round up to nearest 512B
-// for a data transfer
-#define INT_ROUND_UP(value, roundto)   (((value) % (roundto)) ? ((value) + (roundto) - ((value) % (roundto))) : (value))
+//round an integer up to nearest multiple
+//NOTE: It is recommended to use the type specific inline versions below for type enforcement by the compiler
+//Example: Need to round up to nearest 512B for a data transfer
+#define INT_ROUND_UP(value, roundto) (((value) % (roundto)) ? ((value) + (roundto) - ((value) % (roundto))) : (value) )
 
-// round an integer down to nearest multiple
-#define INT_ROUND_DOWN(value, roundto) (((value) % (roundto)) ? ((value) - ((value) % (roundto))) : (value))
-#endif // C11 generic selection detection
+//round an integer down to nearest multiple
+#define INT_ROUND_DOWN(value, roundto) (((value) % (roundto)) ? ((value) - ((value) % (roundto))) : (value) )
+#endif //C11 generic selection detection
+
+// clang-format on
 
 #define M_2sCOMPLEMENT(val) (~(val) + 1)
 

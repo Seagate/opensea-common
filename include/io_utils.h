@@ -168,22 +168,24 @@ extern "C"
 // using intX_t or uintX_t since these are type defs to one of the types in the
 // macro below. NOTE: No default case so we can get a warning when this doesn't
 // expand correctly.
+// clang-format off
 #define get_Valid_Integer_Input(strToConvert, unit, unittype, outputInteger)                                           \
-    _Generic((outputInteger), \
-                        char*: get_And_Validate_Integer_Input_C,\
-                        unsigned char*: get_And_Validate_Integer_Input_UC,\
-                        short*: get_And_Validate_Integer_Input_S,\
-                        unsigned short*: get_And_Validate_Integer_Input_US,\
-                        int*: get_And_Validate_Integer_Input_I,\
-                        unsigned int*: get_And_Validate_Integer_Input_UI,\
-                        long*: get_And_Validate_Integer_Input_L,\
-                        unsigned long*: get_And_Validate_Integer_Input_UL,\
-                        long long*: get_And_Validate_Integer_Input_LL,\
-                        unsigned long long*: get_And_Validate_Integer_Input_ULL,\
-                        float*: get_And_Validate_Float_Input,\
-                        double*: get_And_Validate_Double_Input,\
-                        long double*: get_And_Validate_LDouble_Input\
-                        )(strToConvert, unit, unittype, outputInteger)
+    _Generic((outputInteger),                                                                                          \
+             char*                  : get_And_Validate_Integer_Input_C,                                                \
+             unsigned char*         : get_And_Validate_Integer_Input_UC,                                               \
+             short*                 : get_And_Validate_Integer_Input_S,                                                \
+             unsigned short*        : get_And_Validate_Integer_Input_US,                                               \
+             int*                   : get_And_Validate_Integer_Input_I,                                                \
+             unsigned int*          : get_And_Validate_Integer_Input_UI,                                               \
+             long*                  : get_And_Validate_Integer_Input_L,                                                \
+             unsigned long*         : get_And_Validate_Integer_Input_UL,                                               \
+             long long*             : get_And_Validate_Integer_Input_LL,                                               \
+             unsigned long long*    : get_And_Validate_Integer_Input_ULL,                                              \
+             float*                 : get_And_Validate_Float_Input,                                                    \
+             double*                : get_And_Validate_Double_Input,                                                   \
+             long double*           : get_And_Validate_LDouble_Input                                                   \
+            )(strToConvert, unit, unittype, outputInteger)
+// clang-format on
 #endif // C11
 
 #if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
