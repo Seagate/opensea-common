@@ -105,7 +105,7 @@ extern "C"
         uid_t userID;
         gid_t groupID;
         dev_t representedDeviceID;
-        offset_t filesize;
+        oscoffset_t filesize;
         int64_t fileLastAccessTime;//milliseconds since Unix epoch (in Windows, converted from Windows file epoch to this value)
         int64_t fileModificationTime;//milliseconds since Unix epoch (in Windows, converted from Windows file epoch to this value)
         int64_t fileStatusChangeTime;//milliseconds since Unix epoch (in Windows, converted from Windows file epoch to this value)
@@ -201,9 +201,9 @@ extern "C"
 
     M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInfo, void* M_RESTRICT buffer, size_t buffersize, size_t elementsize, size_t count, size_t* numberread/*optional*/);
     M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileInfo, void* M_RESTRICT buffer, size_t buffersize, size_t elementsize, size_t count, size_t* numberwritten/*optional*/);
-    M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, offset_t offset, int initialPosition);
+    M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, oscoffset_t offset, int initialPosition);
     M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo);
-    M_NODISCARD offset_t secure_Tell_File(secureFileInfo* fileInfo);
+    M_NODISCARD oscoffset_t secure_Tell_File(secureFileInfo* fileInfo);
 
     //This function will unlink the file if it is still open, otherwise it will remove it.
     M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo);

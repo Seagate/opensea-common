@@ -72,11 +72,11 @@ extern "C"
         typedef unsigned short mode_t;
         typedef short nlink_t;
         //using our own "type" to make sure we can get as much of the filesize as possible..and workaround Windows issues with off_t -TJE
-        typedef int64_t offset_t;//NOTE: WinAPI uses __int64_t which is the same as long long which is also what int64_t from stdint.h is defined as
+        typedef int64_t oscoffset_t;//NOTE: WinAPI uses __int64_t which is the same as long long which is also what int64_t from stdint.h is defined as
         typedef unsigned long winsyserror_t;
     #else
         //using our own "type" to make sure we can get as much of the filesize as possible..and workaround Windows issues with off_t -TJE
-        typedef off_t offset_t;//to deal with windows differences in off_t definitions in stat
+        typedef off_t oscoffset_t;//to deal with windows differences in off_t definitions in stat
     #endif
 
     #if !defined (HAVE_C11_ANNEX_K) && !defined(__STDC_SECURE_LIB__)
