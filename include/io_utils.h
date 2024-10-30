@@ -21,6 +21,7 @@
 #include "common_types.h"
 #include "code_attributes.h"
 #include <stdio.h>
+#include <stdarg.h>
 
 #if defined (__cplusplus)
 extern "C"
