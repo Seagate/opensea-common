@@ -36,21 +36,21 @@ extern "C"
 // wish, but you are better off using static_cast or reinterpret_cast in C++
 // over this macro. -TJE
 #if defined(USING_CPP98)
-#define M_STATIC_CAST(type, val) static_cast<type>(val)
+#    define M_STATIC_CAST(type, val) static_cast<type>(val)
 #else // C
-#define M_STATIC_CAST(type, val) C_CAST(type, val)
+#    define M_STATIC_CAST(type, val) ((type)(val))
 #endif
 
 #if defined(USING_CPP98)
-#define M_REINTERPRET_CAST(type, ptr) reinterpret_cast<type>(ptr)
+#    define M_REINTERPRET_CAST(type, ptr) reinterpret_cast<type>(ptr)
 #else // C
-#define M_REINTERPRET_CAST(type, ptr) C_CAST(type, ptr)
+#    define M_REINTERPRET_CAST(type, ptr) ((type)(ptr))
 #endif
 
 #if defined(USING_CPP98)
-#define M_CONST_CAST(type, val) const_cast<type>(val)
+#    define M_CONST_CAST(type, val) const_cast<type>(val)
 #else // C
-#define M_CONST_CAST(type, val) ((type)((uintptr_t)(val)))
+#    define M_CONST_CAST(type, val) ((type)((uintptr_t)(val)))
 #endif
 
 // Convert the result to a boolean true or false (ternary operator)

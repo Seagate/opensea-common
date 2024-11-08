@@ -239,7 +239,8 @@ extern "C"
     typedef struct sOSVersionNumber
     {
         eOSType osVersioningIdentifier;
-        union {
+        union
+        {
             WindowsVersionNumber   windowsVersion;
             LinuxVersionNumber     linuxVersion;
             FreeBSDVersionNumber   freeBSDVersion;
@@ -412,16 +413,16 @@ extern "C"
     bool is_Running_Elevated(void);
 
 #if defined(ENABLE_READ_USERNAME)
-#if defined(_WIN32)
+#    if defined(_WIN32)
 // This pragma is needed to tell a library including opensea-common to look for
 // Version.lib for the version helping information in the .c file. NOTE: ARM
 // requires 10.0.16299.0 API to get this library!
-#if !defined(__MINGW32__) && !defined(__MINGW64__)
-#pragma comment(lib, "Advapi32.lib") // for checking for "run as administrator". May
-                                     // not be necessary to build some tools, but
-                                     // putting this here to prevent problems.
-#endif
-#endif //_WIN32
+#        if !defined(__MINGW32__) && !defined(__MINGW64__)
+#            pragma comment(lib, "Advapi32.lib") // for checking for "run as administrator". May
+                                                 // not be necessary to build some tools, but
+                                                 // putting this here to prevent problems.
+#        endif
+#    endif //_WIN32
     // This flag is required to enable this functionality.
     //  A customer reported concerns about this reading the /etc/passwd file in
     //  Linux...the only way to map a UID to a username string So the solution to

@@ -29,10 +29,10 @@
 #include <string.h>
 
 #if defined(UEFI_C_SOURCE)
-#include <Library/PrintLib.h> //to convert CHAR16 string to CHAR8. may also be able to use stdlib in someway, but this seems to work
-#include <Library/UefiBootServicesTableLib.h> //to get global boot services pointer. This pointer should be checked before use, but any app using stdlib will have this set.
-#include <Protocol/SimpleTextOut.h>           //for colors
-#include <Uefi.h>
+#    include <Library/PrintLib.h> //to convert CHAR16 string to CHAR8. may also be able to use stdlib in someway, but this seems to work
+#    include <Library/UefiBootServicesTableLib.h> //to get global boot services pointer. This pointer should be checked before use, but any app using stdlib will have this set.
+#    include <Protocol/SimpleTextOut.h>           //for colors
+#    include <Uefi.h>
 #endif // UEFI_C_SOURCE
 
 #if defined(UEFI_C_SOURCE)
@@ -316,9 +316,9 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
 void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eConsoleColors backgroundColor)
 {
     static bool defaultsSet       = false;
-    static WORD defaultColorValue = 0;
+    static WORD defaultColorValue = WORD_C(0);
     HANDLE      consoleHandle     = GetStdHandle(STD_OUTPUT_HANDLE);
-    WORD        theColor          = 0;
+    WORD        theColor          = WORD_C(0);
     if (!defaultsSet)
     {
         // First time we are setting colors backup the default settings so they
@@ -513,11 +513,11 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
 }
 
 #else
-#include "secured_env_vars.h"
-#if (defined(__FreeBSD__) && __FreeBSD__ >= 4 /*4.6 technically*/) || (defined(__OpenBSD__) && defined OpenBSD2_9)
-#include <readpassphrase.h>
-#endif // FreeBSD 4.6+ or OpenBSD 2.9+
-#include <termios.h>
+#    include "secured_env_vars.h"
+#    if (defined(__FreeBSD__) && __FreeBSD__ >= 4 /*4.6 technically*/) || (defined(__OpenBSD__) && defined OpenBSD2_9)
+#        include <readpassphrase.h>
+#    endif // FreeBSD 4.6+ or OpenBSD 2.9+
+#    include <termios.h>
 void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
 {
     // use the new behavior
@@ -1074,7 +1074,7 @@ static M_INLINE void fclose_term(FILE* term)
 eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen)
 {
     eReturnValues  ret = SUCCESS;
-#if defined(POSIX_2001)
+#    if defined(POSIX_2001)
     struct termios defaultterm;
     struct termios currentterm;
     FILE*          term = fopen("/dev/tty", "r"); // use /dev/tty instead of stdin to get the
@@ -1141,13 +1141,13 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         fclose_term(term);
     }
     printf("\n");
-#elif (defined(__FreeBSD__) && __FreeBSD__ >= 4 /*4.6 technically*/) || (defined(__OpenBSD__) && defined OpenBSD2_9)
+#    elif (defined(__FreeBSD__) && __FreeBSD__ >= 4 /*4.6 technically*/) || (defined(__OpenBSD__) && defined OpenBSD2_9)
     // use readpassphrase instead
     // use BUFSIZ buffer as that should be more than enough to read this
     // NOTE: Linux's libbsd also provides this, but termios method above is
     // still preferred-TJE
     *inputDataLen = BUFSIZ;
-    *userInput    = C_CAST(char*, safe_calloc(*inputDataLen, sizeof(char)));
+    *userInput    = M_REINTERPRET_CAST(char*, safe_calloc(*inputDataLen, sizeof(char)));
     if (*userInput)
     {
         if (!readpassphrase(prompt, *userInput, *inputDataLen, 0))
@@ -1159,7 +1159,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     {
         ret = MEMORY_FAILURE;
     }
-#elif defined(__NetBSD__) && defined __NetBSD_Version__ && __NetBSD_Version__ >= 7000000000
+#    elif defined(__NetBSD__) && defined __NetBSD_Version__ && __NetBSD_Version__ >= 7000000000
     // Use getpass_r
     // this will dynamically allocate memory for use when the buffer is set to
     // M_NULLPTR
@@ -1173,7 +1173,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         *inputDataLen = safe_strlen(*userInput) + 1; // add one since this adds to the buffer size and that is what we
                                                      // are returning in all other cases-TJE
     }
-#elif defined(__sun) && defined(__SunOS_5_6)
+#    elif defined(__sun) && defined(__SunOS_5_6)
     // use getpassphrase since it can return longer passwords than getpass
     char* eraseme = getpassphrase(prompt);
     if (eraseme)
@@ -1196,7 +1196,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     {
         ret = FAILURE;
     }
-#else  // POSIX & OS MACRO CHECKS
+#    else  // POSIX & OS MACRO CHECKS
     // Last resort is to use getpass. This is the least desirable thing to use
     // which is why it only gets used in this else case as a backup in case the
     // OS we are supporting doesn't support any other available method.-TJE
@@ -1221,7 +1221,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     {
         ret = FAILURE;
     }
-#endif // POSIX & OS MACRO CHECKS
+#    endif // POSIX & OS MACRO CHECKS
     return ret;
 }
 #endif
@@ -2003,7 +2003,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint16(const char*       strToCo
 {
     if (strToConvert && outputInteger)
     {
-        uint32_t temp = 0;
+        uint32_t temp = UINT32_C(0);
         bool     ret  = get_And_Validate_Integer_Input_Uint32(strToConvert, unit, unittype, &temp);
         if (ret && temp > UINT16_MAX)
         {
@@ -2031,7 +2031,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint8(const char*       strToCon
 {
     if (strToConvert && outputInteger)
     {
-        uint32_t temp = 0;
+        uint32_t temp = UINT32_C(0);
         bool     ret  = get_And_Validate_Integer_Input_Uint32(strToConvert, unit, unittype, &temp);
         if (ret && temp > UINT8_MAX)
         {
@@ -2150,7 +2150,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int16(const char*       strToCon
 {
     if (strToConvert && outputInteger)
     {
-        int32_t temp = 0;
+        int32_t temp = INT32_C(0);
         bool    ret  = get_And_Validate_Integer_Input_Int32(strToConvert, unit, unittype, &temp);
         if (ret && (temp > INT16_MAX || temp < INT16_MIN))
         {
@@ -2177,7 +2177,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int8(const char*       strToConv
 {
     if (strToConvert && outputInteger)
     {
-        int32_t temp = 0;
+        int32_t temp = INT32_C(0);
         bool    ret  = get_And_Validate_Integer_Input_Int32(strToConvert, unit, unittype, &temp);
         if (ret && (temp > INT8_MAX || temp < INT8_MIN))
         {
@@ -2213,7 +2213,7 @@ ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter,
     if (*lineptr == M_NULLPTR || *n == 0)
     {
         *n       = BUFSIZ;
-        *lineptr = C_CAST(char*, malloc(*n));
+        *lineptr = M_REINTERPRET_CAST(char*, malloc(*n));
         if (M_NULLPTR == *lineptr)
         {
             errno = ENOMEM;
@@ -2265,13 +2265,13 @@ ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter,
             char*   temp     = M_NULLPTR;
             size_t  newsize  = *n * 2;
             ssize_t numchars = C_CAST(ssize_t, C_CAST(intptr_t, currentptr) - C_CAST(intptr_t, *lineptr));
-#if defined(SSIZE_MAX)
+#    if defined(SSIZE_MAX)
             if (newsize > SSIZE_MAX)
             {
                 errno = EOVERFLOW;
                 return -1;
             }
-#endif // SSIZE_MAX
+#    endif // SSIZE_MAX
             temp = safe_reallocf(C_CAST(void**, lineptr), newsize);
             if (temp == M_NULLPTR)
             {
@@ -2309,21 +2309,21 @@ M_NODISCARD FUNC_ATTR_PRINTF(2, 3) int asprintf(char** M_RESTRICT strp, const ch
 M_NODISCARD FUNC_ATTR_PRINTF(2, 0) int vasprintf(char** M_RESTRICT strp, const char* M_RESTRICT fmt, va_list arg)
 {
     va_list copyarg;
-#if defined(va_copy)
+#    if defined(va_copy)
     va_copy(copyarg, arg);
-#elif defined(__va_copy)
+#    elif defined(__va_copy)
     __va_copy(copyarg, arg);
-#else
+#    else
     copyarg = arg;
-#endif
+#    endif
 //_vscprintf existed in Windows to get format string len before vsnprintf
-#if defined(USING_C99) || defined(BSD4_4) /*or have VSNPRINTF?*/
+#    if defined(USING_C99) || defined(BSD4_4) /*or have VSNPRINTF?*/
     int len = vsnprintf(M_NULLPTR, 0, fmt, copyarg);
-#elif defined(_WIN32)
+#    elif defined(_WIN32)
     int len = _vscprintf(fmt, copyarg);
-#else
+#    else
     int len = -1; // error, cannot get count
-#endif
+#    endif
     va_end(copyarg);
 
     if (len < 0)
@@ -2332,18 +2332,18 @@ M_NODISCARD FUNC_ATTR_PRINTF(2, 0) int vasprintf(char** M_RESTRICT strp, const c
         return -1;
     }
 
-    *strp = C_CAST(char*, malloc(int_to_sizet(len) + 1));
+    *strp = M_REINTERPRET_CAST(char*, malloc(int_to_sizet(len) + 1));
     if (*strp == M_NULLPTR)
     {
         return -1;
     }
 
-#if defined(USING_C99) || defined(BSD4_4) /*or have VSNPRINTF?*/
+#    if defined(USING_C99) || defined(BSD4_4) /*or have VSNPRINTF?*/
     vsnprintf(*strp, int_to_sizet(len) + 1, fmt, arg);
-#else /*don't have vsnprintf, but we allocated a buffer big enough for                                                 \
-         this and a NULL terminator, so vsprintf will be safe*/
+#    else /*don't have vsnprintf, but we allocated a buffer big enough for                                             \
+             this and a NULL terminator, so vsprintf will be safe*/
     vsprintf(*strp, fmt, arg);
-#endif
+#    endif
 
     return len;
 }
@@ -2357,22 +2357,22 @@ int                                                  snprintf(char* buffer, size
     va_list args;
     va_list countargs;
     va_start(args, format);
-#if defined(va_copy)
+#    if defined(va_copy)
     va_copy(countargs,
             args); // C99, but available in VS2013 which is the oldest VS
                    // compiler we expect to possibly work with this code.
-#else
+#    else
     countargs = args; // this is what microsoft's va_copy expands to
-#endif
+#    endif
     if (bufsz > 0) // Allow calling only when bufsz > 0. Let _vsnprintf evaluate
                    // if buffer is M_NULLPTR in here.
     {
         errno = 0;
-#if defined(__STDC_SECURE_LIB__)
+#    if defined(__STDC_SECURE_LIB__)
         charCount = _vsnprintf_s(buffer, bufsz, _TRUNCATE, format, args);
-#else
+#    else
         charCount = _vsnprintf(buffer, bufsz, format, args);
-#endif
+#    endif
     }
     if (charCount == -1)
     {
@@ -2403,22 +2403,22 @@ int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
 {
     int     charCount = -1;
     va_list countargs;
-#if defined(va_copy)
+#    if defined(va_copy)
     va_copy(countargs,
             args); // C99, but available in VS2013 which is the oldest VS
                    // compiler we expect to possibly work with this code.
-#else
+#    else
     countargs = args; // this is what microsoft's va_copy expands to
-#endif
+#    endif
     if (bufsz > 0) // Allow calling only when bufsz > 0. Let _vsnprintf evaluate
                    // if buffer is M_NULLPTR in here.
     {
         errno = 0;
-#if defined(__STDC_SECURE_LIB__)
+#    if defined(__STDC_SECURE_LIB__)
         charCount = _vsnprintf_s(buffer, bufsz, _TRUNCATE, format, countargs);
-#else
+#    else
         charCount = _vsnprintf(buffer, bufsz, format, countargs);
-#endif
+#    endif
     }
     if (charCount == -1)
     {
@@ -2578,12 +2578,12 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
 #define LINE_WIDTH       16
 static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset)
 {
-    uint32_t printIter   = 0;
-    uint32_t offset      = 0;
-    uint32_t offsetWidth = 2; // used to figure out how wide we need to pad with 0's for consistent
-                              // output, 2 is the minimum width
+    uint32_t printIter   = UINT32_C(0);
+    uint32_t offset      = UINT32_C(0);
+    uint32_t offsetWidth = UINT32_C(2); // used to figure out how wide we need to pad with 0's for consistent
+                                        // output, 2 is the minimum width
     DECLARE_ZERO_INIT_ARRAY(char, lineBuff, LINE_BUF_STR_LEN);
-    uint8_t lineBuffIter = 0;
+    uint8_t lineBuffIter = UINT8_C(0);
     if (showOffset)
     {
         if (bufferLen <= UINT8_MAX)
@@ -2674,7 +2674,7 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
                                                         // the ++happens during the loop
             if (spacePadding)
             {
-                uint32_t counter = 0;
+                uint32_t counter = UINT32_C(0);
                 while (counter < ((LINE_WIDTH - spacePadding)))
                 {
                     printf("   ");

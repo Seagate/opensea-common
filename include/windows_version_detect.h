@@ -184,69 +184,69 @@ extern "C"
     // the WIN10 SDK is being targeted.
 
 #if defined(WIN_API_TARGET_VERSION)
-#undef WIN_API_TARGET_VERSION
-#pragma message("WIN_API_TARGET_VERSION no longer needs to be defined. Automatically defined from sdkddkver.h now")
+#    undef WIN_API_TARGET_VERSION
+#    pragma message("WIN_API_TARGET_VERSION no longer needs to be defined. Automatically defined from sdkddkver.h now")
 #endif
 
 #if defined(WDK_NTDDI_VERSION)
-#define WIN_API_TARGET_VERSION WDK_NTDDI_VERSION
+#    define WIN_API_TARGET_VERSION WDK_NTDDI_VERSION
 #else
 // Check which, if any older NTDDI macros are available and set the
 // highest...likely an older compiler or SDK version has been found that doesn't
 // set the above macro like WIN10 SDKs
-#if defined(NTDDI_WINBLUE)
-#define WIN_API_TARGET_VERSION NTDDI_WINBLUE
-#elif defined(NTDDI_WIN8)
-#define WIN_API_TARGET_VERSION NTDDI_WIN8
-#elif defined(NTDDI_WIN7)
-#define WIN_API_TARGET_VERSION NTDDI_WIN7
-#elif defined(NTDDI_WIN6SP4)
-#define WIN_API_TARGET_VERSION NTDDI_WIN6SP4
-#elif defined(NTDDI_WIN6SP3)
-#define WIN_API_TARGET_VERSION NTDDI_WIN6SP3
-#elif defined(NTDDI_WIN6SP2)
-#define WIN_API_TARGET_VERSION NTDDI_WIN6SP2
-#elif defined(NTDDI_WIN6SP1)
-#define WIN_API_TARGET_VERSION NTDDI_WIN6SP1
-#elif defined(NTDDI_WIN6)
-#define WIN_API_TARGET_VERSION NTDDI_WIN6
-#elif defined(NTDDI_WS03SP4)
-#define WIN_API_TARGET_VERSION NTDDI_WS03SP4
-#elif defined(NTDDI_WS03SP3)
-#define WIN_API_TARGET_VERSION NTDDI_WS03SP3
-#elif defined(NTDDI_WS03SP2)
-#define WIN_API_TARGET_VERSION NTDDI_WS03SP2
-#elif defined(NTDDI_WS03SP1)
-#define WIN_API_TARGET_VERSION NTDDI_WS03SP1
-#elif defined(NTDDI_WS03)
-#define WIN_API_TARGET_VERSION NTDDI_WS03
-#elif defined(NTDDI_WINXPSP4)
-#define WIN_API_TARGET_VERSION NTDDI_WINXPSP4
-#elif defined(NTDDI_WINXPSP3)
-#define WIN_API_TARGET_VERSION NTDDI_WINXPSP3
-#elif defined(NTDDI_WINXPSP2)
-#define WIN_API_TARGET_VERSION NTDDI_WINXPSP2
-#elif defined(NTDDI_WINXPSP1)
-#define WIN_API_TARGET_VERSION NTDDI_WINXPSP1
-#elif defined(NTDDI_WINXP)
-#define WIN_API_TARGET_VERSION NTDDI_WINXP
-#elif defined(NTDDI_WIN2KSP4)
-#define WIN_API_TARGET_VERSION NTDDI_WIN2KSP4
-#elif defined(NTDDI_WIN2KSP3)
-#define WIN_API_TARGET_VERSION NTDDI_WIN2KSP3
-#elif defined(NTDDI_WIN2KSP2)
-#define WIN_API_TARGET_VERSION NTDDI_WIN2KSP2
-#elif defined(NTDDI_WIN2KSP1)
-#define WIN_API_TARGET_VERSION NTDDI_WIN2KSP1
-#elif defined(NTDDI_WIN2K)
-#define WIN_API_TARGET_VERSION NTDDI_WIN2K
-#else
-#define WIN_API_TARGET_VERSION                                                                                         \
-    1 /*this is an unknown version...assume that no target API is                                                      \
-         known*/
-#pragma message("WARNING: No Windows API detected! Things may not work at all!")
-#endif // checking NTDDI_versions
-#endif // WDK_NTDDI_VERSION
+#    if defined(NTDDI_WINBLUE)
+#        define WIN_API_TARGET_VERSION NTDDI_WINBLUE
+#    elif defined(NTDDI_WIN8)
+#        define WIN_API_TARGET_VERSION NTDDI_WIN8
+#    elif defined(NTDDI_WIN7)
+#        define WIN_API_TARGET_VERSION NTDDI_WIN7
+#    elif defined(NTDDI_WIN6SP4)
+#        define WIN_API_TARGET_VERSION NTDDI_WIN6SP4
+#    elif defined(NTDDI_WIN6SP3)
+#        define WIN_API_TARGET_VERSION NTDDI_WIN6SP3
+#    elif defined(NTDDI_WIN6SP2)
+#        define WIN_API_TARGET_VERSION NTDDI_WIN6SP2
+#    elif defined(NTDDI_WIN6SP1)
+#        define WIN_API_TARGET_VERSION NTDDI_WIN6SP1
+#    elif defined(NTDDI_WIN6)
+#        define WIN_API_TARGET_VERSION NTDDI_WIN6
+#    elif defined(NTDDI_WS03SP4)
+#        define WIN_API_TARGET_VERSION NTDDI_WS03SP4
+#    elif defined(NTDDI_WS03SP3)
+#        define WIN_API_TARGET_VERSION NTDDI_WS03SP3
+#    elif defined(NTDDI_WS03SP2)
+#        define WIN_API_TARGET_VERSION NTDDI_WS03SP2
+#    elif defined(NTDDI_WS03SP1)
+#        define WIN_API_TARGET_VERSION NTDDI_WS03SP1
+#    elif defined(NTDDI_WS03)
+#        define WIN_API_TARGET_VERSION NTDDI_WS03
+#    elif defined(NTDDI_WINXPSP4)
+#        define WIN_API_TARGET_VERSION NTDDI_WINXPSP4
+#    elif defined(NTDDI_WINXPSP3)
+#        define WIN_API_TARGET_VERSION NTDDI_WINXPSP3
+#    elif defined(NTDDI_WINXPSP2)
+#        define WIN_API_TARGET_VERSION NTDDI_WINXPSP2
+#    elif defined(NTDDI_WINXPSP1)
+#        define WIN_API_TARGET_VERSION NTDDI_WINXPSP1
+#    elif defined(NTDDI_WINXP)
+#        define WIN_API_TARGET_VERSION NTDDI_WINXP
+#    elif defined(NTDDI_WIN2KSP4)
+#        define WIN_API_TARGET_VERSION NTDDI_WIN2KSP4
+#    elif defined(NTDDI_WIN2KSP3)
+#        define WIN_API_TARGET_VERSION NTDDI_WIN2KSP3
+#    elif defined(NTDDI_WIN2KSP2)
+#        define WIN_API_TARGET_VERSION NTDDI_WIN2KSP2
+#    elif defined(NTDDI_WIN2KSP1)
+#        define WIN_API_TARGET_VERSION NTDDI_WIN2KSP1
+#    elif defined(NTDDI_WIN2K)
+#        define WIN_API_TARGET_VERSION NTDDI_WIN2K
+#    else
+#        define WIN_API_TARGET_VERSION                                                                                 \
+            1 /*this is an unknown version...assume that no target API is                                              \
+                 known*/
+#        pragma message("WARNING: No Windows API detected! Things may not work at all!")
+#    endif // checking NTDDI_versions
+#endif     // WDK_NTDDI_VERSION
 
     // SDK Versions can be found here:
     // https://en.wikipedia.org/wiki/Microsoft_Windows_SDK Add more below as we need

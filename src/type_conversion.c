@@ -21,7 +21,7 @@
 
 #if !defined(SIZE_MAX) // this should come from the system or at least defined
                        // with all the types
-#error "SIZE_MAX not defined! Please add a definition for this system!"
+#    error "SIZE_MAX not defined! Please add a definition for this system!"
 #endif
 
 size_t int8_to_sizet(int8_t val)
@@ -419,7 +419,7 @@ void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* decimalValue)
 
     int8_t power   = -23;
     double mantisa = 1.0;
-    for (uint8_t i = 0; i < 23; i++)
+    for (uint8_t i = UINT8_C(0); i < 23; i++)
     {
         mantisa += C_CAST(double, M_GETBITRANGE(floatValue, i, i)) * pow(2.0, power);
         power++;

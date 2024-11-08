@@ -24,11 +24,11 @@
 #include <string.h>
 
 #if defined(UEFI_C_SOURCE)
-#include <Uefi.h>
-#include <Uefi/UefiBaseType.h> //for EFI_STATUS definitions
+#    include <Uefi.h>
+#    include <Uefi/UefiBaseType.h> //for EFI_STATUS definitions
 #elif defined(_WIN32)
-#include <tchar.h>
-#include <windows.h>
+#    include <tchar.h>
+#    include <windows.h>
 #endif
 
 #define ERROR_STRING_BUFFER_LENGTH 1024
@@ -38,7 +38,7 @@ void print_Errno_To_Screen(errno_t error)
     size_t errorStringLen = strerrorlen_s(error);
     if (errorStringLen > 0 && errorStringLen < RSIZE_MAX)
     {
-        char* errorString = C_CAST(char*, safe_calloc(errorStringLen + 1, sizeof(char)));
+        char* errorString = M_REINTERPRET_CAST(char*, safe_calloc(errorStringLen + 1, sizeof(char)));
         if (errorString)
         {
             errno_t truncated = strerror_s(errorString, errorStringLen + 1, error);
@@ -74,10 +74,10 @@ void print_Errno_To_Screen(errno_t error)
         printf("%d - <Unable to convert error to string>\n", error);
     }
 #elif defined(HAVE_POSIX_STRERR_R) || defined(HAVE_GNU_STRERR_R) || defined(POSIX_2001) || defined(_GNU_SOURCE)
-#if defined(HAVE_POSIX_STRERR_R) && defined(HAVE_GNU_STRERR_R)
-#error                                                                                                                 \
-    "strerror_r is either POSIX or GNU compatible, but not both. Define only one of HAVE_POSIX_STRERR_R or HAVE_GNU_STRERR_R"
-#endif // HAVE_POSIX_STRERR_R && HAVE_GNU_STRERR_R
+#    if defined(HAVE_POSIX_STRERR_R) && defined(HAVE_GNU_STRERR_R)
+#        error                                                                                                         \
+            "strerror_r is either POSIX or GNU compatible, but not both. Define only one of HAVE_POSIX_STRERR_R or HAVE_GNU_STRERR_R"
+#    endif // HAVE_POSIX_STRERR_R && HAVE_GNU_STRERR_R
 // GNU/POSIX strerror_r. Beware, GNU version works different-TJE
 // POSIX version available since glibc 2.3.4, but not POSIX-compliant until
 // glibc 2.13 GNU version available since glibc 2.0
@@ -86,7 +86,7 @@ void print_Errno_To_Screen(errno_t error)
 // https://www.gnu.org/software/gnulib/manual/html_node/strerror_005fr.html
 // There is brief mention of xstrerror, but I cannot find any documentation on
 // it anywhere.-TJE
-#if (defined(POSIX_2001) && !defined(_GNU_SOURCE)) || defined(HAVE_POSIX_STRERR_R)
+#    if (defined(POSIX_2001) && !defined(_GNU_SOURCE)) || defined(HAVE_POSIX_STRERR_R)
     // POSIX version
     DECLARE_ZERO_INIT_ARRAY(char, errorString, ERROR_STRING_BUFFER_LENGTH);
     if (0 == strerror_r(error, errorString, ERROR_STRING_BUFFER_LENGTH))
@@ -99,7 +99,7 @@ void print_Errno_To_Screen(errno_t error)
     {
         printf("%d - <Unable to convert error to string>\n", error);
     }
-#elif defined(HAVE_GNU_STRERR_R) || defined(_GNU_SOURCE)
+#    elif defined(HAVE_GNU_STRERR_R) || defined(_GNU_SOURCE)
     // GNU version
     DECLARE_ZERO_INIT_ARRAY(char, errorString, ERROR_STRING_BUFFER_LENGTH);
     char* errmsg = strerror_r(error, errorString, ERROR_STRING_BUFFER_LENGTH);
@@ -113,9 +113,9 @@ void print_Errno_To_Screen(errno_t error)
     {
         printf("%d - <Unable to convert error to string>\n", error);
     }
-#else
-#error "Error detectiong POSIX strerror_r vs GNU strerror_r"
-#endif
+#    else
+#        error "Error detectiong POSIX strerror_r vs GNU strerror_r"
+#    endif
 #else
     char* temp = strerror(error);
     if (temp != M_NULLPTR)
@@ -131,7 +131,7 @@ void print_Errno_To_Screen(errno_t error)
 
 #if defined(UEFI_C_SOURCE)
 // Use %d to print this out or the output look really strange
-#define PRI_UINTN "d"
+#    define PRI_UINTN "d"
 void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus)
 {
     switch (efiStatus)

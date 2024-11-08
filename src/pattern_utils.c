@@ -29,13 +29,13 @@ eReturnValues fill_Random_Pattern_In_Buffer(uint8_t* ptrData, uint32_t dataLengt
 {
     size_t localPtrDataLen =
         ((dataLength + sizeof(uint32_t)) - 1) / sizeof(uint32_t); // round up to nearest uint32 amount
-    uint32_t* localPtr = C_CAST(uint32_t*, safe_calloc(localPtrDataLen, sizeof(uint32_t)));
+    uint32_t* localPtr = M_REINTERPRET_CAST(uint32_t*, safe_calloc(localPtrDataLen, sizeof(uint32_t)));
     if (!localPtr)
     {
         return MEMORY_FAILURE;
     }
     seed_32(C_CAST(uint32_t, time(M_NULLPTR)));
-    for (uint32_t iter = 0; iter < (dataLength / sizeof(uint32_t)); ++iter)
+    for (uint32_t iter = UINT32_C(0); iter < (dataLength / sizeof(uint32_t)); ++iter)
     {
         localPtr[iter] = xorshiftplus32();
     }
@@ -50,12 +50,12 @@ eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* ptrData, 
 {
     size_t localPtrDataLen =
         ((dataLength + sizeof(uint32_t)) - 1) / sizeof(uint32_t); // round up to nearest uint32 amount
-    uint32_t* localPtr = C_CAST(uint32_t*, safe_calloc(localPtrDataLen, sizeof(uint32_t)));
+    uint32_t* localPtr = M_REINTERPRET_CAST(uint32_t*, safe_calloc(localPtrDataLen, sizeof(uint32_t)));
     if (!localPtr)
     {
         return MEMORY_FAILURE;
     }
-    for (uint32_t iter = 0; iter < (dataLength / sizeof(uint32_t)); ++iter)
+    for (uint32_t iter = UINT32_C(0); iter < (dataLength / sizeof(uint32_t)); ++iter)
     {
         localPtr[iter] = hexPattern;
     }
@@ -72,7 +72,7 @@ eReturnValues fill_Incrementing_Pattern_In_Buffer(uint8_t incrementStartValue, u
     {
         return BAD_PARAMETER;
     }
-    for (uint32_t iter = 0; iter < dataLength; ++iter)
+    for (uint32_t iter = UINT32_C(0); iter < dataLength; ++iter)
     {
         ptrData[iter] = incrementStartValue++;
     }
@@ -88,7 +88,7 @@ eReturnValues fill_ASCII_Pattern_In_Buffer(const char* asciiPattern,
     {
         return BAD_PARAMETER;
     }
-    for (uint32_t iter = 0; iter < dataLength; iter += patternLength)
+    for (uint32_t iter = UINT32_C(0); iter < dataLength; iter += patternLength)
     {
         safe_memcpy(&ptrData[iter], dataLength, asciiPattern, M_Min(patternLength, dataLength - iter));
     }
@@ -104,7 +104,7 @@ eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t* inPattern,
     {
         return BAD_PARAMETER;
     }
-    for (uint32_t iter = 0; iter < dataLength; iter += inpatternLength)
+    for (uint32_t iter = UINT32_C(0); iter < dataLength; iter += inpatternLength)
     {
         safe_memcpy(&ptrData[iter], dataLength, inPattern, M_Min(inpatternLength, dataLength - iter));
     }

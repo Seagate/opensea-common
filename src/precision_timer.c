@@ -25,7 +25,7 @@
 #include <string.h>
 
 #if defined(_WIN32)
-#include <windows.h>
+#    include <windows.h>
 void start_Timer(seatimer_t* timer)
 {
     if (timer)
@@ -64,8 +64,8 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
 {
     LARGE_INTEGER frequency;                                 // clock ticks per second
     uint64_t      ticksPerNanosecond = UINT64_C(1000000000); // start with a count of nanoseconds per second
-    uint64_t      seconds            = 0;
-    uint64_t      nanoSeconds        = 0;
+    uint64_t      seconds            = UINT64_C(0);
+    uint64_t      nanoSeconds        = UINT64_C(0);
     safe_memset(&frequency, sizeof(LARGE_INTEGER), 0, sizeof(LARGE_INTEGER));
     if (TRUE == QueryPerformanceFrequency(&frequency))
     {
@@ -91,9 +91,9 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
     }
 }
 #else //!_WIN32
-#include <sys/time.h>
-#include <time.h>
-#include <unistd.h>
+#    include <sys/time.h>
+#    include <time.h>
+#    include <unistd.h>
 // Always prefers CLOCK_MONOTONIC
 // may want to consider CLOCK_REALTIME as an alternative when not supported
 // (this will be affected just like gettimeofday function) other clocks that may
@@ -106,12 +106,12 @@ void start_Timer(seatimer_t* timer)
         struct timespec startTimespec;
         int             ret = 0;
         safe_memset(&startTimespec, sizeof(struct timespec), 0, sizeof(struct timespec));
-#if !defined(UEFI_C_SOURCE) && defined(POSIX_1993) && defined(_POSIX_TIMERS) && defined _POSIX_MONOTONIC_CLOCK
+#    if !defined(UEFI_C_SOURCE) && defined(POSIX_1993) && defined(_POSIX_TIMERS) && defined _POSIX_MONOTONIC_CLOCK
         ret = clock_gettime(CLOCK_MONOTONIC, &startTimespec);
-#else // this function is older and more likely available if we don't have
-      // the support we need/want
+#    else // this function is older and more likely available if we don't have
+          // the support we need/want
         ret = gettimeofday(&startTimespec, M_NULLPTR);
-#endif
+#    endif
         if (0 == ret) // hopefully this always works...-TJE
         {
             //        printf("Start Time:  %lu\n", startTimespec.tv_nsec);
@@ -132,12 +132,12 @@ void stop_Timer(seatimer_t* timer)
         struct timespec stopTimespec;
         int             ret = 0;
         safe_memset(&stopTimespec, sizeof(struct timespec), 0, sizeof(struct timespec));
-#if !defined(UEFI_C_SOURCE) && defined(POSIX_1993) && defined(_POSIX_TIMERS) && defined _POSIX_MONOTONIC_CLOCK
+#    if !defined(UEFI_C_SOURCE) && defined(POSIX_1993) && defined(_POSIX_TIMERS) && defined _POSIX_MONOTONIC_CLOCK
         ret = clock_gettime(CLOCK_MONOTONIC, &stopTimespec);
-#else // this function is older and more likely available if we don't have
-      // the support we need/want
+#    else // this function is older and more likely available if we don't have
+          // the support we need/want
         ret = gettimeofday(&stopTimespec, M_NULLPTR);
-#endif
+#    endif
         if (0 == ret) // hopefully this always works...-TJE
         {
             //        printf("Stop Time:  %lu\n", stopTimespec.tv_nsec);

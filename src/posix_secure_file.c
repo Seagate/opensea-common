@@ -44,7 +44,7 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* const fil
     safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
     if (filetoCheck && stat(filetoCheck, &st) == 0)
     {
-        attrs = C_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
+        attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
         if (attrs != M_NULLPTR)
         {
 #if defined(UEFI_C_SOURCE)
@@ -80,7 +80,7 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
     safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
     if (file && fstat(fileno(file), &st) == 0)
     {
-        attrs = C_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
+        attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
         if (attrs != M_NULLPTR)
         {
 #if defined(UEFI_C_SOURCE)
@@ -120,7 +120,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
     if (file && fstat(fileno(file), &st))
     {
         // device ID and inode
-        uniqueID = C_CAST(fileUniqueIDInfo*, safe_calloc(1, sizeof(fileUniqueIDInfo)));
+        uniqueID = M_REINTERPRET_CAST(fileUniqueIDInfo*, safe_calloc(1, sizeof(fileUniqueIDInfo)));
         if (uniqueID != M_NULLPTR)
         {
             uniqueID->deviceid = st.st_dev;
@@ -165,10 +165,10 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 {
     char*       path_copy   = M_NULLPTR;
     char**      dirs        = M_NULLPTR;
-    ssize_t     num_of_dirs = 1;
+    ssize_t     num_of_dirs = SSIZE_T_C(1);
     bool        secure      = true;
-    ssize_t     i           = 0;
-    ssize_t     r           = 0;
+    ssize_t     i           = SSIZE_T_C(0);
+    ssize_t     r           = SSIZE_T_C(0);
     struct stat buf;
 #if !defined(UEFI_C_SOURCE)
     uid_t my_uid = geteuid();
@@ -227,7 +227,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     /* Now num_of_dirs indicates # of dirs we must check */
     safe_free(&path_copy);
 
-    if (!(dirs = C_CAST(char**, safe_malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)))))
+    if (!(dirs = M_REINTERPRET_CAST(char**, safe_malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)))))
     {
         /* Handle error */
 #if defined(_DEBUG)
@@ -292,7 +292,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
      */
     for (i = 0; i < num_of_dirs; i++)
     {
-        ssize_t linksize = 0;
+        ssize_t linksize = SSIZE_T_C(0);
         char*   link     = M_NULLPTR;
 #if defined(_DEBUG)
         printf("Checking \"%s\"\n", dirs[i]);
@@ -315,29 +315,30 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             {
                 /* Handle error */
                 secure = false;
-#if defined(_DEBUG)
+#    if defined(_DEBUG)
                 printf("Bad link size\n");
-#endif
+#    endif
                 break;
             }
             linksize = buf.st_size + 1;
-            if (!(link = C_CAST(char*, safe_malloc(C_CAST(size_t, linksize)))))
+            if (!(link = M_REINTERPRET_CAST(char*, safe_malloc(C_CAST(size_t, linksize)))))
             {
                 /* Handle error */
                 secure = false;
-#if defined(_DEBUG)
+#    if defined(_DEBUG)
                 printf("link cannot allocate\n");
-#endif
+#    endif
                 break;
             }
 
             r = readlink(dirs[i], link, C_CAST(size_t, linksize));
+            // NOLINTBEGIN(bugprone-branch-clone)
             if (r == -1)
             {
                 /* Handle error */
-#if defined(_DEBUG)
+#    if defined(_DEBUG)
                 printf("readlink failed\n");
-#endif
+#    endif
                 secure = false;
                 safe_free(&link);
                 break;
@@ -345,13 +346,14 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             else if (r >= linksize)
             {
                 /* Handle truncation error */
-#if defined(_DEBUG)
+#    if defined(_DEBUG)
                 printf("link truncated\n");
-#endif
+#    endif
                 secure = false;
                 safe_free(&link);
                 break;
             }
+            // NOLINTEND(bugprone-branch-clone)
             link[r] = '\0';
 
             num_symlinks++;
@@ -360,9 +362,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
             if (!recurseSecure)
             {
-#if defined(_DEBUG)
+#    if defined(_DEBUG)
                 printf("recursive link check failed\n");
-#endif
+#    endif
                 secure = false;
                 safe_free(&link);
                 break;
@@ -383,9 +385,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         }
 
 #if !defined(UEFI_C_SOURCE)
-#if defined(_DEBUG)
+#    if defined(_DEBUG)
         printf("Checking UIDs\n");
-#endif
+#    endif
         if ((buf.st_uid != my_uid) && (buf.st_uid != ROOT_UID_VAL))
         {
             /* Before we assume insecure, check if this was executed as sudo by
@@ -394,22 +396,22 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             /* Only do this if the euid read above is set to zero */
             if (my_uid == ROOT_UID_VAL)
             {
-#if defined(_DEBUG)
+#    if defined(_DEBUG)
                 printf("root UID detected, getting user's ID\n");
-#endif
+#    endif
                 uid_t sudouid = get_sudo_uid();
-#if defined(_DEBUG)
+#    if defined(_DEBUG)
                 printf("UID detected: %u\n", sudouid);
-#endif
+#    endif
                 if (sudouid != ROOT_UID_VAL && buf.st_uid != sudouid)
                 {
                     /* Directory is owned by someone besides user or root */
                     secure = false;
-#if defined(_DEBUG)
+#    if defined(_DEBUG)
                     printf("Directory owned by someone other than user or "
                            "root: %u my_uid: %u\n",
                            buf.st_uid, my_uid);
-#endif
+#    endif
                     break;
                 }
             }
@@ -417,11 +419,11 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             {
                 /* Directory is owned by someone besides user or root */
                 secure = false;
-#if defined(_DEBUG)
+#    if defined(_DEBUG)
                 printf("Directory owned by someone other than user or root: %u "
                        "my_uid: %u\n",
                        buf.st_uid, my_uid);
-#endif
+#    endif
                 break;
             }
         }

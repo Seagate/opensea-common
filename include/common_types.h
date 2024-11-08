@@ -21,39 +21,43 @@
 #if defined(__cplusplus)
 // defining these macros for C++ to make older C++ compilers happy and work like
 // the newer C++ compilers
-#ifndef __STDC_FORMAT_MACROS
-#define __STDC_FORMAT_MACROS
-#endif
-#ifndef __STDC_LIMIT_MACROS
-#define __STDC_LIMIT_MACROS
-#endif
-#ifndef __STDC_CONSTANT_MACROS
-#define __STDC_CONSTANT_MACROS
-#endif
+// NOLINTBEGIN(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
+#    ifndef __STDC_FORMAT_MACROS
+#        define __STDC_FORMAT_MACROS
+#    endif
+#    ifndef __STDC_LIMIT_MACROS
+#        define __STDC_LIMIT_MACROS
+#    endif
+#    ifndef __STDC_CONSTANT_MACROS
+#        define __STDC_CONSTANT_MACROS
+#    endif
+// NOLINTEND(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 #endif //__cplusplus
 
 #include "predef_env_detect.h"
 
 #if defined(UEFI_C_SOURCE)
-#include <sys/syslimits.h>
+#    include <sys/syslimits.h>
 #endif
 
 // Define this to allow reading larger files in 32bit OSs without a limitation.
 // https://www.gnu.org/software/libc/manual/html_node/Feature-Test-Macros.html
+// NOLINTBEGIN(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 #if !defined(_FILE_OFFSET_BITS)
-#define _FILE_OFFSET_BITS 64
+#    define _FILE_OFFSET_BITS 64
 #elif _FILE_OFFSET_BITS < 64
-#undef _FILE_OFFSET_BITS
-#define _FILE_OFFSET_BITS 64
+#    undef _FILE_OFFSET_BITS
+#    define _FILE_OFFSET_BITS 64
 #endif
+// NOLINTEND(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 
 #include <sys/stat.h>
 #include <sys/types.h> //This is available in Windows and linux/unix-like systems
 #if defined(_WIN32)
-#include <BaseTsd.h> //for MAXSSIZE_T
-#include <windows.h> //Includes various Windows headers for types and functions. Used for MAX_PATH below
+#    include <BaseTsd.h> //for MAXSSIZE_T
+#    include <windows.h> //Includes various Windows headers for types and functions. Used for MAX_PATH below
 #else
-#include <sys/param.h>
+#    include <sys/param.h>
 #endif             //_WIN32
 #include <errno.h> //for errno_t if it is available
 #include <inttypes.h>
@@ -90,56 +94,151 @@ typedef off_t offset_t; // to deal with windows differences in off_t definitions
     typedef int errno_t;
 #endif //! HAVE_C11_ANNEX_K && !__STDC_SECURE_LIB__
 
-#if !defined(UINTPTR_MAX)
-// need uintptr_t type for NVMe capabilities to prevent warnings/errors
-// TODO: if C11, _Static_assert can be used to check against sizeof(void*) to
-// make sure this is defined in a way that should work.
-#if defined(_WIN64) || defined(_M_IA64) || defined(_M_ALPHA) || defined(_M_X64) || defined(_M_AMD64) ||                \
-    defined(__alpha__) || defined(__amd64__) || defined(__x86_64__) || defined(__aarch64__) || defined(__ia64__) ||    \
-    defined(__IA64__) || defined(__powerpc64__) || defined(__PPC64__) || defined(__ppc64__) ||                         \
-    defined(_ARCH_PPC64) // 64bit
-    typedef uint64_t uintptr_t;
-#define UINTPTR_MAX UINT64_MAX
-#else // assuming 32bit
-    typedef uint32_t uintptr_t;
-#define UINTPTR_MAX UINT32_MAX
-#endif // Checking for 64bit CPUs
-#endif //! UINTPTR_MAX
+#if defined(USING_C23) || defined(USING_CPP23)
+#    if !defined(SIZE_T_C)
+#        define SIZE_T_C(c) (c##ZU)
+#    endif // SIZE_T_C
+#    if !defined(SSIZE_T_C)
+#        define SSIZE_T_C(c) (c##Z)
+#    endif // SSIZE_T_C
+#endif     // C23 or C++23
 
-#if !defined(INTPTR_MAX)
+#if defined(ENV_64BIT)
+#    if !defined(UINTPTR_MAX)
+    // need uintptr_t type for NVMe capabilities to prevent warnings/errors
+    // TODO: if C11, _Static_assert can be used to check against sizeof(void*) to
+    // make sure this is defined in a way that should work.
+    typedef uint64_t uintptr_t;
+#        define UINTPTR_MAX UINT64_MAX
+#    endif // UINTPTR_MAX
+#    if !defined(INTPTR_MAX)
+    // need uintptr_t type for NVMe capabilities to prevent warnings/errors
+    // TODO: if C11, _Static_assert can be used to check against sizeof(void*) to
+    // make sure this is defined in a way that should work.
+    typedef int64_t intptr_t;
+#        define INTPTR_MAX INT64_MAX
+#        define INTMAX_MIN INT64_MIN
+#    endif // INTPTR_MAX
+#    if !defined(SIZE_T_C)
+#        define SIZE_T_C(c) UINT64_C(c)
+#    endif // SIZE_T_C
+#    if !defined(RSIZE_T_C)
+#        define RSIZE_T_C(c) UINT64_C(c)
+#    endif // RSIZE_T_C
+#    if !defined(SSIZE_T_C)
+#        define SSIZE_T_C(c) INT64_C(c)
+#    endif // SSIZE_T_C
+#    if defined(_WIN32)
+// MSFT specific types often used in structures at the low-level
+// Creating macros to assist with assignments that are clear. See minwindef for the typedefs these match
+#        if !defined(ULONGLONG_C)
+// Unsigned long
+#            define ULONGLONG_C(c) (c##ULL)
+#        endif // ULONGLONG_C
+#        if !defined(ULONG_C)
+// Unsigned long
+#            define ULONG_C(c) (c##UL)
+#        endif // ULONG_C
+#        if !defined(DWORD_C)
+// Unsigned long
+#            define DWORD_C(c) (c##UL)
+#        endif // DWORD_C
+#        if !defined(WORD_C)
+// Unsigned short
+#            define WORD_C(c) (c)
+#        endif // WORD_C
+#        if !defined(BYTE_C)
+// Unsigned char
+#            define BYTE_C(c) (c)
+#        endif // BYTE_C
+#        if !defined(UCHAR_C)
+// Unsigned char
+#            define UCHAR_C(c) (c)
+#        endif // UCHAR_C
+#        if !defined(INT_C)
+// int
+#            define INT_C(c) (c)
+#        endif // INT_C
+#        if !defined(UINT_C)
+// Unsigned int
+#            define UINT_C(c) (c##U)
+#        endif // UINT_C
+#    endif     //_WIN32
+#else          // ENV_32BIT
+#    if !defined(UINTPTR_MAX)
 // need uintptr_t type for NVMe capabilities to prevent warnings/errors
 // TODO: if C11, _Static_assert can be used to check against sizeof(void*) to
 // make sure this is defined in a way that should work.
-#if defined(_WIN64) || defined(_M_IA64) || defined(_M_ALPHA) || defined(_M_X64) || defined(_M_AMD64) ||                \
-    defined(__alpha__) || defined(__amd64__) || defined(__x86_64__) || defined(__aarch64__) || defined(__ia64__) ||    \
-    defined(__IA64__) || defined(__powerpc64__) || defined(__PPC64__) || defined(__ppc64__) ||                         \
-    defined(_ARCH_PPC64) // 64bit
-    typedef int64_t intptr_t;
-#define INTPTR_MAX INT64_MAX
-#define INTMAX_MIN INT64_MIN
-#else // assuming 32bit
-    typedef int32_t  intptr_t;
-#define INTPTR_MAX INT32_MAX
-#define INTMAX_MIN INT32_MIN
-#endif // Checking for 64bit CPUs
-#endif //! INTPTR_MAX
+typedef uint32_t uintptr_t;
+#        define UINTPTR_MAX UINT32_MAX
+#    endif // UINTPTR_MAX
+#    if !defined(INTPTR_MAX)
+// need uintptr_t type for NVMe capabilities to prevent warnings/errors
+// TODO: if C11, _Static_assert can be used to check against sizeof(void*) to
+// make sure this is defined in a way that should work.
+typedef int32_t intptr_t;
+#        define INTPTR_MAX INT32_MAX
+#        define INTMAX_MIN INT32_MIN
+#    endif // INTPTR_MAX
+#    if !defined(SIZE_T_C)
+#        define SIZE_T_C(c) UINT32_C(c)
+#    endif // SIZE_T_C
+#    if !defined(RSIZE_T_C)
+#        define RSIZE_T_C(c) UINT32_C(c)
+#    endif // RSIZE_T_C
+#    if !defined(SSIZE_T_C)
+#        define SSIZE_T_C(c) INT32_C(c)
+#    endif // SSIZE_T_C
+#    if defined(_WIN32)
+// MSFT specific types often used in structures at the low-level
+// Creating macros to assist with assignments that are clear. See minwindef for the typedefs these match
+#        if !defined(ULONG_C)
+// Unsigned long
+#            define ULONG_C(c) (c##UL)
+#        endif // ULONG_C
+#        if !defined(DWORD_C)
+// Unsigned long
+#            define DWORD_C(c) (c##UL)
+#        endif // DWORD_C
+#        if !defined(WORD_C)
+// Unsigned short
+#            define WORD_C(c) (c)
+#        endif // WORD_C
+#        if !defined(BYTE_C)
+// Unsigned char
+#            define BYTE_C(c) (c)
+#        endif // BYTE_C
+#        if !defined(UCHAR_C)
+// Unsigned char
+#            define UCHAR_C(c) (c)
+#        endif // UCHAR_C
+#        if !defined(INT_C)
+// int
+#            define INT_C(c) (c)
+#        endif // INT_C
+#        if !defined(UINT_C)
+// Unsigned int
+#            define UINT_C(c) (c##U)
+#        endif // UINT_C
+#    endif     //_WIN32
+#endif         // 64bit vs 32bit definitions
 
 #if !defined(SSIZE_MAX) && !defined(SSIZE_MIN) && !defined(SSIZE_T_DEFINED)
 // assume ssize_t is not defined
-#if defined(_MSC_VER) && defined(MAXSSIZE_T) && defined(MINSSIZE_T)
+#    if defined(_MSC_VER) && defined(MAXSSIZE_T) && defined(MINSSIZE_T)
     // MSFT defined this as SSIZE_T, so just make it lowercase to match POSIX
     // NOTE: reviewing MSFT's headers shows this is the same as intptr_t definitions
     // as well
     typedef SSIZE_T ssize_t;
-#define SSIZE_MAX MAXSSIZE_T
-#define SSIZE_MIN MINSSIZE_T
-#else //!_MSCVER && !MAXSSIZE_T && !MINSSIZE_T
+#        define SSIZE_MAX MAXSSIZE_T
+#        define SSIZE_MIN MINSSIZE_T
+#    else //!_MSCVER && !MAXSSIZE_T && !MINSSIZE_T
     // using intptr_t since it has the same range.
     typedef intptr_t ssize_t;
-#define SSIZE_MAX INTPTR_MAX
-#define SSIZE_MIN INTPTR_MIN
-#endif //_MSC_VER && MAXSSIZE_T && MINSSIZE_T
-#define SSIZE_T_DEFINED
+#        define SSIZE_MAX INTPTR_MAX
+#        define SSIZE_MIN INTPTR_MIN
+#    endif //_MSC_VER && MAXSSIZE_T && MINSSIZE_T
+#    define SSIZE_T_DEFINED
 #endif // SSIZE_MAX && _MSC_VER
 
 // define something called reserved that has a value of zero. Use it to set
@@ -157,9 +256,9 @@ typedef off_t offset_t; // to deal with windows differences in off_t definitions
 // NOTE: This is declared at the bottom of the file outside of the extern C to
 // avoid warnings/errors
 #else // C
-#if defined(USING_C23)
-#define M_NULLPTR nullptr
-#elif defined(NULL)
+#    if defined(USING_C23)
+#        define M_NULLPTR nullptr
+#    elif defined(NULL)
                         // use NULL since this is commonly available and likely
                         // to be safe for the environment we are
                         // in.
@@ -168,104 +267,104 @@ typedef off_t offset_t; // to deal with windows differences in off_t definitions
 //       instead where it is defined as a void* of 0 which should work most of
 //       the time unless the platform is doing something funky.
 //       https://stackoverflow.com/questions/2597142/when-was-the-null-macro-not-0
-#define M_NULLPTR NULL
-#else
+#        define M_NULLPTR NULL
+#    else
                         // for unknown reasons M_NULLPTR was not defined so
                         // define it the most common way we can to be
                         // safe
-#define M_NULLPTR ((void*)0)
-#endif // C23
-#endif // C & C++ M_NULLPTR PTR definitions
+#        define M_NULLPTR ((void*)0)
+#    endif // C23
+#endif     // C & C++ M_NULLPTR PTR definitions
 
 // define SIZE_MAX if not defined...probably not needed since we are expecting
 // at least C99
 #if !defined(SIZE_MAX)
-#if defined(UINTPTR_MAX)
-#define SIZE_MAX UINTPTR_MAX
-#else //! UINTPTR_MAX
-#define SIZE_MAX (size_t)(~((size_t)0))
-#endif // UINTPTR_MAX
-#endif //! SIZE_MAX
+#    if defined(UINTPTR_MAX)
+#        define SIZE_MAX UINTPTR_MAX
+#    else //! UINTPTR_MAX
+#        define SIZE_MAX (size_t)(~((size_t)0))
+#    endif // UINTPTR_MAX
+#endif     //! SIZE_MAX
 
 #if !defined(RSIZE_MAX)
     typedef size_t rsize_t;
-#define RSIZE_MAX (SIZE_MAX >> 1)
+#    define RSIZE_MAX (SIZE_MAX >> 1)
 #endif //! RSIZE_MAX
 
 // Use this macro to declare enums for C and enum classes for C++11 and later.
 // Without enum classes there are a lot of excess warnings and this will make it
 // easier to resolve all warnings.
 #if defined(USING_CPP11)
-#define M_DECLARE_ENUM(name, ...)                                                                                      \
-    enum class name                                                                                                    \
-    {                                                                                                                  \
-        __VA_ARGS__                                                                                                    \
-    }
+#    define M_DECLARE_ENUM(name, ...)                                                                                  \
+        enum class name                                                                                                \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        }
 #elif defined(USING_CPP98)
-#define M_DECLARE_ENUM(name, ...)                                                                                      \
-    enum name                                                                                                          \
-    {                                                                                                                  \
-        __VA_ARGS__                                                                                                    \
-    }
+#    define M_DECLARE_ENUM(name, ...)                                                                                  \
+        enum name                                                                                                      \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        }
 #else //! CPP11
-#define M_DECLARE_ENUM(name, ...) typedef enum _##name{__VA_ARGS__} name
+#    define M_DECLARE_ENUM(name, ...) typedef enum e_##name{__VA_ARGS__} name
 #endif // CPP11
 
 // If you want a specific type underlying the enum, use M_DECLAR_ENUM_TYPE to
 // specify it. This can be something like M_DECLARE_ENUM_TYPE(myEnum, uint32_t,
 // ...) If you set type to "int" then it's the same as M_DECLARE_ENUM
 #if defined(USING_CPP11)
-#define M_DECLARE_ENUM_TYPE(name, type, ...)                                                                           \
-    enum class name : type                                                                                             \
-    {                                                                                                                  \
-        __VA_ARGS__                                                                                                    \
-    }
+#    define M_DECLARE_ENUM_TYPE(name, type, ...)                                                                       \
+        enum class name : type                                                                                         \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        }
 #elif defined(USING_CPP98)
-#define M_DECLARE_ENUM_TYPE(name, type, ...)                                                                           \
-    enum name                                                                                                          \
-    {                                                                                                                  \
-        __VA_ARGS__                                                                                                    \
-    }
+#    define M_DECLARE_ENUM_TYPE(name, type, ...)                                                                       \
+        enum name                                                                                                      \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        }
 #else //! CPP11...old CPP or C
-#if defined(USING_C23)
-#define M_DECLARE_ENUM_TYPE(name, type, ...) typedef enum _##name : type{__VA_ARGS__} name
-#else
+#    if defined(USING_C23)
+#        define M_DECLARE_ENUM_TYPE(name, type, ...) typedef enum e_##name : type{__VA_ARGS__} name
+#    else
 /*cannot specify the type, so just ignore the input for now-TJE*/
-#define M_DECLARE_ENUM_TYPE(name, type, ...) typedef enum _##name{__VA_ARGS__} name
-#endif
+#        define M_DECLARE_ENUM_TYPE(name, type, ...) typedef enum e_##name{__VA_ARGS__} name
+#    endif
 #endif // CPP11
 
 // This macro is really for C++, but can be used in C as well. It helps with the
 // differences between C++11 and C++98 when accessing an enum value for
 // comparison or assignment.
 #if defined(USING_CPP11)
-#define M_ACCESS_ENUM(type, val) type::val
+#    define M_ACCESS_ENUM(type, val) type::val
 #else
-#define M_ACCESS_ENUM(type, val) val
+#    define M_ACCESS_ENUM(type, val) val
 #endif
 
 // A macro to help define packed structures in a way that best works with
 // different compilers
 #if defined(_MSC_VER)
-#define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                                   \
-    __pragma(pack(push, alignmentval));                                                                                \
-    typedef struct _##name                                                                                             \
-    {                                                                                                                  \
-        __VA_ARGS__                                                                                                    \
-    } name;                                                                                                            \
-    __pragma(pack(pop))
+#    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
+        __pragma(pack(push, alignmentval));                                                                            \
+        typedef struct s_##name                                                                                        \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } name;                                                                                                        \
+        __pragma(pack(pop))
 #elif defined(__GNUC__) || defined(__clang__) || defined(__MINGW32__) || defined(__MINGW64__)
-#define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                                   \
-    typedef struct _##name                                                                                             \
-    {                                                                                                                  \
-        __VA_ARGS__                                                                                                    \
-    } __attribute__((packed, aligned(alignmentval))) name
+#    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
+        typedef struct s_##name                                                                                        \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } __attribute__((packed, aligned(alignmentval))) name
 #else
-#define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                                   \
-    typedef struct _##name                                                                                             \
-    {                                                                                                                  \
-        __VA_ARGS__                                                                                                    \
-    } name
+#    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
+        typedef struct s_##name                                                                                        \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } name
 #endif
 
 // same idea as above but without providing a specific alignment requirement,
@@ -273,35 +372,36 @@ typedef off_t offset_t; // to deal with windows differences in off_t definitions
 // an alignment of 1 in GCC, but it is as close as MSVC can get to the same
 // behavior
 #if defined(_MSC_VER)
-#define M_PACKED_STRUCT(name, ...)                                                                                     \
-    __pragma(pack(push, 1));                                                                                           \
-    typedef struct _##name                                                                                             \
-    {                                                                                                                  \
-        __VA_ARGS__                                                                                                    \
-    } name;                                                                                                            \
-    __pragma(pack(pop))
+#    define M_PACKED_STRUCT(name, ...)                                                                                 \
+        __pragma(pack(push, 1));                                                                                       \
+        typedef struct s_##name                                                                                        \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } name;                                                                                                        \
+        __pragma(pack(pop))
 #elif defined(__GNUC__) || defined(__clang__) || defined(__MINGW32__) || defined(__MINGW64__)
-#define M_PACKED_STRUCT(name, ...)                                                                                     \
-    typedef struct _##name                                                                                             \
-    {                                                                                                                  \
-        __VA_ARGS__                                                                                                    \
-    } __attribute__((packed)) name
+#    define M_PACKED_STRUCT(name, ...)                                                                                 \
+        typedef struct s_##name                                                                                        \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } __attribute__((packed)) name
 #else
-#define M_PACKED_STRUCT(name, ...)                                                                                     \
-    typedef struct _##name                                                                                             \
-    {                                                                                                                  \
-        __VA_ARGS__                                                                                                    \
-    } name
+#    define M_PACKED_STRUCT(name, ...)                                                                                 \
+        typedef struct s_##name                                                                                        \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } name
 #endif
 
 #if !defined(USING_CPP98)
 // only use these methods in C
 // The C++ version is at the end of this file outside of the extern "C"
-#if defined(__GNUC__)
+#    if defined(__GNUC__)
 // This is a GNU extension to zero initialize the array
-#define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) type_name array_name[size] = {[0 ...((size)-1)] = 0}
-#else
-#if defined(USING_C99)
+#        define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                   \
+            type_name array_name[size] = {[0 ...((size)-1)] = 0}
+#    else
+#        if defined(USING_C99)
     // Define a function for zero-initialization to be compatible with other C99
     // compilers where we can call a function after defining the type without
     // generating compiler warnings or errors. NOTE: Not using M_INLINE macro here
@@ -314,76 +414,76 @@ typedef off_t offset_t; // to deal with windows differences in off_t definitions
     // explicit_zeroes to reduce the amount of ifdefs in here.
     static inline void zero_init_array(void* array, size_t element_size, size_t element_count)
     {
-#if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
+#            if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
         memset_explicit(array, 0, element_size * element_count);
-#elif defined(HAVE_C11_ANNEX_K) || defined(HAVE_MEMSET_S)
+#            elif defined(HAVE_C11_ANNEX_K) || defined(HAVE_MEMSET_S)
         memset_s(array, element_size * element_count, 0, element_size * element_count);
-#elif (defined(_WIN32) && defined(_MSC_VER)) || defined(HAVE_MSFT_SECURE_ZERO_MEMORY) ||                               \
-    defined(HAVE_MSFT_SECURE_ZERO_MEMORY2)
-#if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                                      \
-    (defined(HAVE_MSFT_SECURE_ZERO_MEMORY2) ||                                                                         \
-     (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
+#            elif (defined(_WIN32) && defined(_MSC_VER)) || defined(HAVE_MSFT_SECURE_ZERO_MEMORY) ||                   \
+                defined(HAVE_MSFT_SECURE_ZERO_MEMORY2)
+#                if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                      \
+                    (defined(HAVE_MSFT_SECURE_ZERO_MEMORY2) ||                                                         \
+                     (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
         // use secure zero memory 2
         // Cast is to remove warning about different volatile qualifiers
         SecureZeroMemory2(array, element_size * element_count);
-#else
+#                else
         // use microsoft's SecureZeroMemory function
         SecureZeroMemory(array, element_size * element_count);
-#endif
-#else
+#                endif
+#            else
         memset(array, 0, element_size * element_count);
-#endif
+#            endif
     }
 
-#define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                           \
-    type_name array_name[size];                                                                                        \
-    zero_init_array(array_name, sizeof(type_name), size)
-#else
+#            define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                               \
+                type_name array_name[size];                                                                            \
+                zero_init_array(array_name, sizeof(type_name), size)
+#        else
 // This is not exactly the same, but what we have done for years and usually
 // works out ok... The only way to make this work for old standards 100% is a
 // memset, but we don't want to do that because C89 requires variable
 // declarations before functions are run, so defining like this. Some compilers
 // will interpret this to mean zero initialize the array, but it is not
 // guaranteed.
-#define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) type_name array_name[size] = {0}
-#endif
-#endif
+#            define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) type_name array_name[size] = {0}
+#        endif
+#    endif
 #endif
 
 // Setup a way to do static-assertions
 // NOTE: Do not pass a quoted string for backwards compatibility with the
 // fallback case. example: M_STATIC_ASSET(condition, this_is_my_example_error)
 #if defined(USING_CPP11) && defined(__cpp_static_assert)
-#define M_STATIC_ASSERT(condition, message) static_assert(condition, #message)
+#    define M_STATIC_ASSERT(condition, message) static_assert(condition, #    message)
 #elif defined(USING_C23)
-#define M_STATIC_ASSERT(condition, message) static_assert(condition, #message)
+#    define M_STATIC_ASSERT(condition, message) static_assert(condition, #    message)
 #elif defined(USING_C11)
-#include <assert.h>
-#define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #message)
+#    include <assert.h>
+#    define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #    message)
 #else
 // Generic way to do this. Not as good messaging but should work about the same
-#define M_STATIC_ASSERT(condition, message)                                                                            \
-    typedef char static_assertion_##message[(condition) ? 1 : -1] /* M_ATTR_UNUSED                                     \
-                                                                   */
+#    define M_STATIC_ASSERT(condition, message)                                                                        \
+        typedef char static_assertion_##message[(condition) ? 1 : -1] /* M_ATTR_UNUSED                                 \
+                                                                       */
 #endif
 
 #if defined(MAX_PATH)
 // more info on max path in Windows
 // https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd
-#define OPENSEA_PATH_MAX MAX_PATH
+#    define OPENSEA_PATH_MAX MAX_PATH
 #elif defined(PATH_MAX)
-#define OPENSEA_PATH_MAX PATH_MAX
+#    define OPENSEA_PATH_MAX PATH_MAX
 #elif defined(MAXPATHLEN)
 // In 4.4BSD and Solaris, the limit on the pathname length is MAXPATHLEN (found
 // in <sys/param.h>).
-#define OPENSEA_PATH_MAX MAXPATHLEN
+#    define OPENSEA_PATH_MAX MAXPATHLEN
 #else
 // a system is not defining the length. You can read it with pathconf or
 // sysconf, but that does not do us any good for how we use this define in some
 // of our code, so defaulting to 4096 If we need to change this default case on
 // a system by system basis, we can check system unique definitions to update
 // this.
-#define OPENSEA_PATH_MAX (4096)
+#    define OPENSEA_PATH_MAX (4096)
 #endif
 
 // NOTE: Technically UEFI shell uses Windows style seperators, but is a
@@ -392,11 +492,11 @@ typedef off_t offset_t; // to deal with windows differences in off_t definitions
 //       and functions There are other places in our code that will need updates
 //       to handle converting to \\ style path seperators in UEFI shell - TJE
 #if defined(_WIN32) && !defined(UEFI_C_SOURCE)
-#define SYSTEM_PATH_SEPARATOR     '\\'
-#define SYSTEM_PATH_SEPARATOR_STR "\\"
+#    define SYSTEM_PATH_SEPARATOR     '\\'
+#    define SYSTEM_PATH_SEPARATOR_STR "\\"
 #else
-#define SYSTEM_PATH_SEPARATOR     '/'
-#define SYSTEM_PATH_SEPARATOR_STR "/"
+#    define SYSTEM_PATH_SEPARATOR     '/'
+#    define SYSTEM_PATH_SEPARATOR_STR "/"
 #endif
 
 #define ROOT_UID_VAL (0)
@@ -405,22 +505,22 @@ typedef off_t offset_t; // to deal with windows differences in off_t definitions
 // some compilers have it as an extension, so define a macro to make it usable
 // when it is available if not available, add the definition NO_TYPEOF
 #if defined(USING_C23)
-#define M_TYPEOF(var) typeof(var)
+#    define M_TYPEOF(var) typeof(var)
 #elif defined(USING_CPP11) // one web comment mentions this is closer:
-                        // std::decay<decltype((X))>::type but this may be
-                        // situational. Not sure...-TJE
-#define M_TYPEOF(var) decltype(var)
+// std::decay<decltype((X))>::type but this may be
+// situational. Not sure...-TJE
+#    define M_TYPEOF(var) decltype(var)
 #elif defined(_MSC_VER) && _MSC_VER >= 1939
 // added in Visual Studio 2022 version 17.9 and later
-#define M_TYPEOF(var) __typeof__(var)
+#    define M_TYPEOF(var) __typeof__(var)
 #elif defined(__clang__) || defined(__GNUC__)
 // GCC 2 and later have typeof support so not even checking the version in this
 // case
-#define M_TYPEOF(var) __typeof__(var)
+#    define M_TYPEOF(var) __typeof__(var)
 #else
 // This is not available in the current compiler/environment
 // If this is defined then M_TYPEOF will not be available to use
-#define NO_TYPEOF
+#    define NO_TYPEOF
 #endif
 
     M_DECLARE_ENUM(eReturnValues,
@@ -546,25 +646,26 @@ typedef off_t offset_t; // to deal with windows differences in off_t definitions
 // This has to live here to avoid errors about C linkage in older GCC in C++98
 // mode
 #if defined(USING_CPP98) && !defined(M_NULLPTR)
-#if defined(USING_CPP11)
-#define M_NULLPTR nullptr
-#else
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc++0x-compat" // treated as synonymn for Wc++11-compat, so
-                                                  // use this for compatibility to old versions
+#    if defined(USING_CPP11)
+#        define M_NULLPTR nullptr
+#    else
+#        if defined(__clang__)
+#            pragma clang diagnostic push
+#            pragma clang diagnostic ignored "-Wc++0x-compat" // treated as synonymn for Wc++11-compat, so
+                                                              // use this for compatibility to old versions
 // gcc 4.7.x - present calls it c++11-compat
 // 4.3.6 - 4.6.4 calls it c++0x-compat
-#elif defined(__GNUC__)
-#if (defined(__GNUC__) && (__GNUC__ > 4) || (defined(__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 7))
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wc++11-compat"
-#elif (defined(__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 3)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wc++0x-compat"
-#endif // no need to disable on older GCC as this warning didn't
-       // exist
-#endif // GCC or Clang
+#        elif defined(__GNUC__)
+#            if (defined(__GNUC__) && (__GNUC__ > 4) ||                                                                \
+                 (defined(__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 7))
+#                pragma GCC diagnostic push
+#                pragma GCC diagnostic ignored "-Wc++11-compat"
+#            elif (defined(__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 3)
+#                pragma GCC diagnostic push
+#                pragma GCC diagnostic ignored "-Wc++0x-compat"
+#            endif // no need to disable on older GCC as this warning didn't
+                   // exist
+#        endif     // GCC or Clang
 // NOTE: G++ defines M_NULLPTR as __null which should be safe
 //       https://gcc.gnu.org/onlinedocs/gcc-4.9.2/libstdc++/manual/manual/support.html#std.support.types.null
 //       Can add a special case to use M_NULLPTR macro instead if this template
@@ -585,17 +686,17 @@ const class nullptr_t
   private:
     void operator&() const;
 } nullptr = {};
-#define M_NULLPTR nullptr
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(__GNUC__)
+#        define M_NULLPTR nullptr
+#        if defined(__clang__)
+#            pragma clang diagnostic pop
+#        elif defined(__GNUC__)
 // the pop can be simplified
-#if __GNUC__ > 4 || (defined(__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 3)
-#pragma GCC diagnostic pop
-#endif
-#endif
-#endif // C++11 check for nullptr
-#endif // c++98 and no M_NULLPTR
+#            if __GNUC__ > 4 || (defined(__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 3)
+#                pragma GCC diagnostic pop
+#            endif
+#        endif
+#    endif // C++11 check for nullptr
+#endif     // c++98 and no M_NULLPTR
 
 #if defined(USING_CPP98) && !defined(DECLARE_ZERO_INIT_ARRAY)
 // NOTE: This does not use memset to handle non-trivial types.
@@ -608,7 +709,7 @@ template <typename T, size_t N> void zero_init_array(T (&array)[N])
         array[i] = 0;
     }
 }
-#define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                           \
-    type_name array_name[size];                                                                                        \
-    zero_init_array(array_name)
+#    define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                       \
+        type_name array_name[size];                                                                                    \
+        zero_init_array(array_name)
 #endif // C++98 and no DECLARE_ZERO_INIT_ARRAY

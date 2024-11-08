@@ -36,7 +36,7 @@ static int lin_file_filter(const struct dirent* entry, const char* stringMatch)
 {
     int    match          = 0;
     size_t filenameLength = safe_strlen(entry->d_name) + safe_strlen("/etc/") + 1;
-    char*  filename       = C_CAST(char*, safe_calloc(filenameLength, sizeof(char)));
+    char*  filename       = M_REINTERPRET_CAST(char*, safe_calloc(filenameLength, sizeof(char)));
     if (filename)
     {
         struct stat s;
@@ -123,7 +123,8 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
                     off_t releaseSize = releasestat.st_size;
                     if (releaseSize > 0)
                     {
-                        char* releaseMemory = C_CAST(char*, safe_calloc(C_CAST(size_t, releaseSize), sizeof(char)));
+                        char* releaseMemory =
+                            M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, releaseSize), sizeof(char)));
                         if (fread(releaseMemory, sizeof(char), C_CAST(size_t, releaseSize), release) ==
                                 C_CAST(size_t, releaseSize) &&
                             !ferror(release))
@@ -165,7 +166,7 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
     if (dirent_entry_name)
     {
         size_t fileNameLength = safe_strlen(dirent_entry_name) + safe_strlen("/etc/") + 1;
-        char*  fileName       = C_CAST(char*, safe_calloc(fileNameLength, sizeof(char)));
+        char*  fileName       = M_REINTERPRET_CAST(char*, safe_calloc(fileNameLength, sizeof(char)));
         FILE*  release        = M_NULLPTR;
         if (fileName)
         {
@@ -182,7 +183,7 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
                     off_t releaseSize = direntfilestat.st_size;
                     if (releaseSize > 0)
                     {
-                        etcFileMem = C_CAST(char*, safe_calloc(C_CAST(size_t, releaseSize), sizeof(char)));
+                        etcFileMem = M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, releaseSize), sizeof(char)));
                         if (etcFileMem)
                         {
                             if (fread(etcFileMem, sizeof(char), C_CAST(size_t, releaseSize), release) !=
@@ -338,7 +339,7 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
                 off_t issueSize = issuestat.st_size;
                 if (issueSize > 0)
                 {
-                    char* issueMemory = C_CAST(char*, safe_calloc(C_CAST(size_t, issueSize), sizeof(char)));
+                    char* issueMemory = M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, issueSize), sizeof(char)));
                     if (issueMemory)
                     {
                         if (fread(issueMemory, sizeof(char), C_CAST(size_t, issueSize), issue) ==
@@ -387,7 +388,7 @@ static bool get_Version_From_Uname_Str(const char* verStr,
         char* strscan = M_CONST_CAST(char*,
                                      verStr); // removing const in order to allow changing strscan
                                               // pointer as we iterate through the string.
-        uint16_t versionoffset = 0;
+        uint16_t versionoffset = UINT16_C(0);
         size_t   verseplen     = safe_strlen(validVerSeperators);
         if (prefix)
         {
@@ -429,7 +430,7 @@ static bool get_Version_From_Uname_Str(const char* verStr,
                 // valid version seperator to move past
                 if (endptr)
                 {
-                    size_t iter     = 0;
+                    size_t iter     = SIZE_T_C(0);
                     bool   validsep = false;
                     if (strcmp(endptr, "") == 0)
                     {
@@ -494,7 +495,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
                                                      // section may need expansion if that happens
         {
             bool    linuxOSNameFound = false;
-            uint8_t linuxOSInfoCount = 0;
+            uint8_t linuxOSInfoCount = UINT8_C(0);
 #define LINUX_OS_INFO_COUNT_MAX_METHODS_TO_ATTEMPT (3)
             versionNumber->osVersioningIdentifier = OS_LINUX;
             // linux kernels are versioned as
@@ -838,13 +839,13 @@ bool is_Running_Elevated(void)
 #if defined(ENABLE_READ_USERNAME)
 static size_t get_Sys_Username_Max_Length(void)
 {
-#if defined(POSIX_2001)
+#    if defined(POSIX_2001)
     // get this in case the system is configured differently
     return sysconf(_SC_LOGIN_NAME_MAX);
-#else
+#    else
     return 256; // this should be more than big enough. Some searching indicates
                 // 32 is usually the default
-#endif
+#    endif
 }
 
 // If this is successful, this function allocates enough memory to hold the full
@@ -863,23 +864,23 @@ static bool get_User_Name_From_ID(uid_t userID, char** userName)
         }
         else
         {
-#if defined(POSIX_2001) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
+#    if defined(POSIX_2001) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
             // use reentrant call instead.
             char*          rawBuffer = M_NULLPTR;
             long           dataSize  = -1;
             int            error     = 0;
             struct passwd  userInfoBuf;
             struct passwd* userInfo = M_NULLPTR;
-#if defined(_SC_GETPW_R_SIZE_MAX)
+#        if defined(_SC_GETPW_R_SIZE_MAX)
             dataSize = sysconf(_SC_GETPW_R_SIZE_MAX);
-#endif
+#        endif
             if (dataSize == -1)
             {
                 // some linux man pages suggest 16384
                 dataSize = 1024; // start with this, will increment it below if
                                  // it fails to read
             }
-            rawBuffer = C_CAST(char*, safe_calloc(dataSize, sizeof(char)));
+            rawBuffer = M_REINTERPRET_CAST(char*, safe_calloc(dataSize, sizeof(char)));
             if (rawBuffer)
             {
                 while (ERANGE == (error = getpwuid_r(userID, &userInfoBuf, rawBuffer, dataSize, &userInfo)))
@@ -907,7 +908,7 @@ static bool get_User_Name_From_ID(uid_t userID, char** userName)
                                                                                                      // is valid and not
                                                                                                      // too large
                     {
-                        *userName = C_CAST(char*, safe_calloc(userNameLength, sizeof(char)));
+                        *userName = M_REINTERPRET_CAST(char*, safe_calloc(userNameLength, sizeof(char)));
                         if (*userName)
                         {
                             snprintf(*userName, userNameLength, "%s", userInfo->pw_name);
@@ -919,7 +920,7 @@ static bool get_User_Name_From_ID(uid_t userID, char** userName)
                 safe_free(&rawBuffer);
             }
             explicit_zeroes(userInfo, sizeof(struct passwd));
-#else  // defined (POSIX_2001) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
+#    else  // defined (POSIX_2001) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
             struct passwd* userInfo = getpwuid(userID);
             if (userInfo)
             {
@@ -930,7 +931,7 @@ static bool get_User_Name_From_ID(uid_t userID, char** userName)
                                                                                                  // valid and not too
                                                                                                  // large
                 {
-                    *userName = C_CAST(char*, safe_calloc(userNameLength, sizeof(char)));
+                    *userName = M_REINTERPRET_CAST(char*, safe_calloc(userNameLength, sizeof(char)));
                     if (*userName)
                     {
                         snprintf(*userName, userNameLength, "%s", userInfo->pw_name);
@@ -945,7 +946,7 @@ static bool get_User_Name_From_ID(uid_t userID, char** userName)
             // change it, making this not thread-safe, so I would assume this is
             // ok to do.
             explicit_zeroes(userInfo, sizeof(struct passwd));
-#endif // defined (POSIX_2001) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
+#    endif // defined (POSIX_2001) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
         }
     }
     return success;

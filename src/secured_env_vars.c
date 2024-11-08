@@ -24,7 +24,7 @@
 #include <string.h>
 
 #if defined(_WIN32)
-#include <tchar.h>
+#    include <tchar.h>
 // If multiple environment variables with the same name exist, consider this a
 // tampered environment and insecure
 static bool is_Environment_Variable_List_Tampered(void)
@@ -40,10 +40,10 @@ static bool is_Environment_Variable_List_Tampered(void)
             return false;
         }
 
-        size_t k     = 0;
-        size_t l     = 0;
-        size_t len_i = 0;
-        size_t len_j = 0;
+        size_t k     = SIZE_T_C(0);
+        size_t l     = SIZE_T_C(0);
+        size_t len_i = SIZE_T_C(0);
+        size_t len_j = SIZE_T_C(0);
 
         for (LPTSTR envVar_i = envBlock; *envVar_i; envVar_i += _tcslen(envVar_i) + 1)
         {
@@ -95,10 +95,10 @@ static bool is_Environment_Variable_List_Tampered(void)
     static bool envEvaluated = false;
     if (envEvaluated == false)
     {
-        size_t k     = 0;
-        size_t l     = 0;
-        size_t len_i = 0;
-        size_t len_j = 0;
+        size_t k     = SIZE_T_C(0);
+        size_t l     = SIZE_T_C(0);
+        size_t len_i = SIZE_T_C(0);
+        size_t len_j = SIZE_T_C(0);
 
         for (size_t i = 0; environ[i] != M_NULLPTR; i++)
         {
@@ -151,11 +151,11 @@ static bool is_Environment_Variable_List_Tampered(void)
        // variables
 
 #if !defined(DISABLE_SECURE_GETENV) && !defined(HAVE_SECURE_GETENV)
-#if defined(_GNU_SOURCE) && defined(__GLIBC__) && defined(__GLIBC_MINOR__) && (__GLIBC__ >= 2) &&                      \
-    (__GLIBC_MINOR__ >= 17)
-#define HAVE_SECURE_GETENV
-#endif // lots of checks for secure_getenv function
-#endif //! DISABLE_SECURE_GETENV
+#    if defined(_GNU_SOURCE) && defined(__GLIBC__) && defined(__GLIBC_MINOR__) && (__GLIBC__ >= 2) &&                  \
+        (__GLIBC_MINOR__ >= 17)
+#        define HAVE_SECURE_GETENV
+#    endif // lots of checks for secure_getenv function
+#endif     //! DISABLE_SECURE_GETENV
 
 // this function will return allocated memory for an environment variable that
 // is requested the returned memory must be freed by the caller will return
@@ -173,14 +173,14 @@ M_NODISCARD eEnvVarResult get_Environment_Variable(const char* environmentVariab
     (defined(__STDC_LIB_EXT1__) && defined(__STDC_WANT_LIB_EXT1__))
         /* MSFT/C11 annex K adds getenv_s, so use it when available to check if
          * this exists */
-        size_t size = 0;
+        size_t size = SIZE_T_C(0);
         if (getenv_s(&size, M_NULLPTR, 0, environmentVariableName) == 0 && size > 0 && size < SIZE_MAX)
         {
             size += 1; // make sure there is room for M_NULLPTR
-            *envVar = C_CAST(char*, safe_calloc(size, sizeof(char)));
+            *envVar = M_REINTERPRET_CAST(char*, safe_calloc(size, sizeof(char)));
             if (*envVar != M_NULLPTR)
             {
-                size_t test = 0; // this is needed to make Windows happy.-TJE
+                size_t test = SIZE_T_C(0); // this is needed to make Windows happy.-TJE
                 if (getenv_s(&test, *envVar, size, environmentVariableName) != 0)
                 {
                     // error, so free this before moving on

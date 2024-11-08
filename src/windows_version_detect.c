@@ -46,9 +46,9 @@ typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(POSVERSIONINFOEXW);
 eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
 {
     eReturnValues ret                  = SUCCESS;
-    static DWORD  winMajor             = 0;
-    static DWORD  winMinor             = 0;
-    static DWORD  winBuild             = 0;
+    static DWORD  winMajor             = DWORD_C(0);
+    static DWORD  winMinor             = DWORD_C(0);
+    static DWORD  winBuild             = DWORD_C(0);
     static bool   readVersionFromNTDLL = false;
     safe_memset(versionNumber, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     versionNumber->osVersioningIdentifier = OS_WINDOWS;
@@ -56,7 +56,7 @@ eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
     if (!readVersionFromNTDLL)
     {
         static CONST TCHAR ntdll[]       = TEXT("\\ntdll.dll");
-        TCHAR*             systemPathBuf = C_CAST(TCHAR*, safe_calloc(OPENSEA_PATH_MAX, sizeof(TCHAR)));
+        TCHAR*             systemPathBuf = M_REINTERPRET_CAST(TCHAR*, safe_calloc(OPENSEA_PATH_MAX, sizeof(TCHAR)));
         CONST TCHAR*       systemPath    = &systemPathBuf[0];
 
         if (!systemPath)

@@ -27,7 +27,7 @@
 
 #include <strsafe.h> //needed in the code written to get the windows version since I'm using a Microsoft provided string concatenation call-tje
 #if defined(ENABLE_READ_USERNAME)
-#include <lmcons.h> //for UNLEN
+#    include <lmcons.h> //for UNLEN
 #endif
 #include <string.h>
 
@@ -293,25 +293,25 @@ eReturnValues get_Current_User_Name(char** userName)
                                               // running as administrator since we only get the
                                               // user's name in Windows.
             size_t usernameLength = _tcslen(localName) + safe_strlen(isAdmin) + 1;
-            *userName             = C_CAST(char*, safe_calloc(usernameLength, sizeof(char)));
+            *userName             = M_REINTERPRET_CAST(char*, safe_calloc(usernameLength, sizeof(char)));
             if (*userName)
             {
-#if defined UNICODE
-                size_t charsConverted = 0;
+#    if defined UNICODE
+                size_t charsConverted = SIZE_T_C(0);
                 // convert output to a char string
                 if (wcstombs_s(&charsConverted, *userName, usernameLength, localName, usernameLength))
                 {
                     safe_free(userName);
                     ret = FAILURE;
                 }
-#else
+#    else
                 // just copy it over after allocating
                 if (strcpy_s(*userName, usernameLength, localName))
                 {
                     safe_free(userName);
                     return FAILURE;
                 }
-#endif
+#    endif
                 if (is_Running_Elevated())
                 {
                     if (strcat_s(*userName, usernameLength, isAdmin))

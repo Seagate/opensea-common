@@ -12,3 +12,9 @@ AlignAfterOpenBracket: true
 BinPackParameters: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AlignConsecutiveMacros: 'AcrossEmptyLines'
+BraceWrapping:
+  AfterControlStatement: true
+AllowShortBlocksOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: Never
+IndentPPDirectives: AfterHash
+BreakBeforeBraces: Allman

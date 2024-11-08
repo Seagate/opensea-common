@@ -32,16 +32,16 @@ extern "C"
 // TODO: improve this check as needed for other systems.
 // TODO: make definitions for other functions in strings.h
 #if defined(__unix__) || defined(POSIX_2001)
-#include <strings.h>
+#    include <strings.h>
 #elif defined(_WIN32)
-#if !defined(strcasecmp)
-#define strcasecmp(s1, s2) _stricmp(s1, s2)
-#endif // strcasecmp
-#if !defined(strncasecmp)
-#define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
-#endif // strncasecmp
+#    if !defined(strcasecmp)
+#        define strcasecmp(s1, s2) _stricmp(s1, s2)
+#    endif // strcasecmp
+#    if !defined(strncasecmp)
+#        define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
+#    endif // strncasecmp
 #else
-#error "Need string case compare definition."
+#    error "Need string case compare definition."
 #endif // __unix__, POSIX, WIN32
 
     //-----------------------------------------------------------------------------
@@ -88,15 +88,15 @@ extern "C"
 
 #if defined(__GNUC__) && (__GNUC__ > 4 || (defined(__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 1))
 //__builtin_object_size was added to GCC 4.1.0
-#define HAVE_BUILT_IN_OBJ_SIZE
+#    define HAVE_BUILT_IN_OBJ_SIZE
 #elif defined __has_builtin
 // If the compiler does not defined __GNUC__ to 4.1.0 or higher, we can check if
 // it has the built - in function with this macro instead. This was added to GCC
 // 10, but other GCC compatible compilers may use this if not defining a
 // compatible GCC versio
-#if __has_builtin(__builtin_object_size)
-#define HAVE_BUILT_IN_OBJ_SIZE
-#endif
+#    if __has_builtin(__builtin_object_size)
+#        define HAVE_BUILT_IN_OBJ_SIZE
+#    endif
 #endif
 
     // if str is a null pointer, returns 0. Internally calls safe_strnlen with size

@@ -21,10 +21,10 @@
 #include "type_conversion.h"
 
 #if defined(_WIN32)
-#include <windows.h>
+#    include <windows.h>
 #else
-#include <time.h>
-#include <unistd.h> //needed for usleep()
+#    include <time.h>
+#    include <unistd.h> //needed for usleep()
 #endif
 
 void delay_Milliseconds(uint32_t milliseconds)
@@ -36,7 +36,7 @@ void delay_Milliseconds(uint32_t milliseconds)
 // usleep is obsolete starting in POSIX 2001 and removed entirely in POSIX 2008
 // and nanosleep is supposed to be used instead. the usleep code is left in just
 // in case it is needed for any reason, but nanosleep works as expected
-#if defined POSIX_1993 && defined _POSIX_TIMERS
+#    if defined POSIX_1993 && defined _POSIX_TIMERS
     struct timespec delayTime;
 // NOTE: tv_sec is long in C11, but time_t prior.
 //       tv_nsec is implementation defined until C23 where it is long long
@@ -45,26 +45,26 @@ void delay_Milliseconds(uint32_t milliseconds)
 // Try using typeof for GCC and __typeof__ for clang, unless in C23 where typeof
 // is standard.
 //
-#if defined(USING_C23)
+#        if defined(USING_C23)
     // C23, so use definitions from C23
     delayTime.tv_sec  = C_CAST(long, milliseconds / UINT32_C(1000));
     delayTime.tv_nsec = C_CAST(long long, UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
-#elif !defined(NO_TYPEOF)
+#        elif !defined(NO_TYPEOF)
     delayTime.tv_sec  = C_CAST(M_TYPEOF(delayTime.tv_sec), milliseconds / UINT32_C(1000));
     delayTime.tv_nsec = C_CAST(M_TYPEOF(delayTime.tv_nsec), UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
-#elif defined(USING_C11)
+#        elif defined(USING_C11)
     // Use long and long int as a best guess or most likely correct case
     delayTime.tv_sec  = C_CAST(long, milliseconds / UINT32_C(1000));
     delayTime.tv_nsec = C_CAST(long int, UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
-#else
+#        else
     // use time_t and long int
     delayTime.tv_sec  = C_CAST(time_t, milliseconds / UINT32_C(1000));
     delayTime.tv_nsec = C_CAST(long int, UINT32_C(1000000) * (milliseconds % UINT32_C(1000)));
-#endif
+#        endif
     nanosleep(&delayTime, M_NULLPTR);
-#else  //! POSIX 1993...try usleep instead
+#    else  //! POSIX 1993...try usleep instead
     usleep(C_CAST(useconds_t, milliseconds * UINT32_C(1000)));
-#endif // POSIX check
+#    endif // POSIX check
 #endif
 }
 // sleep first appeared in Version 7 AT&T unix - conforms to POSIX 1990

@@ -54,7 +54,7 @@ bool get_current_timestamp(void)
 // returns number of milliseconds since 1970 UTC
 uint64_t get_Milliseconds_Since_Unix_Epoch(void)
 {
-    uint64_t msSinceJan1970 = 0;
+    uint64_t msSinceJan1970 = UINT64_C(0);
     // Check for C11's standardized API call.
     // Also check that TIME_UTC is defined, because if it is not, then this will
     // not work. This apparently causes an error in mingww64 environment in
@@ -503,8 +503,12 @@ char* get_Current_Time_String(const time_t* timer, char* buffer, size_t bufferSi
 
 time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
 {
-    uint16_t  days  = 0;
-    uint8_t   years = 0, months = 0, hours = 0, minutes = 0, seconds = 0;
+    uint16_t  days    = UINT16_C(0);
+    uint8_t   years   = UINT8_C(0);
+    uint8_t   months  = UINT8_C(0);
+    uint8_t   hours   = UINT8_C(0);
+    uint8_t   minutes = UINT8_C(0);
+    uint8_t   seconds = UINT8_C(0);
     struct tm futureTime;
     safe_memset(&futureTime, sizeof(struct tm), 0, sizeof(struct tm));
     get_Localtime(C_CAST(const time_t*, &inputTime), &futureTime);
@@ -574,7 +578,7 @@ time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
             futureTime.tm_wday += days;
         }
         // day of the month (depends on the month!)
-        uint8_t numberOfDaysInMonth = 31; // assume the most common
+        uint8_t numberOfDaysInMonth = UINT8_C(31); // assume the most common
         switch (futureTime.tm_mon)
         {
         case 0:  // january

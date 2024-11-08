@@ -80,8 +80,8 @@ eReturnValues get_Current_User_Name(char** userName)
     {
         // while unix functions are there, they are all stubs, so we're just
         // going to return "efi" as the username.
-#define UEFI_USER_NAME_LENGTH 4
-        *userName = C_CAST(char*, safe_calloc(UEFI_USER_NAME_LENGTH, sizeof(char)));
+#    define UEFI_USER_NAME_LENGTH 4
+        *userName = M_REINTERPRET_CAST(char*, safe_calloc(UEFI_USER_NAME_LENGTH, sizeof(char)));
         if (*userName)
         {
             snprintf_err_handle(*userName, UEFI_USER_NAME_LENGTH, "efi");

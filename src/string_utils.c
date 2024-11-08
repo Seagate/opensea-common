@@ -327,14 +327,14 @@ errno_t safe_strcpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRIC
     }
     else
     {
-#if defined(__STDC_SECURE_LIB__)
+#    if defined(__STDC_SECURE_LIB__)
         // call MSFT implementation to reduce warnings. It does not detect as
         // many cases as standard which is why it's down here.-TJE
         errno = strcpy_s(dest, destsz, src);
-#else
+#    else
         errno        = safe_memccpy(dest, destsz, src, '\0', srclen + 1);
         dest[srclen] = '\0'; // ensuring NULL termination
-#endif
+#    endif
         return errno;
     }
 #endif
@@ -443,11 +443,11 @@ errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     }
     else
     {
-#if defined(__STDC_SECURE_LIB__)
+#    if defined(__STDC_SECURE_LIB__)
         // call MSFT implementation to reduce warnings. It does not detect as
         // many cases as standard which is why it's down here.-TJE
         errno = strncpy_s(dest, destsz, src, count);
-#else
+#    else
         errno        = safe_memccpy(dest, destsz, src, '\0', count);
         if (srclen < count)
         {
@@ -457,7 +457,7 @@ errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
         {
             dest[count] = '\0'; // ensuring NULL termination
         }
-#endif
+#    endif
         return errno;
     }
 #endif
@@ -580,15 +580,15 @@ errno_t safe_strcat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRIC
     }
     else
     {
-#if defined(__STDC_SECURE_LIB__)
+#    if defined(__STDC_SECURE_LIB__)
         // call MSFT implementation to reduce warnings. It does not detect as
         // many cases as standard which is why it's down here.-TJE
         errno = strcat_s(dest, destsz, src);
-#else
+#    else
         errno =
             safe_memccpy(destnull, destsz - (C_CAST(uintptr_t, destnull) - C_CAST(uintptr_t, dest)), src, '\0', srclen);
         destnull[srclen] = '\0';
-#endif
+#    endif
         return errno;
     }
 #endif
@@ -652,15 +652,15 @@ errno_t safe_strncat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     }
     else
     {
-#if defined(__STDC_SECURE_LIB__)
+#    if defined(__STDC_SECURE_LIB__)
         // call MSFT implementation to reduce warnings. It does not detect as
         // many cases as standard which is why it's down here.-TJE
         errno = strncat_s(dest, destsz, src, count);
-#else
+#    else
         errno =
             safe_memccpy(destnull, destsz - (C_CAST(uintptr_t, destnull) - C_CAST(uintptr_t, dest)), src, '\0', count);
         destnull[count] = '\0';
-#endif
+#    endif
         return errno;
     }
 #endif
@@ -775,7 +775,7 @@ size_t safe_strnlen(const char* string, size_t n)
     }
     else
     {
-        return 0;
+        return SIZE_T_C(0);
     }
 #else
     // implement this ourselves with memchr after making sure string is not a
@@ -792,7 +792,7 @@ size_t safe_strnlen(const char* string, size_t n)
             return n;
         }
     }
-    return 0;
+    return SIZE_T_C(0);
 #endif
 }
 
@@ -801,8 +801,8 @@ M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size)
 {
     size_t length = memchr(src, '\0', size) != M_NULLPTR
                         ? C_CAST(size_t, C_CAST(uintptr_t, memchr(src, '\0', size)) - C_CAST(uintptr_t, src))
-                        : 0;
-    char*  dupstr = C_CAST(char*, malloc(length + 1));
+                        : SIZE_T_C(0);
+    char*  dupstr = M_REINTERPRET_CAST(char*, malloc(length + 1));
     if (dupstr == M_NULLPTR)
     {
         return M_NULLPTR;
@@ -831,22 +831,22 @@ errno_t safe_strdup(char** dup, const char* src)
     else
     {
         rsize_t srclen = safe_strnlen(src, RSIZE_MAX);
-        if (srclen == RSIZE_MAX && (srclen + 1) != '\0')
+        if (srclen == RSIZE_MAX && (srclen + RSIZE_T_C(1)) != '\0')
         {
             errno = EINVAL;
             invoke_Constraint_Handler("safe_strdup: src longer than RSIZE_MAX", M_NULLPTR, errno);
             return errno;
         }
-        else if (srclen == 0)
+        else if (srclen == RSIZE_T_C(0))
         {
             errno = EINVAL;
             invoke_Constraint_Handler("safe_strdup: src is len 0", M_NULLPTR, errno);
             return errno;
         }
-        *dup = malloc(srclen + 1);
+        *dup = malloc(srclen + RSIZE_T_C(1));
         if (*dup != M_NULLPTR)
         {
-            safe_memcpy(*dup, srclen + 1, src, srclen);
+            safe_memcpy(*dup, srclen + RSIZE_T_C(1), src, srclen);
             (*dup)[srclen] = '\0';
         }
         else
@@ -934,8 +934,8 @@ void byte_Swap_String(char* stringToChange)
 
 void remove_Whitespace_Left(char* stringToChange)
 {
-    size_t iter = 0;
-    size_t len  = 0;
+    size_t iter = SIZE_T_C(0);
+    size_t len  = SIZE_T_C(0);
     if (stringToChange == M_NULLPTR)
     {
         return;
@@ -958,7 +958,7 @@ void remove_Whitespace_Left(char* stringToChange)
 
 void remove_Trailing_Whitespace(char* stringToChange)
 {
-    size_t iter = 0;
+    size_t iter = SIZE_T_C(0);
     if (stringToChange == M_NULLPTR)
     {
         return;
@@ -992,8 +992,8 @@ void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
 
 void remove_Leading_Whitespace(char* stringToChange)
 {
-    size_t iter              = 0;
-    size_t stringToChangeLen = 0;
+    size_t iter              = SIZE_T_C(0);
+    size_t stringToChangeLen = SIZE_T_C(0);
     if (stringToChange == M_NULLPTR)
     {
         return;
@@ -1019,7 +1019,7 @@ void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
         return;
     }
 
-    size_t iter = 0;
+    size_t iter = SIZE_T_C(0);
     while (iter < stringlen && safe_isascii(stringToChange[iter]) && safe_isspace(stringToChange[iter]))
     {
         iter++;
@@ -1047,7 +1047,7 @@ void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
     }
 
     // Remove leading whitespace (calculate for memmove later)
-    size_t start = 0;
+    size_t start = SIZE_T_C(0);
     while (start < stringlen && safe_isascii(stringToChange[start]) && safe_isspace(stringToChange[start]))
     {
         start++;
@@ -1081,7 +1081,7 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
     }
 
     // Remove leading whitespace (calculate for memmove later)
-    size_t start = 0;
+    size_t start = SIZE_T_C(0);
     while (start < stringlen && safe_isascii(stringToChange[start]) && safe_isspace(stringToChange[start]))
     {
         start++;

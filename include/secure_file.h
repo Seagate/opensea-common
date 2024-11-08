@@ -31,46 +31,46 @@ extern "C"
 // Windows does not supply the macros to test the file, so we are defining them
 // ourselves so that we can use them when we want to. NOTE: This is only for the
 // mode_t compatibility provided by Windows.
-#if !defined(S_ISREG)
-#define S_ISREG(m) (m & _S_IFMT) == _S_IFREG
-#endif // S_ISREG
+#    if !defined(S_ISREG)
+#        define S_ISREG(m) (m & _S_IFMT) == _S_IFREG
+#    endif // S_ISREG
 
-#if !defined(S_ISDIR)
-#define S_ISDIR(m) (m & _S_IFMT) == _S_IFDIR
-#endif // S_ISDIR
+#    if !defined(S_ISDIR)
+#        define S_ISDIR(m) (m & _S_IFMT) == _S_IFDIR
+#    endif // S_ISDIR
 
-#if !defined(S_ISCHR)
-#define S_ISCHR(m) (m & _S_IFMT) == _S_IFCHR
-#endif // S_ISCHR
+#    if !defined(S_ISCHR)
+#        define S_ISCHR(m) (m & _S_IFMT) == _S_IFCHR
+#    endif // S_ISCHR
 
-#if !defined(S_ISBLK)
-#define S_ISBLK(m) (0) /*Windows doesn't have a flag for this*/
-#endif                 // S_ISBLK
+#    if !defined(S_ISBLK)
+#        define S_ISBLK(m) (0) /*Windows doesn't have a flag for this*/
+#    endif                     // S_ISBLK
 
-#if !defined(S_ISFIFO)
-#define S_ISFIFO(m) (m & _S_IFMT) == _S_IFIFO
-#endif // S_ISFIFO
+#    if !defined(S_ISFIFO)
+#        define S_ISFIFO(m) (m & _S_IFMT) == _S_IFIFO
+#    endif // S_ISFIFO
 
-#if !defined(S_ISLNK)
-#define S_ISLNK(m) (0) /*Windows doesn't have a flag for this*/
-#endif                 // S_ISLNK
+#    if !defined(S_ISLNK)
+#        define S_ISLNK(m) (0) /*Windows doesn't have a flag for this*/
+#    endif                     // S_ISLNK
 
-#if !defined(S_ISSOCK)
-#define S_ISSOCK(m) (0) /*Windows doesn't have a flag for this*/
-#endif                  // S_ISSOCK
+#    if !defined(S_ISSOCK)
+#        define S_ISSOCK(m) (0) /*Windows doesn't have a flag for this*/
+#    endif                      // S_ISSOCK
 
-#if !defined(S_TYPEISMQ)
-#define S_TYPEISMQ(buf) (0) /*Windows doesn't have a flag for this*/
-#endif                      // S_TYPEISMQ
+#    if !defined(S_TYPEISMQ)
+#        define S_TYPEISMQ(buf) (0) /*Windows doesn't have a flag for this*/
+#    endif                          // S_TYPEISMQ
 
-#if !defined(S_TYPEISSEM)
-#define S_TYPEISSEM(buf) (0) /*Windows doesn't have a flag for this*/
-#endif                       // S_TYPEISSEM
+#    if !defined(S_TYPEISSEM)
+#        define S_TYPEISSEM(buf) (0) /*Windows doesn't have a flag for this*/
+#    endif                           // S_TYPEISSEM
 
-#if !defined(S_TYPEISSHM)
-#define S_TYPEISSHM(buf) (0) /*Windows doesn't have a flag for this*/
-#endif                       // S_TYPEISSHM
-#endif                       //_WIN32
+#    if !defined(S_TYPEISSHM)
+#        define S_TYPEISSHM(buf) (0) /*Windows doesn't have a flag for this*/
+#    endif                           // S_TYPEISSHM
+#endif                               //_WIN32
 
 #define FILE_UNIQUE_ID_ARR_MAX (16)
     typedef struct sfileUniqueIDInfo
@@ -83,11 +83,13 @@ extern "C"
         // Linux: ino_t + dev_t)
         //       use a very generic thing to compare that can hold this many bytes
         //       of data...an array. low-level OS function to do the comparison???
-        union {
+        union
+        {
             uint64_t inode;
             uint64_t volsn;
         };
-        union {
+        union
+        {
             uint64_t deviceid;                       // dev_t from struct stat in posix
             uint8_t  fileid[FILE_UNIQUE_ID_ARR_MAX]; // Windows may use 8 or 16 bytes
                                                      // depending on filesystem. Fat/NTFS

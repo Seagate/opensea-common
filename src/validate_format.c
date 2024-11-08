@@ -39,9 +39,9 @@ typedef enum eValidateFormatResultEnum
 } eValidateFormatResult;
 
 #if defined(USING_C99)
-#define C_STR_LITERAL_LIMIT 4095U
+#    define C_STR_LITERAL_LIMIT 4095U
 #else
-#define C_STR_LITERAL_LIMIT 509U
+#    define C_STR_LITERAL_LIMIT 509U
 #endif
 
 static M_INLINE eValidateFormatResult update_Format_Offset(const char* format,
@@ -478,8 +478,8 @@ static M_INLINE eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
     eValidateFormatResult result           = VALIDATE_FORMAT_SUCCESS;
     wchar_t               character        = C_CAST(wchar_t, widechar);
     char*                 convertedChar    = M_NULLPTR;
-    size_t                charArrayLen     = 0;
-    size_t                conversionresult = 0;
+    size_t                charArrayLen     = SIZE_T_C(0);
+    size_t                conversionresult = SIZE_T_C(0);
     mbstate_t             state;
     safe_memset(&state, sizeof(mbstate_t), 0, sizeof(mbstate_t));
     errno = 0; // ISO C security standard does not say this is necessary, but
@@ -499,7 +499,7 @@ static M_INLINE eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
         return VALIDATE_FORMAT_INVALID_FORMAT; // Should this be a different
                                                // error for encoding failure???
     }
-    convertedChar = C_CAST(char*, safe_calloc(charArrayLen + 1, sizeof(char)));
+    convertedChar = M_REINTERPRET_CAST(char*, safe_calloc(charArrayLen + 1, sizeof(char)));
     if (convertedChar == M_NULLPTR)
     {
         return VALIDATE_FORMAT_INVALID_FORMAT; // Should this be a different
@@ -590,8 +590,8 @@ static M_INLINE eValidateFormatResult validate_WStr_Conversion(const wchar_t* st
     if (string)
     {
         char*     charStr          = M_NULLPTR;
-        size_t    charStrSize      = 0;
-        size_t    conversionResult = 0;
+        size_t    charStrSize      = SIZE_T_C(0);
+        size_t    conversionResult = SIZE_T_C(0);
         mbstate_t state;
         safe_memset(&state, sizeof(mbstate_t), 0, sizeof(mbstate_t));
         errno = 0; // ISO C does not show this as necessary, but doing to set
@@ -612,8 +612,8 @@ static M_INLINE eValidateFormatResult validate_WStr_Conversion(const wchar_t* st
                                                    // error for encoding
                                                    // failure???
         }
-        charStr = C_CAST(char*, safe_calloc(charStrSize + 1,
-                                            sizeof(char))); // add room for M_NULLPTR terminator
+        charStr = M_REINTERPRET_CAST(char*, safe_calloc(charStrSize + 1,
+                                                        sizeof(char))); // add room for M_NULLPTR terminator
         if (charStr == M_NULLPTR)
         {
             return VALIDATE_FORMAT_INVALID_FORMAT; // Should this be a different
@@ -774,11 +774,11 @@ int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formata
     {
         char* offsetToSpecifier = strstr(format, "%"); // if there are no formatting specifiers, just
                                                        // skip all the checks to return zero
-        size_t formatoffset = 0;
+        size_t formatoffset = SIZE_T_C(0);
         if (offsetToSpecifier != M_NULLPTR)
         {
             va_list args;
-            size_t  formatLength = 0;
+            size_t  formatLength = SIZE_T_C(0);
             // removed early %n detection since it would incorrectly catch %%n
             // which is a valid sequence. The rest of the code does catch %n and
             // modifiers to it, so it is safe to let it proceed. see answer from

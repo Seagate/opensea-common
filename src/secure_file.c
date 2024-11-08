@@ -30,16 +30,16 @@
 #include <string.h>
 
 #if defined(_WIN32)
-#include <direct.h> //getcwd
+#    include <direct.h> //getcwd
 #else
-#include <unistd.h> //getcwd
+#    include <unistd.h> //getcwd
 #endif
 
 eReturnValues replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char* newFileName)
 {
     char*  ptr        = strrchr(fullPath, SYSTEM_PATH_SEPARATOR);
-    size_t ptrLen     = 0;
-    size_t fullLength = 0;
+    size_t ptrLen     = SIZE_T_C(0);
+    size_t fullLength = SIZE_T_C(0);
     if (M_NULLPTR != ptr)
     {
         ptr += 1;
@@ -133,7 +133,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                                              fileAttributes*   expectedFileInfo,
                                              fileUniqueIDInfo* uniqueIdInfo /*optional*/)
 {
-    secureFileInfo* fileInfo = C_CAST(secureFileInfo*, safe_calloc(1, sizeof(secureFileInfo)));
+    secureFileInfo* fileInfo = M_REINTERPRET_CAST(secureFileInfo*, safe_calloc(1, sizeof(secureFileInfo)));
     if (fileInfo && filename && mode) /* Not checking extList and outInfo because it is optional */
     {
         bool  creatingFile  = false;
@@ -360,17 +360,11 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                 while (currentExtension && currentExtension->ext != M_NULLPTR)
                 {
                     char* extension = strrchr(fileInfo->fullpath, '.');
-                    if (extension && strcmp(extension, currentExtension->ext) == 0)
+                    if (extension &&
+                        (strcmp(extension, currentExtension->ext) == 0 ||
+                         (currentExtension->caseInsensitive && strcasecmp(extension, currentExtension->ext) == 0)))
                     {
                         // valid extension
-                        foundValidExtension = true;
-                        break;
-                    }
-                    else if (extension && currentExtension->caseInsensitive &&
-                             strcasecmp(extension, currentExtension->ext) == 0)
-                    {
-                        // valid extension with case insensitive comparison that
-                        // was allowed
                         foundValidExtension = true;
                         break;
                     }
@@ -476,10 +470,10 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
 // how current code works.
 //       This will be reenabled once we have resolved the low-level issue.
 #if defined(DISABLE_SECURE_FILE_PATH_CHECK) || defined(_WIN32)
-#if !defined(_WIN32)
-#pragma message(                                                                                                       \
-    "WARNING: Disabling Cert-C directory security check. This is not recommended for production level code.")
-#endif //!_WIN32
+#    if !defined(_WIN32)
+#        pragma message(                                                                                               \
+            "WARNING: Disabling Cert-C directory security check. This is not recommended for production level code.")
+#    endif //!_WIN32
         if (true)
 #else
         // Check for secure directory - This code must traverse the full path
@@ -677,7 +671,7 @@ M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInf
         fileInfo->error = SEC_FILE_INVALID_FILE;
         if (fileInfo->file)
         {
-            size_t readres = 0;
+            size_t readres = SIZE_T_C(0);
 #if defined(__STDC_SECURE_LIB__)
             readres = fread_s(buffer, buffersize, elementsize, count, fileInfo->file);
 #else
@@ -722,7 +716,7 @@ M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInf
                 else
                 {
                     // some other kind of error???
-                    fileInfo->error = SEC_FILE_READ_WRITE_ERROR;
+                    fileInfo->error = SEC_FILE_FAILURE;
                 }
             }
             else if (readres == count)
@@ -756,7 +750,7 @@ M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileIn
         fileInfo->error = SEC_FILE_INVALID_FILE;
         if (fileInfo->file)
         {
-            size_t writeres = 0;
+            size_t writeres = SIZE_T_C(0);
             if (buffer == M_NULLPTR)
             {
                 fileInfo->error = SEC_FILE_INVALID_PARAMETER;
@@ -1276,7 +1270,7 @@ char* generate_Log_Name(eLogFileNamingConvention logFileNamingConvention, // req
     {
         // no extension provided, but allocate an empty string so as not to
         // cause undefined behavrior in the format string interpretation below
-        logExtension = C_CAST(char*, safe_calloc(1, sizeof(char)));
+        logExtension = M_REINTERPRET_CAST(char*, safe_calloc(1, sizeof(char)));
     }
     if (logExtension == M_NULLPTR)
     {

@@ -25,23 +25,23 @@
 #include <string.h>
 
 #if defined(VMK_CROSS_COMP)
-#include <mm_malloc.h> //doing this to shut up warnings about posix_memalign not available despite stdlib include  TJE
-#endif                 // VMK_CROSS_COMP
+#    include <mm_malloc.h> //doing this to shut up warnings about posix_memalign not available despite stdlib include  TJE
+#endif                     // VMK_CROSS_COMP
 
 #if defined(_WIN32)
-#include "windows_version_detect.h"
-#include <WinBase.h>
-#include <windows.h>
+#    include "windows_version_detect.h"
+#    include <WinBase.h>
+#    include <windows.h>
 #else
-#include <unistd.h>
+#    include <unistd.h>
 #endif
 
 size_t get_System_Pagesize(void)
 {
 #if defined(UEFI_C_SOURCE)
-    return 4096; // This is not the processor page size, just the pagesize
-                 // allocated by EDK2. It's in
-                 // <MdePkg/Include/Uefi/UedfiBaseType.h
+    return SIZE_T_C(4096); // This is not the processor page size, just the pagesize
+                           // allocated by EDK2. It's in
+                           // <MdePkg/Include/Uefi/UedfiBaseType.h
 #elif defined(POSIX_2001)
     // use sysconf: http://man7.org/linux/man-pages/man3/sysconf.3.html
     return long_to_sizet(sysconf(_SC_PAGESIZE));
@@ -56,9 +56,9 @@ size_t get_System_Pagesize(void)
     GetSystemInfo(&winSysInfo);
     return ulong_to_sizet(winSysInfo.dwPageSize);
 #else
-    return 4096; // most CPUs use a 4KiB page size. We can detect specific
-                 // architectures using something different if we need to
-                 // here-TJE
+    return SIZE_T_C(4096); // most CPUs use a 4KiB page size. We can detect specific
+                           // architectures using something different if we need to
+                           // here-TJE
 #endif
 }
 
@@ -318,9 +318,9 @@ bool is_Empty(const void* ptrData, size_t lengthBytes)
 }
 
 #if defined(__has_builtin)
-#if __has_builtin(__builtin___clear_cache)
-#define HAS_BUILT_IN_CLEAR_CACHE
-#endif
+#    if __has_builtin(__builtin___clear_cache)
+#        define HAS_BUILT_IN_CLEAR_CACHE
+#    endif
 #endif
 
 void* explicit_zeroes(void* dest, size_t count)
@@ -341,16 +341,16 @@ void* explicit_zeroes(void* dest, size_t count)
         }
 #elif (defined(_WIN32) && defined(_MSC_VER)) || defined(HAVE_MSFT_SECURE_ZERO_MEMORY) ||                               \
     defined(HAVE_MSFT_SECURE_ZERO_MEMORY2)
-#if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                                      \
-    (defined(HAVE_MSFT_SECURE_ZERO_MEMORY2) ||                                                                         \
-     (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
+#    if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                                  \
+        (defined(HAVE_MSFT_SECURE_ZERO_MEMORY2) ||                                                                     \
+         (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
         // use secure zero memory 2
         // Cast is to remove warning about different volatile qualifiers
         return M_CONST_CAST(void*, SecureZeroMemory2(dest, count));
-#else
+#    else
         // use microsoft's SecureZeroMemory function
         return SecureZeroMemory(dest, count);
-#endif
+#    endif
 #elif (defined(__FreeBSD__) && __FreeBSD__ >= 11) || (defined(__OpenBSD__) && defined(OpenBSD5_5)) ||                  \
     (defined(__GLIBC__) && defined(__GLIBC_MINOR__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 25) ||                     \
     defined(HAVE_EXPLICIT_BZERO)
@@ -421,11 +421,11 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
             errno = 0;
             return 0;
         }
-#if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
+#    if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
         memset_explicit(dest, ch, count);
-#elif (defined(__NetBSD__) && defined(__NetBSD_Version__) &&                                                           \
-       __NetBSD_Version >= 7000000000L /* net bsd version 7.0 and up*/) ||                                             \
-    defined(HAVE_EXPLICIT_MEMSET)
+#    elif (defined(__NetBSD__) && defined(__NetBSD_Version__) &&                                                       \
+           __NetBSD_Version >= 7000000000L /* net bsd version 7.0 and up*/) ||                                         \
+        defined(HAVE_EXPLICIT_MEMSET)
         // https://man.netbsd.org/NetBSD-8.0/explicit_memset.3
         // https://docs.oracle.com/cd/E88353_01/html/E37843/explicit-memset-3c.html
         // NOTE: Solaris 11.4.12 added this, but I cannot find it in illumos
@@ -434,39 +434,39 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
         //       manual. Not sure what version to use, so letting meson detect
         //       and set the HAVE_...macros
         explicit_memset(dest, ch, count);
-#else
+#    else
         // last attempts to prevent optimization as best we can
-#if defined(__GNUC__) || defined(__clang__)
+#        if defined(__GNUC__) || defined(__clang__)
         memset(dest, ch, count);
         asm volatile("" ::: "memory");
-#elif defined(HAS_BUILT_IN_CLEAR_CACHE)
+#        elif defined(HAS_BUILT_IN_CLEAR_CACHE)
         memset(dest, ch, count);
         __builtin___clear_cache(dest, dest + count);
-#elif defined(_MSC_VER)
-#if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                                      \
-    (defined(HAVE_MSFT_SECURE_ZERO_MEMORY2) ||                                                                         \
-     (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
+#        elif defined(_MSC_VER)
+#            if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                          \
+                (defined(HAVE_MSFT_SECURE_ZERO_MEMORY2) ||                                                             \
+                 (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
         // SecureZeroMemory2 calls FillVolatileMemory which we can use here to
         // do the same thing
         FillVolatileMemory(dest, count, ch);
-#elif defined(_M_AMD64) || (!defined(_M_CEE) && defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
+#            elif defined(_M_AMD64) || (!defined(_M_CEE) && defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
         // NOTE: Using the securezeromemory implementation in this case
         volatile char* vptr = (volatile char*)dest;
-#if defined(_M_AMD64) && !defined(_M_ARM64EC)
+#                if defined(_M_AMD64) && !defined(_M_ARM64EC)
         __stosb((unsigned char*)((unsigned __int64)vptr), C_CAST(unsigned char, ch), count);
-#else
+#                else
         while (count)
         {
-#if !defined(_M_CEE) && (defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
+#                    if !defined(_M_CEE) && (defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
             __iso_volatile_store8(vptr, C_CAST(unsigned char, ch));
-#else
+#                    else
             *vptr = C_CAST(unsigned char, ch);
-#endif
+#                    endif
             vptr++;
             count--;
         }
-#endif
-#else
+#                endif
+#            else
         /*if you hit this case for some reason, you will need to add an include
          * for <intrin.h>. Not currently done as SecureZeroMemory is used
          * instead*/
@@ -474,15 +474,15 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
          */
         memset(dest, ch, count);
         _ReadWriteBarrier();
-#endif
-#else /* compiler does not support a method above as a barrier, so use                                                 \
-         this as a final way to try and prevent optimization */
+#            endif
+#        else /* compiler does not support a method above as a barrier, so use                                         \
+                 this as a final way to try and prevent optimization */
         // one idea on the web is this ugly volatile function pointer to memset
         // to stop the compiler optimization
         void* (*const volatile no_optimize_memset)(void*, int, size_t) = memset;
         no_optimize_memset(dest, ch, count);
-#endif
-#endif
+#        endif
+#    endif
         errno = 0;
         return 0;
     }
@@ -851,15 +851,15 @@ errno_t safe_memmove(void* dest, rsize_t destsz, const void* src, rsize_t count)
     {
         if (destsz > 0 && count > 0)
         {
-#if defined(__STDC_SECURE_LIB__)
+#    if defined(__STDC_SECURE_LIB__)
             // This is microsoft's version, but it does not do the same checks
             // as C11 standard. Even though we've already done all the checks we
             // need we are calling this because it prevents additional warning
             // from Microsoft's compiler.
             memmove_s(dest, destsz, src, count);
-#else
+#    else
             memmove(dest, src, count);
-#endif //__STDC_SECURE_LIB__
+#    endif //__STDC_SECURE_LIB__
         }
         errno = 0;
         return 0;
@@ -923,15 +923,15 @@ errno_t safe_memcpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRIC
     {
         if (destsz > 0 && count > 0)
         {
-#if defined(__STDC_SECURE_LIB__)
+#    if defined(__STDC_SECURE_LIB__)
             // This is microsoft's version, but it does not do the same checks
             // as C11 standard. Even though we've already done all the checks we
             // need we are calling this because it prevents additional warning
             // from Microsoft's compiler.
             memcpy_s(dest, destsz, src, count);
-#else
+#    else
             memcpy(dest, src, count);
-#endif //__STDC_SECURE_LIB__
+#    endif //__STDC_SECURE_LIB__
         }
         errno = 0;
         return 0;
@@ -991,7 +991,7 @@ errno_t safe_memccpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRI
     {
         if (destsz > 0 && count > 0)
         {
-            size_t counter = 0;
+            size_t counter = SIZE_T_C(0);
             for (; counter < count; ++counter)
             {
                 M_REINTERPRET_CAST(unsigned char*, dest)
@@ -1062,7 +1062,7 @@ errno_t safe_memcmove(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTR
             if (dest < src)
             {
                 // forward copy to avoid overlap
-                size_t counter = 0;
+                size_t counter = SIZE_T_C(0);
                 for (; counter < count; ++counter)
                 {
                     M_REINTERPRET_CAST(unsigned char*, dest)

@@ -116,8 +116,8 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
             char*  pl         = M_NULLPTR;
             char*  pm         = M_NULLPTR;
             char*  pn         = M_NULLPTR;
-            size_t d1         = 0;
-            size_t d2         = 0;
+            size_t d1         = SIZE_T_C(0);
+            size_t d2         = SIZE_T_C(0);
             int    cmp_result = 0;
             int    swap_cnt   = 0;
 

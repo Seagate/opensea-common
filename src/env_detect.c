@@ -297,12 +297,12 @@ eArchitecture get_Compiled_Architecture(void)
 // clang specific because behavior can differ even with the GCC diagnostic being
 // "compatible" https
 // ://clang.llvm.org/docs/UsersManual.html#controlling-diagnostics-via-pragmas
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-function"
-#elif defined            __GNUC__ && __GNUC__ >= 3
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wunused-function"
+#elif defined __GNUC__ && __GNUC__ >= 3
 // temporarily disable the warning for unused function
-#pragma GCC diagnostic   push
-#pragma GCC diagnostic   ignored "-Wunused-function"
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wunused-function"
 #endif //__clang__, __GNUC__
 
 // https://sourceforge.net/p/predef/wiki/Endianness/
@@ -313,7 +313,8 @@ static eEndianness calculate_Endianness(void)
                                                         // time, but this may help optimise this.
     if (endian == OPENSEA_UNKNOWN_ENDIAN)
     {
-        union {
+        union
+        {
             uint32_t value;
             uint8_t  data[sizeof(uint32_t)];
         } number;
@@ -346,10 +347,10 @@ static eEndianness calculate_Endianness(void)
 }
 
 // reenable the unused function warning
-#if defined              __clang__
-#pragma clang diagnostic pop
-#elif defined            __GNUC__ && __GNUC__ >= 3
-#pragma GCC diagnostic   pop
+#if defined __clang__
+#    pragma clang diagnostic pop
+#elif defined __GNUC__ && __GNUC__ >= 3
+#    pragma GCC diagnostic pop
 #endif //__clang__, __GNUC__
 
 // MDE_CPU_EBC should always calculate the endianness for EFI byte code since we
@@ -357,33 +358,34 @@ static eEndianness calculate_Endianness(void)
 eEndianness get_Compiled_Endianness(void)
 {
 #if defined(__BYTE_ORDER__)
-#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#    if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
     return OPENSEA_BIG_ENDIAN;
-#elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#    elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
     return OPENSEA_LITTLE_ENDIAN;
-#else
+#    else
     return calculate_Endianness();
-#endif
+#    endif
 #else
-#if defined(__BIG_ENDIAN__)
+#    if defined(__BIG_ENDIAN__)
     return OPENSEA_BIG_ENDIAN;
-#elif defined(__LITTLE_ENDIAN__)
+#    elif defined(__LITTLE_ENDIAN__)
     return OPENSEA_LITTLE_ENDIAN;
-#else
+#    else
 // check architecture specific defines...
-#if defined(__ARMEB__) || defined(__THUMBEB__) || defined(__AARCH64EB__) || defined(_MIPSEB) || defined(__MIPSEB) ||   \
-    defined(__MIPSEB__)
+#        if defined(__ARMEB__) || defined(__THUMBEB__) || defined(__AARCH64EB__) || defined(_MIPSEB) ||                \
+            defined(__MIPSEB) || defined(__MIPSEB__)
     return OPENSEA_BIG_ENDIAN;
-#elif defined(__ARMEL__) || defined(__THUMBEL__) || defined(__AARCH64EL__) || defined(_MIPSEL) || defined(__MIPSEL) || \
-    defined(__MIPSEL__) || defined _M_X64 || defined _M_AMD64 || defined _M_ALPHA || defined _M_ARM ||                 \
-    defined _M_ARMT || defined _M_IX86 || defined _M_IA64 || defined _M_PPC /* This is a special Windows case for PPC  \
-                                                                               as NT ran it in little endian mode */   \
-    || defined MDE_CPU_X64 || defined MDE_CPU_IA32 || defined MDE_CPU_ARM || defined MDE_CPU_AARCH64
+#        elif defined(__ARMEL__) || defined(__THUMBEL__) || defined(__AARCH64EL__) || defined(_MIPSEL) ||              \
+            defined(__MIPSEL) || defined(__MIPSEL__) || defined _M_X64 || defined _M_AMD64 || defined _M_ALPHA ||      \
+            defined _M_ARM || defined _M_ARMT || defined _M_IX86 || defined _M_IA64 ||                                 \
+            defined _M_PPC /* This is a special Windows case for PPC                                                   \
+                              as NT ran it in little endian mode */                                                    \
+            || defined MDE_CPU_X64 || defined MDE_CPU_IA32 || defined MDE_CPU_ARM || defined MDE_CPU_AARCH64
     return OPENSEA_LITTLE_ENDIAN;
-#else
+#        else
     return calculate_Endianness();
-#endif
-#endif
+#        endif
+#    endif
 #endif
 }
 
@@ -400,7 +402,7 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     // from 2003 and later and we only really support 2013 and higher due to C99
     // usage)-TJE
     *compilerUsed = OPENSEA_COMPILER_MICROSOFT_VISUAL_C_CPP;
-#define MS_VERSION_STRING_LENGTH 10
+#    define MS_VERSION_STRING_LENGTH 10
     DECLARE_ZERO_INIT_ARRAY(char, msVersion, MS_VERSION_STRING_LENGTH);
     snprintf(msVersion, MS_VERSION_STRING_LENGTH, "%u", _MSC_FULL_VER);
     DECLARE_ZERO_INIT_ARRAY(char, msMajor, 3);
@@ -430,7 +432,7 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
 #elif defined __HP_aCC
     // untested
     *compilerUsed = OPENSEA_COMPILER_HP_A_CPP;
-#define HP_ACC_VERSION_STRING_LENGTH 7
+#    define HP_ACC_VERSION_STRING_LENGTH 7
     DECLARE_ZERO_INIT_ARRAY(char, hpVersion, HP_ACC_VERSION_STRING_LENGTH);
     snprintf(hpVersion, HP_ACC_VERSION_STRING_LENGTH, "%u", __HP_aCC);
     DECLARE_ZERO_INIT_ARRAY(char, hpMajor, 3);
@@ -445,21 +447,21 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
 #elif defined __IBMC__ || defined __IBMCPP__
     // untested
     // detect if it's xl or lx for system z
-#if defined                       __COMPILER_VER__
+#    if defined __COMPILER_VER__
     // system z
     compilerVersionInfo->major = M_Nibble6(__COMPILER_VER__);
     compilerVersionInfo->minor = M_Byte2(__COMPILER_VER__);
     compilerVersionInfo->patch = M_Word0(__COMPILER_VER__);
-#else
+#    else
     // standard xl
     compilerVersionInfo->major = M_Byte1(__xlC__);
     compilerVersionInfo->minor = M_Byte0(__xlC__);
     compilerVersionInfo->patch = M_Byte1(__xlC_ver__);
-#endif
+#    endif
 #elif defined __INTEL_COMPILER
     // untested
     *compilerUsed = OPENSEA_COMPILER_INTEL_C_CPP;
-#define INTEL_VERSION_STRING_MAX_LENGTH 4;
+#    define INTEL_VERSION_STRING_MAX_LENGTH 4;
     DECLARE_ZERO_INIT_ARRAY(char, intelVersion, 4);
     snprintf(intelVersion, INTEL_VERSION_STRING_MAX_LENGTH, "%u", __INTEL_COMPILER);
     DECLARE_ZERO_INIT_ARRAY(char, intelMajor, 2);

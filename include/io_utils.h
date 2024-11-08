@@ -220,7 +220,7 @@ extern "C"
     // https://wiki.sei.cmu.edu/confluence/display/c/ERR33-C.+Detect+and+handle+standard+library+errors
     // This does NOT do bounds checking
     // TODO: a safe_snprintf that works as C11 annex k specifies.
-    M_INLINE FUNC_ATTR_PRINTF(3, 4) int snprintf_err_handle(char* buf, size_t bufsize, const char* format, ...)
+    FUNC_ATTR_PRINTF(3, 4) static M_INLINE int snprintf_err_handle(char* buf, size_t bufsize, const char* format, ...)
     {
         va_list args;
         va_start(args, format);
@@ -368,6 +368,11 @@ extern "C"
     static M_INLINE void flush_stdout(void)
     {
         M_STATIC_CAST(void, fflush(stdout));
+    }
+
+    static M_INLINE void flush_stderr(void)
+    {
+        M_STATIC_CAST(void, fflush(stderr));
     }
 
 #if defined(__cplusplus)

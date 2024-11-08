@@ -24,9 +24,9 @@
 #include <string.h> //to pull in memset for anything that includes this file
 
 #if defined(_WIN32)
-#include "windows_version_detect.h" //for determining if securezeromemory2 is available and setting the pragma to include the required library.
+#    include "windows_version_detect.h" //for determining if securezeromemory2 is available and setting the pragma to include the required library.
 #elif defined(POSIX_1990) || defined(BSD4_2)
-#include <dirent.h>
+#    include <dirent.h>
 #endif
 
 #if defined(__cplusplus)
@@ -180,7 +180,7 @@ extern "C"
             )(mem)
 // clang-format on
 #elif !defined(__cplusplus)
-#define safe_free(mem) safe_Free(M_REINTERPRET_CAST(void**, mem))
+#    define safe_free(mem) safe_Free(M_REINTERPRET_CAST(void**, mem))
 #endif // C11
 
 #if defined(POSIX_1990) || defined(BSD4_2)
@@ -251,8 +251,8 @@ extern "C"
 #if defined(_MSC_VER) && !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                 \
     (defined(HAVE_MSFT_SECURE_ZERO_MEMORY2) ||                                                                         \
      (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
-#pragma comment(lib, "volatileaccessu.lib") // for VS to pick up this dependency when
-                                            // SecureZeroMemory2 is available
+#    pragma comment(lib, "volatileaccessu.lib") // for VS to pick up this dependency when
+                                                // SecureZeroMemory2 is available
 #endif
 
     //-----------------------------------------------------------------------------
@@ -414,7 +414,7 @@ extern "C"
             )(mem)
 // clang-format on
 #elif !defined(__cplusplus)
-#define safe_free_aligned(mem) safe_Free_aligned(M_REINTERPRET_CAST(void**, mem))
+#    define safe_free_aligned(mem) safe_Free_aligned(M_REINTERPRET_CAST(void**, mem))
 #endif // C11
 
     //-----------------------------------------------------------------------------
@@ -578,7 +578,7 @@ extern "C"
             )(mem)
 // clang-format on
 #elif !defined(__cplusplus)
-#define safe_free_page_aligned(mem) safe_Free_page_aligned(M_REINTERPRET_CAST(void**, mem))
+#    define safe_free_page_aligned(mem) safe_Free_page_aligned(M_REINTERPRET_CAST(void**, mem))
 #endif // C11
 
     //-----------------------------------------------------------------------------
@@ -674,25 +674,25 @@ extern "C"
 #if defined(__cplusplus)
 }
 
-#if !defined(safe_free)
+#    if !defined(safe_free)
 template <typename T> M_INLINE void safe_free(T** mem)
 {
     safe_Free(reinterpret_cast<void**>(mem));
 }
-#endif // safe_free
+#    endif // safe_free
 
-#if !defined(safe_free_aligned)
+#    if !defined(safe_free_aligned)
 template <typename T> M_INLINE void safe_free_aligned(T** mem)
 {
     safe_Free_aligned(reinterpret_cast<void**>(mem));
 }
-#endif // safe_free_aligned
+#    endif // safe_free_aligned
 
-#if !defined(safe_free_page_aligned)
+#    if !defined(safe_free_page_aligned)
 template <typename T> M_INLINE void safe_free_page_aligned(T** mem)
 {
     safe_Free_aligned(reinterpret_cast<void**>(mem));
 }
-#endif // safe_free_page_aligned
+#    endif // safe_free_page_aligned
 
 #endif

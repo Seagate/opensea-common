@@ -29,13 +29,13 @@
 #if defined(_MSC_VER) && !defined(HAVE_WIN_BSWAP)
 // Unknown if added to specific _MSC_VER.
 // Will need to add this check if we ever run into an issue with this -TJE
-#define HAVE_WIN_BSWAP
+#    define HAVE_WIN_BSWAP
 #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)) && !defined(HAVE_BUILTIN_BSWAP)
-#define HAVE_BUILTIN_BSWAP
+#    define HAVE_BUILTIN_BSWAP
 #elif !defined(HAVE_BUILTIN_BSWAP) && defined(__has_builtin)
-#if __has_builtin(__builtin_bswap64)
-#define HAVE_BUILTIN_BSWAP
-#endif
+#    if __has_builtin(__builtin_bswap64)
+#        define HAVE_BUILTIN_BSWAP
+#    endif
 #endif
 
 void nibble_Swap(uint8_t* byteToSwap)
@@ -232,7 +232,7 @@ bool get_Bytes_To_32(uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, 
 {
     if (out && get_Bytes_Abs_Range(msb, lsb) <= sizeof(uint32_t))
     {
-        uint64_t temp   = 0;
+        uint64_t temp   = UINT64_C(0);
         bool     result = get_Bytes_To_64(dataPtrBeginning, fullDataLen, msb, lsb, &temp);
         if (result)
         {
@@ -250,7 +250,7 @@ bool get_Bytes_To_16(uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, 
 {
     if (out && get_Bytes_Abs_Range(msb, lsb) <= sizeof(uint16_t))
     {
-        uint64_t temp   = 0;
+        uint64_t temp   = UINT64_C(0);
         bool     result = get_Bytes_To_64(dataPtrBeginning, fullDataLen, msb, lsb, &temp);
         if (result)
         {
