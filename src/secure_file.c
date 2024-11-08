@@ -397,14 +397,16 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char* filename, const char* m
 //This flag can disable the file path security check.
 //NOTE: Currently disabling _WIN32 due to new Windows security feature breaking how current code works.
 //      This will be reenabled once we have resolved the low-level issue.
+        char *dirSecurityError = M_NULLPTR;
 #if defined (DISABLE_SECURE_FILE_PATH_CHECK) || defined (_WIN32)
     #if !defined (_WIN32)
         #pragma message ("WARNING: Disabling Cert-C directory security check. This is not recommended for production level code.")
     #endif //!_WIN32
+        M_USE_UNUSED(dirSecurityError);
         if (true)
 #else
         //Check for secure directory - This code must traverse the full path and validate permissions of the directories.
-        if (os_Is_Directory_Secure(pathOnly))
+        if (os_Is_Directory_Secure(pathOnly, &dirSecurityError))
 #endif //DISABLE_SECURE_FILE_PATH_CHECK || _WIN32
         {
             fileInfo->file = M_NULLPTR;
@@ -413,6 +415,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char* filename, const char* m
             if (fopenError == 0 && fileInfo->file != M_NULLPTR)
 #else //fopen_s not available
             fileInfo->file = fopen(fileInfo->fullpath, internalmode);
+            errno_t fopenError = errno;
             if (fileInfo->file != M_NULLPTR)
 #endif //checking for MSFT secure functions or annex K of C11
             {
@@ -436,6 +439,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char* filename, const char* m
                         {
                             safe_free(&pathOnly);
                         }
+                        safe_free(&dirSecurityError);
                         return fileInfo;
                     }
                 }
@@ -462,6 +466,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char* filename, const char* m
                         {
                             safe_free(&pathOnly);
                         }
+                        safe_free(&dirSecurityError);
                         return fileInfo;
                     }
 #if defined (_WIN32)
@@ -482,6 +487,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char* filename, const char* m
                         {
                             safe_free(&pathOnly);
                         }
+                        safe_free(&dirSecurityError);
                         return fileInfo;
                     }
 #endif //_WIN32
@@ -501,11 +507,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char* filename, const char* m
             }
             else
             {
-#if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
                 switch (fopenError)
-#else
-                switch (errno)
-#endif
                 {
                     //add other errno values to check for?
                     //https://pubs.opengroup.org/onlinepubs/9699919799/functions/fopen.html
@@ -520,10 +522,9 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char* filename, const char* m
         else
         {
             fileInfo->error = SEC_FILE_INSECURE_PATH;
-#if defined (_DEBUG)
-            printf("Insecure path\n");
-#endif
+            printf("Insecure path detected: %s\n", dirSecurityError);
         }
+        safe_free(&dirSecurityError);
         if (pathOnly && allocatedLocalPathOnly)
         {
             safe_free(&pathOnly);
@@ -909,7 +910,7 @@ M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eS
         {
             pathOnly = C_CAST(char*, fullpath);
         }
-        if (!os_Is_Directory_Secure(pathOnly))
+        if (!os_Is_Directory_Secure(pathOnly, M_NULLPTR))
         {
             safe_free(&pathOnly);
             return SEC_FILE_INSECURE_PATH;

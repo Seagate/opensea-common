@@ -91,7 +91,9 @@ extern "C"
 
     M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file);
 
-    M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath);
+    //outputError can be a null pointer. If not null, an error message will be allocated for you.
+    //it can be free'd by calling safe_free() on it when you are done with the error
+    M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath, char **outputError);
 
     //Most members of this strucuture match the stat structure. There are some differences which is why we define it without that strucure.
     //Main reason to NOT use struct stat is that Windows has a version, but to get the 64 version would make this a mess to define.
