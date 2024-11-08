@@ -80,14 +80,14 @@ extern "C"
     typedef short          nlink_t;
     // using our own "type" to make sure we can get as much of the filesize as
     // possible..and workaround Windows issues with off_t -TJE
-    typedef int64_t offset_t; // NOTE: WinAPI uses __int64_t which is the same as long long
-                              // which is also what int64_t from stdint.h is defined as
+    typedef int64_t oscoffset_t; // NOTE: WinAPI uses __int64_t which is the same as long long
+                                 // which is also what int64_t from stdint.h is defined as
     typedef unsigned long winsyserror_t;
 #else
 // using our own "type" to make sure we can get as much of the filesize as
 // possible..and workaround Windows issues with off_t -TJE
-typedef off_t offset_t; // to deal with windows differences in off_t definitions
-                        // in stat
+typedef off_t oscoffset_t; // to deal with windows differences in off_t definitions
+                           // in stat
 #endif
 
 #if !defined(HAVE_C11_ANNEX_K) && !defined(__STDC_SECURE_LIB__)
@@ -259,9 +259,9 @@ typedef int32_t intptr_t;
 #    if defined(USING_C23)
 #        define M_NULLPTR nullptr
 #    elif defined(NULL)
-                        // use NULL since this is commonly available and likely
-                        // to be safe for the environment we are
-                        // in.
+                           // use NULL since this is commonly available and likely
+                           // to be safe for the environment we are
+                           // in.
 // NOTE: If this is ever an issue, consider improving this check to fall into
 // the #else below
 //       instead where it is defined as a void* of 0 which should work most of
@@ -269,9 +269,9 @@ typedef int32_t intptr_t;
 //       https://stackoverflow.com/questions/2597142/when-was-the-null-macro-not-0
 #        define M_NULLPTR NULL
 #    else
-                        // for unknown reasons M_NULLPTR was not defined so
-                        // define it the most common way we can to be
-                        // safe
+                           // for unknown reasons M_NULLPTR was not defined so
+                           // define it the most common way we can to be
+                           // safe
 #        define M_NULLPTR ((void*)0)
 #    endif // C23
 #endif     // C & C++ M_NULLPTR PTR definitions

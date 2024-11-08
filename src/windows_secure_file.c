@@ -24,6 +24,7 @@
 
 #include "common_types.h"
 #include "error_translation.h"
+#include "io_utils.h"
 #include "memory_safety.h"
 #include "secure_file.h"
 #include "secured_env_vars.h"
@@ -561,11 +562,27 @@ static bool get_System_Volume(char* winSysVol, size_t winSysVolLen)
     return validsystemvol;
 }
 
-static bool is_Folder_Secure(const char* securityDescriptorString, const char* dirptr)
+FUNC_ATTR_PRINTF(2, 3) static void set_dir_security_output_error_message(char** outputError, const char* format, ...)
+{
+    if (outputError != M_NULLPTR)
+    {
+        va_list args;
+        va_start(args, format);
+        int result = vasprintf(outputError, format, args);
+        va_end(args);
+        if (result < 0 && *outputError != M_NULLPTR)
+        {
+            safe_free(outputError);
+        }
+    }
+}
+
+static bool is_Folder_Secure(const char* securityDescriptorString, const char* dirptr, char** outputError)
 {
     bool secure = true;
     if (securityDescriptorString == M_NULLPTR || dirptr == M_NULLPTR)
     {
+        set_dir_security_output_error_message(outputError, "Invalid security descriptor string or directory given.\n");
         return false;
     }
     DECLARE_ZERO_INIT_ARRAY(char, windowsSystemVolume, MAX_PATH);
@@ -587,12 +604,15 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
         if (FALSE == ConvertStringSidToSidA(mySidStr, &mySid))
         {
             /* Handle Error */
+            set_dir_security_output_error_message(outputError,
+                                                  "Failed to convert current user's SID string to sid structure\n");
             secure = false;
             break;
         }
         if (FALSE == IsValidSid(mySid))
         {
             /* Handle Error */
+            set_dir_security_output_error_message(outputError, "Invalid sid\n");
             secure = false;
             break;
         }
@@ -600,24 +620,29 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                                                                           &secdesc, &secdesclen))
         {
             /* Handle Error */
+            set_dir_security_output_error_message(
+                outputError, "Failed to convert security descriptor string to security descriptor structure\n");
             secure = false;
             break;
         }
         if (FALSE == IsValidSecurityDescriptor(secdesc))
         {
             /* Handle Error */
+            set_dir_security_output_error_message(outputError, "Invalid security descriptor\n");
             secure = false;
             break;
         }
         if (FALSE == GetSecurityDescriptorOwner(secdesc, &userSid, &defaultOwner))
         {
             /* Handle Error */
+            set_dir_security_output_error_message(outputError, "Failed to get security descriptor owner\n");
             secure = false;
             break;
         }
         if (FALSE == IsValidSid(userSid))
         {
             /* Handle Error */
+            set_dir_security_output_error_message(outputError, "Invalid SID for security descriptor owner\n");
             secure = false;
             break;
         }
@@ -670,14 +695,15 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                         {
                             /* Directory is owned by someone besides
                              * user/system/administrator */
-                            secure = false;
-#if defined(_DEBUG)
+                            secure          = false;
                             char* sidString = M_NULLPTR;
                             if (ConvertSidToStringSidA(userSid, &sidString))
                             {
-                                printf("Untrusted Owner SID: %s\n", sidString);
+                                set_dir_security_output_error_message(
+                                    outputError, "Directory (%s) owned by SID (not trusted): %s\n", dirptr, sidString);
+                                LocalFree(sidString);
+                                sidString = M_NULLPTR;
                             }
-#endif //_DEBUG
                             break;
                         }
                     }
@@ -686,14 +712,15 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                 {
                     /* Directory is owned by someone besides
                      * user/system/administrator */
-                    secure = false;
-#if defined(_DEBUG)
+                    secure          = false;
                     char* sidString = M_NULLPTR;
                     if (ConvertSidToStringSidA(userSid, &sidString))
                     {
-                        printf("Untrusted Owner SID: %s\n", sidString);
+                        set_dir_security_output_error_message(
+                            outputError, "Directory (%s) owned by SID (not trusted): %s\n", dirptr, sidString);
+                        LocalFree(sidString);
+                        sidString = M_NULLPTR;
                     }
-#endif //_DEBUG
                     break;
                 }
             }
@@ -701,14 +728,15 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
             {
                 /* Directory is owned by someone besides
                  * user/system/administrator */
-                secure = false;
-#if defined(_DEBUG)
+                secure          = false;
                 char* sidString = M_NULLPTR;
                 if (ConvertSidToStringSidA(userSid, &sidString))
                 {
-                    printf("Untrusted Owner SID: %s\n", sidString);
+                    set_dir_security_output_error_message(
+                        outputError, "Directory (%s) owned by SID (not trusted): %s\n", dirptr, sidString);
+                    LocalFree(sidString);
+                    sidString = M_NULLPTR;
                 }
-#endif //_DEBUG
                 break;
             }
         }
@@ -742,6 +770,8 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
         {
             /* Handle Error */
             secure = false;
+            set_dir_security_output_error_message(outputError, "Unable to retrieve DACL from security descriptor: %s\n",
+                                                  dirptr);
             break;
         }
 
@@ -749,6 +779,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
         {
             /* Missing DACL, so cannot verify permissions */
             secure = false;
+            set_dir_security_output_error_message(outputError, "DACL Missing. Cannot verify permissions: %s\n", dirptr);
             break;
         }
 
@@ -756,6 +787,8 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
         {
             /* Handle Error */
             secure = false;
+            set_dir_security_output_error_message(outputError, "Invalid DACL received. Cannot verify permissions: %s\n",
+                                                  dirptr);
             break;
         }
 
@@ -785,14 +818,18 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                             if (!(allowEveryoneGroup && everyoneGroupSID != M_NULLPTR &&
                                   EqualSid(aceSID, everyoneGroupSID)))
                             {
-                                secure = false;
-#if defined(_DEBUG)
                                 char* sidString = M_NULLPTR;
+                                secure          = false;
                                 if (ConvertSidToStringSidA(aceSID, &sidString))
                                 {
-                                    printf("Untrusted SID: %s\n", sidString);
+                                    set_dir_security_output_error_message(
+                                        outputError,
+                                        "Directory (%s) can be accessed by SID (not trusted, must be removed to be "
+                                        "secure): %s\n",
+                                        dirptr, sidString);
+                                    LocalFree(sidString);
+                                    sidString = M_NULLPTR;
                                 }
-#endif //_DEBUG
                             }
 #if defined(_DEBUG)
                             else
@@ -801,6 +838,8 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                                 if (ConvertSidToStringSidA(aceSID, &sidString))
                                 {
                                     printf("Trusted SID: %s\n", sidString);
+                                    LocalFree(sidString);
+                                    sidString = M_NULLPTR;
                                 }
                             }
 #endif //_DEBUG
@@ -818,6 +857,8 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                     }
                     else
                     {
+                        set_dir_security_output_error_message(
+                            outputError, "Invalid ACE in DACL. Directory (%s) cannot be trusted\n", dirptr);
                         secure = false;
                     }
                 }
@@ -864,13 +905,16 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
 #define MAX_SYMLINKS_IN_PATH 5
 
 /* This function requires Windows style seperators (\) to function properly! */
-static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int num_symlinks)
+static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int num_symlinks, char** outputError)
 {
     char*   path_copy   = M_NULLPTR;
     char**  dirs        = M_NULLPTR;
     ssize_t num_of_dirs = SSIZE_T_C(1);
     bool    secure      = true;
     ssize_t i           = SSIZE_T_C(0);
+
+    // TODO: Set error message appropriate for Windows errors detected
+    M_USE_UNUSED(outputError);
 
     if (!fullpath || fullpath[0] == '\0')
     {
@@ -1000,6 +1044,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         {
             /* handle error */
             secure = false;
+            set_dir_security_output_error_message(outputError, "Unable to read directory attributes: %s\n", dirptr);
             if (appendedTrailingSlash)
             {
                 safe_free(&dirptr);
@@ -1010,6 +1055,8 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         {
             /* handle error */
             secure = false;
+            set_dir_security_output_error_message(outputError, "Too many symlinks in path (>%d): %s\n",
+                                                  MAX_SYMLINKS_IN_PATH, dirptr);
             free_File_Attributes(&attrs);
             if (appendedTrailingSlash)
             {
@@ -1068,7 +1115,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                                 else
                                 {
                                     num_symlinks++;
-                                    bool recurseSecure = internal_OS_Is_Directory_Secure(reparsePath, num_symlinks);
+                                    bool recurseSecure = internal_OS_Is_Directory_Secure(reparsePath, num_symlinks, outputError);
                                     num_symlinks--;
                                     if (!recurseSecure)
                                     {
@@ -1079,22 +1126,33 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                             }
                             else
                             {
+                                set_dir_security_output_error_message(
+                                    outputError, "Unable to allocate memory to check reparse point in path: %s\n",
+                                    dirptr);
                                 secure = false;
                             }
                         }
                         else
                         {
+                            set_dir_security_output_error_message(
+                                outputError, "Unable to calculate memory length to check reparse point in path: %s\n",
+                                dirptr);
                             secure = false;
                         }
                     }
                     else
                     {
+                        set_dir_security_output_error_message(
+                            outputError,
+                            "Unable to issue FSCTL_GET_REPASE_POINT to validate reparse point in path: %s\n", dirptr);
                         secure = false;
                     }
                     safe_free_reparse_data_buf(&reparseData);
                 }
                 else
                 {
+                    set_dir_security_output_error_message(
+                        outputError, "Unable to allocate memory to check reparse point in path: %s\n", dirptr);
                     secure = false;
                 }
                 CloseHandle(link);
@@ -1113,6 +1171,8 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             }
             else
             {
+                set_dir_security_output_error_message(outputError,
+                                                      "Unable to open handle to reparse point in path: %s\n", dirptr);
                 secure = false;
                 free_File_Attributes(&attrs);
                 if (appendedTrailingSlash)
@@ -1127,6 +1187,8 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         {
             /* Not a directory */
             secure = false;
+            set_dir_security_output_error_message(outputError,
+                                                  "%s is not a directory. Cannot validate as part of path.\n", dirptr);
             free_File_Attributes(&attrs);
             if (appendedTrailingSlash)
             {
@@ -1135,7 +1197,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             break;
         }
 
-        secure = is_Folder_Secure(attrs->winSecurityDescriptor, dirptr);
+        secure = is_Folder_Secure(attrs->winSecurityDescriptor, dirptr, outputError);
         if (appendedTrailingSlash)
         {
             safe_free(&dirptr);
@@ -1153,12 +1215,12 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     return secure;
 }
 
-M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath)
+M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath, char** outputError)
 {
     // This was implemented as close as possible to
     // https://wiki.sei.cmu.edu/confluence/display/c/FIO15-C.+Ensure+that+file+operations+are+performed+in+a+secure+directory
     unsigned int num_symlinks = 0;
-    return internal_OS_Is_Directory_Secure(fullpath, num_symlinks);
+    return internal_OS_Is_Directory_Secure(fullpath, num_symlinks, outputError);
 }
 
 bool os_Directory_Exists(const char* const pathToCheck)

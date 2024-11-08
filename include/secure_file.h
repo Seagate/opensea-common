@@ -20,6 +20,7 @@
 
 #include "code_attributes.h"
 #include "common_types.h"
+#include <stdarg.h>
 #include <stdio.h>
 
 #if defined(__cplusplus)
@@ -103,7 +104,9 @@ extern "C"
 
     M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file);
 
-    M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath);
+    // outputError can be a null pointer. If not null, an error message will be allocated for you.
+    // it can be free'd by calling safe_free() on it when you are done with the error
+    M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath, char** outputError);
 
     // Most members of this strucuture match the stat structure. There are some
     // differences which is why we define it without that strucure. Main reason to
@@ -113,24 +116,21 @@ extern "C"
     // Windows dues to not have the same concepts as on Unix/Unix-like systems
     typedef struct sfileAttributes
     {
-        dev_t    deviceID;
-        ino_t    inode;
-        mode_t   filemode;
-        nlink_t  numberOfLinks;
-        uid_t    userID;
-        gid_t    groupID;
-        dev_t    representedDeviceID;
-        offset_t filesize;
-        int64_t  fileLastAccessTime;  // milliseconds since Unix epoch (in Windows,
-                                      // converted from Windows file epoch to this value)
-        int64_t fileModificationTime; // milliseconds since Unix epoch (in Windows,
-                                      // converted from Windows file epoch to this
-                                      // value)
-        int64_t fileStatusChangeTime; // milliseconds since Unix epoch (in Windows,
-                                      // converted from Windows file epoch to this
-                                      // value)
-        // Windows only below here for Windows specific info that may differ from
-        // above
+        dev_t       deviceID;
+        ino_t       inode;
+        mode_t      filemode;
+        nlink_t     numberOfLinks;
+        uid_t       userID;
+        gid_t       groupID;
+        dev_t       representedDeviceID;
+        oscoffset_t filesize;
+        int64_t fileLastAccessTime;   // milliseconds since Unix epoch (in Windows, converted from Windows file epoch to
+                                      // this value)
+        int64_t fileModificationTime; // milliseconds since Unix epoch (in Windows, converted from Windows file epoch to
+                                      // this value)
+        int64_t fileStatusChangeTime; // milliseconds since Unix epoch (in Windows, converted from Windows file epoch to
+                                      // this value)
+        // Windows only below here for Windows specific info that may differ from above
         uint32_t fileFlags;
         uint16_t securityControlFlags;
 #if defined(_WIN32)
@@ -261,9 +261,9 @@ extern "C"
                                                    size_t                     elementsize,
                                                    size_t                     count,
                                                    size_t*                    numberwritten /*optional*/);
-    M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, offset_t offset, int initialPosition);
+    M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, oscoffset_t offset, int initialPosition);
     M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo);
-    M_NODISCARD offset_t         secure_Tell_File(secureFileInfo* fileInfo);
+    M_NODISCARD oscoffset_t      secure_Tell_File(secureFileInfo* fileInfo);
 
     // This function will unlink the file if it is still open, otherwise it will
     // remove it.
