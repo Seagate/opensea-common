@@ -716,7 +716,7 @@ M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileIn
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
-M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, offset_t offset, int initialPosition)
+M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, oscoffset_t offset, int initialPosition)
 {
     if (fileInfo)
     {
@@ -774,7 +774,7 @@ M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
-M_NODISCARD offset_t secure_Tell_File(secureFileInfo* fileInfo)
+M_NODISCARD oscoffset_t secure_Tell_File(secureFileInfo* fileInfo)
 {
     if (fileInfo)
     {
@@ -785,7 +785,7 @@ M_NODISCARD offset_t secure_Tell_File(secureFileInfo* fileInfo)
         fileInfo->error = SEC_FILE_INVALID_FILE;
         if (fileInfo->file)
         {
-            offset_t tellres = 0;
+            oscoffset_t tellres = 0;
             //Windows has _fseeki64, which may be better to use instead for larger files or to be compatible with larger files.
             //Linux/posix have fseeko and ftello which use off_t which can be wider as well. (POSIX 2001)
             errno = 0;//ISO secure coding standard recommends this to ensure errno is interpretted correctly after this call

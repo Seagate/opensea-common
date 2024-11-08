@@ -200,7 +200,7 @@ M_NODISCARD eEnvVarResult get_Environment_Variable(const char* environmentVariab
         const char* env = __secure_getenv(environmentVariableName);
         if (env != M_NULLPTR)
         {
-            *envVar = strdup(temp);
+            *envVar = strdup(env);
         }
 #else
         const char* env = getenv(environmentVariableName);
