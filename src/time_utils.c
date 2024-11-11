@@ -385,9 +385,9 @@ struct tm* get_UTCtime(const time_t* timer, struct tm* buf)
 #if (defined(POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined(USING_C23)
         // POSIX or C2x (C23 right now) have gmtime_r to use
         return gmtime_r(timer, buf);
-#elif defined(HAVE_C11_ANNEX_K)
+#elif defined(HAVE_C11_ANNEX_K) || (defined(HAVE_MSFT_SECURE_LIB) && defined (_CRT_USE_CONFORMING_ANNEX_K_TIME) && _CRT_USE_CONFORMING_ANNEX_K_TIME != 0)
         return gmtime_s(timer, buf);
-#elif defined(__STDC_SECURE_LIB__)
+#elif defined(HAVE_MSFT_SECURE_LIB)
         // If MSFT CRT available, use microsoft gmtime_s which is incompatible
         // with the standard
         if (0 != gmtime_s(buf, timer))
@@ -417,9 +417,9 @@ struct tm* get_Localtime(const time_t* timer, struct tm* buf)
 #if (defined(POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined(USING_C23)
         // POSIX or C2x (C23 right now) have localtime_r to use
         return localtime_r(timer, buf);
-#elif defined(HAVE_C11_ANNEX_K)
+#elif defined(HAVE_C11_ANNEX_K) || (defined(HAVE_MSFT_SECURE_LIB) && defined (_CRT_USE_CONFORMING_ANNEX_K_TIME) && _CRT_USE_CONFORMING_ANNEX_K_TIME != 0)
         return localtime_s(timer, buf);
-#elif defined(__STDC_SECURE_LIB__)
+#elif defined(HAVE_MSFT_SECURE_LIB)
         // If MSFT CRT available, use microsoft localtime_s which is
         // incompatible with the standard
         if (0 != localtime_s(buf, timer))
@@ -444,7 +444,7 @@ char* get_Time_String_From_TM_Structure(const struct tm* timeptr, char* buffer, 
     {
         // start with a known zeroed buffer
         safe_memset(buffer, bufferSize, 0, bufferSize);
-#if defined(__STDC_SECURE_LIB__) || defined(HAVE_C11_ANNEX_K)
+#if defined(HAVE_MSFT_SECURE_LIB) || defined(HAVE_C11_ANNEX_K)
         if (0 != asctime_s(buffer, bufferSize, timeptr))
         {
             // error
@@ -454,7 +454,7 @@ char* get_Time_String_From_TM_Structure(const struct tm* timeptr, char* buffer, 
         {
             return buffer;
         }
-#endif //__STDC_SECURE_LIB__ || HAVE_C11_ANNEX_K
+#endif //HAVE_MSFT_SECURE_LIB || HAVE_C11_ANNEX_K
        // strftime is recommended to be used. Using format %c will return the
        // matching output for this function asctime (which this replaces uses
        // the format: Www Mmm dd hh:mm:ss yyyy\n) NOTE: %e is C99. C89's closest
