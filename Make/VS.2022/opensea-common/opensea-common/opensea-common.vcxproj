@@ -70,6 +70,7 @@
     <ClInclude Include="..\..\..\..\include\bit_manip.h" />
     <ClInclude Include="..\..\..\..\include\code_attributes.h" />
     <ClInclude Include="..\..\..\..\include\common_types.h" />
+    <ClInclude Include="..\..\..\..\include\constraint_handling.h" />
     <ClInclude Include="..\..\..\..\include\env_detect.h" />
     <ClInclude Include="..\..\..\..\include\error_translation.h" />
     <ClInclude Include="..\..\..\..\include\io_utils.h" />
@@ -92,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\bit_manip.c" />
+    <ClCompile Include="..\..\..\..\src\constraint_handling.c" />
     <ClCompile Include="..\..\..\..\src\env_detect.c" />
     <ClCompile Include="..\..\..\..\src\error_translation.c" />
     <ClCompile Include="..\..\..\..\src\io_utils.c" />
