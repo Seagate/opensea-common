@@ -247,12 +247,12 @@ extern "C"
 
 #if (defined(__STDC_LIB_EXT1__) && defined(__STDC_WANT_LIB_EXT1__))
 #    define HAVE_C11_ANNEX_K
-// NOTE: These are _s functions, but they MAY NOT MATCH the _s functions
-// Microsoft has available.
-//       Some have different parameters or different parameter order among other
-//       things. Some do match and are the same. To check for Microsoft's
-//       version, check for __STDC_SECURE_LIB__
 #endif // check for annex k
+
+#if defined (__STDC_SECURE_LIB__) || defined (__GOT_SECURE_LIB__)
+#   define HAVE_MSFT_SECURE_LIB
+#endif //Microsoft secure lib
+
 
 // Detect the system we are compiling for as best we can
 #if defined(UEFI_C_SOURCE)
