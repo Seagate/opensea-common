@@ -244,7 +244,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
             }
             if (isWindowsPE)
             {
-                common_String_Concat(operatingSystemName, OS_NAME_SIZE, " (PE)");
+                safe_strcat(operatingSystemName, OS_NAME_SIZE, " (PE)");
             }
         }
     }

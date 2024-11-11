@@ -342,7 +342,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
         {
             return M_NULLPTR;
         }
-#if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_VERSION
+#if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_VISTA
         if (is_Windows_Vista_Or_Higher()) // This ex function is only available
                                           // on Vista and later OSs according to
                                           // MSFT docs
@@ -515,7 +515,7 @@ static bool get_System_Volume(char* winSysVol, size_t winSysVolLen)
     if (validsystemvol && safe_strnlen(windowsSystemVolume, MAX_PATH) > 0)
     {
         safe_memset(winSysVol, winSysVolLen, 0, winSysVolLen);
-        common_String_Concat(winSysVol, winSysVolLen, windowsSystemVolume);
+        safe_strcat(winSysVol, winSysVolLen, windowsSystemVolume);
     }
     else
     {
@@ -533,10 +533,10 @@ static bool get_System_Volume(char* winSysVol, size_t winSysVolLen)
             }
             else
             {
-                common_String_Concat(windowsSystemVolume, MAX_PATH, systemDrive);
+                safe_strcat(windowsSystemVolume, MAX_PATH, systemDrive);
                 if (M_NULLPTR == strchr(windowsSystemVolume, '\\'))
                 {
-                    common_String_Concat(windowsSystemVolume, MAX_PATH, "\\");
+                    safe_strcat(windowsSystemVolume, MAX_PATH, "\\");
                 }
             }
             safe_free(&systemDrive);
@@ -556,7 +556,7 @@ static bool get_System_Volume(char* winSysVol, size_t winSysVolLen)
             }
             validsystemvol = true;
             safe_memset(winSysVol, winSysVolLen, 0, winSysVolLen);
-            common_String_Concat(winSysVol, winSysVolLen, windowsSystemVolume);
+            safe_strcat(winSysVol, winSysVolLen, windowsSystemVolume);
         }
     }
     return validsystemvol;
@@ -769,8 +769,8 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                     // for simplicity. Can reduce memory by shortening, but this
                     // is fine for now on this limited list.
                     DECLARE_ZERO_INIT_ARRAY(char, usersdir, MAX_PATH);
-                    common_String_Concat(usersdir, MAX_PATH, windowsSystemVolume);
-                    common_String_Concat(usersdir, MAX_PATH,
+                    safe_strcat(usersdir, MAX_PATH, windowsSystemVolume);
+                    safe_strcat(usersdir, MAX_PATH,
                                          "Users"); // no trailing slash as the paths passed in
                                                    // are not completed with a slash
                     if (strcmp(dirptr, usersdir) == 0)
@@ -1043,7 +1043,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             if (dirptr)
             {
                 safe_memcpy(dirptr, newlen, dirs[i], newlen - 2);
-                common_String_Concat(dirptr, newlen, "\\");
+                safe_strcat(dirptr, newlen, "\\");
                 appendedTrailingSlash = true;
             }
             else
