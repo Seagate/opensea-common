@@ -279,176 +279,192 @@ int safe_ispunct(int c)
 
 errno_t safe_strcpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src)
 {
-#if defined(HAVE_C11_ANNEX_K)
-    return strcpy_s(dest, destsz, src);
-#else
+    errno_t error = 0;
     size_t srclen = safe_strnlen(src, destsz);
     if (dest == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_strcpy: dest is NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strcpy: dest is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (src == M_NULLPTR)
     {
-        invoke_Constraint_Handler("safe_strcpy: src is NULL", M_NULLPTR, EINVAL);
-        if (destsz > 0 && destsz <= RSIZE_MAX)
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strcpy: src is NULL", M_NULLPTR, error);
+        if (destsz > RSIZE_T_C(0) && destsz <= RSIZE_MAX)
         {
             dest[0] = 0;
         }
-        errno = EINVAL;
-        return errno;
+        errno = error;
+        return error;
     }
-    else if (destsz == 0)
+    else if (destsz == RSIZE_T_C(0))
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_strcpy: destsz is zero", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strcpy: destsz is zero", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (destsz > RSIZE_MAX)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_strcpy: destsz > RSIZE_MAX", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strcpy: destsz > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (destsz <= srclen)
     {
         dest[0] = 0;
-        errno   = ERANGE;
-        invoke_Constraint_Handler("safe_strcpy: destsz <= srclen", M_NULLPTR, errno);
-        return errno;
+        error   = ERANGE;
+        invoke_Constraint_Handler("safe_strcpy: destsz <= srclen", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (memory_regions_overlap(dest, destsz, src, srclen))
     {
         dest[0] = 0;
-        errno   = EINVAL;
-        invoke_Constraint_Handler("safe_strcpy: src and destination overlap!", M_NULLPTR, errno);
-        return errno;
+        error   = EINVAL;
+        invoke_Constraint_Handler("safe_strcpy: src and destination overlap!", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else
     {
-#    if defined(__STDC_SECURE_LIB__)
+#    if defined(HAVE_MSFT_SECURE_LIB)
         // call MSFT implementation to reduce warnings. It does not detect as
         // many cases as standard which is why it's down here.-TJE
-        errno = strcpy_s(dest, destsz, src);
+        error = strcpy_s(dest, destsz, src);
 #    else
-        errno        = safe_memccpy(dest, destsz, src, '\0', srclen + 1);
+        error        = safe_memccpy(dest, destsz, src, '\0', srclen + SIZE_T_C(1));
         dest[srclen] = '\0'; // ensuring NULL termination
 #    endif
-        return errno;
+        errno = error;
+        return error;
     }
-#endif
 }
 
 errno_t safe_strmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src)
 {
+    errno_t error = 0;
     size_t srclen = safe_strnlen(src, destsz);
     if (dest == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_strmove: dest is NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strmove: dest is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (src == M_NULLPTR)
     {
-        invoke_Constraint_Handler("safe_strmove: src is NULL", M_NULLPTR, EINVAL);
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strmove: src is NULL", M_NULLPTR, error);
         if (destsz > 0 && destsz <= RSIZE_MAX)
         {
             dest[0] = 0;
         }
-        errno = EINVAL;
-        return errno;
+        errno = error;
+        return error;
     }
-    else if (destsz == 0)
+    else if (destsz == RSIZE_T_C(0))
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_strmove: destsz is zero", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strmove: destsz is zero", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (destsz > RSIZE_MAX)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_strmove: destsz > RSIZE_MAX", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strmove: destsz > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (destsz <= srclen)
     {
         dest[0] = 0;
-        errno   = ERANGE;
-        invoke_Constraint_Handler("safe_strmove: destsz <= srclen", M_NULLPTR, errno);
-        return errno;
+        error   = ERANGE;
+        invoke_Constraint_Handler("safe_strmove: destsz <= srclen", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else
     {
-        errno        = safe_memcmove(dest, destsz, src, '\0', srclen + 1);
+        error        = safe_memcmove(dest, destsz, src, '\0', srclen + SIZE_T_C(1));
         dest[srclen] = '\0'; // ensuring NULL termination
-        return errno;
+        errno = error;
+        return error;
     }
 }
 
 errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src, rsize_t count)
 {
-#if defined(HAVE_C11_ANNEX_K)
-    return strcpy_s(dest, destsz, src);
-#else
+    errno_t error = 0;
     size_t srclen = safe_strnlen(src, count);
     if (dest == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_strncpy: dest is NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strncpy: dest is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (src == M_NULLPTR)
     {
-        invoke_Constraint_Handler("safe_strncpy: src is NULL", M_NULLPTR, EINVAL);
-        if (destsz > 0 && destsz <= RSIZE_MAX)
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strncpy: src is NULL", M_NULLPTR, error);
+        if (destsz > RSIZE_T_C(0) && destsz <= RSIZE_MAX)
         {
             dest[0] = 0;
         }
-        errno = EINVAL;
-        return errno;
+        errno = error;
+        return error;
     }
-    else if (destsz == 0)
+    else if (destsz == RSIZE_T_C(0))
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_strncpy: destsz is zero", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strncpy: destsz is zero", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (destsz > RSIZE_MAX)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_strncpy: destsz > RSIZE_MAX", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strncpy: destsz > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (count > RSIZE_MAX)
     {
         dest[0] = 0;
-        errno   = ERANGE;
-        invoke_Constraint_Handler("safe_strncpy: count > RSIZE_MAX", M_NULLPTR, errno);
-        return errno;
+        error   = ERANGE;
+        invoke_Constraint_Handler("safe_strncpy: count > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (count >= destsz && destsz <= srclen)
     {
         dest[0] = 0;
-        errno   = ERANGE;
-        invoke_Constraint_Handler("safe_strncpy: count >= destsz", M_NULLPTR, errno);
-        return errno;
+        error   = ERANGE;
+        invoke_Constraint_Handler("safe_strncpy: count >= destsz", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (memory_regions_overlap(dest, destsz, src, count))
     {
         dest[0] = 0;
-        errno   = EINVAL;
-        invoke_Constraint_Handler("safe_strncpy: src and destination overlap!", M_NULLPTR, errno);
-        return errno;
+        error   = EINVAL;
+        invoke_Constraint_Handler("safe_strncpy: src and destination overlap!", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else
     {
-#    if defined(__STDC_SECURE_LIB__)
+#    if defined(HAVE_MSFT_SECURE_LIB)
         // call MSFT implementation to reduce warnings. It does not detect as
         // many cases as standard which is why it's down here.-TJE
-        errno = strncpy_s(dest, destsz, src, count);
+        error = strncpy_s(dest, destsz, src, count);
 #    else
-        errno        = safe_memccpy(dest, destsz, src, '\0', count);
+        error        = safe_memccpy(dest, destsz, src, '\0', count);
         if (srclen < count)
         {
             dest[srclen] = '\0'; // ensuring NULL termination
@@ -458,59 +474,66 @@ errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
             dest[count] = '\0'; // ensuring NULL termination
         }
 #    endif
-        return errno;
+        errno = error;
+        return error;
     }
-#endif
 }
 
 errno_t safe_strnmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src, rsize_t count)
 {
+    errno_t error = 0;
     size_t srclen = safe_strnlen(src, count);
     if (dest == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_strnmove: dest is NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strnmove: dest is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (src == M_NULLPTR)
     {
-        invoke_Constraint_Handler("safe_strnmove: src is NULL", M_NULLPTR, EINVAL);
-        if (destsz > 0 && destsz <= RSIZE_MAX)
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strnmove: src is NULL", M_NULLPTR, error);
+        if (destsz > RSIZE_T_C(0) && destsz <= RSIZE_MAX)
         {
             dest[0] = 0;
         }
-        errno = EINVAL;
-        return errno;
+        errno = error;
+        return error;
     }
-    else if (destsz == 0)
+    else if (destsz == RSIZE_T_C(0))
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_strnmove: destsz is zero", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strnmove: destsz is zero", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (destsz > RSIZE_MAX)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_strnmove: destsz > RSIZE_MAX", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strnmove: destsz > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (count > RSIZE_MAX)
     {
         dest[0] = 0;
-        errno   = ERANGE;
-        invoke_Constraint_Handler("safe_strnmove: count > RSIZE_MAX", M_NULLPTR, errno);
-        return errno;
+        error   = ERANGE;
+        invoke_Constraint_Handler("safe_strnmove: count > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (count >= destsz && destsz <= srclen)
     {
         dest[0] = 0;
-        errno   = ERANGE;
-        invoke_Constraint_Handler("safe_strnmove: count >= destsz", M_NULLPTR, errno);
-        return errno;
+        error   = ERANGE;
+        invoke_Constraint_Handler("safe_strnmove: count >= destsz", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else
     {
-        errno = safe_memcmove(dest, destsz, src, '\0', count);
+        error = safe_memcmove(dest, destsz, src, '\0', count);
         if (srclen < count)
         {
             dest[srclen] = '\0'; // ensuring NULL termination
@@ -519,151 +542,162 @@ errno_t safe_strnmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTR
         {
             dest[count] = '\0'; // ensuring NULL termination
         }
-        return errno;
+        errno = error;
+        return error;
     }
 }
 
 errno_t safe_strcat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src)
 {
-#if defined(HAVE_C11_ANNEX_K)
-    return strcat_s(dest, destsz, src);
-#else
+    errno_t error = 0;
     size_t srclen   = safe_strnlen(src, destsz);
     char*  destnull = M_NULLPTR;
     if (dest == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_strcat: dest is NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strcat: dest is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (src == M_NULLPTR)
     {
-        invoke_Constraint_Handler("safe_strcat: src is NULL", M_NULLPTR, EINVAL);
-        if (destsz > 0 && destsz <= RSIZE_MAX)
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strcat: src is NULL", M_NULLPTR, error);
+        if (destsz > RSIZE_T_C(0) && destsz <= RSIZE_MAX)
         {
             dest[0] = 0;
         }
-        errno = EINVAL;
-        return errno;
+        errno = error;
+        return error;
     }
-    else if (destsz == 0)
+    else if (destsz == RSIZE_T_C(0))
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_strcat: destsz is zero", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strcat: destsz is zero", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (destsz > RSIZE_MAX)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_strcat: destsz > RSIZE_MAX", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strcat: destsz > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (M_NULLPTR == (destnull = M_REINTERPRET_CAST(char*, memchr(dest, '\0', destsz))))
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_strcat: No NULL terminator found in dest", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strcat: No NULL terminator found in dest", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if ((destsz + M_STATIC_CAST(uintptr_t, destnull)) <= srclen) // truncation
     {
         dest[0] = 0;
-        errno   = ERANGE;
-        invoke_Constraint_Handler("safe_strcat: destsz too small. Src will be truncated.", M_NULLPTR, errno);
-        return errno;
+        error   = ERANGE;
+        invoke_Constraint_Handler("safe_strcat: destsz too small. Src will be truncated.", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (memory_regions_overlap(dest, destsz, src, srclen))
     {
         dest[0] = 0;
-        errno   = EINVAL;
-        invoke_Constraint_Handler("safe_strcat: src and destination overlap!", M_NULLPTR, errno);
-        return errno;
+        error   = EINVAL;
+        invoke_Constraint_Handler("safe_strcat: src and destination overlap!", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else
     {
-#    if defined(__STDC_SECURE_LIB__)
+#    if defined(HAVE_MSFT_SECURE_LIB)
         // call MSFT implementation to reduce warnings. It does not detect as
         // many cases as standard which is why it's down here.-TJE
-        errno = strcat_s(dest, destsz, src);
+        error = strcat_s(dest, destsz, src);
 #    else
-        errno =
+        error =
             safe_memccpy(destnull, destsz - (C_CAST(uintptr_t, destnull) - C_CAST(uintptr_t, dest)), src, '\0', srclen);
         destnull[srclen] = '\0';
 #    endif
-        return errno;
+errno = error;
+        return error;
     }
-#endif
 }
 
 errno_t safe_strncat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src, rsize_t count)
 {
-#if defined(HAVE_C11_ANNEX_K)
-    return strncat_s(dest, destsz, src, count);
-#else
+    errno_t error = 0;
     size_t srclen   = safe_strnlen(src, destsz);
     char*  destnull = M_NULLPTR;
     if (dest == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_strncat: dest is NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strncat: dest is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (src == M_NULLPTR)
     {
-        invoke_Constraint_Handler("safe_strncat: src is NULL", M_NULLPTR, EINVAL);
-        if (destsz > 0 && destsz <= RSIZE_MAX)
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strncat: src is NULL", M_NULLPTR, error);
+        if (destsz > RSIZE_T_C(0) && destsz <= RSIZE_MAX)
         {
             dest[0] = 0;
         }
-        errno = EINVAL;
-        return errno;
+        errno = error;
+        return error;
     }
-    else if (destsz == 0)
+    else if (destsz == RSIZE_T_C(0))
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_strncat: destsz is zero", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strncat: destsz is zero", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (destsz > RSIZE_MAX)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_strncat: destsz > RSIZE_MAX", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strncat: destsz > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (M_NULLPTR == (destnull = M_REINTERPRET_CAST(char*, memchr(dest, '\0', destsz))))
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_strncat: No NULL terminator found in dest", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strncat: No NULL terminator found in dest", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (((destsz + M_STATIC_CAST(uintptr_t, destnull)) <= srclen) ||
              ((destsz + M_STATIC_CAST(uintptr_t, destnull)) <= count)) // truncation
     {
         dest[0] = 0;
-        errno   = ERANGE;
-        invoke_Constraint_Handler("safe_strncat: destsz too small. Src will be truncated.", M_NULLPTR, errno);
-        return errno;
+        error   = ERANGE;
+        invoke_Constraint_Handler("safe_strncat: destsz too small. Src will be truncated.", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (memory_regions_overlap(dest, destsz, src, count))
     {
         dest[0] = 0;
-        errno   = EINVAL;
-        invoke_Constraint_Handler("safe_strncat: src and destination overlap!", M_NULLPTR, errno);
-        return errno;
+        error   = EINVAL;
+        invoke_Constraint_Handler("safe_strncat: src and destination overlap!", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else
     {
-#    if defined(__STDC_SECURE_LIB__)
+#    if defined(HAVE_MSFT_SECURE_LIB)
         // call MSFT implementation to reduce warnings. It does not detect as
         // many cases as standard which is why it's down here.-TJE
-        errno = strncat_s(dest, destsz, src, count);
+        error = strncat_s(dest, destsz, src, count);
 #    else
-        errno =
+        error =
             safe_memccpy(destnull, destsz - (C_CAST(uintptr_t, destnull) - C_CAST(uintptr_t, dest)), src, '\0', count);
         destnull[count] = '\0';
 #    endif
-        return errno;
+        errno = error;
+        return error;
     }
-#endif
 }
 
 char* safe_String_Token(char* M_RESTRICT       str,
@@ -671,27 +705,28 @@ char* safe_String_Token(char* M_RESTRICT       str,
                         const char* M_RESTRICT delim,
                         char** M_RESTRICT      saveptr)
 {
-#if defined(HAVE_C11_ANNEX_K)
-    return strtok_s(str, strmax, delim, saveptr);
-#else
+    errno_t error = 0;
     char* token = M_NULLPTR;
     char* end   = M_NULLPTR;
     if (strmax == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_String_Token: strmax = NULL", M_NULLPTR, errno);
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_String_Token: strmax = NULL", M_NULLPTR, error);
+        errno = error;
         return M_NULLPTR;
     }
     else if (delim == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_String_Token: delim = NULL", M_NULLPTR, errno);
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_String_Token: delim = NULL", M_NULLPTR, error);
+        errno = error;
         return M_NULLPTR;
     }
     else if (saveptr == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_String_Token: saveptr = NULL", M_NULLPTR, errno);
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_String_Token: saveptr = NULL", M_NULLPTR, error);
+        errno = error;
         return M_NULLPTR;
     }
     if (str != M_NULLPTR)
@@ -699,21 +734,23 @@ char* safe_String_Token(char* M_RESTRICT       str,
         // Initial call of the function.
         *saveptr = str;
         *strmax  = safe_strnlen(str, RSIZE_MAX);
-        if (*strmax == 0)
+        if (*strmax == RSIZE_T_C(0))
         {
-            errno = ERANGE;
-            invoke_Constraint_Handler("safe_String_Token: *strmax = 0 on initial call", M_NULLPTR, errno);
+            error = ERANGE;
+            invoke_Constraint_Handler("safe_String_Token: *strmax = 0 on initial call", M_NULLPTR, error);
+            errno = error;
             return M_NULLPTR;
         }
-        else if (*strmax >= RSIZE_MAX && str[*strmax + 1] != '\0') // This is to determine if the string is really
+        else if (*strmax >= RSIZE_MAX && str[*strmax + RSIZE_T_C(1)] != '\0') // This is to determine if the string is really
                                                                    // RSIZE_MAX or not. safe_strnlen will return
                                                                    // RSIZE_MAX if NULL is found at that size OR if it
                                                                    // is not found in the string. So adding 1 to check
                                                                    // if it found NULL terminator or not to make this
                                                                    // check match annex k
         {
-            errno = ERANGE;
-            invoke_Constraint_Handler("safe_String_Token: *strmax > RSIZE_MAX on initial call", M_NULLPTR, errno);
+            error = ERANGE;
+            invoke_Constraint_Handler("safe_String_Token: *strmax > RSIZE_MAX on initial call", M_NULLPTR, error);
+            errno = error;
             return M_NULLPTR;
         }
     }
@@ -722,8 +759,9 @@ char* safe_String_Token(char* M_RESTRICT       str,
         // non-initial call of the function
         if (*saveptr == M_NULLPTR)
         {
-            errno = EINVAL;
-            invoke_Constraint_Handler("safe_String_Token: *saveptr = NULL on non-initial call", M_NULLPTR, errno);
+            error = EINVAL;
+            invoke_Constraint_Handler("safe_String_Token: *saveptr = NULL on non-initial call", M_NULLPTR, error);
+            errno = error;
             return M_NULLPTR;
         }
     }
@@ -735,17 +773,18 @@ char* safe_String_Token(char* M_RESTRICT       str,
         *strmax  = C_CAST(uintptr_t, end) - C_CAST(uintptr_t, str);
         return str;
     }
-    while (*strmax > 0 && *token && !strchr(delim, *token))
+    while (*strmax > RSIZE_T_C(0) && *token && !strchr(delim, *token))
     {
         token++;
         (*strmax)--;
     }
-    if (*strmax == 0 && *token != '\0')
+    if (*strmax == RSIZE_T_C(0) && *token != '\0')
     {
-        errno = ERANGE;
+        error = ERANGE;
         invoke_Constraint_Handler("safe_String_Token: reached end of source "
                                   "string without encountering null terminator",
-                                  M_NULLPTR, errno);
+                                  M_NULLPTR, error);
+        errno = error;                                  
         return M_NULLPTR;
     }
     if (*token)
@@ -760,13 +799,12 @@ char* safe_String_Token(char* M_RESTRICT       str,
         token    = M_NULLPTR;
     }
     return token;
-
-#endif
 }
 
 size_t safe_strnlen(const char* string, size_t n)
 {
-#if defined(HAVE_C11_ANNEX_K) || defined(__STDC_SECURE_LIB__)
+#if defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
+    //Does not invoke constraint handler of it's own so we can use this here - TJE
     return strnlen_s(string, n);
 #elif defined(POSIX_2008) || defined(USING_SUS4) || defined(HAVE_STRNLEN) /*also glibc 2.0, openbsd 4.8*/
     if (string != M_NULLPTR)
@@ -815,33 +853,38 @@ M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size)
 
 errno_t safe_strdup(char** dup, const char* src)
 {
+    errno_t error = 0;
     errno = 0;
     if (dup == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_strdup: dup == NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strdup: dup == NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (src == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_strdup: src == NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strdup: src == NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else
     {
         rsize_t srclen = safe_strnlen(src, RSIZE_MAX);
         if (srclen == RSIZE_MAX && (srclen + RSIZE_T_C(1)) != '\0')
         {
-            errno = EINVAL;
-            invoke_Constraint_Handler("safe_strdup: src longer than RSIZE_MAX", M_NULLPTR, errno);
-            return errno;
+            error = EINVAL;
+            invoke_Constraint_Handler("safe_strdup: src longer than RSIZE_MAX", M_NULLPTR, error);
+            errno = error;
+            return error;
         }
         else if (srclen == RSIZE_T_C(0))
         {
-            errno = EINVAL;
-            invoke_Constraint_Handler("safe_strdup: src is len 0", M_NULLPTR, errno);
-            return errno;
+            error = EINVAL;
+            invoke_Constraint_Handler("safe_strdup: src is len 0", M_NULLPTR, error);
+            errno = error;
+            return error;
         }
         *dup = malloc(srclen + RSIZE_T_C(1));
         if (*dup != M_NULLPTR)
@@ -851,43 +894,48 @@ errno_t safe_strdup(char** dup, const char* src)
         }
         else
         {
-            errno = ENOMEM;
+            error = ENOMEM;
             // TODO: Call constraint handler
         }
     }
-    return errno;
+    return error;
 }
 
 errno_t safe_strndup(char** dup, const char* src, rsize_t size)
 {
+    errno_t error = 0;
     errno = 0;
     if (dup == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_strndup: dup == NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strndup: dup == NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (src == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_strndup: src == NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strndup: src == NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (size > RSIZE_MAX)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_strndup: size > RSIZE_MAX", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strndup: size > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
-    else if (size == 0)
+    else if (size == RSIZE_T_C(0))
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_strndup: size == 0", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strndup: size == 0", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else
     {
-        *dup = safe_malloc(size + 1);
+        *dup = safe_malloc(size + RSIZE_T_C(1));
         if (*dup != M_NULLPTR)
         {
             safe_memcpy(*dup, size + 1, src, size);
@@ -895,23 +943,24 @@ errno_t safe_strndup(char** dup, const char* src, rsize_t size)
         }
         else
         {
-            errno = ENOMEM;
+            error = ENOMEM;
             // TODO: Call constraint handler
         }
     }
-    return errno;
+    errno = error;
+    return error;
 }
 
 void byte_Swap_String_Len(char* stringToChange, size_t stringlen)
 {
-    if (stringlen > 1) // Check if the string has more than one character
+    if (stringlen > SIZE_T_C(1)) // Check if the string has more than one character
     {
-        for (size_t stringIter = 0; stringIter < stringlen - 1; stringIter += 2)
+        for (size_t stringIter = SIZE_T_C(0); stringIter < stringlen - SIZE_T_C(1); stringIter += SIZE_T_C(2))
         {
             // Swap the characters
             char temp                      = stringToChange[stringIter];
-            stringToChange[stringIter]     = stringToChange[stringIter + 1];
-            stringToChange[stringIter + 1] = temp;
+            stringToChange[stringIter]     = stringToChange[stringIter + SIZE_T_C(1)];
+            stringToChange[stringIter + SIZE_T_C(1)] = temp;
         }
     }
 }
@@ -920,14 +969,14 @@ void byte_Swap_String_Len(char* stringToChange, size_t stringlen)
 void byte_Swap_String(char* stringToChange)
 {
     size_t stringlen = safe_strlen(stringToChange);
-    if (stringlen > 1) // Check if the string has more than one character
+    if (stringlen > SIZE_T_C(1)) // Check if the string has more than one character
     {
-        for (size_t stringIter = 0; stringIter < stringlen - 1; stringIter += 2)
+        for (size_t stringIter = SIZE_T_C(0); stringIter < stringlen - SIZE_T_C(1); stringIter += SIZE_T_C(2))
         {
             // Swap the characters
             char temp                      = stringToChange[stringIter];
-            stringToChange[stringIter]     = stringToChange[stringIter + 1];
-            stringToChange[stringIter + 1] = temp;
+            stringToChange[stringIter]     = stringToChange[stringIter + SIZE_T_C(1)];
+            stringToChange[stringIter + SIZE_T_C(1)] = temp;
         }
     }
 }
@@ -943,12 +992,12 @@ void remove_Whitespace_Left(char* stringToChange)
     len = strspn(stringToChange,
                  " \t\n\v\f"); // only touch spaces at the beginning of the
                                // string, not the whole string
-    if (len == 0)
+    if (len == SIZE_T_C(0))
     {
         return;
     }
 
-    while ((iter < (safe_strlen(stringToChange) - 1) && stringToChange[iter])) // having issues with the isspace command
+    while ((iter < (safe_strlen(stringToChange) - SIZE_T_C(1)) && stringToChange[iter])) // having issues with the isspace command
                                                                                // leaving extra chars in the string
     {
         stringToChange[iter] = stringToChange[iter + len];
@@ -964,28 +1013,28 @@ void remove_Trailing_Whitespace(char* stringToChange)
         return;
     }
     iter = (safe_strlen(stringToChange));
-    if (iter == 0)
+    if (iter == SIZE_T_C(0))
     {
         return;
     }
-    while (iter > 0 && safe_isascii(stringToChange[iter - 1]) && safe_isspace(stringToChange[iter - 1]))
+    while (iter > SIZE_T_C(0) && safe_isascii(stringToChange[iter - SIZE_T_C(1)]) && safe_isspace(stringToChange[iter - SIZE_T_C(1)]))
     {
-        stringToChange[iter - 1] = '\0'; // replace spaces with null terminators
+        stringToChange[iter - SIZE_T_C(1)] = '\0'; // replace spaces with null terminators
         iter--;
     }
 }
 
 void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
 {
-    if (stringToChange == M_NULLPTR || stringlen == 0)
+    if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
         return;
     }
 
     size_t iter = stringlen;
-    while (iter > 0 && safe_isascii(stringToChange[iter - 1]) && safe_isspace(stringToChange[iter - 1]))
+    while (iter > SIZE_T_C(0) && safe_isascii(stringToChange[iter - SIZE_T_C(1)]) && safe_isspace(stringToChange[iter - SIZE_T_C(1)]))
     {
-        stringToChange[iter - 1] = '\0'; // Replace spaces with null terminators
+        stringToChange[iter - SIZE_T_C(1)] = '\0'; // Replace spaces with null terminators
         iter--;
     }
 }
@@ -1003,7 +1052,7 @@ void remove_Leading_Whitespace(char* stringToChange)
     {
         iter++;
     }
-    if (iter > 0)
+    if (iter > SIZE_T_C(0))
     {
         safe_memmove(&stringToChange[0], stringToChangeLen, &stringToChange[iter], stringToChangeLen - iter);
         safe_memset(&stringToChange[stringToChangeLen - iter], stringToChangeLen - iter, 0,
@@ -1014,7 +1063,7 @@ void remove_Leading_Whitespace(char* stringToChange)
 
 void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
 {
-    if (stringToChange == M_NULLPTR || stringlen == 0)
+    if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
         return;
     }
@@ -1025,7 +1074,7 @@ void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
         iter++;
     }
 
-    if (iter > 0)
+    if (iter > SIZE_T_C(0))
     {
         safe_memmove(stringToChange, stringlen, &stringToChange[iter], stringlen - iter);
         safe_memset(&stringToChange[stringlen - iter], stringlen - iter, 0,
@@ -1041,7 +1090,7 @@ void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
     }
 
     size_t stringlen = safe_strlen(stringToChange);
-    if (stringlen == 0)
+    if (stringlen == SIZE_T_C(0))
     {
         return;
     }
@@ -1055,7 +1104,7 @@ void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
 
     // Remove trailing whitespace
     size_t end = stringlen;
-    while (end > start && safe_isascii(stringToChange[end - 1]) && safe_isspace(stringToChange[end - 1]))
+    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) && safe_isspace(stringToChange[end - SIZE_T_C(1)]))
     {
         end--;
     }
@@ -1064,7 +1113,7 @@ void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
     size_t newlen = end - start;
 
     // If there's leading whitespace, shift the string to the start
-    if (start > 0)
+    if (start > SIZE_T_C(0))
     {
         safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
     }
@@ -1075,7 +1124,7 @@ void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
 
 void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
 {
-    if (stringToChange == M_NULLPTR || stringlen == 0)
+    if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
         return;
     }
@@ -1089,7 +1138,7 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
 
     // Remove trailing whitespace
     size_t end = stringlen;
-    while (end > start && safe_isascii(stringToChange[end - 1]) && safe_isspace(stringToChange[end - 1]))
+    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) && safe_isspace(stringToChange[end - SIZE_T_C(1)]))
     {
         end--;
     }
@@ -1098,7 +1147,7 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
     size_t newlen = end - start;
 
     // If there's leading whitespace, shift the string to the start
-    if (start > 0)
+    if (start > SIZE_T_C(0))
     {
         safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
     }
@@ -1113,7 +1162,7 @@ void convert_String_To_Upper_Case(char* stringToChange)
     {
         return;
     }
-    for (size_t iter = 0; stringToChange[iter] != '\0'; iter++)
+    for (size_t iter = SIZE_T_C(0); stringToChange[iter] != '\0'; iter++)
     {
         stringToChange[iter] = C_CAST(char, safe_toupper(stringToChange[iter]));
     }
@@ -1125,7 +1174,7 @@ void convert_String_To_Upper_Case_Len(char* stringToChange, size_t stringlen)
     {
         return;
     }
-    for (size_t iter = 0; iter < stringlen; iter++)
+    for (size_t iter = SIZE_T_C(0); iter < stringlen; iter++)
     {
         stringToChange[iter] = C_CAST(char, safe_toupper(stringToChange[iter]));
     }
@@ -1137,7 +1186,7 @@ void convert_String_To_Lower_Case(char* stringToChange)
     {
         return;
     }
-    for (size_t iter = 0; stringToChange[iter] != '\0'; iter++)
+    for (size_t iter = SIZE_T_C(0); stringToChange[iter] != '\0'; iter++)
     {
         stringToChange[iter] = C_CAST(char, safe_tolower(stringToChange[iter]));
     }
@@ -1149,7 +1198,7 @@ void convert_String_To_Lower_Case_Len(char* stringToChange, size_t stringlen)
     {
         return;
     }
-    for (size_t iter = 0; iter < stringlen; iter++)
+    for (size_t iter = SIZE_T_C(0); iter < stringlen; iter++)
     {
         stringToChange[iter] = C_CAST(char, safe_tolower(stringToChange[iter]));
     }
@@ -1161,7 +1210,7 @@ void convert_String_To_Inverse_Case(char* stringToChange)
     {
         return;
     }
-    for (size_t iter = 0; stringToChange[iter] != '\0'; iter++)
+    for (size_t iter = SIZE_T_C(0); stringToChange[iter] != '\0'; iter++)
     {
         if (safe_islower(stringToChange[iter]))
         {
@@ -1180,7 +1229,7 @@ void convert_String_To_Inverse_Case_Len(char* stringToChange, size_t stringlen)
     {
         return;
     }
-    for (size_t iter = 0; iter < stringlen; iter++)
+    for (size_t iter = SIZE_T_C(0); iter < stringlen; iter++)
     {
         if (safe_islower(stringToChange[iter]))
         {
@@ -1202,7 +1251,7 @@ size_t find_last_occurrence_in_string(const char* originalString, const char* st
 
     size_t last_occurrence = SIZE_MAX;
     size_t stringToFindLen = safe_strlen(stringToFind);
-    if (stringToFindLen == 0)
+    if (stringToFindLen == SIZE_T_C(0))
     {
         return SIZE_MAX; // Searching for an empty string is undefined
     }

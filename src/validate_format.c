@@ -129,8 +129,7 @@ static M_INLINE eValidateFormatResult validate_Format_Width(const char* format,
     {
         if ((*offsetToSpecifier)[0] == '*')
         {
-            *width = va_arg(*args,
-                            int); // read this to move to next thing in arg list
+            *width = va_arg(*args, int); //NOLINT(clang-analyzer-valist.Uninitialized) - false positive
             *offsetToSpecifier += 1;
             result = update_Format_Offset(format, *offsetToSpecifier, formatoffset, formatLength);
         }
@@ -190,7 +189,7 @@ static M_INLINE eValidateFormatResult validate_Format_Precision(const char* form
             // get precision value as int or * again
             if ((*offsetToSpecifier)[0] == '*')
             {
-                *precision = va_arg(*args, int); // read this to move to next thing in arg list
+                *precision = va_arg(*args, int); //NOLINT(clang-analyzer-valist.Uninitialized) - false positive
                 *offsetToSpecifier += 1;
                 result = update_Format_Offset(format, *offsetToSpecifier, formatoffset, formatLength);
                 if (result == VALIDATE_FORMAT_COMPLETE)
@@ -342,44 +341,44 @@ static M_INLINE eValidateFormatResult validate_Format_Integer(const char*       
         {
             if (lenmods->hh == true)
             {
-                signed char value = C_CAST(signed char, va_arg(*args, int)); // type promoted to int in
-                                                                             // va_args, so access as int
+                signed char value = C_CAST(signed char, va_arg(*args, int)); //NOLINT(clang-analyzer-valist.Uninitialized) - false positive
+                                                                             // type promoted to int in va_args, so access as int
                 M_USE_UNUSED(value);
             }
             else if (lenmods->h == true)
             {
-                signed short value = C_CAST(signed short, va_arg(*args, int)); // type promoted to int in
-                                                                               // va_args, so access as int
+                signed short value = C_CAST(signed short, va_arg(*args, int)); //NOLINT(clang-analyzer-valist.Uninitialized) - false positive
+                                                                               // type promoted to int in va_args, so access as int
                 M_USE_UNUSED(value);
             }
             else if (lenmods->ll == true)
             {
-                signed long long value = va_arg(*args, signed long long);
+                signed long long value = va_arg(*args, signed long long);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
                 M_USE_UNUSED(value);
             }
             else if (lenmods->l == true)
             {
-                signed long value = va_arg(*args, signed long);
+                signed long value = va_arg(*args, signed long);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
                 M_USE_UNUSED(value);
             }
             else if (lenmods->j == true)
             {
-                intmax_t value = va_arg(*args, intmax_t);
+                intmax_t value = va_arg(*args, intmax_t);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
                 M_USE_UNUSED(value);
             }
             else if (lenmods->z == true)
             {
-                ssize_t value = va_arg(*args, ssize_t);
+                ssize_t value = va_arg(*args, ssize_t);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
                 M_USE_UNUSED(value);
             }
             else if (lenmods->t == true)
             {
-                ptrdiff_t value = va_arg(*args, ptrdiff_t);
+                ptrdiff_t value = va_arg(*args, ptrdiff_t);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
                 M_USE_UNUSED(value);
             }
             else
             {
-                int value = va_arg(*args, int);
+                int value = va_arg(*args, int);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
                 M_USE_UNUSED(value);
             }
         }
@@ -387,49 +386,47 @@ static M_INLINE eValidateFormatResult validate_Format_Integer(const char*       
         {
             if (lenmods->hh == true)
             {
-                unsigned char value = C_CAST(unsigned char, va_arg(*args,
-                                                                   unsigned int)); // type promoted to unsigned int in
-                                                                                   // va_args, so access as unsigned int
+                unsigned char value = C_CAST(unsigned char, va_arg(*args, unsigned int)); //NOLINT(clang-analyzer-valist.Uninitialized) - false positive
+                                                                                   // type promoted to int in va_args, so access as unsigned int
                 M_USE_UNUSED(value);
             }
             else if (lenmods->h == true)
             {
                 unsigned short value =
-                    C_CAST(unsigned short, va_arg(*args,
-                                                  unsigned int)); // type promoted to unsigned int in
-                                                                  // va_args, so access as unsigned int
+                    C_CAST(unsigned short, va_arg(*args, unsigned int)); ////NOLINT(clang-analyzer-valist.Uninitialized) - false positive
+                                                                  // type promoted to int in va_args, so access as unsigned int
                 M_USE_UNUSED(value);
             }
             else if (lenmods->ll == true)
             {
-                unsigned long long value = va_arg(*args, unsigned long long);
+                unsigned long long value = va_arg(*args, unsigned long long);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
                 M_USE_UNUSED(value);
             }
             else if (lenmods->l == true)
             {
-                unsigned long value = va_arg(*args, unsigned long);
+                unsigned long value = va_arg(*args, unsigned long);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
                 M_USE_UNUSED(value);
             }
             else if (lenmods->j == true)
             {
-                uintmax_t value = va_arg(*args, uintmax_t);
+                uintmax_t value = va_arg(*args, uintmax_t);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
                 M_USE_UNUSED(value);
             }
             else if (lenmods->z == true)
             {
-                size_t value = va_arg(*args, size_t);
+                size_t value = va_arg(*args, size_t);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
                 M_USE_UNUSED(value);
             }
             else if (lenmods->t == true)
             {
                 // unsigned version of this....but this should be ok since we
                 // aren't doing anything else with this right now
-                ptrdiff_t value = va_arg(*args, ptrdiff_t);
+                ptrdiff_t value = va_arg(*args, ptrdiff_t);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
                 M_USE_UNUSED(value);
             }
             else
             {
-                unsigned int value = va_arg(*args, unsigned int);
+                unsigned int value = va_arg(*args, unsigned int);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
                 M_USE_UNUSED(value);
             }
         }
@@ -452,17 +449,17 @@ static M_INLINE eValidateFormatResult validate_Format_Float(const char*         
     {
         if (lenmods->L == true)
         {
-            long double floatval = va_arg(*args, long double);
+            long double floatval = va_arg(*args, long double);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
             M_USE_UNUSED(floatval);
         }
         else if (lenmods->l == true)
         {
-            double floatval = va_arg(*args, double);
+            double floatval = va_arg(*args, double);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
             M_USE_UNUSED(floatval);
         }
         else
         {
-            double floatval = va_arg(*args, double);
+            double floatval = va_arg(*args, double);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
             M_USE_UNUSED(floatval);
         }
     }
@@ -484,7 +481,7 @@ static M_INLINE eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
     safe_memset(&state, sizeof(mbstate_t), 0, sizeof(mbstate_t));
     errno = 0; // ISO C security standard does not say this is necessary, but
                // going to make sure it is zero before moving on anyways - TJE
-#if defined(__STDC_SECURE_LIB__) || defined(HAVE_C11_ANNEX_K)
+#if defined(HAVE_MSFT_SECURE_LIB) || defined(HAVE_C11_ANNEX_K)
     // wcrtombs_s
     if (wcrtomb_s(&charArrayLen, M_NULLPTR, 0, character, &state) != 0)
     {
@@ -507,7 +504,7 @@ static M_INLINE eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
     }
     errno = 0; // ISO C does not show this as necessary, but doing to set this
                // to zero anyways
-#if defined(__STDC_SECURE_LIB__) || defined(HAVE_C11_ANNEX_K)
+#if defined(HAVE_MSFT_SECURE_LIB) || defined(HAVE_C11_ANNEX_K)
     // wcrtombs_s
     if (wcrtomb_s(&conversionresult, convertedChar, charArrayLen, character, &state) != 0)
     {
@@ -544,15 +541,15 @@ static M_INLINE eValidateFormatResult validate_Format_Char(const char*          
             // to int, but wint_t may be smaller or the same size which is why
             // this check is here.
 #if defined(WINT_MAX) && defined(INT_MAX) && WINT_MAX < INT_MAX
-            character = C_CAST(wint_t, va_arg(*args, int));
+            character = C_CAST(wint_t, va_arg(*args, int));//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
 #else
-            character = va_arg(*args, wint_t);
+            character = va_arg(*args, wint_t);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
 #endif
             result = validate_Wchar_Conversion(character);
         }
         else
         {
-            int character = va_arg(*args, int);
+            int character = va_arg(*args, int);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
             M_USE_UNUSED(character);
         }
     }
@@ -572,7 +569,7 @@ static M_INLINE eValidateFormatResult validate_Format_Pointer(const char*       
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
     if (format && offsetToSpecifier && formatoffset && lenmods && args)
     {
-        uintptr_t pointerval = C_CAST(uintptr_t, va_arg(*args, void*));
+        uintptr_t pointerval = C_CAST(uintptr_t, va_arg(*args, void*));//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
         M_USE_UNUSED(pointerval);
     }
     else
@@ -596,7 +593,7 @@ static M_INLINE eValidateFormatResult validate_WStr_Conversion(const wchar_t* st
         safe_memset(&state, sizeof(mbstate_t), 0, sizeof(mbstate_t));
         errno = 0; // ISO C does not show this as necessary, but doing to set
                    // this to zero anyways get allocation size first
-#if defined(__STDC_SECURE_LIB__) || defined(HAVE_C11_ANNEX_K)
+#if defined(HAVE_MSFT_SECURE_LIB) || defined(HAVE_C11_ANNEX_K)
         // wcsrtombs_s
         if (wcsrtombs_s(&charStrSize, M_NULLPTR, 0, &string, 0, &state) != 0)
         {
@@ -622,7 +619,7 @@ static M_INLINE eValidateFormatResult validate_WStr_Conversion(const wchar_t* st
         }
         errno = 0; // ISO C does not show this as necessary, but doing to set
                    // this to zero anyways
-#if defined(__STDC_SECURE_LIB__) || defined(HAVE_C11_ANNEX_K)
+#if defined(HAVE_MSFT_SECURE_LIB) || defined(HAVE_C11_ANNEX_K)
         // wcsrtombs_s
         if (wcsrtombs_s(&conversionResult, charStr, charStrSize, &string, 0, &state) != 0)
         {
@@ -659,7 +656,7 @@ static M_INLINE eValidateFormatResult validate_Format_String(const char*        
     {
         if (lenmods->l == true)
         {
-            wchar_t* string = va_arg(*args, wchar_t*);
+            wchar_t* string = va_arg(*args, wchar_t*);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
             if (string == M_NULLPTR)
             {
                 result = VALIDATE_FORMAT_INVALID_FORMAT;
@@ -671,7 +668,7 @@ static M_INLINE eValidateFormatResult validate_Format_String(const char*        
         }
         else
         {
-            char* string = va_arg(*args, char*);
+            char* string = va_arg(*args, char*);//NOLINT(clang-analyzer-valist.Uninitialized) - false positive
             if (string == M_NULLPTR)
             {
                 result = VALIDATE_FORMAT_INVALID_FORMAT;

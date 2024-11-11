@@ -277,6 +277,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
             // unable to get the full path to this file.
             // This means something went wrong, and we need to return an error.
             fileInfo->error = SEC_FILE_INVALID_PATH;
+            safe_free(&intFileName);
             return fileInfo;
         }
 
@@ -476,22 +477,17 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
             "WARNING: Disabling Cert-C directory security check. This is not recommended for production level code.")
 #    endif //!_WIN32
         M_USE_UNUSED(dirSecurityError);
-        if (true)
+        if (/* DISABLES CODE */ (true))
 #else
         // Check for secure directory - This code must traverse the full path
         // and validate permissions of the directories.
         if (os_Is_Directory_Secure(pathOnly, &dirSecurityError))
 #endif // DISABLE_SECURE_FILE_PATH_CHECK || _WIN32
         {
+            errno_t fopenError = 0;
             fileInfo->file = M_NULLPTR;
-#if defined(HAVE_C11_ANNEX_K) || defined(__STDC_SECURE_LIB__)
-            errno_t fopenError = fopen_s(&fileInfo->file, fileInfo->fullpath, internalmode);
+            fopenError = safe_fopen(&fileInfo->file, fileInfo->fullpath, internalmode);
             if (fopenError == 0 && fileInfo->file != M_NULLPTR)
-#else  // fopen_s not available
-            fileInfo->file     = fopen(fileInfo->fullpath, internalmode);
-            errno_t fopenError = errno;
-            if (fileInfo->file != M_NULLPTR)
-#endif // checking for MSFT secure functions or annex K of C11
             {
                 // file is opened, check unique id if it was passed in to
                 // compare against
@@ -673,7 +669,7 @@ M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInf
         if (fileInfo->file)
         {
             size_t readres = SIZE_T_C(0);
-#if defined(__STDC_SECURE_LIB__)
+#if defined(HAVE_MSFT_SECURE_LIB)
             readres = fread_s(buffer, buffersize, elementsize, count, fileInfo->file);
 #else
             if (buffer == M_NULLPTR)
@@ -854,7 +850,7 @@ M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
         if (fileInfo->file)
         {
             fileInfo->error = secure_Seek_File(fileInfo, 0, SEEK_SET);
-#if defined(__STDC_SECURE_LIB__)
+#if defined(HAVE_MSFT_SECURE_LIB)
             clearerr_s(fileInfo->file);
 #else
             clearerr(fileInfo->file); // rewind clears errors and eof indicators, so
@@ -1016,14 +1012,7 @@ M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eS
         // Check if the file is already open before attempting to remove it
         errno_t fileerror  = 0;
         FILE*   checkExist = M_NULLPTR;
-#if defined(HAVE_C11_ANNEX_K) || defined(__STDC_SECURE_LIB__)
-        fileerror = fopen_s(&checkExist, fullpath, "r");
-#else
-        errno      = 0;
-        checkExist = fopen(fullpath, "r");
-        fileerror  = errno;
-#endif
-
+        fileerror = safe_fopen(&checkExist, fullpath, "r");
         if (checkExist != M_NULLPTR && fileerror == 0)
         {
             M_STATIC_CAST(void, fclose(checkExist));
@@ -1146,14 +1135,18 @@ eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const
         if (format)
         {
             int vfprintfresult = 0;
-#if defined(HAVE_C11_ANNEX_K) || defined(__STDC_SECURE_LIB__)
+#if defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
             vfprintfresult = vfprintf_s(fileInfo->file, format, args);
 #else
             va_list verifyargs;
+            va_list vfprintfargs;
             va_copy(verifyargs, args);
-            if (verify_Format_String_And_Args(format, args) > 0)
+            if (verify_Format_String_And_Args(format, verifyargs) > 0)
             {
-                vfprintfresult = vfprintf(fileInfo->file, format, args);
+                va_copy(vfprintfargs, args);
+                //nolint line is because of a false positive....clearly copying the args before calling this-TJE
+                vfprintfresult = vfprintf(fileInfo->file, format, vfprintfargs);// NOLINT(clang-analyzer-valist.Uninitialized)
+                va_end(vfprintfargs);
             }
             else
             {

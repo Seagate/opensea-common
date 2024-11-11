@@ -70,16 +70,16 @@ static int lin_file_filter(const struct dirent* entry, const char* stringMatch)
 
 static int release_file_filter(const struct dirent* entry)
 {
-    return lin_file_filter(entry,
-                           "-release"); // looks like almost all linux specific
+    // looks like almost all linux specific
                                         // releases put it as -release
+    return lin_file_filter(entry, "-release"); 
 }
 
 static int version_file_filter(const struct dirent* entry)
 {
-    return lin_file_filter(entry,
-                           "version"); // most, but not all do a _version, but some do a -, so this
+    // most, but not all do a _version, but some do a -, so this
                                        // should work for both
+    return lin_file_filter(entry, "version"); 
 }
 
 // This is a simple function intended to resolve Clang-tidy warnings.
@@ -103,17 +103,18 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
             DECLARE_ZERO_INIT_ARRAY(char, releasefile, RELEASE_FILE_NAME_LENGTH);
             // read this file and get the linux name
             FILE* release = M_NULLPTR;
+            errno_t fileerror = 0;
             if (etcRelease)
             {
-                release = fopen("/etc/os-release", "r");
+                fileerror = safe_fopen(&release, "/etc/os-release", "r");
                 snprintf(releasefile, RELEASE_FILE_NAME_LENGTH, "/etc/os-release");
             }
             else
             {
-                release = fopen("/usr/lib/os-release", "r");
+                fileerror = safe_fopen(&release, "/usr/lib/os-release", "r");
                 snprintf(releasefile, RELEASE_FILE_NAME_LENGTH, "/usr/lib/os-release");
             }
-            if (release)
+            if (fileerror == 0 && release)
             {
                 int         releasefileno = fileno(release);
                 struct stat releasestat;
@@ -168,11 +169,12 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
         size_t fileNameLength = safe_strlen(dirent_entry_name) + safe_strlen("/etc/") + 1;
         char*  fileName       = M_REINTERPRET_CAST(char*, safe_calloc(fileNameLength, sizeof(char)));
         FILE*  release        = M_NULLPTR;
+        errno_t fileopenerr = 0;
         if (fileName)
         {
             snprintf(fileName, fileNameLength, "/etc/%s", dirent_entry_name);
-            release = fopen(fileName, "r");
-            if (release)
+            fileopenerr = safe_fopen(&release, fileName, "r");
+            if (fileopenerr == 0 && release)
             {
                 int         releaseFileno = fileno(release);
                 struct stat direntfilestat;
@@ -327,8 +329,9 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
     if (operatingSystemName)
     {
         // read this file and get the linux name
-        FILE* issue = fopen("/etc/issue", "r");
-        if (issue)
+        FILE* issue = M_NULLPTR;
+        errno_t fileopenerr = safe_fopen(&issue, "/etc/issue", "r");
+        if (fileopenerr == 0 && issue)
         {
             int         issueFileno = fileno(issue);
             struct stat issuestat;

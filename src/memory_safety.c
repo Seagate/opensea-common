@@ -121,8 +121,8 @@ M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment)
     void* temp = M_NULLPTR;
     // printf("\trequested allocation: size = %zu  alignment = %zu\n", size,
     // alignment);
-    if (size && (alignment > 0) &&
-        ((alignment & (alignment - 1)) == 0)) // Check that we have a size to allocate and enforce that the
+    if (size && (alignment > SIZE_T_C(0)) &&
+        ((alignment & (alignment - SIZE_T_C(1))) == SIZE_T_C(0))) // Check that we have a size to allocate and enforce that the
                                               // alignment value is a power of 2.
     {
         size_t requiredExtraBytes = sizeof(size_t); // We will store the original beginning address in
@@ -213,23 +213,24 @@ M_FUNC_ATTR_MALLOC void* calloc_aligned(size_t num, size_t size, size_t alignmen
 M_FUNC_ATTR_MALLOC void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t alignment)
 {
     void* temp = M_NULLPTR;
-    if (originalSize == 0) // if this is zero, they don't want or care to keep the data
+    if (size == SIZE_T_C(0))
     {
         free_aligned(alignedPtr);
         alignedPtr = M_NULLPTR;
     }
-    if (size)
+    else
     {
         temp = malloc_aligned(size, alignment);
-        if (alignedPtr && originalSize && temp)
+        if (alignedPtr && originalSize > SIZE_T_C(0) && temp)
         {
             safe_memcpy(temp, size, alignedPtr, originalSize);
         }
-    }
-    if (alignedPtr && temp)
-    {
-        // free the old pointer
-        free_aligned(alignedPtr);
+        if (alignedPtr && temp)
+        {
+            // free the old pointer
+            free_aligned(alignedPtr);
+            alignedPtr = M_NULLPTR;
+        }
     }
     return temp;
 }
@@ -275,21 +276,21 @@ M_FUNC_ATTR_MALLOC void* realloc_page_aligned(void* alignedPtr, size_t originalS
 
 bool is_Empty(const void* ptrData, size_t lengthBytes)
 {
-    if (ptrData || lengthBytes == 0)
+    if (ptrData || lengthBytes == SIZE_T_C(0))
     {
         bool byteByByte = true;
         // Allocate single memory page as zeroes to compare for the range
         // instead of byte by byte for better performance.-TJE
         size_t              sysPageSize = get_System_Pagesize();
         const uint_fast8_t* byteptr     = C_CAST(const uint_fast8_t*, ptrData);
-        if (sysPageSize != 0)
+        if (sysPageSize != SIZE_T_C(0))
         {
             uint8_t* zeroes = C_CAST(uint8_t*, calloc_page_aligned(sysPageSize, sizeof(uint8_t)));
             if (zeroes)
             {
                 size_t increment = M_Min(sysPageSize, lengthBytes);
                 byteByByte       = false;
-                for (size_t iter = 0; iter < lengthBytes; iter += increment)
+                for (size_t iter = SIZE_T_C(0); iter < lengthBytes; iter += increment)
                 {
                     if (memcmp(&byteptr[iter], zeroes, increment) != 0)
                     {
@@ -304,7 +305,7 @@ bool is_Empty(const void* ptrData, size_t lengthBytes)
         }
         if (byteByByte)
         {
-            for (size_t iter = 0, iterEnd = lengthBytes - 1; iter < lengthBytes && iterEnd >= iter; ++iter, --iterEnd)
+            for (size_t iter = SIZE_T_C(0), iterEnd = lengthBytes - SIZE_T_C(1); iter < lengthBytes && iterEnd >= iter; ++iter, --iterEnd)
             {
                 if (byteptr[iter] != UINT8_C(0) || byteptr[iterEnd] != UINT8_C(0))
                 {
@@ -325,7 +326,7 @@ bool is_Empty(const void* ptrData, size_t lengthBytes)
 
 void* explicit_zeroes(void* dest, size_t count)
 {
-    if (dest && count > 0)
+    if (dest && count > SIZE_T_C(0))
     {
 #if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
         return memset_explicit(dest, 0, count);
@@ -387,42 +388,44 @@ void* explicit_zeroes(void* dest, size_t count)
 
 errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
 {
-#if defined(HAVE_C11_ANNEX_K) || defined(HAVE_MEMSET_S)
-    return memset_s(dest, destsz, ch, count);
-#else
+    errno_t error = 0;
     if (dest == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_memset: dest is NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_memset: dest is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (destsz > RSIZE_MAX)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_memset: destsz > RSIZE_MAX", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_memset: destsz > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (count > RSIZE_MAX)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_memset: count > RSIZE_MAX", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_memset: count > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (count > destsz)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_memset: count > destsz", M_NULLPTR, errno);
-        return errno;
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_memset: count > destsz", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else
     {
-        if (destsz == 0 || count == 0)
+        if (destsz == RSIZE_T_C(0) || count == RSIZE_T_C(0))
         {
-            errno = 0;
-            return 0;
+            errno = error;
+            return error;
         }
 #    if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
-        memset_explicit(dest, ch, count);
+        memset_explicit(dest, ch, count);//NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #    elif (defined(__NetBSD__) && defined(__NetBSD_Version__) &&                                                       \
            __NetBSD_Version >= 7000000000L /* net bsd version 7.0 and up*/) ||                                         \
         defined(HAVE_EXPLICIT_MEMSET)
@@ -433,14 +436,14 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
         //       Illumos does not list this, but lists explicit_bzero in their
         //       manual. Not sure what version to use, so letting meson detect
         //       and set the HAVE_...macros
-        explicit_memset(dest, ch, count);
+        explicit_memset(dest, ch, count);//NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #    else
         // last attempts to prevent optimization as best we can
 #        if defined(__GNUC__) || defined(__clang__)
-        memset(dest, ch, count);
+        memset(dest, ch, count);//NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         asm volatile("" ::: "memory");
 #        elif defined(HAS_BUILT_IN_CLEAR_CACHE)
-        memset(dest, ch, count);
+        memset(dest, ch, count);//NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         __builtin___clear_cache(dest, dest + count);
 #        elif defined(_MSC_VER)
 #            if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                          \
@@ -448,19 +451,19 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
                  (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
         // SecureZeroMemory2 calls FillVolatileMemory which we can use here to
         // do the same thing
-        FillVolatileMemory(dest, count, ch);
+        FillVolatileMemory(dest, count, ch);//NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #            elif defined(_M_AMD64) || (!defined(_M_CEE) && defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
         // NOTE: Using the securezeromemory implementation in this case
-        volatile char* vptr = (volatile char*)dest;
+        volatile char* vptr = M_REINTERPRET_CAST(volatile char*, dest);
 #                if defined(_M_AMD64) && !defined(_M_ARM64EC)
-        __stosb((unsigned char*)((unsigned __int64)vptr), C_CAST(unsigned char, ch), count);
+        __stosb(M_REINTERPRET_CAST(unsigned char*, M_STATIC_CAST(unsigned __int64, vptr)), M_STATIC_CAST(unsigned char, ch), count);//NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #                else
         while (count)
         {
 #                    if !defined(_M_CEE) && (defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
-            __iso_volatile_store8(vptr, C_CAST(unsigned char, ch));
+            __iso_volatile_store8(vptr, M_STATIC_CAST(unsigned char, ch));
 #                    else
-            *vptr = C_CAST(unsigned char, ch);
+            *vptr = M_STATIC_CAST(unsigned char, ch);
 #                    endif
             vptr++;
             count--;
@@ -472,7 +475,7 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
          * instead*/
         /* https://learn.microsoft.com/en-us/cpp/intrinsics/readwritebarrier?view=msvc-170
          */
-        memset(dest, ch, count);
+        memset(dest, ch, count);//NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         _ReadWriteBarrier();
 #            endif
 #        else /* compiler does not support a method above as a barrier, so use                                         \
@@ -483,17 +486,16 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
         no_optimize_memset(dest, ch, count);
 #        endif
 #    endif
-        errno = 0;
-        return 0;
+        errno = error;
+        return error;
     }
-#endif
 }
 
 // malloc in standards leaves malloc'ing size 0 as a undefined behavior.
 // this version will always return a null pointer if the size is zero
 M_FUNC_ATTR_MALLOC void* safe_malloc(size_t size)
 {
-    if (size == 0)
+    if (size == SIZE_T_C(0))
     {
         errno = EINVAL;
         invoke_Constraint_Handler("safe_malloc: size == 0", M_NULLPTR, errno);
@@ -510,14 +512,14 @@ M_FUNC_ATTR_MALLOC void* safe_malloc(size_t size)
 // from count * size, then return a null pointer
 M_FUNC_ATTR_MALLOC void* safe_calloc(size_t count, size_t size)
 {
-    if (count == 0)
+    if (count == SIZE_T_C(0))
     {
         // do not alloc size zero
         errno = EINVAL;
         invoke_Constraint_Handler("safe_calloc: count == 0", M_NULLPTR, errno);
         return M_NULLPTR;
     }
-    else if (size == 0)
+    else if (size == SIZE_T_C(0))
     {
         // do not alloc size zero
         errno = EINVAL;
@@ -545,7 +547,7 @@ M_FUNC_ATTR_MALLOC void* safe_realloc(void* block, size_t size)
     {
         return safe_malloc(size);
     }
-    else if (size == 0)
+    else if (size == SIZE_T_C(0))
     {
         free(block);
         return M_NULLPTR;
@@ -582,7 +584,7 @@ M_FUNC_ATTR_MALLOC void* safe_reallocf(void** block, size_t size)
     {
         return safe_malloc(size);
     }
-    else if (size == 0)
+    else if (size == SIZE_T_C(0))
     {
         free(*block);
         *block = M_NULLPTR;
@@ -591,7 +593,7 @@ M_FUNC_ATTR_MALLOC void* safe_reallocf(void** block, size_t size)
     else
     {
         void* newblock = realloc(*block, size);
-        if (newblock == M_NULLPTR)
+        if (newblock == M_NULLPTR && size != SIZE_T_C(0))
         {
             free(*block);
             *block = M_NULLPTR;
@@ -612,12 +614,12 @@ static size_t alignment_Round_Up(size_t alignment)
         alignment = sizeof(void*);
     }
     // round up to next power of 2 if necessary
-    if ((alignment & (alignment - 1)) != 0)
+    if ((alignment & (alignment - SIZE_T_C(1))) != SIZE_T_C(0))
     {
         size_t rounded_alignment = sizeof(void*);
         while (rounded_alignment < alignment)
         {
-            rounded_alignment <<= 1;
+            rounded_alignment <<= SIZE_T_C(1);
         }
         alignment = rounded_alignment;
     }
@@ -630,13 +632,13 @@ static size_t alignment_Round_Up(size_t alignment)
 static size_t aligned_Size_Round_Up(size_t size, size_t alignment)
 {
     // do not round up if it would cause an overflow of the size value
-    if (size > (SIZE_MAX - alignment + 1))
+    if (size > (SIZE_MAX - alignment + SIZE_T_C(1)))
     {
         return size;
     }
     // round to nearest multiple of alignment
     size_t remainder = size % alignment;
-    if (remainder != 0)
+    if (remainder != SIZE_T_C(0))
     {
         size += alignment - remainder;
     }
@@ -647,7 +649,7 @@ static size_t aligned_Size_Round_Up(size_t size, size_t alignment)
 // this version will always return a null pointer if the size is zero
 M_FUNC_ATTR_MALLOC void* safe_malloc_aligned(size_t size, size_t alignment)
 {
-    if (size == 0)
+    if (size == SIZE_T_C(0))
     {
         // do not alloc size zero
         errno = EINVAL;
@@ -667,14 +669,14 @@ M_FUNC_ATTR_MALLOC void* safe_malloc_aligned(size_t size, size_t alignment)
 // from count * size, then return a null pointer
 M_FUNC_ATTR_MALLOC void* safe_calloc_aligned(size_t count, size_t size, size_t alignment)
 {
-    if (count == 0)
+    if (count == SIZE_T_C(0))
     {
         // do not alloc size zero
         errno = EINVAL;
         invoke_Constraint_Handler("safe_calloc_aligned: count == 0", M_NULLPTR, errno);
         return M_NULLPTR;
     }
-    else if (size == 0)
+    else if (size == SIZE_T_C(0))
     {
         // do not alloc size zero
         errno = EINVAL;
@@ -711,7 +713,7 @@ M_FUNC_ATTR_MALLOC void* safe_realloc_aligned(void* block, size_t originalSize, 
     {
         return safe_malloc_aligned(size, alignment);
     }
-    else if (size == 0)
+    else if (size == SIZE_T_C(0))
     {
         free_aligned(block);
         return M_NULLPTR;
@@ -750,7 +752,7 @@ M_FUNC_ATTR_MALLOC void* safe_reallocf_aligned(void** block, size_t originalSize
     {
         return safe_malloc_aligned(size, alignment);
     }
-    else if (size == 0)
+    else if (size == SIZE_T_C(0))
     {
         free_aligned(*block);
         *block = M_NULLPTR;
@@ -761,7 +763,7 @@ M_FUNC_ATTR_MALLOC void* safe_reallocf_aligned(void** block, size_t originalSize
         alignment      = alignment_Round_Up(alignment);
         size           = aligned_Size_Round_Up(size, alignment);
         void* newblock = realloc_aligned(*block, originalSize, size, alignment);
-        if (newblock == M_NULLPTR)
+        if (newblock == M_NULLPTR && *block && size != SIZE_T_C(0))
         {
             free_aligned(*block);
             *block = M_NULLPTR;
@@ -806,190 +808,188 @@ M_FUNC_ATTR_MALLOC void* safe_reallocf_page_aligned(void** block, size_t origina
 // does before calling memmove
 errno_t safe_memmove(void* dest, rsize_t destsz, const void* src, rsize_t count)
 {
-#if defined(HAVE_C11_ANNEX_K)
-    return memmove_s(dest, destsz, src, count);
-#else
+    errno_t error = 0;
     errno = 0;
     if (dest == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_memmove: dest is NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_memmove: dest is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (src == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_memmove: src is NULL", M_NULLPTR, errno);
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_memmove: src is NULL", M_NULLPTR, error);
     }
     else if (destsz > RSIZE_MAX)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_memmove: destsz > RSIZE_MAX", M_NULLPTR, errno);
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_memmove: destsz > RSIZE_MAX", M_NULLPTR, error);
     }
     else if (count > RSIZE_MAX)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_memmove: count > RSIZE_MAX", M_NULLPTR, errno);
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_memmove: count > RSIZE_MAX", M_NULLPTR, error);
     }
     else if (count > destsz)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_memmove: count > destsz", M_NULLPTR, errno);
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_memmove: count > destsz", M_NULLPTR, error);
     }
-    if (errno != 0)
+    if (error != 0)
     {
-        errno_t temp = errno;
         // on error when dest is not NULL and destsz is valid, then this memset
         // is done
         if (destsz <= RSIZE_MAX)
         {
             safe_memset(dest, destsz, 0, destsz);
         }
-        return temp;
+        errno = error;
+        return error;
     }
     else
     {
-        if (destsz > 0 && count > 0)
+        if (destsz > RSIZE_T_C(0) && count > RSIZE_T_C(0))
         {
-#    if defined(__STDC_SECURE_LIB__)
+#    if defined(HAVE_MSFT_SECURE_LIB)
             // This is microsoft's version, but it does not do the same checks
             // as C11 standard. Even though we've already done all the checks we
             // need we are calling this because it prevents additional warning
             // from Microsoft's compiler.
             memmove_s(dest, destsz, src, count);
 #    else
-            memmove(dest, src, count);
-#    endif //__STDC_SECURE_LIB__
+            memmove(dest, src, count);// NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#    endif //HAVE_MSFT_SECURE_LIB
         }
         errno = 0;
-        return 0;
+        return error;
     }
-#endif
 }
 
 // calls memcpy_s if available, otherwise performs all checks that memcpy_s does
 // before calling memcpy
 errno_t safe_memcpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t count)
 {
-#if defined(HAVE_C11_ANNEX_K)
-    return memcpy_s(dest, destsz, src, count);
-#else
+    errno_t error = 0;
     errno = 0;
     if (dest == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_memcpy: dest is NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_memcpy: dest is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (src == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_memcpy: src is NULL", M_NULLPTR, errno);
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_memcpy: src is NULL", M_NULLPTR, error);
     }
     else if (destsz > RSIZE_MAX)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_memcpy: destsz > RSIZE_MAX", M_NULLPTR, errno);
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_memcpy: destsz > RSIZE_MAX", M_NULLPTR, error);
     }
     else if (count > RSIZE_MAX)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_memcpy: count > RSIZE_MAX", M_NULLPTR, errno);
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_memcpy: count > RSIZE_MAX", M_NULLPTR, error);
     }
     else if (count > destsz)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_memcpy: count > destsz", M_NULLPTR, errno);
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_memcpy: count > destsz", M_NULLPTR, error);
     }
     else if (memory_regions_overlap(dest, destsz, src, count))
     {
-        errno = EINVAL;
+        error = EINVAL;
         invoke_Constraint_Handler("safe_memcpy: dest and src pointer overlap. "
                                   "Use safe_memmove instead.",
-                                  M_NULLPTR, errno);
+                                  M_NULLPTR, error);
     }
-    if (errno != 0)
+    if (error != 0)
     {
-        errno_t temp = errno;
         // on error when dest is not NULL and destsz is valid, then this memset
         // is done
         if (destsz <= RSIZE_MAX)
         {
             safe_memset(dest, destsz, 0, destsz);
         }
-        return temp;
+        errno = error;
+        return error;
     }
     else
     {
-        if (destsz > 0 && count > 0)
+        if (destsz > RSIZE_T_C(0) && count > RSIZE_T_C(0))
         {
-#    if defined(__STDC_SECURE_LIB__)
+#    if defined(HAVE_MSFT_SECURE_LIB)
             // This is microsoft's version, but it does not do the same checks
             // as C11 standard. Even though we've already done all the checks we
             // need we are calling this because it prevents additional warning
             // from Microsoft's compiler.
             memcpy_s(dest, destsz, src, count);
 #    else
-            memcpy(dest, src, count);
-#    endif //__STDC_SECURE_LIB__
+            memcpy(dest, src, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#    endif //HAVE_MSFT_SECURE_LIB
         }
-        errno = 0;
-        return 0;
+        errno = error;
+        return error;
     }
-#endif
 }
 
 errno_t safe_memccpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t count)
 {
+    errno_t error = 0;
     errno = 0;
     if (dest == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_memccpy: dest is NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_memccpy: dest is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (src == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_memccpy: src is NULL", M_NULLPTR, errno);
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_memccpy: src is NULL", M_NULLPTR, error);
     }
     else if (destsz > RSIZE_MAX)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_memccpy: destsz > RSIZE_MAX", M_NULLPTR, errno);
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_memccpy: destsz > RSIZE_MAX", M_NULLPTR, error);
     }
     else if (count > RSIZE_MAX)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_memccpy: count > RSIZE_MAX", M_NULLPTR, errno);
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_memccpy: count > RSIZE_MAX", M_NULLPTR, error);
     }
     else if (count > destsz)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_memccpy: count > destsz", M_NULLPTR, errno);
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_memccpy: count > destsz", M_NULLPTR, error);
     }
     else if ((src <= dest && C_CAST(void*, C_CAST(uintptr_t, src) + count) > dest) ||
              (dest <= src && C_CAST(void*, C_CAST(uintptr_t, dest) + count) > src))
     {
-        errno = EINVAL;
+        error = EINVAL;
         invoke_Constraint_Handler("safe_memccpy: dest and src pointer overlap. "
                                   "Use safe_memcmove instead.",
-                                  M_NULLPTR, errno);
+                                  M_NULLPTR, error);
     }
-    if (errno != 0)
+    if (error != 0)
     {
-        errno_t temp = errno;
         // on error when dest is not NULL and destsz is valid, then this memset
         // is done
         if (destsz <= RSIZE_MAX)
         {
             safe_memset(dest, destsz, 0, destsz);
         }
-        return temp;
+        errno = error;
+        return error;
     }
     else
     {
-        if (destsz > 0 && count > 0)
+        if (destsz > RSIZE_T_C(0) && count > RSIZE_T_C(0))
         {
             size_t counter = SIZE_T_C(0);
             for (; counter < count; ++counter)
@@ -1003,61 +1003,64 @@ errno_t safe_memccpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRI
                 }
             }
         }
-        errno = 0;
-        return 0;
+        errno = error;
+        return error;
     }
 }
 
 // allows overlapping ranges
 errno_t safe_memcmove(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t count)
 {
+    errno_t error = 0;
     errno = 0;
     if (dest == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_memcmove: dest is NULL", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_memcmove: dest is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else if (src == M_NULLPTR)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_memcmove: src is NULL", M_NULLPTR, errno);
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_memcmove: src is NULL", M_NULLPTR, error);
     }
     else if (destsz > RSIZE_MAX)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_memcmove: destsz > RSIZE_MAX", M_NULLPTR, errno);
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_memcmove: destsz > RSIZE_MAX", M_NULLPTR, error);
     }
     else if (count > RSIZE_MAX)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_memcmove: count > RSIZE_MAX", M_NULLPTR, errno);
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_memcmove: count > RSIZE_MAX", M_NULLPTR, error);
     }
     else if (count > destsz)
     {
-        errno = ERANGE;
-        invoke_Constraint_Handler("safe_memcmove: count > destsz", M_NULLPTR, errno);
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_memcmove: count > destsz", M_NULLPTR, error);
     }
     else if (dest == src)
     {
-        errno = EINVAL;
-        invoke_Constraint_Handler("safe_memcmove: dest and src are the same!", M_NULLPTR, errno);
-        return errno;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_memcmove: dest and src are the same!", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
-    if (errno != 0)
+    if (error != 0)
     {
-        errno_t temp = errno;
         // on error when dest is not NULL and destsz is valid, then this memset
         // is done
         if (destsz <= RSIZE_MAX)
         {
             safe_memset(dest, destsz, 0, destsz);
         }
-        return temp;
+        errno = error;
+        return error;
     }
     else
     {
-        if (destsz > 0 && count > 0)
+        if (destsz > RSIZE_T_C(0) && count > RSIZE_T_C(0))
         {
             if (dest < src)
             {
@@ -1081,19 +1084,19 @@ errno_t safe_memcmove(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTR
                 void*  found   = memchr(src, c, count);
                 if (found != M_NULLPTR)
                 {
-                    counter = M_STATIC_CAST(uintptr_t, found) - M_STATIC_CAST(uintptr_t, src) + 1;
+                    counter = M_STATIC_CAST(uintptr_t, found) - M_STATIC_CAST(uintptr_t, src) + SIZE_T_C(1);
                 }
-                for (; counter > 0; --counter)
+                for (; counter > SIZE_T_C(0); --counter)
                 {
                     M_REINTERPRET_CAST(unsigned char*, dest)
-                    [counter - 1] = M_REINTERPRET_CAST(unsigned const char*, src)[counter - 1];
+                    [counter - SIZE_T_C(1)] = M_REINTERPRET_CAST(unsigned const char*, src)[counter - SIZE_T_C(1)];
                     // checking for C is not necessary since memchr already
                     // found it and we already adjusted the memory range we are
                     // working within.-TJE
                 }
             }
         }
-        errno = 0;
-        return 0;
+        errno = error;
+        return error;
     }
 }

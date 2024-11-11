@@ -26,131 +26,100 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if !defined(HAVE_C11_ANNEX_K)
-// If C11 annex K's constraint handler functions are not available, declare them
-// here.
-typedef void (*constraint_handler_t)(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error);
+typedef void (*constraint_handler_func)(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error);
 
-static constraint_handler_t* installedhandler = M_NULLPTR;
+static constraint_handler_func installedhandler = M_NULLPTR;
 
-constraint_handler_t set_constraint_handler_s(constraint_handler_t handler);
+M_NORETURN void safe_abort_handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error);
 
-M_NORETURN void abort_handler_s(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error);
+void safe_ignore_handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error);
 
-void ignore_handler_s(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error);
-
-M_NORETURN void abort_handler_s(const char* M_RESTRICT msg, M_ATTR_UNUSED void* M_RESTRICT ptr, errno_t error)
+M_NORETURN void safe_abort_handler(const char* M_RESTRICT msg, M_ATTR_UNUSED void* M_RESTRICT ptr, errno_t error)
 {
     fprintf(stderr, "abort_handler_s: %s\n", msg);
     fprintf(stderr, "Error code: %d\n", error);
     abort();
 }
 
-void ignore_handler_s(M_ATTR_UNUSED const char* M_RESTRICT msg,
+void safe_ignore_handler(M_ATTR_UNUSED const char* M_RESTRICT msg,
                       M_ATTR_UNUSED void* M_RESTRICT       ptr,
                       M_ATTR_UNUSED errno_t                error)
 {
     return;
 }
 
-constraint_handler_t set_constraint_handler_s(constraint_handler_t handler)
+constraint_handler_func int_set_constraint_handler(constraint_handler_func handler);
+
+constraint_handler_func int_set_constraint_handler(constraint_handler_func handler)
 {
-    constraint_handler_t* old = installedhandler;
+    constraint_handler_func old = installedhandler;
     if (old == M_NULLPTR)
     {
-        *old = abort_handler_s;
+        old = safe_abort_handler;
     }
     if (handler == M_NULLPTR)
     {
         // install default which is abort handler for us
-        *installedhandler = abort_handler_s;
+        installedhandler = safe_abort_handler;
     }
     else
     {
-        *installedhandler = handler;
+        installedhandler = handler;
     }
-    return *old;
+    return old;
 }
-
-#else
-static constraint_handler_t* installedhandler = M_NULLPTR;
-
-#endif // HAVE_C11_ANNEX_K
 
 void invoke_Constraint_Handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error)
 {
-    constraint_handler_t handler = *installedhandler;
-#if defined(HAVE_C11_ANNEX_K)
-    // set the default handler with a NULL pointer
-    handler = set_constraint_handler_s(M_NULLPTR); // get the current one
+    constraint_handler_func handler = installedhandler;
     if (handler == M_NULLPTR)
     {
-        // this is not supposed to happen, but making sure we always have the
-        // abort handler set as default
-        handler = abort_handler_s;
+        installedhandler = safe_abort_handler;
+        handler           = installedhandler;
     }
-    set_constraint_handler_s(handler); // set it back, we just needed to figure it out to store our
-                                       // copy for our own functions -TJE
-    *installedhandler = handler;
-#else
-    if (handler == M_NULLPTR)
-    {
-        *installedhandler = abort_handler_s;
-        handler           = *installedhandler;
-    }
-#endif
     handler(msg, ptr, error);
 }
 
-void warn_handler_s(const char* M_RESTRICT msg, M_ATTR_UNUSED void* M_RESTRICT ptr, errno_t error);
+void safe_warn_handler(const char* M_RESTRICT msg, M_ATTR_UNUSED void* M_RESTRICT ptr, errno_t error);
 
-void warn_handler_s(const char* M_RESTRICT msg, M_ATTR_UNUSED void* M_RESTRICT ptr, errno_t error)
+void safe_warn_handler(const char* M_RESTRICT msg, M_ATTR_UNUSED void* M_RESTRICT ptr, errno_t error)
 {
-    fprintf(stderr, "warn_handler_s: %s\n", msg);
+    fprintf(stderr, "warn_handler: %s\n", msg);
     fprintf(stderr, "Error code: %d\n", error);
 }
 
 eConstraintHandler set_Constraint_Handler(eConstraintHandler handler)
 {
     eConstraintHandler    olde   = ERR_DEFAULT;
-    constraint_handler_t* oldptr = M_NULLPTR;
+    constraint_handler_func oldptr = safe_abort_handler;
     switch (handler)
     {
     case ERR_ABORT:
-        *oldptr = set_constraint_handler_s(abort_handler_s);
+        oldptr = int_set_constraint_handler(safe_abort_handler);
         break;
     case ERR_WARN:
-        *oldptr = set_constraint_handler_s(warn_handler_s);
+        oldptr = int_set_constraint_handler(safe_warn_handler);
         break;
     case ERR_IGNORE:
-        *oldptr = set_constraint_handler_s(ignore_handler_s);
+        oldptr = int_set_constraint_handler(safe_ignore_handler);
         break;
     }
 
-    if (oldptr != M_NULLPTR && *oldptr != M_NULLPTR)
+    if (oldptr == safe_abort_handler)
     {
-        if (*oldptr == abort_handler_s)
-        {
-            olde = ERR_ABORT;
-        }
-        else if (*oldptr == warn_handler_s)
-        {
-            olde = ERR_WARN;
-        }
-        else if (*oldptr == ignore_handler_s)
-        {
-            olde = ERR_IGNORE;
-        }
-        else
-        {
-            // we did not get a match, so assume default
-            olde = ERR_DEFAULT;
-        }
+        olde = ERR_ABORT;
+    }
+    else if (oldptr == safe_warn_handler)
+    {
+        olde = ERR_WARN;
+    }
+    else if (oldptr == safe_ignore_handler)
+    {
+        olde = ERR_IGNORE;
     }
     else
     {
-        // something is not right. We should never have this returned as a null
-        // pointer. set the default as the output
+        // we did not get a match, so assume default
         olde = ERR_DEFAULT;
     }
     return olde;

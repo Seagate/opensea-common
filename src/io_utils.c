@@ -1077,12 +1077,13 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
 #    if defined(POSIX_2001)
     struct termios defaultterm;
     struct termios currentterm;
-    FILE*          term = fopen("/dev/tty", "r"); // use /dev/tty instead of stdin to get the
-                                                  // terminal controlling the process.
+    FILE*          term = M_NULLPTR;
     bool devtty = true;
     safe_memset(&defaultterm, sizeof(struct termios), 0, sizeof(struct termios));
     safe_memset(&currentterm, sizeof(struct termios), 0, sizeof(struct termios));
-    if (!term)
+    errno_t openresult = safe_fopen(&term, "/dev/tty", "r"); // use /dev/tty instead of stdin to get the
+                                                  // terminal controlling the process.
+    if (openresult != 0 || !term)
     {
         term   = stdin; // fallback to stdin I guess...
         devtty = false;
@@ -2368,7 +2369,7 @@ int                                                  snprintf(char* buffer, size
                    // if buffer is M_NULLPTR in here.
     {
         errno = 0;
-#    if defined(__STDC_SECURE_LIB__)
+#    if defined(HAVE_MSFT_SECURE_LIB)
         charCount = _vsnprintf_s(buffer, bufsz, _TRUNCATE, format, args);
 #    else
         charCount = _vsnprintf(buffer, bufsz, format, args);
@@ -2414,7 +2415,7 @@ int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
                    // if buffer is M_NULLPTR in here.
     {
         errno = 0;
-#    if defined(__STDC_SECURE_LIB__)
+#    if defined(HAVE_MSFT_SECURE_LIB)
         charCount = _vsnprintf_s(buffer, bufsz, _TRUNCATE, format, countargs);
 #    else
         charCount = _vsnprintf(buffer, bufsz, format, countargs);
@@ -2698,4 +2699,272 @@ void print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
 void print_Pipe_Data(uint8_t* dataBuffer, uint32_t bufferLen)
 {
     internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false);
+}
+
+errno_t safe_fopen(FILE* M_RESTRICT *M_RESTRICT streamptr, const char *M_RESTRICT filename, const char *M_RESTRICT mode)
+{
+    errno_t error = 0;
+    if (streamptr == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_fopen: streamptr is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
+    }
+    else if (filename == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_fopen: filename is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
+    }
+    else if (mode == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_fopen: mode is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
+    }
+    else
+    {
+#    if defined(HAVE_MSFT_SECURE_LIB)
+        error = fopen_s(M_CONST_CAST(FILE**, streamptr), filename, mode);
+#    else
+        errno = 0;
+        *streamptr = fopen(filename, mode);
+        if (*streamptr == M_NULLPTR)
+        {
+            error = errno;
+            if (error == 0)
+            {
+                // TODO: Find a better error to use in this case. Unlikely we will need is as errno will likely be set correctly
+                error = EINVAL;
+            }
+        }
+#    endif
+    }
+    errno = error;
+    return error;
+}
+
+errno_t safe_freopen(FILE* M_RESTRICT *M_RESTRICT newstreamptr, const char *M_RESTRICT filename, const char *M_RESTRICT mode, FILE *M_RESTRICT stream)
+{
+    errno_t error = 0;
+    if (newstreamptr == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_freopen: newstreamptr is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
+    }
+    else if (stream == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_freopen: stream is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
+    }
+    else if (mode == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_freopen: mode is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
+    }
+    else
+    {
+#    if defined(HAVE_MSFT_SECURE_LIB)
+        error = freopen_s(M_CONST_CAST(FILE**, newstreamptr), filename, mode, stream);
+#    else
+        errno = 0;
+        *newstreamptr = freopen(filename, mode, stream);
+        if (*newstreamptr == M_NULLPTR)
+        {
+            error = errno;
+            if (error == 0)
+            {
+                // TODO: Find a better error to use in this case. Unlikely we will need is as errno will likely be set correctly
+                error = EINVAL;
+            }
+        }
+#    endif
+    }
+    errno = error;
+    return error;
+}
+
+//NOTE: This implementation of safe_tmpnam matches C11 tmpnam_s
+//      It is commented out as it makes a LOT more sense to use safe_tmpfile call instead and because
+//      calling tmpnam generates warnings about being insecure to use.-TJE
+// #if !defined (TMP_MAX_S)
+//     #define TMP_MAX_S TMP_MAX
+// #endif
+// #if !defined (L_tmpnam_s)
+//     #define L_tmpnam_s L_tmpnam
+// #endif
+// errno_t safe_tmpnam(char *filename_s, rsize_t maxsize)
+// {
+//     errno_t error = 0;
+//     if (filename_s == M_NULLPTR)
+//     {
+//         error = EINVAL;
+//         invoke_Constraint_Handler("safe_tmpnam: filename_s is NULL", M_NULLPTR, error);
+//         errno = error;
+//         return error;
+//     }
+//     else if (maxsize == RSIZE_T_C(0))
+//     {
+//         error = EINVAL;
+//         invoke_Constraint_Handler("safe_tmpnam: maxsize == 0", M_NULLPTR, error);
+//         errno = error;
+//         return error;
+//     }
+//     else if (maxsize > RSIZE_MAX)
+//     {
+//         error = EINVAL;
+//         filename_s[0] = 0;
+//         invoke_Constraint_Handler("safe_tmpnam: maxsize > RSIZE_MAX", M_NULLPTR, error);
+//         errno = error;
+//         return error;
+//     }
+//     else
+//     {
+// #    if defined(HAVE_MSFT_SECURE_LIB)
+//         error = tmpnam_s(filename_s, maxsize);
+// #    else
+//         DECLARE_ZERO_INIT_ARRAY(char, internaltempname, L_tmpnam);
+//         errno = 0;
+//         if (tmpnam(internaltempname) != M_NULLPTR)
+//         {
+//             size_t internaltempnamelen = safe_strlen(internaltempname);
+//             if (internaltempnamelen > maxsize)
+//             {
+//                 error = EINVAL;
+//                 filename_s[0] = 0;
+//                 invoke_Constraint_Handler("safe_tmpnam: maxsize < generated tmpnam size", M_NULLPTR, error);
+//                 errno = error;
+//                 return error;
+//             }
+//             else
+//             {
+//                 error = safe_strcpy(filename_s, maxsize, internaltempname);
+//             }
+//         }
+//         else
+//         {
+//             error = errno;
+//             if (error == 0)
+//             {
+//                 // TODO: Find a better error to use in this case. Unlikely we will need is as errno will likely be set correctly
+//                 error = EINVAL;
+//             }
+//         }
+// #    endif
+//     }
+//     errno = error;
+//     return error;
+// }
+
+errno_t safe_tmpfile(FILE * M_RESTRICT *M_RESTRICT streamptr)
+{
+    errno_t error = 0;
+    if (streamptr == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_tmpfile: streamptr is NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
+    }
+    else
+    {
+#    if defined(HAVE_MSFT_SECURE_LIB)
+        error = tmpfile_s(M_CONST_CAST(FILE**, streamptr));
+#    else
+        errno = 0;
+        *streamptr = tmpfile();
+        if (*streamptr == M_NULLPTR)
+        {
+            error = errno;
+            if (error == 0)
+            {
+                // TODO: Find a better error to use in this case. Unlikely we will need is as errno will likely be set correctly
+                error = EINVAL;
+            }
+        }
+#    endif
+    }
+    errno = error;
+    return error;
+}
+
+char* safe_gets(char *str, rsize_t n)
+{
+    errno_t error = 0;
+    if (n == RSIZE_T_C(0))
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_gets: n == 0", M_NULLPTR, error);
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (n > RSIZE_MAX)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_gets: n > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (str == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_gets: str == NULL", M_NULLPTR, error);
+        errno = error;
+        return M_NULLPTR;
+    }
+    else
+    {
+#    if defined(HAVE_MSFT_SECURE_LIB)
+        gets_s(str, n);
+#    else
+        errno = 0;
+        if (M_NULLPTR == fgets(str, n, stdin))
+        {
+            str[0] = 0;
+            error = EINVAL;
+            invoke_Constraint_Handler("safe_gets: fgets(str, n, stdin) == NULL", M_NULLPTR, error);
+            errno = error;
+            return M_NULLPTR;
+        }
+        else if (ferror(stdin))
+        {
+            str[0] = 0;
+            error = EINVAL;
+            invoke_Constraint_Handler("safe_gets: ferror(stdin)", M_NULLPTR, error);
+            errno = error;
+            return M_NULLPTR;
+        }
+        else
+        {
+            size_t len = safe_strnlen(str, n);
+            if (!feof(stdin) || (len > SIZE_T_C(0) && str[len - SIZE_T_C(1)] != '\n'))
+            {
+                if (len == (n - RSIZE_T_C(1)))
+                {
+                    //there is an error in here
+                    str[0] = 0;
+                    invoke_Constraint_Handler("safe_gets: Did not find newline or eof after writing n-1 chars from stdin!", M_NULLPTR, error);
+                    errno = EINVAL;
+                    return M_NULLPTR;
+                }
+            }
+            //overwrite the newline character if in the stream after fgets
+            if (str[len - SIZE_T_C(1)] == '\n')
+            {
+                str[len - SIZE_T_C(1)] = 0;
+            }
+        }
+#    endif
+    }
+    errno = error;
+    return str;
 }

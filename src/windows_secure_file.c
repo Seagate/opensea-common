@@ -568,7 +568,23 @@ FUNC_ATTR_PRINTF(2, 3) static void set_dir_security_output_error_message(char** 
     {
         va_list args;
         va_start(args, format);
+
+#       if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#            pragma clang diagnostic push
+#            pragma clang diagnostic ignored "-Wformat-nonliteral"
+#       elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.1*/
+#            pragma GCC diagnostic push
+#            pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#       endif
+
         int result = vasprintf(outputError, format, args);
+
+#       if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#            pragma clang diagnostic pop
+#       elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.1*/
+#            pragma GCC diagnostic pop
+#       endif
+
         va_end(args);
         if (result < 0 && *outputError != M_NULLPTR)
         {
@@ -1084,7 +1100,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                     {
                         size_t bufferSize  = SIZE_T_C(0);
                         char*  reparsePath = M_NULLPTR;
-#if defined(__STDC_SECURE_LIB__)
+#if defined(HAVE_MSFT_SECURE_LIB)
                         wcstombs_s(&bufferSize, M_NULLPTR, 0,
                                    C_CAST(wchar_t*, reparseData->SymbolicLinkReparseBuffer.PathBuffer), 0);
 #else
@@ -1097,7 +1113,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                             if (reparsePath)
                             {
                                 size_t conversionSize = SIZE_T_C(0);
-#if defined(__STDC_SECURE_LIB__)
+#if defined(HAVE_MSFT_SECURE_LIB)
                                 wcstombs_s(&conversionSize, reparsePath, bufferSize + 1,
                                            C_CAST(wchar_t*, reparseData->SymbolicLinkReparseBuffer.PathBuffer),
                                            bufferSize + 1);
