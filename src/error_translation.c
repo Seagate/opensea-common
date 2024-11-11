@@ -31,17 +31,17 @@
 #    include <windows.h>
 #endif
 
-#define ERROR_STRING_BUFFER_LENGTH 1024
+#define ERROR_STRING_BUFFER_LENGTH SIZE_T_C(1024)
 void print_Errno_To_Screen(errno_t error)
 {
 #if defined(HAVE_C11_ANNEX_K)
     size_t errorStringLen = strerrorlen_s(error);
     if (errorStringLen > 0 && errorStringLen < RSIZE_MAX)
     {
-        char* errorString = M_REINTERPRET_CAST(char*, safe_calloc(errorStringLen + 1, sizeof(char)));
+        char* errorString = M_REINTERPRET_CAST(char*, safe_calloc(errorStringLen + SIZE_T_C(1), sizeof(char)));
         if (errorString)
         {
-            errno_t truncated = strerror_s(errorString, errorStringLen + 1, error);
+            errno_t truncated = strerror_s(errorString, errorStringLen + SIZE_T_C(1), error);
             if (truncated != 0)
             {
                 printf("%d - %s (truncated)\n", error, errorString);
@@ -61,9 +61,7 @@ void print_Errno_To_Screen(errno_t error)
     {
         printf("%d - <Unable to convert error to string>\n", error);
     }
-#elif defined(__STDC_SECURE_LIB__) // This is a MSFT definition for their
-                                   // original _s functions that sometimes
-                                   // differ from the C11 standard
+#elif defined(HAVE_MSFT_SECURE_LIB)
     DECLARE_ZERO_INIT_ARRAY(char, errorString, ERROR_STRING_BUFFER_LENGTH);
     if (0 == strerror_s(errorString, ERROR_STRING_BUFFER_LENGTH, error))
     {
@@ -91,7 +89,7 @@ void print_Errno_To_Screen(errno_t error)
     DECLARE_ZERO_INIT_ARRAY(char, errorString, ERROR_STRING_BUFFER_LENGTH);
     if (0 == strerror_r(error, errorString, ERROR_STRING_BUFFER_LENGTH))
     {
-        errorString[ERROR_STRING_BUFFER_LENGTH - 1] = '\0'; // While it should be null terminated, there are known bugs
+        errorString[ERROR_STRING_BUFFER_LENGTH - SIZE_T_C(1)] = '\0'; // While it should be null terminated, there are known bugs
                                                             // on some systems where it is not!
         printf("%d - %s\n", error, errorString);
     }
@@ -105,7 +103,7 @@ void print_Errno_To_Screen(errno_t error)
     char* errmsg = strerror_r(error, errorString, ERROR_STRING_BUFFER_LENGTH);
     if (errmsg != M_NULLPTR)
     {
-        errorString[ERROR_STRING_BUFFER_LENGTH - 1] = '\0'; // While it should be null terminated, there are known bugs
+        errorString[ERROR_STRING_BUFFER_LENGTH - SIZE_T_C(1)] = '\0'; // While it should be null terminated, there are known bugs
                                                             // on some systems where it is not!
         printf("%d - %s\n", error, errmsg);
     }
