@@ -90,9 +90,9 @@ typedef off_t oscoffset_t; // to deal with windows differences in off_t definiti
                            // in stat
 #endif
 
-#if !defined(HAVE_C11_ANNEX_K) && !defined(__STDC_SECURE_LIB__)
+#if !defined(HAVE_C11_ANNEX_K) && !defined(HAVE_MSFT_SECURE_LIB)
     typedef int errno_t;
-#endif //! HAVE_C11_ANNEX_K && !__STDC_SECURE_LIB__
+#endif //! HAVE_C11_ANNEX_K && !HAVE_MSFT_SECURE_LIB
 
 #if defined(USING_C23) || defined(USING_CPP23)
 #    if !defined(SIZE_T_C)
@@ -345,7 +345,7 @@ typedef int32_t intptr_t;
 
 // A macro to help define packed structures in a way that best works with
 // different compilers
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(__clang__)
 #    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
         __pragma(pack(push, alignmentval));                                                                            \
         typedef struct s_##name                                                                                        \
@@ -371,7 +371,7 @@ typedef int32_t intptr_t;
 // just to pack as small as "possible" This is not exactly the same as providing
 // an alignment of 1 in GCC, but it is as close as MSVC can get to the same
 // behavior
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(__clang__)
 #    define M_PACKED_STRUCT(name, ...)                                                                                 \
         __pragma(pack(push, 1));                                                                                       \
         typedef struct s_##name                                                                                        \
