@@ -132,7 +132,7 @@ extern "C"
 
     //-----------------------------------------------------------------------------
     //
-    //  char* common_String_Concat(char* destination, size_t destinationSizeBytes,
+    //  char* safe_strcat(char* destination, size_t destinationSizeBytes,
     //  const char* source);
     //
     //! \brief   Description:  To be used in place of strcat.
@@ -147,7 +147,7 @@ extern "C"
     //!   \return pointer to destination
     //
     //-----------------------------------------------------------------------------
-    M_INLINE char* common_String_Concat(char* M_RESTRICT       destination,
+    static M_INLINE char* common_String_Concat(char* M_RESTRICT       destination,
                                         size_t                 destinationSizeBytes,
                                         const char* M_RESTRICT source)
     {
@@ -179,7 +179,7 @@ extern "C"
     //!   \return pointer to destination
     //
     //-----------------------------------------------------------------------------
-    M_INLINE char* common_String_Concat_Len(char* M_RESTRICT       destination,
+    static M_INLINE char* common_String_Concat_Len(char* M_RESTRICT       destination,
                                             size_t                 destinationSizeBytes,
                                             const char* M_RESTRICT source,
                                             int                    sourceLength)

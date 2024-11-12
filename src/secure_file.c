@@ -311,7 +311,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
         {
             // append the filename to the end on fileInfo->fullpath
             // first add a trailing slash since one will not be present
-            common_String_Concat(M_CONST_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, SYSTEM_PATH_SEPARATOR_STR);
+            safe_strcat(M_CONST_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, SYSTEM_PATH_SEPARATOR_STR);
             if (strchr(filename, '/') // always check for forwards slash since
                                       // Windows can accept this
 #if defined(_WIN32)
@@ -338,11 +338,11 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                     lastsep = lastwinsep;
                 }
 #endif //_WIN32
-                common_String_Concat(M_CONST_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, lastsep + 1);
+                safe_strcat(M_CONST_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, lastsep + 1);
             }
             else
             {
-                common_String_Concat(M_CONST_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, filename);
+                safe_strcat(M_CONST_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, filename);
             }
         }
         else
@@ -1227,7 +1227,7 @@ char* generate_Log_Name(eLogFileNamingConvention logFileNamingConvention, // req
         // to append one before using this path below
         if (path[safe_strnlen(path, OPENSEA_PATH_MAX) - 1] != SYSTEM_PATH_SEPARATOR)
         {
-            common_String_Concat(path, OPENSEA_PATH_MAX, SYSTEM_PATH_SEPARATOR_STR);
+            safe_strcat(path, OPENSEA_PATH_MAX, SYSTEM_PATH_SEPARATOR_STR);
         }
     }
     else

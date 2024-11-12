@@ -12,7 +12,7 @@
 // ******************************************************************************************
 //
 // \file safe_lsearch.c
-// \brief Defines safe_bsearch_context which behaves similarly to bsearch_s with
+// \brief Defines bounds checked versions of lsearch and lfind similar to qsort_s and bsearch_s checks
 // a context parameter.
 //        This code is adapted from FreeBSD's lsearch.c under Robert Drehmel's
 //        original license Modifications are licensed under MPL 2.0
@@ -25,6 +25,7 @@
 //              imply the bounds checking capabilities.
 
 #include "common_types.h"
+#include "constraint_handling.h"
 #include "memory_safety.h"
 #include "sort_and_search.h"
 #include "type_conversion.h"
@@ -52,14 +53,89 @@ void* safe_lfind(const void* key, const void* base, size_t* nelp, size_t width, 
 
 static void* safe_lwork(const void* key, const void* base, size_t* nelp, size_t width, comparefn compar, int addelem)
 {
-    if (nelp == M_NULLPTR || (*nelp > 0 && (key == M_NULLPTR || base == M_NULLPTR || compar == M_NULLPTR)))
+    errno_t error = 0;
+    if (nelp == M_NULLPTR)
     {
-        errno = EINVAL;
+        error = EINVAL;
+        if (addelem == 0)
+        {
+            invoke_Constraint_Handler("safe_lfind: nelp == NULL", M_NULLPTR, error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch: nelp == NULL", M_NULLPTR, error);
+        }
+        errno = error;
         return M_NULLPTR;
     }
-    else if (*nelp > RSIZE_MAX || width > RSIZE_MAX)
+    if (*nelp > RSIZE_T_C(0) && base == M_NULLPTR)
     {
-        errno = ERANGE;
+        error = EINVAL;
+        if (addelem == 0)
+        {
+            invoke_Constraint_Handler("safe_lfind: *nelp > 0 && base == NULL", M_NULLPTR, error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch: *nelp > 0 && base == NULL", M_NULLPTR, error);
+        }
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (*nelp > RSIZE_T_C(0) && compar == M_NULLPTR)
+    {
+        error = EINVAL;
+        if (addelem == 0)
+        {
+            invoke_Constraint_Handler("safe_lfind: *nelp > 0 && compar == NULL", M_NULLPTR, error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch: *nelp > 0 && compar == NULL", M_NULLPTR, error);
+        }
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (*nelp > RSIZE_T_C(0) && key == M_NULLPTR)
+    {
+        error = EINVAL;
+        if (addelem == 0)
+        {
+            invoke_Constraint_Handler("safe_lfind:*nelp > 0 && key == NULL", M_NULLPTR, error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch: *nelp > 0 && key == NULL", M_NULLPTR, error);
+        }
+        errno = error;
+        return M_NULLPTR;
+    }
+     else if (*nelp > RSIZE_MAX)
+    {
+        error = ERANGE;
+        if (addelem == 0)
+        {
+            invoke_Constraint_Handler("safe_lfind: *nelp > RSIZE_MAX", M_NULLPTR, error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch: *nelp > RSIZE_MAX", M_NULLPTR, error);
+        }
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (width > RSIZE_MAX)
+    {
+        error = ERANGE;
+        if (addelem == 0)
+        {
+            invoke_Constraint_Handler("safe_lfind: width > RSIZE_MAX", M_NULLPTR, error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch: width > RSIZE_MAX", M_NULLPTR, error);
+        }
+        errno = error;
         return M_NULLPTR;
     }
     else
@@ -70,6 +146,7 @@ static void* safe_lwork(const void* key, const void* base, size_t* nelp, size_t 
         {
             if (compar(key, ep) == 0)
             {
+                errno = error;
                 return (ep);
             }
         }
@@ -77,6 +154,7 @@ static void* safe_lwork(const void* key, const void* base, size_t* nelp, size_t 
         /* lfind() shall return when the key was not found. */
         if (!addelem)
         {
+            errno = error;
             return (M_NULLPTR);
         }
         /*
@@ -119,14 +197,89 @@ static void* safe_lwork_context(const void*  key,
                                 void*        context,
                                 int          addelem)
 {
-    if (nelp == M_NULLPTR || (*nelp > 0 && (key == M_NULLPTR || base == M_NULLPTR || compar == M_NULLPTR)))
+    errno_t error = 0;
+    if (nelp == M_NULLPTR)
     {
-        errno = EINVAL;
+        error = EINVAL;
+        if (addelem == 0)
+        {
+            invoke_Constraint_Handler("safe_lfind_context: nelp == NULL", M_NULLPTR, error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch_context: nelp == NULL", M_NULLPTR, error);
+        }
+        errno = error;
         return M_NULLPTR;
     }
-    else if (*nelp > RSIZE_MAX || width > RSIZE_MAX)
+    if (*nelp > RSIZE_T_C(0) && base == M_NULLPTR)
     {
-        errno = ERANGE;
+        error = EINVAL;
+        if (addelem == 0)
+        {
+            invoke_Constraint_Handler("safe_lfind_context: *nelp > 0 && base == NULL", M_NULLPTR, error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch_context: *nelp > 0 && base == NULL", M_NULLPTR, error);
+        }
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (*nelp > RSIZE_T_C(0) && compar == M_NULLPTR)
+    {
+        error = EINVAL;
+        if (addelem == 0)
+        {
+            invoke_Constraint_Handler("safe_lfind_context: *nelp > 0 && compar == NULL", M_NULLPTR, error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch_context: *nelp > 0 && compar == NULL", M_NULLPTR, error);
+        }
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (*nelp > RSIZE_T_C(0) && key == M_NULLPTR)
+    {
+        error = EINVAL;
+        if (addelem == 0)
+        {
+            invoke_Constraint_Handler("safe_lfind_context: *nelp > 0 && key == NULL", M_NULLPTR, error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch_context: *nelp > 0 && key == NULL", M_NULLPTR, error);
+        }
+        errno = error;
+        return M_NULLPTR;
+    }
+     else if (*nelp > RSIZE_MAX)
+    {
+        error = ERANGE;
+        if (addelem == 0)
+        {
+            invoke_Constraint_Handler("safe_lfind_context: *nelp > RSIZE_MAX", M_NULLPTR, error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch_context: *nelp > RSIZE_MAX", M_NULLPTR, error);
+        }
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (width > RSIZE_MAX)
+    {
+        error = ERANGE;
+        if (addelem == 0)
+        {
+            invoke_Constraint_Handler("safe_lfind_context: width > RSIZE_MAX", M_NULLPTR, error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch_context: width > RSIZE_MAX", M_NULLPTR, error);
+        }
+        errno = error;
         return M_NULLPTR;
     }
     else
@@ -137,6 +290,7 @@ static void* safe_lwork_context(const void*  key,
         {
             if (compar(key, ep, context) == 0)
             {
+                errno = error;
                 return (ep);
             }
         }
@@ -144,6 +298,7 @@ static void* safe_lwork_context(const void*  key,
         /* lfind() shall return when the key was not found. */
         if (!addelem)
         {
+            errno = error;
             return (M_NULLPTR);
         }
         /*

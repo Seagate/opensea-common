@@ -133,7 +133,7 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
                             // Use the "PRETTY_NAME" field
                             char*   saveptr    = M_NULLPTR;
                             rsize_t releaselen = safe_strlen(releaseMemory);
-                            char*   tok        = common_String_Token(releaseMemory, &releaselen, "\n", &saveptr);
+                            char*   tok        = safe_String_Token(releaseMemory, &releaselen, "\n", &saveptr);
                             while (tok != M_NULLPTR)
                             {
                                 if (strncmp(tok, "PRETTY_NAME=", safe_strlen("PRETTY_NAME=")) == 0)
@@ -144,7 +144,7 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
                                              tok + safe_strlen("PRETTY_NAME=\""));
                                     break;
                                 }
-                                tok = common_String_Token(M_NULLPTR, &releaselen, "\n", &saveptr);
+                                tok = safe_String_Token(M_NULLPTR, &releaselen, "\n", &saveptr);
                             }
                         }
                         safe_free(&releaseMemory);

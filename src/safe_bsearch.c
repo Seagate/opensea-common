@@ -14,7 +14,7 @@
 // \file safe_bsearch.c
 // \brief Defines safe_bsearch_context which behaves similarly to bsearch_s with
 // a context parameter.
-//        This code is adapted from FreeBSD's qsort.c under BSD 3-clause license
+//        This code is adapted from FreeBSD's bsearch.c under BSD 3-clause license
 //        Modifications are licensed under MPL 2.0
 // Modifications:
 //             checks for null, sizes as required for C11 annex k bsearch_s
@@ -25,6 +25,7 @@
 
 #include "code_attributes.h"
 #include "common_types.h"
+#include "constraint_handling.h"
 #include "sort_and_search.h"
 #include "type_conversion.h"
 
@@ -78,24 +79,49 @@
 
 void* safe_bsearch_context(const void* key, void* ptr, rsize_t count, rsize_t size, ctxcomparefn compare, void* context)
 {
-    if (count > 0 && (key == M_NULLPTR || ptr == M_NULLPTR || compare == M_NULLPTR))
+    errno_t error = 0;
+    if (count > RSIZE_T_C(0) && ptr == M_NULLPTR)
     {
-        errno = EINVAL;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_bsearch_context: count > 0 && ptr == NULL", M_NULLPTR, error);
+        errno = error;
         return M_NULLPTR;
     }
-    else if (count > RSIZE_MAX || size > RSIZE_MAX)
+    else if (count > RSIZE_T_C(0) && compare == M_NULLPTR)
     {
-        errno = ERANGE;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_bsearch_context: count > 0 && compare == NULL", M_NULLPTR, error);
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (count > RSIZE_T_C(0) && key == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_bsearch_context: count > 0 && key == NULL", M_NULLPTR, error);
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (count > RSIZE_MAX)
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_bsearch_context: count > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (size > RSIZE_MAX)
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_bsearch_context: size > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
         return M_NULLPTR;
     }
     else
     {
         const char* base = ptr;
         const void* p    = M_NULLPTR;
-
         errno = 0;
 
-        for (size_t lim = count; lim != 0; lim >>= 1)
+        for (size_t lim = count; lim != SIZE_T_C(0); lim >>= 1)
         {
             p       = base + (lim >> 1) * size;
             int cmp = compare(key, p, context);

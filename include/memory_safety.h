@@ -643,25 +643,23 @@ extern "C"
     // used inside safe_memcpy and other functions that do not support/allow
     // overlapped memory regions. returns zero when not overlapping otherwise
     // returns a non-zero value.
-    M_INLINE int memory_regions_overlap(const void* M_RESTRICT ptr1,
+    static M_INLINE int memory_regions_overlap(const void* M_RESTRICT ptr1,
                                         rsize_t                size1,
                                         const void* M_RESTRICT ptr2,
                                         rsize_t                size2)
     {
         // casting a null pointer to uintptr_t results in a zero. This should be
         // safe.
-        return ((M_REINTERPRET_CAST(intptr_t, ptr1) -
-                 (M_REINTERPRET_CAST(intptr_t, ptr2) + M_STATIC_CAST(intptr_t, size2))) &
-                (M_REINTERPRET_CAST(intptr_t, ptr2) -
-                 (M_REINTERPRET_CAST(intptr_t, ptr1) + M_STATIC_CAST(intptr_t, size1)))) < 0;
+        return ((M_STATIC_CAST(intptr_t, ptr1) -
+                 (M_STATIC_CAST(intptr_t, ptr2) + M_STATIC_CAST(intptr_t, size2))) &
+                (M_STATIC_CAST(intptr_t, ptr2) -
+                 (M_STATIC_CAST(intptr_t, ptr1) + M_STATIC_CAST(intptr_t, size1)))) < 0;
     }
 
-    // Calls memmove_s if available, otherwise performs all checks that memmove_s
-    // does before calling memmove
+    // bounds checked version of memmove, similar to memmove_s
     errno_t safe_memmove(void* dest, rsize_t destsz, const void* src, rsize_t count);
 
-    // calls memcpy_s if available, otherwise performs all checks that memcpy_s does
-    // before calling memcpy
+    // bounds checked version of memcpy, similar to memcpy_s
     errno_t safe_memcpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t count);
 
     // bounds checked version of memccpy
@@ -670,6 +668,19 @@ extern "C"
     // bounds checked version of memccpy that allows overlapping ranges (like
     // memmove does)
     errno_t safe_memcmove(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t count);
+
+    //Like the C23 function memalignment()
+    static M_INLINE size_t get_memalignment(const void* ptr)
+    {
+        if (ptr == M_NULLPTR)
+        {
+            return SIZE_T_C(0);
+        }
+        else
+        {
+            return M_STATIC_CAST(size_t, ptr) & -M_STATIC_CAST(size_t, ptr);
+        }
+    }
 
 #if defined(__cplusplus)
 }

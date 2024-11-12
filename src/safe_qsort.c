@@ -31,6 +31,7 @@
 
 #include "code_attributes.h"
 #include "common_types.h"
+#include "constraint_handling.h"
 #include "math_utils.h"
 #include "sort_and_search.h"
 #include "type_conversion.h"
@@ -78,7 +79,7 @@ static M_INLINE void swapfunc(char* a, char* b, size_t es)
         t    = *a;
         *a++ = *b;
         *b++ = t;
-    } while (--es > 0);
+    } while (--es > SIZE_T_C(0));
 }
 
 #define vecswap(a, b, n)                                                                                               \
@@ -93,21 +94,39 @@ static M_INLINE char* med3(char* a, char* b, char* c, ctxcomparefn cmp, void* th
 
 errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn compare, void* context)
 {
-    if (count > RSIZE_MAX || size > RSIZE_MAX)
+    errno_t error = 0;
+    if (count > RSIZE_T_C(0) && ptr == M_NULLPTR)
     {
-        errno = ERANGE;
-        return ERANGE;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_qsort_context: count > 0 && ptr == NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
-    else if (count > 0 && (ptr == M_NULLPTR || compare == M_NULLPTR))
+    else if (count > RSIZE_T_C(0) && compare == M_NULLPTR)
     {
-        errno = EINVAL;
-        return EINVAL;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_qsort_context: count > 0 && compare == NULL", M_NULLPTR, error);
+        errno = error;
+        return error;
+    }
+    else if (count > RSIZE_MAX)
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_qsort_context: count > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return error;
+    }
+    else if (size > RSIZE_MAX)
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_qsort_context: size > RSIZE_MAX", M_NULLPTR, error);
+        errno = error;
+        return error;
     }
     else
     {
-        errno_t error = 0;
         errno         = 0;
-        if (count > 0)
+        if (count > RSIZE_T_C(0))
         {
             char*  pa         = M_NULLPTR;
             char*  pb         = M_NULLPTR;
@@ -122,7 +141,7 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
             int    swap_cnt   = 0;
 
             /* if there are less than 2 elements, then sorting is not needed */
-            if (count < 2) // This had __predict_false which is not available
+            if (count < RSIZE_T_C(2)) // This had __predict_false which is not available
                            // here in cross-platform code. TODO: predictfalse
                            // attribute type macro
             {
@@ -131,11 +150,11 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
             }
         loop:
             swap_cnt = 0;
-            if (count < 7)
+            if (count < RSIZE_T_C(7))
             {
-                for (pm = C_CAST(char*, ptr) + size; pm < C_CAST(char*, ptr) + count * size; pm += size)
+                for (pm = M_REINTERPRET_CAST(char*, ptr) + size; pm < M_REINTERPRET_CAST(char*, ptr) + count * size; pm += size)
                 {
-                    for (pl = pm; pl > C_CAST(char*, ptr) && compare(pl - size, pl, context) > 0; pl -= size)
+                    for (pl = pm; pl > M_REINTERPRET_CAST(char*, ptr) && compare(pl - size, pl, context) > 0; pl -= size)
                     {
                         swapfunc(pl, pl - size, size);
                     }
@@ -143,14 +162,14 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
                 errno = error;
                 return error;
             }
-            pm = C_CAST(char*, ptr) + (count / 2) * size;
-            if (count > 7)
+            pm = M_REINTERPRET_CAST(char*, ptr) + (count / RSIZE_T_C(2)) * size;
+            if (count > RSIZE_T_C(7))
             {
                 pl = ptr;
-                pn = C_CAST(char*, ptr) + (count - 1) * size;
-                if (count > 40)
+                pn = M_REINTERPRET_CAST(char*, ptr) + (count - RSIZE_T_C(1)) * size;
+                if (count > RSIZE_T_C(40))
                 {
-                    size_t d = (count / 8) * size;
+                    size_t d = (count / RSIZE_T_C(8)) * size;
 
                     pl = med3(pl, pl + d, pl + 2 * d, compare, context);
                     pm = med3(pm - d, pm, pm + d, compare, context);
@@ -159,9 +178,9 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
                 pm = med3(pl, pm, pn, compare, context);
             }
             swapfunc(ptr, pm, size);
-            pa = pb = C_CAST(char*, ptr) + size;
+            pa = pb = M_REINTERPRET_CAST(char*, ptr) + size;
 
-            pc = pd = C_CAST(char*, ptr) + (count - 1) * size;
+            pc = pd = M_REINTERPRET_CAST(char*, ptr) + (count - RSIZE_T_C(1)) * size;
             for (;;)
             {
                 while (pb <= pc && (cmp_result = compare(pb, ptr, context)) <= 0)
@@ -196,9 +215,9 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
             if (swap_cnt == 0)
             {
                 /* Switch to insertion sort */
-                for (pm = C_CAST(char*, ptr) + size; pm < C_CAST(char*, ptr) + count * size; pm += size)
+                for (pm = M_REINTERPRET_CAST(char*, ptr) + size; pm < M_REINTERPRET_CAST(char*, ptr) + count * size; pm += size)
                 {
-                    for (pl = pm; pl > C_CAST(char*, ptr) && compare(pl - size, pl, context) > 0; pl -= size)
+                    for (pl = pm; pl > M_REINTERPRET_CAST(char*, ptr) && compare(pl - size, pl, context) > 0; pl -= size)
                     {
                         swapfunc(pl, pl - size, size);
                     }
@@ -207,8 +226,8 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
                 return error;
             }
 
-            pn = C_CAST(char*, ptr) + count * size;
-            d1 = M_Min(C_CAST(uintptr_t, pa) - C_CAST(uintptr_t, ptr), C_CAST(uintptr_t, pb) - C_CAST(uintptr_t, pa));
+            pn = M_REINTERPRET_CAST(char*, ptr) + count * size;
+            d1 = M_Min(M_STATIC_CAST(uintptr_t, pa) - M_STATIC_CAST(uintptr_t, ptr), M_STATIC_CAST(uintptr_t, pb) - M_STATIC_CAST(uintptr_t, pa));
             vecswap(ptr, pb - d1, d1);
             /*
              * Cast size to preserve signedness of right-hand side of MIN()
@@ -220,12 +239,12 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
             // result to size_t for assignment to prevent conversion warning.
             //               The comment above is from the original source and
             //               seems reasonable to support adding these casts-TJE
-            d1 = C_CAST(size_t, M_Min(C_CAST(intptr_t, pd) - C_CAST(intptr_t, pc),
-                                      C_CAST(intptr_t, pn) - C_CAST(intptr_t, pd) - C_CAST(ssize_t, size)));
+            d1 = M_STATIC_CAST(size_t, M_Min(M_STATIC_CAST(intptr_t, pd) - M_STATIC_CAST(intptr_t, pc),
+                                      M_STATIC_CAST(intptr_t, pn) - M_STATIC_CAST(intptr_t, pd) - M_STATIC_CAST(ssize_t, size)));
             vecswap(pb, pn - d1, d1);
 
-            d1 = C_CAST(uintptr_t, pb) - C_CAST(uintptr_t, pa);
-            d2 = C_CAST(uintptr_t, pd) - C_CAST(uintptr_t, pc);
+            d1 = M_STATIC_CAST(uintptr_t, pb) - M_STATIC_CAST(uintptr_t, pa);
+            d2 = M_STATIC_CAST(uintptr_t, pd) - M_STATIC_CAST(uintptr_t, pc);
             if (d1 <= d2)
             {
                 /* Recurse on left partition, then iterate on right partition */
