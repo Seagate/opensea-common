@@ -678,7 +678,7 @@ extern "C"
         }
         else
         {
-            return M_STATIC_CAST(size_t, ptr) & -M_STATIC_CAST(size_t, ptr);
+            return M_STATIC_CAST(uintptr_t, ptr) & M_STATIC_CAST(uintptr_t, -M_STATIC_CAST(intptr_t, ptr));
         }
     }
 
