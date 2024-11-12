@@ -26,13 +26,34 @@ extern "C"
 {
 #endif
 
+
+    // NOTE: These warning disables are only needed in MSVC for the C11 generic min/max implementations.
+    // Without them you get a warning about applying a unary - on an unsigned type.
+    // More casts can be used to work around this, but this was easier since it is otherwise correct code -TJE
+    // If this becomes useful in other places, this should be moved to a different file, but since it's
+    // only used here, it can stay here for now. - TJE
+#   if defined (_MSC_VER) && !defined (__clang__)
+#       define DISABLE_WARNING_4146 \
+            _Pragma("warning(push)") \
+            _Pragma("warning(disable: 4146)")
+
+#       define RESTORE_WARNING_4146 \
+            _Pragma("warning(pop)")
+#   else
+#       define DISABLE_WARNING_4146
+#       define RESTORE_WARNING_4146
+#   endif //_MSVC && !clang workaround for min/max macros
+
 // clang-format off
 #if defined(USING_C11) && defined (HAVE_C11_GENERIC_SELECTION)
 // Using generic selection to change behavior on when to use
 // a specific way to evaluate these macros
 // This allows turnary for signed types to avoid undefined behavior
 // and bitwise operations on unsigned types for fewer branch conditions.
-#define M_Min(a, b) _Generic((a), \
+
+#define M_Min(a, b) \
+    DISABLE_WARNING_4146 \
+    _Generic((a), \
     unsigned char: _Generic((b), \
         unsigned char: M_STATIC_CAST(unsigned char, M_STATIC_CAST(unsigned char, b) ^ ((M_STATIC_CAST(unsigned char, a) ^ M_STATIC_CAST(unsigned char, b)) & -M_STATIC_CAST(unsigned char, (a) < (b)))), \
         unsigned short: M_STATIC_CAST(unsigned short, M_STATIC_CAST(unsigned short, b) ^ ((M_STATIC_CAST(unsigned short, a) ^ M_STATIC_CAST(unsigned short, b)) & -M_STATIC_CAST(unsigned short, (a) < (b)))), \
@@ -68,9 +89,12 @@ extern "C"
         unsigned long: (M_STATIC_CAST(unsigned long long, b) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
         unsigned long long: (M_STATIC_CAST(unsigned long long, b) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
         default: (((a) < (b)) ? (a) : (b))), \
-    default: (((a) < (b)) ? (a) : (b)))
+    default: (((a) < (b)) ? (a) : (b))) \
+    RESTORE_WARNING_4146
 
-#define M_Max(a, b) _Generic((a), \
+#define M_Max(a, b) \
+    DISABLE_WARNING_4146 \
+    _Generic((a), \
     unsigned char: _Generic((b), \
         unsigned char: M_STATIC_CAST(unsigned char, M_STATIC_CAST(unsigned char, a) ^ ((M_STATIC_CAST(unsigned char, a) ^ M_STATIC_CAST(unsigned char, b)) & -M_STATIC_CAST(unsigned char, (a) < (b)))), \
         unsigned short: M_STATIC_CAST(unsigned short, M_STATIC_CAST(unsigned short, a) ^ ((M_STATIC_CAST(unsigned short, a) ^ M_STATIC_CAST(unsigned short, b)) & -M_STATIC_CAST(unsigned short, (a) < (b)))), \
@@ -106,7 +130,8 @@ extern "C"
         unsigned long: (M_STATIC_CAST(unsigned long long, a) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
         unsigned long long: (M_STATIC_CAST(unsigned long long, a) ^ ((M_STATIC_CAST(unsigned long long, a) ^ M_STATIC_CAST(unsigned long long, b)) & -M_STATIC_CAST(unsigned long long, (a) < (b)))), \
         default: (((a) > (b)) ? (a) : (b))), \
-    default: (((a) > (b)) ? (a) : (b)))
+    default: (((a) > (b)) ? (a) : (b))) \
+    RESTORE_WARNING_4146
 
 // NOTE: On the int rounding macros for unsigned char and unsigned short, the 1 is cast to those types to avoid
 //       making the type wider and generating a truncation error at assignment.
