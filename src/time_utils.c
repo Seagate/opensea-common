@@ -19,6 +19,7 @@
 #include "common_types.h"
 #include "io_utils.h"
 #include "memory_safety.h"
+#include "string_utils.h"
 #include "type_conversion.h"
 
 #include <locale.h> //used when getting time to replace ctime and asctime function to try and replicate the format exactly-TJE
@@ -101,11 +102,11 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
         safe_memset(&epoch, sizeof(SYSTEMTIME), 0, sizeof(SYSTEMTIME));
         safe_memset(&nowAsInt, sizeof(ULARGE_INTEGER), 0, sizeof(ULARGE_INTEGER));
         safe_memset(&epochAsInt, sizeof(ULARGE_INTEGER), 0, sizeof(ULARGE_INTEGER));
-        epoch.wYear      = 1970;
-        epoch.wMonth     = 1;
-        epoch.wSecond    = 0; // MSFT says to set to first second.
-        epoch.wDayOfWeek = 4; // Thursday
-        epoch.wDay       = 1;
+        epoch.wYear      = WORD_C(1970);
+        epoch.wMonth     = WORD_C(1);
+        epoch.wSecond    = WORD_C(0); // MSFT says to set to first second.
+        epoch.wDayOfWeek = WORD_C(4); // Thursday
+        epoch.wDay       = WORD_C(1);
         GetSystemTimeAsFileTime(&ftnow);
         safe_memcpy(&nowAsInt, sizeof(ULARGE_INTEGER), &ftnow,
                     sizeof(FILETIME)); // these are both 8 bytes in size, so it SHOULD
@@ -320,7 +321,11 @@ void convert_Seconds_To_Displayable_Time(uint64_t  secondsToConvert,
     }
 }
 
-void print_Time_To_Screen(uint8_t* years, uint16_t* days, uint8_t* hours, uint8_t* minutes, uint8_t* seconds)
+void print_Time_To_Screen(const uint8_t*  years,
+                          const uint16_t* days,
+                          const uint8_t*  hours,
+                          const uint8_t*  minutes,
+                          const uint8_t*  seconds)
 {
     if (years && *years > 0)
     {
@@ -385,7 +390,8 @@ struct tm* get_UTCtime(const time_t* timer, struct tm* buf)
 #if (defined(POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined(USING_C23)
         // POSIX or C2x (C23 right now) have gmtime_r to use
         return gmtime_r(timer, buf);
-#elif defined(HAVE_C11_ANNEX_K) || (defined(HAVE_MSFT_SECURE_LIB) && defined (_CRT_USE_CONFORMING_ANNEX_K_TIME) && _CRT_USE_CONFORMING_ANNEX_K_TIME != 0)
+#elif defined(HAVE_C11_ANNEX_K) || (defined(HAVE_MSFT_SECURE_LIB) && defined(_CRT_USE_CONFORMING_ANNEX_K_TIME) &&      \
+                                    _CRT_USE_CONFORMING_ANNEX_K_TIME != 0)
         return gmtime_s(timer, buf);
 #elif defined(HAVE_MSFT_SECURE_LIB)
         // If MSFT CRT available, use microsoft gmtime_s which is incompatible
@@ -417,7 +423,8 @@ struct tm* get_Localtime(const time_t* timer, struct tm* buf)
 #if (defined(POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined(USING_C23)
         // POSIX or C2x (C23 right now) have localtime_r to use
         return localtime_r(timer, buf);
-#elif defined(HAVE_C11_ANNEX_K) || (defined(HAVE_MSFT_SECURE_LIB) && defined (_CRT_USE_CONFORMING_ANNEX_K_TIME) && _CRT_USE_CONFORMING_ANNEX_K_TIME != 0)
+#elif defined(HAVE_C11_ANNEX_K) || (defined(HAVE_MSFT_SECURE_LIB) && defined(_CRT_USE_CONFORMING_ANNEX_K_TIME) &&      \
+                                    _CRT_USE_CONFORMING_ANNEX_K_TIME != 0)
         return localtime_s(timer, buf);
 #elif defined(HAVE_MSFT_SECURE_LIB)
         // If MSFT CRT available, use microsoft localtime_s which is
@@ -454,16 +461,21 @@ char* get_Time_String_From_TM_Structure(const struct tm* timeptr, char* buffer, 
         {
             return buffer;
         }
-#endif //HAVE_MSFT_SECURE_LIB || HAVE_C11_ANNEX_K
-       // strftime is recommended to be used. Using format %c will return the
-       // matching output for this function asctime (which this replaces uses
-       // the format: Www Mmm dd hh:mm:ss yyyy\n) NOTE: %e is C99. C89's closest
-       // is %d which has a leading zero. To be technically correct in replacing
-       // this, need to set locale to english instead of localized locale first.
-       // After that is done, it can be reverted back.
+#endif // HAVE_MSFT_SECURE_LIB || HAVE_C11_ANNEX_K
+       //  strftime is recommended to be used. Using format %c will return the
+       //  matching output for this function asctime (which this replaces uses
+       //  the format: Www Mmm dd hh:mm:ss yyyy\n) NOTE: %e is C99. C89's closest
+       //  is %d which has a leading zero. To be technically correct in replacing
+       //  this, need to set locale to english instead of localized locale first.
+       //  After that is done, it can be reverted back.
         bool  restoreLocale = false;
-        char* currentLocale = strdup(setlocale(LC_TIME, M_NULLPTR));
-        if (setlocale(LC_TIME, "en-us.utf8"))
+        char* currentLocale = M_NULLPTR;
+        // Turn off constraint handling since it is possible we will receive NULL and want to continue execution -TJE
+        eConstraintHandler currentHandler = set_Constraint_Handler(ERR_IGNORE);
+        errno_t            error          = safe_strdup(&currentLocale, setlocale(LC_TIME, M_NULLPTR));
+        // Restore previous constraint handler
+        set_Constraint_Handler(currentHandler);
+        if (error == 0 && currentLocale != M_NULLPTR && setlocale(LC_TIME, "en-us.utf8"))
         {
             restoreLocale = true;
         }

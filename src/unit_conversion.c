@@ -119,7 +119,7 @@ eReturnValues capacity_Unit_Convert(double* byteValue, char** capacityUnit)
     return ret;
 }
 
-int16_t celsius_To_Fahrenheit(int16_t* celsius)
+int16_t celsius_To_Fahrenheit(const int16_t* celsius)
 {
     // rewrote order of operations to be better for integer math.
     // formula is C * (9/5) + 32. To scale better for int math we use
@@ -129,31 +129,31 @@ int16_t celsius_To_Fahrenheit(int16_t* celsius)
     return fahrenheit;
 }
 
-int16_t fahrenheit_To_celsius(int16_t* fahrenheit)
+int16_t fahrenheit_To_celsius(const int16_t* fahrenheit)
 {
     int16_t celsius = ((*fahrenheit - INT16_C(32)) * INT16_C(5)) / INT16_C(9); // NOLINT(bugprone-narrowing-conversions)
     return celsius;
 }
 
-int16_t celsius_To_Kelvin(int16_t* celsius)
+int16_t celsius_To_Kelvin(const int16_t* celsius)
 {
     int16_t kelvin = *celsius + INT16_C(273); // NOLINT(bugprone-narrowing-conversions)
     return kelvin;
 }
 
-int16_t fahrenheit_To_Kelvin(int16_t* fahrenheit)
+int16_t fahrenheit_To_Kelvin(const int16_t* fahrenheit)
 {
     int16_t kelvin = fahrenheit_To_celsius(fahrenheit) + INT16_C(273); // NOLINT(bugprone-narrowing-conversions)
     return kelvin;
 }
 
-int16_t kelvin_To_Celsius(int16_t* kelvin)
+int16_t kelvin_To_Celsius(const int16_t* kelvin)
 {
     int16_t celsius = *kelvin - INT16_C(273); // NOLINT(bugprone-narrowing-conversions)
     return celsius;
 }
 
-int16_t kelvin_To_Fahrenheit(int16_t* kelvin)
+int16_t kelvin_To_Fahrenheit(const int16_t* kelvin)
 {
     int16_t fahrenheit =
         ((kelvin_To_Celsius(kelvin) * INT16_C(9)) / INT16_C(5)) + INT16_C(32); // NOLINT(bugprone-narrowing-conversions)

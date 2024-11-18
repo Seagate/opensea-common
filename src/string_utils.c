@@ -279,8 +279,8 @@ int safe_ispunct(int c)
 
 errno_t safe_strcpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src)
 {
-    errno_t error = 0;
-    size_t srclen = safe_strnlen(src, destsz);
+    errno_t error  = 0;
+    size_t  srclen = safe_strnlen(src, destsz);
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -331,14 +331,14 @@ errno_t safe_strcpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRIC
     }
     else
     {
-#    if defined(HAVE_MSFT_SECURE_LIB)
+#if defined(HAVE_MSFT_SECURE_LIB)
         // call MSFT implementation to reduce warnings. It does not detect as
         // many cases as standard which is why it's down here.-TJE
         error = strcpy_s(dest, destsz, src);
-#    else
+#else
         error        = safe_memccpy(dest, destsz, src, '\0', srclen + SIZE_T_C(1));
         dest[srclen] = '\0'; // ensuring NULL termination
-#    endif
+#endif
         errno = error;
         return error;
     }
@@ -346,8 +346,8 @@ errno_t safe_strcpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRIC
 
 errno_t safe_strmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src)
 {
-    errno_t error = 0;
-    size_t srclen = safe_strnlen(src, destsz);
+    errno_t error  = 0;
+    size_t  srclen = safe_strnlen(src, destsz);
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -392,15 +392,15 @@ errno_t safe_strmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     {
         error        = safe_memcmove(dest, destsz, src, '\0', srclen + SIZE_T_C(1));
         dest[srclen] = '\0'; // ensuring NULL termination
-        errno = error;
+        errno        = error;
         return error;
     }
 }
 
 errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src, rsize_t count)
 {
-    errno_t error = 0;
-    size_t srclen = safe_strnlen(src, count);
+    errno_t error  = 0;
+    size_t  srclen = safe_strnlen(src, count);
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -459,11 +459,11 @@ errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     }
     else
     {
-#    if defined(HAVE_MSFT_SECURE_LIB)
+#if defined(HAVE_MSFT_SECURE_LIB)
         // call MSFT implementation to reduce warnings. It does not detect as
         // many cases as standard which is why it's down here.-TJE
         error = strncpy_s(dest, destsz, src, count);
-#    else
+#else
         error        = safe_memccpy(dest, destsz, src, '\0', count);
         if (srclen < count)
         {
@@ -473,7 +473,7 @@ errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
         {
             dest[count] = '\0'; // ensuring NULL termination
         }
-#    endif
+#endif
         errno = error;
         return error;
     }
@@ -481,8 +481,8 @@ errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
 
 errno_t safe_strnmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src, rsize_t count)
 {
-    errno_t error = 0;
-    size_t srclen = safe_strnlen(src, count);
+    errno_t error  = 0;
+    size_t  srclen = safe_strnlen(src, count);
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -549,9 +549,9 @@ errno_t safe_strnmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTR
 
 errno_t safe_strcat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src)
 {
-    errno_t error = 0;
-    size_t srclen   = safe_strnlen(src, destsz);
-    char*  destnull = M_NULLPTR;
+    errno_t error    = 0;
+    size_t  srclen   = safe_strnlen(src, destsz);
+    char*   destnull = M_NULLPTR;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -609,25 +609,25 @@ errno_t safe_strcat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRIC
     }
     else
     {
-#    if defined(HAVE_MSFT_SECURE_LIB)
+#if defined(HAVE_MSFT_SECURE_LIB)
         // call MSFT implementation to reduce warnings. It does not detect as
         // many cases as standard which is why it's down here.-TJE
         error = strcat_s(dest, destsz, src);
-#    else
+#else
         error =
             safe_memccpy(destnull, destsz - (C_CAST(uintptr_t, destnull) - C_CAST(uintptr_t, dest)), src, '\0', srclen);
         destnull[srclen] = '\0';
-#    endif
-errno = error;
+#endif
+        errno = error;
         return error;
     }
 }
 
 errno_t safe_strncat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src, rsize_t count)
 {
-    errno_t error = 0;
-    size_t srclen   = safe_strnlen(src, destsz);
-    char*  destnull = M_NULLPTR;
+    errno_t error    = 0;
+    size_t  srclen   = safe_strnlen(src, destsz);
+    char*   destnull = M_NULLPTR;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -686,15 +686,15 @@ errno_t safe_strncat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     }
     else
     {
-#    if defined(HAVE_MSFT_SECURE_LIB)
+#if defined(HAVE_MSFT_SECURE_LIB)
         // call MSFT implementation to reduce warnings. It does not detect as
         // many cases as standard which is why it's down here.-TJE
         error = strncat_s(dest, destsz, src, count);
-#    else
+#else
         error =
             safe_memccpy(destnull, destsz - (C_CAST(uintptr_t, destnull) - C_CAST(uintptr_t, dest)), src, '\0', count);
         destnull[count] = '\0';
-#    endif
+#endif
         errno = error;
         return error;
     }
@@ -706,8 +706,8 @@ char* safe_String_Token(char* M_RESTRICT       str,
                         char** M_RESTRICT      saveptr)
 {
     errno_t error = 0;
-    char* token = M_NULLPTR;
-    char* end   = M_NULLPTR;
+    char*   token = M_NULLPTR;
+    char*   end   = M_NULLPTR;
     if (strmax == M_NULLPTR)
     {
         error = EINVAL;
@@ -741,12 +741,13 @@ char* safe_String_Token(char* M_RESTRICT       str,
             errno = error;
             return M_NULLPTR;
         }
-        else if (*strmax >= RSIZE_MAX && str[*strmax + RSIZE_T_C(1)] != '\0') // This is to determine if the string is really
-                                                                   // RSIZE_MAX or not. safe_strnlen will return
-                                                                   // RSIZE_MAX if NULL is found at that size OR if it
-                                                                   // is not found in the string. So adding 1 to check
-                                                                   // if it found NULL terminator or not to make this
-                                                                   // check match annex k
+        else if (*strmax >= RSIZE_MAX &&
+                 str[*strmax + RSIZE_T_C(1)] != '\0') // This is to determine if the string is really
+                                                      // RSIZE_MAX or not. safe_strnlen will return
+                                                      // RSIZE_MAX if NULL is found at that size OR if it
+                                                      // is not found in the string. So adding 1 to check
+                                                      // if it found NULL terminator or not to make this
+                                                      // check match annex k
         {
             error = ERANGE;
             invoke_Constraint_Handler("safe_String_Token: *strmax > RSIZE_MAX on initial call", M_NULLPTR, error);
@@ -784,7 +785,7 @@ char* safe_String_Token(char* M_RESTRICT       str,
         invoke_Constraint_Handler("safe_String_Token: reached end of source "
                                   "string without encountering null terminator",
                                   M_NULLPTR, error);
-        errno = error;                                  
+        errno = error;
         return M_NULLPTR;
     }
     if (*token)
@@ -804,7 +805,7 @@ char* safe_String_Token(char* M_RESTRICT       str,
 size_t safe_strnlen(const char* string, size_t n)
 {
 #if defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
-    //Does not invoke constraint handler of it's own so we can use this here - TJE
+    // Does not invoke constraint handler of it's own so we can use this here - TJE
     return strnlen_s(string, n);
 #elif defined(POSIX_2008) || defined(USING_SUS4) || defined(HAVE_STRNLEN) /*also glibc 2.0, openbsd 4.8*/
     if (string != M_NULLPTR)
@@ -854,7 +855,7 @@ M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size)
 errno_t safe_strdup(char** dup, const char* src)
 {
     errno_t error = 0;
-    errno = 0;
+    errno         = 0;
     if (dup == M_NULLPTR)
     {
         error = EINVAL;
@@ -904,7 +905,7 @@ errno_t safe_strdup(char** dup, const char* src)
 errno_t safe_strndup(char** dup, const char* src, rsize_t size)
 {
     errno_t error = 0;
-    errno = 0;
+    errno         = 0;
     if (dup == M_NULLPTR)
     {
         error = EINVAL;
@@ -958,8 +959,8 @@ void byte_Swap_String_Len(char* stringToChange, size_t stringlen)
         for (size_t stringIter = SIZE_T_C(0); stringIter < stringlen - SIZE_T_C(1); stringIter += SIZE_T_C(2))
         {
             // Swap the characters
-            char temp                      = stringToChange[stringIter];
-            stringToChange[stringIter]     = stringToChange[stringIter + SIZE_T_C(1)];
+            char temp                                = stringToChange[stringIter];
+            stringToChange[stringIter]               = stringToChange[stringIter + SIZE_T_C(1)];
             stringToChange[stringIter + SIZE_T_C(1)] = temp;
         }
     }
@@ -974,8 +975,8 @@ void byte_Swap_String(char* stringToChange)
         for (size_t stringIter = SIZE_T_C(0); stringIter < stringlen - SIZE_T_C(1); stringIter += SIZE_T_C(2))
         {
             // Swap the characters
-            char temp                      = stringToChange[stringIter];
-            stringToChange[stringIter]     = stringToChange[stringIter + SIZE_T_C(1)];
+            char temp                                = stringToChange[stringIter];
+            stringToChange[stringIter]               = stringToChange[stringIter + SIZE_T_C(1)];
             stringToChange[stringIter + SIZE_T_C(1)] = temp;
         }
     }
@@ -997,8 +998,9 @@ void remove_Whitespace_Left(char* stringToChange)
         return;
     }
 
-    while ((iter < (safe_strlen(stringToChange) - SIZE_T_C(1)) && stringToChange[iter])) // having issues with the isspace command
-                                                                               // leaving extra chars in the string
+    while ((iter < (safe_strlen(stringToChange) - SIZE_T_C(1)) &&
+            stringToChange[iter])) // having issues with the isspace command
+                                   // leaving extra chars in the string
     {
         stringToChange[iter] = stringToChange[iter + len];
         iter++;
@@ -1017,7 +1019,8 @@ void remove_Trailing_Whitespace(char* stringToChange)
     {
         return;
     }
-    while (iter > SIZE_T_C(0) && safe_isascii(stringToChange[iter - SIZE_T_C(1)]) && safe_isspace(stringToChange[iter - SIZE_T_C(1)]))
+    while (iter > SIZE_T_C(0) && safe_isascii(stringToChange[iter - SIZE_T_C(1)]) &&
+           safe_isspace(stringToChange[iter - SIZE_T_C(1)]))
     {
         stringToChange[iter - SIZE_T_C(1)] = '\0'; // replace spaces with null terminators
         iter--;
@@ -1032,7 +1035,8 @@ void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
     }
 
     size_t iter = stringlen;
-    while (iter > SIZE_T_C(0) && safe_isascii(stringToChange[iter - SIZE_T_C(1)]) && safe_isspace(stringToChange[iter - SIZE_T_C(1)]))
+    while (iter > SIZE_T_C(0) && safe_isascii(stringToChange[iter - SIZE_T_C(1)]) &&
+           safe_isspace(stringToChange[iter - SIZE_T_C(1)]))
     {
         stringToChange[iter - SIZE_T_C(1)] = '\0'; // Replace spaces with null terminators
         iter--;
@@ -1104,7 +1108,8 @@ void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
 
     // Remove trailing whitespace
     size_t end = stringlen;
-    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) && safe_isspace(stringToChange[end - SIZE_T_C(1)]))
+    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
+           safe_isspace(stringToChange[end - SIZE_T_C(1)]))
     {
         end--;
     }
@@ -1138,7 +1143,8 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
 
     // Remove trailing whitespace
     size_t end = stringlen;
-    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) && safe_isspace(stringToChange[end - SIZE_T_C(1)]))
+    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
+           safe_isspace(stringToChange[end - SIZE_T_C(1)]))
     {
         end--;
     }

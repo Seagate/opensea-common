@@ -194,7 +194,7 @@ static size_t get_Bytes_Abs_Range(size_t msb, size_t lsb)
     }
 }
 
-bool get_Bytes_To_64(uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t* out)
+bool get_Bytes_To_64(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t* out)
 {
     if (dataPtrBeginning == M_NULLPTR || out == M_NULLPTR || msb > fullDataLen || lsb > fullDataLen ||
         get_Bytes_Abs_Range(msb, lsb) > sizeof(uint64_t))
@@ -228,7 +228,7 @@ bool get_Bytes_To_64(uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, 
     return true;
 }
 
-bool get_Bytes_To_32(uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint32_t* out)
+bool get_Bytes_To_32(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint32_t* out)
 {
     if (out && get_Bytes_Abs_Range(msb, lsb) <= sizeof(uint32_t))
     {
@@ -246,7 +246,7 @@ bool get_Bytes_To_32(uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, 
     }
 }
 
-bool get_Bytes_To_16(uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint16_t* out)
+bool get_Bytes_To_16(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint16_t* out)
 {
     if (out && get_Bytes_Abs_Range(msb, lsb) <= sizeof(uint16_t))
     {

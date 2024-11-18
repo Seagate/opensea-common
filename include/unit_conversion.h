@@ -82,7 +82,7 @@ extern "C"
     //!   \return The temperature in fahrenheit
     //
     //-----------------------------------------------------------------------------
-    int16_t celsius_To_Fahrenheit(int16_t* celsius);
+    int16_t celsius_To_Fahrenheit(const int16_t* celsius);
 
     //-----------------------------------------------------------------------------
     //
@@ -98,7 +98,7 @@ extern "C"
     //!   \return The temperature in celsius
     //
     //-----------------------------------------------------------------------------
-    int16_t fahrenheit_To_celsius(int16_t* fahrenheit);
+    int16_t fahrenheit_To_celsius(const int16_t* fahrenheit);
 
     //-----------------------------------------------------------------------------
     //
@@ -114,7 +114,7 @@ extern "C"
     //!   \return The temperature in celsius
     //
     //-----------------------------------------------------------------------------
-    int16_t celsius_To_Kelvin(int16_t* celsius);
+    int16_t celsius_To_Kelvin(const int16_t* celsius);
 
     //-----------------------------------------------------------------------------
     //
@@ -130,7 +130,7 @@ extern "C"
     //!   \return The temperature in celsius
     //
     //-----------------------------------------------------------------------------
-    int16_t fahrenheit_To_Kelvin(int16_t* fahrenheit);
+    int16_t fahrenheit_To_Kelvin(const int16_t* fahrenheit);
 
     //-----------------------------------------------------------------------------
     //
@@ -146,7 +146,7 @@ extern "C"
     //!   \return The temperature in celsius
     //
     //-----------------------------------------------------------------------------
-    int16_t kelvin_To_Celsius(int16_t* kelvin);
+    int16_t kelvin_To_Celsius(const int16_t* kelvin);
 
     //-----------------------------------------------------------------------------
     //
@@ -162,7 +162,7 @@ extern "C"
     //!   \return The temperature in celsius
     //
     //-----------------------------------------------------------------------------
-    int16_t kelvin_To_Fahrenheit(int16_t* kelvin);
+    int16_t kelvin_To_Fahrenheit(const int16_t* kelvin);
 
 #if defined(__cplusplus)
 }

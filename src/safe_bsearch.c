@@ -119,7 +119,7 @@ void* safe_bsearch_context(const void* key, void* ptr, rsize_t count, rsize_t si
     {
         const char* base = ptr;
         const void* p    = M_NULLPTR;
-        errno = 0;
+        errno            = 0;
 
         for (size_t lim = count; lim != SIZE_T_C(0); lim >>= 1)
         {

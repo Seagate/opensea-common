@@ -25,7 +25,9 @@
 #include <string.h>
 
 #if defined(_WIN32)
+DISABLE_WARNING_4255
 #    include <windows.h>
+RESTORE_WARNING_4255
 void start_Timer(seatimer_t* timer)
 {
     if (timer)

@@ -24,6 +24,7 @@
 //       anyways
 //  https://github.com/tianocore/edk2-libc/blob/caea801aac338aa60f85a7c10148ca0b4440fff3/StdLib/Include/sys/stat.h
 
+#include "io_utils.h"
 #include "memory_safety.h"
 #include "secure_file.h"
 #include "secured_env_vars.h"
@@ -38,7 +39,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
+M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoCheck)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct stat     st;
@@ -144,14 +145,10 @@ static uid_t get_sudo_uid(void)
         char* uidstr = M_NULLPTR;
         if (get_Environment_Variable("SUDO_UID", &uidstr) == ENV_VAR_SUCCESS && uidstr != M_NULLPTR)
         {
-            char* endptr = M_NULLPTR;
-            // convert this to uid_t
-            errno = 0; // clear before calling this function as recommended by
-                       // ISO C secure coding
-            unsigned long temp = strtoul(uidstr, &endptr, 10);
-            if (!(temp == ULONG_MAX && errno == ERANGE) && !(temp == 0 && endptr == M_NULLPTR))
+            unsigned long temp = 0UL;
+            if (0 == safe_strtoul(&temp, uidstr, M_NULLPTR, BASE_10_DECIMAL))
             {
-                sudouid = C_CAST(uid_t, temp);
+                sudouid = M_STATIC_CAST(uid_t, temp);
             }
             safe_free(&uidstr);
         }
@@ -189,6 +186,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 #if !defined(UEFI_C_SOURCE)
     uid_t my_uid = geteuid();
 #endif
+    errno_t error = 0;
 
     safe_memset(&buf, sizeof(struct stat), 0, sizeof(struct stat));
 
@@ -208,7 +206,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         return false;
     }
 
-    if (!(path_copy = strdup(fullpath)))
+    error = safe_strdup(&path_copy, fullpath);
+
+    if (error != 0 || path_copy == M_NULLPTR)
     {
         /* Handle error */
         set_dir_security_output_error_message(
@@ -250,7 +250,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         return false;
     }
 
-    if (!(dirs[num_of_dirs - 1] = strdup(fullpath)))
+    error = safe_strdup(&dirs[num_of_dirs - 1], fullpath);
+
+    if (error != 0 || dirs[num_of_dirs - 1] == M_NULLPTR)
     {
         /* Handle error */
         set_dir_security_output_error_message(
@@ -259,7 +261,9 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         return false;
     }
 
-    if (!(path_copy = strdup(fullpath)))
+    error = safe_strdup(&path_copy, fullpath);
+
+    if (error != 0 || path_copy == M_NULLPTR)
     {
         /* Handle error */
         set_dir_security_output_error_message(
@@ -270,10 +274,11 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
     /* Now fill the dirs array */
     path_parent = path_copy;
-    for (i = num_of_dirs - 2; i >= 0; i--)
+    for (i = num_of_dirs - SSIZE_T_C(2); i >= SSIZE_T_C(0); i--)
     {
         path_parent = dirname(path_parent);
-        if (!(dirs[i] = strdup(path_parent)))
+        error       = safe_strdup(&dirs[i], path_parent);
+        if (error != 0 || dirs[i] == M_NULLPTR)
         {
             /* Handle error */
             set_dir_security_output_error_message(
@@ -289,7 +294,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         // i is set to when strdup failed and was decrementing to zero/negatives
         // so use it + 1 as the starting point to go through and cleanup the
         // stored directories to free up memory
-        for (ssize_t cleanup = i + 1; cleanup <= num_of_dirs; cleanup++)
+        for (ssize_t cleanup = i + SSIZE_T_C(1); cleanup <= num_of_dirs; cleanup++)
         {
             safe_free(&dirs[cleanup]);
         }
@@ -301,7 +306,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
      * Traverse from the root to the fullpath,
      * checking permissions along the way.
      */
-    for (i = 0; i < num_of_dirs; i++)
+    for (i = SSIZE_T_C(0); i < num_of_dirs; i++)
     {
         ssize_t linksize = SSIZE_T_C(0);
         char*   link     = M_NULLPTR;
@@ -347,7 +352,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
             r = readlink(dirs[i], link, C_CAST(size_t, linksize));
             // NOLINTBEGIN(bugprone-branch-clone)
-            if (r == -1)
+            if (r == SSIZE_T_C(-1))
             {
                 /* Handle error */
                 set_dir_security_output_error_message(outputError,
@@ -482,7 +487,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         }
     }
 
-    for (i = 0; i < num_of_dirs; i++)
+    for (i = SSIZE_T_C(0); i < num_of_dirs; i++)
     {
         safe_free(&dirs[i]);
     }
@@ -493,11 +498,11 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
 bool os_Is_Directory_Secure(const char* fullpath, char** outputError)
 {
-    unsigned int num_symlinks = 0;
+    unsigned int num_symlinks = 0U;
     return internal_OS_Is_Directory_Secure(fullpath, num_symlinks, outputError);
 }
 
-bool os_Directory_Exists(const char* const pathToCheck)
+bool os_Directory_Exists(const char* pathToCheck)
 {
     fileAttributes* attrs = os_Get_File_Attributes_By_Name(pathToCheck);
     if (attrs != M_NULLPTR)
@@ -512,7 +517,7 @@ bool os_Directory_Exists(const char* const pathToCheck)
     }
 }
 
-bool os_File_Exists(const char* const filetoCheck)
+bool os_File_Exists(const char* filetoCheck)
 {
     fileAttributes* attrs = os_Get_File_Attributes_By_Name(filetoCheck);
     if (attrs != M_NULLPTR)

@@ -42,10 +42,10 @@ M_NORETURN void safe_abort_handler(const char* M_RESTRICT msg, M_ATTR_UNUSED voi
 }
 
 void safe_ignore_handler(M_ATTR_UNUSED const char* M_RESTRICT msg,
-                      M_ATTR_UNUSED void* M_RESTRICT       ptr,
-                      M_ATTR_UNUSED errno_t                error)
+                         M_ATTR_UNUSED void* M_RESTRICT       ptr,
+                         M_ATTR_UNUSED errno_t                error)
 {
-    return;
+    return; // NOLINT(readability-redundant-control-flow)
 }
 
 constraint_handler_func int_set_constraint_handler(constraint_handler_func handler);
@@ -75,7 +75,7 @@ void invoke_Constraint_Handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr,
     if (handler == M_NULLPTR)
     {
         installedhandler = safe_abort_handler;
-        handler           = installedhandler;
+        handler          = installedhandler;
     }
     handler(msg, ptr, error);
 }
@@ -90,7 +90,7 @@ void safe_warn_handler(const char* M_RESTRICT msg, M_ATTR_UNUSED void* M_RESTRIC
 
 eConstraintHandler set_Constraint_Handler(eConstraintHandler handler)
 {
-    eConstraintHandler    olde   = ERR_DEFAULT;
+    eConstraintHandler      olde   = ERR_DEFAULT;
     constraint_handler_func oldptr = safe_abort_handler;
     switch (handler)
     {

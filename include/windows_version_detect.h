@@ -24,7 +24,9 @@ extern "C"
 #endif
 
 #include <sdkddkver.h>
+    DISABLE_WARNING_4255
 #include <windows.h>
+    RESTORE_WARNING_4255
 #include <winsdkver.h>
 
 //

@@ -28,7 +28,9 @@
 #    include <Uefi/UefiBaseType.h> //for EFI_STATUS definitions
 #elif defined(_WIN32)
 #    include <tchar.h>
+DISABLE_WARNING_4255
 #    include <windows.h>
+RESTORE_WARNING_4255
 #endif
 
 #define ERROR_STRING_BUFFER_LENGTH SIZE_T_C(1024)
@@ -89,8 +91,8 @@ void print_Errno_To_Screen(errno_t error)
     DECLARE_ZERO_INIT_ARRAY(char, errorString, ERROR_STRING_BUFFER_LENGTH);
     if (0 == strerror_r(error, errorString, ERROR_STRING_BUFFER_LENGTH))
     {
-        errorString[ERROR_STRING_BUFFER_LENGTH - SIZE_T_C(1)] = '\0'; // While it should be null terminated, there are known bugs
-                                                            // on some systems where it is not!
+        errorString[ERROR_STRING_BUFFER_LENGTH - SIZE_T_C(1)] = '\0'; // While it should be null terminated, there are
+                                                                      // known bugs on some systems where it is not!
         printf("%d - %s\n", error, errorString);
     }
     else
@@ -103,8 +105,8 @@ void print_Errno_To_Screen(errno_t error)
     char* errmsg = strerror_r(error, errorString, ERROR_STRING_BUFFER_LENGTH);
     if (errmsg != M_NULLPTR)
     {
-        errorString[ERROR_STRING_BUFFER_LENGTH - SIZE_T_C(1)] = '\0'; // While it should be null terminated, there are known bugs
-                                                            // on some systems where it is not!
+        errorString[ERROR_STRING_BUFFER_LENGTH - SIZE_T_C(1)] = '\0'; // While it should be null terminated, there are
+                                                                      // known bugs on some systems where it is not!
         printf("%d - %s\n", error, errmsg);
     }
     else

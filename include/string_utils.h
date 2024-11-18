@@ -148,8 +148,8 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     static M_INLINE char* common_String_Concat(char* M_RESTRICT       destination,
-                                        size_t                 destinationSizeBytes,
-                                        const char* M_RESTRICT source)
+                                               size_t                 destinationSizeBytes,
+                                               const char* M_RESTRICT source)
     {
         if (0 == safe_strcat(destination, destinationSizeBytes, source))
         {
@@ -180,9 +180,9 @@ extern "C"
     //
     //-----------------------------------------------------------------------------
     static M_INLINE char* common_String_Concat_Len(char* M_RESTRICT       destination,
-                                            size_t                 destinationSizeBytes,
-                                            const char* M_RESTRICT source,
-                                            int                    sourceLength)
+                                                   size_t                 destinationSizeBytes,
+                                                   const char* M_RESTRICT source,
+                                                   int                    sourceLength)
     {
         if (0 == safe_strncat(destination, destinationSizeBytes, source, int_to_sizet(sourceLength)))
         {

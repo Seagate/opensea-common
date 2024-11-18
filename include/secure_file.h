@@ -145,7 +145,7 @@ extern "C"
     // function to delete this for you!
 
     // This can be used on files or directories.
-    M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck);
+    M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoCheck);
     // This is the preferred method to check attributes are the same once a file has
     // been opened to make sure that the attributes are read from exactly the same
     // file as expected
@@ -302,7 +302,7 @@ extern "C"
     //      \return true if exists, false if it does not.
     //
     //-----------------------------------------------------------------------------
-    bool os_Directory_Exists(const char* const pathToCheck);
+    bool os_Directory_Exists(const char* pathToCheck);
 
     //-----------------------------------------------------------------------------
     //
@@ -318,7 +318,7 @@ extern "C"
     //      \return true if exists, false if it does not.
     //
     //-----------------------------------------------------------------------------
-    bool os_File_Exists(const char* const filetoCheck);
+    bool os_File_Exists(const char* filetoCheck);
 
     //-----------------------------------------------------------------------------
     //

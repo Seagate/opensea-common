@@ -15,12 +15,16 @@
 // \brief implements secure file API for Windows
 //
 
+#include "predef_env_detect.h"
+
+DISABLE_WARNING_4255
 #include <AclAPI.h>
 #include <io.h> //needed for getting the size of a file in windows
 #include <sddl.h>
 #include <string.h>
 #include <tchar.h>
 #include <windows.h>
+RESTORE_WARNING_4255
 
 #include "common_types.h"
 #include "error_translation.h"
@@ -103,7 +107,7 @@ it are likely to fail.
 */
 #define WIN_FD_INVALID (-2)
 
-static bool win_File_Attributes_By_Name(const char* const filename, LPWIN32_FILE_ATTRIBUTE_DATA attributes)
+static bool win_File_Attributes_By_Name(const char* filename, LPWIN32_FILE_ATTRIBUTE_DATA attributes)
 {
     bool success = false;
     if (filename && attributes)
@@ -151,7 +155,7 @@ static bool win_File_Attributes_By_File(FILE* file, LPBY_HANDLE_FILE_INFORMATION
     return success;
 }
 
-static bool win_Get_File_Security_Info_By_Name(const char* const filename, fileAttributes* attrs)
+static bool win_Get_File_Security_Info_By_Name(const char* filename, fileAttributes* attrs)
 {
     bool success = false;
     if (filename && attrs)
@@ -259,7 +263,7 @@ static bool win_Get_File_Security_Info_By_File(FILE* file, fileAttributes* attrs
     return success;
 }
 
-M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* const filetoCheck)
+M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoCheck)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64  st;
@@ -406,8 +410,8 @@ static char* get_Current_User_SID(void)
                 LPSTR pSidString = M_NULLPTR;
                 if (ConvertSidToStringSidA(pUser->User.Sid, &pSidString))
                 {
-                    sidAsString = strdup(pSidString); // dup'ing this because want to use std
-                                                      // malloc/free's instead of LocalFree
+                    // dup'ing this because want to use std malloc/free's instead of LocalFree
+                    safe_strdup(&sidAsString, pSidString);
                     LocalFree(pSidString);
                 }
             }
@@ -569,21 +573,21 @@ FUNC_ATTR_PRINTF(2, 3) static void set_dir_security_output_error_message(char** 
         va_list args;
         va_start(args, format);
 
-#       if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
-#            pragma clang diagnostic push
-#            pragma clang diagnostic ignored "-Wformat-nonliteral"
-#       elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.1*/
-#            pragma GCC diagnostic push
-#            pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#       endif
+#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.1*/
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
 
         int result = vasprintf(outputError, format, args);
 
-#       if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
-#            pragma clang diagnostic pop
-#       elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.1*/
-#            pragma GCC diagnostic pop
-#       endif
+#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#    pragma clang diagnostic pop
+#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.1*/
+#    pragma GCC diagnostic pop
+#endif
 
         va_end(args);
         if (result < 0 && *outputError != M_NULLPTR)
@@ -771,8 +775,8 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                     DECLARE_ZERO_INIT_ARRAY(char, usersdir, MAX_PATH);
                     safe_strcat(usersdir, MAX_PATH, windowsSystemVolume);
                     safe_strcat(usersdir, MAX_PATH,
-                                         "Users"); // no trailing slash as the paths passed in
-                                                   // are not completed with a slash
+                                "Users"); // no trailing slash as the paths passed in
+                                          // are not completed with a slash
                     if (strcmp(dirptr, usersdir) == 0)
                     {
                         allowUsersAndAuthenticatedUsers = true; // S-1-5-11 and S-1-5-32-545
@@ -928,6 +932,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     ssize_t num_of_dirs = SSIZE_T_C(1);
     bool    secure      = true;
     ssize_t i           = SSIZE_T_C(0);
+    errno_t error       = 0;
 
     // TODO: Set error message appropriate for Windows errors detected
     M_USE_UNUSED(outputError);
@@ -951,8 +956,8 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         return false;
     }
 
-    path_copy = strdup(fullpath);
-    if (!path_copy)
+    error = safe_strdup(&path_copy, fullpath);
+    if (error != 0 || path_copy == M_NULLPTR)
     {
         /* Handle error */
         return false;
@@ -982,15 +987,15 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         /* Handle error */
         return false;
     }
-    dirs[num_of_dirs - 1] = strdup(fullpath);
-    if (!dirs[num_of_dirs - 1])
+    error = safe_strdup(&dirs[num_of_dirs - SSIZE_T_C(1)], fullpath);
+    if (error != 0 || dirs[num_of_dirs - SSIZE_T_C(1)] == M_NULLPTR)
     {
         /* Handle error */
         safe_free(dirs);
         return false;
     }
-    path_copy = strdup(fullpath);
-    if (!path_copy)
+    error = safe_strdup(&path_copy, fullpath);
+    if (error != 0 || path_copy == M_NULLPTR)
     {
         /* Handle error */
         safe_free(dirs);
@@ -999,11 +1004,11 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
     /* Now fill the dirs array */
     path_parent = path_copy;
-    for (i = num_of_dirs - 2; i >= 0; i--)
+    for (i = num_of_dirs - SSIZE_T_C(2); i >= SSIZE_T_C(0); i--)
     {
         path_parent = win_dirname(path_parent);
-        dirs[i]     = strdup(path_parent);
-        if (!dirs[i])
+        error       = safe_strdup(&dirs[i], path_parent);
+        if (error != 0 || dirs[i] == M_NULLPTR)
         {
             /* Handle error */
             secure = false;
@@ -1131,7 +1136,8 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                                 else
                                 {
                                     num_symlinks++;
-                                    bool recurseSecure = internal_OS_Is_Directory_Secure(reparsePath, num_symlinks, outputError);
+                                    bool recurseSecure =
+                                        internal_OS_Is_Directory_Secure(reparsePath, num_symlinks, outputError);
                                     num_symlinks--;
                                     if (!recurseSecure)
                                     {
@@ -1239,7 +1245,7 @@ M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath, char** outputError
     return internal_OS_Is_Directory_Secure(fullpath, num_symlinks, outputError);
 }
 
-bool os_Directory_Exists(const char* const pathToCheck)
+bool os_Directory_Exists(const char* pathToCheck)
 {
     WIN32_FILE_ATTRIBUTE_DATA fileAttributes;
     safe_memset(&fileAttributes, sizeof(WIN32_FILE_ATTRIBUTE_DATA), 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
@@ -1289,7 +1295,7 @@ eReturnValues os_Create_Directory(const char* filePath)
     }
 }
 
-bool os_File_Exists(const char* const filetoCheck)
+bool os_File_Exists(const char* filetoCheck)
 {
     WIN32_FILE_ATTRIBUTE_DATA fileAttributes;
     safe_memset(&fileAttributes, sizeof(WIN32_FILE_ATTRIBUTE_DATA), 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));

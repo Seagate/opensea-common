@@ -411,9 +411,9 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     snprintf(msMajor, 3, "%.2s", &msVersion[0]);
     snprintf(msMinor, 3, "%.2s", &msVersion[2]);
     snprintf(msPatch, 6, "%.5s", &msVersion[4]);
-    compilerVersionInfo->major = C_CAST(uint16_t, strtoul(msMajor, M_NULLPTR, 10));
-    compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(msMinor, M_NULLPTR, 10));
-    compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(msPatch, M_NULLPTR, 10));
+    compilerVersionInfo->major = C_CAST(uint16_t, strtoul(msMajor, M_NULLPTR, BASE_10_DECIMAL));
+    compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(msMinor, M_NULLPTR, BASE_10_DECIMAL));
+    compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(msPatch, M_NULLPTR, BASE_10_DECIMAL));
 #elif defined __MINGW64__
     *compilerUsed = OPENSEA_COMPILER_MINGW;
     compilerVersionInfo->major = __MINGW64_VERSION_MAJOR;
@@ -441,9 +441,9 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     snprintf(hpMajor, 3, "%.2s", &hpVersion[0]);
     snprintf(hpMinor, 3, "%.2s", &hpVersion[2]);
     snprintf(hpPatch, 3, "%.2s", &hpVersion[4]);
-    compilerVersionInfo->major = C_CAST(uint16_t, strtoul(hpMajor, M_NULLPTR, 10));
-    compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(hpMinor, M_NULLPTR, 10));
-    compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(hpPatch, M_NULLPTR, 10));
+    compilerVersionInfo->major = C_CAST(uint16_t, strtoul(hpMajor, M_NULLPTR, BASE_10_DECIMAL));
+    compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(hpMinor, M_NULLPTR, BASE_10_DECIMAL));
+    compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(hpPatch, M_NULLPTR, BASE_10_DECIMAL));
 #elif defined __IBMC__ || defined __IBMCPP__
     // untested
     // detect if it's xl or lx for system z
@@ -470,9 +470,9 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     snprintf(intelMajor, 2, "%.1s", &intelVersion[0]);
     snprintf(intelMinor, 2, "%.1s", &intelVersion[1]);
     snprintf(intelPatch, 2, "%.1s", &intelVersion[2]);
-    compilerVersionInfo->major = C_CAST(uint16_t, strtoul(intelMajor, M_NULLPTR, 0));
-    compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(intelMinor, M_NULLPTR, 0));
-    compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(intelPatch, M_NULLPTR, 0));
+    compilerVersionInfo->major = C_CAST(uint16_t, strtoul(intelMajor, M_NULLPTR, BASE_0_AUTO));
+    compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(intelMinor, M_NULLPTR, BASE_0_AUTO));
+    compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(intelPatch, M_NULLPTR, BASE_0_AUTO));
 #elif defined __SUNPRO_C || defined __SUNPRO_CC
     // untested
     // code below is written for versions 5.10 and later. (latest release as of

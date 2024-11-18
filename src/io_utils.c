@@ -97,7 +97,6 @@ void close_Simple_Text_Output_Protocol_Ptr(void** pOutput)
     {
         perror("Failed to close simple text output protocol\n");
     }
-    return;
 }
 
 static int32_t get_Default_Console_Colors()
@@ -450,7 +449,6 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
         }
     }
     SetConsoleTextAttribute(consoleHandle, theColor);
-    return;
 }
 
 static DWORD get_Input_Console_Default_Mode(void)
@@ -646,7 +644,7 @@ static eKnownTERM get_Terminal_Type(void)
                     haveCompleteMatch = true;
                 }
             }
-            else if (strstr(termEnv, "truecolor") == 0 || strncmp(termEnv, "vte", 3) == 0)
+            else if (strstr(termEnv, "truecolor") || strncmp(termEnv, "vte", 3) == 0)
             {
                 terminalType      = TERM_TRUECOLOR_256COLOR;
                 haveCompleteMatch = true;
@@ -731,7 +729,6 @@ static void get_Console_Color_Capabilities(ptrConsoleColorCap colorCapabilities)
             break;
         }
     }
-    return;
 }
 
 void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eConsoleColors backgroundColor)
@@ -1049,7 +1046,6 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
             }
         }
     }
-    return;
 }
 
 static M_INLINE void fclose_term(FILE* term)
@@ -1077,12 +1073,12 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
 #    if defined(POSIX_2001)
     struct termios defaultterm;
     struct termios currentterm;
-    FILE*          term = M_NULLPTR;
-    bool devtty = true;
+    FILE*          term   = M_NULLPTR;
+    bool           devtty = true;
     safe_memset(&defaultterm, sizeof(struct termios), 0, sizeof(struct termios));
     safe_memset(&currentterm, sizeof(struct termios), 0, sizeof(struct termios));
     errno_t openresult = safe_fopen(&term, "/dev/tty", "r"); // use /dev/tty instead of stdin to get the
-                                                  // terminal controlling the process.
+                                                             // terminal controlling the process.
     if (openresult != 0 || !term)
     {
         term   = stdin; // fallback to stdin I guess...
@@ -1179,18 +1175,19 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     char* eraseme = getpassphrase(prompt);
     if (eraseme)
     {
-        *userInput = strdup(eraseme);
+        errno_t erasedup = safe_strdup(userInput, eraseme);
         // immediately clear the original buffer to make sure it cannot be
         // accessed again
         explicit_zeroes(eraseme, safe_strlen(eraseme));
-        if (*userInput == M_NULLPTR)
+        if (erasedup != 0 || *userInput == M_NULLPTR)
         {
             ret = FAILURE;
         }
         else
         {
-            *inputDataLen = safe_strlen(*userInput) + 1; // add one since this adds to the buffer size and that is
-                                                         // what we are returning in all other cases-TJE
+            *inputDataLen =
+                safe_strlen(*userInput) + SIZE_T_C(1); // add one since this adds to the buffer size and that is
+                                                       // what we are returning in all other cases-TJE
         }
     }
     else
@@ -1204,11 +1201,11 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     char* eraseme = getpass(prompt);
     if (eraseme)
     {
-        *userInput = strdup(eraseme);
+        errno_t erasedup = safe_strdup(userInput, eraseme);
         // immediately clear the original buffer to make sure it cannot be
         // accessed again
         explicit_zeroes(eraseme, safe_strlen(eraseme));
-        if (*userInput == M_NULLPTR)
+        if (erasedup != 0 || *userInput == M_NULLPTR)
         {
             ret = FAILURE;
         }
@@ -1227,84 +1224,180 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
 }
 #endif
 
-// Should these units be broken up into different types and the allowed type has
-// to be passed in?
+static M_INLINE bool is_Allowed_Datasize_Unit(const char* unit)
+{
+    bool allowed = false;
+    // allowed units must match exactly at the end of the string!
+    if (strcmp(unit, "B") == 0 || strcmp(unit, "KB") == 0 || strcmp(unit, "KiB") == 0 || strcmp(unit, "MB") == 0 ||
+        strcmp(unit, "MiB") == 0 || strcmp(unit, "GB") == 0 || strcmp(unit, "GiB") == 0 || strcmp(unit, "TB") == 0 ||
+        strcmp(unit, "TiB") == 0 || strcmp(unit, "BLOCKS") == 0 || strcmp(unit, "SECTORS") == 0)
+    {
+        allowed = true;
+    }
+    return allowed;
+}
+
+static M_INLINE bool is_Allowed_Sector_Size_Unit(const char* unit)
+{
+    bool allowed = false;
+    if (strcmp(unit, "l") == 0 // used by some utilities to indicate a count is in
+                               // logical sectors instead of physical sectors
+        || strcmp(unit, "p") == 0 || strcmp(unit, "logical") == 0 || strcmp(unit, "physical") == 0)
+    {
+        allowed = true;
+    }
+    return allowed;
+}
+
+static M_INLINE bool is_Allowed_Time_Unit(const char* unit)
+{
+    bool allowed = false;
+    if (strcmp(unit, "ns") == 0    // nanoseconds
+        || strcmp(unit, "us") == 0 // microseconds
+        || strcmp(unit, "ms") == 0 // milliseconds
+        || strcmp(unit, "s") == 0  // seconds
+        || strcmp(unit, "m") == 0  // minutes
+        || strcmp(unit, "h") == 0  // hours
+    )
+    {
+        allowed = true;
+    }
+    return allowed;
+}
+
+static M_INLINE bool is_Allowed_Power_Unit(const char* unit)
+{
+    bool allowed = false;
+    if (strcmp(unit, "w") == 0     // watts
+        || strcmp(unit, "mw") == 0 // milliwatts
+    )
+    {
+        allowed = true;
+    }
+    return allowed;
+}
+
+static M_INLINE bool is_Allowed_Volts_Unit(const char* unit)
+{
+    bool allowed = false;
+    if (strcmp(unit, "v") == 0     // volts
+        || strcmp(unit, "mv") == 0 // millivolts
+    )
+    {
+        allowed = true;
+    }
+    return allowed;
+}
+
+static M_INLINE bool is_Allowed_Amps_Unit(const char* unit)
+{
+    bool allowed = false;
+    if (strcmp(unit, "a") == 0     // amps
+        || strcmp(unit, "ma") == 0 // milliamps
+    )
+    {
+        allowed = true;
+    }
+    return allowed;
+}
+
+static M_INLINE bool is_Allowed_Temperature_Unit(const char* unit)
+{
+    bool allowed = false;
+    if (strcmp(unit, "c") == 0    // celsius
+        || strcmp(unit, "f") == 0 // fahrenheit
+        || strcmp(unit, "k") == 0 // kelvin
+    )
+    {
+        allowed = true;
+    }
+    return allowed;
+}
+
+// This will only return true when this is at the end of a
+// string meaning the user provided 64KB or something like that,
+// so this matched to KB This allows for the utilities calling
+// this to multiply the output integer into a value that makes
+// sense
 static bool is_Allowed_Unit_For_Get_And_Validate_Input(const char* unit, eAllowedUnitInput unittype)
 {
     bool allowed = false;
-    if (unit)
+    if (unit != M_NULLPTR)
     {
         switch (unittype)
         {
         case ALLOW_UNIT_NONE:
-            allowed = false;
+            if (strcmp(unit, "") == 0)
+            {
+                allowed = true;
+            }
+            else
+            {
+                allowed = false;
+            }
             break;
         case ALLOW_UNIT_DATASIZE:
-            // allowed units must match exactly at the end of the string!
-            if (strcmp(unit, "B") == 0 || strcmp(unit, "KB") == 0 || strcmp(unit, "KiB") == 0 ||
-                strcmp(unit, "MB") == 0 || strcmp(unit, "MiB") == 0 || strcmp(unit, "GB") == 0 ||
-                strcmp(unit, "GiB") == 0 || strcmp(unit, "TB") == 0 || strcmp(unit, "TiB") == 0 ||
-                strcmp(unit, "BLOCKS") == 0 || strcmp(unit, "SECTORS") == 0)
-            {
-                allowed = true;
-            }
+            allowed = is_Allowed_Datasize_Unit(unit);
             break;
         case ALLOW_UNIT_SECTOR_TYPE:
-            if (strcmp(unit, "l") == 0 // used by some utilities to indicate a count is in
-                                       // logical sectors instead of physical sectors
-                || strcmp(unit, "p") == 0 || strcmp(unit, "logical") == 0 || strcmp(unit, "physical") == 0)
-            {
-                allowed = true;
-            }
+            allowed = is_Allowed_Sector_Size_Unit(unit);
             break;
         case ALLOW_UNIT_TIME:
-            if (strcmp(unit, "ns") == 0    // nanoseconds
-                || strcmp(unit, "us") == 0 // microseconds
-                || strcmp(unit, "ms") == 0 // milliseconds
-                || strcmp(unit, "s") == 0  // seconds
-                || strcmp(unit, "m") == 0  // minutes
-                || strcmp(unit, "h") == 0  // hours
-            )
-            {
-                allowed = true;
-            }
+            allowed = is_Allowed_Time_Unit(unit);
             break;
         case ALLOW_UNIT_POWER:
-            if (strcmp(unit, "w") == 0     // watts
-                || strcmp(unit, "mw") == 0 // milliwatts
-            )
-            {
-                allowed = true;
-            }
+            allowed = is_Allowed_Power_Unit(unit);
             break;
         case ALLOW_UNIT_VOLTS:
-            if (strcmp(unit, "v") == 0     // volts
-                || strcmp(unit, "mv") == 0 // millivolts
-            )
-            {
-                allowed = true;
-            }
+            allowed = is_Allowed_Volts_Unit(unit);
             break;
         case ALLOW_UNIT_AMPS:
-            if (strcmp(unit, "a") == 0     // amps
-                || strcmp(unit, "ma") == 0 // milliamps
-            )
-            {
-                allowed = true;
-            }
+            allowed = is_Allowed_Amps_Unit(unit);
             break;
         case ALLOW_UNIT_TEMPERATURE:
-            if (strcmp(unit, "c") == 0    // celsius
-                || strcmp(unit, "f") == 0 // fahrenheit
-                || strcmp(unit, "k") == 0 // kelvin
-            )
-            {
-                allowed = true;
-            }
+            allowed = is_Allowed_Temperature_Unit(unit);
             break;
         }
     }
+    else if (unittype == ALLOW_UNIT_NONE && unit == M_NULLPTR)
+    {
+        allowed = true;
+    }
     return allowed;
+}
+
+typedef enum integerInputStrTypeEnum
+{
+    INT_INPUT_INVALID,
+    INT_INPUT_DECIMAL = 10,
+    INT_INPUT_HEX     = 16
+} eintergetInputStrType;
+
+static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str)
+{
+    eintergetInputStrType type = INT_INPUT_DECIMAL;
+    if (str != M_NULLPTR)
+    {
+        const char* temp = str;
+        while (*temp != '\0')
+        {
+            if ((!safe_isxdigit(*temp)) && (*temp != 'x') && (*temp != 'h'))
+            {
+                type = INT_INPUT_INVALID;
+                break;
+            }
+            else if (!safe_isdigit(*temp))
+            {
+                type = INT_INPUT_HEX;
+            }
+            ++temp;
+        }
+    }
+    else
+    {
+        type = INT_INPUT_INVALID;
+    }
+    return type;
 }
 
 M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToConvert,
@@ -1312,74 +1405,32 @@ M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToCon
                                                     eAllowedUnitInput   unittype,
                                                     unsigned long long* outputInteger)
 {
+    bool result = false;
     if (strToConvert && outputInteger)
     {
-        bool        ret         = true;
-        bool        hex         = false;
-        const char* tmp         = strToConvert;
-        char*       localstrend = M_NULLPTR;
-        char**      endPtrToUse = &localstrend;
-        if (unit)
-        {
-            endPtrToUse = unit;
-        }
-        while (*tmp != '\0')
-        {
-            if ((!safe_isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
-            {
-                ret = false;
-                break;
-            }
-            else if (!safe_isdigit(*tmp))
-            {
-                hex = true;
-            }
-            tmp++;
-        }
-        if (!ret && unit) // only check for a valid unit if the caller provided
-                          // an endptr to get the unit out for their use
-        {
-            // check if a valid unit is present to allow this to continue
-            if (is_Allowed_Unit_For_Get_And_Validate_Input(tmp, unittype))
-            {
-                // This will only return true when this is at the end of a
-                // string meaning the user provided 64KB or something like that,
-                // so this matched to KB This allows for the utilities calling
-                // this to multiply the output integer into a value that makes
-                // sense
-                ret = true;
-            }
-        }
+        eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
         // If everything is a valid hex digit.
-        if (ret)
+        if (strType != INT_INPUT_INVALID)
         {
-            errno = 0; // ISO secure coding standard recommends this to ensure
-                       // errno is interpretted correctly after this call
-            if (hex)
+            if (0 != safe_strtoull(outputInteger, strToConvert, unit, strType))
             {
-                *outputInteger = strtoull(strToConvert, endPtrToUse, 16);
+                result = false;
+            }
+            else if (!is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+            {
+                result = false;
             }
             else
             {
-                *outputInteger = strtoull(strToConvert, endPtrToUse, 10);
+                result = true;
             }
         }
         else
         {
-            ret = false;
+            result = false;
         }
-        // Final Check
-        if (ret && ((*outputInteger == ULLONG_MAX && errno == ERANGE) ||
-                    (strToConvert == *endPtrToUse && *outputInteger == 0)))
-        {
-            ret = false;
-        }
-        return ret;
     }
-    else
-    {
-        return false;
-    }
+    return result;
 }
 
 M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConvert,
@@ -1387,74 +1438,32 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConver
                                                    eAllowedUnitInput unittype,
                                                    unsigned long*    outputInteger)
 {
+    bool result = false;
     if (strToConvert && outputInteger)
     {
-        bool        ret         = true;
-        bool        hex         = false;
-        const char* tmp         = strToConvert;
-        char*       localstrend = M_NULLPTR;
-        char**      endPtrToUse = &localstrend;
-        if (unit)
-        {
-            endPtrToUse = unit;
-        }
-        while (*tmp != '\0')
-        {
-            if ((!safe_isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
-            {
-                ret = false;
-                break;
-            }
-            else if (!safe_isdigit(*tmp))
-            {
-                hex = true;
-            }
-            tmp++;
-        }
-        if (!ret && unit) // only check for a valid unit if the caller provided
-                          // an endptr to get the unit out for their use
-        {
-            // check if a valid unit is present to allow this to continue
-            if (is_Allowed_Unit_For_Get_And_Validate_Input(tmp, unittype))
-            {
-                // This will only return true when this is at the end of a
-                // string meaning the user provided 64KB or something like that,
-                // so this matched to KB This allows for the utilities calling
-                // this to multiply the output integer into a value that makes
-                // sense
-                ret = true;
-            }
-        }
+        eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
         // If everything is a valid hex digit.
-        if (ret)
+        if (strType != INT_INPUT_INVALID)
         {
-            errno = 0; // ISO secure coding standard recommends this to ensure
-                       // errno is interpretted correctly after this call
-            if (hex)
+            if (0 != safe_strtoul(outputInteger, strToConvert, unit, strType))
             {
-                *outputInteger = strtoul(strToConvert, endPtrToUse, 16);
+                result = false;
+            }
+            else if (!is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+            {
+                result = false;
             }
             else
             {
-                *outputInteger = strtoul(strToConvert, endPtrToUse, 10);
+                result = true;
             }
         }
         else
         {
-            ret = false;
+            result = false;
         }
-        // Final Check
-        if (ret && (((*outputInteger == ULONG_MAX && errno == ERANGE) ||
-                     (strToConvert == *endPtrToUse && *outputInteger == 0))))
-        {
-            ret = false;
-        }
-        return ret;
     }
-    else
-    {
-        return false;
-    }
+    return result;
 }
 
 M_NODISCARD bool get_And_Validate_Integer_Input_UI(const char*       strToConvert,
@@ -1462,7 +1471,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UI(const char*       strToConver
                                                    eAllowedUnitInput unittype,
                                                    unsigned int*     outputInteger)
 {
-    unsigned long temp = 0;
+    unsigned long temp = 0UL;
     bool          ret  = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
     if (ret)
     {
@@ -1487,7 +1496,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_US(const char*       strToConver
                                                    eAllowedUnitInput unittype,
                                                    unsigned short*   outputInteger)
 {
-    unsigned long temp = 0;
+    unsigned long temp = 0UL;
     bool          ret  = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
     if (ret)
     {
@@ -1512,7 +1521,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UC(const char*       strToConver
                                                    eAllowedUnitInput unittype,
                                                    unsigned char*    outputInteger)
 {
-    unsigned long temp = 0;
+    unsigned long temp = 0UL;
     bool          ret  = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
     if (ret)
     {
@@ -1537,75 +1546,32 @@ M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char*       strToConver
                                                    eAllowedUnitInput unittype,
                                                    long long*        outputInteger)
 {
+    bool result = false;
     if (strToConvert && outputInteger)
     {
-        bool        ret         = true;
-        bool        hex         = false;
-        const char* tmp         = strToConvert;
-        char*       localstrend = M_NULLPTR;
-        char**      endPtrToUse = &localstrend;
-        if (unit)
-        {
-            endPtrToUse = unit;
-        }
-        while (*tmp != '\0')
-        {
-
-            if ((!safe_isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
-            {
-                ret = false;
-                break;
-            }
-            else if (!safe_isdigit(*tmp))
-            {
-                hex = true;
-            }
-            tmp++;
-        }
-        if (!ret && unit) // only check for a valid unit if the caller provided
-                          // an endptr to get the unit out for their use
-        {
-            // check if a valid unit is present to allow this to continue
-            if (is_Allowed_Unit_For_Get_And_Validate_Input(tmp, unittype))
-            {
-                // This will only return true when this is at the end of a
-                // string meaning the user provided 64KB or something like that,
-                // so this matched to KB This allows for the utilities calling
-                // this to multiply the output integer into a value that makes
-                // sense
-                ret = true;
-            }
-        }
+        eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
         // If everything is a valid hex digit.
-        if (ret)
+        if (strType != INT_INPUT_INVALID)
         {
-            errno = 0; // ISO secure coding standard recommends this to ensure
-                       // errno is interpretted correctly after this call
-            if (hex)
+            if (0 != safe_strtoll(outputInteger, strToConvert, unit, strType))
             {
-                *outputInteger = strtoll(strToConvert, endPtrToUse, 16);
+                result = false;
+            }
+            else if (!is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+            {
+                result = false;
             }
             else
             {
-                *outputInteger = strtoll(strToConvert, endPtrToUse, 10);
+                result = true;
             }
         }
         else
         {
-            ret = false;
+            result = false;
         }
-        // Final Check
-        if (ret && (((*outputInteger == LLONG_MAX || *outputInteger == LLONG_MIN) && errno == ERANGE) ||
-                    (strToConvert == *endPtrToUse && *outputInteger == 0)))
-        {
-            ret = false;
-        }
-        return ret;
     }
-    else
-    {
-        return false;
-    }
+    return result;
 }
 
 M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert,
@@ -1613,74 +1579,32 @@ M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert
                                                   eAllowedUnitInput unittype,
                                                   long*             outputInteger)
 {
+    bool result = false;
     if (strToConvert && outputInteger)
     {
-        bool        ret         = true;
-        bool        hex         = false;
-        const char* tmp         = strToConvert;
-        char*       localstrend = M_NULLPTR;
-        char**      endPtrToUse = &localstrend;
-        if (unit)
-        {
-            endPtrToUse = unit;
-        }
-        while (*tmp != '\0')
-        {
-            if ((!safe_isxdigit(*tmp)) && (*tmp != 'x') && (*tmp != 'h'))
-            {
-                ret = false;
-                break;
-            }
-            else if (!safe_isdigit(*tmp))
-            {
-                hex = true;
-            }
-            tmp++;
-        }
-        if (!ret && unit) // only check for a valid unit if the caller provided
-                          // an endptr to get the unit out for their use
-        {
-            // check if a valid unit is present to allow this to continue
-            if (is_Allowed_Unit_For_Get_And_Validate_Input(tmp, unittype))
-            {
-                // This will only return true when this is at the end of a
-                // string meaning the user provided 64KB or something like that,
-                // so this matched to KB This allows for the utilities calling
-                // this to multiply the output integer into a value that makes
-                // sense
-                ret = true;
-            }
-        }
+        eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
         // If everything is a valid hex digit.
-        if (ret)
+        if (strType != INT_INPUT_INVALID)
         {
-            errno = 0; // ISO secure coding standard recommends this to ensure
-                       // errno is interpretted correctly after this call
-            if (hex)
+            if (0 != safe_strtol(outputInteger, strToConvert, unit, strType))
             {
-                *outputInteger = strtol(strToConvert, endPtrToUse, 16);
+                result = false;
+            }
+            else if (!is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+            {
+                result = false;
             }
             else
             {
-                *outputInteger = strtol(strToConvert, endPtrToUse, 10);
+                result = true;
             }
         }
         else
         {
-            ret = false;
+            result = false;
         }
-        // Final Check
-        if (ret && (((*outputInteger == LONG_MAX || *outputInteger == LONG_MIN) && errno == ERANGE) ||
-                    (strToConvert == *endPtrToUse && *outputInteger == 0)))
-        {
-            ret = false;
-        }
-        return ret;
     }
-    else
-    {
-        return false;
-    }
+    return result;
 }
 
 M_NODISCARD bool get_And_Validate_Integer_Input_I(const char*       strToConvert,
@@ -1688,7 +1612,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_I(const char*       strToConvert
                                                   eAllowedUnitInput unittype,
                                                   int*              outputInteger)
 {
-    long temp = 0;
+    long temp = 0L;
     bool ret  = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
     if (ret)
     {
@@ -1719,7 +1643,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_S(const char*       strToConvert
                                                   eAllowedUnitInput unittype,
                                                   short*            outputInteger)
 {
-    long temp = 0;
+    long temp = 0L;
     bool ret  = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
     if (ret)
     {
@@ -1750,7 +1674,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_C(const char*       strToConvert
                                                   eAllowedUnitInput unittype,
                                                   char*             outputInteger)
 {
-    long temp = 0;
+    long temp = 0L;
     bool ret  = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
     if (ret)
     {
@@ -1785,7 +1709,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint64(const char*       strToCo
     // let the generic selection macro do this
     return get_Valid_Integer_Input(strToConvert, unit, unittype, outputInteger);
 #elif defined(LP64_DATA_MODEL) || defined(ILP64_DATA_MODEL)
-    unsigned long temp = 0;
+    unsigned long temp = 0UL;
     bool          ret  = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
     if (ret && temp > UINT64_MAX)
     {
@@ -1799,7 +1723,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint64(const char*       strToCo
     }
     return ret;
 #else
-    unsigned long long temp = 0;
+    unsigned long long temp = 0ULL;
     bool               ret  = get_And_Validate_Integer_Input_ULL(strToConvert, unit, unittype, &temp);
     if (ret && temp > UINT64_MAX)
     {
@@ -1820,49 +1744,23 @@ M_NODISCARD bool get_And_Validate_Float_Input(const char*       strToConvert,
                                               eAllowedUnitInput unittype,
                                               float*            outputFloat)
 {
+    bool result = false;
     if (strToConvert && outputFloat)
     {
-        char*  localstrend = M_NULLPTR;
-        char** endPtrToUse = &localstrend;
-        if (unit)
+        if (0 != safe_strtof(outputFloat, strToConvert, unit))
         {
-            endPtrToUse = unit;
+            result = false;
         }
-        errno = 0; // ISO secure coding standard recommends this to ensure errno
-                   // is interpretted correctly after this call
-        *outputFloat = strtof(strToConvert, endPtrToUse);
-        if ((*outputFloat >= HUGE_VALF && errno == ERANGE) || strToConvert == *endPtrToUse)
+        else if (!is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
         {
-            return false;
+            result = false;
         }
         else
         {
-            bool unitallowed = is_Allowed_Unit_For_Get_And_Validate_Input(*endPtrToUse, unittype);
-            if (unit)
-            {
-                if (unitallowed)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else if (!unit && unitallowed)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            result = true;
         }
     }
-    else
-    {
-        return false;
-    }
+    return result;
 }
 
 M_NODISCARD bool get_And_Validate_Double_Input(const char*       strToConvert,
@@ -1870,49 +1768,23 @@ M_NODISCARD bool get_And_Validate_Double_Input(const char*       strToConvert,
                                                eAllowedUnitInput unittype,
                                                double*           outputFloat)
 {
+    bool result = false;
     if (strToConvert && outputFloat)
     {
-        char*  localstrend = M_NULLPTR;
-        char** endPtrToUse = &localstrend;
-        if (unit)
+        if (0 != safe_strtod(outputFloat, strToConvert, unit))
         {
-            endPtrToUse = unit;
+            result = false;
         }
-        errno = 0; // ISO secure coding standard recommends this to ensure errno
-                   // is interpretted correctly after this call
-        *outputFloat = strtod(strToConvert, endPtrToUse);
-        if ((*outputFloat >= HUGE_VAL && errno == ERANGE) || strToConvert == *endPtrToUse)
+        else if (!is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
         {
-            return false;
+            result = false;
         }
         else
         {
-            bool unitallowed = is_Allowed_Unit_For_Get_And_Validate_Input(*endPtrToUse, unittype);
-            if (unit)
-            {
-                if (unitallowed)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else if (!unit && unitallowed)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            result = true;
         }
     }
-    else
-    {
-        return false;
-    }
+    return result;
 }
 
 M_NODISCARD bool get_And_Validate_LDouble_Input(const char*       strToConvert,
@@ -1920,49 +1792,23 @@ M_NODISCARD bool get_And_Validate_LDouble_Input(const char*       strToConvert,
                                                 eAllowedUnitInput unittype,
                                                 long double*      outputFloat)
 {
+    bool result = false;
     if (strToConvert && outputFloat)
     {
-        char*  localstrend = M_NULLPTR;
-        char** endPtrToUse = &localstrend;
-        if (unit)
+        if (0 != safe_strtold(outputFloat, strToConvert, unit))
         {
-            endPtrToUse = unit;
+            result = false;
         }
-        errno = 0; // ISO secure coding standard recommends this to ensure errno
-                   // is interpretted correctly after this call
-        *outputFloat = strtold(strToConvert, unit);
-        if ((*outputFloat >= HUGE_VALL && errno == ERANGE) || strToConvert == *endPtrToUse)
+        else if (!is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
         {
-            return false;
+            result = false;
         }
         else
         {
-            bool unitallowed = is_Allowed_Unit_For_Get_And_Validate_Input(*endPtrToUse, unittype);
-            if (unit)
-            {
-                if (unitallowed)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else if (!unit && unitallowed)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            result = true;
         }
     }
-    else
-    {
-        return false;
-    }
+    return result;
 }
 
 // NOTE: This function is deprecated as you should use the one that matches your
@@ -1981,7 +1827,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint32(const char*       strToCo
     // let the generic selection macro do this
     return get_Valid_Integer_Input(strToConvert, unit, unittype, outputInteger);
 #else
-    unsigned long temp = 0;
+    unsigned long temp = 0UL;
     bool          ret  = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
     if (ret && temp > UINT32_MAX)
     {
@@ -2085,7 +1931,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int64(const char*       strToCon
     }
     return ret;
 #else
-    long long temp = 0;
+    long long temp = 0LL;
     bool      ret  = get_And_Validate_Integer_Input_LL(strToConvert, unit, unittype, &temp);
     if (ret)
     {
@@ -2119,7 +1965,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int32(const char*       strToCon
     // let the generic selection macro do this
     return get_Valid_Integer_Input(strToConvert, unit, unittype, outputInteger);
 #else
-    long temp = 0;
+    long temp = 0L;
     bool ret  = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
     if (ret)
     {
@@ -2209,16 +2055,16 @@ ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter,
     if (lineptr == M_NULLPTR || n == M_NULLPTR || stream == M_NULLPTR)
     {
         errno = EINVAL;
-        return -1;
+        return SSIZE_T_C(-1);
     }
-    if (*lineptr == M_NULLPTR || *n == 0)
+    if (*lineptr == M_NULLPTR || *n == SIZE_T_C(0))
     {
         *n       = BUFSIZ;
         *lineptr = M_REINTERPRET_CAST(char*, malloc(*n));
         if (M_NULLPTR == *lineptr)
         {
             errno = ENOMEM;
-            return -1;
+            return SSIZE_T_C(-1);
         }
     }
     currentptr = *lineptr;
@@ -2234,7 +2080,7 @@ ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter,
             if (feof(stream))
             {
                 ssize_t numchars = C_CAST(ssize_t, C_CAST(intptr_t, currentptr) - C_CAST(intptr_t, *lineptr));
-                if (numchars > 0)
+                if (numchars > SSIZE_T_C(0))
                 {
                     // read all the characters in the stream to the end.
                     // set M_NULLPTR terminator and return how many chars were
@@ -2245,7 +2091,7 @@ ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter,
                 }
             }
             // errno value???
-            return -1;
+            return SSIZE_T_C(-1);
         }
         // add to the stream
         *currentptr = C_CAST(char, c); // This cast is necessary to stop a warning. C is
@@ -2264,20 +2110,20 @@ ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter,
         {
             // reallocate. Simple method is to double the current buffer size
             char*   temp     = M_NULLPTR;
-            size_t  newsize  = *n * 2;
+            size_t  newsize  = *n * SIZE_T_C(2);
             ssize_t numchars = C_CAST(ssize_t, C_CAST(intptr_t, currentptr) - C_CAST(intptr_t, *lineptr));
 #    if defined(SSIZE_MAX)
             if (newsize > SSIZE_MAX)
             {
                 errno = EOVERFLOW;
-                return -1;
+                return SSIZE_T_C(-1);
             }
 #    endif // SSIZE_MAX
             temp = safe_reallocf(C_CAST(void**, lineptr), newsize);
             if (temp == M_NULLPTR)
             {
                 errno = ENOMEM;
-                return -1;
+                return SSIZE_T_C(-1);
             }
             *lineptr   = temp;
             *n         = newsize;
@@ -2333,7 +2179,7 @@ M_NODISCARD FUNC_ATTR_PRINTF(2, 0) int vasprintf(char** M_RESTRICT strp, const c
         return -1;
     }
 
-    *strp = M_REINTERPRET_CAST(char*, malloc(int_to_sizet(len) + 1));
+    *strp = M_REINTERPRET_CAST(char*, malloc(int_to_sizet(len) + SIZE_T_C(1)));
     if (*strp == M_NULLPTR)
     {
         return -1;
@@ -2365,8 +2211,8 @@ int                                                  snprintf(char* buffer, size
 #    else
     countargs = args; // this is what microsoft's va_copy expands to
 #    endif
-    if (bufsz > 0) // Allow calling only when bufsz > 0. Let _vsnprintf evaluate
-                   // if buffer is M_NULLPTR in here.
+    if (bufsz > SIZE_T_C(0)) // Allow calling only when bufsz > 0. Let _vsnprintf evaluate
+                             // if buffer is M_NULLPTR in here.
     {
         errno = 0;
 #    if defined(HAVE_MSFT_SECURE_LIB)
@@ -2386,11 +2232,11 @@ int                                                  snprintf(char* buffer, size
             // out of space or some error occurred, so need to null terminate
             // and calculate how long the buffer should have been for this
             // format
-            if (buffer && bufsz > 0)
+            if (buffer && bufsz > SIZE_T_C(0))
             {
                 // null terminate at bufsz since there was no more room, so we
                 // are at the end of the buffer already.
-                buffer[bufsz - 1] = '\0';
+                buffer[bufsz - SIZE_T_C(1)] = '\0';
             }
             charCount = _vscprintf(format, countargs); // gets the count of the number of args
         }
@@ -2411,8 +2257,8 @@ int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
 #    else
     countargs = args; // this is what microsoft's va_copy expands to
 #    endif
-    if (bufsz > 0) // Allow calling only when bufsz > 0. Let _vsnprintf evaluate
-                   // if buffer is M_NULLPTR in here.
+    if (bufsz > SIZE_T_C(0)) // Allow calling only when bufsz > 0. Let _vsnprintf evaluate
+                             // if buffer is M_NULLPTR in here.
     {
         errno = 0;
 #    if defined(HAVE_MSFT_SECURE_LIB)
@@ -2432,11 +2278,11 @@ int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
             // out of space or some error occurred, so need to null terminate
             // and calculate how long the buffer should have been for this
             // format
-            if (buffer && bufsz > 0)
+            if (buffer && bufsz > SIZE_T_C(0))
             {
                 // null terminate at bufsz since there was no more room, so we
                 // are at the end of the buffer already.
-                buffer[bufsz - 1] = '\0';
+                buffer[bufsz - SIZE_T_C(1)] = '\0';
             }
             charCount = _vscprintf(format, countargs); // gets the count of the number of args
         }
@@ -2575,8 +2421,8 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
     printf("\n");
 }
 
-#define LINE_BUF_STR_LEN 18
-#define LINE_WIDTH       16
+#define LINE_BUF_STR_LEN UINT8_C(18)
+#define LINE_WIDTH       UINT32_C(16)
 static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset)
 {
     uint32_t printIter   = UINT32_C(0);
@@ -2589,46 +2435,46 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
     {
         if (bufferLen <= UINT8_MAX)
         {
-            offsetWidth = 2;
+            offsetWidth = UINT32_C(2);
             printf("\n        "); // 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E
                                   // F  ");
         }
         else if (bufferLen <= UINT16_MAX)
         {
-            offsetWidth = 4;
+            offsetWidth = UINT32_C(4);
             printf("\n          "); // 0  1  2  3  4  5  6  7  8  9  A  B  C  D
                                     // E  F  ");
         }
         else if (bufferLen <= UINT32_C(0xFFFFFF))
         {
-            offsetWidth = 6;
+            offsetWidth = UINT32_C(6);
             printf("\n            "); // 0  1  2  3  4  5  6  7  8  9  A  B  C
                                       // D  E  F  ");
         }
         else // 32bit width, don't care about 64bit since max size if 32bit
         {
-            offsetWidth = 8;
+            offsetWidth = UINT32_C(8);
             printf("\n              "); // 0  1  2  3  4  5  6  7  8  9  A  B  C
                                         // D  E  F  ");
         }
         // we print out 2 (0x) + printf formatting width + 2 (spaces) then the
         // offsets
 
-        for (printIter = 0; printIter < LINE_WIDTH && printIter < bufferLen; printIter++)
+        for (printIter = UINT32_C(0); printIter < LINE_WIDTH && printIter < bufferLen; printIter++)
         {
             printf("%" PRIX32 "  ", printIter);
         }
     }
-    for (printIter = 0, offset = 0; printIter < bufferLen; ++printIter, ++lineBuffIter)
+    for (printIter = UINT32_C(0), offset = UINT32_C(0); printIter < bufferLen; ++printIter, ++lineBuffIter)
     {
         if (lineBuffIter >= LINE_BUF_STR_LEN)
         {
-            lineBuffIter = 0;
+            lineBuffIter = UINT8_C(0);
         }
 
         // for every 16 bytes we print, we need to make a newline, then print
         // the offset (hex) before we print the data again
-        if (printIter % LINE_WIDTH == 0)
+        if (printIter % LINE_WIDTH == UINT32_C(0))
         {
             if (showOffset)
             {
@@ -2667,9 +2513,10 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
                 lineBuff[lineBuffIter] = '.';
             }
         }
-        if (showPrint && ((printIter + 1) % LINE_WIDTH == 0 || printIter + 1 == bufferLen))
+        if (showPrint &&
+            ((printIter + UINT32_C(1)) % LINE_WIDTH == UINT32_C(0) || printIter + UINT32_C(1) == bufferLen))
         {
-            uint32_t spacePadding          = (printIter + 1) % LINE_WIDTH;
+            uint32_t spacePadding          = (printIter + UINT32_C(1)) % LINE_WIDTH;
             lineBuff[LINE_BUF_STR_LEN - 1] = '\0';
             lineBuffIter                   = UINT8_MAX; // this is done to cause an overflow when
                                                         // the ++happens during the loop
@@ -2701,7 +2548,7 @@ void print_Pipe_Data(uint8_t* dataBuffer, uint32_t bufferLen)
     internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false);
 }
 
-errno_t safe_fopen(FILE* M_RESTRICT *M_RESTRICT streamptr, const char *M_RESTRICT filename, const char *M_RESTRICT mode)
+errno_t safe_fopen(FILE* M_RESTRICT* M_RESTRICT streamptr, const char* M_RESTRICT filename, const char* M_RESTRICT mode)
 {
     errno_t error = 0;
     if (streamptr == M_NULLPTR)
@@ -2727,27 +2574,31 @@ errno_t safe_fopen(FILE* M_RESTRICT *M_RESTRICT streamptr, const char *M_RESTRIC
     }
     else
     {
-#    if defined(HAVE_MSFT_SECURE_LIB)
+#if defined(HAVE_MSFT_SECURE_LIB)
         error = fopen_s(M_CONST_CAST(FILE**, streamptr), filename, mode);
-#    else
-        errno = 0;
+#else
+        errno      = 0;
         *streamptr = fopen(filename, mode);
         if (*streamptr == M_NULLPTR)
         {
             error = errno;
             if (error == 0)
             {
-                // TODO: Find a better error to use in this case. Unlikely we will need is as errno will likely be set correctly
+                // TODO: Find a better error to use in this case. Unlikely we will need is as errno will likely be set
+                // correctly
                 error = EINVAL;
             }
         }
-#    endif
+#endif
     }
     errno = error;
     return error;
 }
 
-errno_t safe_freopen(FILE* M_RESTRICT *M_RESTRICT newstreamptr, const char *M_RESTRICT filename, const char *M_RESTRICT mode, FILE *M_RESTRICT stream)
+errno_t safe_freopen(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
+                     const char* M_RESTRICT       filename,
+                     const char* M_RESTRICT       mode,
+                     FILE* M_RESTRICT             stream)
 {
     errno_t error = 0;
     if (newstreamptr == M_NULLPTR)
@@ -2773,99 +2624,100 @@ errno_t safe_freopen(FILE* M_RESTRICT *M_RESTRICT newstreamptr, const char *M_RE
     }
     else
     {
-#    if defined(HAVE_MSFT_SECURE_LIB)
+#if defined(HAVE_MSFT_SECURE_LIB)
         error = freopen_s(M_CONST_CAST(FILE**, newstreamptr), filename, mode, stream);
-#    else
-        errno = 0;
+#else
+        errno         = 0;
         *newstreamptr = freopen(filename, mode, stream);
         if (*newstreamptr == M_NULLPTR)
         {
             error = errno;
             if (error == 0)
             {
-                // TODO: Find a better error to use in this case. Unlikely we will need is as errno will likely be set correctly
+                // TODO: Find a better error to use in this case. Unlikely we will need is as errno will likely be set
+                // correctly
                 error = EINVAL;
             }
         }
-#    endif
+#endif
     }
     errno = error;
     return error;
 }
 
-//NOTE: This implementation of safe_tmpnam matches C11 tmpnam_s
-//      It is commented out as it makes a LOT more sense to use safe_tmpfile call instead and because
-//      calling tmpnam generates warnings about being insecure to use.-TJE
-// #if !defined (TMP_MAX_S)
-//     #define TMP_MAX_S TMP_MAX
-// #endif
-// #if !defined (L_tmpnam_s)
-//     #define L_tmpnam_s L_tmpnam
-// #endif
-// errno_t safe_tmpnam(char *filename_s, rsize_t maxsize)
-// {
-//     errno_t error = 0;
-//     if (filename_s == M_NULLPTR)
-//     {
-//         error = EINVAL;
-//         invoke_Constraint_Handler("safe_tmpnam: filename_s is NULL", M_NULLPTR, error);
-//         errno = error;
-//         return error;
-//     }
-//     else if (maxsize == RSIZE_T_C(0))
-//     {
-//         error = EINVAL;
-//         invoke_Constraint_Handler("safe_tmpnam: maxsize == 0", M_NULLPTR, error);
-//         errno = error;
-//         return error;
-//     }
-//     else if (maxsize > RSIZE_MAX)
-//     {
-//         error = EINVAL;
-//         filename_s[0] = 0;
-//         invoke_Constraint_Handler("safe_tmpnam: maxsize > RSIZE_MAX", M_NULLPTR, error);
-//         errno = error;
-//         return error;
-//     }
-//     else
-//     {
-// #    if defined(HAVE_MSFT_SECURE_LIB)
-//         error = tmpnam_s(filename_s, maxsize);
-// #    else
-//         DECLARE_ZERO_INIT_ARRAY(char, internaltempname, L_tmpnam);
-//         errno = 0;
-//         if (tmpnam(internaltempname) != M_NULLPTR)
-//         {
-//             size_t internaltempnamelen = safe_strlen(internaltempname);
-//             if (internaltempnamelen > maxsize)
-//             {
-//                 error = EINVAL;
-//                 filename_s[0] = 0;
-//                 invoke_Constraint_Handler("safe_tmpnam: maxsize < generated tmpnam size", M_NULLPTR, error);
-//                 errno = error;
-//                 return error;
-//             }
-//             else
-//             {
-//                 error = safe_strcpy(filename_s, maxsize, internaltempname);
-//             }
-//         }
-//         else
-//         {
-//             error = errno;
-//             if (error == 0)
-//             {
-//                 // TODO: Find a better error to use in this case. Unlikely we will need is as errno will likely be set correctly
-//                 error = EINVAL;
-//             }
-//         }
-// #    endif
-//     }
-//     errno = error;
-//     return error;
-// }
+// NOTE: This implementation of safe_tmpnam matches C11 tmpnam_s
+//       It is commented out as it makes a LOT more sense to use safe_tmpfile call instead and because
+//       calling tmpnam generates warnings about being insecure to use.-TJE
+//  #if !defined (TMP_MAX_S)
+//      #define TMP_MAX_S TMP_MAX
+//  #endif
+//  #if !defined (L_tmpnam_s)
+//      #define L_tmpnam_s L_tmpnam
+//  #endif
+//  errno_t safe_tmpnam(char *filename_s, rsize_t maxsize)
+//  {
+//      errno_t error = 0;
+//      if (filename_s == M_NULLPTR)
+//      {
+//          error = EINVAL;
+//          invoke_Constraint_Handler("safe_tmpnam: filename_s is NULL", M_NULLPTR, error);
+//          errno = error;
+//          return error;
+//      }
+//      else if (maxsize == RSIZE_T_C(0))
+//      {
+//          error = EINVAL;
+//          invoke_Constraint_Handler("safe_tmpnam: maxsize == 0", M_NULLPTR, error);
+//          errno = error;
+//          return error;
+//      }
+//      else if (maxsize > RSIZE_MAX)
+//      {
+//          error = EINVAL;
+//          filename_s[0] = 0;
+//          invoke_Constraint_Handler("safe_tmpnam: maxsize > RSIZE_MAX", M_NULLPTR, error);
+//          errno = error;
+//          return error;
+//      }
+//      else
+//      {
+//  #    if defined(HAVE_MSFT_SECURE_LIB)
+//          error = tmpnam_s(filename_s, maxsize);
+//  #    else
+//          DECLARE_ZERO_INIT_ARRAY(char, internaltempname, L_tmpnam);
+//          errno = 0;
+//          if (tmpnam(internaltempname) != M_NULLPTR)
+//          {
+//              size_t internaltempnamelen = safe_strlen(internaltempname);
+//              if (internaltempnamelen > maxsize)
+//              {
+//                  error = EINVAL;
+//                  filename_s[0] = 0;
+//                  invoke_Constraint_Handler("safe_tmpnam: maxsize < generated tmpnam size", M_NULLPTR, error);
+//                  errno = error;
+//                  return error;
+//              }
+//              else
+//              {
+//                  error = safe_strcpy(filename_s, maxsize, internaltempname);
+//              }
+//          }
+//          else
+//          {
+//              error = errno;
+//              if (error == 0)
+//              {
+//                  // TODO: Find a better error to use in this case. Unlikely we will need is as errno will likely be
+//                  set correctly error = EINVAL;
+//              }
+//          }
+//  #    endif
+//      }
+//      errno = error;
+//      return error;
+//  }
 
-errno_t safe_tmpfile(FILE * M_RESTRICT *M_RESTRICT streamptr)
+errno_t safe_tmpfile(FILE* M_RESTRICT* M_RESTRICT streamptr)
 {
     errno_t error = 0;
     if (streamptr == M_NULLPTR)
@@ -2877,27 +2729,28 @@ errno_t safe_tmpfile(FILE * M_RESTRICT *M_RESTRICT streamptr)
     }
     else
     {
-#    if defined(HAVE_MSFT_SECURE_LIB)
+#if defined(HAVE_MSFT_SECURE_LIB)
         error = tmpfile_s(M_CONST_CAST(FILE**, streamptr));
-#    else
-        errno = 0;
+#else
+        errno      = 0;
         *streamptr = tmpfile();
         if (*streamptr == M_NULLPTR)
         {
             error = errno;
             if (error == 0)
             {
-                // TODO: Find a better error to use in this case. Unlikely we will need is as errno will likely be set correctly
+                // TODO: Find a better error to use in this case. Unlikely we will need is as errno will likely be set
+                // correctly
                 error = EINVAL;
             }
         }
-#    endif
+#endif
     }
     errno = error;
     return error;
 }
 
-char* safe_gets(char *str, rsize_t n)
+char* safe_gets(char* str, rsize_t n)
 {
     errno_t error = 0;
     if (n == RSIZE_T_C(0))
@@ -2907,6 +2760,7 @@ char* safe_gets(char *str, rsize_t n)
         errno = error;
         return M_NULLPTR;
     }
+#if defined(HAVE_MSFT_SECURE_LIB)
     else if (n > RSIZE_MAX)
     {
         error = EINVAL;
@@ -2914,6 +2768,18 @@ char* safe_gets(char *str, rsize_t n)
         errno = error;
         return M_NULLPTR;
     }
+#else
+    else if (n > INT_MAX)
+    {
+        // NOTE: fgets is limited to int for the count, so this is limited to INTMAX in this case unless we write a
+        // different alternative
+        //       to support up to RSIZE_MAX - TJE
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_gets: n > INT_MAX", M_NULLPTR, error);
+        errno = error;
+        return M_NULLPTR;
+    }
+#endif
     else if (str == M_NULLPTR)
     {
         error = EINVAL;
@@ -2923,14 +2789,27 @@ char* safe_gets(char *str, rsize_t n)
     }
     else
     {
-#    if defined(HAVE_MSFT_SECURE_LIB)
-        gets_s(str, n);
-#    else
+#if defined(HAVE_MSFT_SECURE_LIB)
+        char* ret = gets_s(str, n);
+        errno     = error;
+        return ret;
+#else
         errno = 0;
-        if (M_NULLPTR == fgets(str, n, stdin))
+        if (n <= RSIZE_T_C(1))
+        {
+            // NOTE: Handling this special case for consistent behavior.
+            //       Since this "string" is too small to hold anything but NULL,
+            //       we will not consider this an error and also not read anything from the stream.
+            //       Some implementation do this, some report errors, some store nothing, some set NULL.
+            //       Setting NULL and reading nothing seems most reasonable way to get consistent behavior
+            //       across libc's that we may interact with. - TJE
+            str[0] = 0;
+            error  = 0;
+        }
+        else if (M_NULLPTR == fgets(str, M_STATIC_CAST(int, n), stdin))
         {
             str[0] = 0;
-            error = EINVAL;
+            error  = EINVAL;
             invoke_Constraint_Handler("safe_gets: fgets(str, n, stdin) == NULL", M_NULLPTR, error);
             errno = error;
             return M_NULLPTR;
@@ -2938,7 +2817,7 @@ char* safe_gets(char *str, rsize_t n)
         else if (ferror(stdin))
         {
             str[0] = 0;
-            error = EINVAL;
+            error  = EINVAL;
             invoke_Constraint_Handler("safe_gets: ferror(stdin)", M_NULLPTR, error);
             errno = error;
             return M_NULLPTR;
@@ -2950,21 +2829,451 @@ char* safe_gets(char *str, rsize_t n)
             {
                 if (len == (n - RSIZE_T_C(1)))
                 {
-                    //there is an error in here
+                    // there is an error in here
                     str[0] = 0;
-                    invoke_Constraint_Handler("safe_gets: Did not find newline or eof after writing n-1 chars from stdin!", M_NULLPTR, error);
+                    invoke_Constraint_Handler(
+                        "safe_gets: Did not find newline or eof after writing n-1 chars from stdin!", M_NULLPTR, error);
                     errno = EINVAL;
                     return M_NULLPTR;
                 }
             }
-            //overwrite the newline character if in the stream after fgets
+            // overwrite the newline character if in the stream after fgets
             if (str[len - SIZE_T_C(1)] == '\n')
             {
                 str[len - SIZE_T_C(1)] = 0;
             }
         }
-#    endif
+        errno = error;
+        return str;
+#endif
+    }
+}
+
+errno_t safe_strtol(long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+{
+    errno_t error = 0;
+    if (value == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtol: value == NULL", M_NULLPTR, error);
+    }
+    else if (str == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtol: str == NULL", M_NULLPTR, error);
+    }
+    else if (base > BASE_36_MAX)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtol: base > 36", M_NULLPTR, error);
+    }
+    else
+    {
+        // We need the end pointer to detect errors in conversion reliably.
+        // since that is an optional parameter, we have a local one to use if the user
+        // does not provide one
+        char*  localend = M_NULLPTR;
+        char** useend   = endp;
+        if (useend == M_NULLPTR)
+        {
+            useend = &localend;
+        }
+        errno  = 0; // must clear to zero before calling strtol to properly detect errors
+        *value = strtol(str, useend, base);
+        if (((*value == LONG_MAX || *value == LONG_MIN) && errno == ERANGE) || (*value == 0L && *useend == str) ||
+            errno != 0)
+        {
+            error = errno;
+            if (error == 0)
+            {
+                error = EINVAL;
+            }
+        }
     }
     errno = error;
-    return str;
+    return error;
+}
+
+errno_t safe_strtoll(long long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+{
+    errno_t error = 0;
+    if (value == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoll: value == NULL", M_NULLPTR, error);
+    }
+    else if (str == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoll: str == NULL", M_NULLPTR, error);
+    }
+    else if (base > BASE_36_MAX)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoll: base > 36", M_NULLPTR, error);
+    }
+    else
+    {
+        // We need the end pointer to detect errors in conversion reliably.
+        // since that is an optional parameter, we have a local one to use if the user
+        // does not provide one
+        char*  localend = M_NULLPTR;
+        char** useend   = endp;
+        if (useend == M_NULLPTR)
+        {
+            useend = &localend;
+        }
+        errno  = 0; // must clear to zero before calling strtol to properly detect errors
+        *value = strtoll(str, useend, base);
+        if (((*value == LLONG_MAX || *value == LLONG_MIN) && errno == ERANGE) || (*value == 0LL && *useend == str) ||
+            errno != 0)
+        {
+            error = errno;
+            if (error == 0)
+            {
+                error = EINVAL;
+            }
+        }
+    }
+    errno = error;
+    return error;
+}
+
+errno_t safe_strtoul(unsigned long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+{
+    errno_t error = 0;
+    if (value == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoul: value == NULL", M_NULLPTR, error);
+    }
+    else if (str == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoul: str == NULL", M_NULLPTR, error);
+    }
+    else if (base > BASE_36_MAX)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoul: base > 36", M_NULLPTR, error);
+    }
+    else
+    {
+        // We need the end pointer to detect errors in conversion reliably.
+        // since that is an optional parameter, we have a local one to use if the user
+        // does not provide one
+        char*  localend = M_NULLPTR;
+        char** useend   = endp;
+        if (useend == M_NULLPTR)
+        {
+            useend = &localend;
+        }
+        errno  = 0; // must clear to zero before calling strtol to properly detect errors
+        *value = strtoul(str, useend, base);
+        if ((*value == ULONG_MAX && errno == ERANGE) || (*value == 0UL && *useend == str) || errno != 0)
+        {
+            error = errno;
+            if (error == 0)
+            {
+                error = EINVAL;
+            }
+        }
+    }
+    errno = error;
+    return error;
+}
+
+errno_t safe_strtoull(unsigned long long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+{
+    errno_t error = 0;
+    if (value == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoull: value == NULL", M_NULLPTR, error);
+    }
+    else if (str == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoull: str == NULL", M_NULLPTR, error);
+    }
+    else if (base > BASE_36_MAX)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoull: base > 36", M_NULLPTR, error);
+    }
+    else
+    {
+        // We need the end pointer to detect errors in conversion reliably.
+        // since that is an optional parameter, we have a local one to use if the user
+        // does not provide one
+        char*  localend = M_NULLPTR;
+        char** useend   = endp;
+        if (useend == M_NULLPTR)
+        {
+            useend = &localend;
+        }
+        errno  = 0; // must clear to zero before calling strtol to properly detect errors
+        *value = strtoull(str, useend, base);
+        if ((*value == ULLONG_MAX && errno == ERANGE) || (*value == 0ULL && *useend == str) || errno != 0)
+        {
+            error = errno;
+            if (error == 0)
+            {
+                error = EINVAL;
+            }
+        }
+    }
+    errno = error;
+    return error;
+}
+
+errno_t safe_strtoimax(intmax_t* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+{
+    errno_t error = 0;
+    if (value == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoimax: value == NULL", M_NULLPTR, error);
+    }
+    else if (str == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoimax: str == NULL", M_NULLPTR, error);
+    }
+    else if (base > BASE_36_MAX)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoimax: base > 36", M_NULLPTR, error);
+    }
+    else
+    {
+        // We need the end pointer to detect errors in conversion reliably.
+        // since that is an optional parameter, we have a local one to use if the user
+        // does not provide one
+        char*  localend = M_NULLPTR;
+        char** useend   = endp;
+        if (useend == M_NULLPTR)
+        {
+            useend = &localend;
+        }
+        errno  = 0; // must clear to zero before calling strtol to properly detect errors
+        *value = strtoimax(str, useend, base);
+        if (((*value == INTMAX_MAX || *value == INTMAX_MIN) && errno == ERANGE) ||
+            (*value == INTMAX_C(0) && *useend == str) || errno != 0)
+        {
+            error = errno;
+            if (error == 0)
+            {
+                error = EINVAL;
+            }
+        }
+    }
+    errno = error;
+    return error;
+}
+
+errno_t safe_strtoumax(uintmax_t* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+{
+    errno_t error = 0;
+    if (value == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoumax: value == NULL", M_NULLPTR, error);
+    }
+    else if (str == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoumax: str == NULL", M_NULLPTR, error);
+    }
+    else if (base > BASE_36_MAX)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtoumax: base > 36", M_NULLPTR, error);
+    }
+    else
+    {
+        // We need the end pointer to detect errors in conversion reliably.
+        // since that is an optional parameter, we have a local one to use if the user
+        // does not provide one
+        char*  localend = M_NULLPTR;
+        char** useend   = endp;
+        if (useend == M_NULLPTR)
+        {
+            useend = &localend;
+        }
+        errno  = 0; // must clear to zero before calling strtol to properly detect errors
+        *value = strtoumax(str, useend, base);
+        if ((*value == UINTMAX_MAX && errno == ERANGE) || (*value == UINTMAX_C(0) && *useend == str) || errno != 0)
+        {
+            error = errno;
+            if (error == 0)
+            {
+                error = EINVAL;
+            }
+        }
+    }
+    errno = error;
+    return error;
+}
+
+errno_t safe_strtof(float* value, const char* M_RESTRICT str, char** M_RESTRICT endp)
+{
+    errno_t error = 0;
+    if (value == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtof: value == NULL", M_NULLPTR, error);
+    }
+    else if (str == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtof: str == NULL", M_NULLPTR, error);
+    }
+    else
+    {
+        // We need the end pointer to detect errors in conversion reliably.
+        // since that is an optional parameter, we have a local one to use if the user
+        // does not provide one
+        char*  localend = M_NULLPTR;
+        char** useend   = endp;
+        if (useend == M_NULLPTR)
+        {
+            useend = &localend;
+        }
+        errno  = 0; // must clear to zero before calling strtol to properly detect errors
+        *value = strtof(str, useend);
+        // Disable float equal because this is necessary to check for conversion errors from this function.
+        // This is one of the only times this warning should ever be disabled.
+#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wfloat-equal"
+#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.5*/
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
+        if (((*value >= HUGE_VALF || *value <= -HUGE_VALF) && errno == ERANGE) || (*value == 0.0F && *useend == str) ||
+            errno != 0)
+        {
+            error = errno;
+            if (error == 0)
+            {
+                error = EINVAL;
+            }
+        }
+#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#    pragma clang diagnostic pop
+#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.5*/
+#    pragma GCC diagnostic pop
+#endif
+    }
+    errno = error;
+    return error;
+}
+
+errno_t safe_strtod(double* value, const char* M_RESTRICT str, char** M_RESTRICT endp)
+{
+    errno_t error = 0;
+    if (value == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtod: value == NULL", M_NULLPTR, error);
+    }
+    else if (str == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtod: str == NULL", M_NULLPTR, error);
+    }
+    else
+    {
+        // We need the end pointer to detect errors in conversion reliably.
+        // since that is an optional parameter, we have a local one to use if the user
+        // does not provide one
+        char*  localend = M_NULLPTR;
+        char** useend   = endp;
+        if (useend == M_NULLPTR)
+        {
+            useend = &localend;
+        }
+        errno  = 0; // must clear to zero before calling strtol to properly detect errors
+        *value = strtod(str, useend);
+        // Disable float equal because this is necessary to check for conversion errors from this function.
+        // This is one of the only times this warning should ever be disabled.
+#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wfloat-equal"
+#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.5*/
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
+        if (((*value >= HUGE_VAL || *value <= -HUGE_VAL) && errno == ERANGE) || (*value == 0.0 && *useend == str) ||
+            errno != 0)
+        {
+            error = errno;
+            if (error == 0)
+            {
+                error = EINVAL;
+            }
+        }
+#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#    pragma clang diagnostic pop
+#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.5*/
+#    pragma GCC diagnostic pop
+#endif
+    }
+    errno = error;
+    return error;
+}
+
+errno_t safe_strtold(long double* value, const char* M_RESTRICT str, char** M_RESTRICT endp)
+{
+    errno_t error = 0;
+    if (value == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtold: value == NULL", M_NULLPTR, error);
+    }
+    else if (str == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strtold: str == NULL", M_NULLPTR, error);
+    }
+    else
+    {
+        // We need the end pointer to detect errors in conversion reliably.
+        // since that is an optional parameter, we have a local one to use if the user
+        // does not provide one
+        char*  localend = M_NULLPTR;
+        char** useend   = endp;
+        if (useend == M_NULLPTR)
+        {
+            useend = &localend;
+        }
+        errno  = 0; // must clear to zero before calling strtol to properly detect errors
+        *value = strtold(str, useend);
+        // Disable float equal because this is necessary to check for conversion errors from this function.
+        // This is one of the only times this warning should ever be disabled.
+#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wfloat-equal"
+#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.5*/
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
+        if (((*value >= HUGE_VALL || *value <= -HUGE_VALL) && errno == ERANGE) || (*value == 0.0L && *useend == str) ||
+            errno != 0)
+        {
+            error = errno;
+            if (error == 0)
+            {
+                error = EINVAL;
+            }
+        }
+#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#    pragma clang diagnostic pop
+#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.5*/
+#    pragma GCC diagnostic pop
+#endif
+    }
+    errno = error;
+    return error;
 }

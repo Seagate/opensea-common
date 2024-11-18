@@ -16,6 +16,7 @@
 // securely as possible
 
 #include "secured_env_vars.h"
+#include "constraint_handling.h"
 #include "env_detect.h"
 #include "memory_safety.h"
 #include "string_utils.h"
@@ -169,14 +170,15 @@ M_NODISCARD eEnvVarResult get_Environment_Variable(const char* environmentVariab
     *envVar = M_NULLPTR;
     if (is_Environment_Variable_List_Tampered() == false)
     {
+        errno_t error = 0;
 #if defined(HAVE_GETENV_S) || (defined(_WIN32) && defined(_MSC_VER) && defined(__STDC_SECURE_LIB__)) ||                \
     (defined(__STDC_LIB_EXT1__) && defined(__STDC_WANT_LIB_EXT1__))
         /* MSFT/C11 annex K adds getenv_s, so use it when available to check if
          * this exists */
         size_t size = SIZE_T_C(0);
-        if (getenv_s(&size, M_NULLPTR, 0, environmentVariableName) == 0 && size > 0 && size < SIZE_MAX)
+        if (getenv_s(&size, M_NULLPTR, 0, environmentVariableName) == 0 && size > SIZE_T_C(0) && size < SIZE_MAX)
         {
-            size += 1; // make sure there is room for M_NULLPTR
+            size += SIZE_T_C(1); // make sure there is room for M_NULLPTR
             *envVar = M_REINTERPRET_CAST(char*, safe_calloc(size, sizeof(char)));
             if (*envVar != M_NULLPTR)
             {
@@ -185,6 +187,25 @@ M_NODISCARD eEnvVarResult get_Environment_Variable(const char* environmentVariab
                 {
                     // error, so free this before moving on
                     safe_free(envVar);
+                    if (errno != 0)
+                    {
+                        error = errno;
+                    }
+                    else
+                    {
+                        error = ENOMEM;
+                    }
+                }
+            }
+            else
+            {
+                if (errno != 0)
+                {
+                    error = errno;
+                }
+                else
+                {
+                    error = ENOMEM;
                 }
             }
         }
@@ -196,11 +217,11 @@ M_NODISCARD eEnvVarResult get_Environment_Variable(const char* environmentVariab
          * See https://linux.die.net/man/3/secure_getenv for reasons to disable
          * it.
          */
-        const char* env = secure_getenv(environmentVariableName);
-        if (env != M_NULLPTR)
-        {
-            *envVar = strdup(env);
-        }
+        // Turn off constraint handling since it is possible we will receive NULL and want to continue execution -TJE
+        eConstraintHandler currentHandler = set_Constraint_Handler(ERR_IGNORE);
+        error                             = safe_strdup(envVar, secure_getenv(environmentVariableName));
+        // Restore previous constraint handler
+        set_Constraint_Handler(currentHandler);
 #elif defined(HAVE___SECURE_GETENV) && !defined(DISABLE_SECURE_GETENV)
         /*
          * Use __secure_getenv, unless the DISABLE_SECURE_GETENV is defined
@@ -209,19 +230,19 @@ M_NODISCARD eEnvVarResult get_Environment_Variable(const char* environmentVariab
          * See https://linux.die.net/man/3/secure_getenv for reasons to disable
          * it.
          */
-        const char* env = __secure_getenv(environmentVariableName);
-        if (env != M_NULLPTR)
-        {
-            *envVar = strdup(env);
-        }
+        // Turn off constraint handling since it is possible we will receive NULL and want to continue execution -TJE
+        eConstraintHandler currentHandler = set_Constraint_Handler(ERR_IGNORE);
+        error                             = safe_strdup(envVar, __secure_getenv(environmentVariableName));
+        // Restore previous constraint handler
+        set_Constraint_Handler(currentHandler);
 #else
-        const char* env = getenv(environmentVariableName);
-        if (env != M_NULLPTR)
-        {
-            *envVar = strdup(env);
-        }
+        // Turn off constraint handling since it is possible we will receive NULL and want to continue execution -TJE
+        eConstraintHandler currentHandler = set_Constraint_Handler(ERR_IGNORE);
+        error                             = safe_strdup(envVar, getenv(environmentVariableName));
+        // Restore previous constraint handler
+        set_Constraint_Handler(currentHandler);
 #endif // checking macros for which getenv function to use
-        if (*envVar != M_NULLPTR)
+        if (error == 0 && *envVar != M_NULLPTR)
         {
             return ENV_VAR_SUCCESS;
         }

@@ -21,7 +21,9 @@
 #include "type_conversion.h"
 
 #if defined(_WIN32)
+DISABLE_WARNING_4255
 #    include <windows.h>
+RESTORE_WARNING_4255
 #else
 #    include <time.h>
 #    include <unistd.h> //needed for usleep()

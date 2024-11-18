@@ -38,8 +38,19 @@
 #    include <sys/param.h> //can be helpful to do compile-time version/capabilities identification
 #endif                     //__unix__ || __APPLE__ || HAVE_SYSPARAM
 
+#if defined(_MSC_VER) && !defined(__clang__)
+#    define DISABLE_WARNING_4255 _Pragma("warning(push)") _Pragma("warning(disable: 4255)")
+
+#    define RESTORE_WARNING_4255 _Pragma("warning(pop)")
+#else
+#    define DISABLE_WARNING_4255
+#    define RESTORE_WARNING_4255
+#endif //_MSVC && !clang workaround for Windows API headers
+
 #if defined(_WIN32)
+DISABLE_WARNING_4255
 #    include <windows.h>
+RESTORE_WARNING_4255
 // This pragma is needed to tell a library including opensea-common to look for
 // Version.lib for the version helping information
 //  This only works in MSVC which is why mingw gets filtered out below.
@@ -249,10 +260,9 @@ extern "C"
 #    define HAVE_C11_ANNEX_K
 #endif // check for annex k
 
-#if defined (__STDC_SECURE_LIB__) || defined (__GOT_SECURE_LIB__)
-#   define HAVE_MSFT_SECURE_LIB
-#endif //Microsoft secure lib
-
+#if defined(__STDC_SECURE_LIB__) || defined(__GOT_SECURE_LIB__)
+#    define HAVE_MSFT_SECURE_LIB
+#endif // Microsoft secure lib
 
 // Detect the system we are compiling for as best we can
 #if defined(UEFI_C_SOURCE)

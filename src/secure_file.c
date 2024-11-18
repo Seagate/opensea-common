@@ -166,8 +166,12 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
             //       they are supported for additional verification by the
             //       library/system - TJE
             duplicatedModeForInternalUse = true;
-            internalmode                 = strdup(mode);
-            char* thex                   = strchr(internalmode, 'x');
+            if (0 != safe_strdup(&internalmode, mode))
+            {
+                fileInfo->error = SEC_FILE_INVALID_MODE;
+                return fileInfo;
+            }
+            char* thex = strchr(internalmode, 'x');
             if (thex)
             {
                 // remove it since it is not supported outside C11 and a few
@@ -225,8 +229,12 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                     lastsep = lastwinsep;
                 }
 #endif //_WIN32
-                intFileName = strndup(filename, C_CAST(uintptr_t, lastsep) -
-                                                    C_CAST(uintptr_t, filename)); // path only. No file name
+       // path only. No file name
+                if (0 != safe_strndup(&intFileName, filename, C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, filename)))
+                {
+                    fileInfo->error = SEC_FILE_INVALID_PATH;
+                    return fileInfo;
+                }
             }
             else
             {
@@ -264,7 +272,11 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
         {
             // not creating a new file, so we will have what we need to get a
             // full canonical path
-            intFileName = strdup(filename);
+            if (0 != safe_strdup(&intFileName, filename))
+            {
+                fileInfo->error = SEC_FILE_INVALID_PATH;
+                return fileInfo;
+            }
         }
         if (intFileName == M_NULLPTR)
         {
@@ -452,10 +464,10 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
             lastsep = lastwinsep;
         }
 #endif //_WIN32
-        pathOnly = strndup(fileInfo->fullpath,
-                           C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t,
-                                                               fileInfo->fullpath)); // path only. No file name
-        if (pathOnly)
+
+        if (safe_strndup(&pathOnly, fileInfo->fullpath,
+                         C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, fileInfo->fullpath)) == 0 &&
+            pathOnly != M_NULLPTR)
         {
             allocatedLocalPathOnly = true;
         }
@@ -463,6 +475,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
         {
             pathOnly = M_CONST_CAST(char*, fileInfo->fullpath);
         }
+
 #if defined(_DEBUG)
         printf("Checking directory security: %s\n", pathOnly);
 #endif
@@ -485,8 +498,8 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
 #endif // DISABLE_SECURE_FILE_PATH_CHECK || _WIN32
         {
             errno_t fopenError = 0;
-            fileInfo->file = M_NULLPTR;
-            fopenError = safe_fopen(&fileInfo->file, fileInfo->fullpath, internalmode);
+            fileInfo->file     = M_NULLPTR;
+            fopenError         = safe_fopen(&fileInfo->file, fileInfo->fullpath, internalmode);
             if (fopenError == 0 && fileInfo->file != M_NULLPTR)
             {
                 // file is opened, check unique id if it was passed in to
@@ -997,9 +1010,9 @@ M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eS
 #endif //_WIN32
        // Check for secure directory - This code must traverse the full path and
        // validate permissions of the directories.
-        char* pathOnly =
-            strndup(fullpath, C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, fullpath)); // path only. No file name
-        if (!pathOnly)
+        char* pathOnly = M_NULLPTR;
+        if (safe_strndup(&pathOnly, fullpath, C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, fullpath)) != 0 ||
+            pathOnly == M_NULLPTR)
         {
             pathOnly = C_CAST(char*, fullpath);
         }
@@ -1012,7 +1025,7 @@ M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eS
         // Check if the file is already open before attempting to remove it
         errno_t fileerror  = 0;
         FILE*   checkExist = M_NULLPTR;
-        fileerror = safe_fopen(&checkExist, fullpath, "r");
+        fileerror          = safe_fopen(&checkExist, fullpath, "r");
         if (checkExist != M_NULLPTR && fileerror == 0)
         {
             M_STATIC_CAST(void, fclose(checkExist));
@@ -1044,7 +1057,7 @@ M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eS
 #elif defined(POSIX_2001) || defined(BSD4_3) || defined(__svr4__)
                 if (0 != unlink(fullpath))
                 {
-                     return SEC_FILE_FAILURE;
+                    return SEC_FILE_FAILURE;
                 }
                 return SEC_FILE_SUCCESS;
 #else
@@ -1144,8 +1157,9 @@ eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const
             if (verify_Format_String_And_Args(format, verifyargs) > 0)
             {
                 va_copy(vfprintfargs, args);
-                //nolint line is because of a false positive....clearly copying the args before calling this-TJE
-                vfprintfresult = vfprintf(fileInfo->file, format, vfprintfargs);// NOLINT(clang-analyzer-valist.Uninitialized)
+                // nolint line is because of a false positive....clearly copying the args before calling this-TJE
+                vfprintfresult =
+                    vfprintf(fileInfo->file, format, vfprintfargs); // NOLINT(clang-analyzer-valist.Uninitialized)
                 va_end(vfprintfargs);
             }
             else
@@ -1236,13 +1250,16 @@ char* generate_Log_Name(eLogFileNamingConvention logFileNamingConvention, // req
         // will be expanded by secure file to a full path
         snprintf(path, OPENSEA_PATH_MAX, ".%c", SYSTEM_PATH_SEPARATOR);
     }
-    if (logExt && logExtLen > 0)
+    if (logExt && logExtLen > SIZE_T_C(0))
     {
         // check if there is already an extension with a dot, otherwise add a
         // dot then the extension
         if (logExt[0] == '.')
         {
-            logExtension = strdup(logExt);
+            if (0 != safe_strdup(&logExtension, logExt))
+            {
+                return M_NULLPTR;
+            }
         }
         else
         {

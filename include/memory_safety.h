@@ -644,16 +644,14 @@ extern "C"
     // overlapped memory regions. returns zero when not overlapping otherwise
     // returns a non-zero value.
     static M_INLINE int memory_regions_overlap(const void* M_RESTRICT ptr1,
-                                        rsize_t                size1,
-                                        const void* M_RESTRICT ptr2,
-                                        rsize_t                size2)
+                                               rsize_t                size1,
+                                               const void* M_RESTRICT ptr2,
+                                               rsize_t                size2)
     {
         // casting a null pointer to uintptr_t results in a zero. This should be
         // safe.
-        return ((M_STATIC_CAST(intptr_t, ptr1) -
-                 (M_STATIC_CAST(intptr_t, ptr2) + M_STATIC_CAST(intptr_t, size2))) &
-                (M_STATIC_CAST(intptr_t, ptr2) -
-                 (M_STATIC_CAST(intptr_t, ptr1) + M_STATIC_CAST(intptr_t, size1)))) < 0;
+        return ((M_STATIC_CAST(intptr_t, ptr1) - (M_STATIC_CAST(intptr_t, ptr2) + M_STATIC_CAST(intptr_t, size2))) &
+                (M_STATIC_CAST(intptr_t, ptr2) - (M_STATIC_CAST(intptr_t, ptr1) + M_STATIC_CAST(intptr_t, size1)))) < 0;
     }
 
     // bounds checked version of memmove, similar to memmove_s
@@ -669,17 +667,10 @@ extern "C"
     // memmove does)
     errno_t safe_memcmove(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t count);
 
-    //Like the C23 function memalignment()
+    // Like the C23 function memalignment()
     static M_INLINE size_t get_memalignment(const void* ptr)
     {
-        if (ptr == M_NULLPTR)
-        {
-            return SIZE_T_C(0);
-        }
-        else
-        {
-            return M_STATIC_CAST(uintptr_t, ptr) & M_STATIC_CAST(uintptr_t, -M_STATIC_CAST(intptr_t, ptr));
-        }
+        return M_STATIC_CAST(uintptr_t, ptr) & M_STATIC_CAST(uintptr_t, -M_STATIC_CAST(intptr_t, ptr));
     }
 
 #if defined(__cplusplus)

@@ -71,15 +71,15 @@ static int lin_file_filter(const struct dirent* entry, const char* stringMatch)
 static int release_file_filter(const struct dirent* entry)
 {
     // looks like almost all linux specific
-                                        // releases put it as -release
-    return lin_file_filter(entry, "-release"); 
+    // releases put it as -release
+    return lin_file_filter(entry, "-release");
 }
 
 static int version_file_filter(const struct dirent* entry)
 {
     // most, but not all do a _version, but some do a -, so this
-                                       // should work for both
-    return lin_file_filter(entry, "version"); 
+    // should work for both
+    return lin_file_filter(entry, "version");
 }
 
 // This is a simple function intended to resolve Clang-tidy warnings.
@@ -102,7 +102,7 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
 #define RELEASE_FILE_NAME_LENGTH 21
             DECLARE_ZERO_INIT_ARRAY(char, releasefile, RELEASE_FILE_NAME_LENGTH);
             // read this file and get the linux name
-            FILE* release = M_NULLPTR;
+            FILE*   release   = M_NULLPTR;
             errno_t fileerror = 0;
             if (etcRelease)
             {
@@ -166,10 +166,10 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
     char* etcFileMem = M_NULLPTR;
     if (dirent_entry_name)
     {
-        size_t fileNameLength = safe_strlen(dirent_entry_name) + safe_strlen("/etc/") + 1;
-        char*  fileName       = M_REINTERPRET_CAST(char*, safe_calloc(fileNameLength, sizeof(char)));
-        FILE*  release        = M_NULLPTR;
-        errno_t fileopenerr = 0;
+        size_t  fileNameLength = safe_strlen(dirent_entry_name) + safe_strlen("/etc/") + 1;
+        char*   fileName       = M_REINTERPRET_CAST(char*, safe_calloc(fileNameLength, sizeof(char)));
+        FILE*   release        = M_NULLPTR;
+        errno_t fileopenerr    = 0;
         if (fileName)
         {
             snprintf(fileName, fileNameLength, "/etc/%s", dirent_entry_name);
@@ -329,7 +329,7 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
     if (operatingSystemName)
     {
         // read this file and get the linux name
-        FILE* issue = M_NULLPTR;
+        FILE*   issue       = M_NULLPTR;
         errno_t fileopenerr = safe_fopen(&issue, "/etc/issue", "r");
         if (fileopenerr == 0 && issue)
         {
@@ -400,18 +400,12 @@ static bool get_Version_From_Uname_Str(const char* verStr,
         }
         while (success && versionoffset < versionCount && strscan)
         {
-            errno = 0; // clear this before we begin to make sure it isn't
-                       // holding some previous error-TJE
-            unsigned long value = strtoul(strscan, &endptr, 10);
-            if (strscan == endptr)
+            unsigned long value = 0UL;
+            if (0 != safe_strtoul(&value, strscan, &endptr, BASE_10_DECIMAL))
             {
                 // When this happens, the value read is zero and the conversion
                 // failed returning a zero. Most likely a prefix was missing to
                 // move past above.
-                break;
-            }
-            else if (value == ULONG_MAX && errno == ERANGE)
-            {
                 success = false;
                 break;
             }
@@ -477,6 +471,389 @@ static bool get_Version_From_Uname_Str(const char* verStr,
     }
 }
 
+static eReturnValues get_Linux_Ver_And_Name(ptrOSVersionNumber versionNumber,
+                                            char*              operatingSystemName,
+                                            struct utsname*    unixUname)
+{
+    eReturnValues ret              = SUCCESS;
+    bool          linuxOSNameFound = false;
+    uint8_t       linuxOSInfoCount = UINT8_C(0);
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 4);
+#define LINUX_OS_INFO_COUNT_MAX_METHODS_TO_ATTEMPT (3)
+    versionNumber->osVersioningIdentifier = OS_LINUX;
+    // linux kernels are versioned as
+    // kernel.major.minor-securityAndBugFixes-SomeString older linux
+    // kernels don't have the -securityAndBugFixes on the end
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".-", list, 4))
+    {
+        versionNumber->versionType.linuxVersion.kernelVersion             = list[0];
+        versionNumber->versionType.linuxVersion.majorVersion              = list[1];
+        versionNumber->versionType.linuxVersion.minorVersion              = list[2];
+        versionNumber->versionType.linuxVersion.securityAndBugFixesNumber = list[3];
+    }
+    else
+    {
+        // retry in case of old kernel
+        if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".-", list, 3))
+        {
+            versionNumber->versionType.linuxVersion.kernelVersion             = list[0];
+            versionNumber->versionType.linuxVersion.majorVersion              = list[1];
+            versionNumber->versionType.linuxVersion.minorVersion              = list[2];
+            versionNumber->versionType.linuxVersion.securityAndBugFixesNumber = 0;
+        }
+        else
+        {
+            ret = FAILURE;
+        }
+    }
+    while (!linuxOSNameFound && linuxOSInfoCount < LINUX_OS_INFO_COUNT_MAX_METHODS_TO_ATTEMPT)
+    {
+        switch (linuxOSInfoCount)
+        {
+        case 0:
+            linuxOSNameFound = get_Linux_Info_From_OS_Release_File(operatingSystemName);
+            break;
+        case 1:
+            linuxOSNameFound = get_Linux_Info_From_Distribution_Specific_Files(operatingSystemName);
+            break;
+        case 2:
+            linuxOSNameFound = get_Linux_Info_From_ETC_Issue(operatingSystemName);
+            break;
+        }
+        ++linuxOSInfoCount;
+    }
+    // if we couldn't find a name, set unknown linux os
+    if (!linuxOSNameFound && operatingSystemName)
+    {
+        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Linux OS");
+    }
+    return ret;
+}
+
+static eReturnValues get_FreeBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
+                                              char*              operatingSystemName,
+                                              struct utsname*    unixUname)
+{
+    eReturnValues ret = SUCCESS;
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
+    versionNumber->osVersioningIdentifier = OS_FREEBSD;
+    // FreeBSD version is stored as Major.Minor-SomeString
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, 2))
+    {
+        versionNumber->versionType.freeBSDVersion.majorVersion = list[0];
+        versionNumber->versionType.freeBSDVersion.minorVersion = list[1];
+    }
+    else
+    {
+        ret = FAILURE;
+    }
+    // set the OS Name
+    if (operatingSystemName)
+    {
+        if (ret != FAILURE)
+        {
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "FreeBSD %" PRIu16 ".%" PRIu16 "",
+                     versionNumber->versionType.freeBSDVersion.majorVersion,
+                     versionNumber->versionType.freeBSDVersion.minorVersion);
+        }
+        else
+        {
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown FreeBSD OS Version");
+        }
+    }
+    return ret;
+}
+
+static eReturnValues get_SunOS_Ver_And_Name(ptrOSVersionNumber versionNumber,
+                                            char*              operatingSystemName,
+                                            struct utsname*    unixUname)
+{
+    eReturnValues ret = SUCCESS;
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
+    versionNumber->osVersioningIdentifier = OS_SOLARIS;
+    // Solaris stores the SunOS version in release
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, 3))
+    {
+        versionNumber->versionType.solarisVersion.sunOSMajorVersion = list[0];
+        versionNumber->versionType.solarisVersion.sunOSMinorVersion = list[1];
+        versionNumber->versionType.solarisVersion.sunOSRevision     = list[2];
+    }
+    else
+    {
+        ret = FAILURE;
+    }
+    // set OS name as Solaris "unixUname.version" for the OS Name
+    if (operatingSystemName)
+    {
+        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Solaris %s", unixUname->version);
+    }
+    // The Solaris Version/name is stored in version
+    if (safe_strlen(unixUname->version) > 0 && safe_isdigit(unixUname->version[0]))
+    {
+        // set OS name as Solaris x.x
+        if (get_Version_From_Uname_Str(unixUname->version, M_NULLPTR, ".", list, 3))
+        {
+            versionNumber->versionType.solarisVersion.solarisMajorVersion = list[0];
+            versionNumber->versionType.solarisVersion.solarisMinorVersion = list[1];
+            versionNumber->versionType.solarisVersion.solarisRevision     = list[2];
+        }
+    }
+    return ret;
+}
+
+static eReturnValues get_Darwin_Ver_And_Name(ptrOSVersionNumber versionNumber,
+                                             char*              operatingSystemName,
+                                             struct utsname*    unixUname)
+{
+    eReturnValues ret = SUCCESS;
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
+    versionNumber->osVersioningIdentifier = OS_MACOSX;
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, 3))
+    {
+        versionNumber->versionType.macOSVersion.majorVersion = list[0];
+        versionNumber->versionType.macOSVersion.minorVersion = list[1];
+        versionNumber->versionType.macOSVersion.revision     = list[2];
+    }
+    else
+    {
+        ret = FAILURE;
+    }
+    // set the OS Name from the major numbers starting with "Puma"
+    // https://en.wikipedia.org/wiki/Darwin_(operating_system)
+    if (operatingSystemName)
+    {
+        switch (versionNumber->versionType.macOSVersion.majorVersion)
+        {
+        case 5: // puma
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.1 Puma");
+            break;
+        case 6: // jaguar
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.2 Jaguar");
+            break;
+        case 7: // panther
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.3 Panther");
+            break;
+        case 8: // tiger
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.4 Tiger");
+            break;
+        case 9: // leopard
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.5 Leopard");
+            break;
+        case 10: // snow leopard
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.6 Snow Leopard");
+            break;
+        case 11: // lion
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.7 Lion");
+            break;
+        case 12: // Mountain Lion
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.8 Mountain Lion");
+            break;
+        case 13: // mavericks
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.9 Mavericks");
+            break;
+        case 14: // Yosemite
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.10 Yosemite");
+            break;
+        case 15: // el capitan
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.11 El Capitan");
+            break;
+        default:
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Mac OS X Version");
+            break;
+        }
+    }
+    return ret;
+}
+
+static eReturnValues get_AIX_Ver_And_Name(ptrOSVersionNumber versionNumber,
+                                          char*              operatingSystemName,
+                                          struct utsname*    unixUname)
+{
+    eReturnValues ret                     = SUCCESS;
+    unsigned long temp                    = 0UL;
+    versionNumber->osVersioningIdentifier = OS_AIX;
+    if (0 == safe_strtoul(&temp, unixUname->version, M_NULLPTR, BASE_10_DECIMAL))
+    {
+        versionNumber->versionType.aixVersion.majorVersion = M_STATIC_CAST(uint16_t, temp);
+    }
+    if (0 == safe_strtoul(&temp, unixUname->version, M_NULLPTR, BASE_10_DECIMAL))
+    {
+        versionNumber->versionType.aixVersion.minorVersion = M_STATIC_CAST(uint16_t, temp);
+    }
+    if (operatingSystemName)
+    {
+        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "AIX %" PRIu16 ".%" PRIu16 "",
+                 versionNumber->versionType.aixVersion.majorVersion,
+                 versionNumber->versionType.aixVersion.minorVersion);
+    }
+    return ret;
+}
+
+static eReturnValues get_Dragonfly_Ver_And_Name(ptrOSVersionNumber versionNumber,
+                                                char*              operatingSystemName,
+                                                struct utsname*    unixUname)
+{
+    eReturnValues ret = SUCCESS;
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
+    versionNumber->osVersioningIdentifier = OS_DRAGONFLYBSD;
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, 2))
+    {
+        versionNumber->versionType.dragonflyVersion.majorVersion = list[0];
+        versionNumber->versionType.dragonflyVersion.minorVersion = list[1];
+        if (operatingSystemName)
+        {
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Dragonfly BSD %" PRIu16 ".%" PRIu16 "",
+                     versionNumber->versionType.dragonflyVersion.majorVersion,
+                     versionNumber->versionType.dragonflyVersion.minorVersion);
+        }
+    }
+    else
+    {
+        ret = FAILURE;
+        if (operatingSystemName)
+        {
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Dragonfly BSD Version");
+        }
+    }
+    return ret;
+}
+
+static eReturnValues get_OpenBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
+                                              char*              operatingSystemName,
+                                              struct utsname*    unixUname)
+{
+    eReturnValues ret                     = SUCCESS;
+    unsigned long temp                    = 0UL;
+    versionNumber->osVersioningIdentifier = OS_OPENBSD;
+    if (0 == safe_strtoul(&temp, unixUname->version, M_NULLPTR, BASE_10_DECIMAL))
+    {
+        versionNumber->versionType.openBSDVersion.majorVersion = M_STATIC_CAST(uint16_t, temp);
+    }
+    if (0 == safe_strtoul(&temp, unixUname->version, M_NULLPTR, BASE_10_DECIMAL))
+    {
+        versionNumber->versionType.openBSDVersion.minorVersion = M_STATIC_CAST(uint16_t, temp);
+    }
+    if (operatingSystemName)
+    {
+        snprintf(&operatingSystemName[0], OS_NAME_SIZE, "OpenBSD %" PRIu16 ".%" PRIu16 "",
+                 versionNumber->versionType.openBSDVersion.majorVersion,
+                 versionNumber->versionType.openBSDVersion.minorVersion);
+    }
+    return ret;
+}
+
+static eReturnValues get_NetBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
+                                             char*              operatingSystemName,
+                                             struct utsname*    unixUname)
+{
+    eReturnValues ret = SUCCESS;
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
+    versionNumber->osVersioningIdentifier = OS_NETBSD;
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, 3))
+    {
+        versionNumber->versionType.netBSDVersion.majorVersion = list[0];
+        versionNumber->versionType.netBSDVersion.minorVersion = list[1];
+        versionNumber->versionType.netBSDVersion.revision     = list[2];
+        if (operatingSystemName)
+        {
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "NetBSD %s", unixUname->release);
+        }
+    }
+    else
+    {
+        ret = FAILURE;
+        if (operatingSystemName)
+        {
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown NetBSD Version");
+        }
+    }
+    return ret;
+}
+
+static eReturnValues get_OSF1_Ver_And_Name(ptrOSVersionNumber versionNumber,
+                                           char*              operatingSystemName,
+                                           struct utsname*    unixUname)
+{
+    eReturnValues ret = SUCCESS;
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
+    versionNumber->osVersioningIdentifier = OS_TRU64;
+    if (get_Version_From_Uname_Str(unixUname->release, "V", ".", list, 2))
+    {
+        versionNumber->versionType.tru64Version.majorVersion = list[0];
+        versionNumber->versionType.tru64Version.minorVersion = list[1];
+        if (operatingSystemName)
+        {
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Tru64 %s", unixUname->release);
+        }
+    }
+    else
+    {
+        ret = FAILURE;
+        if (operatingSystemName)
+        {
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Tru64 Version");
+        }
+    }
+    return ret;
+}
+
+static eReturnValues get_HPUX_Ver_And_Name(ptrOSVersionNumber versionNumber,
+                                           char*              operatingSystemName,
+                                           struct utsname*    unixUname)
+{
+    eReturnValues ret = SUCCESS;
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
+    versionNumber->osVersioningIdentifier = OS_HPUX;
+    if (get_Version_From_Uname_Str(unixUname->release, "B.", ".", list, 2))
+    {
+        versionNumber->versionType.hpuxVersion.majorVersion = list[0];
+        versionNumber->versionType.hpuxVersion.minorVersion = list[1];
+        if (operatingSystemName)
+        {
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "HP-UX %" PRIu16 ".%" PRIu16 "",
+                     versionNumber->versionType.hpuxVersion.majorVersion,
+                     versionNumber->versionType.hpuxVersion.minorVersion);
+        }
+    }
+    else
+    {
+        ret = FAILURE;
+        if (operatingSystemName)
+        {
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown HP-UX Version");
+        }
+    }
+    return ret;
+}
+
+static eReturnValues get_VMKernel_Ver_And_Name(ptrOSVersionNumber versionNumber,
+                                               char*              operatingSystemName,
+                                               struct utsname*    unixUname)
+{
+    eReturnValues ret = SUCCESS;
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
+    versionNumber->osVersioningIdentifier = OS_ESX;
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, 3))
+    {
+        versionNumber->versionType.esxiVersion.majorVersion = list[0];
+        versionNumber->versionType.esxiVersion.minorVersion = list[1];
+        versionNumber->versionType.esxiVersion.revision     = list[2];
+        if (operatingSystemName)
+        {
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "ESXi %s", unixUname->release);
+        }
+    }
+    else
+    {
+        ret = FAILURE;
+        if (operatingSystemName)
+        {
+            snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown ESXi Version");
+        }
+    }
+    return ret;
+}
+
 // code is written based on the table in this link
 // https://en.wikipedia.org/wiki/Uname This code is not complete for all
 // operating systems. I only added in support for the ones we are most
@@ -493,325 +870,50 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
     safe_memset(&unixUname, sizeof(struct utsname), 0, sizeof(struct utsname));
     if (0 == uname(&unixUname))
     {
-        convert_String_To_Upper_Case(unixUname.sysname);
-        if (strcmp("LINUX", unixUname.sysname) == 0) // some OSs like Android or ESX may fall into here, so this
-                                                     // section may need expansion if that happens
+        if (strcasecmp("Linux", unixUname.sysname) == 0) // some OSs like Android or ESX may fall into here, so this
+                                                         // section may need expansion if that happens
         {
-            bool    linuxOSNameFound = false;
-            uint8_t linuxOSInfoCount = UINT8_C(0);
-#define LINUX_OS_INFO_COUNT_MAX_METHODS_TO_ATTEMPT (3)
-            versionNumber->osVersioningIdentifier = OS_LINUX;
-            // linux kernels are versioned as
-            // kernel.major.minor-securityAndBugFixes-SomeString older linux
-            // kernels don't have the -securityAndBugFixes on the end
-            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 4);
-            if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".-", list, 4))
-            {
-                versionNumber->versionType.linuxVersion.kernelVersion             = list[0];
-                versionNumber->versionType.linuxVersion.majorVersion              = list[1];
-                versionNumber->versionType.linuxVersion.minorVersion              = list[2];
-                versionNumber->versionType.linuxVersion.securityAndBugFixesNumber = list[3];
-            }
-            else
-            {
-                // retry in case of old kernel
-                if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".-", list, 3))
-                {
-                    versionNumber->versionType.linuxVersion.kernelVersion             = list[0];
-                    versionNumber->versionType.linuxVersion.majorVersion              = list[1];
-                    versionNumber->versionType.linuxVersion.minorVersion              = list[2];
-                    versionNumber->versionType.linuxVersion.securityAndBugFixesNumber = 0;
-                }
-                else
-                {
-                    ret = FAILURE;
-                }
-            }
-            while (!linuxOSNameFound && linuxOSInfoCount < LINUX_OS_INFO_COUNT_MAX_METHODS_TO_ATTEMPT)
-            {
-                switch (linuxOSInfoCount)
-                {
-                case 0:
-                    linuxOSNameFound = get_Linux_Info_From_OS_Release_File(operatingSystemName);
-                    break;
-                case 1:
-                    linuxOSNameFound = get_Linux_Info_From_Distribution_Specific_Files(operatingSystemName);
-                    break;
-                case 2:
-                    linuxOSNameFound = get_Linux_Info_From_ETC_Issue(operatingSystemName);
-                    break;
-                }
-                ++linuxOSInfoCount;
-            }
-            // if we couldn't find a name, set unknown linux os
-            if (!linuxOSNameFound && operatingSystemName)
-            {
-                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Linux OS");
-            }
+            ret = get_Linux_Ver_And_Name(versionNumber, operatingSystemName, &unixUname);
         }
-        else if (strcmp("FREEBSD", unixUname.sysname) == 0)
+        else if (strcasecmp("FreeBSD", unixUname.sysname) == 0)
         {
-            versionNumber->osVersioningIdentifier = OS_FREEBSD;
-            // FreeBSD version is stored as Major.Minor-SomeString
-            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
-            if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".", list, 2))
-            {
-                versionNumber->versionType.freeBSDVersion.majorVersion = list[0];
-                versionNumber->versionType.freeBSDVersion.minorVersion = list[1];
-            }
-            else
-            {
-                ret = FAILURE;
-            }
-            // set the OS Name
-            if (operatingSystemName)
-            {
-                if (ret != FAILURE)
-                {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "FreeBSD %" PRIu16 ".%" PRIu16 "",
-                             versionNumber->versionType.freeBSDVersion.majorVersion,
-                             versionNumber->versionType.freeBSDVersion.minorVersion);
-                }
-                else
-                {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown FreeBSD OS Version");
-                }
-            }
+            ret = get_FreeBSD_Ver_And_Name(versionNumber, operatingSystemName, &unixUname);
         }
-        else if (strcmp("SUNOS", unixUname.sysname) == 0)
+        else if (strcasecmp("SunOS", unixUname.sysname) == 0)
         {
-            versionNumber->osVersioningIdentifier = OS_SOLARIS;
-            // Solaris stores the SunOS version in release
-            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
-            if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".", list, 3))
-            {
-                versionNumber->versionType.solarisVersion.sunOSMajorVersion = list[0];
-                versionNumber->versionType.solarisVersion.sunOSMinorVersion = list[1];
-                versionNumber->versionType.solarisVersion.sunOSRevision     = list[2];
-            }
-            else
-            {
-                ret = FAILURE;
-            }
-            // set OS name as Solaris "unixUname.version" for the OS Name
-            if (operatingSystemName)
-            {
-                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Solaris %s", unixUname.version);
-            }
-            // The Solaris Version/name is stored in version
-            if (safe_strlen(unixUname.version) > 0 && safe_isdigit(unixUname.version[0]))
-            {
-                // set OS name as Solaris x.x
-                if (get_Version_From_Uname_Str(unixUname.version, M_NULLPTR, ".", list, 3))
-                {
-                    versionNumber->versionType.solarisVersion.solarisMajorVersion = list[0];
-                    versionNumber->versionType.solarisVersion.solarisMinorVersion = list[1];
-                    versionNumber->versionType.solarisVersion.solarisRevision     = list[2];
-                }
-            }
+            ret = get_SunOS_Ver_And_Name(versionNumber, operatingSystemName, &unixUname);
         }
-        else if (strcmp("DARWIN", unixUname.sysname) == 0) // Mac OSX
+        else if (strcasecmp("DARWIN", unixUname.sysname) == 0) // Mac OSX
         {
-            versionNumber->osVersioningIdentifier = OS_MACOSX;
-            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
-            if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".", list, 3))
-            {
-                versionNumber->versionType.macOSVersion.majorVersion = list[0];
-                versionNumber->versionType.macOSVersion.minorVersion = list[1];
-                versionNumber->versionType.macOSVersion.revision     = list[2];
-            }
-            else
-            {
-                ret = FAILURE;
-            }
-            // set the OS Name from the major numbers starting with "Puma"
-            // https://en.wikipedia.org/wiki/Darwin_(operating_system)
-            if (operatingSystemName)
-            {
-                switch (versionNumber->versionType.macOSVersion.majorVersion)
-                {
-                case 5: // puma
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.1 Puma");
-                    break;
-                case 6: // jaguar
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.2 Jaguar");
-                    break;
-                case 7: // panther
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.3 Panther");
-                    break;
-                case 8: // tiger
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.4 Tiger");
-                    break;
-                case 9: // leopard
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.5 Leopard");
-                    break;
-                case 10: // snow leopard
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.6 Snow Leopard");
-                    break;
-                case 11: // lion
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.7 Lion");
-                    break;
-                case 12: // Mountain Lion
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.8 Mountain Lion");
-                    break;
-                case 13: // mavericks
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.9 Mavericks");
-                    break;
-                case 14: // Yosemite
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.10 Yosemite");
-                    break;
-                case 15: // el capitan
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.11 El Capitan");
-                    break;
-                default:
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Mac OS X Version");
-                    break;
-                }
-            }
+            ret = get_Darwin_Ver_And_Name(versionNumber, operatingSystemName, &unixUname);
         }
-        else if (strcmp("AIX", unixUname.sysname) == 0)
+        else if (strcasecmp("AIX", unixUname.sysname) == 0)
         {
-            versionNumber->osVersioningIdentifier = OS_AIX;
-            versionNumber->versionType.aixVersion.majorVersion =
-                C_CAST(uint16_t, strtoul(unixUname.version, M_NULLPTR, 10));
-            versionNumber->versionType.aixVersion.minorVersion =
-                C_CAST(uint16_t, strtoul(unixUname.release, M_NULLPTR, 10));
-            if (operatingSystemName)
-            {
-                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "AIX %" PRIu16 ".%" PRIu16 "",
-                         versionNumber->versionType.aixVersion.majorVersion,
-                         versionNumber->versionType.aixVersion.minorVersion);
-            }
+            ret = get_AIX_Ver_And_Name(versionNumber, operatingSystemName, &unixUname);
         }
-        else if (strcmp("DRAGONFLY", unixUname.sysname) == 0)
+        else if (strcasecmp("DRAGONFLY", unixUname.sysname) == 0)
         {
-            versionNumber->osVersioningIdentifier = OS_DRAGONFLYBSD;
-            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
-            if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".", list, 2))
-            {
-                versionNumber->versionType.dragonflyVersion.majorVersion = list[0];
-                versionNumber->versionType.dragonflyVersion.minorVersion = list[1];
-                if (operatingSystemName)
-                {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Dragonfly BSD %" PRIu16 ".%" PRIu16 "",
-                             versionNumber->versionType.dragonflyVersion.majorVersion,
-                             versionNumber->versionType.dragonflyVersion.minorVersion);
-                }
-            }
-            else
-            {
-                ret = FAILURE;
-                if (operatingSystemName)
-                {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Dragonfly BSD Version");
-                }
-            }
+            ret = get_Dragonfly_Ver_And_Name(versionNumber, operatingSystemName, &unixUname);
         }
-        else if (strcmp("OPENBSD", unixUname.sysname) == 0)
+        else if (strcasecmp("OPENBSD", unixUname.sysname) == 0)
         {
-            versionNumber->osVersioningIdentifier = OS_OPENBSD;
-            versionNumber->versionType.openBSDVersion.majorVersion =
-                C_CAST(uint16_t, strtoul(unixUname.version, M_NULLPTR, 10));
-            versionNumber->versionType.openBSDVersion.minorVersion =
-                C_CAST(uint16_t, strtoul(unixUname.release, M_NULLPTR, 10));
-            if (operatingSystemName)
-            {
-                snprintf(&operatingSystemName[0], OS_NAME_SIZE, "OpenBSD %" PRIu16 ".%" PRIu16 "",
-                         versionNumber->versionType.openBSDVersion.majorVersion,
-                         versionNumber->versionType.openBSDVersion.minorVersion);
-            }
+            ret = get_OpenBSD_Ver_And_Name(versionNumber, operatingSystemName, &unixUname);
         }
-        else if (strcmp("NETBSD", unixUname.sysname) == 0)
+        else if (strcasecmp("NETBSD", unixUname.sysname) == 0)
         {
-            versionNumber->osVersioningIdentifier = OS_NETBSD;
-            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
-            if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".", list, 3))
-            {
-                versionNumber->versionType.netBSDVersion.majorVersion = list[0];
-                versionNumber->versionType.netBSDVersion.minorVersion = list[1];
-                versionNumber->versionType.netBSDVersion.revision     = list[2];
-                if (operatingSystemName)
-                {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "NetBSD %s", unixUname.release);
-                }
-            }
-            else
-            {
-                ret = FAILURE;
-                if (operatingSystemName)
-                {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown NetBSD Version");
-                }
-            }
+            ret = get_NetBSD_Ver_And_Name(versionNumber, operatingSystemName, &unixUname);
         }
-        else if (strcmp("OSF1", unixUname.sysname) == 0)
+        else if (strcasecmp("OSF1", unixUname.sysname) == 0)
         {
-            versionNumber->osVersioningIdentifier = OS_TRU64;
-            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
-            if (get_Version_From_Uname_Str(unixUname.release, "V", ".", list, 2))
-            {
-                versionNumber->versionType.tru64Version.majorVersion = list[0];
-                versionNumber->versionType.tru64Version.minorVersion = list[1];
-                if (operatingSystemName)
-                {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Tru64 %s", unixUname.release);
-                }
-            }
-            else
-            {
-                ret = FAILURE;
-                if (operatingSystemName)
-                {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Tru64 Version");
-                }
-            }
+            ret = get_OSF1_Ver_And_Name(versionNumber, operatingSystemName, &unixUname);
         }
-        else if (strcmp("HP-UX", unixUname.sysname) == 0)
+        else if (strcasecmp("HP-UX", unixUname.sysname) == 0)
         {
-            versionNumber->osVersioningIdentifier = OS_HPUX;
-            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
-            if (get_Version_From_Uname_Str(unixUname.release, "B.", ".", list, 2))
-            {
-                versionNumber->versionType.hpuxVersion.majorVersion = list[0];
-                versionNumber->versionType.hpuxVersion.minorVersion = list[1];
-                if (operatingSystemName)
-                {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "HP-UX %" PRIu16 ".%" PRIu16 "",
-                             versionNumber->versionType.hpuxVersion.majorVersion,
-                             versionNumber->versionType.hpuxVersion.minorVersion);
-                }
-            }
-            else
-            {
-                ret = FAILURE;
-                if (operatingSystemName)
-                {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown HP-UX Version");
-                }
-            }
+            ret = get_HPUX_Ver_And_Name(versionNumber, operatingSystemName, &unixUname);
         }
-        else if (strcmp("VMKERNEL", unixUname.sysname) == 0)
+        else if (strcasecmp("VMKERNEL", unixUname.sysname) == 0)
         {
-            versionNumber->osVersioningIdentifier = OS_ESX;
-            DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
-            if (get_Version_From_Uname_Str(unixUname.release, M_NULLPTR, ".", list, 3))
-            {
-                versionNumber->versionType.esxiVersion.majorVersion = list[0];
-                versionNumber->versionType.esxiVersion.minorVersion = list[1];
-                versionNumber->versionType.esxiVersion.revision     = list[2];
-                if (operatingSystemName)
-                {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "ESXi %s", unixUname.release);
-                }
-            }
-            else
-            {
-                ret = FAILURE;
-                if (operatingSystemName)
-                {
-                    snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown ESXi Version");
-                }
-            }
+            ret = get_VMKernel_Ver_And_Name(versionNumber, operatingSystemName, &unixUname);
         }
         else // don't know what unix this is so return not supported
         {
@@ -862,26 +964,28 @@ static bool get_User_Name_From_ID(uid_t userID, char** userName)
     {
         if (userID == ROOT_UID_VAL)
         {
-            *userName = strdup("root");
-            success   = true;
+            if (0 == safe_strdup(userName, "root"))
+            {
+                success = true;
+            }
         }
         else
         {
 #    if defined(POSIX_2001) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
             // use reentrant call instead.
             char*          rawBuffer = M_NULLPTR;
-            long           dataSize  = -1;
+            long           dataSize  = -1L;
             int            error     = 0;
             struct passwd  userInfoBuf;
             struct passwd* userInfo = M_NULLPTR;
 #        if defined(_SC_GETPW_R_SIZE_MAX)
             dataSize = sysconf(_SC_GETPW_R_SIZE_MAX);
 #        endif
-            if (dataSize == -1)
+            if (dataSize == -1L)
             {
                 // some linux man pages suggest 16384
-                dataSize = 1024; // start with this, will increment it below if
-                                 // it fails to read
+                dataSize = 1024L; // start with this, will increment it below if
+                                  // it fails to read
             }
             rawBuffer = M_REINTERPRET_CAST(char*, safe_calloc(dataSize, sizeof(char)));
             if (rawBuffer)
@@ -891,7 +995,7 @@ static bool get_User_Name_From_ID(uid_t userID, char** userName)
                     // this means there was not enough memory allocated in order
                     // to read this. realloc with more memory and try again
                     char* temp = M_NULLPTR;
-                    dataSize *= 2;
+                    dataSize *= 2L;
                     temp = safe_realloc(rawBuffer, dataSize);
                     if (!temp)
                     {

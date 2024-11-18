@@ -31,7 +31,9 @@
 #if defined(_WIN32)
 #    include "windows_version_detect.h"
 #    include <WinBase.h>
+DISABLE_WARNING_4255
 #    include <windows.h>
+RESTORE_WARNING_4255
 #else
 #    include <unistd.h>
 #endif
@@ -122,8 +124,8 @@ M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment)
     // printf("\trequested allocation: size = %zu  alignment = %zu\n", size,
     // alignment);
     if (size && (alignment > SIZE_T_C(0)) &&
-        ((alignment & (alignment - SIZE_T_C(1))) == SIZE_T_C(0))) // Check that we have a size to allocate and enforce that the
-                                              // alignment value is a power of 2.
+        ((alignment & (alignment - SIZE_T_C(1))) == SIZE_T_C(0))) // Check that we have a size to allocate and enforce
+                                                                  // that the alignment value is a power of 2.
     {
         size_t requiredExtraBytes = sizeof(size_t); // We will store the original beginning address in
                                                     // front of the return data pointer
@@ -159,27 +161,21 @@ void free_aligned(void* ptr)
 #if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined(USING_C11) && !defined(_MSC_VER)
     // just call free
     free(ptr);
-    return;
 #elif !defined(UEFI_C_SOURCE) && (defined(POSIX_2001) || defined(VMK_CROSS_COMP))
     // POSIX.1-2001 and higher define support for posix_memalign
     // Just call free
     free(ptr);
-    return;
 #elif !defined(UEFI_C_SOURCE) && (defined(__INTEL_COMPILER) || defined(__ICC))
     //_mm_free
     _mm_free(ptr);
-    return;
 #elif !defined(UEFI_C_SOURCE) && defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
     // mingw32 has an aligned malloc function that is not available in mingw64.
     __mingw_aligned_free(ptr);
-    return;
 #elif !defined(UEFI_C_SOURCE) && (defined(_MSC_VER) || defined(__MINGW64_VERSION_MAJOR))
     // use the MS _aligned_free function
     _aligned_free(ptr);
-    return;
 #elif !defined(UEFI_C_SOURCE) && (defined(__linux__) || defined(_sun))
     free(ptr);
-    return;
 #else
     // original pointer
     if (ptr)
@@ -190,7 +186,6 @@ void free_aligned(void* ptr)
         tempPtr = C_CAST(void*, *(C_CAST(size_t*, tempPtr)));
         free(tempPtr);
     }
-    return;
 #endif // UEFI vs compiler/OS specific capabilities check
 }
 
@@ -305,7 +300,8 @@ bool is_Empty(const void* ptrData, size_t lengthBytes)
         }
         if (byteByByte)
         {
-            for (size_t iter = SIZE_T_C(0), iterEnd = lengthBytes - SIZE_T_C(1); iter < lengthBytes && iterEnd >= iter; ++iter, --iterEnd)
+            for (size_t iter = SIZE_T_C(0), iterEnd = lengthBytes - SIZE_T_C(1); iter < lengthBytes && iterEnd >= iter;
+                 ++iter, --iterEnd)
             {
                 if (byteptr[iter] != UINT8_C(0) || byteptr[iterEnd] != UINT8_C(0))
                 {
@@ -424,11 +420,12 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
             errno = error;
             return error;
         }
-#    if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
-        memset_explicit(dest, ch, count);//NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-#    elif (defined(__NetBSD__) && defined(__NetBSD_Version__) &&                                                       \
-           __NetBSD_Version >= 7000000000L /* net bsd version 7.0 and up*/) ||                                         \
-        defined(HAVE_EXPLICIT_MEMSET)
+#if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
+        memset_explicit(dest, ch,
+                        count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#elif (defined(__NetBSD__) && defined(__NetBSD_Version__) &&                                                           \
+       __NetBSD_Version >= 7000000000L /* net bsd version 7.0 and up*/) ||                                             \
+    defined(HAVE_EXPLICIT_MEMSET)
         // https://man.netbsd.org/NetBSD-8.0/explicit_memset.3
         // https://docs.oracle.com/cd/E88353_01/html/E37843/explicit-memset-3c.html
         // NOTE: Solaris 11.4.12 added this, but I cannot find it in illumos
@@ -436,56 +433,60 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
         //       Illumos does not list this, but lists explicit_bzero in their
         //       manual. Not sure what version to use, so letting meson detect
         //       and set the HAVE_...macros
-        explicit_memset(dest, ch, count);//NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-#    else
+        explicit_memset(dest, ch,
+                        count);        // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#else
         // last attempts to prevent optimization as best we can
-#        if defined(__GNUC__) || defined(__clang__)
-        memset(dest, ch, count);//NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#    if defined(__GNUC__) || defined(__clang__)
+        memset(dest, ch, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         asm volatile("" ::: "memory");
-#        elif defined(HAS_BUILT_IN_CLEAR_CACHE)
-        memset(dest, ch, count);//NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#    elif defined(HAS_BUILT_IN_CLEAR_CACHE)
+        memset(dest, ch, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         __builtin___clear_cache(dest, dest + count);
-#        elif defined(_MSC_VER)
-#            if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                          \
-                (defined(HAVE_MSFT_SECURE_ZERO_MEMORY2) ||                                                             \
-                 (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
+#    elif defined(_MSC_VER)
+#        if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                              \
+            (defined(HAVE_MSFT_SECURE_ZERO_MEMORY2) ||                                                                 \
+             (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
         // SecureZeroMemory2 calls FillVolatileMemory which we can use here to
         // do the same thing
-        FillVolatileMemory(dest, count, ch);//NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-#            elif defined(_M_AMD64) || (!defined(_M_CEE) && defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
+        FillVolatileMemory(dest, count,
+                           ch); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#        elif defined(_M_AMD64) || (!defined(_M_CEE) && defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
         // NOTE: Using the securezeromemory implementation in this case
         volatile char* vptr = M_REINTERPRET_CAST(volatile char*, dest);
-#                if defined(_M_AMD64) && !defined(_M_ARM64EC)
-        __stosb(M_REINTERPRET_CAST(unsigned char*, M_STATIC_CAST(unsigned __int64, vptr)), M_STATIC_CAST(unsigned char, ch), count);//NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-#                else
+#            if defined(_M_AMD64) && !defined(_M_ARM64EC)
+        __stosb(M_REINTERPRET_CAST(unsigned char*, M_STATIC_CAST(unsigned __int64, vptr)),
+                M_STATIC_CAST(unsigned char, ch),
+                count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#            else
         while (count)
         {
-#                    if !defined(_M_CEE) && (defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
+#                if !defined(_M_CEE) && (defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
             __iso_volatile_store8(vptr, M_STATIC_CAST(unsigned char, ch));
-#                    else
+#                else
             *vptr = M_STATIC_CAST(unsigned char, ch);
-#                    endif
+#                endif
             vptr++;
             count--;
         }
-#                endif
-#            else
+#            endif
+#        else
         /*if you hit this case for some reason, you will need to add an include
          * for <intrin.h>. Not currently done as SecureZeroMemory is used
          * instead*/
         /* https://learn.microsoft.com/en-us/cpp/intrinsics/readwritebarrier?view=msvc-170
          */
-        memset(dest, ch, count);//NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        memset(dest, ch, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         _ReadWriteBarrier();
-#            endif
-#        else /* compiler does not support a method above as a barrier, so use                                         \
-                 this as a final way to try and prevent optimization */
+#        endif
+#    else /* compiler does not support a method above as a barrier, so use                                             \
+             this as a final way to try and prevent optimization */
         // one idea on the web is this ugly volatile function pointer to memset
         // to stop the compiler optimization
         void* (*const volatile no_optimize_memset)(void*, int, size_t) = memset;
         no_optimize_memset(dest, ch, count);
-#        endif
 #    endif
+#endif
         errno = error;
         return error;
     }
@@ -809,7 +810,7 @@ M_FUNC_ATTR_MALLOC void* safe_reallocf_page_aligned(void** block, size_t origina
 errno_t safe_memmove(void* dest, rsize_t destsz, const void* src, rsize_t count)
 {
     errno_t error = 0;
-    errno = 0;
+    errno         = 0;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -852,15 +853,15 @@ errno_t safe_memmove(void* dest, rsize_t destsz, const void* src, rsize_t count)
     {
         if (destsz > RSIZE_T_C(0) && count > RSIZE_T_C(0))
         {
-#    if defined(HAVE_MSFT_SECURE_LIB)
+#if defined(HAVE_MSFT_SECURE_LIB)
             // This is microsoft's version, but it does not do the same checks
             // as C11 standard. Even though we've already done all the checks we
             // need we are calling this because it prevents additional warning
             // from Microsoft's compiler.
             memmove_s(dest, destsz, src, count);
-#    else
-            memmove(dest, src, count);// NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-#    endif //HAVE_MSFT_SECURE_LIB
+#else
+            memmove(dest, src, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#endif // HAVE_MSFT_SECURE_LIB
         }
         errno = 0;
         return error;
@@ -872,7 +873,7 @@ errno_t safe_memmove(void* dest, rsize_t destsz, const void* src, rsize_t count)
 errno_t safe_memcpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t count)
 {
     errno_t error = 0;
-    errno = 0;
+    errno         = 0;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -922,15 +923,15 @@ errno_t safe_memcpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRIC
     {
         if (destsz > RSIZE_T_C(0) && count > RSIZE_T_C(0))
         {
-#    if defined(HAVE_MSFT_SECURE_LIB)
+#if defined(HAVE_MSFT_SECURE_LIB)
             // This is microsoft's version, but it does not do the same checks
             // as C11 standard. Even though we've already done all the checks we
             // need we are calling this because it prevents additional warning
             // from Microsoft's compiler.
             memcpy_s(dest, destsz, src, count);
-#    else
-            memcpy(dest, src, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-#    endif //HAVE_MSFT_SECURE_LIB
+#else
+            memcpy(dest, src, count);  // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#endif // HAVE_MSFT_SECURE_LIB
         }
         errno = error;
         return error;
@@ -940,7 +941,7 @@ errno_t safe_memcpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRIC
 errno_t safe_memccpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t count)
 {
     errno_t error = 0;
-    errno = 0;
+    errno         = 0;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -1012,7 +1013,7 @@ errno_t safe_memccpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRI
 errno_t safe_memcmove(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t count)
 {
     errno_t error = 0;
-    errno = 0;
+    errno         = 0;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;

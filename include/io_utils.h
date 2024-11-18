@@ -224,22 +224,24 @@ extern "C"
     {
         va_list args;
         va_start(args, format);
-        //Disabling this warning in GCC and Clang for now. It only seems to show in Windows at the moment-TJE
-#       if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
-#            pragma clang diagnostic push
-#            pragma clang diagnostic ignored "-Wformat-nonliteral"
-#       elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.1*/
-#            pragma GCC diagnostic push
-#            pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#       endif
-        // NOLINTBEGIN(clang-analyzer-valist.Uninitialized,clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) - false positive
+        // Disabling this warning in GCC and Clang for now. It only seems to show in Windows at the moment-TJE
+#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.1*/
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+        // NOLINTBEGIN(clang-analyzer-valist.Uninitialized,clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        // - false positive
         int n = vsnprintf(buf, bufsize, format, args);
-        // NOLINTEND(clang-analyzer-valist.Uninitialized,clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) - false positive
-#       if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
-#            pragma clang diagnostic pop
-#       elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.1*/
-#            pragma GCC diagnostic pop
-#       endif
+        // NOLINTEND(clang-analyzer-valist.Uninitialized,clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        // - false positive
+#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#    pragma clang diagnostic pop
+#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.1*/
+#    pragma GCC diagnostic pop
+#endif
 
         va_end(args);
 
@@ -392,14 +394,48 @@ extern "C"
         M_STATIC_CAST(void, fflush(stderr));
     }
 
-    errno_t safe_fopen(FILE* M_RESTRICT *M_RESTRICT streamptr, const char *M_RESTRICT filename, const char *M_RESTRICT mode);
+    errno_t safe_fopen(FILE* M_RESTRICT* M_RESTRICT streamptr,
+                       const char* M_RESTRICT       filename,
+                       const char* M_RESTRICT       mode);
 
-    errno_t safe_freopen(FILE* M_RESTRICT *M_RESTRICT newstreamptr, const char *M_RESTRICT filename, const char *M_RESTRICT mode, FILE *M_RESTRICT stream);
+    errno_t safe_freopen(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
+                         const char* M_RESTRICT       filename,
+                         const char* M_RESTRICT       mode,
+                         FILE* M_RESTRICT             stream);
 
-    errno_t safe_tmpfile(FILE * M_RESTRICT *M_RESTRICT streamptr);
+    errno_t safe_tmpfile(FILE* M_RESTRICT* M_RESTRICT streamptr);
 
-    //Recommend using getline implementation instead as it will dynamically allocate the string for you.-TJE
-    char* safe_gets(char *str, rsize_t n);
+    // Recommend using getline implementation instead as it will dynamically allocate the string for you.-TJE
+    // NOTE: Max size of n is limited to INT_MAX in many cases. Windows with secure lib can support RSIZE_MAX
+    char* safe_gets(char* str, rsize_t n);
+
+// These are for specifying the base for conversion in strto(u)l(l) functions
+#define BASE_0_AUTO     (0)
+#define BASE_2_BINARY   (2)
+#define BASE_8_OCTAL    (8)
+#define BASE_10_DECIMAL (10)
+#define BASE_16_HEX     (16)
+#define BASE_36_MAX     (36) // this is the max base required by the standards for strtol type functions
+
+    // These safe string to long conversion functions check for NULL ptr on str and value.
+    // They properly check errno for range errors, and detect invalid conversions too
+    errno_t safe_strtol(long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base);
+
+    errno_t safe_strtoll(long long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base);
+
+    errno_t safe_strtoul(unsigned long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base);
+
+    errno_t safe_strtoull(unsigned long long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base);
+
+    errno_t safe_strtoimax(intmax_t* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base);
+
+    errno_t safe_strtoumax(uintmax_t* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base);
+
+    errno_t safe_strtof(float* value, const char* M_RESTRICT str, char** M_RESTRICT endp);
+
+    errno_t safe_strtod(double* value, const char* M_RESTRICT str, char** M_RESTRICT endp);
+
+    errno_t safe_strtold(long double* value, const char* M_RESTRICT str, char** M_RESTRICT endp);
 
 #if defined(__cplusplus)
 }

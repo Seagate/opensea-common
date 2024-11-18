@@ -131,7 +131,11 @@ extern "C"
     //  Exit:
     //
     //-----------------------------------------------------------------------------
-    void print_Time_To_Screen(uint8_t* years, uint16_t* days, uint8_t* hours, uint8_t* minutes, uint8_t* seconds);
+    void print_Time_To_Screen(const uint8_t*  years,
+                              const uint16_t* days,
+                              const uint8_t*  hours,
+                              const uint8_t*  minutes,
+                              const uint8_t*  seconds);
 
     // returns number of milliseconds since Jan 1, 1970 UTC
     // If an error occurs, returns zero

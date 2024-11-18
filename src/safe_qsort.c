@@ -125,7 +125,7 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
     }
     else
     {
-        errno         = 0;
+        errno = 0;
         if (count > RSIZE_T_C(0))
         {
             char*  pa         = M_NULLPTR;
@@ -142,8 +142,8 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
 
             /* if there are less than 2 elements, then sorting is not needed */
             if (count < RSIZE_T_C(2)) // This had __predict_false which is not available
-                           // here in cross-platform code. TODO: predictfalse
-                           // attribute type macro
+                                      // here in cross-platform code. TODO: predictfalse
+                                      // attribute type macro
             {
                 errno = error;
                 return error;
@@ -152,9 +152,11 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
             swap_cnt = 0;
             if (count < RSIZE_T_C(7))
             {
-                for (pm = M_REINTERPRET_CAST(char*, ptr) + size; pm < M_REINTERPRET_CAST(char*, ptr) + count * size; pm += size)
+                for (pm = M_REINTERPRET_CAST(char*, ptr) + size; pm < M_REINTERPRET_CAST(char*, ptr) + count * size;
+                     pm += size)
                 {
-                    for (pl = pm; pl > M_REINTERPRET_CAST(char*, ptr) && compare(pl - size, pl, context) > 0; pl -= size)
+                    for (pl = pm; pl > M_REINTERPRET_CAST(char*, ptr) && compare(pl - size, pl, context) > 0;
+                         pl -= size)
                     {
                         swapfunc(pl, pl - size, size);
                     }
@@ -215,9 +217,11 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
             if (swap_cnt == 0)
             {
                 /* Switch to insertion sort */
-                for (pm = M_REINTERPRET_CAST(char*, ptr) + size; pm < M_REINTERPRET_CAST(char*, ptr) + count * size; pm += size)
+                for (pm = M_REINTERPRET_CAST(char*, ptr) + size; pm < M_REINTERPRET_CAST(char*, ptr) + count * size;
+                     pm += size)
                 {
-                    for (pl = pm; pl > M_REINTERPRET_CAST(char*, ptr) && compare(pl - size, pl, context) > 0; pl -= size)
+                    for (pl = pm; pl > M_REINTERPRET_CAST(char*, ptr) && compare(pl - size, pl, context) > 0;
+                         pl -= size)
                     {
                         swapfunc(pl, pl - size, size);
                     }
@@ -227,7 +231,8 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
             }
 
             pn = M_REINTERPRET_CAST(char*, ptr) + count * size;
-            d1 = M_Min(M_STATIC_CAST(uintptr_t, pa) - M_STATIC_CAST(uintptr_t, ptr), M_STATIC_CAST(uintptr_t, pb) - M_STATIC_CAST(uintptr_t, pa));
+            d1 = M_Min(M_STATIC_CAST(uintptr_t, pa) - M_STATIC_CAST(uintptr_t, ptr),
+                       M_STATIC_CAST(uintptr_t, pb) - M_STATIC_CAST(uintptr_t, pa));
             vecswap(ptr, pb - d1, d1);
             /*
              * Cast size to preserve signedness of right-hand side of MIN()
@@ -240,7 +245,8 @@ errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn 
             //               The comment above is from the original source and
             //               seems reasonable to support adding these casts-TJE
             d1 = M_STATIC_CAST(size_t, M_Min(M_STATIC_CAST(intptr_t, pd) - M_STATIC_CAST(intptr_t, pc),
-                                      M_STATIC_CAST(intptr_t, pn) - M_STATIC_CAST(intptr_t, pd) - M_STATIC_CAST(ssize_t, size)));
+                                             M_STATIC_CAST(intptr_t, pn) - M_STATIC_CAST(intptr_t, pd) -
+                                                 M_STATIC_CAST(ssize_t, size)));
             vecswap(pb, pn - d1, d1);
 
             d1 = M_STATIC_CAST(uintptr_t, pb) - M_STATIC_CAST(uintptr_t, pa);

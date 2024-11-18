@@ -119,7 +119,7 @@ extern "C"
 
     bool is_size_t_max(size_t val);
 
-    double convert_128bit_to_double(uint8_t* pData);
+    double convert_128bit_to_double(const uint8_t* pData);
 
     //-----------------------------------------------------------------------------
     //

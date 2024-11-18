@@ -23,7 +23,9 @@
 #include "type_conversion.h"
 #include "windows_version_detect.h"
 
+DISABLE_WARNING_4255
 #include <windows.h> // NOLINT(clang-diagnostic-error)
+RESTORE_WARNING_4255
 
 #include <strsafe.h> //needed in the code written to get the windows version since I'm using a Microsoft provided string concatenation call-tje
 #if defined(ENABLE_READ_USERNAME)

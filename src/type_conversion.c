@@ -428,13 +428,13 @@ void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* decimalValue)
     *decimalValue = sign * pow(2.0, exponent) * mantisa;
 }
 
-double convert_128bit_to_double(uint8_t* pData)
+double convert_128bit_to_double(const uint8_t* pData)
 {
-    double result = 0;
+    double result = 0.0;
     int    i      = 0;
     for (i = 0; i < 16; i++)
     {
-        result *= 256;
+        result *= 256.0;
         result += pData[15 - i];
     }
     return result;

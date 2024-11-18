@@ -110,7 +110,7 @@ static void* safe_lwork(const void* key, const void* base, size_t* nelp, size_t 
         errno = error;
         return M_NULLPTR;
     }
-     else if (*nelp > RSIZE_MAX)
+    else if (*nelp > RSIZE_MAX)
     {
         error = ERANGE;
         if (addelem == 0)
@@ -254,7 +254,7 @@ static void* safe_lwork_context(const void*  key,
         errno = error;
         return M_NULLPTR;
     }
-     else if (*nelp > RSIZE_MAX)
+    else if (*nelp > RSIZE_MAX)
     {
         error = ERANGE;
         if (addelem == 0)
