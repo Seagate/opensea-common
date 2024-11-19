@@ -772,8 +772,12 @@ char* safe_String_Token(char* M_RESTRICT       str,
     {
         return M_NULLPTR;
     }
-    while (*strmax > RSIZE_T_C(0) && *tokiter && !strchr(delim, *tokiter))
+    while (*strmax > 0 && *tokiter)
     {
+        if (strchr(delim, *tokiter))
+        {
+            break; // Found a delimiter
+        }
         tokiter++;
         (*strmax)--;
     }
