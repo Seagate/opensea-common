@@ -707,7 +707,7 @@ char* safe_String_Token(char* M_RESTRICT       str,
 {
     errno_t error = 0;
     char*   token = M_NULLPTR;
-    char*   end   = M_NULLPTR;
+    char*   tokiter = M_NULLPTR;
     if (strmax == M_NULLPTR)
     {
         error = EINVAL;
@@ -767,19 +767,17 @@ char* safe_String_Token(char* M_RESTRICT       str,
         }
     }
     token = *saveptr;
-    end   = *saveptr + *strmax;
-    if (*end == '\0')
+    tokiter = *saveptr;
+    if (*strmax == RSIZE_T_C(0))
     {
-        *saveptr = end;
-        *strmax  = C_CAST(uintptr_t, end) - C_CAST(uintptr_t, str);
-        return str;
+        return M_NULLPTR;
     }
-    while (*strmax > RSIZE_T_C(0) && *token && !strchr(delim, *token))
+    while (*strmax > RSIZE_T_C(0) && *tokiter && !strchr(delim, *tokiter))
     {
-        token++;
+        tokiter++;
         (*strmax)--;
     }
-    if (*strmax == RSIZE_T_C(0) && *token != '\0')
+    if (*strmax == RSIZE_T_C(0) && *tokiter != '\0')
     {
         error = ERANGE;
         invoke_Constraint_Handler("safe_String_Token: reached end of source "
@@ -788,16 +786,15 @@ char* safe_String_Token(char* M_RESTRICT       str,
         errno = error;
         return M_NULLPTR;
     }
-    if (*token)
+    if (*tokiter)
     {
-        *token   = '\0';
-        *saveptr = token + 1;
+        *tokiter = '\0';
+        *saveptr = tokiter + 1;
         (*strmax)--;
     }
     else
     {
-        *saveptr = end;
-        token    = M_NULLPTR;
+        *saveptr = tokiter;
     }
     return token;
 }
