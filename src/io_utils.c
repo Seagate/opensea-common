@@ -1416,7 +1416,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToCon
             {
                 result = false;
             }
-            else if (!is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+            else if (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+            {
+                result = false;
+            }
+            else if (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE)
             {
                 result = false;
             }
@@ -1449,7 +1453,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConver
             {
                 result = false;
             }
-            else if (!is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+            else if (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+            {
+                result = false;
+            }
+            else if (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE)
             {
                 result = false;
             }
@@ -1557,7 +1565,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char*       strToConver
             {
                 result = false;
             }
-            else if (!is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+            else if (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+            {
+                result = false;
+            }
+            else if (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE)
             {
                 result = false;
             }
@@ -1590,7 +1602,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert
             {
                 result = false;
             }
-            else if (!is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+            else if (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+            {
+                result = false;
+            }
+            else if (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE)
             {
                 result = false;
             }
@@ -1751,7 +1767,11 @@ M_NODISCARD bool get_And_Validate_Float_Input(const char*       strToConvert,
         {
             result = false;
         }
-        else if (!is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+        else if (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+        {
+            result = false;
+        }
+        else if (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE)
         {
             result = false;
         }
@@ -1775,7 +1795,11 @@ M_NODISCARD bool get_And_Validate_Double_Input(const char*       strToConvert,
         {
             result = false;
         }
-        else if (!is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+        else if (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+        {
+            result = false;
+        }
+        else if (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE)
         {
             result = false;
         }
@@ -1799,7 +1823,11 @@ M_NODISCARD bool get_And_Validate_LDouble_Input(const char*       strToConvert,
         {
             result = false;
         }
-        else if (!is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+        else if (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
+        {
+            result = false;
+        }
+        else if (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE)
         {
             result = false;
         }
