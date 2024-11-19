@@ -736,6 +736,7 @@ char* safe_String_Token(char* M_RESTRICT       str,
         *strmax  = safe_strnlen(str, RSIZE_MAX);
         if (*strmax == RSIZE_T_C(0))
         {
+            *saveptr = M_NULLPTR;
             error = ERANGE;
             invoke_Constraint_Handler("safe_String_Token: *strmax = 0 on initial call", M_NULLPTR, error);
             errno = error;
@@ -749,6 +750,7 @@ char* safe_String_Token(char* M_RESTRICT       str,
                                                       // if it found NULL terminator or not to make this
                                                       // check match annex k
         {
+            *saveptr = M_NULLPTR;
             error = ERANGE;
             invoke_Constraint_Handler("safe_String_Token: *strmax > RSIZE_MAX on initial call", M_NULLPTR, error);
             errno = error;
@@ -760,6 +762,7 @@ char* safe_String_Token(char* M_RESTRICT       str,
         // non-initial call of the function
         if (*saveptr == M_NULLPTR)
         {
+            *saveptr = M_NULLPTR;
             error = EINVAL;
             invoke_Constraint_Handler("safe_String_Token: *saveptr = NULL on non-initial call", M_NULLPTR, error);
             errno = error;
@@ -768,33 +771,33 @@ char* safe_String_Token(char* M_RESTRICT       str,
     }
     token = *saveptr;
     tokiter = *saveptr;
-    if (*strmax == RSIZE_T_C(0))
-    {
-        return M_NULLPTR;
-    }
-    while (*strmax > 0 && *tokiter)
+    while (*strmax > RSIZE_T_C(0) && *tokiter)
     {
         if (strchr(delim, *tokiter))
         {
             break; // Found a delimiter
         }
-        tokiter++;
-        (*strmax)--;
+        ++tokiter;
+        --(*strmax);
     }
-    if (*strmax == RSIZE_T_C(0) && *tokiter != '\0')
+    if (*strmax == RSIZE_T_C(0))
     {
-        error = ERANGE;
-        invoke_Constraint_Handler("safe_String_Token: reached end of source "
-                                  "string without encountering null terminator",
-                                  M_NULLPTR, error);
-        errno = error;
+        if (*tokiter != '\0')
+        {
+            *saveptr = M_NULLPTR;
+            error    = ERANGE;
+            invoke_Constraint_Handler("safe_String_Token: reached end of source "
+                                      "string without encountering null terminator",
+                                      M_NULLPTR, error);
+            errno = error;
+        }
         return M_NULLPTR;
     }
     if (*tokiter)
     {
         *tokiter = '\0';
         *saveptr = tokiter + 1;
-        (*strmax)--;
+        --(*strmax);
     }
     else
     {
