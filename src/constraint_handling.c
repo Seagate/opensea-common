@@ -39,25 +39,6 @@ M_NORETURN void safe_abort_handler(const char* M_RESTRICT msg, M_ATTR_UNUSED voi
 {
     fprintf(stderr, "abort_handler_s: %s\n", msg);
     fprintf(stderr, "Error code: %d\n", error);
-    if (ptr != M_NULLPTR)
-    {
-        constraintErrorInfo *errorInfo = M_REINTERPRET_CAST(constraintErrorInfo*, ptr);
-        fprintf(stderr, "Error location: \n");
-        if (errorInfo->file)
-        {
-            fprintf(stderr, "\tFile: %s", errorInfo->file);
-            fprintf(stderr, "\tLine: %u", errorInfo->line);
-        }
-        if (errorInfo->function)
-        {
-            fprintf(stderr, "\tFunction: %s", errorInfo->function);
-        }
-        if (errorInfo->expression)
-        {
-            fprintf(stderr, "\tExpression: %s", errorInfo->expression);
-        }
-        fprintf(stderr, "\n");
-    }
     flush_stderr();
     abort();
 }
@@ -107,25 +88,6 @@ void safe_warn_handler(const char* M_RESTRICT msg, M_ATTR_UNUSED void* M_RESTRIC
 {
     fprintf(stderr, "warn_handler: %s\n", msg);
     fprintf(stderr, "Error code: %d\n", error);
-    if (ptr != M_NULLPTR)
-    {
-        constraintErrorInfo *errorInfo = M_REINTERPRET_CAST(constraintErrorInfo*, ptr);
-        fprintf(stderr, "Error location: \n");
-        if (errorInfo->file)
-        {
-            fprintf(stderr, "\tFile: %s", errorInfo->file);
-            fprintf(stderr, "\tLine: %u", errorInfo->line);
-        }
-        if (errorInfo->function)
-        {
-            fprintf(stderr, "\tFunction: %s", errorInfo->function);
-        }
-        if (errorInfo->expression)
-        {
-            fprintf(stderr, "\tExpression: %s", errorInfo->expression);
-        }
-        fprintf(stderr, "\n");
-    }
     flush_stderr();
 }
 

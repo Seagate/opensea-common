@@ -35,19 +35,6 @@ extern "C"
         ERR_IGNORE // does not output any information
     } eConstraintHandler;
 
-    // This is passed by the inline safe_ that work similar to _s C11 annex K
-    // functions to provide more specific error information This is the "ptr" field
-    // in the invoke_Constraint_Handler function.
-    typedef struct sconstraintErrorInfo
-    {
-        const char* expression; // This is the specific error condition check that
-                                // failed in the function as a string
-        const char* file;       // file that called the function with error
-        const char* function;   // function name in the file that called the function
-                                // with an error
-        const int line;         // line number that the bad call was on with invalid parameters
-    } constraintErrorInfo;
-
     eConstraintHandler set_Constraint_Handler(eConstraintHandler handler);
 
     // calls the installed constraint handler. If one is not already set, it will

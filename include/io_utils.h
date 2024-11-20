@@ -222,6 +222,7 @@ extern "C"
     // TODO: a safe_snprintf that works as C11 annex k specifies.
     FUNC_ATTR_PRINTF(3, 4) static M_INLINE int snprintf_err_handle(char* buf, size_t bufsize, const char* format, ...)
     {
+        int n = 0;
         va_list args;
         va_start(args, format);
         // Disabling this warning in GCC and Clang for now. It only seems to show in Windows at the moment-TJE
@@ -234,7 +235,7 @@ extern "C"
 #endif
         // NOLINTBEGIN(clang-analyzer-valist.Uninitialized,clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         // - false positive
-        int n = vsnprintf(buf, bufsize, format, args);
+        n = vsnprintf(buf, bufsize, format, args);
         // NOLINTEND(clang-analyzer-valist.Uninitialized,clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         // - false positive
 #if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
@@ -248,8 +249,7 @@ extern "C"
         if (n < 0 || int_to_sizet(n) >= bufsize)
         {
             errno                         = EINVAL;
-            constraintErrorInfo errorInfo = {"n < 0 || n >= (bufsize)", __FILE__, __func__, __LINE__};
-            invoke_Constraint_Handler("snprintf_error_handler_macro: error in snprintf", &errorInfo, errno);
+            invoke_Constraint_Handler("snprintf_error_handler_macro: error in snprintf", M_NULLPTR, EINVAL);
         }
         return n;
     }
