@@ -103,7 +103,7 @@ M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment)
 #elif !defined(UEFI_C_SOURCE) && defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
     // mingw32 has an aligned malloc function that is not available in mingw64.
     return __mingw_aligned_malloc(size, alignment);
-#elif !defined(UEFI_C_SOURCE) && (defined(_MSC_VER) || defined(__MINGW64_VERSION_MAJOR))
+#elif !defined(UEFI_C_SOURCE) && (IS_MSVC_VERSION(MSVC_2005) || defined(__MINGW64_VERSION_MAJOR))
     // use the MS _aligned_malloc function. Mingw64 will support this as well
     // from what I can find - TJE
     return _aligned_malloc(size, alignment);
@@ -171,7 +171,7 @@ void free_aligned(void* ptr)
 #elif !defined(UEFI_C_SOURCE) && defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
     // mingw32 has an aligned malloc function that is not available in mingw64.
     __mingw_aligned_free(ptr);
-#elif !defined(UEFI_C_SOURCE) && (defined(_MSC_VER) || defined(__MINGW64_VERSION_MAJOR))
+#elif !defined(UEFI_C_SOURCE) && (IS_MSVC_VERSION(MSVC_2005) || defined(__MINGW64_VERSION_MAJOR))
     // use the MS _aligned_free function
     _aligned_free(ptr);
 #elif !defined(UEFI_C_SOURCE) && (defined(__linux__) || defined(_sun))
@@ -437,13 +437,13 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
                         count);        // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #else
         // last attempts to prevent optimization as best we can
-#    if defined(__GNUC__) || defined(__clang__)
+#    if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
         memset(dest, ch, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         asm volatile("" ::: "memory");
 #    elif defined(HAS_BUILT_IN_CLEAR_CACHE)
         memset(dest, ch, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         __builtin___clear_cache(dest, dest + count);
-#    elif defined(_MSC_VER)
+#    elif IS_MSVC_VERSION(MSVC_2005)
 #        if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                              \
             (defined(HAVE_MSFT_SECURE_ZERO_MEMORY2) ||                                                                 \
              (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))

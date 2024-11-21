@@ -209,7 +209,7 @@ extern "C"
 
 // Microsoft doesn't have snprintf compliant with C99 until VS2015, so make our
 // own definition using what microsoft does have available.
-#if defined(_MSC_VER) && _MSC_VER <= 1800 && defined _WIN32
+#if defined(_MSC_VER) && _MSC_VER <= MSVC_2013 && defined _WIN32
     int snprintf(char* buffer, size_t bufsz, const char* format, ...);
 
     int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args);
@@ -222,33 +222,22 @@ extern "C"
     // TODO: a safe_snprintf that works as C11 annex k specifies.
     FUNC_ATTR_PRINTF(3, 4) static M_INLINE int snprintf_err_handle(char* buf, size_t bufsize, const char* format, ...)
     {
-        int n = 0;
+        int     n = 0;
         va_list args;
         va_start(args, format);
         // Disabling this warning in GCC and Clang for now. It only seems to show in Windows at the moment-TJE
-#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
-#    pragma clang diagnostic push
-#    pragma clang diagnostic ignored "-Wformat-nonliteral"
-#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.1*/
-#    pragma GCC diagnostic push
-#    pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#endif
+        DISABLE_WARNING_FORMAT_NONLITERAL
         // NOLINTBEGIN(clang-analyzer-valist.Uninitialized,clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         // - false positive
         n = vsnprintf(buf, bufsize, format, args);
         // NOLINTEND(clang-analyzer-valist.Uninitialized,clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         // - false positive
-#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
-#    pragma clang diagnostic pop
-#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.1*/
-#    pragma GCC diagnostic pop
-#endif
-
+        RESTORE_WARNING_FORMAT_NONLITERAL
         va_end(args);
 
         if (n < 0 || int_to_sizet(n) >= bufsize)
         {
-            errno                         = EINVAL;
+            errno = EINVAL;
             invoke_Constraint_Handler("snprintf_error_handler_macro: error in snprintf", M_NULLPTR, EINVAL);
         }
         return n;

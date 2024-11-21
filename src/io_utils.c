@@ -2225,8 +2225,8 @@ M_NODISCARD FUNC_ATTR_PRINTF(2, 0) int vasprintf(char** M_RESTRICT strp, const c
 
 #endif // asprintf, vasprintf
 
-#if defined(_MSC_VER) && _MSC_VER <= 1800 && defined _WIN32
-int                                                  snprintf(char* buffer, size_t bufsz, const char* format, ...)
+#if defined(_MSC_VER) && _MSC_VER <= MSVC_2013 && defined _WIN32
+int                                                       snprintf(char* buffer, size_t bufsz, const char* format, ...)
 {
     int     charCount = -1;
     va_list args;
@@ -2317,7 +2317,7 @@ int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
     }
     return charcount;
 }
-#endif // defined (_MSC_VER) && _MSC_VER <= 1800 && defined _WIN32
+#endif // defined (_MSC_VER) && _MSC_VER <= MSVC_2013 && defined _WIN32
 
 void print_Return_Enum(const char* funcName, eReturnValues ret)
 {
@@ -3172,10 +3172,10 @@ errno_t safe_strtof(float* value, const char* M_RESTRICT str, char** M_RESTRICT 
         *value = strtof(str, useend);
         // Disable float equal because this is necessary to check for conversion errors from this function.
         // This is one of the only times this warning should ever be disabled.
-#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#if IS_CLANG_VERSION(3, 0)
 #    pragma clang diagnostic push
 #    pragma clang diagnostic ignored "-Wfloat-equal"
-#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.5*/
+#elif IS_GCC_VERSION(4, 5)
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
@@ -3188,9 +3188,9 @@ errno_t safe_strtof(float* value, const char* M_RESTRICT str, char** M_RESTRICT 
                 error = EINVAL;
             }
         }
-#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#if IS_CLANG_VERSION(3, 0)
 #    pragma clang diagnostic pop
-#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.5*/
+#elif IS_GCC_VERSION(4, 5)
 #    pragma GCC diagnostic pop
 #endif
     }
@@ -3226,10 +3226,10 @@ errno_t safe_strtod(double* value, const char* M_RESTRICT str, char** M_RESTRICT
         *value = strtod(str, useend);
         // Disable float equal because this is necessary to check for conversion errors from this function.
         // This is one of the only times this warning should ever be disabled.
-#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#if IS_CLANG_VERSION(3, 0)
 #    pragma clang diagnostic push
 #    pragma clang diagnostic ignored "-Wfloat-equal"
-#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.5*/
+#elif IS_GCC_VERSION(4, 5)
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
@@ -3242,9 +3242,9 @@ errno_t safe_strtod(double* value, const char* M_RESTRICT str, char** M_RESTRICT
                 error = EINVAL;
             }
         }
-#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#if IS_CLANG_VERSION(3, 0)
 #    pragma clang diagnostic pop
-#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.5*/
+#elif IS_GCC_VERSION(4, 5)
 #    pragma GCC diagnostic pop
 #endif
     }
@@ -3280,10 +3280,10 @@ errno_t safe_strtold(long double* value, const char* M_RESTRICT str, char** M_RE
         *value = strtold(str, useend);
         // Disable float equal because this is necessary to check for conversion errors from this function.
         // This is one of the only times this warning should ever be disabled.
-#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#if IS_CLANG_VERSION(3, 0)
 #    pragma clang diagnostic push
 #    pragma clang diagnostic ignored "-Wfloat-equal"
-#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.5*/
+#elif IS_GCC_VERSION(4, 5)
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
@@ -3296,9 +3296,9 @@ errno_t safe_strtold(long double* value, const char* M_RESTRICT str, char** M_RE
                 error = EINVAL;
             }
         }
-#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#if IS_CLANG_VERSION(3, 0)
 #    pragma clang diagnostic pop
-#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.5*/
+#elif IS_GCC_VERSION(4, 5)
 #    pragma GCC diagnostic pop
 #endif
     }

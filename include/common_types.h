@@ -347,7 +347,13 @@ typedef int32_t intptr_t;
 
 // A macro to help define packed structures in a way that best works with
 // different compilers
-#if defined(_MSC_VER) && !defined(__clang__)
+#if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
+#    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
+        typedef struct s_##name                                                                                        \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } __attribute__((packed, aligned(alignmentval))) name
+#elif IS_MSVC_VERSION(MSVC_2005) && !defined(__clang__)
 #    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
         __pragma(pack(push, alignmentval));                                                                            \
         typedef struct s_##name                                                                                        \
@@ -355,12 +361,6 @@ typedef int32_t intptr_t;
             __VA_ARGS__                                                                                                \
         } name;                                                                                                        \
         __pragma(pack(pop))
-#elif defined(__GNUC__) || defined(__clang__) || defined(__MINGW32__) || defined(__MINGW64__)
-#    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
-        typedef struct s_##name                                                                                        \
-        {                                                                                                              \
-            __VA_ARGS__                                                                                                \
-        } __attribute__((packed, aligned(alignmentval))) name
 #else
 #    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
         typedef struct s_##name                                                                                        \
@@ -373,7 +373,13 @@ typedef int32_t intptr_t;
 // just to pack as small as "possible" This is not exactly the same as providing
 // an alignment of 1 in GCC, but it is as close as MSVC can get to the same
 // behavior
-#if defined(_MSC_VER) && !defined(__clang__)
+#if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
+#    define M_PACKED_STRUCT(name, ...)                                                                                 \
+        typedef struct s_##name                                                                                        \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } __attribute__((packed)) name
+#elif IS_MSVC_VERSION(MSVC_2005) && !defined(__clang__)
 #    define M_PACKED_STRUCT(name, ...)                                                                                 \
         __pragma(pack(push, 1));                                                                                       \
         typedef struct s_##name                                                                                        \
@@ -381,12 +387,6 @@ typedef int32_t intptr_t;
             __VA_ARGS__                                                                                                \
         } name;                                                                                                        \
         __pragma(pack(pop))
-#elif defined(__GNUC__) || defined(__clang__) || defined(__MINGW32__) || defined(__MINGW64__)
-#    define M_PACKED_STRUCT(name, ...)                                                                                 \
-        typedef struct s_##name                                                                                        \
-        {                                                                                                              \
-            __VA_ARGS__                                                                                                \
-        } __attribute__((packed)) name
 #else
 #    define M_PACKED_STRUCT(name, ...)                                                                                 \
         typedef struct s_##name                                                                                        \
@@ -398,7 +398,7 @@ typedef int32_t intptr_t;
 #if !defined(USING_CPP98)
 // only use these methods in C
 // The C++ version is at the end of this file outside of the extern "C"
-#    if defined(__GNUC__)
+#    if IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0)
 // This is a GNU extension to zero initialize the array
 #        define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                   \
             type_name array_name[size] = {[0 ...((size)-1)] = 0}
@@ -512,10 +512,7 @@ typedef int32_t intptr_t;
 // std::decay<decltype((X))>::type but this may be
 // situational. Not sure...-TJE
 #    define M_TYPEOF(var) decltype(var)
-#elif defined(_MSC_VER) && _MSC_VER >= 1939
-// added in Visual Studio 2022 version 17.9 and later
-#    define M_TYPEOF(var) __typeof__(var)
-#elif defined(__clang__) || defined(__GNUC__)
+#elif IS_GCC_VERSION(2, 95) || IS_CLANG_VERSION(1, 0) || IS_MSVC_VERSION(MSVC_2022_17_9)
 // GCC 2 and later have typeof support so not even checking the version in this
 // case
 #    define M_TYPEOF(var) __typeof__(var)
@@ -651,23 +648,20 @@ typedef int32_t intptr_t;
 #    if defined(USING_CPP11)
 #        define M_NULLPTR nullptr
 #    else
-#        if defined(__clang__)
+#        if IS_CLANG_VERSION(1, 0)
 #            pragma clang diagnostic push
 #            pragma clang diagnostic ignored "-Wc++0x-compat" // treated as synonymn for Wc++11-compat, so
                                                               // use this for compatibility to old versions
 // gcc 4.7.x - present calls it c++11-compat
 // 4.3.6 - 4.6.4 calls it c++0x-compat
-#        elif defined(__GNUC__)
-#            if (defined(__GNUC__) && (__GNUC__ > 4) ||                                                                \
-                 (defined(__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 7))
-#                pragma GCC diagnostic push
-#                pragma GCC diagnostic ignored "-Wc++11-compat"
-#            elif (defined(__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 3)
-#                pragma GCC diagnostic push
-#                pragma GCC diagnostic ignored "-Wc++0x-compat"
-#            endif // no need to disable on older GCC as this warning didn't
-                   // exist
-#        endif     // GCC or Clang
+#        elif (IS_GCC_VERSION(4, 7))
+#            pragma GCC diagnostic push
+#            pragma GCC diagnostic ignored "-Wc++11-compat"
+#        elif (IS_GCC_FULL_VERSION(4, 3, 6)
+#            pragma GCC diagnostic push
+#            pragma GCC diagnostic ignored "-Wc++0x-compat"
+#        endif // no need to disable on older GCC as this warning didn't
+               // exist
 // NOTE: G++ defines M_NULLPTR as __null which should be safe
 //       https://gcc.gnu.org/onlinedocs/gcc-4.9.2/libstdc++/manual/manual/support.html#std.support.types.null
 //       Can add a special case to use M_NULLPTR macro instead if this template
@@ -689,13 +683,11 @@ const class nullptr_t
     void operator&() const;
 } nullptr = {};
 #        define M_NULLPTR nullptr
-#        if defined(__clang__)
+#        if IS_CLANG_VERSION(1, 0)
 #            pragma clang diagnostic pop
-#        elif defined(__GNUC__)
+#        elif IS_GCC_FULL_VERSION(4, 3, 6)
 // the pop can be simplified
-#            if __GNUC__ > 4 || (defined(__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 3)
-#                pragma GCC diagnostic pop
-#            endif
+#            pragma GCC diagnostic pop
 #        endif
 #    endif // C++11 check for nullptr
 #endif     // c++98 and no M_NULLPTR

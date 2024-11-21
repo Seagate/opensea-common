@@ -126,7 +126,7 @@ static bool win_File_Attributes_By_Name(const char* filename, LPWIN32_FILE_ATTRI
         {
             success = true;
         }
-        safe_free(&localPathToCheckBuf);
+        safe_free_tchar(&localPathToCheckBuf);
         localPathToCheck = M_NULLPTR;
     }
     return success;
@@ -204,6 +204,7 @@ static bool win_Get_File_Security_Info_By_Name(const char* filename, fileAttribu
             LocalFree(secDescriptor);
             secDescriptor = M_NULLPTR;
         }
+        safe_free_tchar(&localPathToCheckBuf);
     }
     return success;
 }
@@ -573,19 +574,19 @@ FUNC_ATTR_PRINTF(2, 3) static void set_dir_security_output_error_message(char** 
         va_list args;
         va_start(args, format);
 
-#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#if IS_CLANG_VERSION(3, 0)
 #    pragma clang diagnostic push
 #    pragma clang diagnostic ignored "-Wformat-nonliteral"
-#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.1*/
+#elif IS_GCC_VERSION(4, 1)
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
 
         int result = vasprintf(outputError, format, args);
 
-#if defined __clang__ && defined(__clang_major__) && __clang_major__ >= 3
+#if IS_CLANG_VERSION(3, 0)
 #    pragma clang diagnostic pop
-#elif defined __GNUC__ && __GNUC__ >= 4 /*technically 4.1*/
+#elif IS_GCC_VERSION(4, 1)
 #    pragma GCC diagnostic pop
 #endif
 
@@ -1277,6 +1278,7 @@ eReturnValues os_Create_Directory(const char* filePath)
         _stprintf_s(pathNameBuf, filePathLength, TEXT("%hs"), filePath);
 
         returnValue = CreateDirectory(pathName, M_NULLPTR);
+        safe_free_tchar(&pathNameBuf);
         if (returnValue == FALSE)
         {
 #if defined(_DEBUG)
@@ -1327,7 +1329,7 @@ eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_
     DECLARE_ZERO_INIT_ARRAY(TCHAR, fullPathOutput, OPENSEA_PATH_MAX);
     if (!localpathAndFileBuf)
     {
-        return false;
+        return FAILURE;
     }
     CONST TCHAR* localpathAndFile = &localpathAndFileBuf[0];
     _stprintf_s(localpathAndFileBuf, localPathAndFileLength, TEXT("%hs"), pathAndFile);
@@ -1335,6 +1337,7 @@ eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_
     if (result == 0 || result > OPENSEA_PATH_MAX)
     {
         // fatal error
+        safe_free_tchar(&localpathAndFileBuf);
         return FAILURE;
     }
 #if defined(UNICODE)
@@ -1357,8 +1360,10 @@ eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_
     if (!os_File_Exists(fullPath) && !os_Directory_Exists(fullPath))
     {
         safe_memset(fullPath, OPENSEA_PATH_MAX, 0, OPENSEA_PATH_MAX);
+        safe_free_tchar(&localpathAndFileBuf);
         return FAILURE;
     }
+    safe_free_tchar(&localpathAndFileBuf);
     // Future work, use this API instead???
     // https://learn.microsoft.com/en-us/windows/win32/api/pathcch/nf-pathcch-pathcchcanonicalizeex
     return SUCCESS;

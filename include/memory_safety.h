@@ -20,8 +20,10 @@
 #include "code_attributes.h"
 #include "common_types.h"
 #include "type_conversion.h"
+
 #include <stdlib.h>
 #include <string.h> //to pull in memset for anything that includes this file
+#include <wchar.h>
 
 #if defined(_WIN32)
 #    include "windows_version_detect.h" //for determining if securezeromemory2 is available and setting the pragma to include the required library.
@@ -182,6 +184,13 @@ extern "C"
 #elif !defined(__cplusplus)
 #    define safe_free(mem) safe_Free(M_REINTERPRET_CAST(void**, mem))
 #endif // C11
+
+#if defined (_WIN32)
+static M_INLINE void safe_free_tchar(TCHAR **str)
+{
+    safe_Free(M_REINTERPRET_CAST(void**, str));
+}
+#endif
 
 #if defined(POSIX_1990) || defined(BSD4_2)
     // special function for struct dirent since it is used often in the libs
@@ -670,7 +679,7 @@ extern "C"
     // Like the C23 function memalignment()
     static M_INLINE size_t get_memalignment(const void* ptr)
     {
-        return M_STATIC_CAST(uintptr_t, ptr) & M_STATIC_CAST(uintptr_t, -M_STATIC_CAST(intptr_t, ptr));
+        return M_STATIC_CAST(uintptr_t, ptr) & (~M_STATIC_CAST(uintptr_t, ptr) + 1);
     }
 
 #if defined(__cplusplus)

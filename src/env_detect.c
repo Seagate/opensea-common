@@ -293,13 +293,13 @@ eArchitecture get_Compiled_Architecture(void)
 // The reason for this is because in some situations this function is used and
 // in others it won't be. rather than making a complicated ifdef around it,
 // disabling the warning for now-TJE
-#if defined __clang__
+#if IS_CLANG_VERSION(1, 0)
 // clang specific because behavior can differ even with the GCC diagnostic being
 // "compatible" https
 // ://clang.llvm.org/docs/UsersManual.html#controlling-diagnostics-via-pragmas
 #    pragma clang diagnostic push
 #    pragma clang diagnostic ignored "-Wunused-function"
-#elif defined __GNUC__ && __GNUC__ >= 3
+#elif IS_GCC_VERSION(3, 0)
 // temporarily disable the warning for unused function
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wunused-function"
@@ -347,9 +347,9 @@ static eEndianness calculate_Endianness(void)
 }
 
 // reenable the unused function warning
-#if defined __clang__
+#if IS_CLANG_VERSION(1, 0)
 #    pragma clang diagnostic pop
-#elif defined __GNUC__ && __GNUC__ >= 3
+#elif IS_GCC_VERSION(3, 0)
 #    pragma GCC diagnostic pop
 #endif //__clang__, __GNUC__
 

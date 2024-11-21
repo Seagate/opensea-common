@@ -171,7 +171,7 @@ M_NODISCARD eEnvVarResult get_Environment_Variable(const char* environmentVariab
     if (is_Environment_Variable_List_Tampered() == false)
     {
         errno_t error = 0;
-#if defined(HAVE_GETENV_S) || (defined(_WIN32) && defined(_MSC_VER) && defined(__STDC_SECURE_LIB__)) ||                \
+#if defined(HAVE_GETENV_S) || defined(HAVE_MSFT_SECURE_LIB) ||                                                         \
     (defined(__STDC_LIB_EXT1__) && defined(__STDC_WANT_LIB_EXT1__))
         /* MSFT/C11 annex K adds getenv_s, so use it when available to check if
          * this exists */

@@ -30,6 +30,127 @@
 #    define __STDC_WANT_LIB_EXT2__ 1 // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 #endif
 
+// Macro to check GCC version(major.minor)
+#if defined(__GNUC__) && defined(__GNUC_MINOR__)
+#    define IS_GCC_VERSION(major, minor) ((__GNUC__ > (major) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor))))
+#else
+#    define IS_GCC_VERSION(major, minor) (0)
+#endif
+
+// Macro to check GCC full version (major.minor.patch)
+#if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__)
+#    define IS_GCC_FULL_VERSION(major, minor, patch)                                                                   \
+        ((__GNUC__ > (major) ||                                                                                        \
+          (__GNUC__ == (major) &&                                                                                      \
+           (__GNUC_MINOR__ > (minor) || (__GNUC_MINOR__ == (minor) && __GNUC_PATCHLEVEL__ >= (patch))))))
+#else
+#    define IS_GCC_FULL_VERSION(major, minor, patch) (0)
+#endif
+
+// Macro to check Clang version(major.minor)
+#if defined(__clang__)
+#    define IS_CLANG_VERSION(major, minor)                                                                             \
+        (__clang_major__ > (major) || (__clang_major__ == (major) && __clang_minor__ >= (minor)))
+
+// Macro to check Clang full version (major.minor.patch)
+#    define IS_CLANG_FULL_VERSION(major, minor, patch)                                                                 \
+        (__clang_major__ > (major) ||                                                                                  \
+         (__clang_major__ == (major) &&                                                                                \
+          (__clang_minor__ > (minor) || (__clang_minor__ == (minor) && __clang_patchlevel__ >= (patch)))))
+#else
+#    define IS_CLANG_VERSION(major, minor)             (0)
+#    define IS_CLANG_FULL_VERSION(major, minor, patch) (0)
+#endif
+
+// Macro to check MinGW32 version(major.minor)
+#if defined(__MINGW32__) && defined(__MINGW32_MAJOR_VERSION) && defined(__MINGW32_MINOR_VERSION)
+#    define IS_MINGW32_VERSION(major, minor)                                                                           \
+        ((__MINGW32_MAJOR_VERSION > (major) ||                                                                         \
+          (__MINGW32_MAJOR_VERSION == (major) && __MINGW32_MINOR_VERSION >= (minor))))
+#else
+#    define IS_MINGW32_VERSION(major, minor) (0)
+#endif
+
+// Macro to check MinGW-w64 version(major.minor)
+#if defined(__MINGW64__) && defined(__MINGW64_VERSION_MAJOR) && defined(__MINGW64_VERSION_MINOR)
+#    define IS_MINGW64_VERSION(major, minor)                                                                           \
+        ((__MINGW64_VERSION_MAJOR > (major) ||                                                                         \
+          (__MINGW64_VERSION_MAJOR == (major) && __MINGW64_VERSION_MINOR >= (minor))))
+#else
+#    define IS_MINGW64_VERSION(major, minor) (0)
+#endif
+
+// https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+// MSVC version macros to assist with version checks
+#define MSC_6 600
+#define MSC_7 700
+// "Visual" added to name for all following compilers
+#define MSVC_1_0        800
+#define MSVC_2_0        900
+#define MSVC_4_0        1000
+#define MSVC_4_1        1010
+#define MSVC_4_2        1020
+#define MSVC_5_0        1100
+#define MSVC_6_0        1200
+#define MSVC_2002       1300
+#define MSVC_2003       1310
+#define MSVC_2005       1400
+#define MSVC_2008       1500
+#define MSVC_2010       1600
+#define MSVC_2012       1700
+#define MSVC_2013       1800
+#define MSVC_2015       1900
+#define MSVC_2017       1910
+#define MSVC_2017_15_3  1911
+#define MSVC_2017_15_5  1912
+#define MSVC_2017_15_6  1913
+#define MSVC_2017_15_7  1914
+#define MSVC_2017_15_8  1915
+#define MSVC_2017_15_9  1916
+#define MSVC_2019       1920
+#define MSVC_2019_16_1  1921
+#define MSVC_2019_16_2  1922
+#define MSVC_2019_16_3  1923
+#define MSVC_2019_16_4  1924
+#define MSVC_2019_16_5  1925
+#define MSVC_2019_16_6  1926
+#define MSVC_2019_16_7  1927
+#define MSVC_2019_16_8  1928 // need full ver to differentiate
+#define MSVC_2019_16_9  1928 // need full ver to differentiate
+#define MSVC_2019_16_10 1929 // need full ver to differentiate
+#define MSVC_2019_16_11 1929 // need full ver to differentiate
+#define MSVC_2022_17_0  1930
+#define MSVC_2022_17_1  1931
+#define MSVC_2022_17_2  1932
+#define MSVC_2022_17_3  1933
+#define MSVC_2022_17_4  1934
+#define MSVC_2022_17_5  1935
+#define MSVC_2022_17_6  1936
+#define MSVC_2022_17_7  1937
+#define MSVC_2022_17_8  1938
+#define MSVC_2022_17_9  1939
+#define MSVC_2022_17_10 1940
+
+// Some specific full versions when needing to differentiate on the _MSC_FULL_VER macros
+#define MSVC_FULL_2019_16_8  192829333 // need full ver to differentiate
+#define MSVC_FULL_2019_16_9  192829910 // need full ver to differentiate
+#define MSVC_FULL_2019_16_10 192929917 // need full ver to differentiate
+#define MSVC_FULL_2019_16_11 192930129 // need full ver to differentiate
+
+// Macro to check MSVC version
+#if defined(_MSC_VER)
+#    define IS_MSVC_VERSION(msvcver) (_MSC_VER > (msvcver))
+#else
+#    define IS_MSVC_VERSION(msvcver) (0)
+#endif
+
+// Macro to check MSVC full version using _MSC_FULL_VER
+#if defined(_MSC_FULL_VER)
+#    define IS_MSVC_FULL_VERSION(msvcfullver) (_MSC_FULL_VER > (msvcfullver))
+#else
+#    define IS_MSVC_FULL_VERSION(msvcfullver) (0)
+#endif
+
 #if defined(__unix__) || defined(__APPLE__) || defined(HAVE_UNISTD)
 #    include <unistd.h> //to ensure we can check for POSIX versions
 #endif                  //__unix__ || __APPLE__ || HAVE_UNISTD
@@ -38,7 +159,7 @@
 #    include <sys/param.h> //can be helpful to do compile-time version/capabilities identification
 #endif                     //__unix__ || __APPLE__ || HAVE_SYSPARAM
 
-#if defined(_MSC_VER) && !defined(__clang__)
+#if IS_MSVC_VERSION(MSVC_2010) && !defined(__clang__)
 #    define DISABLE_WARNING_4255 _Pragma("warning(push)") _Pragma("warning(disable: 4255)")
 
 #    define RESTORE_WARNING_4255 _Pragma("warning(pop)")
@@ -74,7 +195,7 @@ extern "C"
 //       You may still need additional checks before using certain APIs or
 //       features since there are a lot of missing pieces in some Windows
 //       environements.
-#if defined(__STDC__)
+#if defined(__STDC__) || defined(__STDC_VERSION__)
 #    define USING_C89
 #    if defined(__STDC_VERSION__)
 #        if __STDC_VERSION__ >= 199409L
@@ -97,24 +218,24 @@ extern "C"
 // Set an approximate standard based on MSVC_VER
 // https://learn.microsoft.com/en-us/cpp/overview/compiler-versions?view=msvc-170#service-releases-starting-with-visual-studio-2017
 // https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
-#    if _MSC_VER >= 600
+#    if _MSC_VER >= MSC_6
 #        define USING_C89
-#    endif //_MSC_VER >= 600
+#    endif //_MSC_VER >= MSC_6
 #    if defined(_WCHAR_T_DEFINED)
 // https://learn.microsoft.com/en-us/cpp/build/reference/zc-wchar-t-wchar-t-is-native-type?view=msvc-170
 // NOTE: This may not be perfect, but it's the best thing I can find to
 // check-TJE
 #        define USING_C94
 #    endif //_WCHAR_T_DEFINED
-#    if _MSC_VER >= 1800
+#    if _MSC_VER >= MSVC_2013
 // NOTE: This is not exactly true, but close enough.
 //       MSFT does not support VLAs which is the biggest missing piece of C99
 //       support However, starting in MSVC2013 most everything else from C99 was
 //       implemented. Setting this since we don't use VLAs and don't need the
 //       missing math calls in our code base
 #        define USING_C99
-#    endif //_MSC_VER >= 1800
-#    if _MSC_VER >= 1920 && _MSC_VER < 1932 && defined(_MSC_EXTENSIONS) &&                                             \
+#    endif //_MSC_VER >= MSVC_2013
+#    if _MSC_VER >= MSVC_2019 && _MSC_VER < MSVC_2022_17_2 && defined(_MSC_EXTENSIONS) &&                              \
         (defined(__STDC_NO_VLA__) || defined(__STDC_NO_ATOMICS__) || defined(__STDC_NO_COMPLEX__) ||                   \
          defined(__STDC_NO_THREADS__))
 // NOTE: This is far from perfect.
@@ -212,19 +333,19 @@ extern "C"
 // V1 published in 1985
 // V2 published in 1987
 #    if _XOPEN_VERSION >= 3
-#        define USING_XPG3 // 1989
+#        define USING_XPG3 /* 1989 */
 #    endif
 #    if _XOPEN_VERSION >= 4
-#        define USING_XPG4 // 1992
+#        define USING_XPG4 /* 1992 */
 #        if defined(_XOPEN_UNIX)
-#            define USING_SUS // UNIX95
+#            define USING_SUS /* UNIX95 */
 #        endif
 #    endif
 #    if _XOPEN_VERSION >= 500
-#        define USING_SUS2 // UNIX98
+#        define USING_SUS2 /* UNIX98 */
 #    endif
 #    if _XOPEN_VERSION >= 600
-#        define USING_SUS3 // UNIX03
+#        define USING_SUS3 /* UNIX03 */
 #    endif
 #    if _XOPEN_VERSION >= 700
 #        define USING_SUS4
@@ -306,11 +427,11 @@ extern "C"
 #if defined(USING_C11) && !defined(HAVE_C11_GENERIC_SELECTION)
 // workaround for early C11 compilers that may still be used with this code to
 // disable generic selection when not supported
-#    if defined(__clang__) && __clang__ > 3 || (defined(__clang_minor__) && __clang__ == 3 && __clang_minor__ >= 3)
+#    if IS_GCC_VERSION(4, 9)
 #        define HAVE_C11_GENERIC_SELECTION
-#    elif defined(__GNUC__) && (__GNUC__ >= 5 || (defined(__GNUC_MINOR__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 9))
+#    elif IS_CLANG_VERSION(3, 3)
 #        define HAVE_C11_GENERIC_SELECTION
-#    elif defined(_MSC_VER) && _MSC_VER >= 1928
+#    elif IS_MSVC_VERSION(MSVC_2019_16_8)
 /* SDK version 10.0.20348.0 is technically when it arrived, but you also need
  * VS2019 16.8 and later */
 /*TODO: Move the Windows SDK version detection to this file and add that check
@@ -327,6 +448,58 @@ extern "C"
 #else // CPU Check
 #    define ENV_32BIT
 #endif // CPU Check
+
+    // NOTE: These warning disables are only needed in MSVC for the C11 generic min/max implementations.
+    // Without them you get a warning about applying a unary - on an unsigned type.
+    // More casts can be used to work around this, but this was easier since it is otherwise correct code -TJE
+    // If this becomes useful in other places, this should be moved to a different file, but since it's
+    // only used here, it can stay here for now. - TJE
+    // Started in VS2012???
+#if IS_MSVC_VERSION(MSVC_2012) && !defined(__clang__)
+#    define DISABLE_WARNING_4146 _Pragma("warning(push)") _Pragma("warning(disable: 4146)")
+#    define RESTORE_WARNING_4146 _Pragma("warning(pop)")
+#else
+#    define DISABLE_WARNING_4146
+#    define RESTORE_WARNING_4146
+#endif //_MSVC && !clang workaround for min/max macros
+
+#if IS_CLANG_VERSION(3, 0)
+#    define DISABLE_WARNING_SIGN_CONVERSION                                                                            \
+        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wsign-conversion\"")
+#    define RESTORE_WARNING_SIGN_CONVERSION _Pragma("clang diagnostic pop")
+#elif IS_GCC_VERSION(4, 3)
+#    define DISABLE_WARNING_SIGN_CONVERSION                                                                            \
+        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
+#    define RESTORE_WARNING_SIGN_CONVERSION _Pragma("GCC diagnostic pop")
+#else
+#    define DISABLE_WARNING_SIGN_CONVERSION
+#    define RESTORE_WARNING_SIGN_CONVERSION
+#endif
+
+#if IS_CLANG_VERSION(3, 0)
+#    define DISABLE_WARNING_ZERO_LENGTH_ARRAY                                                                          \
+        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wzero-length-array\"")
+#    define RESTORE_WARNING_ZERO_LENGTH_ARRAY _Pragma("clang diagnostic pop")
+#elif IS_MSVC_VERSION(MSVC_2005)
+#    define DISABLE_WARNING_ZERO_LENGTH_ARRAY _Pragma("warning(push)") _Pragma("warning(disable: 4200)")
+#    define RESTORE_WARNING_ZERO_LENGTH_ARRAY _Pragma("warning(pop)")
+#else
+#    define DISABLE_WARNING_ZERO_LENGTH_ARRAY
+#    define RESTORE_WARNING_ZERO_LENGTH_ARRAY
+#endif
+
+#if IS_CLANG_VERSION(3, 0)
+#    define DISABLE_WARNING_FORMAT_NONLITERAL                                                                          \
+        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wformat-nonliteral\"")
+#    define RESTORE_WARNING_FORMAT_NONLITERAL _Pragma("clang diagnostic pop")
+#elif IS_GCC_VERSION(4, 1)
+#    define DISABLE_WARNING_FORMAT_NONLITERAL                                                                          \
+        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"")
+#    define RESTORE_WARNING_FORMAT_NONLITERAL _Pragma("GCC diagnostic pop")
+#else
+#    define DISABLE_WARNING_FORMAT_NONLITERAL
+#    define RESTORE_WARNING_FORMAT_NONLITERAL
+#endif
 
 #if defined(__cplusplus)
 }

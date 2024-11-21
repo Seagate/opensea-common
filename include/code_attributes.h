@@ -21,6 +21,7 @@
 #pragma once
 
 #include "env_detect.h"
+#include "predef_env_detect.h"
 
 #if defined(_WIN32)
 #    include <sal.h>
@@ -32,7 +33,7 @@ extern "C"
 #endif //__cplusplus
 
 #if defined USING_C99
-#    if defined _MSC_VER && !defined USING_C11
+#    if IS_MSVC_VERSION(MSVC_2005) && !defined USING_C11
 #        define M_RESTRICT __restrict
 #    else
 #        define M_RESTRICT restrict
@@ -46,27 +47,26 @@ extern "C"
 #else // C
 #    if defined(USING_C99)
 #        define M_INLINE inline
-#    elif defined(_MSC_VER) /*version check? It's not clear when this was                                              \
-                               first supported*/
+#    elif IS_MSVC_VERSION(MSVC_6_0)
 #        define M_INLINE __inline
-#    elif defined(__GNUC__) || defined(__clang__)
+#    elif IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0)
 #        define M_INLINE __inline__
 #    else
 #        define M_INLINE /*inline support not available*/
 #    endif
 #endif // C++/C check
 
-#if defined(__GNUC__) || defined(__clang__)
+#if IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0)
 #    define M_NOINLINE __attribute__((noinline))
-#elif defined(_MSC_VER) // version check? It's not clear when this was first supported
+#elif IS_MSVC_VERSION(MSVC_6_0)
 #    define M_NOINLINE __declspec(noinline)
 #else
 #    define M_NOINLINE /*no support for noinline*/
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
+#if IS_GCC_FULL_VERSION(4, 1, 3) || IS_CLANG_VERSION(1, 0)
 #    define M_FORCEINLINE static M_INLINE __attribute__((always_inline))
-#elif defined(_MSC_VER) // version check? It's not clear when this was first supported
+#elif IS_MSVC_VERSION(MSVC_6_0)
 #    define M_FORCEINLINE __forceinline
 #else
 /*Support for forcing inline is not present, however lets try the "normal"
@@ -111,9 +111,7 @@ extern "C"
 #        endif
 #    endif
 #    if !defined M_FALLTHROUGH
-#        if (defined(__GNUC__) && __GNUC__ >= 7) ||                                                                    \
-            (defined __clang__ && defined(__clang_major__) && defined(__clang_minor__) &&                              \
-             (__clang_major__ > 3 || (__clang_major__ >= 3 && __clang_minor__ >= 9)))
+#        if (IS_GCC_VERSION(7, 0) || IS_CLANG_VERSION(3, 9))
 // GCC 7+ support the fallthrough attribute.
 // Clang 3.9+ has similar fallthrough support.
 #            define M_FALLTHROUGH                                                                                      \
@@ -191,7 +189,7 @@ extern "C"
 #    endif
 #    if !defined(M_ATTR_UNUSED) /*__has_attribute is available, but doesn't                                            \
                                    have what we need-TJE*/
-#        if defined(__GNUC__) || defined(__clang__)
+#        if IS_GCC_FULL_VERSION(2, 95, 3) || IS_CLANG_VERSION(1, 0)
 /* GCC as far back as 2.95.3's online manual supports unused on variables */
 #            define M_ATTR_UNUSED __attribute__((unused))
 #        elif defined(_MSC_VER)
@@ -212,7 +210,7 @@ extern "C"
  * for not knowing what to do. Seemed easiest to add this additional version
  * check to get rid of this error
  */
-#    if __cplusplus >= 201103L && defined __has_cpp_attribute
+#    if USING_CPP11 && defined __has_cpp_attribute
 #        if __has_cpp_attribute(deprecated)
 /*This is the standardized way introduced in C++17*/
 #            define M_DEPRECATED [[deprecated]]
@@ -235,12 +233,11 @@ extern "C"
 #    endif
 #    if !defined M_DEPRECATED /*if a test macro didn't work above, check the                                           \
                                  compiler to set this correctly -TJE*/
-#        if (defined(__GNUC__) && __GNUC__ >= 4) ||                                                                    \
-            (defined(__clang__) && defined(__clang_major__) && __clang_major__ >= 3)
+#        if (IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(3, 0))
 /*GCC 4 added deprecated attribute*/
 /*Unclear when added to clang, but somewhere around version 3.0*/
 #            define M_DEPRECATED __attribute__((deprecated))
-#        elif defined(_MSC_VER) && _MSC_VER > 1916
+#        elif IS_MSVC_VERSION(MSVC_2017_15_9)
 #            define M_DEPRECATED __declspec(deprecated) __pragma(warning(suppress : 4996))
 #        else
 /*Insert a comment instead since other methods were not detected.*/
@@ -285,7 +282,7 @@ extern "C"
 #    endif
 #    if !defined M_NODISCARD /*if a test macro didn't work above, check the                                            \
                                 compiler to set this correctly -TJE*/
-#        if (defined(__GNUC__) && __GNUC__ >= 3) || defined(__clang__)
+#        if (IS_GCC_VERSION(3, 4) || IS_CLANG_VERSION(1, 0))
 /*first in GCC 3.4*/
 #            define M_NODISCARD __attribute__((warn_unused_result))
 #        elif defined(_Check_return_) /*from sal.h*/
@@ -343,10 +340,10 @@ extern "C"
 #    endif
 #    if !defined M_NORETURN /*if a test macro didn't work above, check the                                             \
                                compiler to set this correctly -TJE*/
-#        if (defined(__GNUC__) && __GNUC__ >= 3) || defined(__clang__)
+#        if (IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0))
 /*GCC 2.5 added this support*/
 #            define M_NORETURN __attribute__((noreturn))
-#        elif defined(_MSC_VER)
+#        elif IS_MSVC_VERSION(MSVC_6_0)
 #            define M_NORETURN __declspec(noreturn)
 #        else
 /*Insert a comment instead since other methods were not detected.*/
@@ -356,17 +353,9 @@ extern "C"
 #    endif
 #endif
 
-#if defined(__clang__)
+#if IS_CLANG_VERSION(1, 0) || IS_GCC_FULL_VERSION(4, 1, 3)
 #    define M_FUNC_ATTR_MALLOC __attribute__((malloc))
-#elif defined(__GNUC__)
-/*GCC 4.1.3 added attribute for malloc*/
-#    if __GNUC__ > 4 || (defined(__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 1)
-#        define M_FUNC_ATTR_MALLOC __attribute__((malloc))
-#    else
-#        define M_FUNC_ATTR_MALLOC    /* this function allocates memory and                                            \
-                                         returns the    pointer to you */
-#    endif
-#elif defined(_MSC_VER) && (_MSC_VER >= 1900) /*vs2015+*/
+#elif IS_MSVC_VERSION(MSVC_2015)
 #    define M_FUNC_ATTR_MALLOC __declspec(allocator) __declspec(restrict)
 #elif defined(_Ret_opt_valid_) /*sal*/
 #    define M_FUNC_ATTR_MALLOC _Ret_opt_valid_
@@ -392,10 +381,10 @@ extern "C"
     //_Printf_format_string_impl_ for SAL. Not sure how to use it yet so not defined
     // currently
 
-#if defined(_WIN32)
+#if IS_MSVC_VERSION(MSVC_4_0)
 #    define DLL_EXPORT __declspec(dllexport)
 #    define DLL_IMPORT __declspec(dllimport)
-#elif defined(__GNUC__) && __GNUC__ >= 4
+#elif IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0)
 // See https://gcc.gnu.org/wiki/Visibility
 #    define DLL_EXPORT __attribute__((visibility("default")))
 #    define DLL_IMPORT /*no gcc equivalent*/
@@ -412,10 +401,10 @@ extern "C"
 #    define M_ALIGNAS(x) _Alignas(x)
 #else
 // compiler unique before C11/C++11
-#    if defined(__GNUC__) && ((__GNUC__) > 2 || (defined(__GNUC_MINOR__) && __GNUC__ == 2 && __GNUC_MINOR__ >= 7))
+#    if IS_GCC_VERSION(2, 7) || IS_CLANG_VERSION(1, 0)
 #        define M_ALIGNOF(x) __alignof__(x)
 #        define M_ALIGNAS(x) __attribute__((aligned(x)))
-#    elif defined(_MSC_VER) && _MSC_VER >= 1400 /*vs2005 and later*/
+#    elif IS_MSVC_VERSION(MSVC_2005)
 #        define M_ALIGNOF(x) __alignof(x)
 #        define M_ALIGNAS(x) __declspec(align(x))
 #    else

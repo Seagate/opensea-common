@@ -705,8 +705,8 @@ char* safe_String_Token(char* M_RESTRICT       str,
                         const char* M_RESTRICT delim,
                         char** M_RESTRICT      saveptr)
 {
-    errno_t error = 0;
-    char*   token = M_NULLPTR;
+    errno_t error   = 0;
+    char*   token   = M_NULLPTR;
     char*   tokiter = M_NULLPTR;
     if (strmax == M_NULLPTR)
     {
@@ -737,7 +737,7 @@ char* safe_String_Token(char* M_RESTRICT       str,
         if (*strmax == RSIZE_T_C(0))
         {
             *saveptr = M_NULLPTR;
-            error = ERANGE;
+            error    = ERANGE;
             invoke_Constraint_Handler("safe_String_Token: *strmax = 0 on initial call", M_NULLPTR, error);
             errno = error;
             return M_NULLPTR;
@@ -751,7 +751,7 @@ char* safe_String_Token(char* M_RESTRICT       str,
                                                       // check match annex k
         {
             *saveptr = M_NULLPTR;
-            error = ERANGE;
+            error    = ERANGE;
             invoke_Constraint_Handler("safe_String_Token: *strmax > RSIZE_MAX on initial call", M_NULLPTR, error);
             errno = error;
             return M_NULLPTR;
@@ -763,13 +763,13 @@ char* safe_String_Token(char* M_RESTRICT       str,
         if (*saveptr == M_NULLPTR)
         {
             *saveptr = M_NULLPTR;
-            error = EINVAL;
+            error    = EINVAL;
             invoke_Constraint_Handler("safe_String_Token: *saveptr = NULL on non-initial call", M_NULLPTR, error);
             errno = error;
             return M_NULLPTR;
         }
     }
-    token = *saveptr;
+    token   = *saveptr;
     tokiter = *saveptr;
     while (*strmax > RSIZE_T_C(0) && *tokiter)
     {

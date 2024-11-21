@@ -22,6 +22,10 @@
 #include "string_utils.h"
 #include "type_conversion.h"
 
+#if defined(_WIN32)
+#    include "windows_version_detect.h"
+#endif
+
 #include <locale.h> //used when getting time to replace ctime and asctime function to try and replicate the format exactly-TJE
 #include <math.h>
 #include <stdlib.h>
@@ -88,7 +92,7 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
                              (C_CAST(uint64_t, posixnow.tv_nsec) / UINT64_C(1000000));
         }
         else
-#elif defined(_MSC_VER)
+#elif defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_2000
         // Use the function in the link below, but MSFT also documents another
         // way to do this, which is what we've implemented -TJE
         // https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-rtltimetosecondssince1970

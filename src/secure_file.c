@@ -155,7 +155,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
         if (strchr(internalmode, 'w') && strchr(internalmode, 'x'))
         {
             exclusiveFlag = true;
-#if !defined(USING_C11) && !(defined(_MSC_VER) && _MSC_VER < 1800) &&                                                  \
+#if !defined(USING_C11) && !(defined(_MSC_VER) && _MSC_VER < MSVC_2013) &&                                             \
     !(defined(__GLIBC__) || defined(__GNU_LIBRARY__)) &&                                                               \
     !(defined(USING_MUSL_LIBC) && USING_MUSL_LIBC > 0) // Glibc supports x. VS2013+ support x
             // For systems that do not support 'x' need to adjust the mode
