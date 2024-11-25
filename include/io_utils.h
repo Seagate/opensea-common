@@ -426,6 +426,14 @@ extern "C"
 
     errno_t safe_strtold(long double* value, const char* M_RESTRICT str, char** M_RESTRICT endp);
 
+    errno_t safe_atoi(int* value, const char* M_RESTRICT str);
+
+    errno_t safe_atol(long* value, const char* M_RESTRICT str);
+
+    errno_t safe_atoll(long long* value, const char* M_RESTRICT str);
+
+    errno_t safe_atof(double* value, const char* M_RESTRICT str);
+
 #if defined(__cplusplus)
 }
 #endif

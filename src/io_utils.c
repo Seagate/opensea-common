@@ -3305,3 +3305,73 @@ errno_t safe_strtold(long double* value, const char* M_RESTRICT str, char** M_RE
     errno = error;
     return error;
 }
+
+errno_t safe_atoi(int* value, const char* M_RESTRICT str)
+{
+    if (value == M_NULLPTR)
+    {
+        errno = EINVAL;
+        return EINVAL;
+    }
+    char *endp = M_NULLPTR;
+    long temp = 0L;
+    errno_t error = safe_strtol(&temp, str, &endp, BASE_10_DECIMAL);
+    if (error == 0)
+    {
+        if (temp > INT_MAX || temp < INT_MIN)
+        {
+            error = ERANGE;
+            *value = 0;
+        }
+        else if (*endp != '\0')
+        {
+            error = EINVAL;
+            *value = 0;
+        }
+        else
+        {
+            *value = M_STATIC_CAST(int, temp);
+        }
+    }
+    errno = error;
+    return error;
+}
+
+errno_t safe_atol(long* value, const char* M_RESTRICT str)
+{
+    char *endp = M_NULLPTR;
+    errno_t error = safe_strtol(value, str, &endp, BASE_10_DECIMAL);
+    if (error == 0 && *endp != '\0')
+    {
+        error = EINVAL;
+        *value = 0L;
+    }
+    errno = error;
+    return error;
+}
+
+errno_t safe_atoll(long long* value, const char* M_RESTRICT str)
+{
+    char *endp = M_NULLPTR;
+    errno_t error = safe_strtoll(value, str, &endp, BASE_10_DECIMAL);
+    if (error == 0 && *endp != '\0')
+    {
+        error = EINVAL;
+        *value = 0LL;
+    }
+    errno = error;
+    return error;
+}
+
+errno_t safe_atof(double* value, const char* M_RESTRICT str)
+{
+    char *endp = M_NULLPTR;
+    errno_t error = safe_strtod(value, str, &endp);
+    if (error == 0 && *endp != '\0')
+    {
+        error = EINVAL;
+        *value = 0;
+    }
+    errno = error;
+    return error;
+}
