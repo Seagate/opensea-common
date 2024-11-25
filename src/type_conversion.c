@@ -352,7 +352,7 @@ size_t ulong_to_sizet(unsigned long val)
 #else // SIZE_MAX < ULONG_MAX
     if (val <= SIZE_MAX)
     {
-        return val;
+        return C_CAST(size_t, val);
     }
     else
     {
