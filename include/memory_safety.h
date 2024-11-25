@@ -659,8 +659,8 @@ static M_INLINE void safe_free_tchar(TCHAR **str)
     {
         // casting a null pointer to uintptr_t results in a zero. This should be
         // safe.
-        return ((M_STATIC_CAST(intptr_t, ptr1) - (M_STATIC_CAST(intptr_t, ptr2) + M_STATIC_CAST(intptr_t, size2))) &
-                (M_STATIC_CAST(intptr_t, ptr2) - (M_STATIC_CAST(intptr_t, ptr1) + M_STATIC_CAST(intptr_t, size1)))) < 0;
+        return ((M_REINTERPRET_CAST(intptr_t, ptr1) - (M_REINTERPRET_CAST(intptr_t, ptr2) + M_STATIC_CAST(intptr_t, size2))) &
+                (M_REINTERPRET_CAST(intptr_t, ptr2) - (M_REINTERPRET_CAST(intptr_t, ptr1) + M_STATIC_CAST(intptr_t, size1)))) < 0;
     }
 
     // bounds checked version of memmove, similar to memmove_s
@@ -679,8 +679,12 @@ static M_INLINE void safe_free_tchar(TCHAR **str)
     // Like the C23 function memalignment()
     static M_INLINE size_t get_memalignment(const void* ptr)
     {
-        return M_STATIC_CAST(uintptr_t, ptr) & (~M_STATIC_CAST(uintptr_t, ptr) + 1);
+        return M_REINTERPRET_CAST(uintptr_t, ptr) & (~M_REINTERPRET_CAST(uintptr_t, ptr) + 1);
     }
+
+    // This can calculate the size of an array declared on the stack. This will not work on
+    // Any heap allocated arrays!
+    #define SIZE_OF_STACK_ARRAY(array) (sizeof(array) / sizeof(*array))
 
 #if defined(__cplusplus)
 }
