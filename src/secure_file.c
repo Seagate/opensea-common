@@ -179,7 +179,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                 if (safe_strlen(thex) > 1)
                 {
                     size_t lenx = safe_strlen(thex);
-                    memmove(thex, thex + 1, lenx - 1);
+                    safe_memmove(thex, lenx, thex + 1, lenx - 1);
                     thex[lenx - 1] = '\0';
                 }
                 else
