@@ -185,11 +185,11 @@ extern "C"
 #    define safe_free(mem) safe_Free(M_REINTERPRET_CAST(void**, mem))
 #endif // C11
 
-#if defined (_WIN32)
-static M_INLINE void safe_free_tchar(TCHAR **str)
-{
-    safe_Free(M_REINTERPRET_CAST(void**, str));
-}
+#if defined(_WIN32)
+    static M_INLINE void safe_free_tchar(TCHAR** str)
+    {
+        safe_Free(M_REINTERPRET_CAST(void**, str));
+    }
 #endif
 
 #if defined(POSIX_1990) || defined(BSD4_2)
@@ -659,8 +659,10 @@ static M_INLINE void safe_free_tchar(TCHAR **str)
     {
         // casting a null pointer to uintptr_t results in a zero. This should be
         // safe.
-        return ((M_REINTERPRET_CAST(intptr_t, ptr1) - (M_REINTERPRET_CAST(intptr_t, ptr2) + M_STATIC_CAST(intptr_t, size2))) &
-                (M_REINTERPRET_CAST(intptr_t, ptr2) - (M_REINTERPRET_CAST(intptr_t, ptr1) + M_STATIC_CAST(intptr_t, size1)))) < 0;
+        return ((M_REINTERPRET_CAST(intptr_t, ptr1) -
+                 (M_REINTERPRET_CAST(intptr_t, ptr2) + M_STATIC_CAST(intptr_t, size2))) &
+                (M_REINTERPRET_CAST(intptr_t, ptr2) -
+                 (M_REINTERPRET_CAST(intptr_t, ptr1) + M_STATIC_CAST(intptr_t, size1)))) < 0;
     }
 
     // bounds checked version of memmove, similar to memmove_s
@@ -682,9 +684,9 @@ static M_INLINE void safe_free_tchar(TCHAR **str)
         return M_REINTERPRET_CAST(uintptr_t, ptr) & (~M_REINTERPRET_CAST(uintptr_t, ptr) + 1);
     }
 
-    // This can calculate the size of an array declared on the stack. This will not work on
-    // Any heap allocated arrays!
-    #define SIZE_OF_STACK_ARRAY(array) (sizeof(array) / sizeof(*array))
+// This can calculate the size of an array declared on the stack. This will not work on
+// Any heap allocated arrays!
+#define SIZE_OF_STACK_ARRAY(array) (sizeof(array) / sizeof((*array)))
 
 #if defined(__cplusplus)
 }
