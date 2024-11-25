@@ -210,7 +210,7 @@ extern "C"
  * for not knowing what to do. Seemed easiest to add this additional version
  * check to get rid of this error
  */
-#    if USING_CPP11 && defined __has_cpp_attribute
+#    if defined USING_CPP11 && defined __has_cpp_attribute
 #        if __has_cpp_attribute(deprecated)
 /*This is the standardized way introduced in C++17*/
 #            define M_DEPRECATED [[deprecated]]
