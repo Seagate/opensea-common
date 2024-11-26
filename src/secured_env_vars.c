@@ -101,7 +101,7 @@ static bool is_Environment_Variable_List_Tampered(void)
         size_t len_i = SIZE_T_C(0);
         size_t len_j = SIZE_T_C(0);
 
-        for (size_t i = 0; environ[i] != M_NULLPTR; i++)
+        for (size_t i = SIZE_T_C(0); environ[i] != M_NULLPTR; i++)
         {
             for (size_t j = i; environ[j] != M_NULLPTR; j++)
             {
@@ -152,8 +152,7 @@ static bool is_Environment_Variable_List_Tampered(void)
        // variables
 
 #if !defined(DISABLE_SECURE_GETENV) && !defined(HAVE_SECURE_GETENV)
-#    if defined(_GNU_SOURCE) && defined(__GLIBC__) && defined(__GLIBC_MINOR__) && (__GLIBC__ >= 2) &&                  \
-        (__GLIBC_MINOR__ >= 17)
+#    if defined(_GNU_SOURCE) && IS_GLIBC_VERSION(2, 17)
 #        define HAVE_SECURE_GETENV
 #    endif // lots of checks for secure_getenv function
 #endif     //! DISABLE_SECURE_GETENV

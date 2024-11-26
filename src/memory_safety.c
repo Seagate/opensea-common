@@ -77,8 +77,7 @@ size_t get_System_Pagesize(void)
 M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment)
 {
 #if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined(USING_C11) && !defined(_MSC_VER) &&                    \
-    (!defined(__GLIBC__) || (defined(__GLIBC__) && ((__GLIBC__ > 2) || (defined(__GLIBC_MINOR__) && __GLIBC__ >= 2 &&  \
-                                                                        __GLIBC_MINOR__ >= 16))))
+    (!defined(THIS_IS_GLIBC) || IS_GLIBC_VERSION(2, 16))
     // C11 added an aligned alloc function we can use
     // One additional requirement of this function is that the size must be a
     // multiple of alignment, so we will check and round up the size to make
@@ -349,8 +348,7 @@ void* explicit_zeroes(void* dest, size_t count)
         return SecureZeroMemory(dest, count);
 #    endif
 #elif (defined(__FreeBSD__) && __FreeBSD__ >= 11) || (defined(__OpenBSD__) && defined(OpenBSD5_5)) ||                  \
-    (defined(__GLIBC__) && defined(__GLIBC_MINOR__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 25) ||                     \
-    defined(HAVE_EXPLICIT_BZERO)
+    (defined(THIS_IS_GLIBC) && IS_GLIBC_VERSION(2, 25)) || defined(HAVE_EXPLICIT_BZERO)
         // https://elixir.bootlin.com/musl/latest/source/src/string/explicit_bzero.c
         // <- seems to appear first in 1.1.20
         // https://man.freebsd.org/cgi/man.cgi?query=explicit_bzero
