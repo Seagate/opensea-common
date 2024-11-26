@@ -814,7 +814,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
         }
 
         /* dir is writable by others */
-        for (DWORD iter = 0; secure && iter < dacl->AceCount; ++iter)
+        for (DWORD iter = DWORD_C(0); secure && iter < dacl->AceCount; ++iter)
         {
             ACE_HEADER* aceHeader = M_NULLPTR;
             if (GetAce(dacl, iter, C_CAST(void**, &aceHeader)))
@@ -1380,7 +1380,7 @@ static bool CompareAces(PACL pAcl1, PACL pAcl2)
         return false;
     }
 
-    for (DWORD i = 0; i < pAcl1->AceCount; i++)
+    for (DWORD i = DWORD_C(0); i < pAcl1->AceCount; i++)
     {
         PACE_HEADER pAce1 = M_NULLPTR;
         PACE_HEADER pAce2 = M_NULLPTR;

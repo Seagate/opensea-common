@@ -1936,7 +1936,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int64(const char*       strToCon
     // let the generic selection macro do this
     return get_Valid_Integer_Input(strToConvert, unit, unittype, outputInteger);
 #elif defined(LP64_DATA_MODEL) || defined(ILP64_DATA_MODEL)
-    long temp = 0;
+    long temp = 0L;
     bool ret  = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
     if (ret)
     {
@@ -3313,19 +3313,19 @@ errno_t safe_atoi(int* value, const char* M_RESTRICT str)
         errno = EINVAL;
         return EINVAL;
     }
-    char *endp = M_NULLPTR;
-    long temp = 0L;
+    char*   endp  = M_NULLPTR;
+    long    temp  = 0L;
     errno_t error = safe_strtol(&temp, str, &endp, BASE_10_DECIMAL);
     if (error == 0)
     {
         if (temp > INT_MAX || temp < INT_MIN)
         {
-            error = ERANGE;
+            error  = ERANGE;
             *value = 0;
         }
         else if (*endp != '\0')
         {
-            error = EINVAL;
+            error  = EINVAL;
             *value = 0;
         }
         else
@@ -3339,11 +3339,11 @@ errno_t safe_atoi(int* value, const char* M_RESTRICT str)
 
 errno_t safe_atol(long* value, const char* M_RESTRICT str)
 {
-    char *endp = M_NULLPTR;
+    char*   endp  = M_NULLPTR;
     errno_t error = safe_strtol(value, str, &endp, BASE_10_DECIMAL);
     if (error == 0 && *endp != '\0')
     {
-        error = EINVAL;
+        error  = EINVAL;
         *value = 0L;
     }
     errno = error;
@@ -3352,11 +3352,11 @@ errno_t safe_atol(long* value, const char* M_RESTRICT str)
 
 errno_t safe_atoll(long long* value, const char* M_RESTRICT str)
 {
-    char *endp = M_NULLPTR;
+    char*   endp  = M_NULLPTR;
     errno_t error = safe_strtoll(value, str, &endp, BASE_10_DECIMAL);
     if (error == 0 && *endp != '\0')
     {
-        error = EINVAL;
+        error  = EINVAL;
         *value = 0LL;
     }
     errno = error;
@@ -3365,11 +3365,11 @@ errno_t safe_atoll(long long* value, const char* M_RESTRICT str)
 
 errno_t safe_atof(double* value, const char* M_RESTRICT str)
 {
-    char *endp = M_NULLPTR;
+    char*   endp  = M_NULLPTR;
     errno_t error = safe_strtod(value, str, &endp);
     if (error == 0 && *endp != '\0')
     {
-        error = EINVAL;
+        error  = EINVAL;
         *value = 0;
     }
     errno = error;

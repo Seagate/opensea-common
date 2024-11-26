@@ -698,7 +698,7 @@ const class nullptr_t
 //       is a zero initialization of the data -TJE
 template <typename T, size_t N> void zero_init_array(T (&array)[N])
 {
-    for (size_t i = 0; i < N; ++i)
+    for (size_t i = SIZE_T_C(0); i < N; ++i)
     {
         array[i] = 0;
     }

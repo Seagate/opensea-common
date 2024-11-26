@@ -308,7 +308,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
         {
             // remove any control characters from the string. We don't need them
             // for what we're doing
-            for (size_t iter = 0; iter < safe_strlen(operatingSystemName); ++iter)
+            for (size_t iter = SIZE_T_C(0); iter < safe_strlen(operatingSystemName); ++iter)
             {
                 if (safe_iscntrl(operatingSystemName[iter]))
                 {
