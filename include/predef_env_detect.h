@@ -151,6 +151,56 @@
 #    define IS_MSVC_FULL_VERSION(msvcfullver) (0)
 #endif
 
+// Including this to allow libc to include any features.h (if it exists) to help with libc version checking -TJE
+// https://github.com/cpredef/predef/blob/master/Libraries.md
+#if defined(__has_include)
+#    if __has_include(<features.h>)
+#        include <features.h>
+#    else
+#        include <limits.h>
+#    endif // has features.h
+#else
+#    include <limits.h>
+#endif // does not support __has_include
+// Macro to check glibc version (major.minor)
+#if defined(__GNU_LIBRARY__) && defined(__GNU_LIBRARY_MINOR__)
+#    define THIS_IS_GLIBC
+#    define IS_GLIBC_VERSION(major, minor)                                                                             \
+        ((__GNU_LIBRARY__ > (major) || (__GNU_LIBRARY__ == (major) && __GNU_LIBRARY_MINOR__ >= (minor))))
+#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__)
+#    define THIS_IS_GLIBC
+#    define IS_GLIBC_VERSION(major, minor)                                                                             \
+        ((__GLIBC__ > (major) || (__GLIBC__ == (major) && __GLIBC_MINOR__ >= (minor))))
+#else
+#    define IS_GLIBC_VERSION(major, minor) (0)
+#endif
+
+// Macro to check uClibc version (major.minor)
+#if defined(__UCLIBC__) && defined(__UCLIBC_MAJOR__) && defined(__UCLIBC_MINOR__)
+#    define IS_UCLIBC_VERSION(major, minor)                                                                            \
+        ((__UCLIBC_MAJOR__ > (major) || (__UCLIBC_MAJOR__ == (major) && __UCLIBC_MINOR__ >= (minor))))
+#    define IS_UCLIBC_FULL_VERSION(major, minor, patch)                                                                \
+        (__UCLIBC_MAJOR__ > (major) ||                                                                                 \
+         (__UCLIBC_MAJOR__ == (major) &&                                                                               \
+          (__UCLIBC_MINOR__ > (minor) || (__UCLIBC_MINOR__ == (minor) && __UCLIBC_SUBLEVEL__ >= (patch)))))
+#else
+#    define IS_UCLIBC_VERSION(major, minor)             (0)
+#    define IS_UCLIBC_FULL_VERSION(major, minor, patch) (0)
+#endif
+
+// Macro to check klibc version (major.minor)
+#if defined(__KLIBC__) && defined(__KLIBC_MINOR__) && defined(__KLIBC_PATCHLEVEL__)
+#    define IS_KLIBC_VERSION(major, minor)                                                                             \
+        ((__KLIBC__ > (major) || (__KLIBC__ == (major) && __KLIBC_MINOR__ >= (minor))))
+#    define IS_KLIBC_FULL_VERSION(major, minor, patch)                                                                 \
+        (__KLIBC__ > (major) ||                                                                                        \
+         (__KLIBC__ == (major) &&                                                                                      \
+          (__KLIBC_MINOR__ > (minor) || (__KLIBC_MINOR__ == (minor) && __KLIBC_PATCHLEVEL__ >= (patch)))))
+#else
+#    define IS_KLIBC_VERSION(major, minor)             (0)
+#    define IS_KLIBC_FULL_VERSION(major, minor, patch) (0)
+#endif
+
 #if defined(__unix__) || defined(__APPLE__) || defined(HAVE_UNISTD)
 #    include <unistd.h> //to ensure we can check for POSIX versions
 #endif                  //__unix__ || __APPLE__ || HAVE_UNISTD
