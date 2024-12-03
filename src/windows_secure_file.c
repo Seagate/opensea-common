@@ -992,14 +992,14 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     if (error != 0 || dirs[num_of_dirs - SSIZE_T_C(1)] == M_NULLPTR)
     {
         /* Handle error */
-        safe_free(dirs);
+        safe_free(M_REINTERPRET_CAST(void**, &dirs));
         return false;
     }
     error = safe_strdup(&path_copy, fullpath);
     if (error != 0 || path_copy == M_NULLPTR)
     {
         /* Handle error */
-        safe_free(dirs);
+        safe_free(M_REINTERPRET_CAST(void**, &dirs));
         return false;
     }
 
@@ -1027,7 +1027,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         {
             safe_free(&dirs[cleanup]);
         }
-        safe_free(dirs);
+        safe_free(M_REINTERPRET_CAST(void**, &dirs));
         return secure;
     }
 
@@ -1234,7 +1234,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         safe_free(&dirs[i]);
     }
 
-    safe_free(dirs);
+    safe_free(M_REINTERPRET_CAST(void**, &dirs));
     return secure;
 }
 

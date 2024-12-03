@@ -150,8 +150,8 @@ static uid_t get_sudo_uid(void)
             {
                 sudouid = M_STATIC_CAST(uid_t, temp);
             }
-            safe_free(&uidstr);
         }
+        safe_free(&uidstr);
         gotsudouid = true;
     }
     return sudouid;
@@ -236,12 +236,14 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             "Error: The path contains too many directories. Please reduce the number of directories in the path and "
             "try again. Must be less than %zd directories in the path.\n",
             SSIZE_MAX);
+        safe_free(&path_copy);
         return false;
     }
     /* Now num_of_dirs indicates # of dirs we must check */
     safe_free(&path_copy);
 
-    if (!(dirs = M_REINTERPRET_CAST(char**, safe_malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)))))
+    dirs = M_REINTERPRET_CAST(char**, safe_malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)));
+    if (dirs == M_NULLPTR)
     {
         /* Handle error */
         set_dir_security_output_error_message(outputError,
@@ -257,7 +259,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         /* Handle error */
         set_dir_security_output_error_message(
             outputError, "Error: Unable to duplicate fullpath into dirs array: %s (Out of memory)\n", fullpath);
-        safe_free(dirs);
+        safe_free(M_REINTERPRET_CAST(void**, &dirs));
         return false;
     }
 
@@ -268,7 +270,8 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         /* Handle error */
         set_dir_security_output_error_message(
             outputError, "Error: Unable to duplicate fullpath to path copy: %s (Out of memory)\n", fullpath);
-        safe_free(dirs);
+        safe_free(&dirs[num_of_dirs - 1]);
+        safe_free(M_REINTERPRET_CAST(void**, &dirs));
         return false;
     }
 
@@ -288,6 +291,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         }
     }
     safe_free(&path_copy);
+
     if (!secure)
     {
         // cleanup dirs before returning error
@@ -298,7 +302,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         {
             safe_free(&dirs[cleanup]);
         }
-        safe_free(dirs);
+        safe_free(M_REINTERPRET_CAST(void**, &dirs));
         return secure;
     }
 
@@ -491,8 +495,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     {
         safe_free(&dirs[i]);
     }
-
-    safe_free(dirs);
+    safe_free(M_REINTERPRET_CAST(void**, &dirs));
     return secure;
 }
 
