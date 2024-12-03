@@ -754,6 +754,22 @@ extern "C"
 
     bool get_Bytes_To_64(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t* out);
 
+    // These functions are similar to those in endian.h, named slightly differently to be common to this library code,
+    // but work the same. Defiend ourselves since there are various names and different systems have the endian.h in
+    // different locations. Rather than deal with that mess, we defined our own ourselves. - TJE
+    M_NODISCARD uint16_t be16_to_host(uint16_t value);
+    M_NODISCARD uint32_t be32_to_host(uint32_t value);
+    M_NODISCARD uint64_t be64_to_host(uint64_t value);
+    M_NODISCARD uint16_t host_to_be16(uint16_t value);
+    M_NODISCARD uint32_t host_to_be32(uint32_t value);
+    M_NODISCARD uint64_t host_to_be64(uint64_t value);
+    M_NODISCARD uint16_t host_to_le16(uint16_t value);
+    M_NODISCARD uint32_t host_to_le32(uint32_t value);
+    M_NODISCARD uint64_t host_to_le64(uint64_t value);
+    M_NODISCARD uint16_t le16_to_host(uint16_t value);
+    M_NODISCARD uint32_t le32_to_host(uint32_t value);
+    M_NODISCARD uint64_t le64_to_host(uint64_t value);
+
 #if defined(__cplusplus)
 }
 #endif

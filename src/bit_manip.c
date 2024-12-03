@@ -16,6 +16,7 @@
 // manipulate bytes, swap bytes, etc
 
 #include "bit_manip.h"
+#include "predef_env_detect.h"
 #include "type_conversion.h"
 #include <math.h>
 #include <stdlib.h>
@@ -30,7 +31,7 @@
 // Unknown if added to specific _MSC_VER.
 // Will need to add this check if we ever run into an issue with this -TJE
 #    define HAVE_WIN_BSWAP
-#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)) && !defined(HAVE_BUILTIN_BSWAP)
+#elif IS_GCC_VERSION(4, 8) && !defined(HAVE_BUILTIN_BSWAP)
 #    define HAVE_BUILTIN_BSWAP
 #elif !defined(HAVE_BUILTIN_BSWAP) && defined(__has_builtin)
 #    if __has_builtin(__builtin_bswap64)
@@ -182,6 +183,114 @@ void double_Word_Swap_64(uint64_t* quadWordToSwap)
     }
 }
 
+uint16_t be16_to_host(uint16_t value)
+{
+#if defined(ENV_BIG_ENDIAN)
+    return value;
+#else // Assume little endian
+    return byteswap_uint16(value);
+#endif
+}
+
+uint32_t be32_to_host(uint32_t value)
+{
+#if defined(ENV_BIG_ENDIAN)
+    return value;
+#else // Assume little endian
+    return byteswap_uint32(value);
+#endif
+}
+
+uint64_t be64_to_host(uint64_t value)
+{
+#if defined(ENV_BIG_ENDIAN)
+    return value;
+#else // Assume little endian
+    return byteswap_uint64(value);
+#endif
+}
+
+uint16_t host_to_be16(uint16_t value)
+{
+#if defined(ENV_BIG_ENDIAN)
+    return value;
+#else // Assume little endian
+    return byteswap_uint16(value);
+#endif
+}
+
+uint32_t host_to_be32(uint32_t value)
+{
+#if defined(ENV_BIG_ENDIAN)
+    return value;
+#else // Assume little endian
+    return byteswap_uint32(value);
+#endif
+}
+
+uint64_t host_to_be64(uint64_t value)
+{
+#if defined(ENV_BIG_ENDIAN)
+    return value;
+#else // Assume little endian
+    return byteswap_uint64(value);
+#endif
+}
+
+uint16_t host_to_le16(uint16_t value)
+{
+#if defined(ENV_BIG_ENDIAN)
+    return byteswap_uint16(value);
+#else // Assume little endian
+    return value;
+#endif
+}
+
+uint32_t host_to_le32(uint32_t value)
+{
+#if defined(ENV_BIG_ENDIAN)
+    return byteswap_uint32(value);
+#else // Assume little endian
+    return value;
+#endif
+}
+
+uint64_t host_to_le64(uint64_t value)
+{
+#if defined(ENV_BIG_ENDIAN)
+    return byteswap_uint64(value);
+#else // Assume little endian
+    return value;
+#endif
+}
+
+uint16_t le16_to_host(uint16_t value)
+{
+#if defined(ENV_BIG_ENDIAN)
+    return byteswap_uint16(value);
+#else // Assume little endian
+    return value;
+#endif
+}
+
+uint32_t le32_to_host(uint32_t value)
+{
+#if defined(ENV_BIG_ENDIAN)
+    return byteswap_uint32(value);
+#else // Assume little endian
+    return value;
+#endif
+}
+
+uint64_t le64_to_host(uint64_t value)
+{
+#if defined(ENV_BIG_ENDIAN)
+    return byteswap_uint64(value);
+#else // Assume little endian
+    return value;
+#endif
+}
+
 static size_t get_Bytes_Abs_Range(size_t msb, size_t lsb)
 {
     if (msb > lsb)
@@ -264,6 +373,187 @@ bool get_Bytes_To_16(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t
     }
 }
 
+static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
+                                            M_ATTR_UNUSED size_t outputsize,
+                                            uint8_t              msb,
+                                            uint8_t              lsb)
+{
+    genericint_t out;
+    safe_memset(&out, sizeof(genericint_t), 0, sizeof(genericint_t));
+    if (msb > 7 || lsb > 7)
+    {
+        errno = ERANGE;
+    }
+    else
+    {
+        // output size is not used in this case since a uint8_t can only
+        // ever output a uint8_t
+        out.sizeoftype = sizeof(uint8_t);
+        out.u8 =
+            ((input.u8) >> (lsb)) & ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to
+                                                                                     // resolve warning about signed int
+                                                                                     // since UINT8_C() does not apply U
+        out.issigned = input.issigned;
+    }
+    return out;
+}
+
+static M_INLINE genericint_t gen_16bit_range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
+{
+    genericint_t out;
+    safe_memset(&out, sizeof(genericint_t), 0, sizeof(genericint_t));
+    if (msb > 15 || lsb > 15)
+    {
+        errno = ERANGE;
+    }
+    else if (outputsize == sizeof(uint8_t))
+    {
+        if ((msb - lsb + 1) > 8)
+        {
+            errno = ERANGE;
+        }
+        else
+        {
+            out.sizeoftype = sizeof(uint8_t);
+            out.u8         = C_CAST(uint8_t,
+                                    ((input.u16) >> (lsb)) &
+                                        ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1)))); // starting with UINT32_C to
+                                                                                          // resolve warning about
+                                                                                          // signed int since UINT16_C()
+                                                                                          // does not apply U
+            out.issigned = input.issigned;
+        }
+    }
+    else // default case where outputsize is not less than uint16
+    {
+        out.sizeoftype = sizeof(uint16_t);
+        out.u16        = ((input.u16) >> (lsb)) &
+                  ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to resolve
+                                                                   // warning about signed int since
+                                                                   // UINT16_C() does not apply U
+        out.issigned = input.issigned;
+    }
+    return out;
+}
+
+static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
+{
+    genericint_t out;
+    safe_memset(&out, sizeof(genericint_t), 0, sizeof(genericint_t));
+    if (msb > 31 || lsb > 31)
+    {
+        errno = ERANGE;
+    }
+    else if (outputsize == sizeof(uint8_t))
+    {
+        if ((msb - lsb + 1) > 8)
+        {
+            errno = ERANGE;
+        }
+        else
+        {
+            out.sizeoftype = sizeof(uint8_t);
+            out.u8         = C_CAST(uint8_t,
+                                    ((input.u32) >> (lsb)) &
+                                        ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1)))); // starting with UINT32_C to
+                                                                                          // resolve warning about
+                                                                                          // signed int since UINT16_C()
+                                                                                          // does not apply U
+            out.issigned = input.issigned;
+        }
+    }
+    else if (outputsize == sizeof(uint16_t))
+    {
+        if ((msb - lsb + 1) > 16)
+        {
+            errno = ERANGE;
+        }
+        else
+        {
+            out.sizeoftype = sizeof(uint16_t);
+            out.u16        = C_CAST(uint16_t,
+                                    ((input.u32) >> (lsb)) &
+                                        ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1)))); // starting with UINT32_C to
+                                                                                   // resolve warning about signed
+                                                                                   // int since UINT16_C() does
+                                                                                   // not apply U
+            out.issigned = input.issigned;
+        }
+    }
+    else // default case where outputsize is not less than uint32
+    {
+        out.sizeoftype = sizeof(uint16_t);
+        out.u32        = ((input.u32) >> (lsb)) & ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1)));
+        out.issigned   = input.issigned;
+    }
+    return out;
+}
+
+static M_INLINE genericint_t gen_64bit_range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
+{
+    genericint_t out;
+    safe_memset(&out, sizeof(genericint_t), 0, sizeof(genericint_t));
+    if (msb > 63 || lsb > 63)
+    {
+        errno = ERANGE;
+    }
+    else if (outputsize == sizeof(uint8_t))
+    {
+        if ((msb - lsb + 1) > 8)
+        {
+            errno = ERANGE;
+        }
+        else
+        {
+            out.sizeoftype = sizeof(uint8_t);
+            out.u8         = ((input.u64) >> (lsb)) &
+                     ~(~UINT64_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to resolve
+                                                                      // warning about signed int since
+                                                                      // UINT16_C() does not apply U
+            out.issigned = input.issigned;
+        }
+    }
+    else if (outputsize == sizeof(uint16_t))
+    {
+        if ((msb - lsb + 1) > 16)
+        {
+            errno = ERANGE;
+        }
+        else
+        {
+            out.sizeoftype = sizeof(uint16_t);
+            out.u16        = ((input.u64) >> (lsb)) &
+                      ~(~UINT64_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to resolve
+                                                                       // warning about signed int since
+                                                                       // UINT16_C() does not apply U
+            out.issigned = input.issigned;
+        }
+    }
+    else if (outputsize == sizeof(uint32_t))
+    {
+        if ((msb - lsb + 1) > 32)
+        {
+            errno = ERANGE;
+        }
+        else
+        {
+            out.sizeoftype = sizeof(uint16_t);
+            out.u32        = ((input.u64) >> (lsb)) &
+                      ~(~UINT64_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to resolve
+                                                                       // warning about signed int since
+                                                                       // UINT16_C() does not apply U
+            out.issigned = input.issigned;
+        }
+    }
+    else // default case where outputsize is not less than uint64
+    {
+        out.sizeoftype = sizeof(uint64_t);
+        out.u64        = ((input.u64) >> (lsb)) & ~(~UINT64_C(0) << ((msb) - (lsb) + UINT8_C(1)));
+        out.issigned   = input.issigned;
+    }
+    return out;
+}
+
 genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
 {
     genericint_t out;
@@ -282,163 +572,16 @@ genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_
         switch (input.sizeoftype)
         {
         case sizeof(uint8_t):
-            if (msb > 7 || lsb > 7)
-            {
-                errno = ERANGE;
-            }
-            else
-            {
-                // output size is not used in this case since a uint8_t can only
-                // ever output a uint8_t
-                out.sizeoftype = sizeof(uint8_t);
-                out.u8         = ((input.u8) >> (lsb)) &
-                         ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to
-                                                                          // resolve warning about signed int
-                                                                          // since UINT8_C() does not apply U
-                out.issigned = input.issigned;
-            }
+            out = gen_8bit_range(input, outputsize, msb, lsb);
             break;
         case sizeof(uint16_t):
-            if (msb > 15 || lsb > 15)
-            {
-                errno = ERANGE;
-            }
-            else if (outputsize == sizeof(uint8_t))
-            {
-                if ((msb - lsb + 1) > 8)
-                {
-                    errno = ERANGE;
-                }
-                else
-                {
-                    out.sizeoftype = sizeof(uint8_t);
-                    out.u8         = C_CAST(uint8_t,
-                                            ((input.u16) >> (lsb)) &
-                                                ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1)))); // starting with UINT32_C to
-                                                                                          // resolve warning about
-                                                                                          // signed int since UINT16_C()
-                                                                                          // does not apply U
-                    out.issigned = input.issigned;
-                }
-            }
-            else // default case where outputsize is not less than uint16
-            {
-                out.sizeoftype = sizeof(uint16_t);
-                out.u16        = ((input.u16) >> (lsb)) &
-                          ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to resolve
-                                                                           // warning about signed int since
-                                                                           // UINT16_C() does not apply U
-                out.issigned = input.issigned;
-            }
+            out = gen_16bit_range(input, outputsize, msb, lsb);
             break;
         case sizeof(uint32_t):
-            if (msb > 31 || lsb > 31)
-            {
-                errno = ERANGE;
-            }
-            else if (outputsize == sizeof(uint8_t))
-            {
-                if ((msb - lsb + 1) > 8)
-                {
-                    errno = ERANGE;
-                }
-                else
-                {
-                    out.sizeoftype = sizeof(uint8_t);
-                    out.u8         = C_CAST(uint8_t,
-                                            ((input.u32) >> (lsb)) &
-                                                ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1)))); // starting with UINT32_C to
-                                                                                          // resolve warning about
-                                                                                          // signed int since UINT16_C()
-                                                                                          // does not apply U
-                    out.issigned = input.issigned;
-                }
-            }
-            else if (outputsize == sizeof(uint16_t))
-            {
-                if ((msb - lsb + 1) > 16)
-                {
-                    errno = ERANGE;
-                }
-                else
-                {
-                    out.sizeoftype = sizeof(uint16_t);
-                    out.u16 =
-                        C_CAST(uint16_t,
-                               ((input.u32) >> (lsb)) &
-                                   ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1)))); // starting with UINT32_C to
-                                                                                     // resolve warning about signed
-                                                                                     // int since UINT16_C() does
-                                                                                     // not apply U
-                    out.issigned = input.issigned;
-                }
-            }
-            else // default case where outputsize is not less than uint32
-            {
-                out.sizeoftype = sizeof(uint16_t);
-                out.u32        = ((input.u32) >> (lsb)) & ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1)));
-                out.issigned   = input.issigned;
-            }
+            out = gen_32bit_range(input, outputsize, msb, lsb);
             break;
         case sizeof(uint64_t):
-            if (msb > 63 || lsb > 63)
-            {
-                errno = ERANGE;
-            }
-            else if (outputsize == sizeof(uint8_t))
-            {
-                if ((msb - lsb + 1) > 8)
-                {
-                    errno = ERANGE;
-                }
-                else
-                {
-                    out.sizeoftype = sizeof(uint8_t);
-                    out.u8         = ((input.u64) >> (lsb)) &
-                             ~(~UINT64_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to resolve
-                                                                              // warning about signed int since
-                                                                              // UINT16_C() does not apply U
-                    out.issigned = input.issigned;
-                }
-            }
-            else if (outputsize == sizeof(uint16_t))
-            {
-                if ((msb - lsb + 1) > 16)
-                {
-                    errno = ERANGE;
-                }
-                else
-                {
-                    out.sizeoftype = sizeof(uint16_t);
-                    out.u16        = ((input.u64) >> (lsb)) &
-                              ~(~UINT64_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to resolve
-                                                                               // warning about signed int since
-                                                                               // UINT16_C() does not apply U
-                    out.issigned = input.issigned;
-                }
-            }
-            else if (outputsize == sizeof(uint32_t))
-            {
-                if ((msb - lsb + 1) > 32)
-                {
-                    errno = ERANGE;
-                }
-                else
-                {
-                    out.sizeoftype = sizeof(uint16_t);
-                    out.u32        = ((input.u64) >> (lsb)) &
-                              ~(~UINT64_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to resolve
-                                                                               // warning about signed int since
-                                                                               // UINT16_C() does not apply U
-                    out.issigned = input.issigned;
-                }
-            }
-            else // default case where outputsize is not less than uint64
-            {
-                out.sizeoftype = sizeof(uint64_t);
-                out.u64        = ((input.u64) >> (lsb)) & ~(~UINT64_C(0) << ((msb) - (lsb) + UINT8_C(1)));
-                out.issigned   = input.issigned;
-            }
+            out = gen_64bit_range(input, outputsize, msb, lsb);
             break;
         }
     }

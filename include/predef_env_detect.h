@@ -372,6 +372,12 @@ extern "C"
 #    if _POSIX_VERSION >= 200809L
 #        define POSIX_2008
 #    endif
+#    if _POSIX_VERSION >= 201709L
+#        define POSIX_2017
+#    endif
+#    if _POSIX_VERSION >= 202409L
+#        define POSIX_2024
+#    endif
 #endif //_POSIX_VERSION
 
 // detect X/open portability guide/single unix specification support
@@ -498,6 +504,45 @@ extern "C"
 #else // CPU Check
 #    define ENV_32BIT
 #endif // CPU Check
+
+#if defined(__has_include)
+#    if __has_include(<endian.h>)
+#        include <endian.h>
+#    elif __has_include(<sys/endian.h>)
+#        include <sys/endian.h>
+#    endif
+#elif defined(POSIX_2024)
+#    include <endian.h>
+#endif
+#if defined(__BYTE_ORDER__)
+#    if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#        define ENV_BIG_ENDIAN
+#    elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#        define ENV_LITTLE_ENDIAN
+#    endif
+#endif
+#if !defined(ENV_BIG_ENDIAN) && !defined(ENV_LITTLE_ENDIAN)
+#    if defined(__BIG_ENDIAN__)
+#        define ENV_BIG_ENDIAN
+#    elif defined(__LITTLE_ENDIAN__)
+#        define ENV_LITTLE_ENDIAN
+#    else
+// check architecture specific defines...
+#        if defined(__ARMEB__) || defined(__THUMBEB__) || defined(__AARCH64EB__) || defined(_MIPSEB) ||                \
+            defined(__MIPSEB) || defined(__MIPSEB__)
+#            define ENV_BIG_ENDIAN
+#        elif defined(__ARMEL__) || defined(__THUMBEL__) || defined(__AARCH64EL__) || defined(_MIPSEL) ||              \
+            defined(__MIPSEL) || defined(__MIPSEL__) || defined _M_X64 || defined _M_AMD64 || defined _M_ALPHA ||      \
+            defined _M_ARM || defined _M_ARMT || defined _M_IX86 || defined _M_IA64 ||                                 \
+            defined    _M_PPC /* This is a special Windows case for PPC as NT ran it in little endian mode */          \
+            || defined MDE_CPU_X64 || defined MDE_CPU_IA32 || defined MDE_CPU_ARM || defined MDE_CPU_AARCH64
+#            define ENV_LITTLE_ENDIAN
+#        else
+    // If you get to here, you will need to update the methods to check the endianness above for your compiler/platform.
+#            error "Unknown endianness. Please update the definitions to properly detect endianness"
+#        endif
+#    endif
+#endif
 
     // NOTE: These warning disables are only needed in MSVC for the C11 generic min/max implementations.
     // Without them you get a warning about applying a unary - on an unsigned type.
