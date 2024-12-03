@@ -303,7 +303,7 @@ eArchitecture get_Compiled_Architecture(void)
 // temporarily disable the warning for unused function
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wunused-function"
-#endif //__clang__, __GNUC__
+#endif
 
 // https://sourceforge.net/p/predef/wiki/Endianness/
 static eEndianness calculate_Endianness(void)
@@ -351,41 +351,18 @@ static eEndianness calculate_Endianness(void)
 #    pragma clang diagnostic pop
 #elif IS_GCC_VERSION(3, 0)
 #    pragma GCC diagnostic pop
-#endif //__clang__, __GNUC__
+#endif
 
 // MDE_CPU_EBC should always calculate the endianness for EFI byte code since we
 // do not know the exact endianness through other means
 eEndianness get_Compiled_Endianness(void)
 {
-#if defined(__BYTE_ORDER__)
-#    if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#if defined(ENV_BIG_ENDIAN)
     return OPENSEA_BIG_ENDIAN;
-#    elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#elif defined(ENV_LITTLE_ENDIAN)
     return OPENSEA_LITTLE_ENDIAN;
-#    else
-    return calculate_Endianness();
-#    endif
 #else
-#    if defined(__BIG_ENDIAN__)
-    return OPENSEA_BIG_ENDIAN;
-#    elif defined(__LITTLE_ENDIAN__)
-    return OPENSEA_LITTLE_ENDIAN;
-#    else
-// check architecture specific defines...
-#        if defined(__ARMEB__) || defined(__THUMBEB__) || defined(__AARCH64EB__) || defined(_MIPSEB) ||                \
-            defined(__MIPSEB) || defined(__MIPSEB__)
-    return OPENSEA_BIG_ENDIAN;
-#        elif defined(__ARMEL__) || defined(__THUMBEL__) || defined(__AARCH64EL__) || defined(_MIPSEL) ||              \
-            defined(__MIPSEL) || defined(__MIPSEL__) || defined _M_X64 || defined _M_AMD64 || defined _M_ALPHA ||      \
-            defined _M_ARM || defined _M_ARMT || defined _M_IX86 || defined _M_IA64 ||                                 \
-            defined _M_PPC /* This is a special Windows case for PPC                                                   \
-                              as NT ran it in little endian mode */                                                    \
-            || defined MDE_CPU_X64 || defined MDE_CPU_IA32 || defined MDE_CPU_ARM || defined MDE_CPU_AARCH64
-    return OPENSEA_LITTLE_ENDIAN;
-#        else
     return calculate_Endianness();
-#        endif
-#    endif
 #endif
 }
 
