@@ -61,11 +61,11 @@ extern "C"
 #elif IS_MSVC_VERSION(MSVC_6_0)
 #    define M_NOINLINE __declspec(noinline)
 #elif defined __has_attribute
-    #if __has_attribute(noinline)
-#    define M_NOINLINE M_INLINE __attribute__((noinline))
-    #else
-#    define M_NOINLINE M_INLINE
-    #endif
+#    if __has_attribute(noinline)
+#        define M_NOINLINE M_INLINE __attribute__((noinline))
+#    else
+#        define M_NOINLINE M_INLINE
+#    endif
 #else
 #    define M_NOINLINE /*no support for noinline*/
 #endif
@@ -75,11 +75,11 @@ extern "C"
 #elif IS_MSVC_VERSION(MSVC_6_0)
 #    define M_FORCEINLINE __forceinline
 #elif defined __has_attribute
-    #if __has_attribute(always_inline)
-#    define M_FORCEINLINE M_INLINE __attribute__((always_inline))
-    #else
-#    define M_FORCEINLINE M_INLINE
-    #endif
+#    if __has_attribute(always_inline)
+#        define M_FORCEINLINE M_INLINE __attribute__((always_inline))
+#    else
+#        define M_FORCEINLINE M_INLINE
+#    endif
 #else
 /*Support for forcing inline is not present, however lets try the "normal"
  * inline option to suggest it at least*/
