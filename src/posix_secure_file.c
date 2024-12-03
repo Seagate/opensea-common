@@ -432,7 +432,8 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         safe_free(&dirs[i]);
     }
 
-    safe_free(dirs);
+    //safe_free(dirs);
+    safe_free(M_REINTERPRET_CAST(void**, &dirs));
     return secure;
 }
 
