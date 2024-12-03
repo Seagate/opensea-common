@@ -86,14 +86,9 @@ extern "C"
 
     size_t safe_strnlen(const char* string, size_t n);
 
-#if defined(__GNUC__) && (__GNUC__ > 4 || (defined(__GNUC_MINOR__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 1))
-//__builtin_object_size was added to GCC 4.1.0
+#if IS_GCC_VERSION(4, 1)
 #    define HAVE_BUILT_IN_OBJ_SIZE
 #elif defined __has_builtin
-// If the compiler does not defined __GNUC__ to 4.1.0 or higher, we can check if
-// it has the built - in function with this macro instead. This was added to GCC
-// 10, but other GCC compatible compilers may use this if not defining a
-// compatible GCC versio
 #    if __has_builtin(__builtin_object_size)
 #        define HAVE_BUILT_IN_OBJ_SIZE
 #    endif
