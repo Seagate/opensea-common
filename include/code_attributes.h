@@ -60,14 +60,26 @@ extern "C"
 #    define M_NOINLINE __attribute__((noinline))
 #elif IS_MSVC_VERSION(MSVC_6_0)
 #    define M_NOINLINE __declspec(noinline)
+#elif defined __has_attribute
+    #if __has_attribute(noinline)
+#    define M_NOINLINE M_INLINE __attribute__((noinline))
+    #else
+#    define M_NOINLINE M_INLINE
+    #endif
 #else
 #    define M_NOINLINE /*no support for noinline*/
 #endif
 
 #if IS_GCC_FULL_VERSION(4, 1, 3) || IS_CLANG_VERSION(1, 0)
-#    define M_FORCEINLINE static M_INLINE __attribute__((always_inline))
+#    define M_FORCEINLINE M_INLINE __attribute__((always_inline))
 #elif IS_MSVC_VERSION(MSVC_6_0)
 #    define M_FORCEINLINE __forceinline
+#elif defined __has_attribute
+    #if __has_attribute(always_inline)
+#    define M_FORCEINLINE M_INLINE __attribute__((always_inline))
+    #else
+#    define M_FORCEINLINE M_INLINE
+    #endif
 #else
 /*Support for forcing inline is not present, however lets try the "normal"
  * inline option to suggest it at least*/
@@ -364,19 +376,15 @@ extern "C"
                                      the    pointer to you */
 #endif
 
-#if defined(__GNUC__)
-// This attribute was first suppored in GCC 2.5
-// Not doing a version check with how old that is at this time.
-// If we need to add a version check in the future for other compilers that have
-// some GCC support, we can - TJE Varargpos should be set to zero when used with
-// functions like vfprintf
+#if IS_CLANG_VERSION(1, 0) || IS_GCC_VERSION(2, 5)
+// Varargpos should be set to zero when used with functions like vfprintf
 #    define FUNC_ATTR_PRINTF(formatargpos, varargpos) __attribute__((format(printf, formatargpos, varargpos)))
 #elif defined(_Format_string_impl_)
 #    define FUNC_ATTR_PRINTF(formatargpos, varargpos) _Format_string_impl_("printf", formatargpos)
-#else                                                    //!__GNUC__
+#else
 #    define FUNC_ATTR_PRINTF(formatargpos, varargpos)    /* this is a printf/fprintf/etc style function. Please use    \
                                                             a    user    defined constant string for the format! */
-#endif                                                   //__GNUC__
+#endif
 
     //_Printf_format_string_impl_ for SAL. Not sure how to use it yet so not defined
     // currently
