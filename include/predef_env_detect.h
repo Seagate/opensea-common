@@ -532,17 +532,16 @@ extern "C"
             defined(__MIPSEB) || defined(__MIPSEB__)
 #            define ENV_BIG_ENDIAN
 #        elif defined(__ARMEL__) || defined(__THUMBEL__) || defined(__AARCH64EL__) || defined(_MIPSEL) ||              \
-            defined(__MIPSEL) || defined(__MIPSEL__) || defined _M_X64 || defined _M_AMD64 || defined _M_ALPHA ||      \
-            defined _M_ARM || defined _M_ARMT || defined _M_IX86 || defined _M_IA64 ||                                 \
-            defined    _M_PPC /* This is a special Windows case for PPC as NT ran it in little endian mode */          \
-            || defined MDE_CPU_X64 || defined MDE_CPU_IA32 || defined MDE_CPU_ARM || defined MDE_CPU_AARCH64
+            defined(__MIPSEL) || defined(__MIPSEL__) || defined(_M_X64) || defined(_M_AMD64) || defined(_M_ALPHA) ||   \
+            defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARMT) || defined(_M_IX86) || defined(_M_IA64) ||        \
+            defined(_M_PPC) /* This is a special Windows case for PPC as NT ran it in little endian mode */            \
+            || defined(MDE_CPU_X64) || defined(MDE_CPU_IA32) || defined(MDE_CPU_ARM) || defined(MDE_CPU_AARCH64)
 #            define ENV_LITTLE_ENDIAN
 #        else
     // If you get to here, you will need to update the methods to check the endianness above for your compiler/platform.
 #            error "Unknown endianness. Please update the definitions to properly detect endianness"
 #        endif
 #    endif
-#endif
 
     // NOTE: These warning disables are only needed in MSVC for the C11 generic min/max implementations.
     // Without them you get a warning about applying a unary - on an unsigned type.
