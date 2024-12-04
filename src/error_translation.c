@@ -114,7 +114,7 @@ void print_Errno_To_Screen(errno_t error)
         printf("%d - <Unable to convert error to string>\n", error);
     }
 #    else
-#        error "Error detectiong POSIX strerror_r vs GNU strerror_r"
+#        error "Error detection POSIX strerror_r vs GNU strerror_r"
 #    endif
 #else
     char* temp = strerror(error);
