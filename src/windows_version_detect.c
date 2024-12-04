@@ -68,7 +68,7 @@ eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
 
         UINT directoryStringLength = GetSystemDirectory(systemPathBuf, OPENSEA_PATH_MAX);
         if (directoryStringLength > OPENSEA_PATH_MAX || directoryStringLength == 0 ||
-            directoryStringLength > OPENSEA_PATH_MAX - sizeof(ntdll) / sizeof(*ntdll))
+            directoryStringLength > OPENSEA_PATH_MAX - SIZE_OF_STACK_ARRAY(ntdll))
         {
             // error
             safe_free_tchar(&systemPathBuf);

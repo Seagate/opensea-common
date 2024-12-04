@@ -48,8 +48,8 @@ bool get_current_timestamp(void)
         struct tm logTime;
         safe_memset(&logTime, sizeof(struct tm), 0, sizeof(struct tm));
         CURRENT_TIME = time(M_NULLPTR);
-        safe_memset(CURRENT_TIME_STRING, sizeof(CURRENT_TIME_STRING) / sizeof(*CURRENT_TIME_STRING), 0,
-                    sizeof(CURRENT_TIME_STRING) / sizeof(*CURRENT_TIME_STRING));
+        safe_memset(CURRENT_TIME_STRING, SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING), 0,
+                    SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING));
         retStatus = strftime(CURRENT_TIME_STRING, CURRENT_TIME_STRING_LENGTH, "%Y%m%dT%H%M%S",
                              get_Localtime(&CURRENT_TIME, &logTime));
     }
