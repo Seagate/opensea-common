@@ -542,6 +542,7 @@ extern "C"
 #            error "Unknown endianness. Please update the definitions to properly detect endianness"
 #        endif
 #    endif
+#endif
 
     // NOTE: These warning disables are only needed in MSVC for the C11 generic min/max implementations.
     // Without them you get a warning about applying a unary - on an unsigned type.
