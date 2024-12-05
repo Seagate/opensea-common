@@ -18,6 +18,7 @@
 //        secure_file.h is used instead.
 
 #include "io_utils.h"
+#include "bit_manip.h"
 #include "common_types.h"
 #include "env_detect.h"
 #include "memory_safety.h"
@@ -2449,121 +2450,160 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
     printf("\n");
 }
 
-#define LINE_BUF_STR_LEN UINT8_C(18)
-#define LINE_WIDTH       UINT32_C(16)
+#define DATA_LINE_BUFFER_LENGTH (70)
+#define PRINTABLE_DATA_OFFSET   (50)
+#define LINE_WIDTH              UINT32_C(16)
+#define CHARS_PER_BUF_VAL       (3)
+// This creates the output for a SINGLE line with optional printable characters and returns it.
+// The pointer to the buffer and remaining length should be passed into this function!
+static char* create_data_line_output(char* line, uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
+{
+    safe_memset(line, DATA_LINE_BUFFER_LENGTH, ' ', DATA_LINE_BUFFER_LENGTH - 1);
+    line[DATA_LINE_BUFFER_LENGTH - 1] = '\0';
+    const char hexDigits[]            = "0123456789ABCDEF";
+    for (uint32_t bufferIter = UINT32_C(0), hexLineIter = UINT32_C(0), printLineIter = PRINTABLE_DATA_OFFSET;
+         bufferIter < bufferLen && bufferIter < LINE_WIDTH;
+         ++bufferIter, hexLineIter += CHARS_PER_BUF_VAL, printLineIter += 1)
+    {
+        line[hexLineIter]     = hexDigits[M_Nibble1(dataBuffer[bufferIter])];
+        line[hexLineIter + 1] = hexDigits[M_Nibble0(dataBuffer[bufferIter])];
+        line[hexLineIter + 2] = ' ';
+        if (showPrint)
+        {
+            if (safe_isascii(dataBuffer[bufferIter]) && safe_isprint(C_CAST(int, dataBuffer[bufferIter])))
+            {
+                line[printLineIter] = C_CAST(char, dataBuffer[bufferIter]);
+            }
+            else
+            {
+                line[printLineIter] = '.';
+            }
+        }
+    }
+    return line;
+}
+
 static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset)
 {
-    uint32_t printIter   = UINT32_C(0);
-    uint32_t offset      = UINT32_C(0);
-    uint32_t offsetWidth = UINT32_C(2); // used to figure out how wide we need to pad with 0's for consistent
-                                        // output, 2 is the minimum width
-    DECLARE_ZERO_INIT_ARRAY(char, lineBuff, LINE_BUF_STR_LEN);
-    uint8_t lineBuffIter = UINT8_C(0);
+    uint32_t    printIter    = UINT32_C(0);
+    uint32_t    offset       = UINT32_C(0);
+    const char* offsetFmtStr = "\n  0x%02" PRIX32 " ";
+
+    if (dataBuffer == M_NULLPTR || bufferLen == UINT32_C(0))
+    {
+        return;
+    }
+
     if (showOffset)
     {
+
+        const char* spacePad = "\n        ";
         if (bufferLen <= UINT8_MAX)
         {
-            offsetWidth = UINT32_C(2);
-            printf("\n        "); // 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E
-                                  // F  ");
+            // vars already set
         }
         else if (bufferLen <= UINT16_MAX)
         {
-            offsetWidth = UINT32_C(4);
-            printf("\n          "); // 0  1  2  3  4  5  6  7  8  9  A  B  C  D
-                                    // E  F  ");
+            offsetFmtStr = "\n  0x%04" PRIX32 " ";
+            spacePad     = "\n          ";
         }
         else if (bufferLen <= UINT32_C(0xFFFFFF))
         {
-            offsetWidth = UINT32_C(6);
-            printf("\n            "); // 0  1  2  3  4  5  6  7  8  9  A  B  C
-                                      // D  E  F  ");
+            offsetFmtStr = "\n  0x%06" PRIX32 " ";
+            spacePad     = "\n            ";
         }
         else // 32bit width, don't care about 64bit since max size if 32bit
         {
-            offsetWidth = UINT32_C(8);
-            printf("\n              "); // 0  1  2  3  4  5  6  7  8  9  A  B  C
-                                        // D  E  F  ");
+            offsetFmtStr = "\n  0x%08" PRIX32 " ";
+            spacePad     = "\n              ";
         }
         // we print out 2 (0x) + printf formatting width + 2 (spaces) then the
         // offsets
-
-        for (printIter = UINT32_C(0); printIter < LINE_WIDTH && printIter < bufferLen; printIter++)
+        fputs(spacePad, stdout);
+        switch (bufferLen)
         {
-            printf("%" PRIX32 "  ", printIter);
+        case 0:
+            break;
+        case 1:
+            fputs("0", stdout);
+            break;
+        case 2:
+            fputs("0  1", stdout);
+            break;
+        case 3:
+            fputs("0  1  2", stdout);
+            break;
+        case 4:
+            fputs("0  1  2  3", stdout);
+            break;
+        case 5:
+            fputs("0  1  2  3  4", stdout);
+            break;
+        case 6:
+            fputs("0  1  2  3  4  5", stdout);
+            break;
+        case 7:
+            fputs("0  1  2  3  4  5  6", stdout);
+            break;
+        case 8:
+            fputs("0  1  2  3  4  5  6  7", stdout);
+            break;
+        case 9:
+            fputs("0  1  2  3  4  5  6  7  8", stdout);
+            break;
+        case 0xA:
+            fputs("0  1  2  3  4  5  6  7  8  9", stdout);
+            break;
+        case 0xB:
+            fputs("0  1  2  3  4  5  6  7  8  9  A", stdout);
+            break;
+        case 0xC:
+            fputs("0  1  2  3  4  5  6  7  8  9  A  B", stdout);
+            break;
+        case 0xD:
+            fputs("0  1  2  3  4  5  6  7  8  9  A  B  C", stdout);
+            break;
+        case 0xE:
+            fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D", stdout);
+            break;
+        case 0xF:
+            fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D  E", stdout);
+            break;
+        default:
+            fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F", stdout);
         }
     }
-    for (printIter = UINT32_C(0), offset = UINT32_C(0); printIter < bufferLen; ++printIter, ++lineBuffIter)
+
+    volatile uint32_t buffLen         = bufferLen;
+    uint32_t          buffLenModifier = LINE_WIDTH;
+
+    for (printIter = UINT32_C(0), offset = UINT32_C(0); printIter < buffLen && offset < bufferLen;
+         buffLen -= buffLenModifier, offset += LINE_WIDTH)
     {
-        if (lineBuffIter >= LINE_BUF_STR_LEN)
+        DECLARE_ZERO_INIT_ARRAY(char, line, DATA_LINE_BUFFER_LENGTH);
+        if (showOffset)
         {
-            lineBuffIter = UINT8_C(0);
+            // We set the correct string literal above to a variable.
+            // This is 1 millisecond faster than a switch case again here for a small buffer (512B) and can be even more
+            // for larger buffers This is the reason to disable the warning in this case, then re-enable it again. Since
+            // this variable is only set within this function and cannot be manipulated externally, this should be safe
+            // enough to disable this warning -TJE
+            DISABLE_WARNING_FORMAT_NONLITERAL
+            printf(offsetFmtStr, offset);
+            RESTORE_WARNING_FORMAT_NONLITERAL
         }
-
-        // for every 16 bytes we print, we need to make a newline, then print
-        // the offset (hex) before we print the data again
-        if (printIter % LINE_WIDTH == UINT32_C(0))
+        else
         {
-            if (showOffset)
-            {
-                switch (offsetWidth)
-                {
-                case 4:
-                    printf("\n  0x%04" PRIX32 " ", offset);
-                    break;
-                case 6:
-                    printf("\n  0x%06" PRIX32 " ", offset);
-                    break;
-                case 8:
-                    printf("\n  0x%08" PRIX32 " ", offset);
-                    break;
-                case 2:
-                default:
-                    printf("\n  0x%02" PRIX32 " ", offset);
-                    break;
-                }
-            }
-            else
-            {
-                printf("\n  ");
-            }
-            offset += LINE_WIDTH;
+            fputs("\n  ", stdout);
         }
-        printf("%02" PRIX8 " ", dataBuffer[printIter]);
-        if (showPrint)
+        if (buffLen < buffLenModifier)
         {
-            if (safe_isascii(dataBuffer[printIter]) && safe_isprint(C_CAST(int, dataBuffer[printIter])))
-            {
-                lineBuff[lineBuffIter] = C_CAST(char, dataBuffer[printIter]);
-            }
-            else
-            {
-                lineBuff[lineBuffIter] = '.';
-            }
+            buffLenModifier = buffLen;
         }
-        if (showPrint &&
-            ((printIter + UINT32_C(1)) % LINE_WIDTH == UINT32_C(0) || printIter + UINT32_C(1) == bufferLen))
-        {
-            uint32_t spacePadding          = (printIter + UINT32_C(1)) % LINE_WIDTH;
-            lineBuff[LINE_BUF_STR_LEN - 1] = '\0';
-            lineBuffIter                   = UINT8_MAX; // this is done to cause an overflow when
-                                                        // the ++happens during the loop
-            if (spacePadding)
-            {
-                uint32_t counter = UINT32_C(0);
-                while (counter < ((LINE_WIDTH - spacePadding)))
-                {
-                    printf("   ");
-                    counter++;
-                }
-            }
-            // space after last printed hex
-            printf("  ");
-            printf("%s", lineBuff);
-            safe_memset(lineBuff, LINE_BUF_STR_LEN, 0, LINE_BUF_STR_LEN);
-        }
+        fputs(create_data_line_output(line, &dataBuffer[offset], buffLenModifier, showPrint), stdout);
     }
-    printf("\n\n");
+
+    fputs("\n\n", stdout);
 }
 
 void print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
