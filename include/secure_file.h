@@ -212,9 +212,10 @@ extern "C"
                                                      // 4gig file on 32bit OS.
         fileAttributes*   attributes;
         fileUniqueIDInfo* uniqueID;
-        const char *errorString;// if non-NULL then it contains a human readable error message for the failure that occurred. Dynamically allocated
-    } secureFileInfo; // do not free this manually. call the free_Secure_File_Info
-                      // function!
+        const char* errorString; // if non-NULL then it contains a human readable error message for the failure that
+                                 // occurred. Dynamically allocated
+    } secureFileInfo;            // do not free this manually. call the free_Secure_File_Info
+                                 // function!
 
     void free_Secure_File_Info(secureFileInfo** fileInfo);
 
