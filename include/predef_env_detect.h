@@ -583,14 +583,17 @@ extern "C"
 #    define RESTORE_WARNING_ZERO_LENGTH_ARRAY
 #endif
 
-#if IS_CLANG_VERSION(3, 0)
+#if IS_CLANG_VERSION(2, 6)
 #    define DISABLE_WARNING_FORMAT_NONLITERAL                                                                          \
         _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wformat-nonliteral\"")
 #    define RESTORE_WARNING_FORMAT_NONLITERAL _Pragma("clang diagnostic pop")
-#elif IS_GCC_VERSION(4, 1)
+#elif IS_GCC_VERSION(3, 4)
 #    define DISABLE_WARNING_FORMAT_NONLITERAL                                                                          \
         _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"")
 #    define RESTORE_WARNING_FORMAT_NONLITERAL _Pragma("GCC diagnostic pop")
+#elif IS_MSVC_VERSION(MSVC_2005)
+#    define DISABLE_WARNING_FORMAT_NONLITERAL _Pragma("warning(push)") _Pragma("warning(disable: 4774)")
+#    define RESTORE_WARNING_FORMAT_NONLITERAL _Pragma("warning(pop)")
 #else
 #    define DISABLE_WARNING_FORMAT_NONLITERAL
 #    define RESTORE_WARNING_FORMAT_NONLITERAL
