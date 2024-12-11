@@ -599,6 +599,11 @@ extern "C"
 #    define RESTORE_WARNING_FORMAT_NONLITERAL
 #endif
 
+// Detect editors to allow us an easy wrapper to enable/disable things as needed
+#if defined(__INTELLISENSE__) || defined(__clang_analyzer__) || defined(__CDT_PARSER__)
+#    define DEV_ENVIRONMENT
+#endif
+
 #if defined(__cplusplus)
 }
 #endif
