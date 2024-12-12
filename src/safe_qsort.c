@@ -92,34 +92,47 @@ static M_INLINE char* med3(char* a, char* b, char* c, ctxcomparefn cmp, void* th
                                 : (cmp(b, c, thunk) > 0 ? b : (cmp(a, c, thunk) < 0 ? a : c));
 }
 
-errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn compare, void* context)
+errno_t safe_qsort_context_impl(void*        ptr,
+                                rsize_t      count,
+                                rsize_t      size,
+                                ctxcomparefn compare,
+                                void*        context,
+                                const char*  file,
+                                const char*  function,
+                                int          line,
+                                const char*  expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (count > RSIZE_T_C(0) && ptr == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_qsort_context: count > 0 && ptr == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_qsort_context: count > 0 && ptr == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (count > RSIZE_T_C(0) && compare == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_qsort_context: count > 0 && compare == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_qsort_context: count > 0 && compare == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (count > RSIZE_MAX)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_qsort_context: count > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_qsort_context: count > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (size > RSIZE_MAX)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_qsort_context: size > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_qsort_context: size > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }

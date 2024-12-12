@@ -2616,27 +2616,37 @@ void print_Pipe_Data(uint8_t* dataBuffer, uint32_t bufferLen)
     internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false);
 }
 
-errno_t safe_fopen(FILE* M_RESTRICT* M_RESTRICT streamptr, const char* M_RESTRICT filename, const char* M_RESTRICT mode)
+errno_t safe_fopen_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
+                        const char* M_RESTRICT       filename,
+                        const char* M_RESTRICT       mode,
+                        const char*                  file,
+                        const char*                  function,
+                        int                          line,
+                        const char*                  expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (streamptr == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_fopen: streamptr is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_fopen: streamptr is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (filename == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_fopen: filename is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_fopen: filename is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (mode == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_fopen: mode is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_fopen: mode is NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         errno = error;
         return error;
     }
@@ -2663,30 +2673,38 @@ errno_t safe_fopen(FILE* M_RESTRICT* M_RESTRICT streamptr, const char* M_RESTRIC
     return error;
 }
 
-errno_t safe_freopen(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
-                     const char* M_RESTRICT       filename,
-                     const char* M_RESTRICT       mode,
-                     FILE* M_RESTRICT             stream)
+errno_t safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
+                          const char* M_RESTRICT       filename,
+                          const char* M_RESTRICT       mode,
+                          FILE* M_RESTRICT             stream,
+                          const char*                  file,
+                          const char*                  function,
+                          int                          line,
+                          const char*                  expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (newstreamptr == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_freopen: newstreamptr is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_freopen: newstreamptr is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (stream == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_freopen: stream is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_freopen: stream is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (mode == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_freopen: mode is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_freopen: mode is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -2716,82 +2734,95 @@ errno_t safe_freopen(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
 // NOTE: This implementation of safe_tmpnam matches C11 tmpnam_s
 //       It is commented out as it makes a LOT more sense to use safe_tmpfile call instead and because
 //       calling tmpnam generates warnings about being insecure to use.-TJE
-//  #if !defined (TMP_MAX_S)
-//      #define TMP_MAX_S TMP_MAX
-//  #endif
-//  #if !defined (L_tmpnam_s)
-//      #define L_tmpnam_s L_tmpnam
-//  #endif
-//  errno_t safe_tmpnam(char *filename_s, rsize_t maxsize)
-//  {
-//      errno_t error = 0;
-//      if (filename_s == M_NULLPTR)
-//      {
-//          error = EINVAL;
-//          invoke_Constraint_Handler("safe_tmpnam: filename_s is NULL", M_NULLPTR, error);
-//          errno = error;
-//          return error;
-//      }
-//      else if (maxsize == RSIZE_T_C(0))
-//      {
-//          error = EINVAL;
-//          invoke_Constraint_Handler("safe_tmpnam: maxsize == 0", M_NULLPTR, error);
-//          errno = error;
-//          return error;
-//      }
-//      else if (maxsize > RSIZE_MAX)
-//      {
-//          error = EINVAL;
-//          filename_s[0] = 0;
-//          invoke_Constraint_Handler("safe_tmpnam: maxsize > RSIZE_MAX", M_NULLPTR, error);
-//          errno = error;
-//          return error;
-//      }
-//      else
-//      {
-//  #    if defined(HAVE_MSFT_SECURE_LIB)
-//          error = tmpnam_s(filename_s, maxsize);
-//  #    else
-//          DECLARE_ZERO_INIT_ARRAY(char, internaltempname, L_tmpnam);
-//          errno = 0;
-//          if (tmpnam(internaltempname) != M_NULLPTR)
-//          {
-//              size_t internaltempnamelen = safe_strlen(internaltempname);
-//              if (internaltempnamelen > maxsize)
-//              {
-//                  error = EINVAL;
-//                  filename_s[0] = 0;
-//                  invoke_Constraint_Handler("safe_tmpnam: maxsize < generated tmpnam size", M_NULLPTR, error);
-//                  errno = error;
-//                  return error;
-//              }
-//              else
-//              {
-//                  error = safe_strcpy(filename_s, maxsize, internaltempname);
-//              }
-//          }
-//          else
-//          {
-//              error = errno;
-//              if (error == 0)
-//              {
-//                  // TODO: Find a better error to use in this case. Unlikely we will need is as errno will likely be
-//                  set correctly error = EINVAL;
-//              }
-//          }
-//  #    endif
-//      }
-//      errno = error;
-//      return error;
-//  }
-
-errno_t safe_tmpfile(FILE* M_RESTRICT* M_RESTRICT streamptr)
+#if defined(WANT_SAFE_TMPNAM)
+errno_t safe_tmpnam_impl(char*       filename_s,
+                         rsize_t     maxsize,
+                         const char* file,
+                         const char* function,
+                         int         line,
+                         const char* expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
+    if (filename_s == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_tmpnam: filename_s is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (maxsize == RSIZE_T_C(0))
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_tmpnam: maxsize == 0", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
+        errno = error;
+        return error;
+    }
+    else if (maxsize > RSIZE_MAX)
+    {
+        error         = EINVAL;
+        filename_s[0] = 0;
+        invoke_Constraint_Handler("safe_tmpnam: maxsize > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else
+    {
+#    if defined(HAVE_MSFT_SECURE_LIB)
+        error = tmpnam_s(filename_s, maxsize);
+#    else
+        DECLARE_ZERO_INIT_ARRAY(char, internaltempname, L_tmpnam);
+        errno = 0;
+        if (tmpnam(internaltempname) != M_NULLPTR)
+        {
+            size_t internaltempnamelen = safe_strlen(internaltempname);
+            if (internaltempnamelen > maxsize)
+            {
+                error         = EINVAL;
+                filename_s[0] = 0;
+                invoke_Constraint_Handler("safe_tmpnam: maxsize < generated tmpnam size",
+                                          set_Env_Info(&envInfo, file, function, expression, line), error);
+                errno = error;
+                return error;
+            }
+            else
+            {
+                error = safe_strcpy(filename_s, maxsize, internaltempname);
+            }
+        }
+        else
+        {
+            error = errno;
+            if (error == 0)
+            {
+                // TODO: Find a better error to use in this case. Unlikely we will need is as errno will likely be
+                // set correctly
+                error = EINVAL;
+            }
+        }
+#    endif
+    }
+    errno = error;
+    return error;
+}
+#endif // WANT_SAFE_TMPNAM
+
+errno_t safe_tmpfile_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
+                          const char*                  file,
+                          const char*                  function,
+                          int                          line,
+                          const char*                  expression)
+{
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (streamptr == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_tmpfile: streamptr is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_tmpfile: streamptr is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -2818,13 +2849,14 @@ errno_t safe_tmpfile(FILE* M_RESTRICT* M_RESTRICT streamptr)
     return error;
 }
 
-char* safe_gets(char* str, rsize_t n)
+char* safe_gets_impl(char* str, rsize_t n, const char* file, const char* function, int line, const char* expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (n == RSIZE_T_C(0))
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_gets: n == 0", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_gets: n == 0", set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return M_NULLPTR;
     }
@@ -2832,7 +2864,8 @@ char* safe_gets(char* str, rsize_t n)
     else if (n > RSIZE_MAX)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_gets: n > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_gets: n > RSIZE_MAX", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         errno = error;
         return M_NULLPTR;
     }
@@ -2843,7 +2876,8 @@ char* safe_gets(char* str, rsize_t n)
         // different alternative
         //       to support up to RSIZE_MAX - TJE
         error = EINVAL;
-        invoke_Constraint_Handler("safe_gets: n > INT_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_gets: n > INT_MAX", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         errno = error;
         return M_NULLPTR;
     }
@@ -2851,7 +2885,8 @@ char* safe_gets(char* str, rsize_t n)
     else if (str == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_gets: str == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_gets: str == NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         errno = error;
         return M_NULLPTR;
     }
@@ -2878,7 +2913,8 @@ char* safe_gets(char* str, rsize_t n)
         {
             str[0] = 0;
             error  = EINVAL;
-            invoke_Constraint_Handler("safe_gets: fgets(str, n, stdin) == NULL", M_NULLPTR, error);
+            invoke_Constraint_Handler("safe_gets: fgets(str, n, stdin) == NULL",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
             errno = error;
             return M_NULLPTR;
         }
@@ -2886,7 +2922,8 @@ char* safe_gets(char* str, rsize_t n)
         {
             str[0] = 0;
             error  = EINVAL;
-            invoke_Constraint_Handler("safe_gets: ferror(stdin)", M_NULLPTR, error);
+            invoke_Constraint_Handler("safe_gets: ferror(stdin)",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
             errno = error;
             return M_NULLPTR;
         }
@@ -2900,7 +2937,8 @@ char* safe_gets(char* str, rsize_t n)
                     // there is an error in here
                     str[0] = 0;
                     invoke_Constraint_Handler(
-                        "safe_gets: Did not find newline or eof after writing n-1 chars from stdin!", M_NULLPTR, error);
+                        "safe_gets: Did not find newline or eof after writing n-1 chars from stdin!",
+                        set_Env_Info(&envInfo, file, function, expression, line), error);
                     errno = EINVAL;
                     return M_NULLPTR;
                 }
@@ -2917,23 +2955,34 @@ char* safe_gets(char* str, rsize_t n)
     }
 }
 
-errno_t safe_strtol(long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+errno_t safe_strtol_impl(long*                  value,
+                         const char* M_RESTRICT str,
+                         char** M_RESTRICT      endp,
+                         int                    base,
+                         const char*            file,
+                         const char*            function,
+                         int                    line,
+                         const char*            expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (value == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtol: value == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtol: value == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (str == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtol: str == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtol: str == NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else if (base > BASE_36_MAX)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtol: base > 36", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtol: base > 36", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else
     {
@@ -2962,23 +3011,34 @@ errno_t safe_strtol(long* value, const char* M_RESTRICT str, char** M_RESTRICT e
     return error;
 }
 
-errno_t safe_strtoll(long long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+errno_t safe_strtoll_impl(long long*             value,
+                          const char* M_RESTRICT str,
+                          char** M_RESTRICT      endp,
+                          int                    base,
+                          const char*            file,
+                          const char*            function,
+                          int                    line,
+                          const char*            expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (value == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoll: value == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoll: value == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (str == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoll: str == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoll: str == NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else if (base > BASE_36_MAX)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoll: base > 36", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoll: base > 36", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else
     {
@@ -3007,23 +3067,34 @@ errno_t safe_strtoll(long long* value, const char* M_RESTRICT str, char** M_REST
     return error;
 }
 
-errno_t safe_strtoul(unsigned long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+errno_t safe_strtoul_impl(unsigned long*         value,
+                          const char* M_RESTRICT str,
+                          char** M_RESTRICT      endp,
+                          int                    base,
+                          const char*            file,
+                          const char*            function,
+                          int                    line,
+                          const char*            expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (value == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoul: value == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoul: value == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (str == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoul: str == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoul: str == NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else if (base > BASE_36_MAX)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoul: base > 36", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoul: base > 36", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else
     {
@@ -3051,23 +3122,34 @@ errno_t safe_strtoul(unsigned long* value, const char* M_RESTRICT str, char** M_
     return error;
 }
 
-errno_t safe_strtoull(unsigned long long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+errno_t safe_strtoull_impl(unsigned long long*    value,
+                           const char* M_RESTRICT str,
+                           char** M_RESTRICT      endp,
+                           int                    base,
+                           const char*            file,
+                           const char*            function,
+                           int                    line,
+                           const char*            expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (value == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoull: value == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoull: value == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (str == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoull: str == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoull: str == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (base > BASE_36_MAX)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoull: base > 36", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoull: base > 36", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else
     {
@@ -3095,23 +3177,34 @@ errno_t safe_strtoull(unsigned long long* value, const char* M_RESTRICT str, cha
     return error;
 }
 
-errno_t safe_strtoimax(intmax_t* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+errno_t safe_strtoimax_impl(intmax_t*              value,
+                            const char* M_RESTRICT str,
+                            char** M_RESTRICT      endp,
+                            int                    base,
+                            const char*            file,
+                            const char*            function,
+                            int                    line,
+                            const char*            expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (value == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoimax: value == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoimax: value == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (str == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoimax: str == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoimax: str == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (base > BASE_36_MAX)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoimax: base > 36", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoimax: base > 36", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else
     {
@@ -3140,23 +3233,34 @@ errno_t safe_strtoimax(intmax_t* value, const char* M_RESTRICT str, char** M_RES
     return error;
 }
 
-errno_t safe_strtoumax(uintmax_t* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+errno_t safe_strtoumax_impl(uintmax_t*             value,
+                            const char* M_RESTRICT str,
+                            char** M_RESTRICT      endp,
+                            int                    base,
+                            const char*            file,
+                            const char*            function,
+                            int                    line,
+                            const char*            expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (value == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoumax: value == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoumax: value == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (str == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoumax: str == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoumax: str == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (base > BASE_36_MAX)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtoumax: base > 36", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtoumax: base > 36", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else
     {
@@ -3184,18 +3288,27 @@ errno_t safe_strtoumax(uintmax_t* value, const char* M_RESTRICT str, char** M_RE
     return error;
 }
 
-errno_t safe_strtof(float* value, const char* M_RESTRICT str, char** M_RESTRICT endp)
+errno_t safe_strtof_impl(float*                 value,
+                         const char* M_RESTRICT str,
+                         char** M_RESTRICT      endp,
+                         const char*            file,
+                         const char*            function,
+                         int                    line,
+                         const char*            expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (value == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtof: value == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtof: value == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (str == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtof: str == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtof: str == NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else
     {
@@ -3238,18 +3351,27 @@ errno_t safe_strtof(float* value, const char* M_RESTRICT str, char** M_RESTRICT 
     return error;
 }
 
-errno_t safe_strtod(double* value, const char* M_RESTRICT str, char** M_RESTRICT endp)
+errno_t safe_strtod_impl(double*                value,
+                         const char* M_RESTRICT str,
+                         char** M_RESTRICT      endp,
+                         const char*            file,
+                         const char*            function,
+                         int                    line,
+                         const char*            expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (value == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtod: value == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtod: value == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (str == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtod: str == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtod: str == NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else
     {
@@ -3292,18 +3414,27 @@ errno_t safe_strtod(double* value, const char* M_RESTRICT str, char** M_RESTRICT
     return error;
 }
 
-errno_t safe_strtold(long double* value, const char* M_RESTRICT str, char** M_RESTRICT endp)
+errno_t safe_strtold_impl(long double*           value,
+                          const char* M_RESTRICT str,
+                          char** M_RESTRICT      endp,
+                          const char*            file,
+                          const char*            function,
+                          int                    line,
+                          const char*            expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (value == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtold: value == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtold: value == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (str == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strtold: str == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strtold: str == NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else
     {

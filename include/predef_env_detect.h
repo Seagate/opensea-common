@@ -604,6 +604,14 @@ extern "C"
 #    define DEV_ENVIRONMENT
 #endif
 
+#if IS_GCC_VERSION(4, 1)
+#    define HAVE_BUILT_IN_OBJ_SIZE
+#elif defined __has_builtin
+#    if __has_builtin(__builtin_object_size)
+#        define HAVE_BUILT_IN_OBJ_SIZE
+#    endif
+#endif
+
 #if defined(__cplusplus)
 }
 #endif

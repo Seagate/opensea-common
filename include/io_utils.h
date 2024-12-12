@@ -23,6 +23,7 @@
 #include "common_types.h"
 #include "constraint_handling.h"
 #include "env_detect.h"
+#include "impl_io_utils.h"
 #include "type_conversion.h"
 #include <stdarg.h>
 #include <stdio.h>
@@ -237,8 +238,10 @@ extern "C"
 
         if (n < 0 || int_to_sizet(n) >= bufsize)
         {
+            constraintEnvInfo envInfo;
             errno = EINVAL;
-            invoke_Constraint_Handler("snprintf_error_handler_macro: error in snprintf", M_NULLPTR, EINVAL);
+            invoke_Constraint_Handler("snprintf_error_handler_macro: error in snprintf",
+                                      set_Env_Info(&envInfo, __FILE__, __func__, M_NULLPTR, __LINE__), EINVAL);
         }
         return n;
     }
@@ -383,20 +386,77 @@ extern "C"
         M_STATIC_CAST(void, fflush(stderr));
     }
 
-    errno_t safe_fopen(FILE* M_RESTRICT* M_RESTRICT streamptr,
-                       const char* M_RESTRICT       filename,
-                       const char* M_RESTRICT       mode);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_fopen(FILE* M_RESTRICT* M_RESTRICT streamptr,
+                                const char* M_RESTRICT       filename,
+                                const char* M_RESTRICT       mode)
+    {
+        return safe_fopen_impl(streamptr, filename, mode, __FILE__, __func__, __LINE__,
+                               "safe_fopen(streamptr, filename, mode)");
+    }
+#else
+#    define safe_fopen(streamptr, filename, mode)                                                                      \
+        safe_fopen_impl(streamptr, filename, mode, __FILE__, __func__, __LINE__,                                       \
+                        "safe_fopen(" #streamptr ", " #filename ", " #mode ")")
+#endif
 
-    errno_t safe_freopen(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
-                         const char* M_RESTRICT       filename,
-                         const char* M_RESTRICT       mode,
-                         FILE* M_RESTRICT             stream);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_freopen(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
+                                  const char* M_RESTRICT       filename,
+                                  const char* M_RESTRICT       mode,
+                                  FILE* M_RESTRICT             stream)
+    {
+        return safe_freopen_impl(newstreamptr, filename, mode, stream, __FILE__, __func__, __LINE__,
+                                 "safe_freopen(streamptr, filename, mode, stream)");
+    }
+#else
+#    define safe_freopen(newstreamptr, filename, mode, stream)                                                         \
+        safe_freopen_impl(newstreamptr, filename, mode, stream, __FILE__, __func__, __LINE__,                          \
+                          "safe_freopen(" #newstreamptr ", " #filename ", " #mode ", " #stream ")")
+#endif
 
-    errno_t safe_tmpfile(FILE* M_RESTRICT* M_RESTRICT streamptr);
+#if defined(WANT_SAFE_TMPNAM)
+
+#    if !defined(TMP_MAX_S)
+#        define TMP_MAX_S TMP_MAX
+#    endif
+#    if !defined(L_tmpnam_s)
+#        define L_tmpnam_s L_tmpnam
+#    endif
+
+#    if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_tmpnam(char* filename_s, rsize_t maxsize)
+    {
+        return safe_tmpnam_impl(filename_s, maxsize, __FILE__, __func__, __LINE__, "safe_tmpnam(filename_s, maxsize)");
+    }
+#    else
+#        define safe_tmpnam(filename_s, maxsize)                                                                       \
+            safe_tmpnam_impl(filename_s, maxsize, __FILE__, __func__, __LINE__,                                        \
+                             "safe_tmpnam(" #filename_s ", " #maxsize ")")
+#    endif
+#endif // WANT_SAFE_TMPNAM
+
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_tmpfile(FILE* M_RESTRICT* M_RESTRICT streamptr)
+    {
+        return safe_tmpfile_impl(streamptr, __FILE__, __func__, __LINE__, "safe_tmpfile(streamptr)");
+    }
+#else
+#    define safe_tmpfile(streamptr)                                                                                    \
+        safe_tmpfile_impl(streamptr, __FILE__, __func__, __LINE__, "safe_tmpfile(" #streamptr ")")
+#endif
 
     // Recommend using getline implementation instead as it will dynamically allocate the string for you.-TJE
     // NOTE: Max size of n is limited to INT_MAX in many cases. Windows with secure lib can support RSIZE_MAX
-    char* safe_gets(char* str, rsize_t n);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE char* safe_gets(char* str, rsize_t n)
+    {
+        return safe_gets_impl(str, n, __FILE__, __func__, __LINE__, "safe_gets(streamptr)");
+    }
+#else
+#    define safe_gets(streamptr, n)                                                                                    \
+        safe_gets_impl(streamptr, n, __FILE__, __func__, __LINE__, "safe_gets(" #streamptr ", " #n ")")
+#endif
 
 // These are for specifying the base for conversion in strto(u)l(l) functions
 #define BASE_0_AUTO     (0)
@@ -408,23 +468,111 @@ extern "C"
 
     // These safe string to long conversion functions check for NULL ptr on str and value.
     // They properly check errno for range errors, and detect invalid conversions too
-    errno_t safe_strtol(long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strtol(long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+    {
+        return safe_strtol_impl(value, str, endp, base, __FILE__, __func__, __LINE__,
+                                "safe_strtol(value, str, endp, base)");
+    }
+#else
+#    define safe_strtol(value, str, endp, base)                                                                        \
+        safe_strtol_impl(value, str, endp, base, __FILE__, __func__, __LINE__,                                         \
+                         "safe_strtol(" #value ", " #str ", " #endp ", " #base ")")
+#endif
 
-    errno_t safe_strtoll(long long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strtoll(long long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+    {
+        return safe_strtoll_impl(value, str, endp, base, __FILE__, __func__, __LINE__,
+                                 "safe_strtoll(value, str, endp, base)");
+    }
+#else
+#    define safe_strtoll(value, str, endp, base)                                                                       \
+        safe_strtoll_impl(value, str, endp, base, __FILE__, __func__, __LINE__,                                        \
+                          "safe_strtoll(" #value ", " #str ", " #endp ", " #base ")")
+#endif
 
-    errno_t safe_strtoul(unsigned long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strtoul(unsigned long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+    {
+        return safe_strtoul_impl(value, str, endp, base, __FILE__, __func__, __LINE__,
+                                 "safe_strtoul(value, str, endp, base)");
+    }
+#else
+#    define safe_strtoul(value, str, endp, base)                                                                       \
+        safe_strtoul_impl(value, str, endp, base, __FILE__, __func__, __LINE__,                                        \
+                          "safe_strtoul(" #value ", " #str ", " #endp ", " #base ")")
+#endif
 
-    errno_t safe_strtoull(unsigned long long* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strtoull(unsigned long long*    value,
+                                   const char* M_RESTRICT str,
+                                   char** M_RESTRICT      endp,
+                                   int                    base)
+    {
+        return safe_strtoull_impl(value, str, endp, base, __FILE__, __func__, __LINE__,
+                                  "safe_strtoull(value, str, endp, base)");
+    }
+#else
+#    define safe_strtoull(value, str, endp, base)                                                                      \
+        safe_strtoull_impl(value, str, endp, base, __FILE__, __func__, __LINE__,                                       \
+                           "safe_strtoull(" #value ", " #str ", " #endp ", " #base ")")
+#endif
 
-    errno_t safe_strtoimax(intmax_t* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strtoimax(intmax_t* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+    {
+        return safe_strtoimax_impl(value, str, endp, base, __FILE__, __func__, __LINE__,
+                                   "safe_strtoimax(value, str, endp, base)");
+    }
+#else
+#    define safe_strtoimax(value, str, endp, base)                                                                     \
+        safe_strtoimax_impl(value, str, endp, base, __FILE__, __func__, __LINE__,                                      \
+                            "safe_strtoimax(" #value ", " #str ", " #endp ", " #base ")")
+#endif
 
-    errno_t safe_strtoumax(uintmax_t* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strtoumax(uintmax_t* value, const char* M_RESTRICT str, char** M_RESTRICT endp, int base)
+    {
+        return safe_strtoumax_impl(value, str, endp, base, __FILE__, __func__, __LINE__,
+                                   "safe_strtoumax(value, str, endp, base)");
+    }
+#else
+#    define safe_strtoumax(value, str, endp, base)                                                                     \
+        safe_strtoumax_impl(value, str, endp, base, __FILE__, __func__, __LINE__,                                      \
+                            "safe_strtoumax(" #value ", " #str ", " #endp ", " #base ")")
+#endif
 
-    errno_t safe_strtof(float* value, const char* M_RESTRICT str, char** M_RESTRICT endp);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strtof(float* value, const char* M_RESTRICT str, char** M_RESTRICT endp)
+    {
+        return safe_strtof_impl(value, str, endp, __FILE__, __func__, __LINE__, "safe_strtof(value, str, endp)");
+    }
+#else
+#    define safe_strtof(value, str, endp)                                                                              \
+        safe_strtof_impl(value, str, endp, __FILE__, __func__, __LINE__, "safe_strtof(" #value ", " #str ", " #endp ")")
+#endif
 
-    errno_t safe_strtod(double* value, const char* M_RESTRICT str, char** M_RESTRICT endp);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strtod(double* value, const char* M_RESTRICT str, char** M_RESTRICT endp)
+    {
+        return safe_strtod_impl(value, str, endp, __FILE__, __func__, __LINE__, "safe_strtod(value, str, endp)");
+    }
+#else
+#    define safe_strtod(value, str, endp)                                                                              \
+        safe_strtod_impl(value, str, endp, __FILE__, __func__, __LINE__, "safe_strtod(" #value ", " #str ", " #endp ")")
+#endif
 
-    errno_t safe_strtold(long double* value, const char* M_RESTRICT str, char** M_RESTRICT endp);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strtold(long double* value, const char* M_RESTRICT str, char** M_RESTRICT endp)
+    {
+        return safe_strtold_impl(value, str, endp, __FILE__, __func__, __LINE__, "safe_strtold(value, str, endp)");
+    }
+#else
+#    define safe_strtold(value, str, endp)                                                                             \
+        safe_strtold_impl(value, str, endp, __FILE__, __func__, __LINE__,                                              \
+                          "safe_strtold(" #value ", " #str ", " #endp ")")
+#endif
 
     errno_t safe_atoi(int* value, const char* M_RESTRICT str);
 

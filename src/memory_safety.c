@@ -277,7 +277,7 @@ bool is_Empty(const void* ptrData, size_t lengthBytes)
         // instead of byte by byte for better performance.-TJE
         size_t              sysPageSize = get_System_Pagesize();
         const uint_fast8_t* byteptr     = C_CAST(const uint_fast8_t*, ptrData);
-        if (sysPageSize != SIZE_T_C(0))
+        if (sysPageSize != SIZE_T_C(0) && get_memalignment(ptrData) >= sysPageSize)
         {
             uint8_t* zeroes = C_CAST(uint8_t*, calloc_page_aligned(sysPageSize, sizeof(uint8_t)));
             if (zeroes)
@@ -291,7 +291,7 @@ bool is_Empty(const void* ptrData, size_t lengthBytes)
                         safe_Free_page_aligned(C_CAST(void**, &zeroes));
                         return false;
                     }
-                    // update incement amount to ensure this does not access
+                    // update increment amount to ensure this does not access
                     // invalid memory
                 }
                 safe_Free_page_aligned(C_CAST(void**, &zeroes));
@@ -380,34 +380,46 @@ void* explicit_zeroes(void* dest, size_t count)
     }
 }
 
-errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
+errno_t safe_memset_impl(void*       dest,
+                         rsize_t     destsz,
+                         int         ch,
+                         rsize_t     count,
+                         const char* file,
+                         const char* function,
+                         int         line,
+                         const char* expression)
 {
-    errno_t error = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_memset: dest is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memset: dest is NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         errno = error;
         return error;
     }
     else if (destsz > RSIZE_MAX)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_memset: destsz > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memset: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (count > RSIZE_MAX)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_memset: count > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memset: count > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (count > destsz)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_memset: count > destsz", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memset: count > destsz",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -492,12 +504,18 @@ errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
 
 // malloc in standards leaves malloc'ing size 0 as a undefined behavior.
 // this version will always return a null pointer if the size is zero
-M_FUNC_ATTR_MALLOC void* safe_malloc(size_t size)
+M_FUNC_ATTR_MALLOC void* safe_malloc_impl(size_t      size,
+                                          const char* file,
+                                          const char* function,
+                                          int         line,
+                                          const char* expression)
 {
+    constraintEnvInfo envInfo;
     if (size == SIZE_T_C(0))
     {
         errno = EINVAL;
-        invoke_Constraint_Handler("safe_malloc: size == 0", M_NULLPTR, errno);
+        invoke_Constraint_Handler("safe_malloc: size == 0", set_Env_Info(&envInfo, file, function, expression, line),
+                                  errno);
         return M_NULLPTR;
     }
     else
@@ -509,27 +527,36 @@ M_FUNC_ATTR_MALLOC void* safe_malloc(size_t size)
 // avoiding undefined behavior allocing zero size and avoiding alloc'ing less
 // memory due to an overflow If alloc'ing zero or alloc would overflow size_t
 // from count * size, then return a null pointer
-M_FUNC_ATTR_MALLOC void* safe_calloc(size_t count, size_t size)
+M_FUNC_ATTR_MALLOC void* safe_calloc_impl(size_t      count,
+                                          size_t      size,
+                                          const char* file,
+                                          const char* function,
+                                          int         line,
+                                          const char* expression)
 {
+    constraintEnvInfo envInfo;
     if (count == SIZE_T_C(0))
     {
         // do not alloc size zero
         errno = EINVAL;
-        invoke_Constraint_Handler("safe_calloc: count == 0", M_NULLPTR, errno);
+        invoke_Constraint_Handler("safe_calloc: count == 0", set_Env_Info(&envInfo, file, function, expression, line),
+                                  errno);
         return M_NULLPTR;
     }
     else if (size == SIZE_T_C(0))
     {
         // do not alloc size zero
         errno = EINVAL;
-        invoke_Constraint_Handler("safe_calloc: size == 0", M_NULLPTR, errno);
+        invoke_Constraint_Handler("safe_calloc: size == 0", set_Env_Info(&envInfo, file, function, expression, line),
+                                  errno);
         return M_NULLPTR;
     }
     else if (count > (SIZE_MAX / size))
     {
         // avoid overflow due to inputs
         errno = EINVAL;
-        invoke_Constraint_Handler("safe_calloc: count * size = overflow", M_NULLPTR, errno);
+        invoke_Constraint_Handler("safe_calloc: count * size = overflow",
+                                  set_Env_Info(&envInfo, file, function, expression, line), errno);
         return M_NULLPTR;
     }
     else
@@ -646,13 +673,20 @@ static size_t aligned_Size_Round_Up(size_t size, size_t alignment)
 
 // malloc in standards leaves malloc'ing size 0 as a undefined behavior.
 // this version will always return a null pointer if the size is zero
-M_FUNC_ATTR_MALLOC void* safe_malloc_aligned(size_t size, size_t alignment)
+M_FUNC_ATTR_MALLOC void* safe_malloc_aligned_impl(size_t      size,
+                                                  size_t      alignment,
+                                                  const char* file,
+                                                  const char* function,
+                                                  int         line,
+                                                  const char* expression)
 {
+    constraintEnvInfo envInfo;
     if (size == SIZE_T_C(0))
     {
         // do not alloc size zero
         errno = EINVAL;
-        invoke_Constraint_Handler("safe_malloc_aligned: count == 0", M_NULLPTR, errno);
+        invoke_Constraint_Handler("safe_malloc_aligned: count == 0",
+                                  set_Env_Info(&envInfo, file, function, expression, line), errno);
         return M_NULLPTR;
     }
     else
@@ -666,27 +700,37 @@ M_FUNC_ATTR_MALLOC void* safe_malloc_aligned(size_t size, size_t alignment)
 // avoiding undefined behavior allocing zero size and avoiding alloc'ing less
 // memory due to an overflow If alloc'ing zero or alloc would overflow size_t
 // from count * size, then return a null pointer
-M_FUNC_ATTR_MALLOC void* safe_calloc_aligned(size_t count, size_t size, size_t alignment)
+M_FUNC_ATTR_MALLOC void* safe_calloc_aligned_impl(size_t      count,
+                                                  size_t      size,
+                                                  size_t      alignment,
+                                                  const char* file,
+                                                  const char* function,
+                                                  int         line,
+                                                  const char* expression)
 {
+    constraintEnvInfo envInfo;
     if (count == SIZE_T_C(0))
     {
         // do not alloc size zero
         errno = EINVAL;
-        invoke_Constraint_Handler("safe_calloc_aligned: count == 0", M_NULLPTR, errno);
+        invoke_Constraint_Handler("safe_calloc_aligned: count == 0",
+                                  set_Env_Info(&envInfo, file, function, expression, line), errno);
         return M_NULLPTR;
     }
     else if (size == SIZE_T_C(0))
     {
         // do not alloc size zero
         errno = EINVAL;
-        invoke_Constraint_Handler("safe_calloc_aligned: size == 0", M_NULLPTR, errno);
+        invoke_Constraint_Handler("safe_calloc_aligned: size == 0",
+                                  set_Env_Info(&envInfo, file, function, expression, line), errno);
         return M_NULLPTR;
     }
     else if (count > (SIZE_MAX / size))
     {
         // avoid overflow due to inputs
         errno = EINVAL;
-        invoke_Constraint_Handler("safe_calloc_aligned: count * size = overflow", M_NULLPTR, errno);
+        invoke_Constraint_Handler("safe_calloc_aligned: count * size = overflow",
+                                  set_Env_Info(&envInfo, file, function, expression, line), errno);
         return M_NULLPTR;
     }
     else
@@ -805,36 +849,49 @@ M_FUNC_ATTR_MALLOC void* safe_reallocf_page_aligned(void** block, size_t origina
 
 // Calls memmove_s if available, otherwise performs all checks that memmove_s
 // does before calling memmove
-errno_t safe_memmove(void* dest, rsize_t destsz, const void* src, rsize_t count)
+errno_t safe_memmove_impl(void*       dest,
+                          rsize_t     destsz,
+                          const void* src,
+                          rsize_t     count,
+                          const char* file,
+                          const char* function,
+                          int         line,
+                          const char* expression)
 {
-    errno_t error = 0;
-    errno         = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
+    errno = 0;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_memmove: dest is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memmove: dest is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (src == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_memmove: src is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memmove: src is NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else if (destsz > RSIZE_MAX)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_memmove: destsz > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memmove: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (count > RSIZE_MAX)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_memmove: count > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memmove: count > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (count > destsz)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_memmove: count > destsz", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memmove: count > destsz",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     if (error != 0)
     {
@@ -868,43 +925,56 @@ errno_t safe_memmove(void* dest, rsize_t destsz, const void* src, rsize_t count)
 
 // calls memcpy_s if available, otherwise performs all checks that memcpy_s does
 // before calling memcpy
-errno_t safe_memcpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t count)
+errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
+                         rsize_t                destsz,
+                         const void* M_RESTRICT src,
+                         rsize_t                count,
+                         const char*            file,
+                         const char*            function,
+                         int                    line,
+                         const char*            expression)
 {
-    errno_t error = 0;
-    errno         = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
+    errno = 0;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_memcpy: dest is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memcpy: dest is NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         errno = error;
         return error;
     }
     else if (src == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_memcpy: src is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memcpy: src is NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else if (destsz > RSIZE_MAX)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_memcpy: destsz > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memcpy: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (count > RSIZE_MAX)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_memcpy: count > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memcpy: count > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (count > destsz)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_memcpy: count > destsz", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memcpy: count > destsz",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (memory_regions_overlap(dest, destsz, src, count))
     {
         error = EINVAL;
         invoke_Constraint_Handler("safe_memcpy: dest and src pointer overlap. "
                                   "Use safe_memmove instead.",
-                                  M_NULLPTR, error);
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     if (error != 0)
     {
@@ -936,36 +1006,50 @@ errno_t safe_memcpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRIC
     }
 }
 
-errno_t safe_memccpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t count)
+errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
+                          rsize_t                destsz,
+                          const void* M_RESTRICT src,
+                          int                    c,
+                          rsize_t                count,
+                          const char*            file,
+                          const char*            function,
+                          int                    line,
+                          const char*            expression)
 {
-    errno_t error = 0;
-    errno         = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
+    errno = 0;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_memccpy: dest is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memccpy: dest is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (src == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_memccpy: src is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memccpy: src is NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
     }
     else if (destsz > RSIZE_MAX)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_memccpy: destsz > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memccpy: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (count > RSIZE_MAX)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_memccpy: count > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memccpy: count > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (count > destsz)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_memccpy: count > destsz", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memccpy: count > destsz",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if ((src <= dest && C_CAST(void*, C_CAST(uintptr_t, src) + count) > dest) ||
              (dest <= src && C_CAST(void*, C_CAST(uintptr_t, dest) + count) > src))
@@ -973,7 +1057,7 @@ errno_t safe_memccpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRI
         error = EINVAL;
         invoke_Constraint_Handler("safe_memccpy: dest and src pointer overlap. "
                                   "Use safe_memcmove instead.",
-                                  M_NULLPTR, error);
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     if (error != 0)
     {
@@ -1008,41 +1092,56 @@ errno_t safe_memccpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRI
 }
 
 // allows overlapping ranges
-errno_t safe_memcmove(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t count)
+errno_t safe_memcmove_impl(void* M_RESTRICT       dest,
+                           rsize_t                destsz,
+                           const void* M_RESTRICT src,
+                           int                    c,
+                           rsize_t                count,
+                           const char*            file,
+                           const char*            function,
+                           int                    line,
+                           const char*            expression)
 {
-    errno_t error = 0;
-    errno         = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
+    errno = 0;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_memcmove: dest is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memcmove: dest is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (src == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_memcmove: src is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memcmove: src is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (destsz > RSIZE_MAX)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_memcmove: destsz > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memcmove: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (count > RSIZE_MAX)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_memcmove: count > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memcmove: count > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (count > destsz)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_memcmove: count > destsz", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memcmove: count > destsz",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
     }
     else if (dest == src)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_memcmove: dest and src are the same!", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_memcmove: dest and src are the same!",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }

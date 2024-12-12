@@ -35,6 +35,38 @@ extern "C"
         ERR_IGNORE // does not output any information
     } eConstraintHandler;
 
+#define CONSTRAINT_HANDLER_ENV_INFO_VERSION SIZE_T_C(1)
+    typedef struct s_ConstraintEnvInfo
+    {
+        size_t      version; // CONSTRAINT_HANDLER_ENV_INFO_VERSION
+        size_t      size;    // sizeof(constraintEnvInfo)
+        const char* file;
+        const char* function;
+        const char* expression;
+        int         line;
+        // Other things to look into for the future: Compiler specific flags
+        // GCC: __FUNCTION__, __PRETTY_FUNCTION__
+        // MSVC: __FUNCDNAME__, __FUNCSIG__
+    } constraintEnvInfo;
+
+    static M_INLINE constraintEnvInfo* set_Env_Info(constraintEnvInfo* envInfo,
+                                                    const char*        file,
+                                                    const char*        function,
+                                                    const char*        expression,
+                                                    const int          line)
+    {
+        if (envInfo)
+        {
+            envInfo->version    = CONSTRAINT_HANDLER_ENV_INFO_VERSION;
+            envInfo->size       = sizeof(constraintEnvInfo);
+            envInfo->file       = file;
+            envInfo->function   = function;
+            envInfo->expression = expression;
+            envInfo->line       = line;
+        }
+        return envInfo;
+    }
+
     eConstraintHandler set_Constraint_Handler(eConstraintHandler handler);
 
     // calls the installed constraint handler. If one is not already set, it will

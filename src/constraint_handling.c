@@ -35,10 +35,52 @@ M_NORETURN void safe_abort_handler(const char* M_RESTRICT msg, void* M_RESTRICT 
 
 void safe_ignore_handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error);
 
-M_NORETURN void safe_abort_handler(const char* M_RESTRICT msg, M_ATTR_UNUSED void* M_RESTRICT ptr, errno_t error)
+static M_INLINE void print_Additional_Error_Info(constraintEnvInfo* envInfo, FILE* stream)
+{
+    if (envInfo)
+    {
+        if (envInfo->version == CONSTRAINT_HANDLER_ENV_INFO_VERSION && envInfo->size == sizeof(constraintEnvInfo))
+        {
+            fprintf(stream, "\tAdditional Error info:\n");
+            if (envInfo->file)
+            {
+                const char* fileNameOnly = strrchr(envInfo->file, '/');
+                if (fileNameOnly == M_NULLPTR)
+                {
+                    fileNameOnly = strrchr(envInfo->file, '\\');
+                    if (fileNameOnly == M_NULLPTR)
+                    {
+                        fileNameOnly = envInfo->file;
+                    }
+                    else
+                    {
+                        fileNameOnly += 1;
+                    }
+                }
+                else
+                {
+                    fileNameOnly += 1;
+                }
+                fprintf(stream, "\t\tFile:       %s\n", fileNameOnly);
+                fprintf(stream, "\t\tLine:       %d\n", envInfo->line);
+            }
+            if (envInfo->function)
+            {
+                fprintf(stream, "\t\tFunction:   %s\n", envInfo->function);
+            }
+            if (envInfo->expression)
+            {
+                fprintf(stream, "\t\tExpression: %s\n", envInfo->expression);
+            }
+        }
+    }
+}
+
+M_NORETURN void safe_abort_handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error)
 {
     fprintf(stderr, "abort_handler_s: %s\n", msg);
     fprintf(stderr, "Error code: %d\n", error);
+    print_Additional_Error_Info(M_REINTERPRET_CAST(constraintEnvInfo*, ptr), stderr);
     flush_stderr();
     abort();
 }
@@ -82,12 +124,13 @@ void invoke_Constraint_Handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr,
     handler(msg, ptr, error);
 }
 
-void safe_warn_handler(const char* M_RESTRICT msg, M_ATTR_UNUSED void* M_RESTRICT ptr, errno_t error);
+void safe_warn_handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error);
 
-void safe_warn_handler(const char* M_RESTRICT msg, M_ATTR_UNUSED void* M_RESTRICT ptr, errno_t error)
+void safe_warn_handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error)
 {
     fprintf(stderr, "warn_handler: %s\n", msg);
     fprintf(stderr, "Error code: %d\n", error);
+    print_Additional_Error_Info(M_REINTERPRET_CAST(constraintEnvInfo*, ptr), stderr);
     flush_stderr();
 }
 

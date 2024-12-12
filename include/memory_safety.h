@@ -19,6 +19,7 @@
 
 #include "code_attributes.h"
 #include "common_types.h"
+#include "impl_memory_safety.h"
 #include "type_conversion.h"
 
 #include <stdlib.h>
@@ -38,12 +39,27 @@ extern "C"
 
     // malloc in standards leaves malloc'ing size 0 as a undefined behavior.
     // this version will always return a null pointer if the size is zero
-    M_FUNC_ATTR_MALLOC void* safe_malloc(size_t size);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE M_FUNC_ATTR_MALLOC void* safe_malloc(size_t size)
+    {
+        return safe_malloc_impl(size, __FILE__, __func__, __LINE__, "safe_malloc(size)");
+    }
+#else
+#    define safe_malloc(size) safe_malloc_impl(size, __FILE__, __func__, __LINE__, "safe_malloc(" #    size ")")
+#endif
 
     // avoiding undefined behavior allocing zero size and avoiding alloc'ing less
     // memory due to an overflow If alloc'ing zero or alloc would overflow size_t
     // from count * size, then return a null pointer
-    M_FUNC_ATTR_MALLOC void* safe_calloc(size_t count, size_t size);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE M_FUNC_ATTR_MALLOC void* safe_calloc(size_t count, size_t size)
+    {
+        return safe_calloc_impl(count, size, __FILE__, __func__, __LINE__, "safe_calloc(count, size)");
+    }
+#else
+#    define safe_calloc(count, size)                                                                                   \
+        safe_calloc_impl(count, size, __FILE__, __func__, __LINE__, "safe_calloc(" #count ", " #size ")")
+#endif
 
     // if passed a null pointer, behaves as safe_Malloc
     // if size is zero, will perform free and return NULL ptr
@@ -217,28 +233,38 @@ extern "C"
     //-----------------------------------------------------------------------------
     bool is_Empty(const void* ptrData, size_t lengthBytes);
 
-    //-----------------------------------------------------------------------------
-    //
-    //  errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
-    //
-    //! \brief   Description: Works like memset_s from C11 annex K. This will check
-    //! parameters for errors and write count chars to dest without being optimized
-    //! away.
-    //!                       the function explicit_zeroes may be better in some
-    //!                       cases where you want to zero out memory, whereas this
-    //!                       can be used to memset any character.
-    //
-    //  Entry:
-    //!   \param[in] dest = pointer to memory to write
-    //!   \param[in] destsz = size of dest in bytes
-    //!   \param[in] ch = value to write to memory
-    //!   \param[in] count = number of bytes to write
-    //!
-    //  Exit:
-    //!   \return M_NULLPTR = error occurred otherwise returns pointer to dest
-    //
-    //-----------------------------------------------------------------------------
-    errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count);
+//-----------------------------------------------------------------------------
+//
+//  errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
+//
+//! \brief   Description: Works like memset_s from C11 annex K. This will check
+//! parameters for errors and write count chars to dest without being optimized
+//! away.
+//!                       the function explicit_zeroes may be better in some
+//!                       cases where you want to zero out memory, whereas this
+//!                       can be used to memset any character.
+//
+//  Entry:
+//!   \param[in] dest = pointer to memory to write
+//!   \param[in] destsz = size of dest in bytes
+//!   \param[in] ch = value to write to memory
+//!   \param[in] count = number of bytes to write
+//!
+//  Exit:
+//!   \return 0 = no error, otherwise an error code is returned.
+//
+//-----------------------------------------------------------------------------
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
+    {
+        return safe_memset_impl(dest, destsz, ch, count, __FILE__, __func__, __LINE__,
+                                "safe_memset(dest, destsz, ch, count)");
+    }
+#else
+#    define safe_memset(dest, destsz, ch, count)                                                                       \
+        safe_memset_impl(dest, destsz, ch, count, __FILE__, __func__, __LINE__,                                        \
+                         "safe_memset(" #dest ", " #destsz ", " #ch ", " #count ")")
+#endif
 
     //-----------------------------------------------------------------------------
     //
@@ -469,12 +495,32 @@ extern "C"
 
     // malloc in standards leaves malloc'ing size 0 as a undefined behavior.
     // this version will always return a null pointer if the size is zero
-    M_FUNC_ATTR_MALLOC void* safe_malloc_aligned(size_t size, size_t alignment);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE M_FUNC_ATTR_MALLOC void* safe_malloc_aligned(size_t size, size_t alignment)
+    {
+        return safe_malloc_aligned_impl(size, alignment, __FILE__, __func__, __LINE__,
+                                        "safe_malloc_aligned(size, alignment)");
+    }
+#else
+#    define safe_malloc_aligned(size, alignment)                                                                       \
+        safe_malloc_aligned_impl(size, alignment, __FILE__, __func__, __LINE__,                                        \
+                                 "safe_malloc_aligned(" #size ", " #alignment ")")
+#endif
 
     // avoiding undefined behavior allocing zero size and avoiding alloc'ing less
     // memory due to an overflow If alloc'ing zero or alloc would overflow size_t
     // from count * size, then return a null pointer
-    M_FUNC_ATTR_MALLOC void* safe_calloc_aligned(size_t count, size_t size, size_t alignment);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE M_FUNC_ATTR_MALLOC void* safe_calloc_aligned(size_t count, size_t size, size_t alignment)
+    {
+        return safe_calloc_aligned_impl(count, size, alignment, __FILE__, __func__, __LINE__,
+                                        "safe_calloc_aligned(count, size, alignment)");
+    }
+#else
+#    define safe_calloc_aligned(count, size, alignment)                                                                \
+        safe_calloc_aligned_impl(count, size, alignment, __FILE__, __func__, __LINE__,                                 \
+                                 "safe_calloc_aligned(" #count ", " #size ", " #alignment ")")
+#endif
 
     // if passed a null pointer, behaves as safe_Malloc
     // if size is zero, will perform free and return NULL ptr
@@ -666,17 +712,59 @@ extern "C"
     }
 
     // bounds checked version of memmove, similar to memmove_s
-    errno_t safe_memmove(void* dest, rsize_t destsz, const void* src, rsize_t count);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_memmove(void* dest, rsize_t destsz, const void* src, rsize_t count)
+    {
+        return safe_memmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
+                                 "safe_memmove(dest, destsz, src, count)");
+    }
+#else
+#    define safe_memmove(dest, destsz, src, count)                                                                     \
+        safe_memmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                      \
+                          "safe_memmove(" #dest ", " #destsz ", " #src ", " #count ")")
+#endif
 
     // bounds checked version of memcpy, similar to memcpy_s
-    errno_t safe_memcpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t count);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_memcpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t count)
+    {
+        return safe_memcpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
+                                "safe_memcpy(dest, destsz, src, count)");
+    }
+#else
+#    define safe_memcpy(dest, destsz, src, count)                                                                      \
+        safe_memcpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                       \
+                         "safe_memcpy(" #dest ", " #destsz ", " #src ", " #count ")")
+#endif
 
     // bounds checked version of memccpy
-    errno_t safe_memccpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t count);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t
+    safe_memccpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t count)
+    {
+        return safe_memccpy_impl(dest, destsz, src, c, count, __FILE__, __func__, __LINE__,
+                                 "safe_memccpy(dest, destsz, src, c, count)");
+    }
+#else
+#    define safe_memccpy(dest, destsz, src, c, count)                                                                  \
+        safe_memccpy_impl(dest, destsz, src, c, count, __FILE__, __func__, __LINE__,                                   \
+                          "safe_memccpy(" #dest ", " #destsz ", " #src ", " #c ", " #count ")")
+#endif
 
     // bounds checked version of memccpy that allows overlapping ranges (like
     // memmove does)
-    errno_t safe_memcmove(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t count);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t
+    safe_memcmove(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t count)
+    {
+        return safe_memcmove_impl(dest, destsz, src, c, count, __FILE__, __func__, __LINE__,
+                                  "safe_memcmove(dest, destsz, src, c, count)");
+    }
+#else
+#    define safe_memcmove(dest, destsz, src, c, count)                                                                 \
+        safe_memcmove_impl(dest, destsz, src, c, count, __FILE__, __func__, __LINE__,                                  \
+                           "safe_memcmove(" #dest ", " #destsz ", " #src ", " #c ", " #count ")")
+#endif
 
     // Like the C23 function memalignment()
     static M_INLINE size_t get_memalignment(const void* ptr)

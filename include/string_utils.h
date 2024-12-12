@@ -20,6 +20,8 @@
 #include "code_attributes.h"
 #include "common_types.h"
 #include "env_detect.h"
+#include "impl_string_utils.h"
+#include "predef_env_detect.h"
 #include "type_conversion.h"
 
 #if defined(__cplusplus)
@@ -86,14 +88,6 @@ extern "C"
 
     size_t safe_strnlen(const char* string, size_t n);
 
-#if IS_GCC_VERSION(4, 1)
-#    define HAVE_BUILT_IN_OBJ_SIZE
-#elif defined __has_builtin
-#    if __has_builtin(__builtin_object_size)
-#        define HAVE_BUILT_IN_OBJ_SIZE
-#    endif
-#endif
-
     // if str is a null pointer, returns 0. Internally calls safe_strnlen with size
     // set to RSIZE_MAX If __builtin_object_size can determine the amount of memory
     // allocated for the string, the limit is set to this limit, otherwise RSIZE_MAX
@@ -113,35 +107,75 @@ extern "C"
 #endif
     }
 
-    errno_t safe_strcpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strcpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src)
+    {
+        return safe_strcpy_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strcpy(dest, destsz, src)");
+    }
+#else
+#    define safe_strcpy(dest, destsz, src)                                                                             \
+        safe_strcpy_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                              \
+                         "safe_strcpy(" #dest ", " #destsz ", " #src ")")
+#endif
 
-    errno_t safe_strmove(char* dest, rsize_t destsz, const char* src);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strmove(char* dest, rsize_t destsz, const char* src)
+    {
+        return safe_strmove_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strmove(dest, destsz, src)");
+    }
+#else
+#    define safe_strmove(dest, destsz, src)                                                                            \
+        safe_strmove_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                             \
+                          "safe_strmove(" #dest ", " #destsz ", " #src ")")
+#endif
 
-    errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src, rsize_t count);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src, rsize_t count)
+    {
+        return safe_strncpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
+                                 "safe_strncpy(dest, destsz, src, count)");
+    }
+#else
+#    define safe_strncpy(dest, destsz, src, count)                                                                     \
+        safe_strncpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                      \
+                          "safe_strncpy(" #dest ", " #destsz ", " #src ", " #count ")")
+#endif
 
-    errno_t safe_strnmove(char* dest, rsize_t destsz, const char* src, rsize_t count);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strnmove(char* dest, rsize_t destsz, const char* src, rsize_t count)
+    {
+        return safe_strnmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
+                                  "safe_strnmove(dest, destsz, src, count)");
+    }
+#else
+#    define safe_strnmove(dest, destsz, src, count)                                                                    \
+        safe_strnmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                     \
+                           "safe_strnmove(" #dest ", " #destsz ", " #src ", " #count ")")
+#endif
 
-    errno_t safe_strcat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strcat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src)
+    {
+        return safe_strcat_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strcat(dest, destsz, src)");
+    }
+#else
+#    define safe_strcat(dest, destsz, src)                                                                             \
+        safe_strcat_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                              \
+                         "safe_strcat(" #dest ", " #destsz ", " #src ")")
+#endif
 
-    errno_t safe_strncat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src, rsize_t count);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strncat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src, rsize_t count)
+    {
+        return safe_strncat_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
+                                 "safe_strncat(dest, destsz, src, count)");
+    }
+#else
+#    define safe_strncat(dest, destsz, src, count)                                                                     \
+        safe_strncat_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                      \
+                          "safe_strncat(" #dest ", " #destsz ", " #src ", " #count ")")
+#endif
 
-    //-----------------------------------------------------------------------------
-    //
-    //  char* safe_strcat(char* destination, size_t destinationSizeBytes,
-    //  const char* source);
-    //
-    //! \brief   Description:  To be used in place of strcat.
-    //
-    //  Entry:
-    //!   \param[in] destination = pointer to memory to write with zeroes. Must be
-    //!   non-M_NULLPTR \param[in] destinationSizeBytes = number of bytes pointed to
-    //!   by destination \param[in] source = pointer to source string to concatenate
-    //!   onto destination. Must be M_NULLPTR terminated.
-    //!
-    //  Exit:
-    //!   \return pointer to destination
-    //
-    //-----------------------------------------------------------------------------
     static M_INLINE char* common_String_Concat(char* M_RESTRICT       destination,
                                                size_t                 destinationSizeBytes,
                                                const char* M_RESTRICT source)
@@ -215,10 +249,21 @@ extern "C"
     //!   \return pointer to destination
     //
     //-----------------------------------------------------------------------------
-    char* safe_String_Token(char* M_RESTRICT       str,
-                            rsize_t* M_RESTRICT    strmax,
-                            const char* M_RESTRICT delim,
-                            char** M_RESTRICT      saveptr);
+
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE char* safe_String_Token(char* M_RESTRICT       str,
+                                     rsize_t* M_RESTRICT    strmax,
+                                     const char* M_RESTRICT delim,
+                                     char** M_RESTRICT      saveptr)
+    {
+        return safe_String_Token_impl(str, strmax, delim, saveptr, __FILE__, __func__, __LINE__,
+                                      "safe_strncat(str, strmax, delim, saveptr)");
+    }
+#else
+#    define safe_String_Token(str, strmax, delim, saveptr)                                                             \
+        safe_String_Token_impl(str, strmax, delim, saveptr, __FILE__, __func__, __LINE__,                              \
+                               "safe_String_Token(" #str ", " #strmax ", " #delim ", " #saveptr ")")
+#endif
 
 #define common_String_Token(str, strmax, delim, saveptr) safe_String_Token(str, strmax, delim, saveptr)
 
@@ -229,9 +274,25 @@ extern "C"
     M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size);
 #endif // checks for when to add strndup functionality
 
-    errno_t safe_strdup(char** dup, const char* src);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strdup(char** dup, const char* src)
+    {
+        return safe_strdup_impl(dup, src, __FILE__, __func__, __LINE__, "safe_strdup(dup, src)");
+    }
+#else
+#    define safe_strdup(dup, src)                                                                                      \
+        safe_strdup_impl(dup, src, __FILE__, __func__, __LINE__, "safe_strdup(" #dup ", " #src ")")
+#endif
 
-    errno_t safe_strndup(char** dup, const char* src, rsize_t size);
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_strndup(char** dup, const char* src, rsize_t size)
+    {
+        return safe_strndup_impl(dup, src, size, __FILE__, __func__, __LINE__, "safe_strndup(dup, src, size)");
+    }
+#else
+#    define safe_strndup(dup, src, size)                                                                               \
+        safe_strndup_impl(dup, src, size, __FILE__, __func__, __LINE__, "safe_strndup(" #dup ", " #src ", " #size ")")
+#endif
 
     //-----------------------------------------------------------------------------
     //

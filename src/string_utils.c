@@ -277,21 +277,30 @@ int safe_ispunct(int c)
     }
 }
 
-errno_t safe_strcpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src)
+errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
+                         rsize_t                destsz,
+                         const char* M_RESTRICT src,
+                         const char*            file,
+                         const char*            function,
+                         int                    line,
+                         const char*            expression)
 {
-    errno_t error  = 0;
-    size_t  srclen = safe_strnlen(src, destsz);
+    errno_t           error  = 0;
+    size_t            srclen = safe_strnlen(src, destsz);
+    constraintEnvInfo envInfo;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strcpy: dest is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strcpy: dest is NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         errno = error;
         return error;
     }
     else if (src == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strcpy: src is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strcpy: src is NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         if (destsz > RSIZE_T_C(0) && destsz <= RSIZE_MAX)
         {
             dest[0] = 0;
@@ -302,14 +311,16 @@ errno_t safe_strcpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRIC
     else if (destsz == RSIZE_T_C(0))
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_strcpy: destsz is zero", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strcpy: destsz is zero",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (destsz > RSIZE_MAX)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_strcpy: destsz > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strcpy: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -317,7 +328,8 @@ errno_t safe_strcpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRIC
     {
         dest[0] = 0;
         error   = ERANGE;
-        invoke_Constraint_Handler("safe_strcpy: destsz <= srclen", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strcpy: destsz <= srclen",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -325,7 +337,8 @@ errno_t safe_strcpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRIC
     {
         dest[0] = 0;
         error   = EINVAL;
-        invoke_Constraint_Handler("safe_strcpy: src and destination overlap!", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strcpy: src and destination overlap!",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -344,21 +357,30 @@ errno_t safe_strcpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRIC
     }
 }
 
-errno_t safe_strmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src)
+errno_t safe_strmove_impl(char*       dest,
+                          rsize_t     destsz,
+                          const char* src,
+                          const char* file,
+                          const char* function,
+                          int         line,
+                          const char* expression)
 {
-    errno_t error  = 0;
-    size_t  srclen = safe_strnlen(src, destsz);
+    errno_t           error  = 0;
+    size_t            srclen = safe_strnlen(src, destsz);
+    constraintEnvInfo envInfo;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strmove: dest is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strmove: dest is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (src == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strmove: src is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strmove: src is NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         if (destsz > 0 && destsz <= RSIZE_MAX)
         {
             dest[0] = 0;
@@ -369,14 +391,16 @@ errno_t safe_strmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     else if (destsz == RSIZE_T_C(0))
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_strmove: destsz is zero", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strmove: destsz is zero",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (destsz > RSIZE_MAX)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_strmove: destsz > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strmove: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -384,7 +408,8 @@ errno_t safe_strmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     {
         dest[0] = 0;
         error   = ERANGE;
-        invoke_Constraint_Handler("safe_strmove: destsz <= srclen", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strmove: destsz <= srclen",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -397,21 +422,31 @@ errno_t safe_strmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     }
 }
 
-errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src, rsize_t count)
+errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
+                          rsize_t                destsz,
+                          const char* M_RESTRICT src,
+                          rsize_t                count,
+                          const char*            file,
+                          const char*            function,
+                          int                    line,
+                          const char*            expression)
 {
-    errno_t error  = 0;
-    size_t  srclen = safe_strnlen(src, count);
+    errno_t           error  = 0;
+    size_t            srclen = safe_strnlen(src, count);
+    constraintEnvInfo envInfo;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strncpy: dest is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strncpy: dest is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (src == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strncpy: src is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strncpy: src is NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         if (destsz > RSIZE_T_C(0) && destsz <= RSIZE_MAX)
         {
             dest[0] = 0;
@@ -422,14 +457,16 @@ errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     else if (destsz == RSIZE_T_C(0))
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_strncpy: destsz is zero", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strncpy: destsz is zero",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (destsz > RSIZE_MAX)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_strncpy: destsz > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strncpy: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -437,7 +474,8 @@ errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     {
         dest[0] = 0;
         error   = ERANGE;
-        invoke_Constraint_Handler("safe_strncpy: count > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strncpy: count > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -445,7 +483,8 @@ errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     {
         dest[0] = 0;
         error   = ERANGE;
-        invoke_Constraint_Handler("safe_strncpy: count >= destsz", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strncpy: count >= destsz",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -453,7 +492,8 @@ errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     {
         dest[0] = 0;
         error   = EINVAL;
-        invoke_Constraint_Handler("safe_strncpy: src and destination overlap!", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strncpy: src and destination overlap!",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -479,21 +519,31 @@ errno_t safe_strncpy(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     }
 }
 
-errno_t safe_strnmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src, rsize_t count)
+errno_t safe_strnmove_impl(char*       dest,
+                           rsize_t     destsz,
+                           const char* src,
+                           rsize_t     count,
+                           const char* file,
+                           const char* function,
+                           int         line,
+                           const char* expression)
 {
-    errno_t error  = 0;
-    size_t  srclen = safe_strnlen(src, count);
+    errno_t           error  = 0;
+    size_t            srclen = safe_strnlen(src, count);
+    constraintEnvInfo envInfo;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strnmove: dest is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strnmove: dest is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (src == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strnmove: src is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strnmove: src is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         if (destsz > RSIZE_T_C(0) && destsz <= RSIZE_MAX)
         {
             dest[0] = 0;
@@ -504,14 +554,16 @@ errno_t safe_strnmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTR
     else if (destsz == RSIZE_T_C(0))
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_strnmove: destsz is zero", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strnmove: destsz is zero",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (destsz > RSIZE_MAX)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_strnmove: destsz > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strnmove: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -519,7 +571,8 @@ errno_t safe_strnmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTR
     {
         dest[0] = 0;
         error   = ERANGE;
-        invoke_Constraint_Handler("safe_strnmove: count > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strnmove: count > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -527,7 +580,8 @@ errno_t safe_strnmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTR
     {
         dest[0] = 0;
         error   = ERANGE;
-        invoke_Constraint_Handler("safe_strnmove: count >= destsz", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strnmove: count >= destsz",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -547,22 +601,31 @@ errno_t safe_strnmove(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTR
     }
 }
 
-errno_t safe_strcat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src)
+errno_t safe_strcat_impl(char* M_RESTRICT       dest,
+                         rsize_t                destsz,
+                         const char* M_RESTRICT src,
+                         const char*            file,
+                         const char*            function,
+                         int                    line,
+                         const char*            expression)
 {
-    errno_t error    = 0;
-    size_t  srclen   = safe_strnlen(src, destsz);
-    char*   destnull = M_NULLPTR;
+    errno_t           error    = 0;
+    size_t            srclen   = safe_strnlen(src, destsz);
+    char*             destnull = M_NULLPTR;
+    constraintEnvInfo envInfo;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strcat: dest is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strcat: dest is NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         errno = error;
         return error;
     }
     else if (src == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strcat: src is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strcat: src is NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         if (destsz > RSIZE_T_C(0) && destsz <= RSIZE_MAX)
         {
             dest[0] = 0;
@@ -573,21 +636,24 @@ errno_t safe_strcat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRIC
     else if (destsz == RSIZE_T_C(0))
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_strcat: destsz is zero", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strcat: destsz is zero",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (destsz > RSIZE_MAX)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_strcat: destsz > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strcat: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (M_NULLPTR == (destnull = M_REINTERPRET_CAST(char*, memchr(dest, '\0', destsz))))
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strcat: No NULL terminator found in dest", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strcat: No NULL terminator found in dest",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -595,7 +661,8 @@ errno_t safe_strcat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRIC
     {
         dest[0] = 0;
         error   = ERANGE;
-        invoke_Constraint_Handler("safe_strcat: destsz too small. Src will be truncated.", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strcat: destsz too small. Src will be truncated.",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -603,7 +670,8 @@ errno_t safe_strcat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRIC
     {
         dest[0] = 0;
         error   = EINVAL;
-        invoke_Constraint_Handler("safe_strcat: src and destination overlap!", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strcat: src and destination overlap!",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -623,22 +691,32 @@ errno_t safe_strcat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRIC
     }
 }
 
-errno_t safe_strncat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRICT src, rsize_t count)
+errno_t safe_strncat_impl(char* M_RESTRICT       dest,
+                          rsize_t                destsz,
+                          const char* M_RESTRICT src,
+                          rsize_t                count,
+                          const char*            file,
+                          const char*            function,
+                          int                    line,
+                          const char*            expression)
 {
-    errno_t error    = 0;
-    size_t  srclen   = safe_strnlen(src, destsz);
-    char*   destnull = M_NULLPTR;
+    errno_t           error    = 0;
+    size_t            srclen   = safe_strnlen(src, destsz);
+    char*             destnull = M_NULLPTR;
+    constraintEnvInfo envInfo;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strncat: dest is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strncat: dest is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (src == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strncat: src is NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strncat: src is NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         if (destsz > RSIZE_T_C(0) && destsz <= RSIZE_MAX)
         {
             dest[0] = 0;
@@ -649,21 +727,24 @@ errno_t safe_strncat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     else if (destsz == RSIZE_T_C(0))
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_strncat: destsz is zero", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strncat: destsz is zero",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (destsz > RSIZE_MAX)
     {
         error = ERANGE;
-        invoke_Constraint_Handler("safe_strncat: destsz > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strncat: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (M_NULLPTR == (destnull = M_REINTERPRET_CAST(char*, memchr(dest, '\0', destsz))))
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strncat: No NULL terminator found in dest", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strncat: No NULL terminator found in dest",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -672,7 +753,8 @@ errno_t safe_strncat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     {
         dest[0] = 0;
         error   = ERANGE;
-        invoke_Constraint_Handler("safe_strncat: destsz too small. Src will be truncated.", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strncat: destsz too small. Src will be truncated.",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -680,7 +762,8 @@ errno_t safe_strncat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     {
         dest[0] = 0;
         error   = EINVAL;
-        invoke_Constraint_Handler("safe_strncat: src and destination overlap!", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strncat: src and destination overlap!",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
@@ -700,32 +783,40 @@ errno_t safe_strncat(char* M_RESTRICT dest, rsize_t destsz, const char* M_RESTRI
     }
 }
 
-char* safe_String_Token(char* M_RESTRICT       str,
-                        rsize_t* M_RESTRICT    strmax,
-                        const char* M_RESTRICT delim,
-                        char** M_RESTRICT      saveptr)
+char* safe_String_Token_impl(char* M_RESTRICT       str,
+                             rsize_t* M_RESTRICT    strmax,
+                             const char* M_RESTRICT delim,
+                             char** M_RESTRICT      saveptr,
+                             const char*            file,
+                             const char*            function,
+                             int                    line,
+                             const char*            expression)
 {
-    errno_t error   = 0;
-    char*   token   = M_NULLPTR;
-    char*   tokiter = M_NULLPTR;
+    errno_t           error   = 0;
+    char*             token   = M_NULLPTR;
+    char*             tokiter = M_NULLPTR;
+    constraintEnvInfo envInfo;
     if (strmax == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_String_Token: strmax = NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_String_Token: strmax = NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return M_NULLPTR;
     }
     else if (delim == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_String_Token: delim = NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_String_Token: delim = NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return M_NULLPTR;
     }
     else if (saveptr == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_String_Token: saveptr = NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_String_Token: saveptr = NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return M_NULLPTR;
     }
@@ -738,7 +829,8 @@ char* safe_String_Token(char* M_RESTRICT       str,
         {
             *saveptr = M_NULLPTR;
             error    = ERANGE;
-            invoke_Constraint_Handler("safe_String_Token: *strmax = 0 on initial call", M_NULLPTR, error);
+            invoke_Constraint_Handler("safe_String_Token: *strmax = 0 on initial call",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
             errno = error;
             return M_NULLPTR;
         }
@@ -752,7 +844,8 @@ char* safe_String_Token(char* M_RESTRICT       str,
         {
             *saveptr = M_NULLPTR;
             error    = ERANGE;
-            invoke_Constraint_Handler("safe_String_Token: *strmax > RSIZE_MAX on initial call", M_NULLPTR, error);
+            invoke_Constraint_Handler("safe_String_Token: *strmax > RSIZE_MAX on initial call",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
             errno = error;
             return M_NULLPTR;
         }
@@ -764,7 +857,8 @@ char* safe_String_Token(char* M_RESTRICT       str,
         {
             *saveptr = M_NULLPTR;
             error    = EINVAL;
-            invoke_Constraint_Handler("safe_String_Token: *saveptr = NULL on non-initial call", M_NULLPTR, error);
+            invoke_Constraint_Handler("safe_String_Token: *saveptr = NULL on non-initial call",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
             errno = error;
             return M_NULLPTR;
         }
@@ -788,7 +882,7 @@ char* safe_String_Token(char* M_RESTRICT       str,
             error    = ERANGE;
             invoke_Constraint_Handler("safe_String_Token: reached end of source "
                                       "string without encountering null terminator",
-                                      M_NULLPTR, error);
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
             errno = error;
         }
         return M_NULLPTR;
@@ -856,21 +950,29 @@ M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size)
 }
 #endif // checks for strndup
 
-errno_t safe_strdup(char** dup, const char* src)
+errno_t safe_strdup_impl(char**      dup,
+                         const char* src,
+                         const char* file,
+                         const char* function,
+                         int         line,
+                         const char* expression)
 {
-    errno_t error = 0;
-    errno         = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
+    errno = 0;
     if (dup == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strdup: dup == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strdup: dup == NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         errno = error;
         return error;
     }
     else if (src == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strdup: src == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strdup: src == NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         errno = error;
         return error;
     }
@@ -880,14 +982,16 @@ errno_t safe_strdup(char** dup, const char* src)
         if (srclen == RSIZE_MAX && (srclen + RSIZE_T_C(1)) != '\0')
         {
             error = EINVAL;
-            invoke_Constraint_Handler("safe_strdup: src longer than RSIZE_MAX", M_NULLPTR, error);
+            invoke_Constraint_Handler("safe_strdup: src longer than RSIZE_MAX",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
             errno = error;
             return error;
         }
         else if (srclen == RSIZE_T_C(0))
         {
             error = EINVAL;
-            invoke_Constraint_Handler("safe_strdup: src is len 0", M_NULLPTR, error);
+            invoke_Constraint_Handler("safe_strdup: src is len 0",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
             errno = error;
             return error;
         }
@@ -906,35 +1010,46 @@ errno_t safe_strdup(char** dup, const char* src)
     return error;
 }
 
-errno_t safe_strndup(char** dup, const char* src, rsize_t size)
+errno_t safe_strndup_impl(char**      dup,
+                          const char* src,
+                          rsize_t     size,
+                          const char* file,
+                          const char* function,
+                          int         line,
+                          const char* expression)
 {
-    errno_t error = 0;
-    errno         = 0;
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
+    errno = 0;
     if (dup == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strndup: dup == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strndup: dup == NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         errno = error;
         return error;
     }
     else if (src == M_NULLPTR)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strndup: src == NULL", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strndup: src == NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         errno = error;
         return error;
     }
     else if (size > RSIZE_MAX)
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strndup: size > RSIZE_MAX", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strndup: size > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return error;
     }
     else if (size == RSIZE_T_C(0))
     {
         error = EINVAL;
-        invoke_Constraint_Handler("safe_strndup: size == 0", M_NULLPTR, error);
+        invoke_Constraint_Handler("safe_strndup: size == 0", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         errno = error;
         return error;
     }
