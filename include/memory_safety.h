@@ -216,71 +216,84 @@ extern "C"
     }
 #endif
 
-    //-----------------------------------------------------------------------------
+    //! \fn bool is_Empty(const void* ptrData, size_t lengthBytes)
+    //! \brief   checks if a memory block is set to zeros
     //
-    //  is_Empty(void *ptrData, size_t lengthBytes)
-    //
-    //! \brief   Description:  Checks if the provided pointer is cleared to zeros
-    //
-    //  Entry:
-    //!   \param[in] ptrData = pointer to a memory block to check if zeros
-    //!   \param[in] lengthBytes = size in bytes of the ptr to check
-    //!
-    //  Exit:
-    //!   \return true = memory is filled with zeros. false = memory has nonzero
-    //!   values in it.
-    //
-    //-----------------------------------------------------------------------------
+    //! \param[in] ptrData pointer to a memory block to check if zeros
+    //! \param[in] lengthBytes size in bytes of \a ptrData to check if equal to zero
+    //! \return true = memory is filled with zeros. false = memory has nonzero
+    //! values in it.
     bool is_Empty(const void* ptrData, size_t lengthBytes);
 
-//-----------------------------------------------------------------------------
-//
-//  errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
-//
-//! \brief   Description: Works like memset_s from C11 annex K. This will check
-//! parameters for errors and write count chars to dest without being optimized
-//! away.
-//!                       the function explicit_zeroes may be better in some
-//!                       cases where you want to zero out memory, whereas this
-//!                       can be used to memset any character.
-//
-//  Entry:
-//!   \param[in] dest = pointer to memory to write
-//!   \param[in] destsz = size of dest in bytes
-//!   \param[in] ch = value to write to memory
-//!   \param[in] count = number of bytes to write
-//!
-//  Exit:
-//!   \return 0 = no error, otherwise an error code is returned.
-//
-//-----------------------------------------------------------------------------
 #if defined(DEV_ENVIRONMENT)
+    //! \fn errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
+    //! \brief Sets a block of memory to a specified value.
+    //
+    //! This function is similar to memset_s in C11 annex K. It sets the first \a count bytes of the block of memory
+    //! pointed to by \a dest to the specified value \a ch.
+    //!
+    //! \param[out] dest Pointer to the block of memory to fill.
+    //! \param[in] destsz Size of the destination buffer.
+    //! \param[in] ch Value to be set.
+    //! \param[in] count Number of bytes to be set to the value.
+    //! \return Zero on success, or an error code on failure.
+    //!
+    //! \note The following errors are detected at runtime and call the currently installed constraint handler function
+    //! after storing \a ch in every location of the destination range [\a dest, \a dest + \a destsz) if \a dest and
+    //! \a destsz are themselves valid:
+    //!
+    //! - \a dest is a null pointer
+    //!
+    //! - \a destsz or \a count is greater than \a RSIZE_MAX
+    //!
+    //! - \a count is greater than \a destsz (buffer overflow would occur)
+    //!
+    //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
+    //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
     M_INLINE errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
     {
         return safe_memset_impl(dest, destsz, ch, count, __FILE__, __func__, __LINE__,
                                 "safe_memset(dest, destsz, ch, count)");
     }
 #else
+//! \def safe_memset(dest, destsz, ch, count)
+//! \brief Sets a block of memory to a specified value using a macro.
+//
+//! This macro is similar to memset_s in C11 annex K. It sets the first \a count bytes of the block of memory
+//! pointed to by \a dest to the specified value \a ch. This macro passes __FILE__, __func__, __LINE__ to
+//! The internal implementation to provide more debug information at compile time to the constraint handler
+//!
+//! \param[out] dest Pointer to the block of memory to fill.
+//! \param[in] destsz Size of the destination buffer.
+//! \param[in] ch Value to be set.
+//! \param[in] count Number of bytes to be set to the value.
+//! \return Zero on success, or an error code on failure.
+//!
+//! \note The following errors are detected at runtime and call the currently installed constraint handler function
+//! after storing \a ch in every location of the destination range [\a dest, \a dest + \a destsz) if \a dest and
+//! \a destsz are themselves valid:
+//!
+//! - \a dest is a null pointer
+//!
+//! - \a destsz or \a count is greater than \a RSIZE_MAX
+//!
+//! - \a count is greater than \a destsz (buffer overflow would occur)
+//!
+//! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
+//! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
 #    define safe_memset(dest, destsz, ch, count)                                                                       \
         safe_memset_impl(dest, destsz, ch, count, __FILE__, __func__, __LINE__,                                        \
                          "safe_memset(" #dest ", " #destsz ", " #ch ", " #count ")")
 #endif
 
-    //-----------------------------------------------------------------------------
+    //! \fn void* explicit_zeroes(void* dest, size_t count)
+    //! \brief Writes zeroes to a block of memory. Will not be optimized out.
     //
-    //  void* explicit_zeroes(void* dest, size_t count)
-    //
-    //! \brief   Description:  Write zeroes to memory pointer that will not be
-    //! optimized out by the compiler.
-    //
-    //  Entry:
-    //!   \param[in] dest = pointer to memory to write with zeroes. Must be
-    //!   non-M_NULLPTR \param[in] count = number of bytes to write to zero
+    //! This function is useful for erasing sensitive data from memory when it is no longer needed.
     //!
-    //  Exit:
-    //!   \return M_NULLPTR = error occurred otherwise returns pointer to dest
-    //
-    //-----------------------------------------------------------------------------
+    //! \param[in] dest Pointer to the block of memory to zero fill. Must be non-NULL
+    //! \param[in] count Number of bytes to write to zero at \a dest
+    //! \return pointer to \a dest on Success and a NULL pointer on failure
     void* explicit_zeroes(void* dest, size_t count);
 
 #if defined(_MSC_VER) && !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                 \

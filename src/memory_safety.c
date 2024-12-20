@@ -87,7 +87,7 @@ M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment)
         size = size + alignment - (size % alignment);
     }
     return aligned_alloc(alignment, size);
-#elif !defined(UEFI_C_SOURCE) && (defined(POSIX_2001) || defined(VMK_CROSS_COMP))
+#elif !defined(UEFI_C_SOURCE) && ((defined(POSIX_2001) && defined(_POSIX_ADVISORY_INFO)) || defined(VMK_CROSS_COMP))
     // POSIX.1-2001 and higher define support for posix_memalign
     void* temp = M_NULLPTR;
     if (0 != posix_memalign(&temp, alignment, size))
@@ -347,7 +347,7 @@ void* explicit_zeroes(void* dest, size_t count)
         // use microsoft's SecureZeroMemory function
         return SecureZeroMemory(dest, count);
 #    endif
-#elif (defined(__FreeBSD__) && __FreeBSD__ >= 11) || (defined(__OpenBSD__) && defined(OpenBSD5_5)) ||                  \
+#elif IS_FREEBSD_VERSION(11, 0, 0) || (defined(__OpenBSD__) && defined(OpenBSD5_5)) ||                                 \
     (defined(THIS_IS_GLIBC) && IS_GLIBC_VERSION(2, 25)) || defined(HAVE_EXPLICIT_BZERO)
         // https://elixir.bootlin.com/musl/latest/source/src/string/explicit_bzero.c
         // <- seems to appear first in 1.1.20
@@ -358,9 +358,7 @@ void* explicit_zeroes(void* dest, size_t count)
         // explicit_memset https://illumos.org/man/3C/explicit_bzero
         explicit_bzero(dest, count);
         return dest;
-#elif (defined(__NetBSD__) && defined(__NetBSD_Version__) &&                                                           \
-       __NetBSD_Version >= 7000000000L /* net bsd version 7.0 and up*/) ||                                             \
-    defined(HAVE_EXPLICIT_MEMSET)
+#elif IS_NETBSD_VERSION(7, 0, 0) || defined(HAVE_EXPLICIT_MEMSET)
         // https://man.netbsd.org/NetBSD-8.0/explicit_memset.3
         // https://docs.oracle.com/cd/E88353_01/html/E37843/explicit-memset-3c.html
         // NOTE: Solaris 11.4.12 added this, but I cannot find it in illumos
@@ -433,9 +431,7 @@ errno_t safe_memset_impl(void*       dest,
 #if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
         memset_explicit(dest, ch,
                         count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-#elif (defined(__NetBSD__) && defined(__NetBSD_Version__) &&                                                           \
-       __NetBSD_Version >= 7000000000L /* net bsd version 7.0 and up*/) ||                                             \
-    defined(HAVE_EXPLICIT_MEMSET)
+#elif IS_NETBSD_VERSION(7, 0, 0) || defined(HAVE_EXPLICIT_MEMSET)
         // https://man.netbsd.org/NetBSD-8.0/explicit_memset.3
         // https://docs.oracle.com/cd/E88353_01/html/E37843/explicit-memset-3c.html
         // NOTE: Solaris 11.4.12 added this, but I cannot find it in illumos

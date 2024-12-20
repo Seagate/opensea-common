@@ -480,6 +480,30 @@ extern "C"
 #    define SYSTEM_UNKNOWN
 #endif
 
+// Macros to simplify version checks for operating systems.
+// NOTE: Not every OS will have a macro.
+// For example: AIX and openBSD you can do defined(_AIX(M)(m)) to check a version.
+//     where M is a major version and m is a minor version
+// Examples: defined (_AIX43) to check for AIX 4.3
+//           defined (OpenBSD3_9) to check for OpenBSD 3.9
+// OS's with version check macros are those that encode a version into a macro as a numeric value
+// Example: FreeBSD, NetBSD
+#if defined(__FreeBSD__) && defined(__FreeBSD_version)
+#    define FREEBSD_FULL_VERSION_ENCODE(major, minor, revision) ((major)*100000 + (minor)*1000 + (revision))
+#    define IS_FREEBSD_VERSION(major, minor, revision)                                                                 \
+        (__FreeBSD_version >= FREEBSD_FULL_VERSION_ENCODE(major, minor, revision))
+#else
+#    define IS_FREEBSD_VERSION(major, minor, revision) (0)
+#endif
+#if defined(__NetBSD__) && defined(__NetBSD_Version__)
+#    define NETBSD_VERSION_ENCODE(major, minor, patch) ((major)*100000000 + (minor)*1000000 + (patch)*100)
+#    define IS_NETBSD_VERSION(major, minor, patch)     (__NetBSD_Version__ >= NETBSD_VERSION_ENCODE(major, minor, patch))
+#else
+#    define IS_NETBSD_VERSION(major, minor, patch) (0)
+#endif
+
+// Clang supports these other methods to check for generic selection support
+//__has_feature(c_generic_selections) or  __has_extension(c_generic_selections)
 #if defined(USING_C11) && !defined(HAVE_C11_GENERIC_SELECTION)
 // workaround for early C11 compilers that may still be used with this code to
 // disable generic selection when not supported
@@ -599,17 +623,85 @@ extern "C"
 #    define RESTORE_WARNING_FORMAT_NONLITERAL
 #endif
 
+#if IS_CLANG_VERSION(1, 0)
+#    define DISABLE_WARNING_CPP11_COMPAT                                                                               \
+        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wc++0x-compat\"")
+#    define RESTORE_WARNING_CPP11_COMPAT _Pragma("clang diagnostic pop")
+#elif IS_GCC_VERSION(4, 7)
+#    define DISABLE_WARNING_CPP11_COMPAT                                                                               \
+        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wc++11-compat\"")
+#    define RESTORE_WARNING_CPP11_COMPAT _Pragma("GCC diagnostic pop")
+#elif IS_GCC_FULL_VERSION(4, 3, 6)
+#    define DISABLE_WARNING_CPP11_COMPAT                                                                               \
+        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wc++0x-compat\"")
+#    define RESTORE_WARNING_CPP11_COMPAT _Pragma("GCC diagnostic pop")
+#else
+#    define DISABLE_WARNING_CPP11_COMPAT
+#    define RESTORE_WARNING_CPP11_COMPAT
+#endif
+
+#if IS_CLANG_VERSION(3, 0)
+#    define DISABLE_WARNING_FLOAT_EQUAL                                                                                \
+        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wfloat-equal\"")
+#    define RESTORE_WARNING_FLOAT_EQUAL _Pragma("clang diagnostic pop")
+#elif IS_GCC_VERSION(4, 5)
+#    define DISABLE_WARNING_FLOAT_EQUAL                                                                                \
+        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wfloat-equal\"")
+#    define RESTORE_WARNING_FLOAT_EQUAL _Pragma("GCC diagnostic pop")
+#elif IS_GCC_FULL_VERSION(4, 3, 6)
+#    define DISABLE_WARNING_FLOAT_EQUAL                                                                                \
+        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wfloat-equal\"")
+#    define RESTORE_WARNING_FLOAT_EQUAL _Pragma("GCC diagnostic pop")
+#else
+#    define DISABLE_WARNING_FLOAT_EQUAL
+#    define RESTORE_WARNING_FLOAT_EQUAL
+#endif
+
 // Detect editors to allow us an easy wrapper to enable/disable things as needed
 #if defined(__INTELLISENSE__) || defined(__clang_analyzer__) || defined(__CDT_PARSER__)
 #    define DEV_ENVIRONMENT
 #endif
 
-#if IS_GCC_VERSION(4, 1)
-#    define HAVE_BUILT_IN_OBJ_SIZE
-#elif defined __has_builtin
+// Built-in / intrinsic functions detection
+#if defined(__has_builtin)
 #    if __has_builtin(__builtin_object_size)
 #        define HAVE_BUILT_IN_OBJ_SIZE
 #    endif
+#    if __has_builtin(__builtin_bswap64)
+#        define HAVE_BUILTIN_BSWAP
+#    endif
+#    if __has_builtin(__builtin_memchr)
+#        define HAVE_BUILTIN_MEMCHR
+#    endif
+#    if __has_builtin(__builtin_memcmp)
+#        define HAVE_BUILTIN_MEMCMP
+#    endif
+#    if __has_builtin(__builtin_memcpy)
+#        define HAVE_BUILTIN_MEMCPY
+#    endif
+#    if __has_builtin(__builtin_memmove)
+#        define HAVE_BUILTIN_MEMMOVE
+#    endif
+#    if __has_builtin(__builtin_memset)
+#        define HAVE_BUILTIN_MEMSET
+#    endif
+#    if __has_builtin(__builtin_crc32_data8)
+#        define HAVE_BUILT_IN_CRC32_DATA8
+#    endif
+#    if __has_builtin(__builtin_crc16_data8)
+#        define HAVE_BUILT_IN_CRC16_DATA8
+#    endif
+#endif //__has_builtin
+
+#if !defined(HAVE_BUILT_IN_OBJ_SIZE) && IS_GCC_VERSION(4, 1)
+#    define HAVE_BUILT_IN_OBJ_SIZE
+#endif
+
+#if !defined(HAVE_BUILTIN_BSWAP) && IS_GCC_VERSION(4, 8)
+// GCC 4.8 and Clang 3.2 and later have some built-ins:
+// https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html Otherwise rely on our
+// own bit shifting.
+#    define HAVE_BUILTIN_BSWAP
 #endif
 
 #if defined(__cplusplus)

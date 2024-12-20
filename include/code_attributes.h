@@ -10,17 +10,17 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-//
-// \file code_attributes.h
-// \brief Defines attributes that the compilers can use to better generate
-// warnings or optimizations depending on attributes applied.
-//        Also gives access to macros for fallthrough statements, marking
-//        variables as unused and more to help resolve warnings or specify
-//        expected behavior without a warning being generated.
-//
+
+//! \file code_attributes.h
+//! \brief Defines attributes that the compilers can use to better generate
+//! warnings or optimizations.
+//!
+//!        Also gives access to macros for fallthrough statements, marking
+//!        variables as unused and more to help resolve warnings or specify
+//!        expected behavior without a warning being generated.
+
 #pragma once
 
-#include "env_detect.h"
 #include "predef_env_detect.h"
 
 #if defined(_WIN32)
@@ -32,6 +32,12 @@ extern "C"
 {
 #endif //__cplusplus
 
+//! \def M_RESTRICT
+//! \brief Defines the restrict keyword based on the compiler and C standard version.
+//!
+//! This macro defines the restrict keyword to optimize pointer usage.
+//! If using C99 and MSVC 2005 without C11, it defines M_RESTRICT as __restrict.
+//! Otherwise, it defines M_RESTRICT as restrict. If not using C99, it leaves M_RESTRICT undefined.
 #if defined USING_C99
 #    if IS_MSVC_VERSION(MSVC_2005) && !defined USING_C11
 #        define M_RESTRICT __restrict
@@ -42,6 +48,15 @@ extern "C"
 #    define M_RESTRICT /*restrict*/
 #endif
 
+//! \def M_INLINE
+//! \brief Defines the inline keyword based on the compiler and language standard.
+//!
+//! This macro defines the inline keyword to optimize function inlining.
+//! - If using C++98, it defines M_INLINE as inline.
+//! - If using C99, it defines M_INLINE as inline.
+//! - If using MSVC 6.0, it defines M_INLINE as __inline.
+//! - If using GCC version 2.5 or Clang version 1.0, it defines M_INLINE as __inline__.
+//! - Otherwise, it leaves M_INLINE undefined, indicating inline support is not available.
 #if defined(USING_CPP98)
 #    define M_INLINE inline
 #else // C
@@ -56,6 +71,15 @@ extern "C"
 #    endif
 #endif // C++/C check
 
+//! \def M_NOINLINE
+//! \brief Defines the noinline attribute based on the compiler and language standard.
+//!
+//! This macro defines the noinline attribute to prevent function inlining.
+//! - If using GCC version 2.5 or Clang version 1.0, it defines M_NOINLINE as __attribute__((noinline)).
+//! - If using MSVC 6.0, it defines M_NOINLINE as __declspec(noinline).
+//! - If the compiler supports __has_attribute and has the noinline attribute, it defines M_NOINLINE as M_INLINE
+//! __attribute__((noinline)).
+//! - Otherwise, it defines M_NOINLINE as M_INLINE or leaves it undefined if no support for noinline is available.
 #if IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0)
 #    define M_NOINLINE __attribute__((noinline))
 #elif IS_MSVC_VERSION(MSVC_6_0)
@@ -70,6 +94,16 @@ extern "C"
 #    define M_NOINLINE /*no support for noinline*/
 #endif
 
+//! \def M_FORCEINLINE
+//! \brief Defines the always_inline attribute based on the compiler and language standard.
+//!
+//! This macro defines the always_inline attribute to force function inlining.
+//! - If using GCC version 4.1.3 or Clang version 1.0, it defines M_FORCEINLINE as M_INLINE
+//! __attribute__((always_inline)).
+//! - If using MSVC 6.0, it defines M_FORCEINLINE as __forceinline.
+//! - If the compiler supports __has_attribute and has the always_inline attribute, it defines M_FORCEINLINE as M_INLINE
+//! __attribute__((always_inline)).
+//! - Otherwise, it defines M_FORCEINLINE as M_INLINE, suggesting normal inlining if forcing inline is not supported.
 #if IS_GCC_FULL_VERSION(4, 1, 3) || IS_CLANG_VERSION(1, 0)
 #    define M_FORCEINLINE M_INLINE __attribute__((always_inline))
 #elif IS_MSVC_VERSION(MSVC_6_0)
@@ -86,34 +120,34 @@ extern "C"
 #    define M_FORCEINLINE M_INLINE
 #endif
 
-// Defining the M_FALLTHROUGH macro to make it easy to correctly specify when to
-// fallthrough on switch-case statements without extra warnings. This is defined
-// differently depending on c/c++ and which version of the standard is currently
-// being supported by the compiler. In addition some compilers support this and
-// others do not, so this is a little complicated to define in a way that works
-// with everything, but it is attempted below...update this as errors are found.
-// -TJE
+//! \def M_FALLTHROUGH
+//! \brief Defines the fallthrough attribute for switch-case statements to avoid warnings.
+//!
+//! This macro defines the fallthrough attribute differently based on the compiler and language standard.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! - For C++17 and later, it uses [[fallthrough]].
+//! - For C23, it uses [[fallthrough]] or [[__fallthrough__]].
+//! - For GCC and Clang, it uses __attribute__((fallthrough)).
+//! - For MSVC, it uses __fallthrough from sal.h.
+//! - If no support is detected, it inserts a comment to indicate fallthrough.
+//!
+//! \note Update this macro as errors are found to ensure compatibility with different compilers and standards.
+//! \author TJE
 #if defined(__cplusplus)
-// check if the standardized way to check for support is available...
-#    if defined __has_cpp_attribute
+#    if defined USING_CPP11 && defined __has_cpp_attribute
 #        if __has_cpp_attribute(fallthrough)
-// This is the standardized way intriduced in C++17
 #            define M_FALLTHROUGH [[fallthrough]]
 #        endif
 #    endif
 #elif defined __has_c_attribute
 #    if __has_c_attribute(fallthrough)
-// C23 style
 #        define M_FALLTHROUGH [[fallthrough]]
 #    elif __has_c_attribute(__fallthrough__)
-// C23 style
 #        define M_FALLTHROUGH [[__fallthrough__]]
 #    endif
 #endif
 #if !defined(M_FALLTHROUGH)
-// not C++ and doesn't have __has_c_attribute so do something for older C code
 #    if defined __has_attribute
-// GCC type compiler check
 #        if __has_attribute(fallthrough)
 #            define M_FALLTHROUGH                                                                                      \
                 do                                                                                                     \
@@ -124,8 +158,6 @@ extern "C"
 #    endif
 #    if !defined M_FALLTHROUGH
 #        if (IS_GCC_VERSION(7, 0) || IS_CLANG_VERSION(3, 9))
-// GCC 7+ support the fallthrough attribute.
-// Clang 3.9+ has similar fallthrough support.
 #            define M_FALLTHROUGH                                                                                      \
                 do                                                                                                     \
                 {                                                                                                      \
@@ -134,157 +166,157 @@ extern "C"
 #        elif defined(__fallthrough) /* from sal.h*/
 #            define M_FALLTHROUGH __fallthrough
 #        else
-// Insert a comment instead since other methods were not detected.
 #            define M_FALLTHROUGH /*FALLTHRU*/
-
 #        endif
 #    endif
 #endif // Checking C/C++
 
-// Now defining a set of macros for unused variables, unused functions, unused
-// parameters. This can be used to deal with specific cases where these warnings
-// need to be turned off in compiling code. This may be because these things are
-// only used at certain times, or under certain OSs, or other strange flags.
-// Ideally, these macros aren't used at all, but they are available to help
-// cleanup code warnings that may show up sometimes. Some of these may be unique
-// to C/C++ standards or to certain compilers. HOW TO USE Each:
-// M_USE_UNUSED(var): This is mean to be used within a function:
-//  void Func(int unusedVar)
-//  ...
-//     M_USE_UNUSED(unusedVar);
-//  ...
-//     return;
-//
-// M_ATTR_UNUSED: This is meant to be used in front of unused variables withing
-// functions, unused functions, and unused parameters in functions
-//  void Func(int someVar)
-//     M_ATTR_UNUSED int thisIsntUsed = 0;
-//
-//  void Func2 (M_ATTR_UNUSED int unusedVar)
-//
-//  M_ATTR_UNUSED void Func3(int param)
-//
-// NOTE: Please adjust these as necessary if they aren't quite working.
-// Hopefully, not too many are compiler unique...-TJE Define M_USE_UNUSED firstt
-// since it is likely to be common on various compilers...(adjust as needed)
+//! \def M_USE_UNUSED
+//! \brief Marks a variable as used to avoid compiler warnings about unused variables.
+//!
+//! This macro is used within a function to mark a variable as used, preventing compiler warnings
+//! about unused variables. It casts the variable to void.
+//!
+//! \param var The variable to mark as used.
+//!
+//! \code
+//! void Func(int unusedVar)
+//! {
+//!     M_USE_UNUSED(unusedVar);
+//!     // Function implementation
+//! }
+//! \endcode
+//! \author TJE
 #define M_USE_UNUSED(var) M_STATIC_CAST(void, var)
-// Define all others below since they are used differently
+
+//! \def M_ATTR_UNUSED
+//! \brief Marks a variable, function, or parameter as unused to avoid compiler warnings.
+//!
+//! This macro is used to mark variables, functions, or parameters as unused, preventing compiler warnings
+//! about unused entities. It defines the attribute differently based on the compiler and language standard.
+//! - For C++17 and later, it uses [[maybe_unused]].
+//! - For C23, it uses [[maybe_unused]] or [[__maybe_unused__]].
+//! - For GCC and Clang, it uses __attribute__((unused)).
+//! - For MSVC, it uses __pragma(warning(suppress : 4100 4101)).
+//! - If no support is detected, it inserts a comment to indicate unused.
+//!
+//! \code
+//! void Func(int someVar)
+//! {
+//!     M_ATTR_UNUSED int thisIsntUsed = 0;
+//! }
+//!
+//! void Func2(M_ATTR_UNUSED int unusedVar)
+//! {
+//!     // Function implementation
+//! }
+//!
+//! M_ATTR_UNUSED void Func3(int param)
+//! {
+//!     // Function implementation
+//! }
+//! \endcode
+//! \author TJE
 #if defined(__cplusplus)
-/*check if the standardized way to check for support is available...
- * NOTE: Checking for >= C++11 for __has_cpp_attribute due to issues where this
- * shows up even when the GNU C++ compiler is set to 98 or 03 and thows errors
- * for not knowing what to do. Seemed easiest to add this additional version
- * check to get rid of this error
- */
 #    if __cplusplus >= 201103L && defined __has_cpp_attribute
 #        if __has_cpp_attribute(maybe_unused)
-/*This is the standardized way intriduced in C++17*/
 #            define M_ATTR_UNUSED [[maybe_unused]]
 #        endif
 #    endif
-#elif defined __has_c_attribute /*C23*/
+#elif defined __has_c_attribute
 #    if __has_c_attribute(maybe_unused)
-/*C23 style*/
 #        define M_ATTR_UNUSED [[maybe_unused]]
-#    elif __has_c_attribute(__maybe_unused__) /*check for standardized double underscore version*/
-#        define M_DEPRECATED [[__maybe_unused__]]
+#    elif __has_c_attribute(__maybe_unused__)
+#        define M_ATTR_UNUSED [[__maybe_unused__]]
 #    endif
 #endif
 #if !defined(M_ATTR_UNUSED)
-/*older C or CPP or no standard way to define this.*/
-/*Use compiler specific checks*/
 #    if defined __has_attribute
-/*GCC type compiler check*/
 #        if __has_attribute(unused)
 #            define M_ATTR_UNUSED __attribute__((unused))
 #        endif
 #    endif
-#    if !defined(M_ATTR_UNUSED) /*__has_attribute is available, but doesn't                                            \
-                                   have what we need-TJE*/
+#    if !defined(M_ATTR_UNUSED)
 #        if IS_GCC_FULL_VERSION(2, 95, 3) || IS_CLANG_VERSION(1, 0)
-/* GCC as far back as 2.95.3's online manual supports unused on variables */
 #            define M_ATTR_UNUSED __attribute__((unused))
 #        elif defined(_MSC_VER)
-#            define M_ATTR_UNUSED __pragma(warning(suppress : 4100 4101)) /*4102?*/
+#            define M_ATTR_UNUSED __pragma(warning(suppress : 4100 4101))
 #        else
-/*Insert a comment instead since other methods were not detected.*/
 #            define M_ATTR_UNUSED /*UNUSED*/
-
 #        endif
 #    endif
 #endif
 
-// Macro for marking things as deprecated
+//! \def M_DEPRECATED
+//! \brief Marks functions, variables, or parameters as deprecated to avoid compiler warnings.
+//!
+//! This macro defines the deprecated attribute differently based on the compiler and language standard.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! - For C++17 and later, it uses [[deprecated]].
+//! - For C23, it uses [[deprecated]] or [[__deprecated__]].
+//! - For GCC and Clang, it uses __attribute__((deprecated)).
+//! - For MSVC, it uses __declspec(deprecated) with a pragma to suppress warnings.
+//! - If no support is detected, it inserts a comment to indicate deprecation.
+//!
+//! \note Update this macro as errors are found to ensure compatibility with different compilers and standards.
+//! \author TJE
 #if defined(__cplusplus)
-/*check if the standardized way to check for support is available...
- * NOTE: Checking for >= C++11 for __has_cpp_attribute due to issues where this
- * shows up even when the GNU C++ compiler is set to 98 or 03 and thows errors
- * for not knowing what to do. Seemed easiest to add this additional version
- * check to get rid of this error
- */
 #    if defined USING_CPP11 && defined __has_cpp_attribute
 #        if __has_cpp_attribute(deprecated)
-/*This is the standardized way introduced in C++17*/
 #            define M_DEPRECATED [[deprecated]]
 #        endif
 #    endif
-#elif defined __has_c_attribute /*C23*/
+#elif defined __has_c_attribute
 #    if __has_c_attribute(deprecated)
-/*C23 style*/
 #        define M_DEPRECATED [[deprecated]]
-#    elif __has_c_attribute(__deprecated__) /*check for standardized double underscore version*/
+#    elif __has_c_attribute(__deprecated__)
 #        define M_DEPRECATED [[__deprecated__]]
 #    endif
 #endif
-#if !defined M_DEPRECATED /*standard ways to set this did not work, so try                                             \
-                             compiler specific means*/
+#if !defined M_DEPRECATED
 #    if defined __has_attribute
 #        if __has_attribute(deprecated)
 #            define M_DEPRECATED __attribute__((deprecated))
 #        endif
 #    endif
-#    if !defined M_DEPRECATED /*if a test macro didn't work above, check the                                           \
-                                 compiler to set this correctly -TJE*/
+#    if !defined M_DEPRECATED
 #        if (IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(3, 0))
-/*GCC 4 added deprecated attribute*/
-/*Unclear when added to clang, but somewhere around version 3.0*/
 #            define M_DEPRECATED __attribute__((deprecated))
 #        elif IS_MSVC_VERSION(MSVC_2017_15_9)
 #            define M_DEPRECATED __declspec(deprecated) __pragma(warning(suppress : 4996))
 #        else
-/*Insert a comment instead since other methods were not detected.*/
 #            define M_DEPRECATED /*DEPRECATED*/
-
 #        endif
 #    endif
 #endif
 
-// Macro for marking things as nodiscard
-// if a function returns something that should not be ignored, this should be
-// used to mark it and help generate compiler warnings.
+//! \def M_NODISCARD
+//! \brief Marks functions, variables, or parameters as nodiscard to avoid compiler warnings.
+//!
+//! This macro defines the nodiscard attribute to indicate that the return value of a function should not be ignored.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! - For C++17 and later, it uses [[nodiscard]].
+//! - For C23, it uses [[nodiscard]] or [[__nodiscard__]].
+//! - For GCC and Clang, it uses __attribute__((nodiscard)) or __attribute__((warn_unused_result)).
+//! - For MSVC, it uses _Check_return_ from sal.h.
+//! - If no support is detected, it inserts a comment to indicate nodiscard.
+//!
+//! \note Update this macro as errors are found to ensure compatibility with different compilers and standards.
+//! \author TJE
 #if defined(__cplusplus)
-/*check if the standardized way to check for support is available...
- * NOTE: Checking for >= C++11 for __has_cpp_attribute due to issues where this
- * shows up even when the GNU C++ compiler is set to 98 or 03 and thows errors
- * for not knowing what to do. Seemed easiest to add this additional version
- * check to get rid of this error
- */
-#    if __cplusplus >= 201103L && defined __has_cpp_attribute
+#    if defined(USING_CPP11) && defined __has_cpp_attribute
 #        if __has_cpp_attribute(nodiscard)
-/*This is the standardized way introduced in C++17*/
 #            define M_NODISCARD [[nodiscard]]
 #        endif
 #    endif
-#elif defined __has_c_attribute /*C23*/
+#elif defined __has_c_attribute
 #    if __has_c_attribute(nodiscard)
-/*C23 style*/
 #        define M_NODISCARD [[nodiscard]]
-#    elif __has_c_attribute(__nodiscard__) /*check for standardized double underscore version*/
+#    elif __has_c_attribute(__nodiscard__)
 #        define M_NODISCARD [[__nodiscard__]]
 #    endif
 #endif
-#if !defined M_NODISCARD /*standard ways to set this did not work, so try                                              \
-                            compiler specific means*/
+#if !defined M_NODISCARD
 #    if defined __has_attribute
 #        if __has_attribute(nodiscard)
 #            define M_NODISCARD __attribute__((nodiscard))
@@ -292,79 +324,82 @@ extern "C"
 #            define M_NODISCARD __attribute__((warn_unused_result))
 #        endif
 #    endif
-#    if !defined M_NODISCARD /*if a test macro didn't work above, check the                                            \
-                                compiler to set this correctly -TJE*/
+#    if !defined M_NODISCARD
 #        if (IS_GCC_VERSION(3, 4) || IS_CLANG_VERSION(1, 0))
-/*first in GCC 3.4*/
 #            define M_NODISCARD __attribute__((warn_unused_result))
 #        elif defined(_Check_return_) /*from sal.h*/
 #            define M_NODISCARD _Check_return_
 #        else
-/*Insert a comment instead since other methods were not detected.*/
 #            define M_NODISCARD /*NODISCARD*/
-
 #        endif
 #    endif
 #endif
 
-// Macro for marking things as noreturn
-// to be used if a function does not return.
-// examples of stdlib functions with noreturn: abort, exit, _Exit, quick_exit,
-// thrd_exit, longjmp
+//! \def M_NORETURN
+//! \brief Marks functions as noreturn to indicate they do not return.
+//!
+//! This macro defines the noreturn attribute to indicate that a function does not return.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! - For C++17 and later, it uses [[noreturn]].
+//! - For C11, it uses the noreturn convenience macro.
+//! - For C23, it uses [[noreturn]] or [[__noreturn__]] or [[___Noreturn__]].
+//! - For GCC and Clang, it uses __attribute__((noreturn)).
+//! - For MSVC, it uses __declspec(noreturn).
+//! - If no support is detected, it inserts a comment to indicate noreturn.
+//!
+//! \note Update this macro as errors are found to ensure compatibility with different compilers and standards.
+//! \author TJE
+//!
+//! Examples of standard library functions with noreturn: abort, exit, _Exit, quick_exit, thrd_exit, longjmp.
 #if defined USING_C11 && !defined USING_C23
-// added in C11, then deprecated for function attributes instead in C23
-// https://en.cppreference.com/w/c/language/_Noreturn
 #    include <stdnoreturn.h>
 #endif
 #if defined(__cplusplus)
-// check if the standardized way to check for support is available...
-// NOTE: Checking for >= C++11 for __has_cpp_attribute due to issues where this
-// shows up even when the GNU C++ compiler is set to 98 or 03 and thows errors
-// for not knowing what to do. Seemed easiest to add this additional version
-// check to get rid of this error
-#    if __cplusplus >= 201103L && defined __has_cpp_attribute
+#    if defined(USING_CPP11) && defined __has_cpp_attribute
 #        if __has_cpp_attribute(noreturn)
-// This is the standardized way introduced in C++17
 #            define M_NORETURN [[noreturn]]
 #        endif
 #    endif
 #elif defined noreturn
-// C11 convenience macro
-// https://en.cppreference.com/w/c/language/_Noreturn
 #    define M_NORETURN noreturn
-#elif defined __has_c_attribute /*C23*/
+#elif defined __has_c_attribute
 #    if __has_c_attribute(noreturn)
-/*C23 style*/
 #        define M_NORETURN [[noreturn]]
-#    elif __has_c_attribute(__noreturn__) /*check for standardized double underscore version*/
+#    elif __has_c_attribute(__noreturn__)
 #        define M_NORETURN [[__noreturn__]]
-/* next 2 checks are deprecated versions, but also worth checking */
 #    elif __has_c_attribute(___Noreturn__)
 #        define M_NORETURN [[___Noreturn__]]
 #    endif
 #endif
-#if !defined M_NORETURN /*standard ways to set this did not work, so try                                               \
-                           compiler specific means*/
+#if !defined M_NORETURN
 #    if defined __has_attribute
 #        if __has_attribute(noreturn)
 #            define M_NORETURN __attribute__((noreturn))
 #        endif
 #    endif
-#    if !defined M_NORETURN /*if a test macro didn't work above, check the                                             \
-                               compiler to set this correctly -TJE*/
+#    if !defined M_NORETURN
 #        if (IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0))
-/*GCC 2.5 added this support*/
 #            define M_NORETURN __attribute__((noreturn))
 #        elif IS_MSVC_VERSION(MSVC_6_0)
 #            define M_NORETURN __declspec(noreturn)
 #        else
-/*Insert a comment instead since other methods were not detected.*/
 #            define M_NORETURN /*NORETURN*/
-
 #        endif
 #    endif
 #endif
 
+//! \def M_FUNC_ATTR_MALLOC
+//! \brief Marks functions that allocate memory and return a pointer to it.
+//!
+//! This macro defines the malloc attribute to indicate that a function allocates memory and returns a pointer to it.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! - For Clang 1.0 and GCC 4.1.3, it uses __attribute__((malloc)).
+//! - For MSVC 2015, it uses __declspec(allocator) __declspec(restrict).
+//! - For SAL, it uses _Ret_opt_valid_.
+//! - If no support is detected, it inserts a comment to indicate the function allocates memory.
+//!
+//! \note Update this macro as errors are found to ensure compatibility with different compilers and standards.
+//! \author TJE
 #if IS_CLANG_VERSION(1, 0) || IS_GCC_FULL_VERSION(4, 1, 3)
 #    define M_FUNC_ATTR_MALLOC __attribute__((malloc))
 #elif IS_MSVC_VERSION(MSVC_2015)
@@ -372,28 +407,50 @@ extern "C"
 #elif defined(_Ret_opt_valid_) /*sal*/
 #    define M_FUNC_ATTR_MALLOC _Ret_opt_valid_
 #else
-#    define M_FUNC_ATTR_MALLOC    /* this function allocates memory and returns                                        \
-                                     the    pointer to you */
+#    define M_FUNC_ATTR_MALLOC /* this function allocates memory and returns the pointer to you */
 #endif
 
+//! \def FUNC_ATTR_PRINTF
+//! \brief Marks functions that use printf-style formatting.
+//!
+//! This macro defines the format attribute to indicate that a function uses printf-style formatting.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! - For Clang 1.0 and GCC 2.5, it uses __attribute__((format(printf, formatargpos, varargpos))).
+//! - For SAL, it uses _Format_string_impl_("printf", formatargpos).
+//! - If no support is detected, it inserts a comment to indicate the function uses printf-style formatting.
+//!
+//! \param formatargpos The position of the format string argument.
+//! \param varargpos The position of the variadic arguments.
+//!
+//! \note Update this macro as errors are found to ensure compatibility with different compilers and standards.
+//! \author TJE
 #if IS_CLANG_VERSION(1, 0) || IS_GCC_VERSION(2, 5)
-// Varargpos should be set to zero when used with functions like vfprintf
 #    define FUNC_ATTR_PRINTF(formatargpos, varargpos) __attribute__((format(printf, formatargpos, varargpos)))
 #elif defined(_Format_string_impl_)
 #    define FUNC_ATTR_PRINTF(formatargpos, varargpos) _Format_string_impl_("printf", formatargpos)
 #else
-#    define FUNC_ATTR_PRINTF(formatargpos, varargpos)    /* this is a printf/fprintf/etc style function. Please use    \
-                                                            a    user    defined constant string for the format! */
+#    define FUNC_ATTR_PRINTF(formatargpos, varargpos)    /* this is a printf/fprintf/etc style function. Please use a  \
+                                                            user defined constant string for the format! */
 #endif
 
     //_Printf_format_string_impl_ for SAL. Not sure how to use it yet so not defined
     // currently
 
+//! \def DLL_EXPORT
+//! \brief Marks symbols for export in a shared library.
+//!
+//! This macro defines the attribute to mark symbols for export in a shared library.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! - For MSVC 4.0 and later, it uses __declspec(dllexport).
+//! - For GCC 4.0 and Clang 1.0, it uses __attribute__((visibility("default"))).
+//! - If no support is detected, it inserts a comment to indicate no equivalent.
+//!
+//! \note Update this macro as errors are found to ensure compatibility with different compilers and standards.
+//! \author TJE
 #if IS_MSVC_VERSION(MSVC_4_0)
 #    define DLL_EXPORT __declspec(dllexport)
 #    define DLL_IMPORT __declspec(dllimport)
 #elif IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0)
-// See https://gcc.gnu.org/wiki/Visibility
 #    define DLL_EXPORT __attribute__((visibility("default")))
 #    define DLL_IMPORT /*no gcc equivalent*/
 #else
@@ -401,6 +458,19 @@ extern "C"
 #    define DLL_IMPORT /* no equivalent */
 #endif
 
+//! \def M_ALIGNOF
+//! \brief Determines the alignment requirement of a type.
+//!
+//! This macro defines the attribute to determine the alignment requirement of a type.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! - For C++11 and C23, it uses alignof(x).
+//! - For C11, it uses _Alignof(x).
+//! - For GCC 2.7 and Clang 1.0, it uses __alignof__(x).
+//! - For MSVC 2005, it uses __alignof(x).
+//! - If no support is detected, it defines NO_ALIGNOF.
+//!
+//! \note Update this macro as errors are found to ensure compatibility with different compilers and standards.
+//! \author TJE
 #if defined(USING_CPP11) || defined(USING_C23)
 #    define M_ALIGNOF(x) alignof(x)
 #    define M_ALIGNAS(x) alignas(x)
@@ -408,7 +478,6 @@ extern "C"
 #    define M_ALIGNOF(x) _Alignof(x)
 #    define M_ALIGNAS(x) _Alignas(x)
 #else
-// compiler unique before C11/C++11
 #    if IS_GCC_VERSION(2, 7) || IS_CLANG_VERSION(1, 0)
 #        define M_ALIGNOF(x) __alignof__(x)
 #        define M_ALIGNAS(x) __attribute__((aligned(x)))

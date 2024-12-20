@@ -10,12 +10,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-//
-// \file impl_string_utils.h
-// \brief This is an internal header to handle the internal definitions for string_utils.h
-//        Do NOT include this and use these functions directly. Include string_utils.h and use the calls from there
-//        The functions with "impl" in the name expect __FILE__, __func__, __LINE__, and an expression when called which
-//        get wrapped to make this easier for you to use.
+
+//! \file impl_string_utils.h
+//! \brief This is an internal header to handle the internal definitions for string_utils.h
+//!
+//!        Do NOT include this and use these functions directly. Include string_utils.h and use the calls from there
+//!        The functions with "impl" in the name expect __FILE__, __func__, __LINE__, and an expression when called
+//!        which get wrapped to make this easier for you to use.
 
 #pragma once
 

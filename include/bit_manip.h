@@ -10,10 +10,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-//
-// \file bit_manip.h
-// \brief Implements various functions and macros to manipulate bit fields,
-// manipulate bytes, swap bytes, etc
+
+//! \file bit_manip.h
+//! \brief Implements various functions and macros to manipulate bit fields,
+//! manipulate bytes, swap bytes, etc
 
 #pragma once
 
@@ -23,107 +23,449 @@
 #include "memory_safety.h"
 #include "type_conversion.h"
 
+#if IS_MSVC_VERSION(MSVC_2005)
+#    include <stdlib.h>
+#    if !defined(HAVE_WIN_BSWAP)
+#        define HAVE_WIN_BSWAP
+#    endif //! HAVE_WIN_BSWAP
+#endif     //_MSC_VER
+
 #if defined(__cplusplus)
 extern "C"
 {
 #endif
 
-    // get a specific double word
+    //! \fn static M_INLINE uint32_t get_DWord0(uint64_t value)
+    //! \brief Returns the lower 32bits in a 64bit value
+    //!
+    //! \param[in] value 64bit value to get the lower 32bits from
+    //! \return lower 32bits of the input 64bit value
     static M_INLINE uint32_t get_DWord0(uint64_t value)
     {
         return M_STATIC_CAST(uint32_t, value & UINT64_C(0x00000000FFFFFFFF));
     }
 
+    //! \def M_DoubleWord0(l)
+    //! \brief Returns the lower 32bits in a 64bit value
+    //!
+    //! This is a wrapper for get_DWord0 for backwards compatibility.
+    //!
+    //! \param[in] l 64bit value to get the lower 32bits from
+    //! \return lower 32bits of the input 64bit value
+    //! \sa get_DWord0
 #define M_DoubleWord0(l) get_DWord0(l)
 
+    //! \fn static M_INLINE uint32_t get_DWord1(uint64_t value)
+    //! \brief Returns the upper 32bits in a 64bit value
+    //!
+    //! \param[in] value 64bit value to get the upper 32bits from
+    //! \return upper 32bits of the input 64bit value
     static M_INLINE uint32_t get_DWord1(uint64_t value)
     {
         return M_STATIC_CAST(uint32_t, (value & UINT64_C(0xFFFFFFFF00000000)) >> 32);
     }
 
+    //! \def M_DoubleWord1(l)
+    //! \brief Returns the upper 32bits in a 64bit value
+    //!
+    //! This is a wrapper for get_DWord1 for backwards compatibility.
+    //!
+    //! \param[in] l 64bit value to get the upper 32bits from
+    //! \return upper 32bits of the input 64bit value
+    //! \sa get_DWord1
 #define M_DoubleWord1(l) get_DWord1(l)
 
-// get a specific double word
+//! \def M_DoubleWordInt0
+//! \brief Extracts the lower 32 bits from a 64-bit integer and casts it to int32_t.
+//!
+//! This macro extracts the lower 32 bits from a 64-bit integer and casts it to int32_t.
+//! \param l The 64-bit integer from which to extract the lower 32 bits.
 #define M_DoubleWordInt0(l) (M_STATIC_CAST(int32_t, (((l)&UINT64_C(0x00000000FFFFFFFF)) >> 0)))
+
+//! \def M_DoubleWordInt1
+//! \brief Extracts the upper 32 bits from a 64-bit integer and casts it to int32_t.
+//!
+//! This macro extracts the upper 32 bits from a 64-bit integer and casts it to int32_t.
+//! \param l The 64-bit integer from which to extract the upper 32 bits.
 #define M_DoubleWordInt1(l) (M_STATIC_CAST(int32_t, (((l)&UINT64_C(0xFFFFFFFF00000000)) >> 32)))
 
-// get a specific word
+//! \def M_Word0
+//! \brief Extracts the lowest 16 bits from a 64-bit integer and casts it to uint16_t.
+//!
+//! This macro extracts the lowest 16 bits from a 64-bit integer and casts it to uint16_t.
+//! \param l The 64-bit integer from which to extract the lowest 16 bits.
 #define M_Word0(l) (M_STATIC_CAST(uint16_t, (((l)&UINT64_C(0x000000000000FFFF)) >> 0)))
+
+//! \def M_Word1
+//! \brief Extracts the second lowest 16 bits from a 64-bit integer and casts it to uint16_t.
+//!
+//! This macro extracts the second lowest 16 bits from a 64-bit integer and casts it to uint16_t.
+//! \param l The 64-bit integer from which to extract the second lowest 16 bits.
 #define M_Word1(l) (M_STATIC_CAST(uint16_t, (((l)&UINT64_C(0x00000000FFFF0000)) >> 16)))
+
+//! \def M_Word2
+//! \brief Extracts the second highest 16 bits from a 64-bit integer and casts it to uint16_t.
+//!
+//! This macro extracts the second highest 16 bits from a 64-bit integer and casts it to uint16_t.
+//! \param l The 64-bit integer from which to extract the second highest 16 bits.
 #define M_Word2(l) (M_STATIC_CAST(uint16_t, (((l)&UINT64_C(0x0000FFFF00000000)) >> 32)))
+
+//! \def M_Word3
+//! \brief Extracts the highest 16 bits from a 64-bit integer and casts it to uint16_t.
+//!
+//! This macro extracts the highest 16 bits from a 64-bit integer and casts it to uint16_t.
+//! \param l The 64-bit integer from which to extract the highest 16 bits.
 #define M_Word3(l) (M_STATIC_CAST(uint16_t, (((l)&UINT64_C(0xFFFF000000000000)) >> 48)))
 
-// get a specific word as int's
+//! \def M_WordInt0
+//! \brief Extracts the lowest 16 bits from a 64-bit integer and casts it to int16_t.
+//!
+//! This macro extracts the lowest 16 bits from a 64-bit integer and casts it to int16_t.
+//! \param l The 64-bit integer from which to extract the lowest 16 bits.
 #define M_WordInt0(l) (M_STATIC_CAST(int16_t, (((l)&UINT64_C(0x000000000000FFFF)) >> 0)))
+
+//! \def M_WordInt1
+//! \brief Extracts the second lowest 16 bits from a 64-bit integer and casts it to int16_t.
+//!
+//! This macro extracts the second lowest 16 bits from a 64-bit integer and casts it to int16_t.
+//! \param l The 64-bit integer from which to extract the second lowest 16 bits.
 #define M_WordInt1(l) (M_STATIC_CAST(int16_t, (((l)&UINT64_C(0x00000000FFFF0000)) >> 16)))
+
+//! \def M_WordInt2
+//! \brief Extracts the second highest 16 bits from a 64-bit integer and casts it to int16_t.
+//!
+//! This macro extracts the second highest 16 bits from a 64-bit integer and casts it to int16_t.
+//! \param l The 64-bit integer from which to extract the second highest 16 bits.
 #define M_WordInt2(l) (M_STATIC_CAST(int16_t, (((l)&UINT64_C(0x0000FFFF00000000)) >> 32)))
+
+//! \def M_WordInt3
+//! \brief Extracts the highest 16 bits from a 64-bit integer and casts it to int16_t.
+//!
+//! This macro extracts the highest 16 bits from a 64-bit integer and casts it to int16_t.
+//! \param l The 64-bit integer from which to extract the highest 16 bits.
 #define M_WordInt3(l) (M_STATIC_CAST(int16_t, (((l)&UINT64_C(0xFFFF000000000000)) >> 48)))
 
-// need to validate that this macro sets the correct bits on 32bit and 64bit
+//! \def BITSPERBYTE
+//! \brief Defines the number of bits per byte.
+//!
+//! This macro defines the number of bits per byte as 8.
 #define BITSPERBYTE UINT8_C(8)
-#define M_ByteN(n)  ((UINT8_MAX << ((n)*BITSPERBYTE)))
 
-// Get a specific byte
+//! \def M_ByteN
+//! \brief Sets the nth byte to all 1s.
+//!
+//! This macro sets the nth byte to all 1s by shifting the maximum value of a byte (UINT8_MAX) left by n * 8 bits.
+//! \param n The byte position to set to all 1s.
+#define M_ByteN(n) ((UINT8_MAX << ((n)*BITSPERBYTE)))
+
+//! \def M_Byte0
+//! \brief Extracts the lowest byte from a 64-bit integer and casts it to uint8_t.
+//!
+//! This macro extracts the lowest byte from a 64-bit integer and casts it to uint8_t.
+//! \param l The 64-bit integer from which to extract the lowest byte.
 #define M_Byte0(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0x00000000000000FF)) >> 0)))
+
+//! \def M_Byte1
+//! \brief Extracts the second lowest byte from a 64-bit integer and casts it to uint8_t.
+//!
+//! This macro extracts the second lowest byte from a 64-bit integer and casts it to uint8_t.
+//! \param l The 64-bit integer from which to extract the second lowest byte.
 #define M_Byte1(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0x000000000000FF00)) >> 8)))
+
+//! \def M_Byte2
+//! \brief Extracts the third lowest byte from a 64-bit integer and casts it to uint8_t.
+//!
+//! This macro extracts the third lowest byte from a 64-bit integer and casts it to uint8_t.
+//! \param l The 64-bit integer from which to extract the third lowest byte.
 #define M_Byte2(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0x0000000000FF0000)) >> 16)))
+
+//! \def M_Byte3
+//! \brief Extracts the fourth lowest byte from a 64-bit integer and casts it to uint8_t.
+//!
+//! This macro extracts the fourth lowest byte from a 64-bit integer and casts it to uint8_t.
+//! \param l The 64-bit integer from which to extract the fourth lowest byte.
 #define M_Byte3(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0x00000000FF000000)) >> 24)))
+
+//! \def M_Byte4
+//! \brief Extracts the fifth lowest byte from a 64-bit integer and casts it to uint8_t.
+//!
+//! This macro extracts the fifth lowest byte from a 64-bit integer and casts it to uint8_t.
+//! \param l The 64-bit integer from which to extract the fifth lowest byte.
 #define M_Byte4(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0x000000FF00000000)) >> 32)))
+
+//! \def M_Byte5
+//! \brief Extracts the sixth lowest byte from a 64-bit integer and casts it to uint8_t.
+//!
+//! This macro extracts the sixth lowest byte from a 64-bit integer and casts it to uint8_t.
+//! \param l The 64-bit integer from which to extract the sixth lowest byte.
 #define M_Byte5(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0x0000FF0000000000)) >> 40)))
+
+//! \def M_Byte6
+//! \brief Extracts the seventh lowest byte from a 64-bit integer and casts it to uint8_t.
+//!
+//! This macro extracts the seventh lowest byte from a 64-bit integer and casts it to uint8_t.
+//! \param l The 64-bit integer from which to extract the seventh lowest byte.
 #define M_Byte6(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0x00FF000000000000)) >> 48)))
+
+//! \def M_Byte7
+//! \brief Extracts the highest byte from a 64-bit integer and casts it to uint8_t.
+//!
+//! This macro extracts the highest byte from a 64-bit integer and casts it to uint8_t.
+//! \param l The 64-bit integer from which to extract the highest byte.
 #define M_Byte7(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0xFF00000000000000)) >> 56)))
 
-// Get a specific byte int
+//! \def M_ByteInt0
+//! \brief Extracts the lowest byte from a 64-bit integer and casts it to int8_t.
+//!
+//! This macro extracts the lowest byte from a 64-bit integer and casts it to int8_t.
+//! \param l The 64-bit integer from which to extract the lowest byte.
 #define M_ByteInt0(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0x00000000000000FF)) >> 0)))
+
+//! \def M_ByteInt1
+//! \brief Extracts the second lowest byte from a 64-bit integer and casts it to int8_t.
+//!
+//! This macro extracts the second lowest byte from a 64-bit integer and casts it to int8_t.
+//! \param l The 64-bit integer from which to extract the second lowest byte.
 #define M_ByteInt1(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0x000000000000FF00)) >> 8)))
+
+//! \def M_ByteInt2
+//! \brief Extracts the third lowest byte from a 64-bit integer and casts it to int8_t.
+//!
+//! This macro extracts the third lowest byte from a 64-bit integer and casts it to int8_t.
+//! \param l The 64-bit integer from which to extract the third lowest byte.
 #define M_ByteInt2(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0x0000000000FF0000)) >> 16)))
+
+//! \def M_ByteInt3
+//! \brief Extracts the fourth lowest byte from a 64-bit integer and casts it to int8_t.
+//!
+//! This macro extracts the fourth lowest byte from a 64-bit integer and casts it to int8_t.
+//! \param l The 64-bit integer from which to extract the fourth lowest byte.
 #define M_ByteInt3(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0x00000000FF000000)) >> 24)))
+
+//! \def M_ByteInt4
+//! \brief Extracts the fifth lowest byte from a 64-bit integer and casts it to int8_t.
+//!
+//! This macro extracts the fifth lowest byte from a 64-bit integer and casts it to int8_t.
+//! \param l The 64-bit integer from which to extract the fifth lowest byte.
 #define M_ByteInt4(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0x000000FF00000000)) >> 32)))
+
+//! \def M_ByteInt5
+//! \brief Extracts the sixth lowest byte from a 64-bit integer and casts it to int8_t.
+//!
+//! This macro extracts the sixth lowest byte from a 64-bit integer and casts it to int8_t.
+//! \param l The 64-bit integer from which to extract the sixth lowest byte.
 #define M_ByteInt5(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0x0000FF0000000000)) >> 40)))
+
+//! \def M_ByteInt6
+//! \brief Extracts the seventh lowest byte from a 64-bit integer and casts it to int8_t.
+//!
+//! This macro extracts the seventh lowest byte from a 64-bit integer and casts it to int8_t.
+//! \param l The 64-bit integer from which to extract the seventh lowest byte.
 #define M_ByteInt6(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0x00FF000000000000)) >> 48)))
+
+//! \def M_ByteInt7
+//! \brief Extracts the highest byte from a 64-bit integer and casts it to int8_t.
+//!
+//! This macro extracts the highest byte from a 64-bit integer and casts it to int8_t.
+//! \param l The 64-bit integer from which to extract the highest byte.
 #define M_ByteInt7(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0xFF00000000000000)) >> 56)))
 
-// get a specific nibble
-#define M_Nibble0(l)  M_STATIC_CAST(uint8_t, M_STATIC_CAST(uint8_t, l) & M_STATIC_CAST(uint8_t, UINT8_C(0x0F)))
-#define M_Nibble1(l)  M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint8_t, l) & UINT8_C(0xF0)) >> 4))
-#define M_Nibble2(l)  M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint16_t, l) & UINT16_C(0x0F00)) >> 8))
-#define M_Nibble3(l)  M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint16_t, l) & UINT16_C(0xF000)) >> 12))
-#define M_Nibble4(l)  M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint32_t, l) & UINT32_C(0x000F0000)) >> 16))
-#define M_Nibble5(l)  M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint32_t, l) & UINT32_C(0x00F00000)) >> 20))
-#define M_Nibble6(l)  M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint32_t, l) & UINT32_C(0x0F000000)) >> 24))
-#define M_Nibble7(l)  M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint32_t, l) & UINT32_C(0xF0000000)) >> 28))
-#define M_Nibble8(l)  M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint64_t, l) & UINT64_C(0x0000000F00000000)) >> 32))
-#define M_Nibble9(l)  M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint64_t, l) & UINT64_C(0x000000F000000000)) >> 36))
+//! \def M_Nibble0
+//! \brief Extracts the lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the lowest nibble.
+#define M_Nibble0(l) M_STATIC_CAST(uint8_t, M_STATIC_CAST(uint8_t, l) & M_STATIC_CAST(uint8_t, UINT8_C(0x0F)))
+
+//! \def M_Nibble1
+//! \brief Extracts the second lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the second lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the second lowest nibble.
+#define M_Nibble1(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint8_t, l) & UINT8_C(0xF0)) >> 4))
+
+//! \def M_Nibble2
+//! \brief Extracts the third lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the third lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the third lowest nibble.
+#define M_Nibble2(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint16_t, l) & UINT16_C(0x0F00)) >> 8))
+
+//! \def M_Nibble3
+//! \brief Extracts the fourth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the fourth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the fourth lowest nibble.
+#define M_Nibble3(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint16_t, l) & UINT16_C(0xF000)) >> 12))
+
+//! \def M_Nibble4
+//! \brief Extracts the fifth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the fifth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the fifth lowest nibble.
+#define M_Nibble4(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint32_t, l) & UINT32_C(0x000F0000)) >> 16))
+
+//! \def M_Nibble5
+//! \brief Extracts the sixth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the sixth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the sixth lowest nibble.
+#define M_Nibble5(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint32_t, l) & UINT32_C(0x00F00000)) >> 20))
+
+//! \def M_Nibble6
+//! \brief Extracts the seventh lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the seventh lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the seventh lowest nibble.
+#define M_Nibble6(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint32_t, l) & UINT32_C(0x0F000000)) >> 24))
+
+//! \def M_Nibble7
+//! \brief Extracts the eighth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the eighth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the eighth lowest nibble.
+#define M_Nibble7(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint32_t, l) & UINT32_C(0xF0000000)) >> 28))
+
+//! \def M_Nibble8
+//! \brief Extracts the ninth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the ninth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the ninth lowest nibble.
+#define M_Nibble8(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint64_t, l) & UINT64_C(0x0000000F00000000)) >> 32))
+
+//! \def M_Nibble9
+//! \brief Extracts the tenth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the tenth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the tenth lowest nibble.
+#define M_Nibble9(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint64_t, l) & UINT64_C(0x000000F000000000)) >> 36))
+
+//! \def M_Nibble10
+//! \brief Extracts the eleventh lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the eleventh lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the eleventh lowest nibble.
 #define M_Nibble10(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint64_t, l) & UINT64_C(0x00000F0000000000)) >> 40))
+
+//! \def M_Nibble11
+//! \brief Extracts the twelfth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the twelfth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the twelfth lowest nibble.
 #define M_Nibble11(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint64_t, l) & UINT64_C(0x0000F00000000000)) >> 44))
+
+//! \def M_Nibble12
+//! \brief Extracts the thirteenth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the thirteenth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the thirteenth lowest nibble.
 #define M_Nibble12(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint64_t, l) & UINT64_C(0x000F000000000000)) >> 48))
+
+//! \def M_Nibble13
+//! \brief Extracts the fourteenth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the fourteenth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the fourteenth lowest nibble.
 #define M_Nibble13(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint64_t, l) & UINT64_C(0x00F0000000000000)) >> 52))
+
+//! \def M_Nibble14
+//! \brief Extracts the fifteenth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the fifteenth lowest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the fifteenth lowest nibble.
 #define M_Nibble14(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint64_t, l) & UINT64_C(0x0F00000000000000)) >> 56))
+
+//! \def M_Nibble15
+//! \brief Extracts the highest nibble (4 bits) from a value and casts it to uint8_t.
+//!
+//! This macro extracts the highest nibble (4 bits) from a value and casts it to uint8_t.
+//! \param l The value from which to extract the highest nibble.
 #define M_Nibble15(l) M_STATIC_CAST(uint8_t, ((M_STATIC_CAST(uint64_t, l) & UINT64_C(0xF000000000000000)) >> 60))
 
+    //! \fn static M_INLINE uint8_t nibbles_To_Byte(uint8_t upperNibble, uint8_t lowerNibble)
+    //! \brief Combines two nibbles into a single byte
+    //!
+    //! \param[in] upperNibble upper 4 bits
+    //! \param[in] lowerNibble lower 4 bits
+    //! \return byte
     static M_INLINE uint8_t nibbles_To_Byte(uint8_t upperNibble, uint8_t lowerNibble)
     {
         return M_STATIC_CAST(uint8_t, (((upperNibble)&M_STATIC_CAST(uint8_t, 0x0F)) << 4) |
                                           (((lowerNibble)&M_STATIC_CAST(uint8_t, 0x0F)) << 0));
     }
 
+    //! \def M_NibblesTo1ByteValue(n1, n0)
+    //! \brief Combines two nibbles into a single byte
+    //!
+    //! This is a convenience wrapper for nibbles_To_Byte for backwards compatibility
+    //!
+    //! \param[in] upperNibble upper 4 bits
+    //! \param[in] lowerNibble lower 4 bits
+    //! \return byte
+    //! \sa nibbles_To_Byte
 #define M_NibblesTo1ByteValue(n1, n0) nibbles_To_Byte(n1, n0)
 
+    //! \fn static M_INLINE uint16_t bytes_To_Uint16(uint8_t msb, uint8_t lsb)
+    //! \brief Combines two bytes into a word (uint16_t)
+    //!
+    //! \param[in] msb most significant byte
+    //! \param[in] lsb least significant byte
+    //! \return word from combined values
     static M_INLINE uint16_t bytes_To_Uint16(uint8_t msb, uint8_t lsb)
     {
         return M_STATIC_CAST(uint16_t, (M_STATIC_CAST(uint16_t, msb) << 8) | (M_STATIC_CAST(uint16_t, lsb) << 0));
     }
 
+    //! \def M_BytesTo2ByteValue(b1, b0)
+    //! \brief Combines two bytes into a word (uint16_t)
+    //!
+    //! This is a convenience macro for bytes_To_Uint16 for backwards compatibility
+    //! \param[in] b1 most significant byte
+    //! \param[in] b0 least significant byte
+    //! \return word from combined values
+    //! \sa bytes_To_Uint16
 #define M_BytesTo2ByteValue(b1, b0) bytes_To_Uint16(b1, b0)
 
+    //! \fn static M_INLINE uint32_t bytes_To_Uint32(uint8_t msb, uint8_t byte2, uint8_t byte1, uint8_t lsb)
+    //! \brief Combines four bytes into a dword (uint32_t)
+    //!
+    //! \param[in] msb most significant byte (bits 31:24)
+    //! \param[in] byte2 next most significant byte (bits 23:16)
+    //! \param[in] byte1 next byte (bits 15:8)
+    //! \param[in] lsb least significant byte (bits 7:0)
+    //! \return dword from combined values
     static M_INLINE uint32_t bytes_To_Uint32(uint8_t msb, uint8_t byte2, uint8_t byte1, uint8_t lsb)
     {
         return (M_STATIC_CAST(uint32_t, msb) << 24) | (M_STATIC_CAST(uint32_t, byte2) << 16) |
                (M_STATIC_CAST(uint32_t, byte1) << 8) | (M_STATIC_CAST(uint32_t, lsb) << 0);
     }
 
+    //! \def M_BytesTo4ByteValue(b3, b2, b1, b0)
+    //! \brief Combines four bytes into a dword (uint32_t)
+    //!
+    //! This is a convenience macro for bytes_To_Uint32 for backwards compatibility
+    //!
+    //! \param[in] b3 most significant byte (bits 31:24)
+    //! \param[in] b2 next most significant byte (bits 23:16)
+    //! \param[in] b1 next byte (bits 15:8)
+    //! \param[in] b0 least significant byte (bits 7:0)
+    //! \return dword from combined values
+    //! \sa bytes_To_Uint32
 #define M_BytesTo4ByteValue(b3, b2, b1, b0) bytes_To_Uint32(b3, b2, b1, b0)
 
+    //! \fn static M_INLINE uint64_t bytes_To_Uint64(uint8_t msb, uint8_t byte6, uint8_t byte5, uint8_t byte4,
+    //!                                                  uint8_t byte2, uint8_t byte3, uint8_t byte1, uint8_t lsb)
+    //! \brief Combines eight bytes into a qword (uint64_t)
+    //!
+    //! \param[in] msb most significant byte (bits 63:56)
+    //! \param[in] byte6 (bits 55:48)
+    //! \param[in] byte5 (bits 47:40)
+    //! \param[in] byte4 (bits 39:32)
+    //! \param[in] byte3 (bits 31:24)
+    //! \param[in] byte2 (bits 23:16)
+    //! \param[in] byte1 (bits 15:8)
+    //! \param[in] lsb least significant byte (bits 7:0)
+    //! \return qword from combined values
     static M_INLINE uint64_t bytes_To_Uint64(uint8_t msb,
                                              uint8_t byte6,
                                              uint8_t byte5,
@@ -139,51 +481,131 @@ extern "C"
                (M_STATIC_CAST(uint64_t, byte1) << 8) | (M_STATIC_CAST(uint64_t, lsb) << 0);
     }
 
+    //! \def M_BytesTo8ByteValue(b7, b6, b5, b4, b3, b2, b1, b0)
+    //! \brief Combines eight bytes into a qword (uint64_t)
+    //!
+    //! This is a convenience macro for bytes_To_Uint64 for backwards compatibility
+    //!
+    //! \param[in] msb most significant byte (bits 63:56)
+    //! \param[in] byte6 (bits 55:48)
+    //! \param[in] byte5 (bits 47:40)
+    //! \param[in] byte4 (bits 39:32)
+    //! \param[in] byte3 (bits 31:24)
+    //! \param[in] byte2 (bits 23:16)
+    //! \param[in] byte1 (bits 15:8)
+    //! \param[in] lsb least significant byte (bits 7:0)
+    //! \return qword from combined values
+    //! \sa bytes_To_Uint64
 #define M_BytesTo8ByteValue(b7, b6, b5, b4, b3, b2, b1, b0) bytes_To_Uint64(b7, b6, b5, b4, b3, b2, b1, b0)
 
+    //! \fn static M_INLINE uint32_t words_To_Uint32(uint16_t msw, uint16_t lsw)
+    //! \brief Combines two words into a dword (uint32_t)
+    //!
+    //! \param[in] msw most significant word
+    //! \param[in] lsw least significant word
+    //! \return dword from combined values
     static M_INLINE uint32_t words_To_Uint32(uint16_t msw, uint16_t lsw)
     {
         return (M_STATIC_CAST(uint32_t, msw) << 16) | (M_STATIC_CAST(uint32_t, lsw) << 0);
     }
 
+    //! \def M_WordsTo4ByteValue(w1, w0)
+    //! \brief Combines two words into a dword (uint32_t)
+    //!
+    //! This is a convenience macro for words_To_Uint32 for backwards compatibility
+    //!
+    //! \param[in] w1 most significant word
+    //! \param[in] w0 least significant word
+    //! \return dword from combined values
+    //! \sa words_To_Uint32
 #define M_WordsTo4ByteValue(w1, w0) words_To_Uint32(w0, w1)
 
+    //! \fn static M_INLINE uint64_t words_To_Uint64(uint16_t msw, uint16_t word2, uint16_t word1, uint16_t lsw)
+    //! \brief Combines four words into a qword (uint64_t)
+    //!
+    //! \param[in] msw most significant word (bits 63:48)
+    //! \param[in] word2 next most significant word (bits 47:32)
+    //! \param[in] word1 next word (bits 31:16)
+    //! \param[in] lsw least significant word (bits 15:0)
+    //! \return qword from combined values
     static M_INLINE uint64_t words_To_Uint64(uint16_t msw, uint16_t word2, uint16_t word1, uint16_t lsw)
     {
         return (M_STATIC_CAST(uint64_t, msw) << 48) | (M_STATIC_CAST(uint64_t, word2) << 32) |
                (M_STATIC_CAST(uint64_t, word1) << 16) | (M_STATIC_CAST(uint64_t, lsw) << 0);
     }
 
+    //! \def M_WordsTo8ByteValue(w3, w2, w1, w0)
+    //! \brief Combines four words into a qword (uint64_t)
+    //!
+    //! This is a convenience macro for words_To_Uint64 for backwards compatibility
+    //!
+    //! \param[in] w3 most significant word (bits 63:48)
+    //! \param[in] w2 next most significant word (bits 47:32)
+    //! \param[in] w1 next word (bits 31:16)
+    //! \param[in] w0 least significant word (bits 15:0)
+    //! \return qword from combined values
+    //! \sa words_To_Uint64
 #define M_WordsTo8ByteValue(w3, w2, w1, w0) words_To_Uint64(w3, w2, w1, w0)
 
+    //! static M_INLINE uint64_t dwords_To_Uint64(uint32_t msdw, uint32_t lsdw)
+    //!
+    //! \fn static M_INLINE uint64_t dwords_To_Uint64(uint32_t msdw, uint32_t lsdw)
+    //! \brief Combines two dwords into a qword (uint64_t)
+    //!
+    //! \param[in] msdw most significant dword (bits 63:32)
+    //! \param[in] lsdw least significant dword (bits 31:0)
+    //! \return qword from combined values
     static M_INLINE uint64_t dwords_To_Uint64(uint32_t msdw, uint32_t lsdw)
     {
         return (M_STATIC_CAST(uint64_t, msdw) << 32) | (M_STATIC_CAST(uint64_t, lsdw) << 0);
     }
 
+    //! \def M_DWordsTo8ByteValue(d1, d0)
+    //! \brief Combines two dwords into a qword (uint64_t)
+    //!
+    //! This is a convenience macro for dwords_To_Uint64 for backwards compatibility
+    //!
+    //! \param[in] msdw most significant dword (bits 63:32)
+    //! \param[in] lsdw least significant dword (bits 31:0)
+    //! \return qword from combined values
+    //! \sa dwords_To_Uint64
 #define M_DWordsTo8ByteValue(d1, d0) dwords_To_Uint64(d1, d0)
 
-// MACRO to round the number of x so that it will not round up when formating
-// the float
+    //! \def ROUNDF(f, c)
+    //! \brief Rounds a float so it does not get rounded up when formatting
+    //!
+    //! \param[in] f float to round
+    //! \param[in] c nearest value to round to
+    //! \return rounded float value
 #define ROUNDF(f, c) M_STATIC_CAST(float, (M_STATIC_CAST(int, (f) * (c))) / (c))
 
+    //! \struct genericint_t
+    //! \brief Structure used to help generically retrieve a bit range from
+    //!
+    //! This structure contains the information necessary to assist with
+    //! a generic way to extract a range of bits from any size value
     typedef struct sgenericint_t
     {
-        bool   issigned;   /*is this from a signed integer or not*/
-        size_t sizeoftype; /*set to sizzeof(var) when using this structure*/
+        bool   issigned;   /*!< set to true for a signed value, false for unsigned value */
+        size_t sizeoftype; /*!< set to sizeof(var) when using this structure */
         union
         {
-            uint8_t  u8;
-            uint16_t u16;
-            uint32_t u32;
-            uint64_t u64;
-            int8_t   i8;
-            int16_t  i16;
-            int32_t  i32;
-            int64_t  i64;
-        };
+            uint8_t  u8;  /*!< set/get as a uint8_t value */
+            uint16_t u16; /*!< set/get as a uint16_t value */
+            uint32_t u32; /*!< set/get as a uint32_t value */
+            uint64_t u64; /*!< set/get as a uint64_t value */
+            int8_t   i8;  /*!< set/get as a int8_t value */
+            int16_t  i16; /*!< set/get as a int16_t value */
+            int32_t  i32; /*!< set/get as a int32_t value */
+            int64_t  i64; /*!< set/get as a int64_t value */
+        };                /*< Annonymous union for setting/getting different integer types without lots of casting */
     } genericint_t;
 
+    //! \fn static M_INLINE bool is_generic_int_valid(genericint_t genint)
+    //! \brief validates the contents of the genericint_t
+    //!
+    //! \param[in] genint genericint_t structure to validate
+    //! \return true = valid, false = invalid
     static M_INLINE bool is_generic_int_valid(genericint_t genint)
     {
         bool good = false;
@@ -199,12 +621,52 @@ extern "C"
         return good;
     }
 
+    //! \fn genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
+    //! \brief returns a genericint_t with the range of bits requested from the input value
+    //!
+    //! This is the "main" worker function to get a range of bits from "any" sized type value.
+    //! It is recommended not to call this directly but to use the other inline helper functions
+    //! below.
+    //! \param[in] input genericint_t structure to retrieve data from
+    //! \param[in] outputsize requested output integer size (sizeof(uint8_t), sizeof(int16_t), etc)
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return genericint_t structure with requested data range
+    //! \sa get_bit_range_uint8
+    //! \sa get_bit_range_uint16
+    //! \sa get_8bit_range_uint16
+    //! \sa get_bit_range_uint32
+    //! \sa get_8bit_range_uint32
+    //! \sa get_16bit_range_uint32
+    //! \sa get_bit_range_uint64
+    //! \sa get_8bit_range_uint64
+    //! \sa get_16bit_range_uint64
+    //! \sa get_32bit_range_uint64
+    //! \sa get_bit_range_int8
+    //! \sa get_bit_range_int16
+    //! \sa get_8bit_range_int16
+    //! \sa get_bit_range_int32
+    //! \sa get_8bit_range_int32
+    //! \sa get_16bit_range_int32
+    //! \sa get_bit_range_int64
+    //! \sa get_8bit_range_int64
+    //! \sa get_16bit_range_int64
+    //! \sa get_32bit_range_int64
     genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb);
 
+    //! \fn static M_INLINE uint8_t get_bit_range_uint8(uint8_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for uint8_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return uint8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE uint8_t get_bit_range_uint8(uint8_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
+        genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
         genint.issigned   = false;
         genint.u8         = value;
         genint.sizeoftype = sizeof(value);
@@ -212,10 +674,19 @@ extern "C"
         return genint.u8;
     }
 
+    //! \fn static M_INLINE uint16_t get_bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for uint16_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return uint16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE uint16_t get_bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
+        genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
         genint.issigned   = false;
         genint.u16        = value;
         genint.sizeoftype = sizeof(value);
@@ -223,10 +694,19 @@ extern "C"
         return genint.u16;
     }
 
+    //! \fn static M_INLINE uint8_t get_8bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for uint16_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return uint8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE uint8_t get_8bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
+        genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
         genint.issigned   = false;
         genint.u16        = value;
         genint.sizeoftype = sizeof(value);
@@ -234,10 +714,19 @@ extern "C"
         return genint.u8;
     }
 
+    //! \fn static M_INLINE uint32_t get_bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for uint32_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return uint32_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE uint32_t get_bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
+        genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
         genint.issigned   = false;
         genint.u32        = value;
         genint.sizeoftype = sizeof(value);
@@ -245,10 +734,19 @@ extern "C"
         return genint.u32;
     }
 
+    //! \fn static M_INLINE uint8_t get_8bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for uint32_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return uint8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE uint8_t get_8bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
+        genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
         genint.issigned   = false;
         genint.u32        = value;
         genint.sizeoftype = sizeof(value);
@@ -256,10 +754,19 @@ extern "C"
         return genint.u8;
     }
 
+    //! \fn static M_INLINE uint16_t get_16bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for uint32_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return uint16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE uint16_t get_16bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
+        genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
         genint.issigned   = false;
         genint.u32        = value;
         genint.sizeoftype = sizeof(value);
@@ -267,10 +774,18 @@ extern "C"
         return genint.u16;
     }
 
+    //! \fn static M_INLINE uint64_t get_bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for uint64_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return uint64_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE uint64_t get_bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned   = false;
         genint.u64        = value;
         genint.sizeoftype = sizeof(value);
@@ -278,10 +793,18 @@ extern "C"
         return genint.u64;
     }
 
+    //! \fn static M_INLINE uint8_t get_8bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for uint64_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return uint8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE uint8_t get_8bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned   = false;
         genint.u64        = value;
         genint.sizeoftype = sizeof(value);
@@ -289,10 +812,18 @@ extern "C"
         return genint.u8;
     }
 
+    //! \fn static M_INLINE uint16_t get_16bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for uint64_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return uint16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE uint16_t get_16bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned   = false;
         genint.u64        = value;
         genint.sizeoftype = sizeof(value);
@@ -300,10 +831,18 @@ extern "C"
         return genint.u16;
     }
 
+    //! \fn static M_INLINE uint32_t get_32bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for uint64_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return uint32_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE uint32_t get_32bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned   = false;
         genint.u64        = value;
         genint.sizeoftype = sizeof(value);
@@ -311,10 +850,19 @@ extern "C"
         return genint.u32;
     }
 
+    //! \fn static M_INLINE uint8_t get_bit_range_int8(uint8_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for int8_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return int8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE int8_t get_bit_range_int8(int8_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
+        genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
         genint.issigned   = true;
         genint.i8         = value;
         genint.sizeoftype = sizeof(value);
@@ -322,10 +870,19 @@ extern "C"
         return genint.i8;
     }
 
+    //! \fn static M_INLINE int16_t get_bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for int16_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return int16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE int16_t get_bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
+        genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
         genint.issigned   = true;
         genint.i16        = value;
         genint.sizeoftype = sizeof(value);
@@ -333,10 +890,19 @@ extern "C"
         return genint.i16;
     }
 
+    //! \fn static M_INLINE int8_t get_8bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for int16_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return int8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE int8_t get_8bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
+        genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
         genint.issigned   = true;
         genint.i16        = value;
         genint.sizeoftype = sizeof(value);
@@ -344,10 +910,19 @@ extern "C"
         return genint.i8;
     }
 
+    //! \fn static M_INLINE int32_t get_bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for int32_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return int32_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE int32_t get_bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
+        genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
         genint.issigned   = true;
         genint.i32        = value;
         genint.sizeoftype = sizeof(value);
@@ -355,10 +930,19 @@ extern "C"
         return genint.i32;
     }
 
+    //! \fn static M_INLINE int8_t get_8bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for int32_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return int8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE int8_t get_8bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
+        genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
         genint.issigned   = true;
         genint.i32        = value;
         genint.sizeoftype = sizeof(value);
@@ -366,10 +950,19 @@ extern "C"
         return genint.i8;
     }
 
+    //! \fn static M_INLINE int16_t get_16bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for int32_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return int16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE int16_t get_16bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
+        genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
         genint.issigned   = true;
         genint.i32        = value;
         genint.sizeoftype = sizeof(value);
@@ -377,10 +970,18 @@ extern "C"
         return genint.i16;
     }
 
+    //! \fn static M_INLINE int64_t get_bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for int64_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return uint64_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE int64_t get_bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned   = true;
         genint.i64        = value;
         genint.sizeoftype = sizeof(value);
@@ -388,10 +989,18 @@ extern "C"
         return genint.i64;
     }
 
+    //! \fn static M_INLINE int8_t get_8bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for int64_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return int8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE int8_t get_8bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned   = true;
         genint.i64        = value;
         genint.sizeoftype = sizeof(value);
@@ -399,10 +1008,18 @@ extern "C"
         return genint.i8;
     }
 
+    //! \fn static M_INLINE int16_t get_16bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for int64_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return int16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE int16_t get_16bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned   = true;
         genint.i64        = value;
         genint.sizeoftype = sizeof(value);
@@ -410,10 +1027,18 @@ extern "C"
         return genint.i16;
     }
 
+    //! \fn static M_INLINE int32_t get_32bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
+    //! \brief Extracts a value from a range of bits and returns it
+    //!
+    //! This is a helper function for generic_Get_Bit_Range for int64_t values.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return int32_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE int32_t get_32bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
-        safe_memset(&genint, sizeof(genericint_t), 0, sizeof(genericint_t));
         genint.issigned   = true;
         genint.i64        = value;
         genint.sizeoftype = sizeof(value);
@@ -421,8 +1046,37 @@ extern "C"
         return genint.i32;
     }
 
-// recommend using the inlines above when possible, but this will work as the
-// macro always did in the past -TJE
+    //! \def M_GETBITRANGE(input, msb, lsb)
+    //! \brief Extracts a value from a range of bits and returns it as an unsigned value
+    //!
+    //! This is a backwards compatible convenience macro. It is recommended to use one of the other
+    //! inline functions in this file instead of this macro.
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return appropriately sized integer based on bit range for msb and lsb.
+    //! Will be shifted so input lsb is at bit 0 of this output.
+    //! \sa get_bit_range_uint8
+    //! \sa get_bit_range_uint16
+    //! \sa get_8bit_range_uint16
+    //! \sa get_bit_range_uint32
+    //! \sa get_8bit_range_uint32
+    //! \sa get_16bit_range_uint32
+    //! \sa get_bit_range_uint64
+    //! \sa get_8bit_range_uint64
+    //! \sa get_16bit_range_uint64
+    //! \sa get_32bit_range_uint64
+    //! \sa get_bit_range_int8
+    //! \sa get_bit_range_int16
+    //! \sa get_8bit_range_int16
+    //! \sa get_bit_range_int32
+    //! \sa get_8bit_range_int32
+    //! \sa get_16bit_range_int32
+    //! \sa get_bit_range_int64
+    //! \sa get_8bit_range_int64
+    //! \sa get_16bit_range_int64
+    //! \sa get_32bit_range_int64
 #define M_GETBITRANGE(input, msb, lsb)                                                                                 \
     (((msb) - (lsb) + 1) <= 8                                                                                          \
          ? get_8bit_range_uint64(input, msb, lsb)                                                                      \
@@ -432,7 +1086,37 @@ extern "C"
                        ? get_32bit_range_uint64(input, msb, lsb)                                                       \
                        : (((msb) - (lsb) + 1) <= 64 ? get_bit_range_uint64(input, msb, lsb) : UINTMAX_MAX))))
 
-// get bit range for signed values
+    //! \def M_IGETBITRANGE(input, msb, lsb)
+    //! \brief Extracts a value from a range of bits and returns it as a signed value
+    //!
+    //! This is a backwards compatible convenience macro. It is recommended to use one of the other
+    //! inline functions in this file instead of this macro
+    //!
+    //! \param[in] value Input value to extract a range of bits from
+    //! \param[in] msb most significant bit value
+    //! \param[in] lsb least significant bit value
+    //! \return appropriately sized integer based on bit range for msb and lsb.
+    //! Will be shifted so input lsb is at bit 0 of this output.
+    //! \sa get_bit_range_uint8
+    //! \sa get_bit_range_uint16
+    //! \sa get_8bit_range_uint16
+    //! \sa get_bit_range_uint32
+    //! \sa get_8bit_range_uint32
+    //! \sa get_16bit_range_uint32
+    //! \sa get_bit_range_uint64
+    //! \sa get_8bit_range_uint64
+    //! \sa get_16bit_range_uint64
+    //! \sa get_32bit_range_uint64
+    //! \sa get_bit_range_int8
+    //! \sa get_bit_range_int16
+    //! \sa get_8bit_range_int16
+    //! \sa get_bit_range_int32
+    //! \sa get_8bit_range_int32
+    //! \sa get_16bit_range_int32
+    //! \sa get_bit_range_int64
+    //! \sa get_8bit_range_int64
+    //! \sa get_16bit_range_int64
+    //! \sa get_32bit_range_int64
 #define M_IGETBITRANGE(input, msb, lsb)                                                                                \
     (((msb) - (lsb) + 1) <= 8                                                                                          \
          ? get_8bit_range_int64(input, msb, lsb)                                                                       \
@@ -444,331 +1128,1012 @@ extern "C"
 
     // Bit access macros
 
-#define M_BitN(n)   (UINT64_C(1) << (n))
+    //! \def M_BitN(n)
+    //! \brief Sets a specific bit number to 1 and all other bits are zero.
+    //! Recommend using the other macros with specific widths over this one
+    //! \sa M_BitN8
+    //! \sa M_BitN16
+    //! \sa M_BitN32
+    //! \sa M_BitN64
+#define M_BitN(n) (UINT64_C(1) << (n))
 
-#define M_BitN8(n)  (UINT8_C(1) << (n))
+    //! \def M_BitN8(n)
+    //! \brief Sets a specific bit number to 1 and all other bits are zero.
+#define M_BitN8(n) (UINT8_C(1) << (n))
+
+    //! \def M_BitN16(n)
+    //! \brief Sets a specific bit number to 1 and all other bits are zero.
 #define M_BitN16(n) (UINT16_C(1) << (n))
+
+    //! \def M_BitN32(n)
+    //! \brief Sets a specific bit number to 1 and all other bits are zero.
 #define M_BitN32(n) (UINT32_C(1) << (n))
+
+    //! \def M_BitN64(n)
+    //! \brief Sets a specific bit number to 1 and all other bits are zero.
 #define M_BitN64(n) (UINT64_C(1) << (n))
 
 // defined in EDK2 MdePkg and causes conflicts, so checking this define for now
 // to avoid conflicts
 #if !defined(UEFI_C_SOURCE)
 
-#    define BIT0  (M_BitN8(0))
-#    define BIT1  (M_BitN8(1))
-#    define BIT2  (M_BitN8(2))
-#    define BIT3  (M_BitN8(3))
-#    define BIT4  (M_BitN8(4))
-#    define BIT5  (M_BitN8(5))
-#    define BIT6  (M_BitN8(6))
-#    define BIT7  (M_BitN8(7))
-#    define BIT8  (M_BitN16(8))
-#    define BIT9  (M_BitN16(9))
+//! \def BIT0
+//! \brief Sets the 0th bit (0x01).
+#    define BIT0 (M_BitN8(0))
+
+//! \def BIT1
+//! \brief Sets the 1st bit (0x02).
+#    define BIT1 (M_BitN8(1))
+
+//! \def BIT2
+//! \brief Sets the 2nd bit (0x04).
+#    define BIT2 (M_BitN8(2))
+
+//! \def BIT3
+//! \brief Sets the 3rd bit (0x08).
+#    define BIT3 (M_BitN8(3))
+
+//! \def BIT4
+//! \brief Sets the 4th bit (0x10).
+#    define BIT4 (M_BitN8(4))
+
+//! \def BIT5
+//! \brief Sets the 5th bit (0x20).
+#    define BIT5 (M_BitN8(5))
+
+//! \def BIT6
+//! \brief Sets the 6th bit (0x40).
+#    define BIT6 (M_BitN8(6))
+
+//! \def BIT7
+//! \brief Sets the 7th bit (0x80).
+#    define BIT7 (M_BitN8(7))
+
+//! \def BIT8
+//! \brief Sets the 8th bit (0x0100).
+#    define BIT8 (M_BitN16(8))
+
+//! \def BIT9
+//! \brief Sets the 9th bit (0x0200).
+#    define BIT9 (M_BitN16(9))
+
+//! \def BIT10
+//! \brief Sets the 10th bit (0x0400).
 #    define BIT10 (M_BitN16(10))
+
+//! \def BIT11
+//! \brief Sets the 11th bit (0x0800).
 #    define BIT11 (M_BitN16(11))
+
+//! \def BIT12
+//! \brief Sets the 12th bit (0x1000).
 #    define BIT12 (M_BitN16(12))
+
+//! \def BIT13
+//! \brief Sets the 13th bit (0x2000).
 #    define BIT13 (M_BitN16(13))
+
+//! \def BIT14
+//! \brief Sets the 14th bit (0x4000).
 #    define BIT14 (M_BitN16(14))
+
+//! \def BIT15
+//! \brief Sets the 15th bit (0x8000).
 #    define BIT15 (M_BitN16(15))
+
+//! \def BIT16
+//! \brief Sets the 16th bit (0x00010000).
 #    define BIT16 (M_BitN32(16))
+
+//! \def BIT17
+//! \brief Sets the 17th bit (0x00020000).
 #    define BIT17 (M_BitN32(17))
+
+//! \def BIT18
+//! \brief Sets the 18th bit (0x00040000).
 #    define BIT18 (M_BitN32(18))
+
+//! \def BIT19
+//! \brief Sets the 19th bit (0x00080000).
 #    define BIT19 (M_BitN32(19))
+
+//! \def BIT20
+//! \brief Sets the 20th bit (0x00100000).
 #    define BIT20 (M_BitN32(20))
+
+//! \def BIT21
+//! \brief Sets the 21st bit (0x00200000).
 #    define BIT21 (M_BitN32(21))
+
+//! \def BIT22
+//! \brief Sets the 22nd bit (0x00400000).
 #    define BIT22 (M_BitN32(22))
+
+//! \def BIT23
+//! \brief Sets the 23rd bit (0x00800000).
 #    define BIT23 (M_BitN32(23))
+
+//! \def BIT24
+//! \brief Sets the 24th bit (0x01000000).
 #    define BIT24 (M_BitN32(24))
+
+//! \def BIT25
+//! \brief Sets the 25th bit (0x02000000).
 #    define BIT25 (M_BitN32(25))
+
+//! \def BIT26
+//! \brief Sets the 26th bit (0x04000000).
 #    define BIT26 (M_BitN32(26))
+
+//! \def BIT27
+//! \brief Sets the 27th bit (0x08000000).
 #    define BIT27 (M_BitN32(27))
+
+//! \def BIT28
+//! \brief Sets the 28th bit (0x10000000).
 #    define BIT28 (M_BitN32(28))
+
+//! \def BIT29
+//! \brief Sets the 29th bit (0x20000000).
 #    define BIT29 (M_BitN32(29))
+
+//! \def BIT30
+//! \brief Sets the 30th bit (0x40000000).
 #    define BIT30 (M_BitN32(30))
+
+//! \def BIT31
+//! \brief Sets the 31st bit (0x80000000).
 #    define BIT31 (M_BitN32(31))
+
+//! \def BIT32
+//! \brief Sets the 32nd bit (0x0000000100000000).
 #    define BIT32 (M_BitN64(32))
+
+//! \def BIT33
+//! \brief Sets the 33rd bit (0x0000000200000000).
 #    define BIT33 (M_BitN64(33))
+
+//! \def BIT34
+//! \brief Sets the 34th bit (0x0000000400000000).
 #    define BIT34 (M_BitN64(34))
+
+//! \def BIT35
+//! \brief Sets the 35th bit (0x0000000800000000).
 #    define BIT35 (M_BitN64(35))
+
+//! \def BIT36
+//! \brief Sets the 36th bit (0x0000001000000000).
 #    define BIT36 (M_BitN64(36))
+
+//! \def BIT37
+//! \brief Sets the 37th bit (0x0000002000000000).
 #    define BIT37 (M_BitN64(37))
+
+//! \def BIT38
+//! \brief Sets the 38th bit (0x0000004000000000).
 #    define BIT38 (M_BitN64(38))
+
+//! \def BIT39
+//! \brief Sets the 39th bit (0x0000008000000000).
 #    define BIT39 (M_BitN64(39))
+
+//! \def BIT40
+//! \brief Sets the 40th bit (0x0000010000000000).
 #    define BIT40 (M_BitN64(40))
+
+//! \def BIT41
+//! \brief Sets the 41st bit (0x0000020000000000).
 #    define BIT41 (M_BitN64(41))
+
+//! \def BIT42
+//! \brief Sets the 42nd bit (0x0000040000000000).
 #    define BIT42 (M_BitN64(42))
+
+//! \def BIT43
+//! \brief Sets the 43rd bit (0x0000080000000000).
 #    define BIT43 (M_BitN64(43))
+
+//! \def BIT44
+//! \brief Sets the 44th bit (0x0000100000000000).
 #    define BIT44 (M_BitN64(44))
+
+//! \def BIT45
+//! \brief Sets the 45th bit (0x0000200000000000).
 #    define BIT45 (M_BitN64(45))
+
+//! \def BIT46
+//! \brief Sets the 46th bit (0x0000400000000000).
 #    define BIT46 (M_BitN64(46))
+
+//! \def BIT47
+//! \brief Sets the 47th bit (0x0000800000000000).
 #    define BIT47 (M_BitN64(47))
+
+//! \def BIT48
+//! \brief Sets the 48th bit (0x0001000000000000).
 #    define BIT48 (M_BitN64(48))
+
+//! \def BIT49
+//! \brief Sets the 49th bit (0x0002000000000000).
 #    define BIT49 (M_BitN64(49))
+
+//! \def BIT50
+//! \brief Sets the 50th bit (0x0004000000000000).
 #    define BIT50 (M_BitN64(50))
+
+//! \def BIT51
+//! \brief Sets the 51st bit (0x0008000000000000).
 #    define BIT51 (M_BitN64(51))
+
+//! \def BIT52
+//! \brief Sets the 52nd bit (0x0010000000000000).
 #    define BIT52 (M_BitN64(52))
+
+//! \def BIT53
+//! \brief Sets the 53rd bit (0x0020000000000000).
 #    define BIT53 (M_BitN64(53))
+
+//! \def BIT54
+//! \brief Sets the 54th bit (0x0040000000000000).
 #    define BIT54 (M_BitN64(54))
+
+//! \def BIT55
+//! \brief Sets the 55th bit (0x0080000000000000).
 #    define BIT55 (M_BitN64(55))
+
+//! \def BIT56
+//! \brief Sets the 56th bit (0x0100000000000000).
 #    define BIT56 (M_BitN64(56))
+
+//! \def BIT57
+//! \brief Sets the 57th bit (0x0200000000000000).
 #    define BIT57 (M_BitN64(57))
+
+//! \def BIT58
+//! \brief Sets the 58th bit (0x0400000000000000).
 #    define BIT58 (M_BitN64(58))
+
+//! \def BIT59
+//! \brief Sets the 59th bit (0x0800000000000000).
 #    define BIT59 (M_BitN64(59))
+
+//! \def BIT60
+//! \brief Sets the 60th bit (0x1000000000000000).
 #    define BIT60 (M_BitN64(60))
+
+//! \def BIT61
+//! \brief Sets the 61st bit (0x2000000000000000).
 #    define BIT61 (M_BitN64(61))
+
+//! \def BIT62
+//! \brief Sets the 62nd bit (0x4000000000000000).
 #    define BIT62 (M_BitN64(62))
+
+//! \def BIT63
+//! \brief Sets the 63rd bit (0x8000000000000000).
 #    define BIT63 (M_BitN64(63))
 
 #endif // UEFI_C_SOURCE
 
-// set a bit to 1 within a value. NOTE: it is recommended to use the inline
-// functions or type width specific macros instead
+//! \def M_SET_BIT(val, bitNum)
+//! \brief sets the specified bit in the input value.
+//!
+//! Recommended to use one of the other functions in this file
+//! instead!
+//! \sa set_uint8_bit
+//! \sa set_uint16_bit
+//! \sa set_uint32_bit
+//! \sa set_uint64_bit
 #define M_SET_BIT(val, bitNum) ((val) |= M_BitN(bitNum))
 
-// clear a bit to 0 within a value. NOTE: it is recommended to use the inline
-// functions or type width specific macros instead
+//! \def M_CLEAR_BIT(val, bitNum)
+//! \brief Clears the specified bit in the input value.
+//!
+//! Recommended to use one of the other functions in this file
+//! instead!
+//! \sa clear_uint8_bit
+//! \sa clear_uint16_bit
+//! \sa clear_uint32_bit
+//! \sa clear_uint64_bit
 #define M_CLEAR_BIT(val, bitNum) ((val) &= (~M_BitN(bitNum)))
 
-    // Inline functions for setting a bit
+    //! \fn static M_INLINE uint8_t set_uint8_bit(uint8_t val, uint8_t bitNum)
+    //! \brief sets the specified bit to one in the input value.
+    //!
+    //! \param[in] val Original value to set a bit to 1 in.
+    //! \param[in] bitNum The bit number to set to 1. Value values are 0 - 7
+    //! \return returns \a val with the specified bit set to 1
     static M_INLINE uint8_t set_uint8_bit(uint8_t val, uint8_t bitNum)
     {
         return M_STATIC_CAST(uint8_t, val | M_STATIC_CAST(uint8_t, UINT8_C(1) << bitNum));
     }
 
+    //! \fn static M_INLINE uint16_t set_uint16_bit(uint16_t val, uint16_t bitNum)
+    //! \brief sets the specified bit to one in the input value.
+    //!
+    //! \param[in] val Original value to set a bit to 1 in.
+    //! \param[in] bitNum The bit number to set to 1. Value values are 0 - 15
+    //! \return returns \a val with the specified bit set to 1
     static M_INLINE uint16_t set_uint16_bit(uint16_t val, uint16_t bitNum)
     {
         return M_STATIC_CAST(uint16_t, val | M_STATIC_CAST(uint16_t, UINT16_C(1) << bitNum));
     }
 
+    //! \fn static M_INLINE uint32_t set_uint32_bit(uint32_t val, uint32_t bitNum)
+    //! \brief sets the specified bit to one in the input value.
+    //!
+    //! \param[in] val Original value to set a bit to 1 in.
+    //! \param[in] bitNum The bit number to set to 1. Value values are 0 - 31
+    //! \return returns \a val with the specified bit set to 1
     static M_INLINE uint32_t set_uint32_bit(uint32_t val, uint32_t bitNum)
     {
         return val | M_STATIC_CAST(uint32_t, UINT32_C(1) << bitNum);
     }
 
+    //! \fn static M_INLINE uint64_t set_uint64_bit(uint64_t val, uint64_t bitNum)
+    //! \brief sets the specified bit to one in the input value.
+    //!
+    //! \param[in] val Original value to set a bit to 1 in.
+    //! \param[in] bitNum The bit number to set to 1. Value values are 0 - 63
+    //! \return returns \a val with the specified bit set to 1
     static M_INLINE uint64_t set_uint64_bit(uint64_t val, uint64_t bitNum)
     {
         return val | M_STATIC_CAST(uint64_t, UINT64_C(1) << bitNum);
     }
 
-    // Inline functions for clearing a bit
+    //! \fn static M_INLINE uint8_t clear_uint8_bit(uint8_t val, uint8_t bitNum)
+    //! \brief clears the specified bit to zero in the input value.
+    //!
+    //! \param[in] val Original value to clear a bit to 0 in.
+    //! \param[in] bitNum The bit number to clear to 0. Value values are 0 - 7
+    //! \return returns \a val with the specified bit cleared to 0
     static M_INLINE uint8_t clear_uint8_bit(uint8_t val, uint8_t bitNum)
     {
         return M_STATIC_CAST(uint8_t, val & M_STATIC_CAST(uint8_t, ~(UINT8_C(1) << bitNum)));
     }
 
+    //! \fn static M_INLINE uint16_t clear_uint16_bit(uint16_t val, uint16_t bitNum)
+    //! \brief clears the specified bit to zero in the input value.
+    //!
+    //! \param[in] val Original value to clear a bit to 0 in.
+    //! \param[in] bitNum The bit number to clear to 0. Value values are 0 - 15
+    //! \return returns \a val with the specified cleared set to 0
     static M_INLINE uint16_t clear_uint16_bit(uint16_t val, uint16_t bitNum)
     {
         return M_STATIC_CAST(uint16_t, val & M_STATIC_CAST(uint16_t, ~(UINT16_C(1) << bitNum)));
     }
 
+    //! \fn static M_INLINE uint32_t clear_uint32_bit(uint32_t val, uint32_t bitNum)
+    //! \brief clears the specified bit to zero in the input value.
+    //!
+    //! \param[in] val Original value to clear a bit to 0 in.
+    //! \param[in] bitNum The bit number to clear to 0. Value values are 0 - 31
+    //! \return returns \a val with the specified cleared set to 0
     static M_INLINE uint32_t clear_uint32_bit(uint32_t val, uint32_t bitNum)
     {
         return val & M_STATIC_CAST(uint32_t, ~(UINT32_C(1) << bitNum));
     }
 
+    //! \fn static M_INLINE uint64_t clear_uint64_bit(uint64_t val, uint64_t bitNum)
+    //! \brief clears the specified bit to zero in the input value.
+    //!
+    //! \param[in] val Original value to clear a bit to 0 in.
+    //! \param[in] bitNum The bit number to clear to 0. Value values are 0 - 63
+    //! \return returns \a val with the specified cleared set to 0
     static M_INLINE uint64_t clear_uint64_bit(uint64_t val, uint64_t bitNum)
     {
         return val & M_STATIC_CAST(uint64_t, ~(UINT64_C(1) << bitNum));
     }
 
-#define M_CLEAR_BIT8(val, bitNum)  ((val) = clear_uint8_bit(val, bitNum))
+    //! \def M_CLEAR_BIT8(val, bitNum)
+    //! \brief clears the specified bit to zero in the input value.
+    //!
+    //! This is a convenience macro for backwards compatibility
+    //!
+    //! \param[in] val Original value to clear a bit to 0 in.
+    //! \param[in] bitNum The bit number to clear to 0. Value values are 0 - 7
+    //! \return returns \a val with the specified cleared set to 0
+    //! \sa clear_uint8_bit
+#define M_CLEAR_BIT8(val, bitNum) ((val) = clear_uint8_bit(val, bitNum))
+
+    //! \def M_CLEAR_BIT16(val, bitNum)
+    //! \brief clears the specified bit to zero in the input value.
+    //!
+    //! This is a convenience macro for backwards compatibility
+    //!
+    //! \param[in] val Original value to clear a bit to 0 in.
+    //! \param[in] bitNum The bit number to clear to 0. Value values are 0 - 15
+    //! \return returns \a val with the specified cleared set to 0
+    //! \sa clear_uint16_bit
 #define M_CLEAR_BIT16(val, bitNum) ((val) = clear_uint16_bit(val, bitNum))
+
+    //! \def M_CLEAR_BIT32(val, bitNum)
+    //! \brief clears the specified bit to zero in the input value.
+    //!
+    //! This is a convenience macro for backwards compatibility
+    //!
+    //! \param[in] val Original value to clear a bit to 0 in.
+    //! \param[in] bitNum The bit number to clear to 0. Value values are 0 - 31
+    //! \return returns \a val with the specified cleared set to 0
+    //! \sa clear_uint32_bit
 #define M_CLEAR_BIT32(val, bitNum) ((val) = clear_uint32_bit(val, bitNum))
+
+    //! \def M_CLEAR_BIT64(val, bitNum)
+    //! \brief clears the specified bit to zero in the input value.
+    //!
+    //! This is a convenience macro for backwards compatibility
+    //!
+    //! \param[in] val Original value to clear a bit to 0 in.
+    //! \param[in] bitNum The bit number to clear to 0. Value values are 0 - 63
+    //! \return returns \a val with the specified cleared set to 0
+    //! \sa clear_uint64_bit
 #define M_CLEAR_BIT64(val, bitNum) ((val) = clear_uint64_bit(val, bitNum))
 
-#define M_SET_BIT8(val, bitNum)    ((val) = set_uint8_bit(val, bitNum))
-#define M_SET_BIT16(val, bitNum)   ((val) = set_uint16_bit(val, bitNum))
-#define M_SET_BIT32(val, bitNum)   ((val) = set_uint32_bit(val, bitNum))
-#define M_SET_BIT64(val, bitNum)   ((val) = set_uint64_bit(val, bitNum))
+    //! \def M_SET_BIT8(val, bitNum)
+    //! \brief sets the specified bit to one in the input value.
+    //!
+    //! This is a convenience macro for backwards compatibility
+    //!
+    //! \param[in] val Original value to set a bit to 1 in.
+    //! \param[in] bitNum The bit number to set to 1. Value values are 0 - 7
+    //! \return returns \a val with the specified bit set to 1
+    //! \sa set_uint8_bit
+#define M_SET_BIT8(val, bitNum) ((val) = set_uint8_bit(val, bitNum))
 
-    //-----------------------------------------------------------------------------
-    //
-    //  nibble_Swap()
-    //
-    //! \brief   Description:  swap the nibbles in a byte
-    //
-    //  Entry:
-    //!   \param[out] byteToSwap = a pointer to the byte containing the data in
-    //!   which to have the nibbles swapped
+    //! \def M_SET_BIT16(val, bitNum)
+    //! \brief sets the specified bit to one in the input value.
     //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void nibble_Swap(uint8_t* byteToSwap);
+    //! This is a convenience macro for backwards compatibility
+    //!
+    //! \param[in] val Original value to set a bit to 1 in.
+    //! \param[in] bitNum The bit number to set to 1. Value values are 0 - 15
+    //! \return returns \a val with the specified bit set to 1
+    //! \sa set_uint16_bit
+#define M_SET_BIT16(val, bitNum) ((val) = set_uint16_bit(val, bitNum))
 
-    //-----------------------------------------------------------------------------
-    //
-    //  byte_Swap_16()
-    //
-    //! \brief   Description:  swap the bytes in a word
-    //
-    //  Entry:
-    //!   \param[out] wordToSwap = a pointer to the word containing the data in
-    //!   which to have the bytes swapped
+    //! \def M_SET_BIT32(val, bitNum)
+    //! \brief sets the specified bit to one in the input value.
     //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void byte_Swap_16(uint16_t* wordToSwap);
-    //-----------------------------------------------------------------------------
-    //
-    //  byte_Swap_Int16()
-    //
-    //! \brief   Description:  swap the bytes in a singned word
-    //
-    //  Entry:
-    //!   \param[out] signedWordToSwap = a pointer to the signed word containing the
-    //!   data in which to have the bytes swapped
+    //! This is a convenience macro for backwards compatibility
     //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void byte_Swap_Int16(int16_t* signedWordToSwap);
-    //-----------------------------------------------------------------------------
-    //
-    //  big_To_Little_Endian_16()
-    //
-    //! \brief   Description:  swap the bytes in a word only if on little endian
-    //! system.
-    //
-    //  Entry:
-    //!   \param[out] wordToSwap = a pointer to the word containing the data in
-    //!   which to have the bytes swapped
-    //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void big_To_Little_Endian_16(uint16_t* wordToSwap);
+    //! \param[in] val Original value to set a bit to 1 in.
+    //! \param[in] bitNum The bit number to set to 1. Value values are 0 - 31
+    //! \return returns \a val with the specified bit set to 1
+    //! \sa set_uint32_bit
+#define M_SET_BIT32(val, bitNum) ((val) = set_uint32_bit(val, bitNum))
 
-    //-----------------------------------------------------------------------------
-    //
-    //  byte_Swap_32()
-    //
-    //! \brief   Description:  swap the bytes in a double word - useful for
-    //! converting between endianness
-    //
-    //  Entry:
-    //!   \param[out] doubleWordToSwap = a pointer to the double word containing the
-    //!   data in which to have the bytes swapped
+    //! \def M_SET_BIT64(val, bitNum)
+    //! \brief sets the specified bit to one in the input value.
     //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void byte_Swap_32(uint32_t* doubleWordToSwap);
-    //-----------------------------------------------------------------------------
-    //
-    //  byte_Swap_Int32()
-    //
-    //! \brief   Description:  swap the bytes in a Signed double word - useful for
-    //! converting between endianness
-    //
-    //  Entry:
-    //!   \param[out] signedDWord = a pointer to the Signed double word containing
-    //!   the data in which to have the bytes swapped
+    //! This is a convenience macro for backwards compatibility
     //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void byte_Swap_Int32(int32_t* signedDWord);
-    //-----------------------------------------------------------------------------
-    //
-    //  big_To_Little_Endian_32()
-    //
-    //! \brief   Description:  swap the bytes in a double word only if running on
-    //! little endian system
-    //
-    //  Entry:
-    //!   \param[out] doubleWordToSwap = a pointer to the double word containing the
-    //!   data in which to have the bytes swapped
-    //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void big_To_Little_Endian_32(uint32_t* doubleWordToSwap);
+    //! \param[in] val Original value to set a bit to 1 in.
+    //! \param[in] bitNum The bit number to set to 1. Value values are 0 - 63
+    //! \return returns \a val with the specified bit set to 1
+    //! \sa set_uint64_bit
+#define M_SET_BIT64(val, bitNum) ((val) = set_uint64_bit(val, bitNum))
 
-    //-----------------------------------------------------------------------------
-    //
-    //  word_Swap_32()
-    //
-    //! \brief   Description:  swap the words in a double word
-    //
-    //  Entry:
-    //!   \param[out] doubleWordToSwap = a pointer to the double word containing the
-    //!   data in which to have the words swapped
+    //! \fn M_NODISCARD static M_INLINE uint8_t n_swap_8(uint8_t byte)
+    //! \brief swaps nibbles within a byte and returns it
     //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void word_Swap_32(uint32_t* doubleWordToSwap);
+    //! \param[in] byte byte to swap nibbles in
+    //! \return returns \a byte with the nibbles swapped
+    M_NODISCARD static M_INLINE uint8_t n_swap_8(uint8_t byte)
+    {
+        return M_STATIC_CAST(uint8_t, ((byte & UINT8_C(0x0F)) << 4)) |
+               M_STATIC_CAST(uint8_t, ((byte & UINT8_C(0xF0)) >> 4));
+    }
 
-    //-----------------------------------------------------------------------------
-    //
-    //  byte_Swap_64()
-    //
-    //! \brief   Description:  swap the bytes in a quad word - useful for conversion
-    //! between endianness
-    //
-    //  Entry:
-    //!   \param[out] quadWordToSwap = a pointer to the quad word containing the
-    //!   data in which to have the bytes swapped
+    //! \fn void nibble_Swap(uint8_t* byteToSwap)
+    //! \brief swaps nibbles within a byte in place
     //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void byte_Swap_64(uint64_t* quadWordToSwap);
-
-    //-----------------------------------------------------------------------------
-    //
-    //  word_Swap_64()
-    //
-    //! \brief   Description:  swap the words in a quad word
-    //
-    //  Entry:
-    //!   \param[out] quadWordToSwap = a pointer to the quad word containing the
-    //!   data in which to have the words swapped
+    //! Recommend migration to n_swap_8
     //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void word_Swap_64(uint64_t* quadWordToSwap);
+    //! \param[in,out] byteToSwap pointer to byte to swap nibbles
+    //! \sa n_swap_8
+    static M_INLINE void nibble_Swap(uint8_t* byteToSwap)
+    {
+        if (byteToSwap != M_NULLPTR)
+        {
+            *byteToSwap = n_swap_8(*byteToSwap);
+        }
+    }
 
-    //-----------------------------------------------------------------------------
-    //
-    //  double_Word_Swap_64()
-    //
-    //! \brief   Description:  swap the double words in a quad word
-    //
-    //  Entry:
-    //!   \param[out] quadWordToSwap = a pointer to the quad word containing the
-    //!   data in which to have the double words swapped
+    //! \fn M_NODISCARD static M_INLINE uint16_t b_swap_16(uint16_t value)
+    //! \brief byte swaps a uint16_t
     //!
-    //  Exit:
-    //
-    //-----------------------------------------------------------------------------
-    void double_Word_Swap_64(uint64_t* quadWordToSwap);
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value value to byte swap
+    //! \return returns \a value with bytes swapped
+    M_NODISCARD static M_INLINE uint16_t b_swap_16(uint16_t value)
+    {
+#if defined(HAVE_BUILTIN_BSWAP)
+        return __builtin_bswap16(value);
+#elif defined(HAVE_WIN_BSWAP)
+    return _byteswap_ushort(value);
+#else
+    return (((value & UINT16_C(0x00FF)) << 8) | ((value & UINT16_C(0xFF00)) >> 8));
+#endif
+    }
 
+    //! \fn M_NODISCARD static M_INLINE uint32_t b_swap_32(uint32_t value)
+    //! \brief byte swaps a uint32_t
+    //!
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value value to byte swap
+    //! \return returns \a value with bytes swapped
+    M_NODISCARD static M_INLINE uint32_t b_swap_32(uint32_t value)
+    {
+#if defined(HAVE_BUILTIN_BSWAP)
+        return __builtin_bswap32(value);
+#elif defined(HAVE_WIN_BSWAP) && defined(UINT_MAX) && defined(ULONG_MAX) && UINT_MAX == ULONG_MAX
+    // Windows defines uint32 as unsigned int, not unsigned long as this
+    // function expects. So we have a more elaborate check in order to make sure
+    // these have the same range before casting and returning that result It is
+    // unlikely this will change in Windows, but it does not hurt to be safe and
+    // verify everything before casting types that can de defined as different
+    // widths-TJE
+    return M_STATIC_CAST(uint32_t, _byteswap_ulong(M_STATIC_CAST(unsigned long, value)));
+#else
+    return ((value & UINT32_C(0xFF000000) >> 24) | (value & UINT32_C(0x00FF0000) >> 8) |
+            (value & UINT32_C(0x0000FF00) << 8) | (value & UINT32_C(0x000000FF) << 24));
+#endif
+    }
+
+    //! \fn M_NODISCARD static M_INLINE uint64_t b_swap_64(uint64_t value)
+    //! \brief byte swaps a uint64_t
+    //!
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value value to byte swap
+    //! \return returns \a value with bytes swapped
+    M_NODISCARD static M_INLINE uint64_t by_swap_64(uint64_t value)
+    {
+#if defined(HAVE_BUILTIN_BSWAP)
+        return __builtin_bswap64(value);
+#elif defined(HAVE_WIN_BSWAP)
+    return _byteswap_uint64(value);
+#else
+    return ((value & UINT64_C(0xFF00000000000000) >> 56) | (value & UINT64_C(0x00FF000000000000) >> 40) |
+            (value & UINT64_C(0x0000FF0000000000) >> 24) | (value & UINT64_C(0x000000FF00000000) >> 8) |
+            (value & UINT64_C(0x00000000FF000000) << 8) | (value & UINT64_C(0x0000000000FF0000) << 24) |
+            (value & UINT64_C(0x000000000000FF00) << 40) | (value & UINT64_C(0x00000000000000FF) << 56));
+#endif
+    }
+
+    //! \fn void byte_Swap_16(uint16_t* wordToSwap)
+    //! \brief swaps bytes within a word in place
+    //!
+    //! Recommend migrating to b_swap_16
+    //!
+    //! \param[in,out] wordToSwap pointer to word to swap bytes
+    //! \sa b_swap_16
+    static M_INLINE void byte_Swap_16(uint16_t* wordToSwap)
+    {
+        if (wordToSwap != M_NULLPTR)
+        {
+            *wordToSwap = b_swap_16(*wordToSwap);
+        }
+    }
+
+    //! \fn void byte_Swap_Int16(int16_t* signedWordToSwap)
+    //! \brief swaps bytes within a signed word in place
+    //!
+    //! \param[in,out] signedWordToSwap pointer to word to swap bytes
+    static M_INLINE void byte_Swap_Int16(int16_t* signedWordToSwap)
+    {
+        if (signedWordToSwap != M_NULLPTR)
+        {
+            *signedWordToSwap = M_STATIC_CAST(int16_t, ((*signedWordToSwap & UINT16_C(0x00FF)) << 8)) |
+                                M_STATIC_CAST(int16_t, ((*signedWordToSwap & UINT16_C(0xFF00)) >> 8));
+        }
+    }
+
+    //! \fn void byte_Swap_32(uint32_t* doubleWordToSwap)
+    //! \brief swaps bytes within a dword in place
+    //!
+    //! Recommend migrating to b_swap_32
+    //!
+    //! \param[in,out] doubleWordToSwap pointer to dword to swap bytes
+    //! \sa b_swap_32
+    static M_INLINE void byte_Swap_32(uint32_t* doubleWordToSwap)
+    {
+        if (doubleWordToSwap != M_NULLPTR)
+        {
+            *doubleWordToSwap = b_swap_32(*doubleWordToSwap);
+        }
+    }
+
+    //! \fn void byte_Swap_Int32(int32_t* signedDWord)
+    //! \brief swaps bytes within a signed dword in place
+    //!
+    //! \param[in,out] signedDWord pointer to signed dword to swap bytes
+    static M_INLINE void byte_Swap_Int32(int32_t* signedDWord)
+    {
+        if (signedDWord != M_NULLPTR)
+        {
+            *signedDWord =
+                M_STATIC_CAST(int32_t, ((*signedDWord & M_STATIC_CAST(int32_t, INT32_C(0x0000FFFF))) << 16)) |
+                M_STATIC_CAST(int32_t, ((*signedDWord & M_STATIC_CAST(int32_t, INT32_C(0xFFFF0000))) >> 16));
+            *signedDWord = M_STATIC_CAST(int32_t, ((*signedDWord & M_STATIC_CAST(int32_t, INT32_C(0x00FF00FF))) << 8)) |
+                           M_STATIC_CAST(int32_t, ((*signedDWord & M_STATIC_CAST(int32_t, INT32_C(0xFF00FF00))) >> 8));
+        }
+    }
+
+    //! \fn void word_Swap_32(uint32_t* doubleWordToSwap)
+    //! \brief swaps words within a dword in place
+    //!
+    //! \param[in,out] doubleWordToSwap pointer to dword to swap words
+    static M_INLINE void word_Swap_32(uint32_t* doubleWordToSwap)
+    {
+        if (doubleWordToSwap != M_NULLPTR)
+        {
+            *doubleWordToSwap =
+                ((*doubleWordToSwap & UINT32_C(0x0000FFFF)) << 16) | ((*doubleWordToSwap & UINT32_C(0xFFFF0000)) >> 16);
+        }
+    }
+
+    //! \fn void byte_Swap_64(uint64_t* quadWordToSwap)
+    //! \brief swaps bytes within a qword in place
+    //!
+    //! Recommend migrating to b_swap_64
+    //!
+    //! \param[in,out] quadWordToSwap pointer to qword to swap bytes
+    //! \sa b_swap_64
+    static M_INLINE void byte_Swap_64(uint64_t* quadWordToSwap)
+    {
+        if (quadWordToSwap != M_NULLPTR)
+        {
+            *quadWordToSwap = by_swap_64(*quadWordToSwap);
+        }
+    }
+
+    //! \fn void word_Swap_64(uint64_t* quadWordToSwap)
+    //! \brief swaps words within a qword in place
+    //!
+    //! \param[in,out] quadWordToSwap pointer to qword to swap words
+    static M_INLINE void word_Swap_64(uint64_t* quadWordToSwap)
+    {
+        if (quadWordToSwap != M_NULLPTR)
+        {
+            *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) |
+                              ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
+            *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x0000FFFF0000FFFF)) << 16) |
+                              ((*quadWordToSwap & UINT64_C(0xFFFF0000FFFF0000)) >> 16);
+        }
+    }
+
+    //! \fn void double_Word_Swap_64(uint64_t* quadWordToSwap)
+    //! \brief swaps dwords within a qword in place
+    //!
+    //! \param[in,out] quadWordToSwap pointer to qword to swap dwords
+    static M_INLINE void double_Word_Swap_64(uint64_t* quadWordToSwap)
+    {
+        if (quadWordToSwap != M_NULLPTR)
+        {
+            *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) |
+                              ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
+        }
+    }
+
+    //! \fn bool get_Bytes_To_16(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint16_t*
+    //! out) \brief takes a data pointer and byte offsets to output a uint16_t
+    //!
+    //! Reads from a data buffer pointer to output a uint16_t. MSB and LSB can
+    //! be in little or big endian (MSB > LSB or MSB < LSB) when it reads.
+    //! The data pointer should be to the beginning of the buffer and msb/lsb are offsets from the
+    //! first byte the pointer is pointing to.
+    //!
+    //! \param[in] dataPtrBeginning pointer to beginning of a data buffer
+    //! \param[in] fullDataLen full length of the data buffer starting from \a dataPtrBeginning
+    //! \param[in] msb most significant byte offset
+    //! \param[in] lsb least significant byte offset
+    //! \param[out] out uint16_t output based on the input parameters
+    //! \return true when this function succeeds, false on error.
     bool get_Bytes_To_16(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint16_t* out);
 
+    //! \fn bool get_Bytes_To_32(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint32_t*
+    //! out) \brief takes a data pointer and byte offsets to output a uint32_t
+    //!
+    //! Reads from a data buffer pointer to output a uint32_t. MSB and LSB can
+    //! be in little or big endian (MSB > LSB or MSB < LSB) when it reads.
+    //! The data pointer should be to the beginning of the buffer and msb/lsb are offsets from the
+    //! first byte the pointer is pointing to.
+    //!
+    //! \param[in] dataPtrBeginning pointer to beginning of a data buffer
+    //! \param[in] fullDataLen full length of the data buffer starting from \a dataPtrBeginning
+    //! \param[in] msb most significant byte offset
+    //! \param[in] lsb least significant byte offset
+    //! \param[out] out uint32_t output based on the input parameters
+    //! \return true when this function succeeds, false on error.
     bool get_Bytes_To_32(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint32_t* out);
 
+    //! \fn bool get_Bytes_To_32(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t*
+    //! out) \brief takes a data pointer and byte offsets to output a uint64_t
+    //!
+    //! Reads from a data buffer pointer to output a uint64_t. MSB and LSB can
+    //! be in little or big endian (MSB > LSB or MSB < LSB) when it reads.
+    //! The data pointer should be to the beginning of the buffer and msb/lsb are offsets from the
+    //! first byte the pointer is pointing to.
+    //!
+    //! \param[in] dataPtrBeginning pointer to beginning of a data buffer
+    //! \param[in] fullDataLen full length of the data buffer starting from \a dataPtrBeginning
+    //! \param[in] msb most significant byte offset
+    //! \param[in] lsb least significant byte offset
+    //! \param[out] out uint64_t output based on the input parameters
+    //! \return true when this function succeeds, false on error.
     bool get_Bytes_To_64(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t* out);
 
-    // These functions are similar to those in endian.h, named slightly differently to be common to this library code,
-    // but work the same. Defiend ourselves since there are various names and different systems have the endian.h in
-    // different locations. Rather than deal with that mess, we defined our own ourselves. - TJE
-    M_NODISCARD uint16_t be16_to_host(uint16_t value);
-    M_NODISCARD uint32_t be32_to_host(uint32_t value);
-    M_NODISCARD uint64_t be64_to_host(uint64_t value);
-    M_NODISCARD uint16_t host_to_be16(uint16_t value);
-    M_NODISCARD uint32_t host_to_be32(uint32_t value);
-    M_NODISCARD uint64_t host_to_be64(uint64_t value);
-    M_NODISCARD uint16_t host_to_le16(uint16_t value);
-    M_NODISCARD uint32_t host_to_le32(uint32_t value);
-    M_NODISCARD uint64_t host_to_le64(uint64_t value);
-    M_NODISCARD uint16_t le16_to_host(uint16_t value);
-    M_NODISCARD uint32_t le32_to_host(uint32_t value);
-    M_NODISCARD uint64_t le64_to_host(uint64_t value);
+    //! \fn uint16_t be16_to_host(uint16_t value)
+    //! \brief takes a big endian uint16_t and returns it in host endianness
+    //!
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value big endian value to convert to host endianness
+    //! \return returns \a value in the host CPU's endianness
+    M_NODISCARD static M_INLINE uint16_t be16_to_host(uint16_t value)
+    {
+#if defined(ENV_BIG_ENDIAN)
+        return value;
+#else // Assume little endian
+    return b_swap_16(value);
+#endif
+    }
+
+    //! \fn uint32_t be32_to_host(uint32_t value)
+    //! \brief takes a big endian uint32_t and returns it in host endianness
+    //!
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value big endian value to convert to host endianness
+    //! \return returns \a value in the host CPU's endianness
+    M_NODISCARD static M_INLINE uint32_t be32_to_host(uint32_t value)
+    {
+#if defined(ENV_BIG_ENDIAN)
+        return value;
+#else // Assume little endian
+    return b_swap_32(value);
+#endif
+    }
+
+    //! \fn uint64_t be64_to_host(uint64_t value)
+    //! \brief takes a big endian uint64_t and returns it in host endianness
+    //!
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value big endian value to convert to host endianness
+    //! \return returns \a value in the host CPU's endianness
+    M_NODISCARD static M_INLINE uint64_t be64_to_host(uint64_t value)
+    {
+#if defined(ENV_BIG_ENDIAN)
+        return value;
+#else // Assume little endian
+    return by_swap_64(value);
+#endif
+    }
+
+    //! \fn uint16_t host_to_be16(uint16_t value)
+    //! \brief takes a host endian uint16_t and returns it in big endian
+    //!
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value host endian value to convert to big endian
+    //! \return returns \a value in big endian
+    M_NODISCARD static M_INLINE uint16_t host_to_be16(uint16_t value)
+    {
+#if defined(ENV_BIG_ENDIAN)
+        return value;
+#else // Assume little endian
+    return b_swap_16(value);
+#endif
+    }
+
+    //! \fn uint32_t host_to_be16(uint32_t value)
+    //! \brief takes a host endian uint32_t and returns it in big endian
+    //!
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value host endian value to convert to big endian
+    //! \return returns \a value in big endian
+    M_NODISCARD static M_INLINE uint32_t host_to_be32(uint32_t value)
+    {
+#if defined(ENV_BIG_ENDIAN)
+        return value;
+#else // Assume little endian
+    return b_swap_32(value);
+#endif
+    }
+
+    //! \fn uint64_t host_to_be64(uint64_t value)
+    //! \brief takes a host endian uint64_t and returns it in big endian
+    //!
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value host endian value to convert to big endian
+    //! \return returns \a value in big endian
+    M_NODISCARD static M_INLINE uint64_t host_to_be64(uint64_t value)
+    {
+#if defined(ENV_BIG_ENDIAN)
+        return value;
+#else // Assume little endian
+    return by_swap_64(value);
+#endif
+    }
+
+    //! \fn uint16_t host_to_le16(uint16_t value)
+    //! \brief takes a host endian uint16_t and returns it in little endian
+    //!
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value host endian value to convert to little endian
+    //! \return returns \a value in little endian
+    M_NODISCARD static M_INLINE uint16_t host_to_le16(uint16_t value)
+    {
+#if defined(ENV_BIG_ENDIAN)
+        return b_swap_16(value);
+#else // Assume little endian
+    return value;
+#endif
+    }
+
+    //! \fn uint32_t host_to_le32(uint32_t value)
+    //! \brief takes a host endian uint32_t and returns it in little endian
+    //!
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value host endian value to convert to little endian
+    //! \return returns \a value in little endian
+    M_NODISCARD static M_INLINE uint32_t host_to_le32(uint32_t value)
+    {
+#if defined(ENV_BIG_ENDIAN)
+        return b_swap_32(value);
+#else // Assume little endian
+    return value;
+#endif
+    }
+
+    //! \fn uint64_t host_to_le64(uint64_t value)
+    //! \brief takes a host endian uint64_t and returns it in little endian
+    //!
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value host endian value to convert to little endian
+    //! \return returns \a value in little endian
+    M_NODISCARD static M_INLINE uint64_t host_to_le64(uint64_t value)
+    {
+#if defined(ENV_BIG_ENDIAN)
+        return by_swap_64(value);
+#else // Assume little endian
+    return value;
+#endif
+    }
+
+    //! \fn uint16_t le16_to_host(uint16_t value)
+    //! \brief takes a little endian uint16_t and returns it in host endianness
+    //!
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value little endian value to convert to host endianness
+    //! \return returns \a value in the host CPU's endianness
+    M_NODISCARD static M_INLINE uint16_t le16_to_host(uint16_t value)
+    {
+#if defined(ENV_BIG_ENDIAN)
+        return b_swap_16(value);
+#else // Assume little endian
+    return value;
+#endif
+    }
+
+    //! \fn uint32_t le32_to_host(uint32_t value)
+    //! \brief takes a little endian uint32_t and returns it in host endianness
+    //!
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value little endian value to convert to host endianness
+    //! \return returns \a value in the host CPU's endianness
+    M_NODISCARD static M_INLINE uint32_t le32_to_host(uint32_t value)
+    {
+#if defined(ENV_BIG_ENDIAN)
+        return b_swap_32(value);
+#else // Assume little endian
+    return value;
+#endif
+    }
+
+    //! \fn uint64_t le64_to_host(uint64_t value)
+    //! \brief takes a little endian uint64_t and returns it in host endianness
+    //!
+    //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
+    //! Due to these headers residing in different places and some variable function names,
+    //! these are reimplemented here and the names have underscores unlike POSIX 2024 implementation,
+    //! but work identically. This was done to avoid collisions and provide a consistent API for all systems
+    //!
+    //! \param[in] value little endian value to convert to host endianness
+    //! \return returns \a value in the host CPU's endianness
+    M_NODISCARD static M_INLINE uint64_t le64_to_host(uint64_t value)
+    {
+#if defined(ENV_BIG_ENDIAN)
+        return by_swap_64(value);
+#else // Assume little endian
+    return value;
+#endif
+    }
+
+    //! \fn static M_INLINE void big_To_Little_Endian_16(uint16_t* wordToSwap)
+    //! \brief takes a big endian uint16_t and returns it in host endianness
+    //!
+    //! recommend migrating to be16_to_host
+    //!
+    //! \param[in] value big endian value to convert to host endianness
+    //! \return returns \a value in the host CPU's endianness
+    //! \sa be16_to_host
+    static M_INLINE void big_To_Little_Endian_16(uint16_t* wordToSwap)
+    {
+        if (wordToSwap != M_NULLPTR)
+        {
+            *wordToSwap = be16_to_host(*wordToSwap);
+        }
+    }
+
+    //! \fn static M_INLINE void big_To_Little_Endian_32(uint32_t* doubleWordToSwap)
+    //! \brief takes a big endian uint32_t and returns it in host endianness
+    //!
+    //! recommend migrating to be32_to_host
+    //!
+    //! \param[in] value big endian value to convert to host endianness
+    //! \return returns \a value in the host CPU's endianness
+    //! \sa be32_to_host
+    static M_INLINE void big_To_Little_Endian_32(uint32_t* doubleWordToSwap)
+    {
+        if (doubleWordToSwap != M_NULLPTR)
+        {
+            *doubleWordToSwap = be32_to_host(*doubleWordToSwap);
+        }
+    }
 
 #if defined(__cplusplus)
 }

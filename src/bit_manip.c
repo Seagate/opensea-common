@@ -21,277 +21,13 @@
 #include <math.h>
 #include <stdlib.h>
 
-// MSVC has built-in byte swapping which may be more efficient here:
-// https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/byteswap-uint64-byteswap-ulong-byteswap-ushort?view=msvc-170
-// GCC 4.8 and Clang 3.2 and later have some built-ins:
-// https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html Otherwise rely on our
-// own bit shifting.
-
-#if defined(_MSC_VER) && !defined(HAVE_WIN_BSWAP)
-// Unknown if added to specific _MSC_VER.
-// Will need to add this check if we ever run into an issue with this -TJE
-#    define HAVE_WIN_BSWAP
-#elif IS_GCC_VERSION(4, 8) && !defined(HAVE_BUILTIN_BSWAP)
-#    define HAVE_BUILTIN_BSWAP
-#elif !defined(HAVE_BUILTIN_BSWAP) && defined(__has_builtin)
-#    if __has_builtin(__builtin_bswap64)
-#        define HAVE_BUILTIN_BSWAP
-#    endif
-#endif
-
-void nibble_Swap(uint8_t* byteToSwap)
-{
-    if (byteToSwap)
-    {
-        *byteToSwap = C_CAST(uint8_t, ((*byteToSwap & UINT8_C(0x0F)) << 4)) |
-                      C_CAST(uint8_t, ((*byteToSwap & UINT8_C(0xF0)) >> 4));
-    }
-}
-
-static uint16_t byteswap_uint16(uint16_t word)
-{
-#if defined(HAVE_BUILTIN_BSWAP)
-    return __builtin_bswap16(word);
-#elif defined(HAVE_WIN_BSWAP)
-    return _byteswap_ushort(word);
-#else
-    return (((word & UINT16_C(0x00FF)) << 8) | ((word & UINT16_C(0xFF00)) >> 8));
-#endif
-}
-
-void byte_Swap_16(uint16_t* wordToSwap)
-{
-    if (*wordToSwap)
-    {
-        *wordToSwap = byteswap_uint16(*wordToSwap);
-    }
-}
-
-void byte_Swap_Int16(int16_t* signedWordToSwap)
-{
-    if (signedWordToSwap)
-    {
-        *signedWordToSwap = C_CAST(int16_t, ((*signedWordToSwap & UINT16_C(0x00FF)) << 8)) |
-                            C_CAST(int16_t, ((*signedWordToSwap & UINT16_C(0xFF00)) >> 8));
-    }
-}
-
-void big_To_Little_Endian_16(uint16_t* wordToSwap)
-{
-    if (get_Compiled_Endianness() == OPENSEA_LITTLE_ENDIAN)
-    {
-        byte_Swap_16(wordToSwap);
-    }
-}
-
-static uint32_t byteswap_uint32(uint32_t dword)
-{
-#if defined(HAVE_BUILTIN_BSWAP)
-    return __builtin_bswap32(dword);
-#elif defined(HAVE_WIN_BSWAP) && defined(UINT_MAX) && defined(ULONG_MAX) && UINT_MAX == ULONG_MAX
-    // Windows defines uint32 as unsigned int, not unsigned long as this
-    // function expects. So we have a more elaborate check in order to make sure
-    // these have the same range before casting and returning that result It is
-    // unlikely this will change in Windows, but it does not hurt to be safe and
-    // verify everything before casting types that can de defined as different
-    // widths-TJE
-    return C_CAST(uint32_t, _byteswap_ulong(C_CAST(unsigned long, dword)));
-#else
-    return ((dword & UINT32_C(0xFF000000) >> 24) | (dword & UINT32_C(0x00FF0000) >> 8) |
-            (dword & UINT32_C(0x0000FF00) << 8) | (dword & UINT32_C(0x000000FF) << 24));
-#endif
-}
-
-void byte_Swap_32(uint32_t* doubleWordToSwap)
-{
-    if (doubleWordToSwap)
-    {
-        *doubleWordToSwap = byteswap_uint32(*doubleWordToSwap);
-    }
-}
-
-void byte_Swap_Int32(int32_t* signedDWord)
-{
-    if (signedDWord)
-    {
-        // uint32_t temp = C_CAST(uint32_t, *signedDWord);
-        // byte_Swap_32(&temp);
-        // *signedDWord = C_CAST(int32_t, temp);
-
-        *signedDWord = C_CAST(int32_t, ((*signedDWord & C_CAST(int32_t, INT32_C(0x0000FFFF))) << 16)) |
-                       C_CAST(int32_t, ((*signedDWord & C_CAST(int32_t, INT32_C(0xFFFF0000))) >> 16));
-        *signedDWord = C_CAST(int32_t, ((*signedDWord & C_CAST(int32_t, INT32_C(0x00FF00FF))) << 8)) |
-                       C_CAST(int32_t, ((*signedDWord & C_CAST(int32_t, INT32_C(0xFF00FF00))) >> 8));
-    }
-}
-void big_To_Little_Endian_32(uint32_t* doubleWordToSwap)
-{
-    if (get_Compiled_Endianness() == OPENSEA_LITTLE_ENDIAN)
-    {
-        byte_Swap_32(doubleWordToSwap);
-    }
-}
-
-void word_Swap_32(uint32_t* doubleWordToSwap)
-{
-    if (doubleWordToSwap)
-    {
-        *doubleWordToSwap =
-            ((*doubleWordToSwap & UINT32_C(0x0000FFFF)) << 16) | ((*doubleWordToSwap & UINT32_C(0xFFFF0000)) >> 16);
-    }
-}
-
-static uint64_t byteswap_uint64(uint64_t qword)
-{
-#if defined(HAVE_BUILTIN_BSWAP)
-    return __builtin_bswap64(qword);
-#elif defined(HAVE_WIN_BSWAP)
-    return _byteswap_uint64(qword);
-#else
-    return ((qword & UINT64_C(0xFF00000000000000) >> 56) | (qword & UINT64_C(0x00FF000000000000) >> 40) |
-            (qword & UINT64_C(0x0000FF0000000000) >> 24) | (qword & UINT64_C(0x000000FF00000000) >> 8) |
-            (qword & UINT64_C(0x00000000FF000000) << 8) | (qword & UINT64_C(0x0000000000FF0000) << 24) |
-            (qword & UINT64_C(0x000000000000FF00) << 40) | (qword & UINT64_C(0x00000000000000FF) << 56));
-#endif
-}
-
-void byte_Swap_64(uint64_t* quadWordToSwap)
-{
-    if (quadWordToSwap)
-    {
-        *quadWordToSwap = byteswap_uint64(*quadWordToSwap);
-    }
-}
-
-void word_Swap_64(uint64_t* quadWordToSwap)
-{
-    if (quadWordToSwap)
-    {
-        *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) |
-                          ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
-        *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x0000FFFF0000FFFF)) << 16) |
-                          ((*quadWordToSwap & UINT64_C(0xFFFF0000FFFF0000)) >> 16);
-    }
-}
-
-void double_Word_Swap_64(uint64_t* quadWordToSwap)
-{
-    if (quadWordToSwap)
-    {
-        *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) |
-                          ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
-    }
-}
-
-uint16_t be16_to_host(uint16_t value)
-{
-#if defined(ENV_BIG_ENDIAN)
-    return value;
-#else // Assume little endian
-    return byteswap_uint16(value);
-#endif
-}
-
-uint32_t be32_to_host(uint32_t value)
-{
-#if defined(ENV_BIG_ENDIAN)
-    return value;
-#else // Assume little endian
-    return byteswap_uint32(value);
-#endif
-}
-
-uint64_t be64_to_host(uint64_t value)
-{
-#if defined(ENV_BIG_ENDIAN)
-    return value;
-#else // Assume little endian
-    return byteswap_uint64(value);
-#endif
-}
-
-uint16_t host_to_be16(uint16_t value)
-{
-#if defined(ENV_BIG_ENDIAN)
-    return value;
-#else // Assume little endian
-    return byteswap_uint16(value);
-#endif
-}
-
-uint32_t host_to_be32(uint32_t value)
-{
-#if defined(ENV_BIG_ENDIAN)
-    return value;
-#else // Assume little endian
-    return byteswap_uint32(value);
-#endif
-}
-
-uint64_t host_to_be64(uint64_t value)
-{
-#if defined(ENV_BIG_ENDIAN)
-    return value;
-#else // Assume little endian
-    return byteswap_uint64(value);
-#endif
-}
-
-uint16_t host_to_le16(uint16_t value)
-{
-#if defined(ENV_BIG_ENDIAN)
-    return byteswap_uint16(value);
-#else // Assume little endian
-    return value;
-#endif
-}
-
-uint32_t host_to_le32(uint32_t value)
-{
-#if defined(ENV_BIG_ENDIAN)
-    return byteswap_uint32(value);
-#else // Assume little endian
-    return value;
-#endif
-}
-
-uint64_t host_to_le64(uint64_t value)
-{
-#if defined(ENV_BIG_ENDIAN)
-    return byteswap_uint64(value);
-#else // Assume little endian
-    return value;
-#endif
-}
-
-uint16_t le16_to_host(uint16_t value)
-{
-#if defined(ENV_BIG_ENDIAN)
-    return byteswap_uint16(value);
-#else // Assume little endian
-    return value;
-#endif
-}
-
-uint32_t le32_to_host(uint32_t value)
-{
-#if defined(ENV_BIG_ENDIAN)
-    return byteswap_uint32(value);
-#else // Assume little endian
-    return value;
-#endif
-}
-
-uint64_t le64_to_host(uint64_t value)
-{
-#if defined(ENV_BIG_ENDIAN)
-    return byteswap_uint64(value);
-#else // Assume little endian
-    return value;
-#endif
-}
-
-static size_t get_Bytes_Abs_Range(size_t msb, size_t lsb)
+//! \fn static M_INLINE size_t get_Bytes_Abs_Range(size_t msb, size_t lsb)
+//! \brief gets the maximum byte range between msb and lsb
+//!
+//! \param[in] msb most significant bit value
+//! \param[in] lsb least  significant bit value
+//! \return returns range between msb and lsb
+static M_INLINE size_t get_Bytes_Abs_Range(size_t msb, size_t lsb)
 {
     if (msb > lsb)
     {
@@ -373,6 +109,17 @@ bool get_Bytes_To_16(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t
     }
 }
 
+//! \fn static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
+//!                                            M_ATTR_UNUSED size_t outputsize,
+//!                                            uint8_t              msb,
+//!                                            uint8_t              lsb)
+//! \brief internal function to get bit range in a byte (uint8_t)
+//!
+//! \param[in] input input genericint_t to get byte range from
+//! \param[in] outputsize unused
+//! \param[in] msb most significant bit offset value
+//! \param[in] lsb least  significant bit offset value
+//! \return returns genericint_t in requested range
 static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
                                             M_ATTR_UNUSED size_t outputsize,
                                             uint8_t              msb,
@@ -398,6 +145,14 @@ static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
     return out;
 }
 
+//! \fn genericint_t gen_16bit_range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
+//! \brief internal function to get bit range in a word (uint16_t)
+//!
+//! \param[in] input input genericint_t to get byte range from
+//! \param[in] outputsize requested output size (sizeof(uint8_t), sizeof(uint16_t), etc)
+//! \param[in] msb most significant bit offset value
+//! \param[in] lsb least significant bit offset value
+//! \return returns genericint_t in requested range
 static M_INLINE genericint_t gen_16bit_range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
 {
     genericint_t out;
@@ -436,6 +191,14 @@ static M_INLINE genericint_t gen_16bit_range(genericint_t input, size_t outputsi
     return out;
 }
 
+//! \fn genericint_t gen_32bit_range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
+//! \brief internal function to get bit range in a dword (uint32_t)
+//!
+//! \param[in] input input genericint_t to get byte range from
+//! \param[in] outputsize requested output size (sizeof(uint8_t), sizeof(uint16_t), etc)
+//! \param[in] msb most significant bit offset value
+//! \param[in] lsb least significant bit offset value
+//! \return returns genericint_t in requested range
 static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
 {
     genericint_t out;
@@ -489,6 +252,14 @@ static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsi
     return out;
 }
 
+//! \fn genericint_t gen_64bit_range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
+//! \brief internal function to get bit range in a qword (uint64_t)
+//!
+//! \param[in] input input genericint_t to get byte range from
+//! \param[in] outputsize requested output size (sizeof(uint8_t), sizeof(uint16_t), etc)
+//! \param[in] msb most significant bit offset value
+//! \param[in] lsb least significant bit offset value
+//! \return returns genericint_t in requested range
 static M_INLINE genericint_t gen_64bit_range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
 {
     genericint_t out;
@@ -559,13 +330,13 @@ genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_
     genericint_t out;
     safe_memset(&out, sizeof(genericint_t), 0, sizeof(genericint_t));
     errno = 0; // clear out any errors first
-    if (msb > 63 || lsb > 63)
-    {
-        errno = ERANGE;
-    }
-    else if (!is_generic_int_valid(input))
+    if (!is_generic_int_valid(input))
     {
         errno = EINVAL;
+    }
+    else if (msb > 63 || lsb > 63)
+    {
+        errno = ERANGE;
     }
     else
     {

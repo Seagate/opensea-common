@@ -10,10 +10,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-//
-// \file unit_conversion.h
-// \brief Implements various functions for converting between different types of
-// units.
+
+//! \file unit_conversion.h
+//! \brief Implements various functions for converting between different types of
+//! units.
 
 #pragma once
 
@@ -26,142 +26,64 @@ extern "C"
 {
 #endif
 
+//! \def UNIT_STRING_LENGTH
+//! \brief Length of the string needed to hold the unit on conversion output
 #define UNIT_STRING_LENGTH 4
 
-    //-----------------------------------------------------------------------------
-    //
-    //  metric_Unit_Convert()
-    //
-    //! \brief   Description:  Takes a double value which is a a numberic value
-    //! specifying a number of bytes, and
-    //!                        converts it to KB, MB, GB, TB, etc in a more easy to
-    //!                        display manor. Sets the units for you for display
-    //!                        purposes too.
-    //
-    //  Entry:
-    //!   \param[in] byteValue = value specifying a number of bytes
-    //!   \param[in] metricUnit = char ptr to hold the metric unit.
-    //!
-    //  Exit:
-    //!   \return SUCCESS on successful completion, !SUCCESS if problems encountered
-    //
-    //-----------------------------------------------------------------------------
+    //! \fn eReturnValues metric_Unit_Convert(double* byteValue, char** metricUnit)
+    //! \brief Takes a double representing a number of bytes and converts it to the
+    //! most easy to display unit value.
+    //! For example, instead of outputting 8000GB, it will output 8TB.
+    //! Possible output units: KB, MB, GB, TB, PB, EB, ZB, YB
+    //! \param[in,out] byteValue number of bytes going in, converted value to match unit on out
+    //! \param[out] metricUnit string of size UNIT_STRING_LENGTH to hold the converted unit.
+    //! \return SUCCESS if converted without error, otherwise error code
     eReturnValues metric_Unit_Convert(double* byteValue, char** metricUnit);
 
-    //-----------------------------------------------------------------------------
-    //
-    //  capacity_Unit_Convert()
-    //
-    //! \brief   Description:  Takes a double value which is a a numeric value
-    //! specifying a number of bytes, and
-    //!                        converts it to KiB, MiB, GiB, TiB, etc in a more easy
-    //!                        to display manor. Sets the units for you for display
-    //!                        purposes too.
-    //
-    //  Entry:
-    //!   \param[in] byteValue = value specifying a number of bytes
-    //!   \param[in] capacityUnit = char ptr to hold the metric unit.
-    //!
-    //  Exit:
-    //!   \return SUCCESS on successful completion, !SUCCESS if problems encountered
-    //
-    //-----------------------------------------------------------------------------
+    //! \fn eReturnValues capacity_Unit_Convert(double* byteValue, char** metricUnit)
+    //! \brief Takes a double representing a number of bytes and converts it to the
+    //! most easy to display unit value representing drive capacity (or binary unit).
+    //! For example, instead of outputting 8000GiB, it will output 8TiB.
+    //! Possible output units: KiB, MiB, GiB, TiB, PiB, EiB, ZiB, YiB
+    //! \param[in,out] byteValue number of bytes going in, converted value to match unit on out
+    //! \param[out] capacityUnit string of size UNIT_STRING_LENGTH to hold the converted unit.
+    //! \return SUCCESS if converted without error, otherwise error code
     eReturnValues capacity_Unit_Convert(double* byteValue, char** capacityUnit);
 
-    //-----------------------------------------------------------------------------
-    //
-    //  celsius_To_Fahrenheit()
-    //
-    //! \brief   Description:  convert a temperature in celsius to fahrenheit
-    //
-    //  Entry:
-    //!   \param[in] celsius = a pointer to the data containing a temperature in
-    //!   celsius
-    //!
-    //  Exit:
-    //!   \return The temperature in fahrenheit
-    //
-    //-----------------------------------------------------------------------------
+    //! \fn int16_t celsius_To_Fahrenheit(const int16_t* celsius)
+    //! \brief Converts a temperature in celsius to fahrenheit
+    //! \param[in] celsius temperature in celsius to convert
+    //! \return temperature in fahrenheit
     int16_t celsius_To_Fahrenheit(const int16_t* celsius);
 
-    //-----------------------------------------------------------------------------
-    //
-    //  fahrenheit_To_celsius()
-    //
-    //! \brief   Description:  convert a temperature in fahrenheit to celsius
-    //
-    //  Entry:
-    //!   \param[in] fahrenheit = a pointer to the data containing a temperature in
-    //!   fahrenheit
-    //!
-    //  Exit:
-    //!   \return The temperature in celsius
-    //
-    //-----------------------------------------------------------------------------
+    //! \fn int16_t fahrenheit_To_celsius(const int16_t* fahrenheit)
+    //! \brief Converts a temperature in fahrenheit to celsius
+    //! \param[in] celsius temperature in fahrenheit to convert
+    //! \return temperature in celsius
     int16_t fahrenheit_To_celsius(const int16_t* fahrenheit);
 
-    //-----------------------------------------------------------------------------
-    //
-    //  celsius_To_Kelvin()
-    //
-    //! \brief   Description:  convert a temperature in celsius to kelvin
-    //
-    //  Entry:
-    //!   \param[in] celsius = a pointer to the data containing a temperature in
-    //!   celsius
-    //!
-    //  Exit:
-    //!   \return The temperature in celsius
-    //
-    //-----------------------------------------------------------------------------
+    //! \fn int16_t celsius_To_Kelvin(const int16_t* celsius)
+    //! \brief Converts a temperature in celsius to kelvin
+    //! \param[in] celsius temperature in celsius to convert
+    //! \return temperature in kelvin
     int16_t celsius_To_Kelvin(const int16_t* celsius);
 
-    //-----------------------------------------------------------------------------
-    //
-    //  fahrenheit_To_Kelvin()
-    //
-    //! \brief   Description:  convert a temperature in fahrenheit to kelvin
-    //
-    //  Entry:
-    //!   \param[in] fahrenheit = a pointer to the data containing a temperature in
-    //!   fahrenheit
-    //!
-    //  Exit:
-    //!   \return The temperature in celsius
-    //
-    //-----------------------------------------------------------------------------
+    //! \fn int16_t fahrenheit_To_Kelvin(const int16_t* fahrenheit)
+    //! \brief Converts a temperature in fahrenheit to kelvin
+    //! \param[in] fahrenheit temperature in fahrenheit to convert
+    //! \return temperature in kelvin
     int16_t fahrenheit_To_Kelvin(const int16_t* fahrenheit);
 
-    //-----------------------------------------------------------------------------
-    //
-    //  kelvin_To_Celsius()
-    //
-    //! \brief   Description:  convert a temperature in kelvin to celsius
-    //
-    //  Entry:
-    //!   \param[in] kelvin = a pointer to the data containing a temperature in
-    //!   kelvin
-    //!
-    //  Exit:
-    //!   \return The temperature in celsius
-    //
-    //-----------------------------------------------------------------------------
+    //! \fn int16_t kelvin_To_Celsius(const int16_t* kelvin)
+    //! \brief Converts a temperature in kelvin to celsius
+    //! \param[in] kelvin temperature in kelvin to convert
+    //! \return temperature in celsius
     int16_t kelvin_To_Celsius(const int16_t* kelvin);
 
-    //-----------------------------------------------------------------------------
-    //
-    //  kelvin_To_Fahrenheit()
-    //
-    //! \brief   Description:  convert a temperature in kelvin to fahrenheit
-    //
-    //  Entry:
-    //!   \param[in] kelvin = a pointer to the data containing a temperature in
-    //!   kelvin
-    //!
-    //  Exit:
-    //!   \return The temperature in celsius
-    //
-    //-----------------------------------------------------------------------------
+    //! \fn int16_t kelvin_To_Fahrenheit(const int16_t* kelvin)
+    //! \brief Converts a temperature in kelvin to fahrenheit
+    //! \param[in] kelvin temperature in kelvin to convert
+    //! \return temperature in fahrenheit
     int16_t kelvin_To_Fahrenheit(const int16_t* kelvin);
 
 #if defined(__cplusplus)

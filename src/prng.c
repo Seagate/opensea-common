@@ -10,10 +10,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-//
-// \file prng.c
-// \brief Implements psuedo random number generation functionality. Currently it
-// is implemented using XOR shift+
+
+//! \file prng.c
+//! \brief Implements psuedo random number generation functionality.
+//! Currently it is implemented using XOR shift+
 
 #include "prng.h"
 #include "common_types.h"
@@ -26,11 +26,7 @@ void seed_32(uint32_t seed)
 {
     // first initialize
     seed32Array[0] = seed;
-    seed32Array[1] = C_CAST(uint32_t, C_CAST(int32_t, seed) >> 1); // converting to signed int to perform arithmetic
-                                                                   // shift, then back for the seed value
-    // using that initialization, run the random number generator for a more
-    // random seed...may or may not be needed, but I'm doing this anyways -
-    // Tyler
+    seed32Array[1] = C_CAST(uint32_t, C_CAST(int32_t, seed) >> 1);
     seed32Array[0] = xorshiftplus32();
     seed32Array[0] = xorshiftplus32();
 }
@@ -38,11 +34,7 @@ void seed_64(uint64_t seed)
 {
     // first initialize
     seed64Array[0] = seed;
-    seed64Array[1] = C_CAST(uint64_t, C_CAST(int64_t, seed) >> 2); // converting to signed int to perform arithmetic
-                                                                   // shift, then back for the seed value
-    // using that initialization, run the random number generator for a more
-    // random seed...may or may not be needed, but I'm doing this anyways -
-    // Tyler
+    seed64Array[1] = C_CAST(uint64_t, C_CAST(int64_t, seed) >> 2);
     seed64Array[0] = xorshiftplus64();
     seed64Array[0] = xorshiftplus64();
 }
@@ -74,14 +66,14 @@ uint32_t random_Range_32(uint32_t rangeMin, uint32_t rangeMax)
     // doing this to prevent a possible overflow
     if (rangeMax == UINT32_MAX)
     {
-        rangeMax -= 1;
+        rangeMax -= UINT32_C(1);
     }
     // this will slightly bias the randomness.
     // return (xorshiftplus32() % (rangeMax + 1 - rangeMin) + rangeMin);
 
     // This method below should return unbiased results. see
     // http://c-faq.com/lib/randrange.html
-    uint32_t d = (UINT32_MAX / (rangeMax - rangeMin + 1) + 1);
+    uint32_t d = (UINT32_MAX / (rangeMax - rangeMin + UINT32_C(1)) + UINT32_C(1));
     if (d > 0)
     {
         return (rangeMin + xorshiftplus32() / d);
@@ -97,14 +89,14 @@ uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax)
     // doing this to prevent a possible overflow
     if (rangeMax == UINT64_MAX)
     {
-        rangeMax -= 1;
+        rangeMax -= UINT64_C(1);
     }
     // this will slightly bias the randomness.
     // return (xorshiftplus64() % (rangeMax + 1 - rangeMin) + rangeMin);
 
     // This method below should return unbiased results. see
     // http://c-faq.com/lib/randrange.html
-    uint64_t d = (UINT64_MAX / (rangeMax - rangeMin + 1) + 1);
+    uint64_t d = (UINT64_MAX / (rangeMax - rangeMin + UINT64_C(1)) + UINT64_C(1));
     if (d > 0)
     {
         return (rangeMin + xorshiftplus64() / d);

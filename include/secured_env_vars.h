@@ -10,10 +10,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-//
-// \file secured_env_vars.h
-// \brief Implements best practices for handling environment variables as
-// securely as possible
+
+//! \file secured_env_vars.h
+//! \brief Implements best practices for handling environment variables as
+//! securely as possible per Cert-C coding standard
 
 #pragma once
 
@@ -25,12 +25,31 @@ extern "C"
 {
 #endif
 
-    M_DECLARE_ENUM(eEnvVarResult, ENV_VAR_SUCCESS, ENV_VAR_NOT_FOUND, ENV_VAR_TAMPERED_ENV_DETECTED, ENV_VAR_FAILURE);
+    //! \enum eEnvVarResult
+    //! \brief result codes to indicate if environment was read successfully or not
+    M_DECLARE_ENUM(eEnvVarResult,
+                   ENV_VAR_SUCCESS,               /**!< Successfully read environment variable */
+                   ENV_VAR_NOT_FOUND,             /**!< environment variable was not found */
+                   ENV_VAR_TAMPERED_ENV_DETECTED, /**!< tampered environment variables detected. Variable not read */
+                   ENV_VAR_FAILURE                /**!< Failure occurred when attempting to read variable. */
+    );
 
-    // this function will return allocated memory for an environment variable that
-    // is requested the returned memory must be freed by the caller with free() or
-    // safe_Free() will return M_NULLPTR if not found will return M_NULLPTR if the
-    // environment variable list is tampered and not secure to read and trust
+    //! \fn eEnvVarResult get_Environment_Variable(const char* environmentVariableName, char** envVar)
+    //! \brief Securely accesses and returns the requested environment variable
+    //!
+    //! Follows the Cert-C coding standards recommendations to read an environment variable.
+    //! This function will allocate the \a envVar when it is read and this must be free'd by the called
+    //! with free().
+    //! \param[in] environmentVariableName name of the environment variable to access and read the value of
+    //! \param[out] envVar value of the environment variable if accessed without error
+    //! \return
+    //! - ENV_VAR_SUCCESS read successfully.
+    //!
+    //! - ENV_VAR_NOT_FOUND \a environmentVariableName not found.
+    //!
+    //! - ENV_VAR_TAMPERED_ENV_DETECTED tampered environment detected; variable not read.
+    //!
+    //! - ENV_VAR_FAILURE a failure occurred when trying to read the environment variable such as no more memory.
     M_NODISCARD eEnvVarResult get_Environment_Variable(const char* environmentVariableName, char** envVar);
 
 #if defined(__cplusplus)

@@ -513,7 +513,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
 
 #else
 #    include "secured_env_vars.h"
-#    if (defined(__FreeBSD__) && __FreeBSD__ >= 4 /*4.6 technically*/) || (defined(__OpenBSD__) && defined OpenBSD2_9)
+#    if IS_FREEBSD_VERSION(4, 6, 0) || (defined(__OpenBSD__) && defined OpenBSD2_9)
 #        include <readpassphrase.h>
 #    endif // FreeBSD 4.6+ or OpenBSD 2.9+
 #    include <termios.h>
@@ -1071,7 +1071,7 @@ static M_INLINE void fclose_term(FILE* term)
 eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen)
 {
     eReturnValues  ret = SUCCESS;
-#    if defined(POSIX_2001)
+#    if defined(POSIX_2001) && defined(_POSIX_JOB_CONTROL) // https://linux.die.net/man/7/posixoptions
     struct termios defaultterm;
     struct termios currentterm;
     FILE*          term   = M_NULLPTR;
@@ -1139,7 +1139,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         fclose_term(term);
     }
     printf("\n");
-#    elif (defined(__FreeBSD__) && __FreeBSD__ >= 4 /*4.6 technically*/) || (defined(__OpenBSD__) && defined OpenBSD2_9)
+#    elif IS_FREEBSD_VERSION(4, 6, 0) || (defined(__OpenBSD__) && defined OpenBSD2_9)
     // use readpassphrase instead
     // use BUFSIZ buffer as that should be more than enough to read this
     // NOTE: Linux's libbsd also provides this, but termios method above is
@@ -1157,7 +1157,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     {
         ret = MEMORY_FAILURE;
     }
-#    elif defined(__NetBSD__) && defined __NetBSD_Version__ && __NetBSD_Version__ >= 7000000000
+#    elif IS_NETBSD_VERSION(7, 0, 0)
     // Use getpass_r
     // this will dynamically allocate memory for use when the buffer is set to
     // M_NULLPTR
@@ -2169,8 +2169,8 @@ ssize_t getline(char** lineptr, size_t* n, FILE* stream)
 
 #endif //__STDC_ALLOC_LIB__
 
-#if !defined(__STDC_ALLOC_LIB__) && !defined(_GNU_SOURCE) && !(defined(__FreeBSD__) && __FreeBSD__ > 3) &&             \
-    !defined(HAVE_VASPRINTF)
+#if !defined(__STDC_ALLOC_LIB__) && !defined(_GNU_SOURCE) && !IS_FREEBSD_VERSION(2, 2, 0) &&                           \
+    !(defined(__OpenBSD__) && defined(OpenBSD2_3)) && !defined(HAVE_VASPRINTF)
 
 M_NODISCARD FUNC_ATTR_PRINTF(2, 3) int asprintf(char** M_RESTRICT strp, const char* M_RESTRICT fmt, ...)
 {
@@ -2456,7 +2456,7 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
 #define CHARS_PER_BUF_VAL       (3)
 // This creates the output for a SINGLE line with optional printable characters and returns it.
 // The pointer to the buffer and remaining length should be passed into this function!
-static char* create_data_line_output(char* line, uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
+static char* create_data_line_output(char* line, const uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
 {
     safe_memset(line, DATA_LINE_BUFFER_LENGTH, ' ', DATA_LINE_BUFFER_LENGTH - 1);
     line[DATA_LINE_BUFFER_LENGTH - 1] = '\0';
@@ -2483,7 +2483,7 @@ static char* create_data_line_output(char* line, uint8_t* dataBuffer, uint32_t b
     return line;
 }
 
-static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset)
+static void internal_Print_Data_Buffer(const uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset)
 {
     uint32_t    printIter    = UINT32_C(0);
     uint32_t    offset       = UINT32_C(0);
@@ -2606,12 +2606,12 @@ static void internal_Print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, 
     fputs("\n\n", stdout);
 }
 
-void print_Data_Buffer(uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
+void print_Data_Buffer(const uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
 {
     internal_Print_Data_Buffer(dataBuffer, bufferLen, showPrint, true);
 }
 
-void print_Pipe_Data(uint8_t* dataBuffer, uint32_t bufferLen)
+void print_Pipe_Data(const uint8_t* dataBuffer, uint32_t bufferLen)
 {
     internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false);
 }
@@ -3325,13 +3325,7 @@ errno_t safe_strtof_impl(float*                 value,
         *value = strtof(str, useend);
         // Disable float equal because this is necessary to check for conversion errors from this function.
         // This is one of the only times this warning should ever be disabled.
-#if IS_CLANG_VERSION(3, 0)
-#    pragma clang diagnostic push
-#    pragma clang diagnostic ignored "-Wfloat-equal"
-#elif IS_GCC_VERSION(4, 5)
-#    pragma GCC diagnostic push
-#    pragma GCC diagnostic ignored "-Wfloat-equal"
-#endif
+        DISABLE_WARNING_FLOAT_EQUAL
         if (((*value >= HUGE_VALF || *value <= -HUGE_VALF) && errno == ERANGE) || (*value == 0.0F && *useend == str) ||
             errno != 0)
         {
@@ -3341,11 +3335,7 @@ errno_t safe_strtof_impl(float*                 value,
                 error = EINVAL;
             }
         }
-#if IS_CLANG_VERSION(3, 0)
-#    pragma clang diagnostic pop
-#elif IS_GCC_VERSION(4, 5)
-#    pragma GCC diagnostic pop
-#endif
+        RESTORE_WARNING_FLOAT_EQUAL
     }
     errno = error;
     return error;
@@ -3388,13 +3378,7 @@ errno_t safe_strtod_impl(double*                value,
         *value = strtod(str, useend);
         // Disable float equal because this is necessary to check for conversion errors from this function.
         // This is one of the only times this warning should ever be disabled.
-#if IS_CLANG_VERSION(3, 0)
-#    pragma clang diagnostic push
-#    pragma clang diagnostic ignored "-Wfloat-equal"
-#elif IS_GCC_VERSION(4, 5)
-#    pragma GCC diagnostic push
-#    pragma GCC diagnostic ignored "-Wfloat-equal"
-#endif
+        DISABLE_WARNING_FLOAT_EQUAL
         if (((*value >= HUGE_VAL || *value <= -HUGE_VAL) && errno == ERANGE) || (*value == 0.0 && *useend == str) ||
             errno != 0)
         {
@@ -3404,11 +3388,7 @@ errno_t safe_strtod_impl(double*                value,
                 error = EINVAL;
             }
         }
-#if IS_CLANG_VERSION(3, 0)
-#    pragma clang diagnostic pop
-#elif IS_GCC_VERSION(4, 5)
-#    pragma GCC diagnostic pop
-#endif
+        RESTORE_WARNING_FLOAT_EQUAL
     }
     errno = error;
     return error;
@@ -3451,13 +3431,7 @@ errno_t safe_strtold_impl(long double*           value,
         *value = strtold(str, useend);
         // Disable float equal because this is necessary to check for conversion errors from this function.
         // This is one of the only times this warning should ever be disabled.
-#if IS_CLANG_VERSION(3, 0)
-#    pragma clang diagnostic push
-#    pragma clang diagnostic ignored "-Wfloat-equal"
-#elif IS_GCC_VERSION(4, 5)
-#    pragma GCC diagnostic push
-#    pragma GCC diagnostic ignored "-Wfloat-equal"
-#endif
+        DISABLE_WARNING_FLOAT_EQUAL
         if (((*value >= HUGE_VALL || *value <= -HUGE_VALL) && errno == ERANGE) || (*value == 0.0L && *useend == str) ||
             errno != 0)
         {
@@ -3467,17 +3441,18 @@ errno_t safe_strtold_impl(long double*           value,
                 error = EINVAL;
             }
         }
-#if IS_CLANG_VERSION(3, 0)
-#    pragma clang diagnostic pop
-#elif IS_GCC_VERSION(4, 5)
-#    pragma GCC diagnostic pop
-#endif
+        RESTORE_WARNING_FLOAT_EQUAL
     }
     errno = error;
     return error;
 }
 
-errno_t safe_atoi(int* value, const char* M_RESTRICT str)
+errno_t safe_atoi_impl(int*                   value,
+                       const char* M_RESTRICT str,
+                       const char*            file,
+                       const char*            function,
+                       int                    line,
+                       const char*            expression)
 {
     if (value == M_NULLPTR)
     {
@@ -3486,7 +3461,7 @@ errno_t safe_atoi(int* value, const char* M_RESTRICT str)
     }
     char*   endp  = M_NULLPTR;
     long    temp  = 0L;
-    errno_t error = safe_strtol(&temp, str, &endp, BASE_10_DECIMAL);
+    errno_t error = safe_strtol_impl(&temp, str, &endp, BASE_10_DECIMAL, file, function, line, expression);
     if (error == 0)
     {
         if (temp > INT_MAX || temp < INT_MIN)
@@ -3508,10 +3483,15 @@ errno_t safe_atoi(int* value, const char* M_RESTRICT str)
     return error;
 }
 
-errno_t safe_atol(long* value, const char* M_RESTRICT str)
+errno_t safe_atol_impl(long*                  value,
+                       const char* M_RESTRICT str,
+                       const char*            file,
+                       const char*            function,
+                       int                    line,
+                       const char*            expression)
 {
     char*   endp  = M_NULLPTR;
-    errno_t error = safe_strtol(value, str, &endp, BASE_10_DECIMAL);
+    errno_t error = safe_strtol_impl(value, str, &endp, BASE_10_DECIMAL, file, function, line, expression);
     if (error == 0 && *endp != '\0')
     {
         error  = EINVAL;
@@ -3521,10 +3501,15 @@ errno_t safe_atol(long* value, const char* M_RESTRICT str)
     return error;
 }
 
-errno_t safe_atoll(long long* value, const char* M_RESTRICT str)
+errno_t safe_atoll_impl(long long*             value,
+                        const char* M_RESTRICT str,
+                        const char*            file,
+                        const char*            function,
+                        int                    line,
+                        const char*            expression)
 {
     char*   endp  = M_NULLPTR;
-    errno_t error = safe_strtoll(value, str, &endp, BASE_10_DECIMAL);
+    errno_t error = safe_strtoll_impl(value, str, &endp, BASE_10_DECIMAL, file, function, line, expression);
     if (error == 0 && *endp != '\0')
     {
         error  = EINVAL;
@@ -3534,10 +3519,15 @@ errno_t safe_atoll(long long* value, const char* M_RESTRICT str)
     return error;
 }
 
-errno_t safe_atof(double* value, const char* M_RESTRICT str)
+errno_t safe_atof_impl(double*                value,
+                       const char* M_RESTRICT str,
+                       const char*            file,
+                       const char*            function,
+                       int                    line,
+                       const char*            expression)
 {
     char*   endp  = M_NULLPTR;
-    errno_t error = safe_strtod(value, str, &endp);
+    errno_t error = safe_strtod_impl(value, str, &endp, file, function, line, expression);
     if (error == 0 && *endp != '\0')
     {
         error  = EINVAL;
