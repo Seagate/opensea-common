@@ -50,8 +50,8 @@ bool get_current_timestamp(void)
         CURRENT_TIME = time(M_NULLPTR);
         safe_memset(CURRENT_TIME_STRING, SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING), 0,
                     SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING));
-        retStatus = strftime(CURRENT_TIME_STRING, CURRENT_TIME_STRING_LENGTH, "%Y%m%dT%H%M%S",
-                             get_Localtime(&CURRENT_TIME, &logTime));
+        retStatus = M_ToBool(strftime(CURRENT_TIME_STRING, CURRENT_TIME_STRING_LENGTH, "%Y%m%dT%H%M%S",
+                                      get_Localtime(&CURRENT_TIME, &logTime)) > 0);
     }
     return retStatus;
 }
@@ -383,13 +383,29 @@ void print_Time_To_Screen(const uint8_t*  years,
 // posix definitions or C standard versions,
 // or possible compiler specific definitions depending on what is available.
 
-struct tm* get_UTCtime(const time_t* timer, struct tm* buf)
+struct tm* impl_safe_gmtime(const time_t* M_RESTRICT timer,
+                            struct tm* M_RESTRICT    buf,
+                            const char*              file,
+                            const char*              function,
+                            int                      line,
+                            const char*              expression)
 {
-    // There are a few different things we can do in here to be more safe
-    // depending on what is supported by the system and compiler, so there are
-    // ifdefs to help with that... Microsoft CRT uses different parameter order!
-    // May need to detect this if using the _s version in here
-    if (timer && buf)
+    constraintEnvInfo envInfo;
+    if (timer == M_NULLPTR)
+    {
+        errno = EINVAL;
+        invoke_Constraint_Handler("safe_gmtime: timer = NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  errno);
+        return M_NULLPTR;
+    }
+    else if (buf == M_NULLPTR)
+    {
+        errno = EINVAL;
+        invoke_Constraint_Handler("safe_gmtime: buf = NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  errno);
+        return M_NULLPTR;
+    }
+    else
     {
 #if (defined(POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined(USING_C23)
         // POSIX or C2x (C23 right now) have gmtime_r to use
@@ -416,13 +432,29 @@ struct tm* get_UTCtime(const time_t* timer, struct tm* buf)
     return buf;
 }
 
-struct tm* get_Localtime(const time_t* timer, struct tm* buf)
+struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
+                              struct tm* M_RESTRICT    buf,
+                              const char*              file,
+                              const char*              function,
+                              int                      line,
+                              const char*              expression)
 {
-    // There are a few different things we can do in here to be more safe
-    // depending on what is supported by the system and compiler, so there are
-    // ifdefs to help with that... Microsoft CRT uses different parameter order!
-    // May need to detect this if using the _s version in here
-    if (timer && buf)
+    constraintEnvInfo envInfo;
+    if (timer == M_NULLPTR)
+    {
+        errno = EINVAL;
+        invoke_Constraint_Handler("safe_localtime: timer = NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), errno);
+        return M_NULLPTR;
+    }
+    else if (buf == M_NULLPTR)
+    {
+        errno = EINVAL;
+        invoke_Constraint_Handler("safe_localtime: buf = NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  errno);
+        return M_NULLPTR;
+    }
+    else
     {
 #if (defined(POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined(USING_C23)
         // POSIX or C2x (C23 right now) have localtime_r to use
@@ -449,51 +481,176 @@ struct tm* get_Localtime(const time_t* timer, struct tm* buf)
     return buf;
 }
 
-char* get_Time_String_From_TM_Structure(const struct tm* timeptr, char* buffer, size_t bufferSize)
+errno_t impl_safe_asctime(char*            buf,
+                          rsize_t          bufsz,
+                          const struct tm* time_ptr,
+                          bool             ctime,
+                          const char*      file,
+                          const char*      function,
+                          int              line,
+                          const char*      expression)
 {
-    if (timeptr && buffer && bufferSize >= TIME_STRING_LENGTH)
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
+    if (buf == M_NULLPTR)
     {
+        error = EINVAL;
+        invoke_Constraint_Handler(ctime ? "safe_ctime: buf = NULL" : "safe_asctime: buf = NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (time_ptr == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler(ctime ? "safe_ctime: time_ptr = NULL" : "safe_asctime: time_ptr = NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (bufsz < 26)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler(ctime ? "safe_ctime: bufsz < 26" : "safe_asctime: bufsz < 26",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (bufsz > RSIZE_MAX)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler(ctime ? "safe_ctime: bufsz > RSIZE_MAX" : "safe_asctime: bufsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (time_ptr->tm_sec < 0 ||
+#if defined(USING_C99)
+             time_ptr->tm_sec > 60
+#else
+             time_ptr->tm_sec > 61
+#endif
+    )
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler(ctime ? "safe_ctime: time_ptr->tm_sec out of range"
+                                        : "safe_asctime: time_ptr->tm_sec out of range",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (time_ptr->tm_min < 0 || time_ptr->tm_min > 59)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler(ctime ? "safe_ctime: time_ptr->tm_min out of range"
+                                        : "safe_asctime: time_ptr->tm_min out of range",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (time_ptr->tm_hour < 0 || time_ptr->tm_hour > 23)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler(ctime ? "safe_ctime: time_ptr->tm_hour out of range"
+                                        : "safe_asctime: time_ptr->tm_hour out of range",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (time_ptr->tm_mday < 1 || time_ptr->tm_mday > 31)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler(ctime ? "safe_ctime: time_ptr->tm_mday out of range"
+                                        : "safe_asctime: time_ptr->tm_mday out of range",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (time_ptr->tm_mon < 0 || time_ptr->tm_mon > 11)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler(ctime ? "safe_ctime: time_ptr->tm_mon out of range"
+                                        : "safe_asctime: time_ptr->tm_mon out of range",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (time_ptr->tm_wday < 0 || time_ptr->tm_wday > 6)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler(ctime ? "safe_ctime: time_ptr->tm_wday out of range"
+                                        : "safe_asctime: time_ptr->tm_wday out of range",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (time_ptr->tm_yday < 0 || time_ptr->tm_yday > 365)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler(ctime ? "safe_ctime: time_ptr->tm_yday out of range"
+                                        : "safe_asctime: time_ptr->tm_yday out of range",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (time_ptr->tm_year < 0 || time_ptr->tm_year > 9999)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler(ctime ? "safe_ctime: time_ptr->tm_year out of range"
+                                        : "safe_asctime: time_ptr->tm_year out of range",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else
+    {
+        // Perform the conversion
         // start with a known zeroed buffer
-        safe_memset(buffer, bufferSize, 0, bufferSize);
+        safe_memset(buf, bufsz, 0, bufsz);
 #if defined(HAVE_MSFT_SECURE_LIB) || defined(HAVE_C11_ANNEX_K)
-        if (0 != asctime_s(buffer, bufferSize, timeptr))
+        if (0 != asctime_s(buf, bufsz, time_ptr))
         {
             // error
-            safe_memset(buffer, bufferSize, 0, bufferSize);
+            safe_memset(buf, bufsz, 0, bufsz);
+            error = EINVAL;
+            errno = error;
+            return error;
         }
         else
         {
-            return buffer;
+            return error;
         }
-#endif // HAVE_MSFT_SECURE_LIB || HAVE_C11_ANNEX_K
-       //  strftime is recommended to be used. Using format %c will return the
-       //  matching output for this function asctime (which this replaces uses
-       //  the format: Www Mmm dd hh:mm:ss yyyy\n) NOTE: %e is C99. C89's closest
-       //  is %d which has a leading zero. To be technically correct in replacing
-       //  this, need to set locale to english instead of localized locale first.
-       //  After that is done, it can be reverted back.
-        bool  restoreLocale = false;
+#else
+        //  strftime is recommended to be used. Using format %c will return the
+        //  matching output for this function asctime (which this replaces uses
+        //  the format: Www Mmm dd hh:mm:ss yyyy\n) NOTE: %e is C99. C89's closest
+        //  is %d which has a leading zero. To be technically correct in replacing
+        //  this, need to set locale to english instead of localized locale first.
+        //  After that is done, it can be reverted back.
+        bool restoreLocale = false;
         char* currentLocale = M_NULLPTR;
         // Turn off constraint handling since it is possible we will receive NULL and want to continue execution -TJE
         eConstraintHandler currentHandler = set_Constraint_Handler(ERR_IGNORE);
-        errno_t            error          = safe_strdup(&currentLocale, setlocale(LC_TIME, M_NULLPTR));
+        errno_t error = safe_strdup(&currentLocale, setlocale(LC_TIME, M_NULLPTR));
         // Restore previous constraint handler
         set_Constraint_Handler(currentHandler);
         if (error == 0 && currentLocale != M_NULLPTR && setlocale(LC_TIME, "en-us.utf8"))
         {
             restoreLocale = true;
         }
-#if (defined(USING_C99) && !defined(__MINGW32__)) // MINGW in msys2 is warning it does not know %e, so
-                                                  // this is catching that. This will likely need a
-                                                  // version check whenever it gets fixed-TJE
-        if (0 == strftime(buffer, bufferSize, "%a %b %e %H:%M:%S %Y", timeptr))
-#else
-        if (0 == strftime(buffer, bufferSize, "%a %b %d %H:%M:%S %Y", timeptr))
-#endif
+#    if (defined(USING_C99) && !defined(__MINGW32__)) // MINGW in msys2 is warning it does not know %e, so
+                                                      // this is catching that. This will likely need a
+                                                      // version check whenever it gets fixed-TJE
+        if (0 == strftime(buf, bufsz, "%a %b %e %H:%M:%S %Y", time_ptr))
+#    else
+        if (0 == strftime(buf, bufsz, "%a %b %d %H:%M:%S %Y", time_ptr))
+#    endif
         {
             // This means the array was too small...which shouldn't happen...but
             // in case it does, zero out the memory
-            safe_memset(buffer, bufferSize, 0, bufferSize);
+            safe_memset(buf, bufsz, 0, bufsz);
+            error = EINVAL;
+            errno = error;
         }
         if (restoreLocale)
         {
@@ -502,19 +659,36 @@ char* get_Time_String_From_TM_Structure(const struct tm* timeptr, char* buffer, 
             M_STATIC_CAST(void, setlocale(LC_TIME, currentLocale));
         }
         safe_free(&currentLocale);
+#endif // HAVE_MSFT_SECURE_LIB || HAVE_C11_ANNEX_K
     }
-    return buffer;
+    return error;
 }
 
-char* get_Current_Time_String(const time_t* timer, char* buffer, size_t bufferSize)
+errno_t impl_safe_ctime(char*         buf,
+                        rsize_t       bufsz,
+                        const time_t* timer,
+                        const char*   file,
+                        const char*   function,
+                        int           line,
+                        const char*   expression)
 {
-    if (timer && buffer && bufferSize >= CURRENT_TIME_STRING_LENGTH)
+    errno_t error;
+    if (timer == M_NULLPTR)
+    {
+        constraintEnvInfo envInfo;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_ctime: timer = NULL", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
+        errno = error;
+        return error;
+    }
+    else
     {
         struct tm cTimeBuf;
         safe_memset(&cTimeBuf, sizeof(struct tm), 0, sizeof(struct tm));
-        get_Time_String_From_TM_Structure(get_Localtime(timer, &cTimeBuf), buffer, bufferSize);
+        error = impl_safe_asctime(buf, bufsz, get_Localtime(timer, &cTimeBuf), true, file, function, line, expression);
     }
-    return buffer;
+    return error;
 }
 
 time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
