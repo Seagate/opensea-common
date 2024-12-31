@@ -322,12 +322,12 @@ typedef int32_t intptr_t;
 
 //! \def SSIZE_MAX
 //! \brief Defines the maximum value for ssize_t on Microsoft compilers.
-#        define SSIZE_MAX MAXSSSIZE_T
+#        define SSIZE_MAX MAXSSIZE_T
 
 //! \def SSIZE_MIN
 //! \brief Defines the minimum value for ssize_t on Microsoft compilers.
-#        define SSIZE_MIN MINSSSIZE_T
-#    else //!_MSCVER && !MAXSSSIZE_T && !MINSSSIZE_T
+#        define SSIZE_MIN MINSSIZE_T
+#    else //!_MSCVER && !MAXSSIZE_T && !MINSSIZE_T
     //! \typedef ssize_t
     //! \brief Defines the signed size type.
     //!
@@ -341,7 +341,7 @@ typedef int32_t intptr_t;
 //! \def SSIZE_MIN
 //! \brief Defines the minimum value for ssize_t.
 #        define SSIZE_MIN INTPTR_MIN
-#    endif //_MSC_VER && MAXSSSIZE_T && MINSSSIZE_T
+#    endif //_MSC_VER && MAXSSIZE_T && MINSSIZE_T
 #    define SSIZE_T_DEFINED
 #endif // SSIZE_MAX && _MSC_VER
 
