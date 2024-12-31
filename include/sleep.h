@@ -46,9 +46,10 @@ extern "C"
         return supported;
     }
 
-    #if defined (SYSTEM_WINDOWS) && defined (_MSC_VER) && defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_8_DOT_1
-    #        pragma comment(lib, "Ws2_32.lib")
-    #endif
+#if defined(SYSTEM_WINDOWS) && defined(_MSC_VER) && defined(WIN_API_TARGET_VERSION) &&                                 \
+    WIN_API_TARGET_VERSION >= WIN_API_TARGET_8_DOT_1
+#    pragma comment(lib, "Ws2_32.lib")
+#endif
 
     //! \fn errno_t sleepus(uint32_t microseconds)
     //! \brief sleep for specified number of microseconds
