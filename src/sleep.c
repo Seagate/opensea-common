@@ -23,6 +23,8 @@
 #if defined(_WIN32)
 DISABLE_WARNING_4255
 #    include <windows.h>
+#    include <winsock.h>
+#    include "windows_version_detect.h"
 RESTORE_WARNING_4255
 #else
 #    include <time.h>
@@ -118,13 +120,30 @@ errno_t sleepus(uint32_t microseconds)
     {
         struct timeval tv;
 #if defined(SYSTEM_WINDOWS)
-        tv.tv_sec  = M_STATIC_CAST(long, microseconds / MICROSECONDS_PER_SECOND);
-        tv.tv_usec = M_STATIC_CAST(long, microseconds % MICROSECONDS_PER_SECOND);
+        int res = -1;
+    #if defined (_MSC_VER) && defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_8_DOT_1
+        if (is_Windows_8_One_Or_Higher())
+        {
+            tv.tv_sec  = M_STATIC_CAST(long, microseconds / MICROSECONDS_PER_SECOND);
+            tv.tv_usec = M_STATIC_CAST(long, microseconds % MICROSECONDS_PER_SECOND);
+            res = select(0, M_NULLPTR, M_NULLPTR, M_NULLPTR, &tv);
+        }
+        else
+        {
+            errno = ENOSYS;
+            error = ENOSYS;
+        }
+    #else
+        // select function is not available in this version of the windows API
+        errno = ENOSYS;
+        error = ENOSYS;
+    #endif
 #else
         tv.tv_sec  = M_STATIC_CAST(time_t, microseconds / MICROSECONDS_PER_SECOND);
         tv.tv_usec = M_STATIC_CAST(suseconds_t, microseconds % MICROSECONDS_PER_SECOND);
-#endif
         int res = select(0, M_NULLPTR, M_NULLPTR, M_NULLPTR, &tv);
+#endif
+        
         if (res == -1)
         {
             error = errno;
