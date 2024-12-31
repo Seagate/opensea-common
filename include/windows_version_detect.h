@@ -11,8 +11,8 @@
 //
 // ******************************************************************************************
 //
-// \file windows_version_detect.h
-// \brief Definitions and Windows specific functions
+//! \file windows_version_detect.h
+//! \brief Definitions and Windows specific functions regarding detection of the Windows version
 
 #pragma once
 

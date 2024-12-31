@@ -10,12 +10,12 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-//
-// \file impl_memory_safety.h
-// \brief This is an internal header to handle the internal definitions for memory_safety.h
-//        Do NOT include this and use these functions directly. Include memory_safety.h and use the calls from there
-//        The functions with "impl" in the name expect __FILE__, __func__, __LINE__, and an expression when called which
-//        get wrapped by memory_safety.h to make this easier for you to use.
+
+//! \file impl_memory_safety.h
+//! \brief This is an internal header to handle the internal definitions for memory_safety.h
+//!        Do NOT include this and use these functions directly. Include memory_safety.h and use the calls from there
+//!        The functions with "impl" in the name expect __FILE__, __func__, __LINE__, and an expression when called
+//!        which get wrapped by memory_safety.h to make this easier for you to use.
 
 #pragma once
 

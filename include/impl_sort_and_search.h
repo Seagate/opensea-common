@@ -10,7 +10,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-//
+
 //! \file impl_sort_and_search.h
 //! \brief This is an internal header to handle the internal definitions for sort_and_search.h
 //!
