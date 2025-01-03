@@ -140,8 +140,8 @@ bool is_Windows_Vista_Or_Higher(void)
     conditionMask = 0;
     // Now get the actual version of the OS...start at windows vista and work
     // forward from there.
-    windowsVersionInfo.dwMajorVersion = 6;
-    windowsVersionInfo.dwMinorVersion = 0;
+    windowsVersionInfo.dwMajorVersion = DWORD_C(6);
+    windowsVersionInfo.dwMinorVersion = DWORD_C(0);
     conditionMask                     = VerSetConditionMask(conditionMask, VER_MAJORVERSION, VER_GREATER_EQUAL);
     conditionMask                     = VerSetConditionMask(conditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
     if (VerifyVersionInfo(&windowsVersionInfo, VER_MAJORVERSION | VER_MINORVERSION, conditionMask))
@@ -160,8 +160,8 @@ bool is_Windows_7_Or_Higher(void)
     conditionMask = 0;
     // Now get the actual version of the OS...start at windows vista and work
     // forward from there.
-    windowsVersionInfo.dwMajorVersion = 6;
-    windowsVersionInfo.dwMinorVersion = 1;
+    windowsVersionInfo.dwMajorVersion = DWORD_C(6);
+    windowsVersionInfo.dwMinorVersion = DWORD_C(1);
     conditionMask                     = VerSetConditionMask(conditionMask, VER_MAJORVERSION, VER_GREATER_EQUAL);
     conditionMask                     = VerSetConditionMask(conditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
     if (VerifyVersionInfo(&windowsVersionInfo, VER_MAJORVERSION | VER_MINORVERSION, conditionMask))
@@ -180,8 +180,8 @@ bool is_Windows_8_Or_Higher(void)
     conditionMask = 0;
     // Now get the actual version of the OS...start at windows vista and work
     // forward from there.
-    windowsVersionInfo.dwMajorVersion = 6;
-    windowsVersionInfo.dwMinorVersion = 2;
+    windowsVersionInfo.dwMajorVersion = DWORD_C(6);
+    windowsVersionInfo.dwMinorVersion = DWORD_C(2);
     conditionMask                     = VerSetConditionMask(conditionMask, VER_MAJORVERSION, VER_GREATER_EQUAL);
     conditionMask                     = VerSetConditionMask(conditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
     if (VerifyVersionInfo(&windowsVersionInfo, VER_MAJORVERSION | VER_MINORVERSION, conditionMask))
@@ -191,17 +191,29 @@ bool is_Windows_8_Or_Higher(void)
     return isWindows8OrHigher;
 }
 
+//! \fn static M_INLINE bool windows_Version_GT_Check(WindowsVersionNumber winver, uint32_t major, uint32_t minor, uint32_t buildnumber)
+//! \brief Checks if the provided Windows version is greater than or equal to the specified version.
+//! \param[in] winver The Windows version number to check.
+//! \param[in] major The major version number to compare against.
+//! \param[in] minor The minor version number to compare against.
+//! \param[in] buildnumber The build number to compare against.
+//! \return true if the provided Windows version is greater than or equal to the specified version, false otherwise.
+//! \note Example usage: windows_Version_GT_Check(version, 6, 3, 1) to check if the provided info is version 6.3.1 or greater.
+static M_INLINE bool windows_Version_GT_Check(WindowsVersionNumber winver, uint32_t major, uint32_t minor, uint32_t buildnumber)
+{
+    return (winver.majorVersion > major) ||
+           (winver.majorVersion == major && winver.minorVersion > minor) ||
+           (winver.majorVersion == major && winver.minorVersion == minor && winver.buildNumber >= buildnumber);
+}
+
 bool is_Windows_8_One_Or_Higher(void)
 {
     bool            isWindows81OrHigher = false;
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion > 6 ||
-        (windowsVersion.versionType.windowsVersion.majorVersion == 6 &&
-         windowsVersion.versionType.windowsVersion.minorVersion >= 3))
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 6, 3, 0))
     {
-        // Win10 or higher
         isWindows81OrHigher = true;
     }
     return isWindows81OrHigher;
@@ -213,9 +225,8 @@ bool is_Windows_10_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 0))
     {
-        // Win10 or higher
         isWindows10OrHigher = true;
     }
     return isWindows10OrHigher;
@@ -227,10 +238,8 @@ bool is_Windows_10_Version_1507_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 10240)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 10240))
     {
-        // Win10 or higher
         isWindows10_1507OrHigher = true;
     }
     return isWindows10_1507OrHigher;
@@ -242,10 +251,8 @@ bool is_Windows_10_Version_1511_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 10586)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 10586))
     {
-        // Win10 or higher
         isWindows10_1511OrHigher = true;
     }
     return isWindows10_1511OrHigher;
@@ -257,10 +264,8 @@ bool is_Windows_10_Version_1607_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 14393)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 14393))
     {
-        // Win10 or higher
         isWindows10_1607OrHigher = true;
     }
     return isWindows10_1607OrHigher;
@@ -272,10 +277,8 @@ bool is_Windows_10_Version_1703_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 15063)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 15063))
     {
-        // Win10 or higher
         isWindows10_1703OrHigher = true;
     }
     return isWindows10_1703OrHigher;
@@ -287,10 +290,8 @@ bool is_Windows_10_Version_1709_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 16299)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 16299))
     {
-        // Win10 or higher
         isWindows10_1709OrHigher = true;
     }
     return isWindows10_1709OrHigher;
@@ -302,10 +303,8 @@ bool is_Windows_10_Version_1803_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 17134)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 17134))
     {
-        // Win10 or higher
         isWindows10_1803OrHigher = true;
     }
     return isWindows10_1803OrHigher;
@@ -317,10 +316,8 @@ bool is_Windows_10_Version_1809_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 17763)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 17763))
     {
-        // Win10 or higher
         isWindows10_1809OrHigher = true;
     }
     return isWindows10_1809OrHigher;
@@ -332,10 +329,8 @@ bool is_Windows_10_Version_1903_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 18362)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 18362))
     {
-        // Win10 or higher
         isWindows10_1903OrHigher = true;
     }
     return isWindows10_1903OrHigher;
@@ -347,10 +342,8 @@ bool is_Windows_10_Version_1909_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 18363)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 18363))
     {
-        // Win10 or higher
         isWindows10_1909OrHigher = true;
     }
     return isWindows10_1909OrHigher;
@@ -362,10 +355,8 @@ bool is_Windows_10_Version_2004_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 19041)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 19041))
     {
-        // Win10 or higher
         isWindows10_2004OrHigher = true;
     }
     return isWindows10_2004OrHigher;
@@ -377,10 +368,8 @@ bool is_Windows_10_Version_20H2_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 19042)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 19042))
     {
-        // Win10 or higher
         isWindows10_20H2OrHigher = true;
     }
     return isWindows10_20H2OrHigher;
@@ -392,10 +381,8 @@ bool is_Windows_10_Version_21H1_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 19043)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 19043))
     {
-        // Win10 or higher
         isWindows10_21H1OrHigher = true;
     }
     return isWindows10_21H1OrHigher;
@@ -407,10 +394,8 @@ bool is_Windows_10_Version_21H2_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 19044)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 19044))
     {
-        // Win10 or higher
         isWindows10_21H2OrHigher = true;
     }
     return isWindows10_21H2OrHigher;
@@ -422,10 +407,8 @@ bool is_Windows_10_Version_22H2_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 19045)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 19045))
     {
-        // Win10 or higher
         isWindows10_22H2OrHigher = true;
     }
     return isWindows10_22H2OrHigher;
@@ -437,10 +420,8 @@ bool is_Windows_11_Version_21H2_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 22000)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 22000))
     {
-        // Win10 or higher
         isWindows10_21H2OrHigher = true;
     }
     return isWindows10_21H2OrHigher;
@@ -452,8 +433,7 @@ bool is_Windows_11_Version_22H2_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 22621)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 22621))
     {
         isWindows11_22H2OrHigher = true;
     }
@@ -466,8 +446,7 @@ bool is_Windows_11_Version_23H2_Or_Higher(void)
     OSVersionNumber windowsVersion;
     safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
     read_Win_Version(&windowsVersion);
-    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 &&
-        windowsVersion.versionType.windowsVersion.buildNumber >= 22631)
+    if (windows_Version_GT_Check(windowsVersion.versionType.windowsVersion, 10, 0, 22631))
     {
         isWindows11_23H2OrHigher = true;
     }

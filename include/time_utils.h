@@ -81,7 +81,7 @@ extern "C"
         impl_safe_gmtime(timer, buf, __FILE__, __func__, __LINE__, "safe_gmtime(" #timer ", " #buf ")")
 #endif
 
-#    define get_UTCtime(timer, buf) safe_gmtime(timer, buf)
+#define get_UTCtime(timer, buf) safe_gmtime(timer, buf)
 
 #if defined(DEV_ENVIRONMENT)
     //! \fn struct tm* safe_localtime(const time_t* M_RESTRICT timer, struct tm* M_RESTRICT buf)
@@ -111,11 +111,11 @@ extern "C"
 //! - \a timer is a null pointer
 //!
 //! - \a buf is a null pointer
-#    define safe_localtime(timer, buf)                                                                                  \
+#    define safe_localtime(timer, buf)                                                                                 \
         impl_safe_localtime(timer, buf, __FILE__, __func__, __LINE__, "safe_localtime(" #timer ", " #buf ")")
 #endif
 
-#    define get_Localtime(timer, buf) safe_localtime(timer, buf)
+#define get_Localtime(timer, buf) safe_localtime(timer, buf)
 
 #if defined(DEV_ENVIRONMENT)
     //! \fn errno_t safe_asctime(char* buf, rsize_t bufsz, const struct tm* time_ptr)

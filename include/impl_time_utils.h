@@ -81,11 +81,11 @@ extern "C"
     //!
     //! - \a buf is a null pointer
     struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
-                                  struct tm* M_RESTRICT    buf,
-                                  const char*              file,
-                                  const char*              function,
-                                  int                      line,
-                                  const char*              expression);
+                                   struct tm* M_RESTRICT    buf,
+                                   const char*              file,
+                                   const char*              function,
+                                   int                      line,
+                                   const char*              expression);
 
     //! \fn errno_t impl_safe_asctime(char*            buf,
     //!                               rsize_t          bufsz,

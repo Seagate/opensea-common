@@ -28,6 +28,7 @@ size_t int8_to_sizet(int8_t val)
 {
     if (val < 0)
     {
+        errno = ERANGE;
         return 0;
     }
 #if defined(SIZE_MAX) && defined(INT8_MAX) && SIZE_MAX >= INT8_MAX
@@ -42,6 +43,7 @@ size_t int8_to_sizet(int8_t val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -58,6 +60,7 @@ size_t uint8_to_sizet(uint8_t val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -67,6 +70,7 @@ size_t int16_to_sizet(int16_t val)
 {
     if (val < 0)
     {
+        errno = ERANGE;
         return 0;
     }
 #if defined(SIZE_MAX) && defined(INT16_MAX) && SIZE_MAX >= INT16_MAX
@@ -81,6 +85,7 @@ size_t int16_to_sizet(int16_t val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -97,6 +102,7 @@ size_t uint16_to_sizet(uint16_t val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -106,6 +112,7 @@ size_t int32_to_sizet(int32_t val)
 {
     if (val < 0)
     {
+        errno = ERANGE;
         return 0;
     }
 #if defined(SIZE_MAX) && defined(INT32_MAX) && SIZE_MAX >= INT32_MAX
@@ -120,6 +127,7 @@ size_t int32_to_sizet(int32_t val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -136,6 +144,7 @@ size_t uint32_to_sizet(uint32_t val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -145,6 +154,7 @@ size_t int64_to_sizet(int64_t val)
 {
     if (val < 0)
     {
+        errno = ERANGE;
         return 0;
     }
 #if defined(SIZE_MAX) && defined(INT64_MAX) && SIZE_MAX >= INT64_MAX
@@ -159,6 +169,7 @@ size_t int64_to_sizet(int64_t val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -175,6 +186,7 @@ size_t uint64_to_sizet(uint64_t val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -185,6 +197,7 @@ size_t char_to_sizet(char val)
 #if defined(CHAR_MIN) && CHAR_MIN < 0
     if (val < 0)
     {
+        errno = ERANGE;
         return 0;
     }
 #endif // CHAR_MIN < 0
@@ -199,6 +212,7 @@ size_t char_to_sizet(char val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -209,6 +223,7 @@ size_t schar_to_sizet(signed char val)
 #if defined(SCHAR_MIN) && SCHAR_MIN < 0
     if (val < 0)
     {
+        errno = ERANGE;
         return 0;
     }
 #endif // CHAR_MIN < 0
@@ -223,6 +238,7 @@ size_t schar_to_sizet(signed char val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -239,6 +255,7 @@ size_t uchar_to_sizet(unsigned char val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -248,6 +265,7 @@ size_t short_to_sizet(short val)
 {
     if (val < 0)
     {
+        errno = ERANGE;
         return 0;
     }
 #if defined(SIZE_MAX) && defined(SHRT_MAX) && SIZE_MAX >= SHRT_MAX
@@ -262,6 +280,7 @@ size_t short_to_sizet(short val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -278,6 +297,7 @@ size_t ushort_to_sizet(unsigned short val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -287,6 +307,7 @@ size_t int_to_sizet(int val)
 {
     if (val < 0)
     {
+        errno = ERANGE;
         return 0;
     }
 #if defined(SIZE_MAX) && defined(INT_MAX) && SIZE_MAX >= INT_MAX
@@ -301,6 +322,7 @@ size_t int_to_sizet(int val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -317,6 +339,7 @@ size_t uint_to_sizet(unsigned int val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -324,8 +347,9 @@ size_t uint_to_sizet(unsigned int val)
 
 size_t long_to_sizet(long val)
 {
-    if (val < 0)
+    if (val < 0L)
     {
+        errno = ERANGE;
         return 0;
     }
 #if defined(SIZE_MAX) && defined(LONG_MAX) && SIZE_MAX >= LONG_MAX
@@ -340,6 +364,7 @@ size_t long_to_sizet(long val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -356,6 +381,7 @@ size_t ulong_to_sizet(unsigned long val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -363,8 +389,9 @@ size_t ulong_to_sizet(unsigned long val)
 
 size_t longlong_to_sizet(long long val)
 {
-    if (val < 0)
+    if (val < 0LL)
     {
+        errno = ERANGE;
         return 0;
     }
 #if defined(SIZE_MAX) && defined(LLONG_MAX) && SIZE_MAX >= LLONG_MAX
@@ -379,6 +406,7 @@ size_t longlong_to_sizet(long long val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif
@@ -395,6 +423,7 @@ size_t ulonglong_to_sizet(unsigned long long val)
     }
     else
     {
+        errno = ERANGE;
         return SIZE_MAX;
     }
 #endif

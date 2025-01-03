@@ -1297,6 +1297,15 @@ eReturnValues os_Create_Directory(const char* filePath)
     }
 }
 
+// TODO: Need to pass in a security descriptor with proper access information
+//  We will need owner/group IDs that match the current user
+//  DACL that makes sense to use for the user.
+//  Ignoring SACL for now since that serves a different purpose at this time.
+eReturnValues os_Create_Secure_Directory(const char* filePath)
+{
+    return os_Create_Directory(filePath);
+}
+
 bool os_File_Exists(const char* filetoCheck)
 {
     WIN32_FILE_ATTRIBUTE_DATA fileAttributes;

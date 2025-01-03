@@ -433,11 +433,11 @@ struct tm* impl_safe_gmtime(const time_t* M_RESTRICT timer,
 }
 
 struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
-                              struct tm* M_RESTRICT    buf,
-                              const char*              file,
-                              const char*              function,
-                              int                      line,
-                              const char*              expression)
+                               struct tm* M_RESTRICT    buf,
+                               const char*              file,
+                               const char*              function,
+                               int                      line,
+                               const char*              expression)
 {
     constraintEnvInfo envInfo;
     if (timer == M_NULLPTR)
@@ -450,8 +450,8 @@ struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
     else if (buf == M_NULLPTR)
     {
         errno = EINVAL;
-        invoke_Constraint_Handler("safe_localtime: buf = NULL", set_Env_Info(&envInfo, file, function, expression, line),
-                                  errno);
+        invoke_Constraint_Handler("safe_localtime: buf = NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), errno);
         return M_NULLPTR;
     }
     else
@@ -631,7 +631,7 @@ errno_t impl_safe_asctime(char*            buf,
         char* currentLocale = M_NULLPTR;
         // Turn off constraint handling since it is possible we will receive NULL and want to continue execution -TJE
         eConstraintHandler currentHandler = set_Constraint_Handler(ERR_IGNORE);
-        errno_t error = safe_strdup(&currentLocale, setlocale(LC_TIME, M_NULLPTR));
+        error = safe_strdup(&currentLocale, setlocale(LC_TIME, M_NULLPTR));
         // Restore previous constraint handler
         set_Constraint_Handler(currentHandler);
         if (error == 0 && currentLocale != M_NULLPTR && setlocale(LC_TIME, "en-us.utf8"))

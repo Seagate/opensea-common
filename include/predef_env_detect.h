@@ -10,11 +10,12 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-//
-// \file predef_env_detect.h
-// \brief Detects the compilation environment for standards, extensions, etc
-// using only predefined macros from libc/compiler
-//
+
+//! \file predef_env_detect.h
+//! \brief Detects the compilation environment for standards, extensions, etc
+//! using only predefined macros from libc/compiler
+//! This file does include some headers as needed to lookup various defined versions such as features.h, unistd.h,
+//! sys/param.h, limits.h, endian.h, sys/endian.h, etc.
 
 #pragma once
 

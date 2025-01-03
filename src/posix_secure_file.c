@@ -567,6 +567,26 @@ eReturnValues os_Create_Directory(const char* filePath)
     }
 }
 
+// Does not set group write permissions or other write permissions.
+// User gets rwx, group gets rx, other gets rx
+eReturnValues os_Create_Secure_Directory(const char* filePath)
+{
+    // mkdirres should be an int as it is the output of the mkdir command
+    // We are returning enum values, not the result of this command!
+    int mkdirres = mkdir(filePath, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+    if (mkdirres == 0)
+    {
+        return SUCCESS;
+    }
+    else
+    {
+#if defined(_DEBUG)
+        printf("Error: %s\n", strerror(errno));
+#endif
+        return FAILURE;
+    }
+}
+
 // https://linux.die.net/man/3/realpath
 eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_MAX])
 {

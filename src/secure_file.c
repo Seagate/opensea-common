@@ -413,7 +413,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                     (expectedFileInfo->userID != beforeattrs->userID) ||
                     (expectedFileInfo->groupID != beforeattrs->groupID))
                 {
-                    fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
+                    fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBUTES;
                     safe_free(&intFileName);
                     free_File_Attributes(&beforeattrs);
                     if (duplicatedModeForInternalUse)
@@ -542,7 +542,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                     {
                         M_STATIC_CAST(void, fclose(fileInfo->file));
                         fileInfo->file  = M_NULLPTR;
-                        fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
+                        fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBUTES;
                         safe_free(&intFileName);
                         if (duplicatedModeForInternalUse)
                         {
