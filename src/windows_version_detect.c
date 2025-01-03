@@ -191,18 +191,25 @@ bool is_Windows_8_Or_Higher(void)
     return isWindows8OrHigher;
 }
 
-//! \fn static M_INLINE bool windows_Version_GT_Check(WindowsVersionNumber winver, uint32_t major, uint32_t minor, uint32_t buildnumber)
-//! \brief Checks if the provided Windows version is greater than or equal to the specified version.
-//! \param[in] winver The Windows version number to check.
-//! \param[in] major The major version number to compare against.
-//! \param[in] minor The minor version number to compare against.
-//! \param[in] buildnumber The build number to compare against.
-//! \return true if the provided Windows version is greater than or equal to the specified version, false otherwise.
-//! \note Example usage: windows_Version_GT_Check(version, 6, 3, 1) to check if the provided info is version 6.3.1 or greater.
-static M_INLINE bool windows_Version_GT_Check(WindowsVersionNumber winver, uint32_t major, uint32_t minor, uint32_t buildnumber)
+//! \fn static M_INLINE bool windows_Version_GT_Check(WindowsVersionNumber winver, 
+//!                                                   uint32_t major, 
+//!                                                   uint32_t minor,
+//!                                                   uint32_t buildnumber) 
+//! \brief Checks if the provided Windows version is greater than or equal to the specified version
+//! \param[in] winver The Windows version number to check. 
+//! \param[in] major The major version number to compare against. 
+//! \param[in] minor The minor version number to compare against. 
+//! \param[in] buildnumber The build number to compare against. 
+//! \return true if the provided Windows version is greater than or equal to the specified version,
+//! false otherwise. 
+//! \note Example usage: windows_Version_GT_Check(version, 6, 3, 1) to check if the provided info is
+//! version 6.3.1 or greater.
+static M_INLINE bool windows_Version_GT_Check(WindowsVersionNumber winver,
+                                              uint32_t             major,
+                                              uint32_t             minor,
+                                              uint32_t             buildnumber)
 {
-    return (winver.majorVersion > major) ||
-           (winver.majorVersion == major && winver.minorVersion > minor) ||
+    return (winver.majorVersion > major) || (winver.majorVersion == major && winver.minorVersion > minor) ||
            (winver.majorVersion == major && winver.minorVersion == minor && winver.buildNumber >= buildnumber);
 }
 
