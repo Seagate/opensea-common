@@ -431,7 +431,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                 if (!exact_Compare_SIDS_And_DACL_Strings(beforeattrs->winSecurityDescriptor,
                                                          expectedFileInfo->winSecurityDescriptor))
                 {
-                    fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
+                    fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBUTES;
                     safe_free(&intFileName);
                     if (duplicatedModeForInternalUse)
                     {
@@ -565,7 +565,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                     {
                         M_STATIC_CAST(void, fclose(fileInfo->file));
                         fileInfo->file  = M_NULLPTR;
-                        fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBTUES;
+                        fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBUTES;
                         safe_free(&intFileName);
                         if (duplicatedModeForInternalUse)
                         {

@@ -292,6 +292,7 @@ extern "C"
                    SEC_FILE_FILE_ALREADY_EXISTS,
                    SEC_FILE_INVALID_FILE_EXTENSION,
                    SEC_FILE_INVALID_FILE_ATTRIBUTES,
+                   SEC_FILE_INVALID_FILE_ATTRIBTUES = SEC_FILE_INVALID_FILE_ATTRIBUTES, /* Typo. Migrate to correct spelling */
                    SEC_FILE_INVALID_FILE_UNIQUE_ID,
                    SEC_FILE_INSECURE_PATH,
                    SEC_FILE_INVALID_MODE,
