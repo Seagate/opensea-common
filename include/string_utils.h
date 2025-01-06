@@ -36,9 +36,22 @@ extern "C"
 #    include <strings.h>
 #elif defined(_WIN32)
 #    if !defined(strcasecmp)
+         //! \def strcasecmp(s1, s2)
+         //! \brief compares two strings; case insensitive
+         //! \param[in] s1 pointer to first null terminated string to compare
+         //! \param[in] s2 pointer to second null terminated string to compare
+         //! \return 0 if equal. Negative if \a s1 is less than \a s2 or positive if
+         //! \a s1 is greater than \a s2
 #        define strcasecmp(s1, s2) _stricmp(s1, s2)
 #    endif // strcasecmp
 #    if !defined(strncasecmp)
+         //! \def strncasecmp(s1, s2, n)
+         //! \brief compares two strings up to NULL termination or length \a n; case insensitive
+         //! \param[in] s1 pointer to first null terminated string to compare
+         //! \param[in] s2 pointer to second null terminated string to compare
+         //! \param[in] n maximum number of characters to compare between strings
+         //! \return 0 if equal. Negative if \a s1 is less than \a s2 or positive if
+         //! \a s1 is greater than \a s2
 #        define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
 #    endif // strncasecmp
 #else

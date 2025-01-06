@@ -103,8 +103,7 @@ extern "C"
 
     //! \fn errno_t safe_memcpy_impl(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t count,
     //! const char* file, const char* function, int line, const char* expression)
-    //! \brief Copies a block of memory with
-    //! bounds checking.
+    //! \brief Copies a block of memory with bounds checking.
     //!
     //! This function copies \a count bytes from the block of memory pointed to by \a src to the block of memory pointed
     //! to by \a dest, with bounds checking as specified in C11 annex K.
