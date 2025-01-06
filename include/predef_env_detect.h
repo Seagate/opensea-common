@@ -31,14 +31,21 @@
 #    define __STDC_WANT_LIB_EXT2__ 1 // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 #endif
 
-// Macro to check GCC version(major.minor)
+//! \def IS_GCC_VERSION(major, minor)
+//! \brief Macro to check GCC version(major.minor)
+//! \param[in] major major version of GCC to check for
+//! \param[in] minor minor version of GCC to check for
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
 #    define IS_GCC_VERSION(major, minor) ((__GNUC__ > (major) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor))))
 #else
 #    define IS_GCC_VERSION(major, minor) (0)
 #endif
 
-// Macro to check GCC full version (major.minor.patch)
+//! \def IS_GCC_FULL_VERSION(major, minor, patch)
+//! \brief Macro to check GCC full version (major.minor.patch)
+//! \param[in] major major version of GCC to check for
+//! \param[in] minor minor version of GCC to check for
+//! \param[in] patch patch version of GCC to check for
 #if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__)
 #    define IS_GCC_FULL_VERSION(major, minor, patch)                                                                   \
         ((__GNUC__ > (major) ||                                                                                        \
@@ -48,7 +55,16 @@
 #    define IS_GCC_FULL_VERSION(major, minor, patch) (0)
 #endif
 
-// Macro to check Clang version(major.minor)
+//! \def IS_CLANG_VERSION(major, minor)
+//! \brief Macro to check Clang version(major.minor)
+//! \param[in] major major version of Clang to check for
+//! \param[in] minor minor version of Clang to check for
+
+//! \def IS_CLANG_FULL_VERSION(major, minor, patch)
+//! \brief Macro to check Clang full version (major.minor.patch)
+//! \param[in] major major version of Clang to check for
+//! \param[in] minor minor version of Clang to check for
+//! \param[in] patch patch version of Clang to check for
 #if defined(__clang__)
 #    define IS_CLANG_VERSION(major, minor)                                                                             \
         (__clang_major__ > (major) || (__clang_major__ == (major) && __clang_minor__ >= (minor)))
@@ -63,7 +79,10 @@
 #    define IS_CLANG_FULL_VERSION(major, minor, patch) (0)
 #endif
 
-// Macro to check MinGW32 version(major.minor)
+//! \def IS_MINGW32_VERSION(major, minor)
+//! \brief Macro to check MinGW32 version(major.minor)
+//! \param[in] major major version of Mingw32 to check for
+//! \param[in] minor minor version of Mingw32 to check for
 #if defined(__MINGW32__) && defined(__MINGW32_MAJOR_VERSION) && defined(__MINGW32_MINOR_VERSION)
 #    define IS_MINGW32_VERSION(major, minor)                                                                           \
         ((__MINGW32_MAJOR_VERSION > (major) ||                                                                         \
@@ -72,7 +91,10 @@
 #    define IS_MINGW32_VERSION(major, minor) (0)
 #endif
 
-// Macro to check MinGW-w64 version(major.minor)
+//! \def IS_MINGW64_VERSION(major, minor)
+//! \brief Macro to check MinGW-w64 version(major.minor)
+//! \param[in] major major version of MinGW-w64 to check for
+//! \param[in] minor minor version of MinGW-w64 to check for
 #if defined(__MINGW64__) && defined(__MINGW64_VERSION_MAJOR) && defined(__MINGW64_VERSION_MINOR)
 #    define IS_MINGW64_VERSION(major, minor)                                                                           \
         ((__MINGW64_VERSION_MAJOR > (major) ||                                                                         \
@@ -138,14 +160,20 @@
 #define MSVC_FULL_2019_16_10 192929917 // need full ver to differentiate
 #define MSVC_FULL_2019_16_11 192930129 // need full ver to differentiate
 
-// Macro to check MSVC version
+//! \def IS_MSVC_VERSION(msvcver)
+//! \brief Macro to check MSVC version
+//! \param[in] msvcver msvc version that _MSC_VER can be set to in various versions.
+//! Use one of the definitions above for easy use
 #if defined(_MSC_VER)
 #    define IS_MSVC_VERSION(msvcver) (_MSC_VER > (msvcver))
 #else
 #    define IS_MSVC_VERSION(msvcver) (0)
 #endif
 
-// Macro to check MSVC full version using _MSC_FULL_VER
+//! \def IS_MSVC_FULL_VERSION(msvcfullver)
+//! \brief Macro to check MSVC full version using _MSC_FULL_VER
+//! \param[in] msvcfullver msvc version that _MSC_FULL_VER can be set to in various versions.
+//! Use one of the definitions above for easy use
 #if defined(_MSC_FULL_VER)
 #    define IS_MSVC_FULL_VERSION(msvcfullver) (_MSC_FULL_VER > (msvcfullver))
 #else
@@ -163,7 +191,11 @@
 #else
 #    include <limits.h>
 #endif // does not support __has_include
-// Macro to check glibc version (major.minor)
+
+//! \def IS_GLIBC_VERSION(major, minor)
+//! \brief Macro to check Glibc version (major.minor)
+//! \param[in] major major version of Glibc to check for
+//! \param[in] minor minor version of Glibc to check for
 #if defined(__GNU_LIBRARY__) && defined(__GNU_LIBRARY_MINOR__)
 #    define THIS_IS_GLIBC
 #    define IS_GLIBC_VERSION(major, minor)                                                                             \
@@ -176,7 +208,16 @@
 #    define IS_GLIBC_VERSION(major, minor) (0)
 #endif
 
-// Macro to check uClibc version (major.minor)
+//! \def IS_UCLIBC_VERSION(major, minor)
+//! \brief Macro to check uClibc version (major.minor)
+//! \param[in] major major version of uClibc to check for
+//! \param[in] minor minor version of uClibc to check for
+
+//! \def IS_UCLIBC_FULL_VERSION(major, minor, patch)
+//! \brief Macro to check full uClibc version (major.minor.patch)
+//! \param[in] major major version of uClibc to check for
+//! \param[in] minor minor version of uClibc to check for
+//! \param[in] patch patch version of uClibc to check for
 #if defined(__UCLIBC__) && defined(__UCLIBC_MAJOR__) && defined(__UCLIBC_MINOR__)
 #    define IS_UCLIBC_VERSION(major, minor)                                                                            \
         ((__UCLIBC_MAJOR__ > (major) || (__UCLIBC_MAJOR__ == (major) && __UCLIBC_MINOR__ >= (minor))))
@@ -189,7 +230,16 @@
 #    define IS_UCLIBC_FULL_VERSION(major, minor, patch) (0)
 #endif
 
-// Macro to check klibc version (major.minor)
+//! \def IS_KLIBC_VERSION(major, minor)
+//! \brief Macro to check klibc version (major.minor)
+//! \param[in] major major version of klibc to check for
+//! \param[in] minor minor version of klibc to check for
+
+//! \def IS_KLIBC_VERSION(major, minor, patch)
+//! \brief Macro to check full klibc version (major.minor.patch)
+//! \param[in] major major version of klibc to check for
+//! \param[in] minor minor version of klibc to check for
+//! \param[in] patch patch version of klibc to check for
 #if defined(__KLIBC__) && defined(__KLIBC_MINOR__) && defined(__KLIBC_PATCHLEVEL__)
 #    define IS_KLIBC_VERSION(major, minor)                                                                             \
         ((__KLIBC__ > (major) || (__KLIBC__ == (major) && __KLIBC_MINOR__ >= (minor))))
@@ -210,6 +260,11 @@
 #    include <sys/param.h> //can be helpful to do compile-time version/capabilities identification
 #endif                     //__unix__ || __APPLE__ || HAVE_SYSPARAM
 
+//! \def DISABLE_WARNING_4255
+//! \brief disabled MSVC warning 4255. Needed around including windows.h
+
+//! \def RESTORE_WARNING_4255
+//! \brief restores MSVC warning 4255 back to being enabled.
 #if IS_MSVC_VERSION(MSVC_2010) && !defined(__clang__)
 #    define DISABLE_WARNING_4255 _Pragma("warning(push)") _Pragma("warning(disable: 4255)")
 
@@ -353,30 +408,48 @@ extern "C"
 // other macros: https://linux.die.net/man/7/posixoptions
 #if defined(_POSIX_VERSION)
 #    if _POSIX_VERSION >= 198808L
+//! \def POSIX_1988
+//! \brief Defined when POSIX 1988 is supported.
 #        define POSIX_1988
 #    endif
 #    if _POSIX_VERSION >= 199009L
+//! \def POSIX_1990
+//! \brief Defined when POSIX 1990 is supported.
 #        define POSIX_1990
 #    endif
 #    if defined(_POSIX2_C_VERSION) && _POSIX2_C_VERSION >= 199209L
+//! \def POSIX_1992
+//! \brief Defined when POSIX 1992 is supported.
 #        define POSIX_1992
 #    endif
 #    if _POSIX_VERSION >= 199309L
+//! \def POSIX_1993
+//! \brief Defined when POSIX 1993 is supported.
 #        define POSIX_1993
 #    endif
 #    if _POSIX_VERSION >= 199506L
+//! \def POSIX_1996
+//! \brief Defined when POSIX 1996 is supported.
 #        define POSIX_1996
 #    endif
 #    if _POSIX_VERSION >= 200112L
+//! \def POSIX_2001
+//! \brief Defined when POSIX 2001 is supported.
 #        define POSIX_2001
 #    endif
 #    if _POSIX_VERSION >= 200809L
+//! \def POSIX_2008
+//! \brief Defined when POSIX 2008 is supported.
 #        define POSIX_2008
 #    endif
 #    if _POSIX_VERSION >= 201709L
+//! \def POSIX_2017
+//! \brief Defined when POSIX 2017 is supported.
 #        define POSIX_2017
 #    endif
 #    if _POSIX_VERSION >= 202409L
+//! \def POSIX_2024
+//! \brief Defined when POSIX 2024 is supported.
 #        define POSIX_2024
 #    endif
 #endif //_POSIX_VERSION
@@ -390,21 +463,33 @@ extern "C"
 // V1 published in 1985
 // V2 published in 1987
 #    if _XOPEN_VERSION >= 3
+//! \def USING_XPG3
+//! \brief Defined when X/open portability guide version 3 is supported
 #        define USING_XPG3 /* 1989 */
 #    endif
 #    if _XOPEN_VERSION >= 4
+//! \def USING_XPG4
+//! \brief Defined when X/open portability guide version 4 is supported
 #        define USING_XPG4 /* 1992 */
 #        if defined(_XOPEN_UNIX)
+//! \def USING_SUS
+//! \brief Defined when Single Unix Specification is supported
 #            define USING_SUS /* UNIX95 */
 #        endif
 #    endif
 #    if _XOPEN_VERSION >= 500
+//! \def USING_SUS2
+//! \brief Defined when Single Unix Specification version 2 is supported
 #        define USING_SUS2 /* UNIX98 */
 #    endif
 #    if _XOPEN_VERSION >= 600
+//! \def USING_SUS3
+//! \brief Defined when Single Unix Specification version 3 is supported
 #        define USING_SUS3 /* UNIX03 */
 #    endif
 #    if _XOPEN_VERSION >= 700
+//! \def USING_SUS4
+//! \brief Defined when Single Unix Specification version 4 is supported
 #        define USING_SUS4
 #    endif
 #endif //_XOPEN_VERSION
@@ -435,10 +520,14 @@ extern "C"
 #endif
 
 #if (defined(__STDC_LIB_EXT1__) && defined(__STDC_WANT_LIB_EXT1__))
+//! \def HAVE_C11_ANNEX_K
+//! \brief C11 Annex K functions are available
 #    define HAVE_C11_ANNEX_K
 #endif // check for annex k
 
 #if defined(__STDC_SECURE_LIB__) || defined(__GOT_SECURE_LIB__)
+//! \def HAVE_MSFT_SECURE_LIB
+//! \brief Microsoft secure library functions are available (_s)
 #    define HAVE_MSFT_SECURE_LIB
 #endif // Microsoft secure lib
 
@@ -489,6 +578,12 @@ extern "C"
 //           defined (OpenBSD3_9) to check for OpenBSD 3.9
 // OS's with version check macros are those that encode a version into a macro as a numeric value
 // Example: FreeBSD, NetBSD
+
+//! \def IS_FREEBSD_VERSION(major, minor, patch)
+//! \brief Macro to check full FreeBSD version (major.minor.patch)
+//! \param[in] major major version of FreeBSD to check for
+//! \param[in] minor minor version of FreeBSD to check for
+//! \param[in] patch patch version of FreeBSD to check for
 #if defined(__FreeBSD__) && defined(__FreeBSD_version)
 #    define FREEBSD_FULL_VERSION_ENCODE(major, minor, revision) ((major)*100000 + (minor)*1000 + (revision))
 #    define IS_FREEBSD_VERSION(major, minor, revision)                                                                 \
@@ -496,6 +591,12 @@ extern "C"
 #else
 #    define IS_FREEBSD_VERSION(major, minor, revision) (0)
 #endif
+
+//! \def IS_NETBSD_VERSION(major, minor, patch)
+//! \brief Macro to check full NetBSD version (major.minor.patch)
+//! \param[in] major major version of NetBSD to check for
+//! \param[in] minor minor version of NetBSD to check for
+//! \param[in] patch patch version of NetBSD to check for
 #if defined(__NetBSD__) && defined(__NetBSD_Version__)
 #    define NETBSD_VERSION_ENCODE(major, minor, patch) ((major)*100000000 + (minor)*1000000 + (patch)*100)
 #    define IS_NETBSD_VERSION(major, minor, patch)     (__NetBSD_Version__ >= NETBSD_VERSION_ENCODE(major, minor, patch))
@@ -505,6 +606,9 @@ extern "C"
 
 // Clang supports these other methods to check for generic selection support
 //__has_feature(c_generic_selections) or  __has_extension(c_generic_selections)
+
+//! \def HAVE_C11_GENERIC_SELECTION
+//! \brief Macro to check for C11 Generic selection macro support
 #if defined(USING_C11) && !defined(HAVE_C11_GENERIC_SELECTION)
 // workaround for early C11 compilers that may still be used with this code to
 // disable generic selection when not supported
@@ -525,11 +629,20 @@ extern "C"
     defined(__alpha__) || defined(__amd64__) || defined(__x86_64__) || defined(__aarch64__) || defined(__ia64__) ||    \
     defined(__IA64__) || defined(__powerpc64__) || defined(__PPC64__) || defined(__ppc64__) ||                         \
     defined(_ARCH_PPC64) // 64bit
+//! \def ENV_64BIT
+//! \brief This is set when compiling in a 64bit environment
 #    define ENV_64BIT
 #else // CPU Check
+//! \def ENV_32BIT
+//! \brief This is set when compiling in a 32bit environment
 #    define ENV_32BIT
 #endif // CPU Check
 
+//! \def ENV_BIG_ENDIAN
+//! \brief This is set when compiling in a big endian environment
+
+//! \def ENV_LITTLE_ENDIAN
+//! \brief This is set when compiling in a little endian environment
 #if defined(__has_include)
 #    if __has_include(<endian.h>)
 #        include <endian.h>
@@ -569,12 +682,15 @@ extern "C"
 #    endif
 #endif
 
-    // NOTE: These warning disables are only needed in MSVC for the C11 generic min/max implementations.
-    // Without them you get a warning about applying a unary - on an unsigned type.
-    // More casts can be used to work around this, but this was easier since it is otherwise correct code -TJE
-    // If this becomes useful in other places, this should be moved to a different file, but since it's
-    // only used here, it can stay here for now. - TJE
-    // Started in VS2012???
+//! \def DISABLE_WARNING_4146
+//! \brief disables MSVC warning 4146.
+//! \details These warning disables are only needed in MSVC for the C11 generic min/max implementations.
+//! Without them you get a warning about applying a unary - on an unsigned type.
+
+//! \def RESTORE_WARNING_4146
+//! \brief restores MSVC warning 4146 back to being enabled.
+//! \details These warning disables are only needed in MSVC for the C11 generic min/max implementations.
+//! Without them you get a warning about applying a unary - on an unsigned type.
 #if IS_MSVC_VERSION(MSVC_2012) && !defined(__clang__)
 #    define DISABLE_WARNING_4146 _Pragma("warning(push)") _Pragma("warning(disable: 4146)")
 #    define RESTORE_WARNING_4146 _Pragma("warning(pop)")
@@ -583,6 +699,11 @@ extern "C"
 #    define RESTORE_WARNING_4146
 #endif //_MSVC && !clang workaround for min/max macros
 
+//! \def DISABLE_WARNING_SIGN_CONVERSION
+//! \brief Disables warning about sign conversion
+
+//! \def RESTORE_WARNING_SIGN_CONVERSION
+//! \brief Restored warning about sign conversion
 #if IS_CLANG_VERSION(3, 0)
 #    define DISABLE_WARNING_SIGN_CONVERSION                                                                            \
         _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wsign-conversion\"")
@@ -596,6 +717,11 @@ extern "C"
 #    define RESTORE_WARNING_SIGN_CONVERSION
 #endif
 
+//! \def DISABLE_WARNING_ZERO_LENGTH_ARRAY
+//! \brief Disables warning about a zero length array at the end of a structure
+
+//! \def RESTORE_WARNING_ZERO_LENGTH_ARRAY
+//! \brief Restores warning about a zero length array at the end of a structure
 #if IS_CLANG_VERSION(3, 0)
 #    define DISABLE_WARNING_ZERO_LENGTH_ARRAY                                                                          \
         _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wzero-length-array\"")
@@ -608,6 +734,11 @@ extern "C"
 #    define RESTORE_WARNING_ZERO_LENGTH_ARRAY
 #endif
 
+//! \def DISABLE_WARNING_FORMAT_NONLITERAL
+//! \brief Disables warning about a using something other than a string literal as a format string.
+
+//! \def RESTORE_WARNING_FORMAT_NONLITERAL
+//! \brief Restores warning about a using something other than a string literal as a format string.
 #if IS_CLANG_VERSION(2, 6)
 #    define DISABLE_WARNING_FORMAT_NONLITERAL                                                                          \
         _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wformat-nonliteral\"")
@@ -624,6 +755,13 @@ extern "C"
 #    define RESTORE_WARNING_FORMAT_NONLITERAL
 #endif
 
+//! \def DISABLE_WARNING_CPP11_COMPAT
+//! \brief Disables warning about using something that may collide with a part of the C++11 standard.
+//! This is used around a null pointer type/class for C++98
+
+//! \def RESTORE_WARNING_CPP11_COMPAT
+//! \brief Restores warning about using something that may collide with a part of the C++11 standard.
+//! This is used around a null pointer type/class for C++98
 #if IS_CLANG_VERSION(1, 0)
 #    define DISABLE_WARNING_CPP11_COMPAT                                                                               \
         _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wc++0x-compat\"")
@@ -641,6 +779,15 @@ extern "C"
 #    define RESTORE_WARNING_CPP11_COMPAT
 #endif
 
+//! \def DISABLE_WARNING_FLOAT_EQUAL
+//! \brief Disables warning about using == for comparing double/float values.
+//! Generally you should never do this. There are rare uses which is why this needs to be able to be
+//! disabled and restored in those rare cases.
+
+//! \def RESTORE_WARNING_FLOAT_EQUAL
+//! \brief Restores warning about using == for comparing double/float values.
+//! Generally you should never do this. There are rare uses which is why this needs to be able to be
+//! disabled and restored in those rare cases.
 #if IS_CLANG_VERSION(3, 0)
 #    define DISABLE_WARNING_FLOAT_EQUAL                                                                                \
         _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wfloat-equal\"")
@@ -658,8 +805,12 @@ extern "C"
 #    define RESTORE_WARNING_FLOAT_EQUAL
 #endif
 
-// Detect editors to allow us an easy wrapper to enable/disable things as needed
 #if defined(__INTELLISENSE__) || defined(__clang_analyzer__) || defined(__CDT_PARSER__)
+//! \def DEV_ENVIRONMENT
+//! \brief Defined to help create different help pop-ups within an IDE.
+//!
+//! This is used around the safe_ functions that call the constraint handler to popup type
+//! information in the IDE, and at compile time use a macro instead.
 #    define DEV_ENVIRONMENT
 #endif
 
