@@ -285,28 +285,29 @@ extern "C"
 
     //! \enum eSecureFileError
     //! \brief Secure file API error codes.
-    M_DECLARE_ENUM(eSecureFileError,
-                   SEC_FILE_SUCCESS,
-                   SEC_FILE_INVALID_FILE,
-                   SEC_FILE_INVALID_PATH,
-                   SEC_FILE_FILE_ALREADY_EXISTS,
-                   SEC_FILE_INVALID_FILE_EXTENSION,
-                   SEC_FILE_INVALID_FILE_ATTRIBUTES,
-                   SEC_FILE_INVALID_FILE_ATTRIBTUES = SEC_FILE_INVALID_FILE_ATTRIBUTES, /* Typo. Migrate to correct spelling */
-                   SEC_FILE_INVALID_FILE_UNIQUE_ID,
-                   SEC_FILE_INSECURE_PATH,
-                   SEC_FILE_INVALID_MODE,
-                   SEC_FILE_INVALID_SECURE_FILE,
-                   SEC_FILE_FAILURE_CLOSING_FILE,
-                   SEC_FILE_BUFFER_TOO_SMALL,
-                   SEC_FILE_INVALID_PARAMETER,
-                   SEC_FILE_READ_WRITE_ERROR,
-                   SEC_FILE_END_OF_FILE_REACHED,
-                   SEC_FILE_WRITE_DISK_FULL,
-                   SEC_FILE_SEEK_FAILURE,
-                   SEC_FILE_FLUSH_FAILURE,
-                   SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN,
-                   SEC_FILE_FAILURE);
+    M_DECLARE_ENUM(
+        eSecureFileError,
+        SEC_FILE_SUCCESS,
+        SEC_FILE_INVALID_FILE,
+        SEC_FILE_INVALID_PATH,
+        SEC_FILE_FILE_ALREADY_EXISTS,
+        SEC_FILE_INVALID_FILE_EXTENSION,
+        SEC_FILE_INVALID_FILE_ATTRIBUTES,
+        SEC_FILE_INVALID_FILE_ATTRIBTUES = SEC_FILE_INVALID_FILE_ATTRIBUTES, /* Typo. Migrate to correct spelling */
+        SEC_FILE_INVALID_FILE_UNIQUE_ID,
+        SEC_FILE_INSECURE_PATH,
+        SEC_FILE_INVALID_MODE,
+        SEC_FILE_INVALID_SECURE_FILE,
+        SEC_FILE_FAILURE_CLOSING_FILE,
+        SEC_FILE_BUFFER_TOO_SMALL,
+        SEC_FILE_INVALID_PARAMETER,
+        SEC_FILE_READ_WRITE_ERROR,
+        SEC_FILE_END_OF_FILE_REACHED,
+        SEC_FILE_WRITE_DISK_FULL,
+        SEC_FILE_SEEK_FAILURE,
+        SEC_FILE_FLUSH_FAILURE,
+        SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN,
+        SEC_FILE_FAILURE);
 
     //! \var SEC_FILE_SUCCESS
     //! \brief Successful return from secure file API call.

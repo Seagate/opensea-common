@@ -59,22 +59,22 @@ extern "C"
         return safe_malloc_impl(size, __FILE__, __func__, __LINE__, "safe_malloc(size)");
     }
 #else
-    //! \def safe_malloc(size)
-    //! \brief Allocates memory with bounds checking.
-    //!
-    //! This function allocates \a size bytes of memory, with bounds checking to guard against allocating memory with a
-    //! size of zero.
-    //!
-    //! \param[in] size The size of the memory block to allocate.
-    //! \param[in] file The source file name where this function is called.
-    //! \param[in] function The function name where this function is called.
-    //! \param[in] line The line number where this function is called.
-    //! \param[in] expression The expression being evaluated.
-    //! \return A pointer to the allocated memory block, or NULL on failure.
-    //!
-    //! \note The following errors are detected at runtime and call the installed constraint handler:
-    //!
-    //! - \a size is zero
+//! \def safe_malloc(size)
+//! \brief Allocates memory with bounds checking.
+//!
+//! This function allocates \a size bytes of memory, with bounds checking to guard against allocating memory with a
+//! size of zero.
+//!
+//! \param[in] size The size of the memory block to allocate.
+//! \param[in] file The source file name where this function is called.
+//! \param[in] function The function name where this function is called.
+//! \param[in] line The line number where this function is called.
+//! \param[in] expression The expression being evaluated.
+//! \return A pointer to the allocated memory block, or NULL on failure.
+//!
+//! \note The following errors are detected at runtime and call the installed constraint handler:
+//!
+//! - \a size is zero
 #    define safe_malloc(size) safe_malloc_impl(size, __FILE__, __func__, __LINE__, "safe_malloc(" #    size ")")
 #endif
 
@@ -99,21 +99,21 @@ extern "C"
         return safe_calloc_impl(count, size, __FILE__, __func__, __LINE__, "safe_calloc(count, size)");
     }
 #else
-    //! \def safe_calloc(size_t count, size_t size)
-    //! \brief Allocates memory for an array with bounds checking.
-    //!
-    //! This function allocates memory for an array of \a count elements of \a size bytes each, with bounds checking to
-    //! guard against an overflow in the \a count and \a size arguments.
-    //!
-    //! \param[in] count The number of elements to allocate.
-    //! \param[in] size The size of each element.
-    //! \return A pointer to the allocated memory block, or NULL on failure.
-    //!
-    //! \note The following errors are detected at runtime and call the installed constraint handler:
-    //!
-    //! - \a count or \a size is zero
-    //!
-    //! - \a count * \a size results in an overflow
+//! \def safe_calloc(size_t count, size_t size)
+//! \brief Allocates memory for an array with bounds checking.
+//!
+//! This function allocates memory for an array of \a count elements of \a size bytes each, with bounds checking to
+//! guard against an overflow in the \a count and \a size arguments.
+//!
+//! \param[in] count The number of elements to allocate.
+//! \param[in] size The size of each element.
+//! \return A pointer to the allocated memory block, or NULL on failure.
+//!
+//! \note The following errors are detected at runtime and call the installed constraint handler:
+//!
+//! - \a count or \a size is zero
+//!
+//! - \a count * \a size results in an overflow
 #    define safe_calloc(count, size)                                                                                   \
         safe_calloc_impl(count, size, __FILE__, __func__, __LINE__, "safe_calloc(" #count ", " #size ")")
 #endif
@@ -126,11 +126,10 @@ extern "C"
     //! returns a null pointer on failure.
     M_FUNC_ATTR_MALLOC void* safe_realloc(void* block, size_t size);
 
-    
     //! \fn M_FUNC_ATTR_MALLOC void* safe_reallocf(void** block, size_t size)
     //! \brief allocates or reallocates memory pointed to by \a block
     //! If reallocation fails, frees the original memory block.
-    //! \details 
+    //! \details
     //! if pointer to block is NULL, returns NULL
     //! if pointer to block is passed as a null pointer, behaves as safe_Malloc
     //! if size is zero, will perform free and return NULL ptr
@@ -562,8 +561,8 @@ extern "C"
     //! \return pointer to \a dest on Success and a NULL pointer on failure
     void* explicit_zeroes(void* dest, size_t count);
 
-    //This ugly ifdef is to handle newer SecureZeroMemory2 support and visual studio can automatically detect this
-    //dependency this way - TJE
+    // This ugly ifdef is to handle newer SecureZeroMemory2 support and visual studio can automatically detect this
+    // dependency this way - TJE
 #if defined(_MSC_VER) && !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                 \
     (defined(HAVE_MSFT_SECURE_ZERO_MEMORY2) ||                                                                         \
      (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
@@ -579,7 +578,7 @@ extern "C"
     //! \param[in] size size of memory block in bytes to allocate
     //! \param[in] alignment alignment value required. This MUST be a power of 2.
     //! \return pointer to aligned memory on success. null pointer on failure.
-    //! the caller must free this memory using free_aligned(). 
+    //! the caller must free this memory using free_aligned().
     M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment);
 
     //! \brief Frees memory that was allocated with one of malloc_aligned, calloc_aligned, or realloc_aligned
@@ -606,244 +605,244 @@ extern "C"
     }
 
     //! \fn void safe_Free_aligned_char(char** mem)
-//! \brief Helper function for safely freeing aligned char* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! char* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_char(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_char(char** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \brief Helper function for safely freeing aligned char* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! char* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_char(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_char(char** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
-//! \fn void safe_Free_aligned_wchar(wchar_t** mem)
-//! \brief Helper function for safely freeing aligned wchar_t* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! wchar_t* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_wchar(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_wchar(wchar_t** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \fn void safe_Free_aligned_wchar(wchar_t** mem)
+    //! \brief Helper function for safely freeing aligned wchar_t* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! wchar_t* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_wchar(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_wchar(wchar_t** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
-//! \fn void safe_Free_aligned_schar(signed char** mem)
-//! \brief Helper function for safely freeing aligned signed char* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! signed char* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_schar(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_schar(signed char** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \fn void safe_Free_aligned_schar(signed char** mem)
+    //! \brief Helper function for safely freeing aligned signed char* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! signed char* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_schar(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_schar(signed char** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
-//! \fn void safe_Free_aligned_uchar(unsigned char** mem)
-//! \brief Helper function for safely freeing aligned unsigned char* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! unsigned char* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_uchar(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_uchar(unsigned char** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \fn void safe_Free_aligned_uchar(unsigned char** mem)
+    //! \brief Helper function for safely freeing aligned unsigned char* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! unsigned char* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_uchar(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_uchar(unsigned char** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
-//! \fn void safe_Free_aligned_short(signed short** mem)
-//! \brief Helper function for safely freeing aligned signed short* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! signed short* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_short(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_short(signed short** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \fn void safe_Free_aligned_short(signed short** mem)
+    //! \brief Helper function for safely freeing aligned signed short* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! signed short* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_short(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_short(signed short** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
-//! \fn void safe_Free_aligned_ushort(unsigned short** mem)
-//! \brief Helper function for safely freeing aligned unsigned short* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! unsigned short* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_ushort(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_ushort(unsigned short** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \fn void safe_Free_aligned_ushort(unsigned short** mem)
+    //! \brief Helper function for safely freeing aligned unsigned short* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! unsigned short* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_ushort(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_ushort(unsigned short** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
     //! \fn void safe_Free_aligned_int(signed int** mem)
-//! \brief Helper function for safely freeing aligned signed int* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! signed int* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_int(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_int(signed int** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \brief Helper function for safely freeing aligned signed int* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! signed int* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_int(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_int(signed int** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
-//! \fn void safe_Free_aligned_uint(unsigned int** mem)
-//! \brief Helper function for safely freeing aligned unsigned int* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! unsigned int* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_uint(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_uint(unsigned int** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \fn void safe_Free_aligned_uint(unsigned int** mem)
+    //! \brief Helper function for safely freeing aligned unsigned int* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! unsigned int* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_uint(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_uint(unsigned int** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
-//! \fn void safe_Free_aligned_long(signed long** mem)
-//! \brief Helper function for safely freeing aligned signed long* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! signed long* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_long(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_long(signed long** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \fn void safe_Free_aligned_long(signed long** mem)
+    //! \brief Helper function for safely freeing aligned signed long* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! signed long* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_long(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_long(signed long** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
-//! \fn void safe_Free_aligned_ulong(unsigned long** mem)
-//! \brief Helper function for safely freeing aligned unsigned long* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! unsigned long* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_ulong(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_ulong(unsigned long** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \fn void safe_Free_aligned_ulong(unsigned long** mem)
+    //! \brief Helper function for safely freeing aligned unsigned long* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! unsigned long* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_ulong(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_ulong(unsigned long** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
-//! \fn void safe_Free_aligned_longlong(signed long long** mem)
-//! \brief Helper function for safely freeing aligned signed long long* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! signed long long* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_longlong(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_longlong(signed long long** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \fn void safe_Free_aligned_longlong(signed long long** mem)
+    //! \brief Helper function for safely freeing aligned signed long long* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! signed long long* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_longlong(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_longlong(signed long long** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
-//! \fn void safe_Free_aligned_ulonglong(unsigned long long** mem)
-//! \brief Helper function for safely freeing aligned unsigned long long* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! unsigned long long* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_ulonglong(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_ulonglong(unsigned long long** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \fn void safe_Free_aligned_ulonglong(unsigned long long** mem)
+    //! \brief Helper function for safely freeing aligned unsigned long long* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! unsigned long long* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_ulonglong(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_ulonglong(unsigned long long** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
-//! \fn void safe_Free_aligned_float(float** mem)
-//! \brief Helper function for safely freeing aligned float* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! float* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_float(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_float(float** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \fn void safe_Free_aligned_float(float** mem)
+    //! \brief Helper function for safely freeing aligned float* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! float* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_float(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_float(float** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
-//! \fn void safe_Free_aligned_double(double** mem)
-//! \brief Helper function for safely freeing aligned double* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! double* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_double(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_double(double** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \fn void safe_Free_aligned_double(double** mem)
+    //! \brief Helper function for safely freeing aligned double* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! double* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_double(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_double(double** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
-//! \fn void safe_Free_aligned_longdouble(long double** mem)
-//! \brief Helper function for safely freeing aligned long double* memory
-//! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
-//! pointer so that upon completion it will be set to M_NULLPTR
-//! \code
-//! long double* memory = safe_malloc_aligned(50, alignment);
-//!
-//! ...
-//!
-//! safe_Free_aligned_longdouble(&memory);
-//! \endcode
-static M_INLINE void safe_Free_aligned_longdouble(long double** mem)
-{
-    safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
-}
+    //! \fn void safe_Free_aligned_longdouble(long double** mem)
+    //! \brief Helper function for safely freeing aligned long double* memory
+    //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
+    //! pointer so that upon completion it will be set to M_NULLPTR
+    //! \code
+    //! long double* memory = safe_malloc_aligned(50, alignment);
+    //!
+    //! ...
+    //!
+    //! safe_Free_aligned_longdouble(&memory);
+    //! \endcode
+    static M_INLINE void safe_Free_aligned_longdouble(long double** mem)
+    {
+        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+    }
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 // clang-format off
@@ -909,10 +908,10 @@ static M_INLINE void safe_Free_aligned_longdouble(long double** mem)
     //! power of 2 alignment value provided. Original aligned pointer is free'd upon success.
     //! \param[in] alignedPtr pointer to a memory block previously allocated
     //! with malloc_aligned, calloc_aligned, or realloc_aligned. If M_NULLPTR,
-    //! this is the same as malloc_aligned 
-    //! \param[in] originalSize size in bytes of the alignedPtr being passed in. 
+    //! this is the same as malloc_aligned
+    //! \param[in] originalSize size in bytes of the alignedPtr being passed in.
     //! This is used so that previous data can be preserved. Can be set to 0 to discard original data.
-    //! \param[in] size size of memory block in bytes to allocate 
+    //! \param[in] size size of memory block in bytes to allocate
     //! \param[in] alignment alignment value required. This MUST be a power of 2.
     //! \return Pointer to aligned memory on success, null pointer on failure.
     M_FUNC_ATTR_MALLOC void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t alignment);
@@ -937,19 +936,19 @@ static M_INLINE void safe_Free_aligned_longdouble(long double** mem)
                                         "safe_malloc_aligned(size, alignment)");
     }
 #else
-    //! \def safe_malloc_aligned(size_t size, size_t alignment)
-    //! \brief Allocates aligned memory with bounds checking.
-    //!
-    //! This function allocates \a size bytes of memory aligned to \a alignment, with bounds checking to guard against
-    //! allocating memory with a size of zero.
-    //!
-    //! \param[in] size The size of the memory block to allocate.
-    //! \param[in] alignment The alignment of the memory block.
-    //! \return A pointer to the allocated memory block, or NULL on failure.
-    //!
-    //! \note The following errors are detected at runtime and call the installed constraint handler:
-    //!
-    //! - \a size is zero
+//! \def safe_malloc_aligned(size_t size, size_t alignment)
+//! \brief Allocates aligned memory with bounds checking.
+//!
+//! This function allocates \a size bytes of memory aligned to \a alignment, with bounds checking to guard against
+//! allocating memory with a size of zero.
+//!
+//! \param[in] size The size of the memory block to allocate.
+//! \param[in] alignment The alignment of the memory block.
+//! \return A pointer to the allocated memory block, or NULL on failure.
+//!
+//! \note The following errors are detected at runtime and call the installed constraint handler:
+//!
+//! - \a size is zero
 #    define safe_malloc_aligned(size, alignment)                                                                       \
         safe_malloc_aligned_impl(size, alignment, __FILE__, __func__, __LINE__,                                        \
                                  "safe_malloc_aligned(" #size ", " #alignment ")")
@@ -978,45 +977,45 @@ static M_INLINE void safe_Free_aligned_longdouble(long double** mem)
                                         "safe_calloc_aligned(count, size, alignment)");
     }
 #else
-    //! \def safe_calloc_aligned(size_t count, size_t size, size_t alignment)
-    //! \brief Allocates aligned memory for an array with bounds checking.
-    //!
-    //! This function allocates memory for an array of \a count elements of \a size bytes each, aligned to \a alignment,
-    //! with bounds checking to guard against an overflow in the \a count and \a size arguments.
-    //!
-    //! \param[in] count The number of elements to allocate.
-    //! \param[in] size The size of each element.
-    //! \param[in] alignment The alignment of the memory block.
-    //! \return A pointer to the allocated memory block, or NULL on failure.
-    //!
-    //! \note The following errors are detected at runtime and call the installed constraint handler:
-    //!
-    //! - \a count or \a size is zero
-    //!
-    //! - \a count * \a size results in an overflow
+//! \def safe_calloc_aligned(size_t count, size_t size, size_t alignment)
+//! \brief Allocates aligned memory for an array with bounds checking.
+//!
+//! This function allocates memory for an array of \a count elements of \a size bytes each, aligned to \a alignment,
+//! with bounds checking to guard against an overflow in the \a count and \a size arguments.
+//!
+//! \param[in] count The number of elements to allocate.
+//! \param[in] size The size of each element.
+//! \param[in] alignment The alignment of the memory block.
+//! \return A pointer to the allocated memory block, or NULL on failure.
+//!
+//! \note The following errors are detected at runtime and call the installed constraint handler:
+//!
+//! - \a count or \a size is zero
+//!
+//! - \a count * \a size results in an overflow
 #    define safe_calloc_aligned(count, size, alignment)                                                                \
         safe_calloc_aligned_impl(count, size, alignment, __FILE__, __func__, __LINE__,                                 \
                                  "safe_calloc_aligned(" #count ", " #size ", " #alignment ")")
 #endif
 
-    //! \fn M_FUNC_ATTR_MALLOC void* safe_realloc_aligned(void* block, 
-    //!                                                   size_t originalSize, 
-    //!                                                   size_t size, 
+    //! \fn M_FUNC_ATTR_MALLOC void* safe_realloc_aligned(void* block,
+    //!                                                   size_t originalSize,
+    //!                                                   size_t size,
     //!                                                   size_t alignment)
     //! \brief allocates or reallocates memory pointed to by \a block
     //! \param[in] block pointer to existing memory block. If null this is the same as safe_malloc()
     //! \param[in] originalSize original number of bytes allocated in \a block. Can be zero if \a block is NULL or
     //! original contents of \a block do not need to be preserved during reallocation
     //! \param[in] size number of bytes to allocate/reallocate to. If zero, free's memory pointed to by \a block
-    //! \param[in] alignment requested alignment of the memory allocation. Will be rounded up to the nearest power of two.
-    //! \return pointer to allocated memory to be free'd by the caller with free()
-    //! returns a null pointer on failure.
+    //! \param[in] alignment requested alignment of the memory allocation. Will be rounded up to the nearest power of
+    //! two. \return pointer to allocated memory to be free'd by the caller with free() returns a null pointer on
+    //! failure.
     M_FUNC_ATTR_MALLOC void* safe_realloc_aligned(void* block, size_t originalSize, size_t size, size_t alignment);
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_reallocf(void** block, size_t size)
     //! \brief allocates or reallocates memory pointed to by \a block
     //! If reallocation fails, frees the original memory block.
-    //! \details 
+    //! \details
     //! if pointer to block is NULL, returns NULL
     //! if pointer to block is passed as a null pointer, behaves as safe_Malloc
     //! if size is zero, will perform free and return NULL ptr
@@ -1026,9 +1025,9 @@ static M_INLINE void safe_Free_aligned_longdouble(long double** mem)
     //! \param[in] originalSize original number of bytes allocated in \a block. Can be zero if \a block is NULL or
     //! original contents of \a block do not need to be preserved during reallocation
     //! \param[in] size number of bytes to allocate/reallocate to. If zero, free's memory pointed to by \a block
-    //! \param[in] alignment requested alignment of the memory allocation. Will be rounded up to the nearest power of two.
-    //! \return pointer to allocated memory to be free'd by the caller with free()
-    //! returns a null pointer on failure.
+    //! \param[in] alignment requested alignment of the memory allocation. Will be rounded up to the nearest power of
+    //! two. \return pointer to allocated memory to be free'd by the caller with free() returns a null pointer on
+    //! failure.
     M_FUNC_ATTR_MALLOC void* safe_reallocf_aligned(void** block, size_t originalSize, size_t size, size_t alignment);
 
     //! \fn size_t get_System_Pagesize(void)
@@ -1037,11 +1036,11 @@ static M_INLINE void safe_Free_aligned_longdouble(long double** mem)
     size_t get_System_Pagesize(void);
 
     //! \fn M_FUNC_ATTR_MALLOC void* malloc_page_aligned(size_t size)
-    //! \brief allocates page aligned memory. 
+    //! \brief allocates page aligned memory.
     //!
     //! This is a convenience wrapper around malloc_aligned
     //! \param[in] size number of bytes to allocate
-    //! \return 
+    //! \return
     M_FUNC_ATTR_MALLOC void* malloc_page_aligned(size_t size);
 
     //! \fn M_INLINE void free_page_aligned(void* ptr)
@@ -1241,30 +1240,30 @@ static M_INLINE void safe_Free_aligned_longdouble(long double** mem)
                                  "safe_memmove(dest, destsz, src, count)");
     }
 #else
-    //! \def safe_memmove(dest, destsz, src, count)
-    //! \brief Moves a block of memory with bounds checking.
-    //!
-    //! This function moves \a count bytes from the block of memory pointed to by \a src to the block of memory pointed
-    //! to by \a dest, with bounds checking as specified in C11 annex K.
-    //!
-    //! \param[out] dest Pointer to the destination block of memory.
-    //! \param[in] destsz Size of the destination buffer.
-    //! \param[in] src Pointer to the source block of memory.
-    //! \param[in] count Number of bytes to move.
-    //! \return Zero on success, or an error code on failure.
-    //!
-    //! \note The following errors are detected at runtime and call the installed constraint handler:
-    //!
-    //! - \a dest is a null pointer
-    //!
-    //! - \a src is a null pointer
-    //!
-    //! - \a destsz or \a count is greater than \a RSIZE_MAX
-    //!
-    //! - \a count is greater than \a destsz (buffer overflow would occur)
-    //!
-    //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
-    //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
+//! \def safe_memmove(dest, destsz, src, count)
+//! \brief Moves a block of memory with bounds checking.
+//!
+//! This function moves \a count bytes from the block of memory pointed to by \a src to the block of memory pointed
+//! to by \a dest, with bounds checking as specified in C11 annex K.
+//!
+//! \param[out] dest Pointer to the destination block of memory.
+//! \param[in] destsz Size of the destination buffer.
+//! \param[in] src Pointer to the source block of memory.
+//! \param[in] count Number of bytes to move.
+//! \return Zero on success, or an error code on failure.
+//!
+//! \note The following errors are detected at runtime and call the installed constraint handler:
+//!
+//! - \a dest is a null pointer
+//!
+//! - \a src is a null pointer
+//!
+//! - \a destsz or \a count is greater than \a RSIZE_MAX
+//!
+//! - \a count is greater than \a destsz (buffer overflow would occur)
+//!
+//! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
+//! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
 #    define safe_memmove(dest, destsz, src, count)                                                                     \
         safe_memmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                      \
                           "safe_memmove(" #dest ", " #destsz ", " #src ", " #count ")")
@@ -1303,32 +1302,32 @@ static M_INLINE void safe_Free_aligned_longdouble(long double** mem)
                                 "safe_memcpy(dest, destsz, src, count)");
     }
 #else
-    //! \def safe_memcpy(dest, destsz, src, count)  
-    //! \brief Copies a block of memory with bounds checking.
-    //!
-    //! This function copies \a count bytes from the block of memory pointed to by \a src to the block of memory pointed
-    //! to by \a dest, with bounds checking as specified in C11 annex K.
-    //!
-    //! \param[out] dest Pointer to the destination block of memory.
-    //! \param[in] destsz Size of the destination buffer.
-    //! \param[in] src Pointer to the source block of memory.
-    //! \param[in] count Number of bytes to copy.
-    //! \return Zero on success, or an error code on failure.
-    //!
-    //! \note The following errors are detected at runtime and call the installed constraint handler:
-    //!
-    //! - \a dest is a null pointer
-    //!
-    //! - \a src is a null pointer
-    //!
-    //! - \a destsz or \a count is greater than \a RSIZE_MAX
-    //!
-    //! - \a count is greater than \a destsz (buffer overflow would occur)
-    //!
-    //! - \a the source and destination objects overlap
-    //!
-    //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
-    //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
+//! \def safe_memcpy(dest, destsz, src, count)
+//! \brief Copies a block of memory with bounds checking.
+//!
+//! This function copies \a count bytes from the block of memory pointed to by \a src to the block of memory pointed
+//! to by \a dest, with bounds checking as specified in C11 annex K.
+//!
+//! \param[out] dest Pointer to the destination block of memory.
+//! \param[in] destsz Size of the destination buffer.
+//! \param[in] src Pointer to the source block of memory.
+//! \param[in] count Number of bytes to copy.
+//! \return Zero on success, or an error code on failure.
+//!
+//! \note The following errors are detected at runtime and call the installed constraint handler:
+//!
+//! - \a dest is a null pointer
+//!
+//! - \a src is a null pointer
+//!
+//! - \a destsz or \a count is greater than \a RSIZE_MAX
+//!
+//! - \a count is greater than \a destsz (buffer overflow would occur)
+//!
+//! - \a the source and destination objects overlap
+//!
+//! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
+//! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
 #    define safe_memcpy(dest, destsz, src, count)                                                                      \
         safe_memcpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                       \
                          "safe_memcpy(" #dest ", " #destsz ", " #src ", " #count ")")
@@ -1370,33 +1369,33 @@ static M_INLINE void safe_Free_aligned_longdouble(long double** mem)
                                  "safe_memccpy(dest, destsz, src, c, count)");
     }
 #else
-    //! \def safe_memccpy(dest, destsz, src, c, count)
-    //! \brief Copies a block of memory until a specified character is found, with bounds checking.
-    //!
-    //! This function copies \a count bytes from the block of memory pointed to by \a src to the block of memory pointed
-    //! to by \a dest, stopping when the character \a c is found, with bounds checking as specified in C11 annex K.
-    //!
-    //! \param[out] dest Pointer to the destination block of memory.
-    //! \param[in] destsz Size of the destination buffer.
-    //! \param[in] src Pointer to the source block of memory.
-    //! \param[in] c Character to stop copying at.
-    //! \param[in] count Number of bytes to copy.
-    //! \return Zero on success, or an error code on failure.
-    //!
-    //! \note The following errors are detected at runtime and call the installed constraint handler:
-    //!
-    //! - \a dest is a null pointer
-    //!
-    //! - \a src is a null pointer
-    //!
-    //! - \a destsz or \a count is greater than \a RSIZE_MAX
-    //!
-    //! - \a count is greater than \a destsz (buffer overflow would occur)
-    //!
-    //! - \a the source and destination objects overlap
-    //!
-    //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
-    //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
+//! \def safe_memccpy(dest, destsz, src, c, count)
+//! \brief Copies a block of memory until a specified character is found, with bounds checking.
+//!
+//! This function copies \a count bytes from the block of memory pointed to by \a src to the block of memory pointed
+//! to by \a dest, stopping when the character \a c is found, with bounds checking as specified in C11 annex K.
+//!
+//! \param[out] dest Pointer to the destination block of memory.
+//! \param[in] destsz Size of the destination buffer.
+//! \param[in] src Pointer to the source block of memory.
+//! \param[in] c Character to stop copying at.
+//! \param[in] count Number of bytes to copy.
+//! \return Zero on success, or an error code on failure.
+//!
+//! \note The following errors are detected at runtime and call the installed constraint handler:
+//!
+//! - \a dest is a null pointer
+//!
+//! - \a src is a null pointer
+//!
+//! - \a destsz or \a count is greater than \a RSIZE_MAX
+//!
+//! - \a count is greater than \a destsz (buffer overflow would occur)
+//!
+//! - \a the source and destination objects overlap
+//!
+//! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
+//! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
 #    define safe_memccpy(dest, destsz, src, c, count)                                                                  \
         safe_memccpy_impl(dest, destsz, src, c, count, __FILE__, __func__, __LINE__,                                   \
                           "safe_memccpy(" #dest ", " #destsz ", " #src ", " #c ", " #count ")")
@@ -1436,31 +1435,31 @@ static M_INLINE void safe_Free_aligned_longdouble(long double** mem)
                                   "safe_memcmove(dest, destsz, src, c, count)");
     }
 #else
-    //! \def safe_memcmove(dest, destsz, src, c, count)
-    //! \brief Moves a block of memory until a specified character is found, with bounds checking.
-    //!
-    //! This function moves \a count bytes from the block of memory pointed to by \a src to the block of memory pointed
-    //! to by \a dest, stopping when the character \a c is found, with bounds checking as specified in C11 annex K.
-    //!
-    //! \param[out] dest Pointer to the destination block of memory.
-    //! \param[in] destsz Size of the destination buffer.
-    //! \param[in] src Pointer to the source block of memory.
-    //! \param[in] c Character to stop moving at.
-    //! \param[in] count Number of bytes to move.
-    //! \return Zero on success, or an error code on failure.
-    //!
-    //! \note The following errors are detected at runtime and call the installed constraint handler:
-    //!
-    //! - \a dest is a null pointer
-    //!
-    //! - \a src is a null pointer
-    //!
-    //! - \a destsz or \a count is greater than \a RSIZE_MAX
-    //!
-    //! - \a count is greater than \a destsz (buffer overflow would occur)
-    //!
-    //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
-    //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
+//! \def safe_memcmove(dest, destsz, src, c, count)
+//! \brief Moves a block of memory until a specified character is found, with bounds checking.
+//!
+//! This function moves \a count bytes from the block of memory pointed to by \a src to the block of memory pointed
+//! to by \a dest, stopping when the character \a c is found, with bounds checking as specified in C11 annex K.
+//!
+//! \param[out] dest Pointer to the destination block of memory.
+//! \param[in] destsz Size of the destination buffer.
+//! \param[in] src Pointer to the source block of memory.
+//! \param[in] c Character to stop moving at.
+//! \param[in] count Number of bytes to move.
+//! \return Zero on success, or an error code on failure.
+//!
+//! \note The following errors are detected at runtime and call the installed constraint handler:
+//!
+//! - \a dest is a null pointer
+//!
+//! - \a src is a null pointer
+//!
+//! - \a destsz or \a count is greater than \a RSIZE_MAX
+//!
+//! - \a count is greater than \a destsz (buffer overflow would occur)
+//!
+//! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
+//! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
 #    define safe_memcmove(dest, destsz, src, c, count)                                                                 \
         safe_memcmove_impl(dest, destsz, src, c, count, __FILE__, __func__, __LINE__,                                  \
                            "safe_memcmove(" #dest ", " #destsz ", " #src ", " #c ", " #count ")")
