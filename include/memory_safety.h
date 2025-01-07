@@ -1,19 +1,15 @@
 // SPDX-License-Identifier: MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All
-// Rights Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
 
 //! \file memory_safety.h
 //! \brief Implements functions to assist with managing memory safely and mitigate common
 //! errors.
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #pragma once
 
@@ -141,14 +137,14 @@ extern "C"
     //! returns a null pointer on failure.
     M_FUNC_ATTR_MALLOC void* safe_reallocf(void** block, size_t size);
 
-    //! \fn void safe_Free(void** mem)
+    //! \fn void safe_free_core(void** mem)
     //! \brief Safely free dynamically allocated memory. This checks
     //! for a valid pointer, then frees it and sets it to M_NULLPTR.
     //! by setting it to null pointer after freeing this reduces the likelihood
     //! of a double-free error.
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
-    static M_INLINE void safe_Free(void** mem)
+    static M_INLINE void safe_free_core(void** mem)
     {
         if (mem && *mem)
         {
@@ -157,7 +153,7 @@ extern "C"
         }
     }
 
-    //! \fn void safe_Free_char(char** mem)
+    //! \fn void safe_free_core_char(char** mem)
     //! \brief Helper function for safely freeing char* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -166,14 +162,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_char(&memory);
+    //! safe_free_char(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_char(char** mem)
+    static M_INLINE void safe_free_char(char** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_schar(signed char** mem)
+    //! \fn void safe_free_schar(signed char** mem)
     //! \brief Helper function for safely freeing signed char* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -182,14 +178,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_schar(&memory);
+    //! safe_free_schar(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_schar(signed char** mem)
+    static M_INLINE void safe_free_schar(signed char** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_uchar(unsigned char** mem)
+    //! \fn void safe_free_uchar(unsigned char** mem)
     //! \brief Helper function for safely freeing unsigned char* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -198,14 +194,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_uchar(&memory);
+    //! safe_free_uchar(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_uchar(unsigned char** mem)
+    static M_INLINE void safe_free_uchar(unsigned char** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_wchar(wchar_t** mem)
+    //! \fn void safe_free_wchar(wchar_t** mem)
     //! \brief Helper function for safely freeing wchar_t* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -214,14 +210,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_wchar(&memory);
+    //! safe_free_wchar(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_wchar(wchar_t** mem)
+    static M_INLINE void safe_free_wchar(wchar_t** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_short(signed short** mem)
+    //! \fn void safe_free_short(signed short** mem)
     //! \brief Helper function for safely freeing signed short* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -230,14 +226,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_short(&memory);
+    //! safe_free_short(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_short(signed short** mem)
+    static M_INLINE void safe_free_short(signed short** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_ushort(unsigned short** mem)
+    //! \fn void safe_free_ushort(unsigned short** mem)
     //! \brief Helper function for safely freeing unsigned short* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -246,14 +242,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_ushort(&memory);
+    //! safe_free_ushort(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_ushort(unsigned short** mem)
+    static M_INLINE void safe_free_ushort(unsigned short** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_int(signed int** mem)
+    //! \fn void safe_free_int(signed int** mem)
     //! \brief Helper function for safely freeing signed int* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -262,14 +258,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_int(&memory);
+    //! safe_free_int(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_int(signed int** mem)
+    static M_INLINE void safe_free_int(signed int** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_uint(unsigned int** mem)
+    //! \fn void safe_free_uint(unsigned int** mem)
     //! \brief Helper function for safely freeing unsigned int* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -278,14 +274,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_uint(&memory);
+    //! safe_free_uint(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_uint(unsigned int** mem)
+    static M_INLINE void safe_free_uint(unsigned int** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_long(signed long** mem)
+    //! \fn void safe_free_long(signed long** mem)
     //! \brief Helper function for safely freeing signed long* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -294,14 +290,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_long(&memory);
+    //! safe_free_long(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_long(signed long** mem)
+    static M_INLINE void safe_free_long(signed long** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_ulong(unsigned long** mem)
+    //! \fn void safe_free_ulong(unsigned long** mem)
     //! \brief Helper function for safely freeing unsigned long* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -310,14 +306,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_ulong(&memory);
+    //! safe_free_ulong(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_ulong(unsigned long** mem)
+    static M_INLINE void safe_free_ulong(unsigned long** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_longlong(signed long long** mem)
+    //! \fn void safe_free_longlong(signed long long** mem)
     //! \brief Helper function for safely freeing signed long long* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -326,14 +322,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_longlong(&memory);
+    //! safe_free_longlong(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_longlong(signed long long** mem)
+    static M_INLINE void safe_free_longlong(signed long long** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_ulonglong(unsigned long long** mem)
+    //! \fn void safe_free_ulonglong(unsigned long long** mem)
     //! \brief Helper function for safely freeing unsigned long long* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -342,14 +338,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_ulonglong(&memory);
+    //! safe_free_ulonglong(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_ulonglong(unsigned long long** mem)
+    static M_INLINE void safe_free_ulonglong(unsigned long long** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_float(float** mem)
+    //! \fn void safe_free_float(float** mem)
     //! \brief Helper function for safely freeing float* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -358,14 +354,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_float(&memory);
+    //! safe_free_float(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_float(float** mem)
+    static M_INLINE void safe_free_float(float** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_double(double** mem)
+    //! \fn void safe_free_double(double** mem)
     //! \brief Helper function for safely freeing double* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -374,14 +370,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_double(&memory);
+    //! safe_free_double(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_double(double** mem)
+    static M_INLINE void safe_free_double(double** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_longdouble(long double** mem)
+    //! \fn void safe_free_longdouble(long double** mem)
     //! \brief Helper function for safely freeing long double* memory
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -390,11 +386,11 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_longdouble(&memory);
+    //! safe_free_longdouble(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_longdouble(long double** mem)
+    static M_INLINE void safe_free_longdouble(long double** mem)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, mem));
+        safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
@@ -413,27 +409,27 @@ extern "C"
 //! \endcode
 #define safe_free(mem)                                                                                                 \
     _Generic((mem),                                                                                                    \
-             char**                  : safe_Free_char,                                                                 \
-             unsigned char**         : safe_Free_uchar,                                                                \
-             signed short**          : safe_Free_short,                                                                \
-             unsigned short**        : safe_Free_ushort,                                                               \
-             signed int**            : safe_Free_int,                                                                  \
-             unsigned int**          : safe_Free_uint,                                                                 \
-             signed long**           : safe_Free_long,                                                                 \
-             unsigned long**         : safe_Free_ulong,                                                                \
-             signed long long**      : safe_Free_longlong,                                                             \
-             unsigned long long**    : safe_Free_ulonglong,                                                            \
-             float**                 : safe_Free_float,                                                                \
-             double**                : safe_Free_double,                                                               \
-             long double**           : safe_Free_longdouble,                                                           \
-             void **                 : safe_Free,                                                                      \
-             default                 : safe_Free                                                                       \
+             char**                  : safe_free_char,                                                                 \
+             unsigned char**         : safe_free_uchar,                                                                \
+             signed short**          : safe_free_short,                                                                \
+             unsigned short**        : safe_free_ushort,                                                               \
+             signed int**            : safe_free_int,                                                                  \
+             unsigned int**          : safe_free_uint,                                                                 \
+             signed long**           : safe_free_long,                                                                 \
+             unsigned long**         : safe_free_ulong,                                                                \
+             signed long long**      : safe_free_longlong,                                                             \
+             unsigned long long**    : safe_free_ulonglong,                                                            \
+             float**                 : safe_free_float,                                                                \
+             double**                : safe_free_double,                                                               \
+             long double**           : safe_free_longdouble,                                                           \
+             void **                 : safe_free_core,                                                                 \
+             default                 : safe_free_core                                                                  \
             )(mem)
 // clang-format on
 #elif !defined(__cplusplus)
 //! \def safe_free(mem)
-//! \brief Simple helper macro for calling safe_Free without conversion warnings.
-//! Warning: Due to using a cast inside this version, be careful passing the
+//! \brief Simple helper macro for calling safe_free_core without conversion warnings.
+//! \warning Due to using a cast inside this version, be careful passing the
 //! correct pointer to this macro!
 //! The C11 generic version is more type safe for this and should be used instead
 //! when C11 generic selection is available
@@ -446,7 +442,7 @@ extern "C"
 //!
 //! safe_free(&memory);
 //! \endcode
-#    define safe_free(mem) safe_Free(M_REINTERPRET_CAST(void**, mem))
+#    define safe_free(mem) safe_free_core(M_REINTERPRET_CAST(void**, mem))
 #endif // C11
 
 #if defined(_WIN32)
@@ -465,7 +461,7 @@ extern "C"
     //! \endcode
     static M_INLINE void safe_free_tchar(TCHAR** str)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, str));
+        safe_free_core(M_REINTERPRET_CAST(void**, str));
     }
 #endif
 
@@ -477,7 +473,15 @@ extern "C"
     //! pointer so that upon completion it will be set to M_NULLPTR
     static M_INLINE void safe_free_dirent(struct dirent** ent)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, ent));
+        safe_free_core(M_REINTERPRET_CAST(void**, ent));
+    }
+
+    static M_INLINE void safe_free_dirent_list(struct dirent*** list)
+    {
+        if (list)
+        {
+            safe_free_core(M_REINTERPRET_CAST(void**, &list));
+        }
     }
 #endif
 
@@ -588,14 +592,14 @@ extern "C"
     //! This is a wrapper function around all those differences for a single, simple API call.
     void free_aligned(void* ptr);
 
-    //! \fn void safe_Free_aligned(void** mem)
+    //! \fn void safe_free_aligned_core(void** mem)
     //! \brief Safely free dynamically allocated memory that was aligned at allocation. This checks
     //! for a valid pointer, then frees it and sets it to M_NULLPTR.
     //! by setting it to null pointer after freeing this reduces the likelihood
     //! of a double-free error.
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
-    static M_INLINE void safe_Free_aligned(void** mem)
+    static M_INLINE void safe_free_aligned_core(void** mem)
     {
         if (mem && *mem)
         {
@@ -604,7 +608,7 @@ extern "C"
         }
     }
 
-    //! \fn void safe_Free_aligned_char(char** mem)
+    //! \fn void safe_free_aligned_char(char** mem)
     //! \brief Helper function for safely freeing aligned char* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -613,14 +617,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_char(&memory);
+    //! safe_free_aligned_char(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_char(char** mem)
+    static M_INLINE void safe_free_aligned_char(char** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_aligned_wchar(wchar_t** mem)
+    //! \fn void safe_free_aligned_wchar(wchar_t** mem)
     //! \brief Helper function for safely freeing aligned wchar_t* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -629,14 +633,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_wchar(&memory);
+    //! safe_free_aligned_wchar(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_wchar(wchar_t** mem)
+    static M_INLINE void safe_free_aligned_wchar(wchar_t** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_aligned_schar(signed char** mem)
+    //! \fn void safe_free_aligned_schar(signed char** mem)
     //! \brief Helper function for safely freeing aligned signed char* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -645,14 +649,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_schar(&memory);
+    //! safe_free_aligned_schar(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_schar(signed char** mem)
+    static M_INLINE void safe_free_aligned_schar(signed char** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_aligned_uchar(unsigned char** mem)
+    //! \fn void safe_free_aligned_uchar(unsigned char** mem)
     //! \brief Helper function for safely freeing aligned unsigned char* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -661,14 +665,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_uchar(&memory);
+    //! safe_free_aligned_uchar(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_uchar(unsigned char** mem)
+    static M_INLINE void safe_free_aligned_uchar(unsigned char** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_aligned_short(signed short** mem)
+    //! \fn void safe_free_aligned_short(signed short** mem)
     //! \brief Helper function for safely freeing aligned signed short* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -677,14 +681,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_short(&memory);
+    //! safe_free_aligned_short(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_short(signed short** mem)
+    static M_INLINE void safe_free_aligned_short(signed short** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_aligned_ushort(unsigned short** mem)
+    //! \fn void safe_free_aligned_ushort(unsigned short** mem)
     //! \brief Helper function for safely freeing aligned unsigned short* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -693,14 +697,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_ushort(&memory);
+    //! safe_free_aligned_ushort(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_ushort(unsigned short** mem)
+    static M_INLINE void safe_free_aligned_ushort(unsigned short** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_aligned_int(signed int** mem)
+    //! \fn void safe_free_aligned_int(signed int** mem)
     //! \brief Helper function for safely freeing aligned signed int* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -709,14 +713,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_int(&memory);
+    //! safe_free_aligned_int(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_int(signed int** mem)
+    static M_INLINE void safe_free_aligned_int(signed int** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_aligned_uint(unsigned int** mem)
+    //! \fn void safe_free_aligned_uint(unsigned int** mem)
     //! \brief Helper function for safely freeing aligned unsigned int* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -725,14 +729,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_uint(&memory);
+    //! safe_free_aligned_uint(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_uint(unsigned int** mem)
+    static M_INLINE void safe_free_aligned_uint(unsigned int** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_aligned_long(signed long** mem)
+    //! \fn void safe_free_aligned_long(signed long** mem)
     //! \brief Helper function for safely freeing aligned signed long* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -741,14 +745,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_long(&memory);
+    //! safe_free_aligned_long(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_long(signed long** mem)
+    static M_INLINE void safe_free_aligned_long(signed long** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_aligned_ulong(unsigned long** mem)
+    //! \fn void safe_free_aligned_ulong(unsigned long** mem)
     //! \brief Helper function for safely freeing aligned unsigned long* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -757,14 +761,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_ulong(&memory);
+    //! safe_free_aligned_ulong(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_ulong(unsigned long** mem)
+    static M_INLINE void safe_free_aligned_ulong(unsigned long** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_aligned_longlong(signed long long** mem)
+    //! \fn void safe_free_aligned_longlong(signed long long** mem)
     //! \brief Helper function for safely freeing aligned signed long long* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -773,14 +777,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_longlong(&memory);
+    //! safe_free_aligned_longlong(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_longlong(signed long long** mem)
+    static M_INLINE void safe_free_aligned_longlong(signed long long** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_aligned_ulonglong(unsigned long long** mem)
+    //! \fn void safe_free_aligned_ulonglong(unsigned long long** mem)
     //! \brief Helper function for safely freeing aligned unsigned long long* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -789,14 +793,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_ulonglong(&memory);
+    //! safe_free_aligned_ulonglong(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_ulonglong(unsigned long long** mem)
+    static M_INLINE void safe_free_aligned_ulonglong(unsigned long long** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_aligned_float(float** mem)
+    //! \fn void safe_free_aligned_float(float** mem)
     //! \brief Helper function for safely freeing aligned float* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -805,14 +809,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_float(&memory);
+    //! safe_free_aligned_float(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_float(float** mem)
+    static M_INLINE void safe_free_aligned_float(float** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_aligned_double(double** mem)
+    //! \fn void safe_free_aligned_double(double** mem)
     //! \brief Helper function for safely freeing aligned double* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -821,14 +825,14 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_double(&memory);
+    //! safe_free_aligned_double(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_double(double** mem)
+    static M_INLINE void safe_free_aligned_double(double** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
-    //! \fn void safe_Free_aligned_longdouble(long double** mem)
+    //! \fn void safe_free_aligned_longdouble(long double** mem)
     //! \brief Helper function for safely freeing aligned long double* memory
     //! \param[in,out] mem pointer to aligned heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
@@ -837,11 +841,11 @@ extern "C"
     //!
     //! ...
     //!
-    //! safe_Free_aligned_longdouble(&memory);
+    //! safe_free_aligned_longdouble(&memory);
     //! \endcode
-    static M_INLINE void safe_Free_aligned_longdouble(long double** mem)
+    static M_INLINE void safe_free_aligned_longdouble(long double** mem)
     {
-        safe_Free_aligned(M_REINTERPRET_CAST(void**, mem));
+        safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
@@ -860,27 +864,27 @@ extern "C"
 //! \endcode
 #define safe_free_aligned(mem)                                                                                         \
     _Generic((mem),                                                                                                    \
-             char**                 : safe_Free_aligned_char,                                                          \
-             unsigned char**        : safe_Free_aligned_uchar,                                                         \
-             signed short**         : safe_Free_aligned_short,                                                         \
-             unsigned short**       : safe_Free_aligned_ushort,                                                        \
-             signed int**           : safe_Free_aligned_int,                                                           \
-             unsigned int**         : safe_Free_aligned_uint,                                                          \
-             signed long**          : safe_Free_aligned_long,                                                          \
-             unsigned long**        : safe_Free_aligned_ulong,                                                         \
-             signed long long**     : safe_Free_aligned_longlong,                                                      \
-             unsigned long long**   : safe_Free_aligned_ulonglong,                                                     \
-             float**                : safe_Free_aligned_float,                                                         \
-             double**               : safe_Free_aligned_double,                                                        \
-             long double**          : safe_Free_aligned_longdouble,                                                    \
-             void **                : safe_Free_aligned,                                                               \
-             default                : safe_Free_aligned                                                                \
+             char**                 : safe_free_aligned_char,                                                          \
+             unsigned char**        : safe_free_aligned_uchar,                                                         \
+             signed short**         : safe_free_aligned_short,                                                         \
+             unsigned short**       : safe_free_aligned_ushort,                                                        \
+             signed int**           : safe_free_aligned_int,                                                           \
+             unsigned int**         : safe_free_aligned_uint,                                                          \
+             signed long**          : safe_free_aligned_long,                                                          \
+             unsigned long**        : safe_free_aligned_ulong,                                                         \
+             signed long long**     : safe_free_aligned_longlong,                                                      \
+             unsigned long long**   : safe_free_aligned_ulonglong,                                                     \
+             float**                : safe_free_aligned_float,                                                         \
+             double**               : safe_free_aligned_double,                                                        \
+             long double**          : safe_free_aligned_longdouble,                                                    \
+             void **                : safe_free_aligned_core,                                                          \
+             default                : safe_free_aligned_core                                                           \
             )(mem)
 // clang-format on
 #elif !defined(__cplusplus)
 //! \def safe_free_aligned(mem)
-//! \brief Simple helper macro for calling safe_Free_aligned without conversion warnings.
-//! Warning: Due to using a cast inside this version, be careful passing the
+//! \brief Simple helper macro for calling safe_free_aligned without conversion warnings.
+//! \warning Due to using a cast inside this version, be careful passing the
 //! correct pointer to this macro!
 //! The C11 generic version is more type safe for this and should be used instead
 //! when C11 generic selection is available
@@ -893,7 +897,7 @@ extern "C"
 //!
 //! safe_free_aligned(&memory);
 //! \endcode
-#    define safe_free_aligned(mem) safe_Free_aligned(M_REINTERPRET_CAST(void**, mem))
+#    define safe_free_aligned(mem) safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem))
 #endif // C11
 
     //! \fn M_FUNC_ATTR_MALLOC void* calloc_aligned(size_t num, size_t size, size_t alignment)
@@ -1050,9 +1054,9 @@ extern "C"
         free_aligned(ptr);
     }
 
-    //! \fn M_INLINE void safe_Free_page_aligned(void** mem)
+    //! \fn M_INLINE void safe_free_page_aligned_core(void** mem)
     //! \brief convenience function around free_aligned.
-    static M_INLINE void safe_Free_page_aligned(void** mem)
+    static M_INLINE void safe_free_page_aligned_core(void** mem)
     {
         if (mem && *mem)
         {
@@ -1077,27 +1081,27 @@ extern "C"
 //! \endcode
 #define safe_free_page_aligned(mem)                                                                                    \
     _Generic((mem),                                                                                                    \
-             char**                 : safe_Free_aligned_char,                                                          \
-             unsigned char**        : safe_Free_aligned_uchar,                                                         \
-             signed short**         : safe_Free_aligned_short,                                                         \
-             unsigned short**       : safe_Free_aligned_ushort,                                                        \
-             signed int**           : safe_Free_aligned_int,                                                           \
-             unsigned int**         : safe_Free_aligned_uint,                                                          \
-             signed long**          : safe_Free_aligned_long,                                                          \
-             unsigned long**        : safe_Free_aligned_ulong,                                                         \
-             signed long long**     : safe_Free_aligned_longlong,                                                      \
-             unsigned long long**   : safe_Free_aligned_ulonglong,                                                     \
-             float**                : safe_Free_aligned_float,                                                         \
-             double**               : safe_Free_aligned_double,                                                        \
-             long double**          : safe_Free_aligned_longdouble,                                                    \
-             void **                : safe_Free_aligned,                                                               \
-             default                : safe_Free_aligned                                                                \
+             char**                 : safe_free_aligned_char,                                                          \
+             unsigned char**        : safe_free_aligned_uchar,                                                         \
+             signed short**         : safe_free_aligned_short,                                                         \
+             unsigned short**       : safe_free_aligned_ushort,                                                        \
+             signed int**           : safe_free_aligned_int,                                                           \
+             unsigned int**         : safe_free_aligned_uint,                                                          \
+             signed long**          : safe_free_aligned_long,                                                          \
+             unsigned long**        : safe_free_aligned_ulong,                                                         \
+             signed long long**     : safe_free_aligned_longlong,                                                      \
+             unsigned long long**   : safe_free_aligned_ulonglong,                                                     \
+             float**                : safe_free_aligned_float,                                                         \
+             double**               : safe_free_aligned_double,                                                        \
+             long double**          : safe_free_aligned_longdouble,                                                    \
+             void **                : safe_free_aligned_core,                                                          \
+             default                : safe_free_aligned_core                                                           \
             )(mem)
 // clang-format on
 #elif !defined(__cplusplus)
 //! \def safe_free_page_aligned(mem)
-//! \brief Simple helper macro for calling safe_Free_aligned without conversion warnings.
-//! Warning: Due to using a cast inside this version, be careful passing the
+//! \brief Simple helper macro for calling safe_free_aligned without conversion warnings.
+//! \warning Due to using a cast inside this version, be careful passing the
 //! correct pointer to this macro!
 //! The C11 generic version is more type safe for this and should be used instead
 //! when C11 generic selection is available
@@ -1109,7 +1113,7 @@ extern "C"
 //! ...
 //!
 //! safe_free_alsafe_free_page_alignedigned(&memory);
-#    define safe_free_page_aligned(mem) safe_Free_page_aligned(M_REINTERPRET_CAST(void**, mem))
+#    define safe_free_page_aligned(mem) safe_free_page_aligned(M_REINTERPRET_CAST(void**, mem))
 #endif // C11
 
     //! \fn M_FUNC_ATTR_MALLOC void* calloc_page_aligned(size_t num, size_t size)
@@ -1466,10 +1470,10 @@ extern "C"
 #endif
 
     //! \fn static M_INLINE size_t get_memalignment(const void* ptr)
-    //! \brief calculates the mamimum memory alignment of \a ptr
+    //! \brief calculates the maximum memory alignment of \a ptr
     //! \param[in] ptr pointer to memory to determine the alignment of
     //! \return returns the maximum byte alignment of the pointer. This may be greater than originally
-    //! allocated with an alligned allocation. For example, specifying alignment of 8 at allocation
+    //! allocated with an aligned allocation. For example, specifying alignment of 8 at allocation
     //! may mean that the pointer is 8 byte aligned but also 16 byte aligned.
     //! if using this to determine if memory alignment is correct, do get_memalignment(ptr) >= alignment
     static M_INLINE size_t get_memalignment(const void* ptr)
@@ -1480,7 +1484,7 @@ extern "C"
 //! \def SIZE_OF_STACK_ARRAY(array)
 //! \brief Macro to assist with calculating the size of an array on the stack
 //!
-//! WARNING: Do not use on heap allocated memory!
+//! \warning Do not use on heap allocated memory!
 //! \param[in] array stack array to determine the size of.
 //! \return number of bytes allocated on the stack for the array
 #define SIZE_OF_STACK_ARRAY(array) (sizeof(array) / sizeof((*array)))
@@ -1491,22 +1495,28 @@ extern "C"
 #    if !defined(safe_free)
 template <typename T> M_INLINE void safe_free(T** mem)
 {
-    safe_Free(reinterpret_cast<void**>(mem));
+    safe_free_core(reinterpret_cast<void**>(mem));
 }
 #    endif // safe_free
 
 #    if !defined(safe_free_aligned)
 template <typename T> M_INLINE void safe_free_aligned(T** mem)
 {
-    safe_Free_aligned(reinterpret_cast<void**>(mem));
+    safe_free_aligned_core(reinterpret_cast<void**>(mem));
 }
 #    endif // safe_free_aligned
 
 #    if !defined(safe_free_page_aligned)
 template <typename T> M_INLINE void safe_free_page_aligned(T** mem)
 {
-    safe_Free_aligned(reinterpret_cast<void**>(mem));
+    safe_free_aligned_core(reinterpret_cast<void**>(mem));
 }
 #    endif // safe_free_page_aligned
 
+#endif
+
+#if defined (SAFE_FREE_BACKWARDS_COMPATIBILITY)
+#    define safe_Free(mem) safe_free_core(mem)
+#    define safe_Free_aligned(mem) safe_free_aligned_core(mem)
+#    define safe_Free_page_aligned(mem) safe_free_page_aligned(mem)
 #endif
