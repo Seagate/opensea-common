@@ -537,6 +537,9 @@ typedef int32_t intptr_t;
 #    if IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0)
 #        define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                   \
             type_name array_name[size] = {[0 ...((size)-1)] = 0}
+#    elif USING_C23
+#        define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                   \
+            type_name array_name[size] = { }
 #    else
 #        if defined(USING_C99)
     static M_INLINE void zero_init_array(void* array, size_t element_size, size_t element_count)
