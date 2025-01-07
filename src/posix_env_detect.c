@@ -1,19 +1,14 @@
 // SPDX-License-Identifier: MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2012-2024 Seagate Technology LLC and/or its Affiliates, All
-// Rights Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
-//
-// \file common_nix.c
-// \brief Implements functions that are common to (u)nix like platforms code.
-//
+
+//! \file posix_env_detect.c
+//! \brief POSIX specific environment detection functions/implementations for env_detect.h
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "common_types.h"
 #include "io_utils.h"

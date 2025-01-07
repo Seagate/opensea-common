@@ -1,21 +1,18 @@
 // SPDX-License-Identifier: MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All
-// Rights Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
-//
-// \file io_utils.c
-// \brief Implements various functions to work with IO (printf, snprintf, etc)
-//        This file also has functionality for changing output colors and
-//        reading user input. If working with files, it is recommended
-//        secure_file.h is used instead.
+
+//! \file io_utils.c
+//! \brief Implements various functions to work with IO (printf, snprintf, etc)
+//!
+//!        This file also has functionality for changing output colors and
+//!        reading user input. If working with files, it is recommended
+//!        secure_file.h is used instead.
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "io_utils.h"
 #include "bit_manip.h"

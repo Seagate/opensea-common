@@ -1,19 +1,15 @@
 // SPDX-License-Identifier: MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All
-// Rights Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
-//
-// \file memory_safety.c
-// \brief Implements functions to assist with managing memory as safely as
-// possible
+
+//! \file memory_safety.c
+//! \brief Implements functions to assist with managing memory safely and mitigate common
+//! errors.
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "memory_safety.h"
 #include "constraint_handling.h"
@@ -288,13 +284,13 @@ bool is_Empty(const void* ptrData, size_t lengthBytes)
                 {
                     if (memcmp(&byteptr[iter], zeroes, increment) != 0)
                     {
-                        safe_Free_page_aligned(C_CAST(void**, &zeroes));
+                        safe_free_page_aligned_core(C_CAST(void**, &zeroes));
                         return false;
                     }
                     // update increment amount to ensure this does not access
                     // invalid memory
                 }
-                safe_Free_page_aligned(C_CAST(void**, &zeroes));
+                safe_free_page_aligned_core(C_CAST(void**, &zeroes));
             }
         }
         if (byteByByte)

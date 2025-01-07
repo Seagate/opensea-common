@@ -1,19 +1,14 @@
 // SPDX-License-Identifier: MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All
-// Rights Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
-//
-// \file windows_secure_file.c
-// \brief implements secure file API for Windows
-//
+
+//! \file windows_secure_file.c
+//! \brief Windows system specific secure file implementation of secure_file.h functions
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "predef_env_detect.h"
 
@@ -74,7 +69,7 @@ typedef struct sREPARSE_DATA_BUFFER
 
 static M_INLINE void safe_free_reparse_data_buf(REPARSE_DATA_BUFFER** reparse)
 {
-    safe_Free(M_REINTERPRET_CAST(void**, reparse));
+    safe_free_core(M_REINTERPRET_CAST(void**, reparse));
 }
 
 int64_t os_Get_File_Size(FILE* filePtr)
@@ -391,7 +386,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
 
 static M_INLINE void safe_free_token_user(TOKEN_USER** user)
 {
-    safe_Free(M_REINTERPRET_CAST(void**, user));
+    safe_free_core(M_REINTERPRET_CAST(void**, user));
 }
 
 static char* get_Current_User_SID(void)

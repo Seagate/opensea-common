@@ -1,21 +1,17 @@
 // SPDX-License-Identifier: MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All
-// Rights Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
 
 //! \file predef_env_detect.h
 //! \brief Detects the compilation environment for standards, extensions, etc
 //! using only predefined macros from libc/compiler
 //! This file does include some headers as needed to lookup various defined versions such as features.h, unistd.h,
 //! sys/param.h, limits.h, endian.h, sys/endian.h, etc.
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #pragma once
 
@@ -276,11 +272,11 @@
 #endif //_MSVC && !clang workaround for Windows API headers
 
 #if defined(_WIN32)
-#include <sdkddkver.h>
+#    include <sdkddkver.h>
 DISABLE_WARNING_4255
 #    include <windows.h>
 RESTORE_WARNING_4255
-#include <winsdkver.h>
+#    include <winsdkver.h>
 // This pragma is needed to tell a library including opensea-common to look for
 // Version.lib for the version helping information
 //  This only works in MSVC which is why mingw gets filtered out below.
@@ -291,78 +287,79 @@ RESTORE_WARNING_4255
 #        pragma comment(lib, "Advapi32.lib") // WinPE check and windows 10 version check
 #    endif
 
-#if defined(WIN_API_TARGET_VERSION)
-#    undef WIN_API_TARGET_VERSION
-#    pragma message("WIN_API_TARGET_VERSION no longer needs to be defined. Automatically defined from sdkddkver.h now")
-#endif
+#    if defined(WIN_API_TARGET_VERSION)
+#        undef WIN_API_TARGET_VERSION
+#        pragma message(                                                                                               \
+            "WIN_API_TARGET_VERSION no longer needs to be defined. Automatically defined from sdkddkver.h now")
+#    endif
 
-    // The macros for NTDDI_VERSION & _WIN32_WINNT & WINVER are rarely checked once
-    // in Win 10 since they all get set to the same thing, so the below targets
-    // should also be defined in the preprocessor so that we know which version of
-    // the WIN10 SDK is being targeted.
-#if defined(WDK_NTDDI_VERSION)
-#    define WIN_API_TARGET_VERSION WDK_NTDDI_VERSION
-#else
+// The macros for NTDDI_VERSION & _WIN32_WINNT & WINVER are rarely checked once
+// in Win 10 since they all get set to the same thing, so the below targets
+// should also be defined in the preprocessor so that we know which version of
+// the WIN10 SDK is being targeted.
+#    if defined(WDK_NTDDI_VERSION)
+#        define WIN_API_TARGET_VERSION WDK_NTDDI_VERSION
+#    else
 // Check which, if any older NTDDI macros are available and set the
 // highest...likely an older compiler or SDK version has been found that doesn't
 // set the above macro like WIN10 SDKs
-#    if defined(NTDDI_WINBLUE)
-#        define WIN_API_TARGET_VERSION NTDDI_WINBLUE
-#    elif defined(NTDDI_WIN8)
-#        define WIN_API_TARGET_VERSION NTDDI_WIN8
-#    elif defined(NTDDI_WIN7)
-#        define WIN_API_TARGET_VERSION NTDDI_WIN7
-#    elif defined(NTDDI_WIN6SP4)
-#        define WIN_API_TARGET_VERSION NTDDI_WIN6SP4
-#    elif defined(NTDDI_WIN6SP3)
-#        define WIN_API_TARGET_VERSION NTDDI_WIN6SP3
-#    elif defined(NTDDI_WIN6SP2)
-#        define WIN_API_TARGET_VERSION NTDDI_WIN6SP2
-#    elif defined(NTDDI_WIN6SP1)
-#        define WIN_API_TARGET_VERSION NTDDI_WIN6SP1
-#    elif defined(NTDDI_WIN6)
-#        define WIN_API_TARGET_VERSION NTDDI_WIN6
-#    elif defined(NTDDI_WS03SP4)
-#        define WIN_API_TARGET_VERSION NTDDI_WS03SP4
-#    elif defined(NTDDI_WS03SP3)
-#        define WIN_API_TARGET_VERSION NTDDI_WS03SP3
-#    elif defined(NTDDI_WS03SP2)
-#        define WIN_API_TARGET_VERSION NTDDI_WS03SP2
-#    elif defined(NTDDI_WS03SP1)
-#        define WIN_API_TARGET_VERSION NTDDI_WS03SP1
-#    elif defined(NTDDI_WS03)
-#        define WIN_API_TARGET_VERSION NTDDI_WS03
-#    elif defined(NTDDI_WINXPSP4)
-#        define WIN_API_TARGET_VERSION NTDDI_WINXPSP4
-#    elif defined(NTDDI_WINXPSP3)
-#        define WIN_API_TARGET_VERSION NTDDI_WINXPSP3
-#    elif defined(NTDDI_WINXPSP2)
-#        define WIN_API_TARGET_VERSION NTDDI_WINXPSP2
-#    elif defined(NTDDI_WINXPSP1)
-#        define WIN_API_TARGET_VERSION NTDDI_WINXPSP1
-#    elif defined(NTDDI_WINXP)
-#        define WIN_API_TARGET_VERSION NTDDI_WINXP
-#    elif defined(NTDDI_WIN2KSP4)
-#        define WIN_API_TARGET_VERSION NTDDI_WIN2KSP4
-#    elif defined(NTDDI_WIN2KSP3)
-#        define WIN_API_TARGET_VERSION NTDDI_WIN2KSP3
-#    elif defined(NTDDI_WIN2KSP2)
-#        define WIN_API_TARGET_VERSION NTDDI_WIN2KSP2
-#    elif defined(NTDDI_WIN2KSP1)
-#        define WIN_API_TARGET_VERSION NTDDI_WIN2KSP1
-#    elif defined(NTDDI_WIN2K)
-#        define WIN_API_TARGET_VERSION NTDDI_WIN2K
-#    else
-#        define WIN_API_TARGET_VERSION                                                                                 \
-            1 /*this is an unknown version...assume that no target API is                                              \
-                 known*/
-#        pragma message("WARNING: No Windows API detected! Things may not work at all!")
-#    endif // checking NTDDI_versions
-#endif     // WDK_NTDDI_VERSION
+#        if defined(NTDDI_WINBLUE)
+#            define WIN_API_TARGET_VERSION NTDDI_WINBLUE
+#        elif defined(NTDDI_WIN8)
+#            define WIN_API_TARGET_VERSION NTDDI_WIN8
+#        elif defined(NTDDI_WIN7)
+#            define WIN_API_TARGET_VERSION NTDDI_WIN7
+#        elif defined(NTDDI_WIN6SP4)
+#            define WIN_API_TARGET_VERSION NTDDI_WIN6SP4
+#        elif defined(NTDDI_WIN6SP3)
+#            define WIN_API_TARGET_VERSION NTDDI_WIN6SP3
+#        elif defined(NTDDI_WIN6SP2)
+#            define WIN_API_TARGET_VERSION NTDDI_WIN6SP2
+#        elif defined(NTDDI_WIN6SP1)
+#            define WIN_API_TARGET_VERSION NTDDI_WIN6SP1
+#        elif defined(NTDDI_WIN6)
+#            define WIN_API_TARGET_VERSION NTDDI_WIN6
+#        elif defined(NTDDI_WS03SP4)
+#            define WIN_API_TARGET_VERSION NTDDI_WS03SP4
+#        elif defined(NTDDI_WS03SP3)
+#            define WIN_API_TARGET_VERSION NTDDI_WS03SP3
+#        elif defined(NTDDI_WS03SP2)
+#            define WIN_API_TARGET_VERSION NTDDI_WS03SP2
+#        elif defined(NTDDI_WS03SP1)
+#            define WIN_API_TARGET_VERSION NTDDI_WS03SP1
+#        elif defined(NTDDI_WS03)
+#            define WIN_API_TARGET_VERSION NTDDI_WS03
+#        elif defined(NTDDI_WINXPSP4)
+#            define WIN_API_TARGET_VERSION NTDDI_WINXPSP4
+#        elif defined(NTDDI_WINXPSP3)
+#            define WIN_API_TARGET_VERSION NTDDI_WINXPSP3
+#        elif defined(NTDDI_WINXPSP2)
+#            define WIN_API_TARGET_VERSION NTDDI_WINXPSP2
+#        elif defined(NTDDI_WINXPSP1)
+#            define WIN_API_TARGET_VERSION NTDDI_WINXPSP1
+#        elif defined(NTDDI_WINXP)
+#            define WIN_API_TARGET_VERSION NTDDI_WINXP
+#        elif defined(NTDDI_WIN2KSP4)
+#            define WIN_API_TARGET_VERSION NTDDI_WIN2KSP4
+#        elif defined(NTDDI_WIN2KSP3)
+#            define WIN_API_TARGET_VERSION NTDDI_WIN2KSP3
+#        elif defined(NTDDI_WIN2KSP2)
+#            define WIN_API_TARGET_VERSION NTDDI_WIN2KSP2
+#        elif defined(NTDDI_WIN2KSP1)
+#            define WIN_API_TARGET_VERSION NTDDI_WIN2KSP1
+#        elif defined(NTDDI_WIN2K)
+#            define WIN_API_TARGET_VERSION NTDDI_WIN2K
+#        else
+#            define WIN_API_TARGET_VERSION                                                                             \
+                1 /*this is an unknown version...assume that no target API is                                          \
+                     known*/
+#            pragma message("WARNING: No Windows API detected! Things may not work at all!")
+#        endif // checking NTDDI_versions
+#    endif     // WDK_NTDDI_VERSION
 
 #else //!_WIN32
 
-#define WIN_API_TARGET_VERSION 0
+#    define WIN_API_TARGET_VERSION 0
 
 #endif //_WIN32
 
@@ -644,8 +641,14 @@ extern "C"
 #        define USING_SUS4
 #    endif
 #endif //_XOPEN_VERSION
-// NOTE: Some functions that were added to posix, xopen, sus may have come from
-// BSD 4.x. Use sys/param.h to check for these old bsd versions
+    // NOTE: Some functions that were added to posix, xopen, sus may have come from
+    // BSD 4.x. Use sys/param.h to check for these old bsd versions
+
+#if defined(__sysv__) || defined(__SVR4) || defined(__svr4__)
+//! \def SVR4_ENV
+//! \brief Unix System 5 compatible environment
+#    define SVR4_ENV
+#endif
 
 // Detect the LP64 pr LLP64 mode for the system/compiler.
 // This is meant to be used within various opensea-common functions, but defined

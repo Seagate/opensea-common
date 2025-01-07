@@ -1,33 +1,34 @@
 // SPDX-License-Identifier: BSD-3-Clause and MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights
-// Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
-//
-// \file safe_qsort.c
-// \brief Defines safe_qsort_context which behaves similarly to qsort_s with a
-// context parameter.
-//        This code is adapted from FreeBSD's qsort.c under BSD 3-clause license
-//        Modifications are licensed under MPL 2.0
 
-// Modifications: instead of ifdefs around how this is implemented, this is a
-// standalone implementation of safe_qsort
-//                setting order of compare func to match C11
-//                Variables renamed to match standard (as needed)
-//                Compare function order matches standard
-//                return errno_t instead of void
-//                Any other modifications are from security
-//                recommendations(initializing variables, variables declared on
-//                separate lines, etc) Change casts to C_CAST macro Added goto
-//                exit if error occurs during recursion uintptr/intptr casts to
-//                resolve sign conversion warnings as needed
+//! \file safe_qsort.c
+//! \brief Defines safe_qsort_context which behaves similarly to qsort_s with a
+//! context parameter.
+//! \details This code is adapted from FreeBSD's qsort.c under BSD 3-clause license
+//! Modifications are licensed under MPL 2.0
+//! Modifications:
+//! - setting order of compare func to match C11
+//!
+//! - Variables renamed to match standard (as needed)
+//!
+//! - Compare function order matches standard
+//!
+//! - return errno_t instead of void
+//!
+//! - Any other modifications are from security recommendations(initializing variables,
+//! variables declared on separate lines, etc)
+//!
+//! - Change casts to C_CAST macro
+//!
+//! - Added goto exit if error occurs during recursion
+//!
+//! - uintptr/intptr casts to resolve sign conversion warnings as needed
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "code_attributes.h"
 #include "common_types.h"

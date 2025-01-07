@@ -1,26 +1,20 @@
 // SPDX-License-Identifier: MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All
-// Rights Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
-//
-// \file type_conversion.c
-// \brief Defines cast macros and conversion functions for more safely
-// converting between types.
-//
+
+//! \file type_conversion.c
+//! \brief Defines cast macros and conversion functions for safely converting between types.
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 #include "type_conversion.h"
 #include "bit_manip.h"
 #include <math.h>
 
-#if !defined(SIZE_MAX) // this should come from the system or at least defined
-                       // with all the types
+#if !defined(SIZE_MAX)
 #    error "SIZE_MAX not defined! Please add a definition for this system!"
 #endif
 

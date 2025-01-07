@@ -1,27 +1,30 @@
 // SPDX-License-Identifier: BSD-3-Clause and MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights
-// Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
-//
-// \file safe_bsearch.c
-// \brief Defines safe_bsearch_context which behaves similarly to bsearch_s with
-// a context parameter.
-//        This code is adapted from FreeBSD's bsearch.c under BSD 3-clause license
-//        Modifications are licensed under MPL 2.0
-// Modifications:
-//             checks for null, sizes as required for C11 annex k bsearch_s
-//             set errno as needed
-//             change to comparison function with context parameter
-//             casts changed to M_CONST_CAST to resolve warnings
-//             variable scope changed to within for loop for lim and cmp
+
+//! \file safe_bsearch.c
+//! \brief Defines safe_bsearch_context which behaves similarly to bsearch_s with
+//! a context parameter.
+//! \details This code is adapted from FreeBSD's bsearch.c under BSD 3-clause license.
+//! Modifications are licensed under MPL 2.0
+//! Modifications:
+//!
+//! - checks for null, sizes as required for C11 annex k bsearch_s
+//!
+//! - set errno as needed
+//!
+//! - change to comparison function with context parameter
+//!
+//! - casts changed to M_CONST_CAST to resolve warnings
+//!
+//! - variable scope changed to within for loop for lim and cmp
+//!
+//! - call constraint handler for errors detected per C11 Annex K
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "code_attributes.h"
 #include "common_types.h"

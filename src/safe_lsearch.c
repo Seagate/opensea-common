@@ -1,28 +1,27 @@
 // SPDX-License-Identifier: LicenseRef-RobertDrehmel-2002 and MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights
-// Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
-//
-// \file safe_lsearch.c
-// \brief Defines bounds checked versions of lsearch and lfind similar to qsort_s and bsearch_s checks
-// a context parameter.
-//        This code is adapted from FreeBSD's lsearch.c under Robert Drehmel's
-//        original license Modifications are licensed under MPL 2.0
 
-// Modifications:
-//              checks for null, sizes as required for C11 annex k bounds
-//              checking functions set errno as needed added version with
-//              comparison function with context parameter casts changed to
-//              M_CONST_CAST to resolve warnings functions are named safe_ to
-//              imply the bounds checking capabilities.
+//! \file safe_lsearch.c
+//! \brief Defines bounds checked versions of lsearch and lfind similar to qsort_s and bsearch_s checks
+//! a context parameter.
+//! \details This code is adapted from FreeBSD's lsearch.c under Robert Drehmel's original license.
+//! Modifications are licensed under MPL 2.0
+//! Modifications:
+//! - checks for null, sizes as required for C11 annex k bounds
+//!
+//! - checking functions set errno as needed added version with
+//!
+//! - comparison function with context parameter casts changed to
+//!
+//! - M_CONST_CAST to resolve warnings functions are named safe_ to imply the bounds checking capabilities.
+//!
+//! - calls constraint handler on errors
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "common_types.h"
 #include "constraint_handling.h"

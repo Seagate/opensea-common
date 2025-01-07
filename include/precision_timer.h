@@ -1,19 +1,15 @@
 // SPDX-License-Identifier: MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All
-// Rights Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
 
 //! \file precision_timer.h
 //! \brief Defines functions to time operations using a high resolution timer in
 //! a cross-platform way
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #pragma once
 
@@ -50,7 +46,7 @@ extern "C"
     //! \brief Helper function to safely free a seatimer from the heap
     static M_INLINE void safe_free_seatimer(seatimer_t** timer)
     {
-        safe_Free(M_REINTERPRET_CAST(void**, timer));
+        safe_free_core(M_REINTERPRET_CAST(void**, timer));
     }
 
     //! \fn void start_Timer(seatimer_t* timer)

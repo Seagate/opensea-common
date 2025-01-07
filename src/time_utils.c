@@ -1,19 +1,14 @@
 // SPDX-License-Identifier: MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All
-// Rights Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
-//
-// \file common_time.c
-// \brief Implements best practices for working with time functions in stdc
-// library
+
+//! \file time_utils.c
+//! \brief Implements best practices for working with time functions in stdc library
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "time_utils.h"
 #include "common_types.h"
@@ -24,6 +19,10 @@
 
 #if defined(_WIN32)
 #    include "windows_version_detect.h"
+#    if IS_MSVC_VERSION(MSVC_2003)
+#        include <sys/timeb.h>
+#        include <sys/types.h>
+#    endif // VS2003 version check
 #endif
 
 #include <locale.h> //used when getting time to replace ctime and asctime function to try and replicate the format exactly-TJE
@@ -39,6 +38,11 @@ time_t CURRENT_TIME = 0;
 //       - TJE
 char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+M_STATIC_ASSERT(SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING) >= 26, current_time_string_length_too_short);
+
+// cannot support 32bit time_t properly!
+M_STATIC_ASSERT(sizeof(time_t) >= 8, time_t_is_not_64_bits);
 
 bool get_current_timestamp(void)
 {
@@ -79,7 +83,7 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
     else
 #endif // C11
     {
-#if defined(POSIX_1993) && defined _POSIX_TIMERS
+#if defined(POSIX_1993) && defined _POSIX_MONOTONIC_CLOCK
         // POSIX gettimeofday() or clock_gettime(CLOCK_REALTIME, ts)
         // https://pubs.opengroup.org/onlinepubs/9699919799/functions/clock_getres.html
         // NOTE: Using clock_gettime since it's more accurate and not affected
@@ -92,10 +96,25 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
                              (C_CAST(uint64_t, posixnow.tv_nsec) / UINT64_C(1000000));
         }
         else
+#elif defined(BSD4_2) || defined(POSIX_2001) || defined(SVR4_ENV) || defined(USING_SUS2)
+        // using gettimeofday function
+        // NOTE: ftime and ftime64 are another possible API but that has been long obsolete...longer than this method.
+        // https://man.freebsd.org/cgi/man.cgi?query=ftime&sektion=3&n=1
+        // https://www.ibm.com/docs/en/zos/2.4.0?topic=functions-ftime-ftime64-set-date-time
+        struct timeval timenow;
+        safe_memset(&timenow, sizeof(struct timeval), 0, sizeof(struct timeval));
+        if (0 == gettimeofday(&timenow, M_NULLPTR))
+        {
+            msSinceJan1970 = (C_CAST(uint64_t, timenow.tv_sec) * UINT64_C(1000)) +
+                             (C_CAST(uint64_t, timenow.tv_usec) / UINT64_C(1000));
+        }
+        else
 #elif defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_2000
         // Use the function in the link below, but MSFT also documents another
         // way to do this, which is what we've implemented -TJE
         // https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-rtltimetosecondssince1970
+        // Microsoft also has ftime, ftime64 and ftime_s
+        // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/ftime-s-ftime32-s-ftime64-s?view=msvc-170
         FILETIME       ftnow;
         FILETIME       epochfile;
         SYSTEMTIME     epoch;
@@ -130,6 +149,21 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
                                               // by 10000000 to get seconds)
         }
         else
+#elif IS_MSVC_VERSION(MSVC_2003)
+        struct __timeb64 timenow;
+        int              memsetret = safe_memset(&timenow, sizeof(struct __timeb64), 0, sizeof(struct __timeb64));
+#    if IS_MSVC_VERSION(MSVC_2005)
+        if (0 == memsetret && 0 == _ftime64_s(&timenow)) // Can use _s version
+        {
+#    else  // VS2003
+        if (0 == memsetret)
+        {
+            _ftime64(&timenow); // Can use _ftime64 back to Win98
+#    endif // VS2005 check
+            msSinceJan1970 = (C_CAST(uint64_t, timenow.time) * UINT64_C(1000)) + C_CAST(uint64_t, timenow.millitm);
+        }
+        else
+
 #endif // OS unique methods to get this info
         {
             // time_t is not guaranteed to always be a specific number of units.

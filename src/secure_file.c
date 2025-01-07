@@ -1,22 +1,15 @@
 // SPDX-License-Identifier: MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All
-// Rights Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
-//
-// \file secure_file.h
-// \brief Defines functions for working with a file securely according to cert-c
-// recommendations.
-//        System type unique functionality is available in
-//        systemtype_secure_file.c
-//
+
+//! \file secure_file.c
+//! \brief Defines functions for working with a file securely according to cert-c
+//! recommendations and rules
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "secure_file.h"
 #include "common_types.h"
@@ -68,12 +61,12 @@ void free_File_Attributes(fileAttributes** attributes)
             if ((*attributes)->winSecurityDescriptor)
             {
                 explicit_zeroes((*attributes)->winSecurityDescriptor, (*attributes)->securityDescriptorStringLength);
-                safe_Free(C_CAST(void**, &(*attributes)->winSecurityDescriptor));
+                safe_free_core(C_CAST(void**, &(*attributes)->winSecurityDescriptor));
                 (*attributes)->securityDescriptorStringLength = 0;
             }
 #endif //_WIN32
             explicit_zeroes(*attributes, sizeof(fileAttributes));
-            safe_Free(M_REINTERPRET_CAST(void**, attributes));
+            safe_free_core(M_REINTERPRET_CAST(void**, attributes));
         }
     }
 }
@@ -92,16 +85,16 @@ void free_Secure_File_Info(secureFileInfo** fileInfo)
             if ((*fileInfo)->uniqueID != M_NULLPTR)
             {
                 explicit_zeroes((*fileInfo)->uniqueID, sizeof(fileUniqueIDInfo));
-                safe_Free(C_CAST(void**, &(*fileInfo)->uniqueID));
+                safe_free_core(C_CAST(void**, &(*fileInfo)->uniqueID));
             }
             if ((*fileInfo)->errorString != M_NULLPTR)
             {
                 explicit_zeroes(M_CONST_CAST(void**, (*fileInfo)->errorString), safe_strlen((*fileInfo)->errorString));
-                safe_Free(M_CONST_CAST(void**, &(*fileInfo)->errorString));
+                safe_free_core(M_CONST_CAST(void**, &(*fileInfo)->errorString));
             }
             explicit_zeroes(*fileInfo, sizeof(secureFileInfo));
         }
-        safe_Free(C_CAST(void**, fileInfo));
+        safe_free_core(C_CAST(void**, fileInfo));
     }
 }
 
