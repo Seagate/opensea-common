@@ -26,6 +26,13 @@
 #    endif //! HAVE_WIN_BSWAP
 #endif     //_MSC_VER
 
+#if defined(__has_include)
+#    if __has_include(<stdbit.h>)
+#        include <stdbit.h>
+#        define HAVE_STDC_BIT
+#    endif //__has_include(<stdbit.h>)
+#endif     //__has_include
+
 #if defined(__cplusplus)
 extern "C"
 {
@@ -2130,6 +2137,1517 @@ extern "C"
             *doubleWordToSwap = be32_to_host(*doubleWordToSwap);
         }
     }
+
+    // C23-like bit functions. These have similar names so they do not collide with the standard implementation
+
+    //! \fn static M_INLINE unsigned int count_leading_zeros_uc(unsigned char value)
+    //! \brief counts the number of consecutive ​0​ bits, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return number of leading zeros in \a value
+    static M_INLINE unsigned int count_leading_zeros_uc(unsigned char value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_LEADING_ZEROS)
+        return __builtin_stdc_leading_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_leading_zeros(value);
+#elif defined(HAVE_BUILT_IN_CLZ)
+    return value == 0U ? M_STATIC_CAST(unsigned int, UCHAR_WIDTH)
+                       : M_STATIC_CAST(unsigned int, __builtin_clz(value) - (UINT_WIDTH - UCHAR_WIDTH));
+#else
+    unsigned int count = 0U;
+    while (value > 0U)
+    {
+        if (value & UCHAR_MSB)
+        {
+            break;
+        }
+        ++count;
+        value <<= 1;
+    }
+    return count;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_leading_zeros_us(unsigned short value)
+    //! \brief counts the number of consecutive ​0​ bits, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return number of leading zeros in \a value
+    static M_INLINE unsigned int count_leading_zeros_us(unsigned short value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_LEADING_ZEROS)
+        return __builtin_stdc_leading_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_leading_zeros(value);
+#elif defined(HAVE_BUILT_IN_CLZ)
+    return value == 0U ? M_STATIC_CAST(unsigned int, USHRT_WIDTH)
+                       : M_STATIC_CAST(unsigned int, __builtin_clz(value) - (UINT_WIDTH - USHRT_WIDTH));
+#else
+    unsigned int count = 0U;
+    while (value > 0U)
+    {
+        if (value & USHRT_MSB)
+        {
+            break;
+        }
+        ++count;
+        value <<= 1;
+    }
+    return count;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_leading_zeros_ui(unsigned int value)
+    //! \brief counts the number of consecutive ​0​ bits, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return number of leading zeros in \a value
+    static M_INLINE unsigned int count_leading_zeros_ui(unsigned int value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_LEADING_ZEROS)
+        return __builtin_stdc_leading_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_leading_zeros(value);
+#elif defined(HAVE_BUILT_IN_CLZ)
+    return value == 0U ? M_STATIC_CAST(unsigned int, UINT_WIDTH) : M_STATIC_CAST(unsigned int, __builtin_clz(value));
+#else
+    unsigned int count = 0U;
+    while (value > 0U)
+    {
+        if (value & UINT_MSB)
+        {
+            break;
+        }
+        ++count;
+        value <<= 1;
+    }
+    return count;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_leading_zeros_ul(unsigned long value)
+    //! \brief counts the number of consecutive ​0​ bits, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return number of leading zeros in \a value
+    static M_INLINE unsigned int count_leading_zeros_ul(unsigned long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_LEADING_ZEROS)
+        return __builtin_stdc_leading_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_leading_zeros(value);
+#elif defined(HAVE_BUILT_IN_CLZL)
+    return value == 0UL ? M_STATIC_CAST(unsigned int, ULONG_WIDTH) : M_STATIC_CAST(unsigned int, __builtin_clzl(value));
+#else
+    unsigned int count = 0U;
+    while (value > 0UL)
+    {
+        if (value & ULONG_MSB)
+        {
+            break;
+        }
+        ++count;
+        value <<= 1;
+    }
+    return count;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_leading_zeros_ull(unsigned long long value)
+    //! \brief counts the number of consecutive ​0​ bits, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return number of leading zeros in \a value
+    static M_INLINE unsigned int count_leading_zeros_ull(unsigned long long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_LEADING_ZEROS)
+        return __builtin_stdc_leading_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_leading_zeros(value);
+#elif defined(HAVE_BUILT_IN_CLZLL)
+    return value == 0ULL ? M_STATIC_CAST(unsigned int, ULLONG_WIDTH)
+                         : M_STATIC_CAST(unsigned int, __builtin_clzll(value));
+#else
+    unsigned int count = 0U;
+    while (value > 0ULL)
+    {
+        if (value & ULLONG_MSB)
+        {
+            break;
+        }
+        ++count;
+        value <<= 1;
+    }
+    return count;
+#endif
+    }
+
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#    define count_leading_zeros(value)                                                                                 \
+        _Generic((value), unsigned char                                                                                \
+                 : count_leading_zeros_uc, unsigned short                                                              \
+                 : count_leading_zeros_us, unsigned int                                                                \
+                 : count_leading_zeros_ui, unsigned long                                                               \
+                 : count_leading_zeros_ul, unsigned long long                                                          \
+                 : count_leading_zeros_ull)(value)
+#else
+#    define count_leading_zeros(value)                                                                                 \
+        (sizeof(value) == sizeof(unsigned char)    ? count_leading_zeros_uc(value)                                     \
+         : sizeof(value) == sizeof(unsigned short) ? count_leading_zeros_us(value)                                     \
+         : sizeof(value) == sizeof(unsigned int)   ? count_leading_zeros_ui(value)                                     \
+         : sizeof(value) == sizeof(unsigned long)  ? count_leading_zeros_ul(value)                                     \
+                                                   : count_leading_zeros_ull(value))
+#endif
+
+    //! \fn static M_INLINE unsigned int count_leading_ones_uc(unsigned char value)
+    //! \brief counts the number of consecutive 1 bits, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return number of leading ones in \a value
+    static M_INLINE unsigned int count_leading_ones_uc(unsigned char value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_LEADING_ONES)
+        return __builtin_stdc_leading_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_leading_ones(value);
+#else
+    return count_leading_zeros_uc(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_leading_ones_us(unsigned short value)
+    //! \brief counts the number of consecutive 1 bits, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return number of leading ones in \a value
+    static M_INLINE unsigned int count_leading_ones_us(unsigned short value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_LEADING_ONES)
+        return __builtin_stdc_leading_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_leading_ones(value);
+#else
+    return count_leading_zeros_us(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_leading_ones_ui(unsigned int value)
+    //! \brief counts the number of consecutive 1 bits, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return number of leading ones in \a value
+    static M_INLINE unsigned int count_leading_ones_ui(unsigned int value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_LEADING_ONES)
+        return __builtin_stdc_leading_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_leading_ones(value);
+#else
+    return count_leading_zeros_ui(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_leading_ones_ul(unsigned long value)
+    //! \brief counts the number of consecutive 1 bits, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return number of leading ones in \a value
+    static M_INLINE unsigned int count_leading_ones_ul(unsigned long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_LEADING_ONES)
+        return __builtin_stdc_leading_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_leading_ones(value);
+#else
+    return count_leading_zeros_ul(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_leading_ones_ull(unsigned long long value)
+    //! \brief counts the number of consecutive 1 bits, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return number of leading ones in \a value
+    static M_INLINE unsigned int count_leading_ones_ull(unsigned long long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_LEADING_ONES)
+        return __builtin_stdc_leading_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_leading_ones(value);
+#else
+    return count_leading_zeros_ull(~value);
+#endif
+    }
+
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#    define count_leading_ones(value)                                                                                  \
+        _Generic((value), unsigned char                                                                                \
+                 : count_leading_ones_uc, unsigned short                                                               \
+                 : count_leading_ones_us, unsigned int                                                                 \
+                 : count_leading_ones_ui, unsigned long                                                                \
+                 : count_leading_ones_ul, unsigned long long                                                           \
+                 : count_leading_ones_ull)(value)
+#else
+#    define count_leading_ones(value)                                                                                  \
+        (sizeof(value) == sizeof(unsigned char)    ? count_leading_ones_uc(value)                                      \
+         : sizeof(value) == sizeof(unsigned short) ? count_leading_ones_us(value)                                      \
+         : sizeof(value) == sizeof(unsigned int)   ? count_leading_ones_ui(value)                                      \
+         : sizeof(value) == sizeof(unsigned long)  ? count_leading_ones_ul(value)                                      \
+                                                   : count_leading_ones_ull(value))
+#endif
+
+    //! \fn static M_INLINE unsigned int count_trailing_zeros_uc(unsigned char value)
+    //! \brief counts the number of consecutive ​0 bits, starting from the least significant bit
+    //! \param[in] value the value to assess
+    //! \return number of trailing zeroes in \a value
+    static M_INLINE unsigned int count_trailing_zeros_uc(unsigned char value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_TRAILING_ZEROS)
+        return __builtin_stdc_trailing_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_trailing_zeros(value);
+#elif defined(HAVE_BUILT_IN_CTZ)
+    return value == 0U ? UCHAR_WIDTH : M_STATIC_CAST(unsigned int, __builtin_ctz(value));
+#else
+    unsigned int count = 0U;
+    while (value > 0U)
+    {
+        if (value & 0x1U)
+        {
+            break;
+        }
+        else
+        {
+            ++count;
+        }
+        value >>= 1;
+    }
+    return count;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_trailing_zeros_us(unsigned short value)
+    //! \brief counts the number of consecutive ​0 bits, starting from the least significant bit
+    //! \param[in] value the value to assess
+    //! \return number of trailing zeroes in \a value
+    static M_INLINE unsigned int count_trailing_zeros_us(unsigned short value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_TRAILING_ZEROS)
+        return __builtin_stdc_trailing_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_trailing_zeros(value);
+#elif defined(HAVE_BUILT_IN_CTZ)
+    return value == 0U ? USHRT_WIDTH : M_STATIC_CAST(unsigned int, __builtin_ctz(value));
+#else
+    unsigned int count = 0U;
+    while (value > 0U)
+    {
+        if (value & 0x1U)
+        {
+            break;
+        }
+        else
+        {
+            ++count;
+        }
+        value >>= 1;
+    }
+    return count;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_trailing_zeros_ui(unsigned int value)
+    //! \brief counts the number of consecutive ​0 bits, starting from the least significant bit
+    //! \param[in] value the value to assess
+    //! \return number of trailing zeroes in \a value
+    static M_INLINE unsigned int count_trailing_zeros_ui(unsigned int value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_TRAILING_ZEROS)
+        return __builtin_stdc_trailing_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_trailing_zeros(value);
+#elif defined(HAVE_BUILT_IN_CTZ)
+    return value == 0U ? UINT_WIDTH : M_STATIC_CAST(unsigned int, __builtin_ctz(value));
+#else
+    unsigned int count = 0U;
+    while (value > 0U)
+    {
+        if (value & 0x1U)
+        {
+            break;
+        }
+        else
+        {
+            ++count;
+        }
+        value >>= 1;
+    }
+    return count;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_trailing_zeros_ul(unsigned long value)
+    //! \brief counts the number of consecutive ​0 bits, starting from the least significant bit
+    //! \param[in] value the value to assess
+    //! \return number of trailing zeroes in \a value
+    static M_INLINE unsigned int count_trailing_zeros_ul(unsigned long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_TRAILING_ZEROS)
+        return __builtin_stdc_trailing_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_trailing_zeros(value);
+#elif defined(HAVE_BUILT_IN_CTZL)
+    return value == 0UL ? ULONG_WIDTH : M_STATIC_CAST(unsigned int, __builtin_ctzl(value));
+#else
+    unsigned int count = 0U;
+    while (value > 0UL)
+    {
+        if (value & 0x1UL)
+        {
+            break;
+        }
+        else
+        {
+            ++count;
+        }
+        value >>= 1;
+    }
+    return count;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_trailing_zeros_ull(unsigned long long value)
+    //! \brief counts the number of consecutive ​0 bits, starting from the least significant bit
+    //! \param[in] value the value to assess
+    //! \return number of trailing zeroes in \a value
+    static M_INLINE unsigned int count_trailing_zeros_ull(unsigned long long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_TRAILING_ZEROS)
+        return __builtin_stdc_trailing_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_trailing_zeros(value);
+#elif defined(HAVE_BUILT_IN_CTZLL)
+    return value == 0ULL ? ULLONG_WIDTH : M_STATIC_CAST(unsigned int, __builtin_ctzll(value));
+#else
+    unsigned int count = 0U;
+    while (value > 0ULL)
+    {
+        if (value & 0x1ULL)
+        {
+            break;
+        }
+        else
+        {
+            ++count;
+        }
+        value >>= 1;
+    }
+    return count;
+#endif
+    }
+
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#    define count_trailing_zeros(value)                                                                                \
+        _Generic((value), unsigned char                                                                                \
+                 : count_trailing_zeros_uc, unsigned short                                                             \
+                 : count_trailing_zeros_us, unsigned int                                                               \
+                 : count_trailing_zeros_ui, unsigned long                                                              \
+                 : count_trailing_zeros_ul, unsigned long long                                                         \
+                 : count_trailing_zeros_ull)(value)
+#else
+#    define count_trailing_zeros(value)                                                                                \
+        (sizeof(value) == sizeof(unsigned char)    ? count_trailing_zeros_uc(value)                                    \
+         : sizeof(value) == sizeof(unsigned short) ? count_trailing_zeros_us(value)                                    \
+         : sizeof(value) == sizeof(unsigned int)   ? count_trailing_zeros_ui(value)                                    \
+         : sizeof(value) == sizeof(unsigned long)  ? count_trailing_zeros_ul(value)                                    \
+                                                   : count_trailing_zeros_ull(value))
+#endif
+
+    //! \fn static M_INLINE unsigned int count_trailing_ones_uc(unsigned char value)
+    //! \brief counts the number of consecutive 1 bits, starting from the least significant bit
+    //! \param[in] value the value to assess
+    //! \return number of trailing ones in \a value
+    static M_INLINE unsigned int count_trailing_ones_uc(unsigned char value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_TRAILING_ONES)
+        return __builtin_stdc_trailing_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_trailing_ones(value);
+#else
+    return count_trailing_zeros_uc(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_trailing_ones_us(unsigned short value)
+    //! \brief counts the number of consecutive 1 bits, starting from the least significant bit
+    //! \param[in] value the value to assess
+    //! \return number of trailing ones in \a value
+    static M_INLINE unsigned int count_trailing_ones_us(unsigned short value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_TRAILING_ONES)
+        return __builtin_stdc_trailing_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_trailing_ones(value);
+#else
+    return count_trailing_zeros_us(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_trailing_ones_ui(unsigned int value)
+    //! \brief counts the number of consecutive 1 bits, starting from the least significant bit
+    //! \param[in] value the value to assess
+    //! \return number of trailing ones in \a value
+    static M_INLINE unsigned int count_trailing_ones_ui(unsigned int value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_TRAILING_ONES)
+        return __builtin_stdc_trailing_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_trailing_ones(value);
+#else
+    return count_trailing_zeros_ui(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_trailing_ones_ul(unsigned long value)
+    //! \brief counts the number of consecutive 1 bits, starting from the least significant bit
+    //! \param[in] value the value to assess
+    //! \return number of trailing ones in \a value
+    static M_INLINE unsigned int count_trailing_ones_ul(unsigned long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_TRAILING_ONES)
+        return __builtin_stdc_trailing_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_trailing_ones(value);
+#else
+    return count_trailing_zeros_ul(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_trailing_ones_ull(unsigned long long value)
+    //! \brief counts the number of consecutive 1 bits, starting from the least significant bit
+    //! \param[in] value the value to assess
+    //! \return number of trailing ones in \a value
+    static M_INLINE unsigned int count_trailing_ones_ull(unsigned long long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_TRAILING_ONES)
+        return __builtin_stdc_trailing_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_trailing_ones(value);
+#else
+    return count_trailing_zeros_ull(~value);
+#endif
+    }
+
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#    define count_trailing_ones(value)                                                                                 \
+        _Generic((value), unsigned char                                                                                \
+                 : count_trailing_ones_uc, unsigned short                                                              \
+                 : count_trailing_ones_us, unsigned int                                                                \
+                 : count_trailing_ones_ui, unsigned long                                                               \
+                 : count_trailing_ones_ul, unsigned long long                                                          \
+                 : count_trailing_ones_ull)(value)
+#else
+#    define count_trailing_ones(value)                                                                                 \
+        (sizeof(value) == sizeof(unsigned char)    ? count_trailing_ones_uc(value)                                     \
+         : sizeof(value) == sizeof(unsigned short) ? count_trailing_ones_us(value)                                     \
+         : sizeof(value) == sizeof(unsigned int)   ? count_trailing_ones_ui(value)                                     \
+         : sizeof(value) == sizeof(unsigned long)  ? count_trailing_ones_ul(value)                                     \
+                                                   : count_trailing_ones_ull(value))
+#endif
+
+    //! \fn static M_INLINE unsigned int first_leading_one_uc(unsigned char value)
+    //! \brief finds the first position of 1 bit, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return the position of the first bit set to one in \a value
+    static M_INLINE unsigned int first_leading_one_uc(unsigned char value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE)
+        return __builtin_stdc_first_leading_one(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_first_leading_one(value);
+#elif defined(HAVE_BUILT_IN_CLZ)
+    return value == 0U ? 0U : M_STATIC_CAST(unsigned int, __builtin_clz(value) - (UINT_WIDTH - UCHAR_WIDTH) + 1);
+#else
+    unsigned int pos = UCHAR_WIDTH;
+    while (value > 0U)
+    {
+        if (value & UCHAR_MSB)
+        {
+            break;
+        }
+        --pos;
+        value <<= 1;
+    }
+    return pos;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int first_leading_one_us(unsigned short value)
+    //! \brief finds the first position of 1 bit, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return the position of the first bit set to one in \a value
+    static M_INLINE unsigned int first_leading_one_us(unsigned short value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE)
+        return __builtin_stdc_first_leading_one(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_first_leading_one(value);
+#elif defined(HAVE_BUILT_IN_CLZ)
+    return value == 0U ? 0U : M_STATIC_CAST(unsigned int, __builtin_clz(value) - (UINT_WIDTH - USHRT_WIDTH) + 1);
+#else
+    unsigned int pos = USHRT_WIDTH;
+    while (value > 0U)
+    {
+        if (value & USHRT_MSB)
+        {
+            break;
+        }
+        --pos;
+        value <<= 1;
+    }
+    return pos;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int first_leading_one_ui(unsigned int value)
+    //! \brief finds the first position of 1 bit, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return the position of the first bit set to one in \a value
+    static M_INLINE unsigned int first_leading_one_ui(unsigned int value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE)
+        return __builtin_stdc_first_leading_one(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_first_leading_one(value);
+#elif defined(HAVE_BUILT_IN_CLZ)
+    return value == 0U ? 0U : M_STATIC_CAST(unsigned int, __builtin_clz(value) + 1);
+#else
+    unsigned int pos = UINT_WIDTH;
+    while (value > 0U)
+    {
+        if (value & UINT_MSB)
+        {
+            break;
+        }
+        --pos;
+        value <<= 1;
+    }
+    return pos;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int first_leading_one_ul(unsigned long value)
+    //! \brief finds the first position of 1 bit, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return the position of the first bit set to one in \a value
+    static M_INLINE unsigned int first_leading_one_ul(unsigned long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE)
+        return __builtin_stdc_first_leading_one(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_first_leading_one(value);
+#elif defined(HAVE_BUILT_IN_CLZL)
+    return value == 0UL ? 0U : M_STATIC_CAST(unsigned int, __builtin_clzl(value) + 1);
+#else
+    unsigned int pos = ULONG_WIDTH;
+    while (value > 0UL)
+    {
+        if (value & ULONG_MSB)
+        {
+            break;
+        }
+        --pos;
+        value <<= 1;
+    }
+    return pos;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int first_leading_one_ull(unsigned long long value)
+    //! \brief finds the first position of 1 bit, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return the position of the first bit set to one in \a value
+    static M_INLINE unsigned int first_leading_one_ull(unsigned long long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE)
+        return __builtin_stdc_first_leading_one(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_first_leading_one(value);
+#elif defined(HAVE_BUILT_IN_CLZLL)
+    return value == 0ULL ? 0U : M_STATIC_CAST(unsigned int, __builtin_clzll(value) + 1);
+#else
+    unsigned int pos = ULLONG_WIDTH;
+    while (value > 0ULL)
+    {
+        if (value & ULLONG_MSB)
+        {
+            break;
+        }
+        --pos;
+        value <<= 1;
+    }
+    return pos;
+#endif
+    }
+
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#    define first_leading_one(value)                                                                                   \
+        _Generic((value), unsigned char                                                                                \
+                 : first_leading_one_uc, unsigned short                                                                \
+                 : first_leading_one_us, unsigned int                                                                  \
+                 : first_leading_one_ui, unsigned long                                                                 \
+                 : first_leading_one_ul, unsigned long long                                                            \
+                 : first_leading_one_ull)(value)
+#else
+#    define first_leading_one(value)                                                                                   \
+        (sizeof(value) == sizeof(unsigned char)    ? first_leading_one_uc(value)                                       \
+         : sizeof(value) == sizeof(unsigned short) ? first_leading_one_us(value)                                       \
+         : sizeof(value) == sizeof(unsigned int)   ? first_leading_one_ui(value)                                       \
+         : sizeof(value) == sizeof(unsigned long)  ? first_leading_one_ul(value)                                       \
+                                                   : first_leading_one_ull(value))
+#endif
+
+    //! \fn static M_INLINE unsigned int first_leading_zero_uc(unsigned char value)
+    //! \brief finds the first position of 0 bit, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return the position of the highest bit set to one in \a value
+    static M_INLINE unsigned int first_leading_zero_uc(unsigned char value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
+        return __builtin_stdc_first_leading_zero(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_first_leading_zero(value);
+#else
+    return first_leading_one_uc(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int first_leading_zero_us(unsigned short value)
+    //! \brief finds the first position of 0 bit, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return the position of the highest bit set to one in \a value
+    static M_INLINE unsigned int first_leading_zero_us(unsigned short value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
+        return __builtin_stdc_first_leading_zero(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_first_leading_zero(value);
+#else
+    return first_leading_one_us(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int first_leading_zero_ui(unsigned int value)
+    //! \brief finds the first position of 0 bit, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return the position of the highest bit set to one in \a value
+    static M_INLINE unsigned int first_leading_zero_ui(unsigned int value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
+        return __builtin_stdc_first_leading_zero(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_first_leading_zero(value);
+#else
+    return first_leading_one_ui(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int first_leading_zero_ul(unsigned long value)
+    //! \brief finds the first position of 0 bit, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return the position of the highest bit set to one in \a value
+    static M_INLINE unsigned int first_leading_zero_ul(unsigned long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
+        return __builtin_stdc_first_leading_zero(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_first_leading_zero(value);
+#else
+    return first_leading_one_ul(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int first_leading_zero_ull(unsigned long long value)
+    //! \brief finds the first position of 0 bit, starting from the most significant bit
+    //! \param[in] value the value to assess
+    //! \return the position of the highest bit set to one in \a value
+    static M_INLINE unsigned int first_leading_zero_ull(unsigned long long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
+        return __builtin_stdc_first_leading_zero(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_first_leading_zero(value);
+#else
+    return first_leading_one_ull(~value);
+#endif
+    }
+
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#    define first_leading_zero(value)                                                                                  \
+        _Generic((value), unsigned char                                                                                \
+                 : first_leading_zero_uc, unsigned short                                                               \
+                 : first_leading_zero_us, unsigned int                                                                 \
+                 : first_leading_zero_ui, unsigned long                                                                \
+                 : first_leading_zero_ul, unsigned long long                                                           \
+                 : first_leading_zero_ull)(value)
+#else
+#    define first_leading_zero(value)                                                                                  \
+        (sizeof(value) == sizeof(unsigned char)    ? first_leading_zero_uc(value)                                      \
+         : sizeof(value) == sizeof(unsigned short) ? first_leading_zero_us(value)                                      \
+         : sizeof(value) == sizeof(unsigned int)   ? first_leading_zero_ui(value)                                      \
+         : sizeof(value) == sizeof(unsigned long)  ? first_leading_zero_ul(value)                                      \
+                                                   : first_leading_zero_ull(value))
+#endif
+
+    //! \fn static M_INLINE unsigned int count_ones_uc(unsigned char value)
+    //! \brief counts the number of 1 bits in an unsigned integer
+    //! \param[in] value the value to assess
+    //! \return the number of bits set to 1 in \a value
+    static M_INLINE unsigned int count_ones_uc(unsigned char value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_COUNT_ONES)
+        return __builtin_stdc_count_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_count_ones(value);
+#elif defined(HAVE_BUILT_IN_POPCOUNT)
+    return M_STATIC_CAST(unsigned int, __builtin_popcount(value));
+#else
+    value -= (value >> 1) & 0x55U;
+    value = (value & 0x33U) + ((value >> 2) & 0x33U);
+    value = (value + (value >> 4)) & 0x0FU;
+    return value;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_ones_us(unsigned short value)
+    //! \brief counts the number of 1 bits in an unsigned integer
+    //! \param[in] value the value to assess
+    //! \return the number of bits set to 1 in \a value
+    static M_INLINE unsigned int count_ones_us(unsigned short value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_COUNT_ONES)
+        return __builtin_stdc_count_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_count_ones(value);
+#elif defined(HAVE_BUILT_IN_POPCOUNT)
+    return M_STATIC_CAST(unsigned int, __builtin_popcount(value));
+#else
+    value -= (value >> 1) & 0x5555U;
+    value = (value & 0x3333U) + ((value >> 2) & 0x3333U);
+    value = (value + (value >> 4)) & 0x0F0FU;
+    value += value >> 8;
+    return value & 0x1FU;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_ones_ui(unsigned int value)
+    //! \brief counts the number of 1 bits in an unsigned integer
+    //! \param[in] value the value to assess
+    //! \return the number of bits set to 1 in \a value
+    static M_INLINE unsigned int count_ones_ui(unsigned int value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_COUNT_ONES)
+        return __builtin_stdc_count_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_count_ones(value);
+#elif defined(HAVE_BUILT_IN_POPCOUNT)
+    return M_STATIC_CAST(unsigned int, __builtin_popcount(value));
+#else
+    value -= (value >> 1) & 0x55555555U;
+    value = (value & 0x33333333U) + ((value >> 2) & 0x33333333U);
+    value = (value + (value >> 4)) & 0x0F0F0F0FU;
+    value += value >> 8;
+    value += value >> 16;
+    return value & 0x3FU;
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_ones_ul(unsigned long value)
+    //! \brief counts the number of 1 bits in an unsigned integer
+    //! \param[in] value the value to assess
+    //! \return the number of bits set to 1 in \a value
+    static M_INLINE unsigned int count_ones_ul(unsigned long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_COUNT_ONES)
+        return __builtin_stdc_count_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_count_ones(value);
+#elif defined(HAVE_BUILT_IN_POPCOUNTL)
+    return M_STATIC_CAST(unsigned int, __builtin_popcountl(value));
+#else
+#    if defined(LP64_DATA_MODEL) || defined(ILP64_DATA_MODEL)
+    value -= (value >> 1) & 0x5555555555555555UL;
+    value = (value & 0x3333333333333333UL) + ((value >> 2) & 0x3333333333333333UL);
+    value = (value + (value >> 4)) & 0x0F0F0F0F0F0F0F0FUL;
+    value += value >> 8;
+    value += value >> 16;
+    value += value >> 32;
+    return value & 0x7FUL;
+#    else
+    value -= (value >> 1) & 0x55555555UL;
+    value = (value & 0x33333333UL) + ((value >> 2) & 0x33333333UL);
+    value = (value + (value >> 4)) & 0x0F0F0F0FUL;
+    value += value >> 8;
+    value += value >> 16;
+    return value & 0x3FUL;
+#    endif
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_ones_ull(unsigned long long value)
+    //! \brief counts the number of 1 bits in an unsigned integer
+    //! \param[in] value the value to assess
+    //! \return the number of bits set to 1 in \a value
+    static M_INLINE unsigned int count_ones_ull(unsigned long long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_COUNT_ONES)
+        return __builtin_stdc_count_ones(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_count_ones(value);
+#elif defined(HAVE_BUILT_IN_POPCOUNTLL)
+    return M_STATIC_CAST(unsigned int, __builtin_popcountll(value));
+#else
+    value -= (value >> 1) & 0x5555555555555555ULL;
+    value = (value & 0x3333333333333333ULL) + ((value >> 2) & 0x3333333333333333ULL);
+    value = (value + (value >> 4)) & 0x0F0F0F0F0F0F0F0FULL;
+    value += value >> 8;
+    value += value >> 16;
+    value += value >> 32;
+    return value & 0x7FULL;
+#endif
+    }
+
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#    define count_ones(value)                                                                                          \
+        _Generic((value), unsigned char                                                                                \
+                 : count_ones_uc, unsigned short                                                                       \
+                 : count_ones_us, unsigned int                                                                         \
+                 : count_ones_ui, unsigned long                                                                        \
+                 : count_ones_ul, unsigned long long                                                                   \
+                 : count_ones_ull)(value)
+#else
+#    define count_ones(value)                                                                                          \
+        (sizeof(value) == sizeof(unsigned char)    ? count_ones_uc(value)                                              \
+         : sizeof(value) == sizeof(unsigned short) ? count_ones_us(value)                                              \
+         : sizeof(value) == sizeof(unsigned int)   ? count_ones_ui(value)                                              \
+         : sizeof(value) == sizeof(unsigned long)  ? count_ones_ul(value)                                              \
+                                                   : count_ones_ull(value))
+#endif
+
+    //! \fn static M_INLINE unsigned int count_zeros_uc(unsigned char value)
+    //! \brief counts the number of ​0​ bits in an unsigned integer
+    //! \param[in] value the value to assess
+    //! \return the number of bits set to 0 in \a value
+    static M_INLINE unsigned int count_zeros_uc(unsigned char value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_COUNT_ZEROS)
+        return __builtin_stdc_count_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_count_zeros(value);
+#else
+    return count_ones_uc(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_zeros_us(unsigned short value)
+    //! \brief counts the number of ​0​ bits in an unsigned integer
+    //! \param[in] value the value to assess
+    //! \return the number of bits set to 0 in \a value
+    static M_INLINE unsigned int count_zeros_us(unsigned short value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_COUNT_ZEROS)
+        return __builtin_stdc_count_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_count_zeros(value);
+#else
+    return count_ones_us(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_zeros_ui(unsigned int value)
+    //! \brief counts the number of ​0​ bits in an unsigned integer
+    //! \param[in] value the value to assess
+    //! \return the number of bits set to 0 in \a value
+    static M_INLINE unsigned int count_zeros_ui(unsigned int value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_COUNT_ZEROS)
+        return __builtin_stdc_count_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_count_zeros(value);
+#else
+    return count_ones_ui(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_zeros_ul(unsigned long value)
+    //! \brief counts the number of ​0​ bits in an unsigned integer
+    //! \param[in] value the value to assess
+    //! \return the number of bits set to 0 in \a value
+    static M_INLINE unsigned int count_zeros_ul(unsigned long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_COUNT_ZEROS)
+        return __builtin_stdc_count_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_count_zeros(value);
+#else
+    return count_ones_ul(~value);
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int count_zeros_ull(unsigned long long value)
+    //! \brief counts the number of ​0​ bits in an unsigned integer
+    //! \param[in] value the value to assess
+    //! \return the number of bits set to 0 in \a value
+    static M_INLINE unsigned int count_zeros_ull(unsigned long long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_COUNT_ZEROS)
+        return __builtin_stdc_count_zeros(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_count_zeros(value);
+#else
+    return count_ones_ull(~value);
+#endif
+    }
+
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#    define count_zeros(value)                                                                                         \
+        _Generic((value), unsigned char                                                                                \
+                 : count_zeros_uc, unsigned short                                                                      \
+                 : count_zeros_us, unsigned int                                                                        \
+                 : count_zeros_ui, unsigned long                                                                       \
+                 : count_zeros_ul, unsigned long long                                                                  \
+                 : count_zeros_ull)(value)
+#else
+#    define count_zeros(value)                                                                                         \
+        (sizeof(value) == sizeof(unsigned char)    ? count_zeros_uc(value)                                             \
+         : sizeof(value) == sizeof(unsigned short) ? count_zeros_us(value)                                             \
+         : sizeof(value) == sizeof(unsigned int)   ? count_zeros_ui(value)                                             \
+         : sizeof(value) == sizeof(unsigned long)  ? count_zeros_ul(value)                                             \
+                                                   : count_zeros_ull(value))
+#endif
+
+    //! \fn static M_INLINE bool has_single_bit_uc(unsigned char value)
+    //! \brief checks if a number is an integral power of 2 or only one bit is set to 1
+    //! \param[in] value the value to assess
+    //! \return true when only one bit is set to one, otherwise false
+    static M_INLINE bool has_single_bit_uc(unsigned char value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_HAS_SINGLE_BIT)
+        return __builtin_stdc_has_single_bit(value);
+#else
+    return value != 0U && (value & (value - 1U)) == 0U;
+#endif
+    }
+
+    //! \fn static M_INLINE bool has_single_bit_us(unsigned short value)
+    //! \brief checks if a number is an integral power of 2 or only one bit is set to 1
+    //! \param[in] value the value to assess
+    //! \return true when only one bit is set to one, otherwise false
+    static M_INLINE bool has_single_bit_us(unsigned short value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_HAS_SINGLE_BIT)
+        return __builtin_stdc_has_single_bit(value);
+#else
+    return value != 0U && (value & (value - 1U)) == 0U;
+#endif
+    }
+
+    //! \fn static M_INLINE bool has_single_bit_ui(unsigned int value)
+    //! \brief checks if a number is an integral power of 2 or only one bit is set to 1
+    //! \param[in] value the value to assess
+    //! \return true when only one bit is set to one, otherwise false
+    static M_INLINE bool has_single_bit_ui(unsigned int value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_HAS_SINGLE_BIT)
+        return __builtin_stdc_has_single_bit(value);
+#else
+    return value != 0U && (value & (value - 1U)) == 0U;
+#endif
+    }
+
+    //! \fn static M_INLINE bool has_single_bit_ul(unsigned long value)
+    //! \brief checks if a number is an integral power of 2 or only one bit is set to 1
+    //! \param[in] value the value to assess
+    //! \return true when only one bit is set to one, otherwise false
+    static M_INLINE bool has_single_bit_ul(unsigned long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_HAS_SINGLE_BIT)
+        return __builtin_stdc_has_single_bit(value);
+#else
+    return value != 0UL && (value & (value - 1UL)) == 0UL;
+#endif
+    }
+
+    //! \fn static M_INLINE bool has_single_bit_ull(unsigned long long value)
+    //! \brief checks if a number is an integral power of 2 or only one bit is set to 1
+    //! \param[in] value the value to assess
+    //! \return true when only one bit is set to one, otherwise false
+    static M_INLINE bool has_single_bit_ull(unsigned long long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_HAS_SINGLE_BIT)
+        return __builtin_stdc_has_single_bit(value);
+#else
+    return value != 0ULL && (value & (value - 1ULL)) == 0ULL;
+#endif
+    }
+
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#    define has_single_bit(value)                                                                                      \
+        _Generic((value), unsigned char                                                                                \
+                 : has_single_bit_uc, unsigned short                                                                   \
+                 : has_single_bit_us, unsigned int                                                                     \
+                 : has_single_bit_ui, unsigned long                                                                    \
+                 : has_single_bit_ul, unsigned long long                                                               \
+                 : has_single_bit_ull)(value)
+#else
+#    define has_single_bit(value)                                                                                      \
+        (sizeof(value) == sizeof(unsigned char)    ? has_single_bit_uc(value)                                          \
+         : sizeof(value) == sizeof(unsigned short) ? has_single_bit_us(value)                                          \
+         : sizeof(value) == sizeof(unsigned int)   ? has_single_bit_ui(value)                                          \
+         : sizeof(value) == sizeof(unsigned long)  ? has_single_bit_ul(value)                                          \
+                                                   : has_single_bit_ull(value))
+#endif
+
+    //! \fn static M_INLINE unsigned int get_req_bit_width_uc(unsigned char value)
+    //! \brief finds the smallest number of bits needed to represent the given value
+    //! \param[in] value the value to assess
+    //! \return the number of bits required to represent \a value
+    static M_INLINE unsigned int get_req_bit_width_uc(unsigned char value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_WIDTH)
+        return __builtin_stdc_bit_width(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_width(value);
+#else
+    return UCHAR_WIDTH - (value == 0U ? UCHAR_WIDTH : count_leading_zeros_uc(value));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int get_req_bit_width_us(unsigned short value)
+    //! \brief finds the smallest number of bits needed to represent the given value
+    //! \param[in] value the value to assess
+    //! \return the number of bits required to represent \a value
+    static M_INLINE unsigned int get_req_bit_width_us(unsigned short value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_WIDTH)
+        return __builtin_stdc_bit_width(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_width(value);
+#else
+    return USHRT_WIDTH - (value == 0U ? USHRT_WIDTH : count_leading_zeros_us(value));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int get_req_bit_width_ui(unsigned int value)
+    //! \brief finds the smallest number of bits needed to represent the given value
+    //! \param[in] value the value to assess
+    //! \return the number of bits required to represent \a value
+    static M_INLINE unsigned int get_req_bit_width_ui(unsigned int value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_WIDTH)
+        return __builtin_stdc_bit_width(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_width(value);
+#else
+    return UINT_WIDTH - (value == 0U ? UINT_WIDTH : count_leading_zeros_ui(value));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int get_req_bit_width_ul(unsigned long value)
+    //! \brief finds the smallest number of bits needed to represent the given value
+    //! \param[in] value the value to assess
+    //! \return the number of bits required to represent \a value
+    static M_INLINE unsigned int get_req_bit_width_ul(unsigned long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_WIDTH)
+        return __builtin_stdc_bit_width(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_width(value);
+#else
+    return ULONG_WIDTH - (value == 0UL ? ULONG_WIDTH : count_leading_zeros_ul(value));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int get_req_bit_width_ull(unsigned long long value)
+    //! \brief finds the smallest number of bits needed to represent the given value
+    //! \param[in] value the value to assess
+    //! \return the number of bits required to represent \a value
+    static M_INLINE unsigned int get_req_bit_width_ull(unsigned long long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_WIDTH)
+        return __builtin_stdc_bit_width(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_width(value);
+#else
+    return ULLONG_WIDTH - (value == 0ULL ? ULLONG_WIDTH : count_leading_zeros_ull(value));
+#endif
+    }
+
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#    define get_req_bit_width(value)                                                                                   \
+        _Generic((value), unsigned char                                                                                \
+                 : get_req_bit_width_uc, unsigned short                                                                \
+                 : get_req_bit_width_us, unsigned int                                                                  \
+                 : get_req_bit_width_ui, unsigned long                                                                 \
+                 : get_req_bit_width_ul, unsigned long long                                                            \
+                 : get_req_bit_width_ull)(value)
+#else
+#    define get_req_bit_width(value)                                                                                   \
+        (sizeof(value) == sizeof(unsigned char)    ? get_req_bit_width_uc(value)                                       \
+         : sizeof(value) == sizeof(unsigned short) ? get_req_bit_width_us(value)                                       \
+         : sizeof(value) == sizeof(unsigned int)   ? get_req_bit_width_ui(value)                                       \
+         : sizeof(value) == sizeof(unsigned long)  ? get_req_bit_width_ul(value)                                       \
+                                                   : get_req_bit_width_ull(value))
+#endif
+
+    //! \fn static M_INLINE unsigned char bit_floor_uc(unsigned char value)
+    //! \brief finds the largest integral power of two not greater than the given \a value
+    //! \param[in] value the value to assess
+    //! \return power of two <= \a value
+    static M_INLINE unsigned char bit_floor_uc(unsigned char value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_FLOOR)
+        return __builtin_stdc_bit_floor(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_floor(value);
+#else
+    return value == 0U ? 0U : 1U << (UCHAR_WIDTH - 1U - count_leading_zeros_uc(value));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned short bit_floor_us(unsigned short value)
+    //! \brief finds the largest integral power of two not greater than the given \a value
+    //! \param[in] value the value to assess
+    //! \return power of two <= \a value
+    static M_INLINE unsigned short bit_floor_us(unsigned short value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_FLOOR)
+        return __builtin_stdc_bit_floor(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_floor(value);
+#else
+    return value == 0U ? 0U : 1U << (USHRT_WIDTH - 1U - count_leading_zeros_us(value));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int bit_floor_ui(unsigned int value)
+    //! \brief finds the largest integral power of two not greater than the given \a value
+    //! \param[in] value the value to assess
+    //! \return power of two <= \a value
+    static M_INLINE unsigned int bit_floor_ui(unsigned int value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_FLOOR)
+        return __builtin_stdc_bit_floor(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_floor(value);
+#else
+    return value == 0U ? 0U : 1U << (UINT_WIDTH - 1U - count_leading_zeros_ui(value));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned long bit_floor_ul(unsigned long value)
+    //! \brief finds the largest integral power of two not greater than the given \a value
+    //! \param[in] value the value to assess
+    //! \return power of two <= \a value
+    static M_INLINE unsigned long bit_floor_ul(unsigned long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_FLOOR)
+        return __builtin_stdc_bit_floor(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_floor(value);
+#else
+    return value == 0UL ? 0UL : 1UL << (ULONG_WIDTH - 1UL - count_leading_zeros_ul(value));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned long long bit_floor_ull(unsigned long long value)
+    //! \brief finds the largest integral power of two not greater than the given \a value
+    //! \param[in] value the value to assess
+    //! \return power of two <= \a value
+    static M_INLINE unsigned long long bit_floor_ull(unsigned long long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_FLOOR)
+        return __builtin_stdc_bit_floor(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_floor(value);
+#else
+    return value == 0ULL ? 0ULL : 1ULL << (ULLONG_WIDTH - 1ULL - count_leading_zeros_ull(value));
+#endif
+    }
+
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#    define bit_floor(value)                                                                                           \
+        _Generic((value), unsigned char                                                                                \
+                 : bit_floor_uc, unsigned short                                                                        \
+                 : bit_floor_us, unsigned int                                                                          \
+                 : bit_floor_ui, unsigned long                                                                         \
+                 : bit_floor_ul, unsigned long long                                                                    \
+                 : bit_floor_ull)(value)
+#else
+#    define bit_floor(value)                                                                                           \
+        (sizeof(value) == sizeof(unsigned char)    ? bit_floor_uc(value)                                               \
+         : sizeof(value) == sizeof(unsigned short) ? bit_floor_us(value)                                               \
+         : sizeof(value) == sizeof(unsigned int)   ? bit_floor_ui(value)                                               \
+         : sizeof(value) == sizeof(unsigned long)  ? bit_floor_ul(value)                                               \
+                                                   : bit_floor_ull(value))
+#endif
+
+    //! \fn static M_INLINE unsigned char bit_ceil_uc(unsigned char value)
+    //! \brief finds the smallest integral power of two not less than the given \a value
+    //! \param[in] value the value to assess
+    //! \return power of two >= \a value
+    static M_INLINE unsigned char bit_ceil_uc(unsigned char value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_CEIL)
+        return __builtin_stdc_bit_ceil(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_ceil(value);
+#else
+    return value <= 1U ? 1U : 2U << (UCHAR_WIDTH - 1U - count_leading_zeros_uc(value - 1U));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned short bit_ceil_us(unsigned short value)
+    //! \brief finds the smallest integral power of two not less than the given \a value
+    //! \param[in] value the value to assess
+    //! \return power of two >= \a value
+    static M_INLINE unsigned short bit_ceil_us(unsigned short value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_CEIL)
+        return __builtin_stdc_bit_ceil(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_ceil(value);
+#else
+    return value <= 1U ? 1U : 2U << (USHRT_WIDTH - 1U - count_leading_zeros_us(value - 1U));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int bit_ceil_ui(unsigned int value)
+    //! \brief finds the smallest integral power of two not less than the given \a value
+    //! \param[in] value the value to assess
+    //! \return power of two >= \a value
+    static M_INLINE unsigned int bit_ceil_ui(unsigned int value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_CEIL)
+        return __builtin_stdc_bit_ceil(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_ceil(value);
+#else
+    return value <= 1U ? 1U : 2U << (UINT_WIDTH - 1U - count_leading_zeros_ui(value - 1U));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned long bit_ceil_ul(unsigned long value)
+    //! \brief finds the smallest integral power of two not less than the given \a value
+    //! \param[in] value the value to assess
+    //! \return power of two >= \a value
+    static M_INLINE unsigned long bit_ceil_ul(unsigned long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_CEIL)
+        return __builtin_stdc_bit_ceil(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_ceil(value);
+#else
+    return value <= 1UL ? 1UL : 2UL << (ULONG_WIDTH - 1UL - count_leading_zeros_ul(value - 1UL));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned long long bit_ceil_ull(unsigned long long value)
+    //! \brief finds the smallest integral power of two not less than the given \a value
+    //! \param[in] value the value to assess
+    //! \return power of two >= \a value
+    static M_INLINE unsigned long long bit_ceil_ull(unsigned long long value)
+    {
+#if defined(HAVE_BUILT_IN_STDC_BIT_CEIL)
+        return __builtin_stdc_bit_ceil(value);
+#elif defined(HAVE_STDC_BIT)
+    return stdc_bit_ceil(value);
+#else
+    return value <= 1ULL ? 1ULL : 2ULL << (ULLONG_WIDTH - 1ULL - count_leading_zeros_ull(value - 1ULL));
+#endif
+    }
+
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#    define bit_ceil(value)                                                                                            \
+        _Generic((value), unsigned char                                                                                \
+                 : bit_ceil_uc, unsigned short                                                                         \
+                 : bit_ceil_us, unsigned int                                                                           \
+                 : bit_ceil_ui, unsigned long                                                                          \
+                 : bit_ceil_ul, unsigned long long                                                                     \
+                 : bit_ceil_ull)(value)
+#else
+#    define bit_ceil(value)                                                                                            \
+        (sizeof(value) == sizeof(unsigned char)    ? bit_ceil_uc(value)                                                \
+         : sizeof(value) == sizeof(unsigned short) ? bit_ceil_us(value)                                                \
+         : sizeof(value) == sizeof(unsigned int)   ? bit_ceil_ui(value)                                                \
+         : sizeof(value) == sizeof(unsigned long)  ? bit_ceil_ul(value)                                                \
+                                                   : bit_ceil_ull(value))
+#endif
+
+    //! \fn static M_INLINE unsigned char rotate_left_uc(unsigned char value, unsigned int count)
+    //! \brief rotates the value to the left by specified \a count
+    //! \param[in] value the value to rotate
+    //! \param[in] count number of bit positions to rotate to the left
+    //! \return rotated \a value
+    static M_INLINE unsigned char rotate_left_uc(unsigned char value, unsigned int count)
+    {
+#if defined(HAVE_BUILT_IN_STDC_ROTATE_LEFT)
+        return __builtin_stdc_rotate_left(value, count);
+#else
+    return ((value << (count % UCHAR_WIDTH)) | (value >> (((~count) + 1U) % UCHAR_WIDTH)));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned short rotate_left_us(unsigned short value, unsigned int count)
+    //! \brief rotates the value to the left by specified \a count
+    //! \param[in] value the value to rotate
+    //! \param[in] count number of bit positions to rotate to the left
+    //! \return rotated \a value
+    static M_INLINE unsigned short rotate_left_us(unsigned short value, unsigned int count)
+    {
+#if defined(HAVE_BUILT_IN_STDC_ROTATE_LEFT)
+        return __builtin_stdc_rotate_left(value, count);
+#else
+    return ((value << (count % USHRT_WIDTH)) | (value >> (((~count) + 1U) % USHRT_WIDTH)));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int rotate_left_ui(unsigned int value, unsigned int count)
+    //! \brief rotates the value to the left by specified \a count
+    //! \param[in] value the value to rotate
+    //! \param[in] count number of bit positions to rotate to the left
+    //! \return rotated \a value
+    static M_INLINE unsigned int rotate_left_ui(unsigned int value, unsigned int count)
+    {
+#if defined(HAVE_BUILT_IN_STDC_ROTATE_LEFT)
+        return __builtin_stdc_rotate_left(value, count);
+#else
+    return ((value << (count % UINT_WIDTH)) | (value >> (((~count) + 1U) % UINT_WIDTH)));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned long rotate_left_ul(unsigned long value, unsigned int count)
+    //! \brief rotates the value to the left by specified \a count
+    //! \param[in] value the value to rotate
+    //! \param[in] count number of bit positions to rotate to the left
+    //! \return rotated \a value
+    static M_INLINE unsigned long rotate_left_ul(unsigned long value, unsigned int count)
+    {
+#if defined(HAVE_BUILT_IN_STDC_ROTATE_LEFT)
+        return __builtin_stdc_rotate_left(value, count);
+#else
+    return ((value << (count % ULONG_WIDTH)) | (value >> (((~count) + 1U) % ULONG_WIDTH)));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned long long rotate_left_ull(unsigned long long value, unsigned int count)
+    //! \brief rotates the value to the left by specified \a count
+    //! \param[in] value the value to rotate
+    //! \param[in] count number of bit positions to rotate to the left
+    //! \return rotated \a value
+    static M_INLINE unsigned long long rotate_left_ull(unsigned long long value, unsigned int count)
+    {
+#if defined(HAVE_BUILT_IN_STDC_ROTATE_LEFT)
+        return __builtin_stdc_rotate_left(value, count);
+#else
+    return ((value << (count % ULLONG_WIDTH)) | (value >> (((~count) + 1U) % ULLONG_WIDTH)));
+#endif
+    }
+
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#    define rotate_left(value, count)                                                                                  \
+        _Generic((value), unsigned char                                                                                \
+                 : rotate_left_uc, unsigned short                                                                      \
+                 : rotate_left_us, unsigned int                                                                        \
+                 : rotate_left_ui, unsigned long                                                                       \
+                 : rotate_left_ul, unsigned long long                                                                  \
+                 : rotate_left_ull)(value, count)
+#else
+#    define rotate_left(value, count)                                                                                  \
+        (sizeof(value) == sizeof(unsigned char)    ? rotate_left_uc((unsigned char)(value), count)                     \
+         : sizeof(value) == sizeof(unsigned short) ? rotate_left_us((unsigned short)(value), count)                    \
+         : sizeof(value) == sizeof(unsigned int)   ? rotate_left_ui((unsigned int)(value), count)                      \
+         : sizeof(value) == sizeof(unsigned long)  ? rotate_left_ul((unsigned long)(value), count)                     \
+                                                   : rotate_left_ull((unsigned long long)(value), count))
+#endif
+
+    //! \fn static M_INLINE unsigned char rotate_right_uc(unsigned char value, unsigned int count)
+    //! \brief rotates the value to the right by specified \a count
+    //! \param[in] value the value to rotate
+    //! \param[in] count number of bit positions to rotate to the right
+    //! \return rotated \a value
+    static M_INLINE unsigned char rotate_right_uc(unsigned char value, unsigned int count)
+    {
+#if defined(HAVE_BUILT_IN_STDC_ROTATE_RIGHT)
+        return __builtin_stdc_rotate_right(value, count);
+#else
+    return ((value >> (count % UCHAR_WIDTH)) | (value << (((~count) + 1U) % UCHAR_WIDTH)));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned short rotate_right_us(unsigned short value, unsigned int count)
+    //! \brief rotates the value to the right by specified \a count
+    //! \param[in] value the value to rotate
+    //! \param[in] count number of bit positions to rotate to the right
+    //! \return rotated \a value
+    static M_INLINE unsigned short rotate_right_us(unsigned short value, unsigned int count)
+    {
+#if defined(HAVE_BUILT_IN_STDC_ROTATE_RIGHT)
+        return __builtin_stdc_rotate_right(value, count);
+#else
+    return ((value >> (count % USHRT_WIDTH)) | (value << (((~count) + 1U) % USHRT_WIDTH)));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned int rotate_right_ui(unsigned int value, unsigned int count)
+    //! \brief rotates the value to the right by specified \a count
+    //! \param[in] value the value to rotate
+    //! \param[in] count number of bit positions to rotate to the right
+    //! \return rotated \a value
+    static M_INLINE unsigned int rotate_right_ui(unsigned int value, unsigned int count)
+    {
+#if defined(HAVE_BUILT_IN_STDC_ROTATE_RIGHT)
+        return __builtin_stdc_rotate_right(value, count);
+#else
+    return ((value >> (count % UINT_WIDTH)) | (value << (((~count) + 1U) % UINT_WIDTH)));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned long rotate_right_ul(unsigned long value, unsigned int count)
+    //! \brief rotates the value to the right by specified \a count
+    //! \param[in] value the value to rotate
+    //! \param[in] count number of bit positions to rotate to the right
+    //! \return rotated \a value
+    static M_INLINE unsigned long rotate_right_ul(unsigned long value, unsigned int count)
+    {
+#if defined(HAVE_BUILT_IN_STDC_ROTATE_RIGHT)
+        return __builtin_stdc_rotate_right(value, count);
+#else
+    return ((value >> (count % ULONG_WIDTH)) | (value << (((~count) + 1U) % ULONG_WIDTH)));
+#endif
+    }
+
+    //! \fn static M_INLINE unsigned long long rotate_right_ull(unsigned long long value, unsigned int count)
+    //! \brief rotates the value to the right by specified \a count
+    //! \param[in] value the value to rotate
+    //! \param[in] count number of bit positions to rotate to the right
+    //! \return rotated \a value
+    static M_INLINE unsigned long long rotate_right_ull(unsigned long long value, unsigned int count)
+    {
+#if defined(HAVE_BUILT_IN_STDC_ROTATE_RIGHT)
+        return __builtin_stdc_rotate_right(value, count);
+#else
+    return ((value >> (count % ULLONG_WIDTH)) | (value << (((~count) + 1U) % ULLONG_WIDTH)));
+#endif
+    }
+
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#    define rotate_right(value, count)                                                                                 \
+        _Generic((value), unsigned char                                                                                \
+                 : rotate_right_uc, unsigned short                                                                     \
+                 : rotate_right_us, unsigned int                                                                       \
+                 : rotate_right_ui, unsigned long                                                                      \
+                 : rotate_right_ul, unsigned long long                                                                 \
+                 : rotate_right_ull)(value, count)
+#else
+#    define rotate_right(value, count)                                                                                 \
+        (sizeof(value) == sizeof(unsigned char)    ? rotate_right_uc((unsigned char)(value), count)                    \
+         : sizeof(value) == sizeof(unsigned short) ? rotate_right_us((unsigned short)(value), count)                   \
+         : sizeof(value) == sizeof(unsigned int)   ? rotate_right_ui((unsigned int)(value), count)                     \
+         : sizeof(value) == sizeof(unsigned long)  ? rotate_right_ul((unsigned long)(value), count)                    \
+                                                   : rotate_right_ull((unsigned long long)(value), count))
+#endif
 
 #if defined(__cplusplus)
 }

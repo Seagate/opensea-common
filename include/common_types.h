@@ -341,16 +341,173 @@ typedef int32_t intptr_t;
 #    define SSIZE_T_DEFINED
 #endif // SSIZE_MAX && _MSC_VER
 
+// Bit widths. Standardized in C23, but if the def is missing, we will define it -TJE
+// NOTE: Using the table on this page as a reference https://en.cppreference.com/w/c/language/arithmetic_types
+//       Some types may have a common width, otherwise we will do our best to set this based off the data model
+
+//! \def CHAR_WIDTH
+//! \brief Defines the width of a char type in bits.
+//! \details Typically, this is defined as CHAR_BIT, which is usually 8 bits.
+#if !defined(CHAR_WIDTH)
+#    define CHAR_WIDTH CHAR_BIT
+#endif
+
+//! \def CHAR_MSB
+//! \brief Defines a value with the most significant bit of char set to 1
+#define CHAR_MSB (1 << (CHAR_WIDTH - 1))
+
+//! \def SCHAR_WIDTH
+//! \brief Defines the width of a signed char type in bits.
+//! \details Standard width for signed char is 8 bits.
+#if !defined(SCHAR_WIDTH)
+#    define SCHAR_WIDTH 8
+#endif
+
+//! \def SCHAR_MSB
+//! \brief Defines a value with the most significant bit of signed char set to 1
+#define SCHAR_MSB (1 << (SCHAR_WIDTH - 1))
+
+//! \def SHRT_WIDTH
+//! \brief Defines the width of a short type in bits.
+//! \details Standard width for short is 16 bits.
+#if !defined(SHRT_WIDTH)
+#    define SHRT_WIDTH 16
+#endif
+
+//! \def SHRT_MSB
+//! \brief Defines a value with the most significant bit of short set to 1
+#define SHRT_MSB (1 << (SHRT_WIDTH - 1))
+
+//! \def INT_WIDTH
+//! \brief Defines the width of an int type in bits.
+//! \details Width varies based on data model:
+//! - LP32: 16 bits
+//! - ILP64: 64 bits
+//! - Others: 32 bits
+#if !defined(INT_WIDTH)
+#    if defined(LP32_DATA_MODEL)
+#        define INT_WIDTH 16
+#    elif defined(ILP64_DATA_MODEL)
+#        define INT_WIDTH 64
+#    else
+#        define INT_WIDTH 32
+#    endif
+#endif
+
+//! \def INT_MSB
+//! \brief Defines a value with the most significant bit of int set to 1
+#define INT_MSB (1 << (INT_WIDTH - 1))
+
+//! \def LONG_WIDTH
+//! \brief Defines the width of a long type in bits.
+//! \details Width varies based on data model:
+//! - LP64 and ILP64: 64 bits
+//! - Others: 32 bits
+#if !defined(LONG_WIDTH)
+#    if defined(LP64_DATA_MODEL) || defined(ILP64_DATA_MODEL)
+#        define LONG_WIDTH 64
+#    else
+#        define LONG_WIDTH 32
+#    endif
+#endif
+
+//! \def LONG_MSB
+//! \brief Defines a value with the most significant bit of long set to 1
+#define LONG_MSB (1L << (LONG_WIDTH - 1))
+
+//! \def LLONG_WIDTH
+//! \brief Defines the width of a long long type in bits.
+//! \details Standard width for long long is 64 bits.
+#if !defined(LLONG_WIDTH)
+#    define LLONG_WIDTH 64
+#endif
+
+//! \def LLONG_MSB
+//! \brief Defines a value with the most significant bit of long long set to 1
+#define LLONG_MSB (1LL << (LLONG_WIDTH - 1))
+
+//! \def UCHAR_WIDTH
+//! \brief Defines the width of an unsigned char type in bits.
+//! \details Standard width for unsigned char is 8 bits.
+#if !defined(UCHAR_WIDTH)
+#    define UCHAR_WIDTH 8
+#endif
+
+//! \def UCHAR_MSB
+//! \brief Defines a value with the most significant bit of unsigned char set to 1
+#define UCHAR_MSB (1 << (UCHAR_WIDTH - 1))
+
+//! \def USHRT_WIDTH
+//! \brief Defines the width of an unsigned short type in bits.
+//! \details Standard width for unsigned short is 16 bits.
+#if !defined(USHRT_WIDTH)
+#    define USHRT_WIDTH 16
+#endif
+
+//! \def USHRT_MSB
+//! \brief Defines a value with the most significant bit of unsigned short set to 1
+#define USHRT_MSB (1 << (USHRT_WIDTH - 1))
+
+//! \def UINT_WIDTH
+//! \brief Defines the width of an unsigned int type in bits.
+//! \details Width varies based on data model:
+//! - LP32: 16 bits
+//! - ILP64: 64 bits
+//! - Others: 32 bits
+#if !defined(UINT_WIDTH)
+#    if defined(LP32_DATA_MODEL)
+#        define UINT_WIDTH 16
+#    elif defined(ILP64_DATA_MODEL)
+#        define UINT_WIDTH 64
+#    else
+#        define UINT_WIDTH 32
+#    endif
+#endif
+
+//! \def UINT_MSB
+//! \brief Defines a value with the most significant bit of unsigned int set to 1
+#define UINT_MSB (1U << (UINT_WIDTH - 1))
+
+//! \def ULONG_WIDTH
+//! \brief Defines the width of an unsigned long type in bits.
+//! \details Width varies based on data model:
+//! - LP64 and ILP64: 64 bits
+//! - Others: 32 bits
+#if !defined(ULONG_WIDTH)
+#    if defined(LP64_DATA_MODEL) || defined(ILP64_DATA_MODEL)
+#        define ULONG_WIDTH 64
+#    else
+#        define ULONG_WIDTH 32
+#    endif
+#endif
+
+//! \def ULONG_MSB
+//! \brief Defines a value with the most significant bit of unsigned long set to 1
+#define ULONG_MSB (1UL << (ULONG_WIDTH - 1))
+
+//! \def ULLONG_WIDTH
+//! \brief Defines the width of an unsigned long long type in bits.
+//! \details Standard width for unsigned long long is 64 bits.
+#if !defined(ULLONG_WIDTH)
+#    define ULLONG_WIDTH 64
+#endif
+
+//! \def ULLONG_MSB
+//! \brief Defines a value with the most significant bit of unsigned long long set to 1
+#define ULLONG_MSB (1ULL << (ULLONG_WIDTH - 1))
+
 //! \def RESERVED
 //! \brief Defines a macro for reserved bytes.
 //!
 //! This macro defines a reserved byte with a value of 0.
+//! This macro can be used within UINTwidth_C type macros as needed.
 #define RESERVED 0
 
 //! \def OBSOLETE
 //! \brief Defines a macro for obsolete bytes.
 //!
 //! This macro defines an obsolete byte with a value of 0.
+//! This macro can be used within UINTwidth_C type macros as needed.
 #define OBSOLETE 0
 
 //! \def M_NULLPTR
@@ -538,8 +695,7 @@ typedef int32_t intptr_t;
 #        define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                   \
             type_name array_name[size] = {[0 ...((size)-1)] = 0}
 #    elif USING_C23
-#        define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                   \
-            type_name array_name[size] = { }
+#        define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) type_name array_name[size] = {}
 #    else
 #        if defined(USING_C99)
     static M_INLINE void zero_init_array(void* array, size_t element_size, size_t element_count)
@@ -592,7 +748,7 @@ typedef int32_t intptr_t;
 #else
 // Generic way to do this. Not as good messaging but should work about the same
 #    define M_STATIC_ASSERT(condition, message)                                                                        \
-        typedef char static_assertion_##message[(condition) ? 1 : -1] M_ATTR_UNUSED
+        typedef char static_assertion_##message[(condition) ? 1 : -1]
 #endif
 
 //! \def OPENSEA_PATH_MAX

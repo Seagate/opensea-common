@@ -653,6 +653,8 @@ extern "C"
 // Detect the LP64 pr LLP64 mode for the system/compiler.
 // This is meant to be used within various opensea-common functions, but defined
 // in this header so that it can be used easily for other uses
+// https://en.cppreference.com/w/c/language/arithmetic_types discusses data models
+// More discussion on data models: https://archive.opengroup.org/public/tech/aspen/lp64_wp.htm
 #if defined(__LP64__) || defined(_LP64)
 #    define LP64_DATA_MODEL
 #elif defined(_WIN32)
@@ -665,12 +667,14 @@ extern "C"
 #    define ILP32_DATA_MODEL
 #elif defined(__ILP64__) || defined(_ILP64)
 #    define ILP64_DATA_MODEL
-#elif defined(__LP32__) || defined(_LP32)
+#elif defined(__LP32__) || defined(_LP32) || defined(_WIN16)
 #    define LP32_DATA_MODEL
 #else
 // Add more data model info here as necessary.
 // If a data model is not already defined above, then some built in logic is
 // used to decide functions to call in some scenarios.
+// Check type sizes to determine the data model???
+#    define MISSING_DATA_MODEL_INFO
 #endif
 
 #if (defined(__STDC_LIB_EXT1__) && defined(__STDC_WANT_LIB_EXT1__))
@@ -997,10 +1001,124 @@ extern "C"
 #    if __has_builtin(__builtin_crc16_data8)
 #        define HAVE_BUILT_IN_CRC16_DATA8
 #    endif
+#    if __has_builtin(__builtin_clzll)
+#        define HAVE_BUILT_IN_CLZLL
+#    endif
+#    if __has_builtin(__builtin_ctzll)
+#        define HAVE_BUILT_IN_CTZLL
+#    endif
+#    if __has_builtin(__builtin_popcountll)
+#        define HAVE_BUILT_IN_POPCOUNTLL
+#    endif
+#    if __has_builtin(__builtin_clzl)
+#        define HAVE_BUILT_IN_CLZL
+#    endif
+#    if __has_builtin(__builtin_ctzl)
+#        define HAVE_BUILT_IN_CTZL
+#    endif
+#    if __has_builtin(__builtin_popcountl)
+#        define HAVE_BUILT_IN_POPCOUNTL
+#    endif
+#    if __has_builtin(__builtin_clz)
+#        define HAVE_BUILT_IN_CLZ
+#    endif
+#    if __has_builtin(__builtin_ctz)
+#        define HAVE_BUILT_IN_CTZ
+#    endif
+#    if __has_builtin(__builtin_popcount)
+#        define HAVE_BUILT_IN_POPCOUNTLL
+#    endif
+#    if __has_builtin(__builtin_clzg)
+#        define HAVE_BUILT_IN_CLZG
+#    endif
+#    if __has_builtin(__builtin_ctzg)
+#        define HAVE_BUILT_IN_CTZG
+#    endif
+#    if __has_builtin(__builtin_popcountg)
+#        define HAVE_BUILT_IN_POPCOUNTG
+#    endif
+#    if __has_builtin(__builtin_stdc_bit_ceil)
+#        define HAVE_BUILT_IN_STDC_BIT_CEIL
+#    endif
+#    if __has_builtin(__builtin_stdc_bit_floor)
+#        define HAVE_BUILT_IN_STDC_BIT_FLOOR
+#    endif
+#    if __has_builtin(__builtin_stdc_bit_width)
+#        define HAVE_BUILT_IN_STDC_BIT_WIDTH
+#    endif
+#    if __has_builtin(__builtin_stdc_count_ones)
+#        define HAVE_BUILT_IN_STDC_COUNT_ONES
+#    endif
+#    if __has_builtin(__builtin_stdc_count_zeros)
+#        define HAVE_BUILT_IN_STDC_COUNT_ZEROS
+#    endif
+#    if __has_builtin(__builtin_stdc_first_leading_one)
+#        define HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE
+#    endif
+#    if __has_builtin(__builtin_stdc_first_leading_zero)
+#        define HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO
+#    endif
+#    if __has_builtin(__builtin_stdc_first_trailing_one)
+#        define HAVE_BUILT_IN_STDC_FIRST_TRAILING_ONE
+#    endif
+#    if __has_builtin(__builtin_stdc_first_trailing_zero)
+#        define HAVE_BUILT_IN_STDC_FIRST_TRAILING_ZERO
+#    endif
+#    if __has_builtin(__builtin_stdc_has_single_bit)
+#        define HAVE_BUILT_IN_STDC_HAS_SINGLE_BIT
+#    endif
+#    if __has_builtin(__builtin_stdc_leading_ones)
+#        define HAVE_BUILT_IN_STDC_LEADING_ONES
+#    endif
+#    if __has_builtin(__builtin_stdc_leading_zeros)
+#        define HAVE_BUILT_IN_STDC_LEADING_ZEROS
+#    endif
+#    if __has_builtin(__builtin_stdc_trailing_ones)
+#        define HAVE_BUILT_IN_STDC_TRAILING_ONES
+#    endif
+#    if __has_builtin(__builtin_stdc_trailing_zeros)
+#        define HAVE_BUILT_IN_STDC_TRAILING_ZEROS
+#    endif
+#    if __has_builtin(__builtin_stdc_rotate_left)
+#        define HAVE_BUILT_IN_STDC_ROTATE_LEFT
+#    endif
+#    if __has_builtin(__builtin_stdc_rotate_right)
+#        define HAVE_BUILT_IN_STDC_ROTATE_RIGHT
+#    endif
 #endif //__has_builtin
 
 #if !defined(HAVE_BUILT_IN_OBJ_SIZE) && IS_GCC_VERSION(4, 1)
 #    define HAVE_BUILT_IN_OBJ_SIZE
+#endif
+
+#if IS_GCC_VERSION(3, 4)
+#    if !defined(HAVE_BUILT_IN_CLZ)
+#        define HAVE_BUILT_IN_CLZ
+#    endif
+#    if !defined(HAVE_BUILT_IN_CLZL)
+#        define HAVE_BUILT_IN_CLZL
+#    endif
+#    if !defined(HAVE_BUILT_IN_CLZLL)
+#        define HAVE_BUILT_IN_CLZLL
+#    endif
+#    if !defined(HAVE_BUILT_IN_CTZ)
+#        define HAVE_BUILT_IN_CTZ
+#    endif
+#    if !defined(HAVE_BUILT_IN_CTZL)
+#        define HAVE_BUILT_IN_CTZL
+#    endif
+#    if !defined(HAVE_BUILT_IN_CTZLL)
+#        define HAVE_BUILT_IN_CTZLL
+#    endif
+#    if !defined(HAVE_BUILT_IN_POPCOUNT)
+#        define HAVE_BUILT_IN_POPCOUNT
+#    endif
+#    if !defined(HAVE_BUILT_IN_POPCOUNTL)
+#        define HAVE_BUILT_IN_POPCOUNTL
+#    endif
+#    if !defined(HAVE_BUILT_IN_POPCOUNTLL)
+#        define HAVE_BUILT_IN_POPCOUNTLL
+#    endif
 #endif
 
 #if !defined(HAVE_BUILTIN_BSWAP) && IS_GCC_VERSION(4, 8)
