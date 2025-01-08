@@ -57,7 +57,7 @@ extern "C"
     //! - \a timer is a null pointer
     //!
     //! - \a buf is a null pointer
-    M_INLINE struct tm* safe_gmtime(const time_t* M_RESTRICT timer, struct tm* M_RESTRICT buf)
+    static M_INLINE struct tm* safe_gmtime(const time_t* M_RESTRICT timer, struct tm* M_RESTRICT buf)
     {
         return impl_safe_gmtime(timer, buf, __FILE__, __func__, __LINE__, "safe_gmtime(timer, buf)");
     }
@@ -91,7 +91,7 @@ extern "C"
     //! - \a timer is a null pointer
     //!
     //! - \a buf is a null pointer
-    M_INLINE struct tm* safe_localtime(const time_t* M_RESTRICT timer, struct tm* M_RESTRICT buf)
+    static M_INLINE struct tm* safe_localtime(const time_t* M_RESTRICT timer, struct tm* M_RESTRICT buf)
     {
         return impl_safe_localtime(timer, buf, __FILE__, __func__, __LINE__, "safe_localtime(timer, buf)");
     }
@@ -134,7 +134,7 @@ extern "C"
     //! - \a bufsz > RSIZE_MAX
     //!
     //! - member of \a time_ptr is out of normal range
-    M_INLINE errno_t safe_asctime(char* buf, rsize_t bufsz, const struct tm* time_ptr)
+    static M_INLINE errno_t safe_asctime(char* buf, rsize_t bufsz, const struct tm* time_ptr)
     {
         return impl_safe_asctime(buf, bufsz, time_ptr, false, __FILE__, __func__, __LINE__,
                                  "safe_asctime(buf, bufsz, time_ptr)");
@@ -185,7 +185,7 @@ extern "C"
     //! - \a bufsz < 26
     //!
     //! - \a bufsz > RSIZE_MAX
-    M_INLINE errno_t safe_ctime(char* buf, rsize_t bufsz, const time_t* timer)
+    static M_INLINE errno_t safe_ctime(char* buf, rsize_t bufsz, const time_t* timer)
     {
         return impl_safe_ctime(buf, bufsz, timer, __FILE__, __func__, __LINE__, "safe_ctime(buf, bufsz, timer)");
     }
@@ -219,7 +219,7 @@ extern "C"
     //! \param[in] buffer pointer to char buffer to hold output string. Must be at least 26 characters in size
     //! \param[in] bufferSize size of \a buffer. Must be at least 26 and less than RSIZE_MAX
     //! \return pointer to converted string on success. Null pointer on failure.
-    M_INLINE char* get_Time_String_From_TM_Structure(const struct tm* timeptr, char* buffer, size_t bufferSize)
+    static M_INLINE char* get_Time_String_From_TM_Structure(const struct tm* timeptr, char* buffer, size_t bufferSize)
     {
         if (0 == safe_asctime(buffer, bufferSize, timeptr))
         {
@@ -238,7 +238,7 @@ extern "C"
     //! \param[in] buffer pointer to char buffer to hold output string. Must be at least 26 characters in size
     //! \param[in] bufferSize size of \a buffer. Must be at least 26 and less than RSIZE_MAX
     //! \return pointer to converted string on success. Null pointer on failure.
-    M_INLINE char* get_Current_Time_String(const time_t* timer, char* buffer, size_t bufferSize)
+    static M_INLINE char* get_Current_Time_String(const time_t* timer, char* buffer, size_t bufferSize)
     {
         if (0 == safe_ctime(buffer, bufferSize, timer))
         {
