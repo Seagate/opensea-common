@@ -93,6 +93,7 @@ void* safe_bsearch_context_impl(const void*  key,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (count > RSIZE_T_C(0) && ptr == M_NULLPTR)
     {
         error = EINVAL;
@@ -155,5 +156,6 @@ void* safe_bsearch_context_impl(const void*  key,
             } /* else move left */
         }
     }
+    RESTORE_NONNULL_COMPARE
     return M_NULLPTR;
 }

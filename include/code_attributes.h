@@ -422,15 +422,12 @@ extern "C"
 //! \author TJE
 #if IS_CLANG_VERSION(1, 0) || IS_GCC_VERSION(2, 5)
 #    define FUNC_ATTR_PRINTF(formatargpos, varargpos) __attribute__((format(printf, formatargpos, varargpos)))
-#elif defined(_Format_string_impl_)
-#    define FUNC_ATTR_PRINTF(formatargpos, varargpos) _Format_string_impl_("printf", formatargpos)
+#elif defined(_Printf_format_string_params_)
+#    define FUNC_ATTR_PRINTF(formatargpos, varargpos) _Printf_format_string_params_(formatargpos)
 #else
 #    define FUNC_ATTR_PRINTF(formatargpos, varargpos)    /* this is a printf/fprintf/etc style function. Please use a  \
                                                             user defined constant string for the format! */
 #endif
-
-    //_Printf_format_string_impl_ for SAL. Not sure how to use it yet so not defined
-    // currently
 
 //! \def DLL_EXPORT
 //! \brief Marks symbols for export in a shared library.
@@ -484,6 +481,243 @@ extern "C"
 #        define NO_ALIGNOF
 #        define NO_ALIGNAS
 #    endif
+#endif
+
+//! \def M_ALL_PARAMS_NONNULL
+//! \brief Marks all pointer parameters of a function as non-null.
+//!
+//! This macro defines the nonnull attribute to indicate that all pointer parameters of a function must be non-null.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! - For GCC 3.3 and later, it uses __attribute__((nonnull)).
+//! - If no support is detected, it inserts a comment to indicate the non-null requirement.
+//!
+//! \code
+//! M_ALL_PARAMS_NONNULL void example_function(int *param1, char *param2);
+//! \endcode
+//!
+//! \sa M_NONNULL_PARAM_LIST, M_PARAM_RO, M_PARAM_WO, M_PARAM_RW
+
+//! \def M_NONNULL_PARAM_LIST(...)
+//! \brief Marks specific pointer parameters of a function as non-null.
+//!
+//! This macro defines the nonnull attribute to indicate that specific pointer parameters of a function must be
+//! non-null. The arguments to this macro are the indices of the parameters (starting from 1).
+//! - For GCC 3.3 and later, it uses __attribute__((nonnull(__VA_ARGS__))).
+//! - If no support is detected, it inserts a comment to indicate the non-null requirement.
+//!
+//! \param ... The indices of the parameters that must be non-null.
+//!
+//! \code
+//! M_NONNULL_PARAM_LIST(1, 2) void example_function(int *param1, char *param2);
+//! \endcode
+//!
+//! \sa M_ALL_PARAMS_NONNULL, M_PARAM_RO, M_PARAM_WO, M_PARAM_RW
+#if defined __has_attribute
+#    if __has_attribute(nonnull)
+#        define M_ALL_PARAMS_NONNULL      __attribute__((nonnull))
+#        define M_NONNULL_PARAM_LIST(...) __attribute__((nonnull(__VA_ARGS__)))
+#    endif
+#endif
+#if !defined(M_ALL_PARAMS_NONNULL)
+#    if IS_GCC_VERSION(3, 3)
+#        define M_ALL_PARAMS_NONNULL      __attribute__((nonnull))
+#        define M_NONNULL_PARAM_LIST(...) __attribute__((nonnull(__VA_ARGS__)))
+#    else
+#        define M_ALL_PARAMS_NONNULL      /*NONNULL*/
+#        define M_NONNULL_PARAM_LIST(...) /*NONNULL*/
+#    endif
+#endif
+
+//! \def M_NONNULL_IF_NONZERO_PARAM(arg, sizearg)
+//! \brief Marks a pointer parameter as non-null if a corresponding integral parameter is non-zero.
+//!
+//! This macro defines the nonnull_if_nonzero attribute to indicate that a pointer parameter must be non-null if a
+//! corresponding integral parameter is non-zero. It attempts to provide a compatible definition for various compilers
+//! and standards.
+//! - For GCC 12 and later, it uses __attribute__((nonnull_if_nonzero(arg, sizearg))).
+//! - If no support is detected, it inserts a comment to indicate the conditional non-null requirement.
+//!
+//! \param arg The index of the pointer parameter.
+//! \param sizearg The index of the integral parameter.
+//!
+//! \code
+//! M_NONNULL_IF_NONZERO_PARAM(2, 1) void example_function(int size, char *buffer);
+//! \endcode
+//!
+//! \sa M_ALL_PARAMS_NONNULL, M_NONNULL_PARAM_LIST, M_PARAM_RO, M_PARAM_WO, M_PARAM_RW
+#if defined __has_attribute
+#    if __has_attribute(nonnull_if_nonzero)
+#        define M_NONNULL_IF_NONZERO_PARAM(arg, sizearg) __attribute__((nonnull_if_nonzero(arg, sizearg)))
+#    endif
+#endif
+#if !defined(M_NONNULL_IF_NONZERO_PARAM)
+#    define M_NONNULL_IF_NONZERO_PARAM(arg, sizearg) /*NONNULL_IF_SIZE_IS_NONZERO*/
+#endif
+
+//! \def M_NULL_TERM_STRING(arg)
+//! \brief Marks a parameter as a null-terminated string.
+//!
+//! This macro defines the null_terminated_string_arg attribute to indicate that a parameter is a null-terminated
+//! string. It attempts to provide a compatible definition for various compilers and standards.
+//! - If no support is detected, it inserts a comment to indicate the null-terminated string requirement.
+//!
+//! \param arg The index of the parameter that is a null-terminated string.
+//!
+//! \code
+//! M_NULL_TERM_STRING(1) void example_function(char *str);
+//! \endcode
+//!
+//! \sa M_ALL_PARAMS_NONNULL, M_NONNULL_PARAM_LIST, M_NONNULL_IF_NONZERO_PARAM, M_PARAM_RO, M_PARAM_WO, M_PARAM_RW
+#if defined __has_attribute
+#    if __has_attribute(null_terminated_string_arg)
+#        define M_NULL_TERM_STRING(arg) __attribute__((null_terminated_string_arg(arg)))
+#    endif
+#endif
+#if !defined(M_NULL_TERM_STRING)
+#    define M_NULL_TERM_STRING(arg) /*NULL_TERMINATED_STRING_ARGUMENT*/
+#endif
+
+//! \def M_RETURNS_NONNULL
+//! \brief Marks a function as returning a non-null pointer.
+//!
+//! This macro defines the returns_nonnull attribute to indicate that a function returns a non-null pointer.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! - For GCC, it uses __attribute__((returns_nonnull)).
+//! - For SAL, it uses _Ret_notnull_.
+//! - If no support is detected, it inserts a comment to indicate the non-null return requirement.
+//!
+//! \code
+//! M_RETURNS_NONNULL char* example_function(void);
+//! \endcode
+//!
+//! \sa M_ALL_PARAMS_NONNULL, M_NONNULL_PARAM_LIST, M_NONNULL_IF_NONZERO_PARAM, M_NULL_TERM_STRING, M_PARAM_RO,
+//! M_PARAM_WO, M_PARAM_RW
+#if defined __has_attribute
+#    if __has_attribute(returns_nonnull)
+#        define M_RETURNS_NONNULL __attribute__((returns_nonnull))
+#    endif
+#elif defined(_Ret_notnull_) /* SAL.h */
+#    define M_RETURNS_NONNULL _Ret_notnull_
+#endif
+#if !defined(M_RETURNS_NONNULL)
+#    define M_RETURNS_NONNULL /*Function returns non-null pointer*/
+#endif
+
+//! \def M_PARAM_RO(arg)
+//! \brief Marks a parameter as read-only.
+//!
+//! This macro defines the access(read_only) attribute to indicate that a parameter is read-only.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! - If no support is detected, it inserts a comment to indicate the read-only requirement.
+//!
+//! \param arg The index of the parameter that is read-only.
+//!
+//! \code
+//! M_PARAM_RO(1) void example_function(const char *buffer);
+//! \endcode
+//!
+//! \sa M_PARAM_WO, M_PARAM_RW, M_PARAM_RO_SIZE, M_PARAM_WO_SIZE, M_PARAM_RW_SIZE, M_ALL_PARAMS_NONNULL,
+//! M_NONNULL_PARAM_LIST, M_NONNULL_IF_NONZERO_PARAM, M_NULL_TERM_STRING
+
+//! \def M_PARAM_WO(arg)
+//! \brief Marks a parameter as write-only.
+//!
+//! This macro defines the access(write_only) attribute to indicate that a parameter is write-only.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! - If no support is detected, it inserts a comment to indicate the write-only requirement.
+//!
+//! \param arg The index of the parameter that is write-only.
+//!
+//! \code
+//! M_PARAM_WO(1) void example_function(char *buffer);
+//! \endcode
+//!
+//! \sa M_PARAM_RO, M_PARAM_RW, M_PARAM_RO_SIZE, M_PARAM_WO_SIZE, M_PARAM_RW_SIZE, M_ALL_PARAMS_NONNULL,
+//! M_NONNULL_PARAM_LIST, M_NONNULL_IF_NONZERO_PARAM, M_NULL_TERM_STRING
+
+//! \def M_PARAM_RW(arg)
+//! \brief Marks a parameter as read-write.
+//!
+//! This macro defines the access(read_write) attribute to indicate that a parameter is read-write.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! - If no support is detected, it inserts a comment to indicate the read-write requirement.
+//!
+//! \param arg The index of the parameter that is read-write.
+//!
+//! \code
+//! M_PARAM_RW(1) void example_function(char *buffer);
+//! \endcode
+//!
+//! \sa M_PARAM_RO, M_PARAM_WO, M_PARAM_RO_SIZE, M_PARAM_WO_SIZE, M_PARAM_RW_SIZE, M_ALL_PARAMS_NONNULL,
+//! M_NONNULL_PARAM_LIST, M_NONNULL_IF_NONZERO_PARAM, M_NULL_TERM_STRING
+
+//! \def M_PARAM_RO_SIZE(arg, sizearg)
+//! \brief Marks a parameter as read-only with a specified size.
+//!
+//! This macro defines the access(read_only) attribute to indicate that a parameter is read-only with a specified size.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! - If no support is detected, it inserts a comment to indicate the read-only requirement with size.
+//!
+//! \param arg The index of the parameter that is read-only.
+//! \param sizearg The index of the parameter that specifies the size.
+//!
+//! \code
+//! M_PARAM_RO_SIZE(1, 2) void example_function(const char *buffer, size_t size);
+//! \endcode
+//!
+//! \sa M_PARAM_RO, M_PARAM_WO, M_PARAM_RW, M_PARAM_WO_SIZE, M_PARAM_RW_SIZE, M_ALL_PARAMS_NONNULL,
+//! M_NONNULL_PARAM_LIST, M_NONNULL_IF_NONZERO_PARAM, M_NULL_TERM_STRING
+
+//! \def M_PARAM_WO_SIZE(arg, sizearg)
+//! \brief Marks a parameter as write-only with a specified size.
+//!
+//! This macro defines the access(write_only) attribute to indicate that a parameter is write-only with a specified
+//! size. It attempts to provide a compatible definition for various compilers and standards.
+//! - If no support is detected, it inserts a comment to indicate the write-only requirement with size.
+//!
+//! \param arg The index of the parameter that is write-only.
+//! \param sizearg The index of the parameter that specifies the size.
+//!
+//! \code
+//! M_PARAM_WO_SIZE(1, 2) void example_function(char *buffer, size_t size);
+//! \endcode
+//!
+//! \sa M_PARAM_RO, M_PARAM_WO, M_PARAM_RW, M_PARAM_RO_SIZE, M_PARAM_RW_SIZE, M_ALL_PARAMS_NONNULL,
+//! M_NONNULL_PARAM_LIST, M_NONNULL_IF_NONZERO_PARAM, M_NULL_TERM_STRING
+
+//! \def M_PARAM_RW_SIZE(arg, sizearg)
+//! \brief Marks a parameter as read-write with a specified size.
+//!
+//! This macro defines the access(read_write) attribute to indicate that a parameter is read-write with a specified
+//! size. It attempts to provide a compatible definition for various compilers and standards.
+//! - If no support is detected, it inserts a comment to indicate the read-write requirement with size.
+//!
+//! \param arg The index of the parameter that is read-write.
+//! \param sizearg The index of the parameter that specifies the size.
+//!
+//! \code
+//! M_PARAM_RW_SIZE(1, 2) void example_function(char *buffer, size_t size);
+//! \endcode
+//!
+//! \sa M_PARAM_RO, M_PARAM_WO, M_PARAM_RW, M_PARAM_RO_SIZE, M_PARAM_WO_SIZE, M_ALL_PARAMS_NONNULL,
+//! M_NONNULL_PARAM_LIST, M_NONNULL_IF_NONZERO_PARAM, M_NULL_TERM_STRING
+#if defined __has_attribute
+#    if __has_attribute(access)
+#        define M_PARAM_RO(arg)               __attribute__((access(read_only, arg)))
+#        define M_PARAM_WO(arg)               __attribute__((access(write_only, arg)))
+#        define M_PARAM_RW(arg)               __attribute__((access(read_write, arg)))
+#        define M_PARAM_RO_SIZE(arg, sizearg) __attribute__((access(read_only, arg, sizearg)))
+#        define M_PARAM_WO_SIZE(arg, sizearg) __attribute__((access(write_only, arg, sizearg)))
+#        define M_PARAM_RW_SIZE(arg, sizearg) __attribute__((access(read_write, arg, sizearg)))
+#    endif
+#endif
+#if !defined(M_PARAM_RO)
+#    define M_PARAM_RO(arg)               /* PARAM_ACCESS_RO */
+#    define M_PARAM_WO(arg)               /* PARAM_ACCESS_WO */
+#    define M_PARAM_RW(arg)               /* PARAM_ACCESS_RW */
+#    define M_PARAM_RO_SIZE(arg, sizearg) /* PARAM_ACCESS_RO_SIZE */
+#    define M_PARAM_WO_SIZE(arg, sizearg) /* PARAM_ACCESS_WO_SIZE */
+#    define M_PARAM_RW_SIZE(arg, sizearg) /* PARAM_ACCESS_RW_SIZE */
 #endif
 
 #if defined(__cplusplus)

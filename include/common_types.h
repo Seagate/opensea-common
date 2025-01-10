@@ -747,8 +747,7 @@ typedef int32_t intptr_t;
 #    define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #    message)
 #else
 // Generic way to do this. Not as good messaging but should work about the same
-#    define M_STATIC_ASSERT(condition, message)                                                                        \
-        typedef char static_assertion_##message[(condition) ? 1 : -1]
+#    define M_STATIC_ASSERT(condition, message) typedef char static_assertion_##message[(condition) ? 1 : -1]
 #endif
 
 //! \def OPENSEA_PATH_MAX

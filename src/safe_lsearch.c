@@ -91,6 +91,7 @@ static void* safe_lwork(const void* key,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (nelp == M_NULLPTR)
     {
         error = EINVAL;
@@ -215,6 +216,7 @@ static void* safe_lwork(const void* key,
 
         return (endp);
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 // following versions are written by Seagate technology to allow compare
@@ -277,6 +279,7 @@ static void* safe_lwork_context(const void*  key,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (nelp == M_NULLPTR)
     {
         error = EINVAL;
@@ -401,4 +404,5 @@ static void* safe_lwork_context(const void*  key,
 
         return (endp);
     }
+    RESTORE_NONNULL_COMPARE
 }

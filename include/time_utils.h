@@ -77,6 +77,9 @@ extern "C"
         impl_safe_gmtime(timer, buf, __FILE__, __func__, __LINE__, "safe_gmtime(" #timer ", " #buf ")")
 #endif
 
+//! \def get_UTCtime(timer, buf)
+//! \brief Convenience macro that calls safe_gmtime.
+//! \sa safe_gmtime
 #define get_UTCtime(timer, buf) safe_gmtime(timer, buf)
 
 #if defined(DEV_ENVIRONMENT)

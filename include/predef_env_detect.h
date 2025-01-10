@@ -963,6 +963,29 @@ extern "C"
 #    define RESTORE_WARNING_FLOAT_EQUAL
 #endif
 
+//! \def DISABLE_NONNULL_COMPARE
+//! \brief Disables warning comparing a pointer to NULL when it is marked with an attribute as must be non-null.
+//! This is used internally within safe_ functions to maintain null pointer checks for bounds checking
+
+//! \def RESTORE_NONNULL_COMPARE
+//! \brief Restores Disables warning comparing a pointer to NULL when it is marked with an attribute as must be
+//! non-null. This is used internally within safe_ functions to maintain null pointer checks for bounds checking
+#if IS_CLANG_VERSION(3, 2)
+#    define DISABLE_NONNULL_COMPARE                                                                                    \
+        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wtautological-pointer-compare\"")
+#    define RESTORE_NONNULL_COMPARE _Pragma("clang diagnostic pop")
+#elif IS_GCC_VERSION(7, 1)
+#    define DISABLE_NONNULL_COMPARE                                                                                    \
+        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wnonnull-compare\"")
+#    define RESTORE_NONNULL_COMPARE _Pragma("GCC diagnostic pop")
+#elif IS_GCC_VERSION(4, 3)
+#    define DISABLE_NONNULL_COMPARE _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wnonnull\"")
+#    define RESTORE_NONNULL_COMPARE _Pragma("GCC diagnostic pop")
+#else
+#    define DISABLE_NONNULL_COMPARE
+#    define RESTORE_NONNULL_COMPARE
+#endif
+
 #if defined(__INTELLISENSE__) || defined(__clang_analyzer__) || defined(__CDT_PARSER__)
 //! \def DEV_ENVIRONMENT
 //! \brief Defined to help create different help pop-ups within an IDE.

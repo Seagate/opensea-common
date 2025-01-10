@@ -60,8 +60,8 @@ endif
 
 LIB_SRC_FILES = \
     $(SRC_DIR)bit_manip.c\
-    $(SRC_DIR)env_detect.c\
 	$(SRC_DIR)constraint_handling.c\
+    $(SRC_DIR)env_detect.c\
     $(SRC_DIR)error_translation.c\
 	$(SRC_DIR)io_utils.c\
 	$(SRC_DIR)math_utils.c\

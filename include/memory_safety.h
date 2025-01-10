@@ -492,7 +492,7 @@ extern "C"
     //! \param[in] lengthBytes size in bytes of \a ptrData to check if equal to zero
     //! \return true = memory is filled with zeros. false = memory has nonzero
     //! values in it.
-    bool is_Empty(const void* ptrData, size_t lengthBytes);
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* ptrData, size_t lengthBytes);
 
 #if defined(DEV_ENVIRONMENT)
     //! \fn errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
@@ -563,7 +563,7 @@ extern "C"
     //! \param[in] dest Pointer to the block of memory to zero fill. Must be non-NULL
     //! \param[in] count Number of bytes to write to zero at \a dest
     //! \return pointer to \a dest on Success and a NULL pointer on failure
-    void* explicit_zeroes(void* dest, size_t count);
+    M_NONNULL_PARAM_LIST(1) M_PARAM_WO_SIZE(1, 2) void* explicit_zeroes(void* dest, size_t count);
 
     // This ugly ifdef is to handle newer SecureZeroMemory2 support and visual studio can automatically detect this
     // dependency this way - TJE
@@ -1012,7 +1012,8 @@ extern "C"
     //! original contents of \a block do not need to be preserved during reallocation
     //! \param[in] size number of bytes to allocate/reallocate to. If zero, free's memory pointed to by \a block
     //! \param[in] alignment requested alignment of the memory allocation. Will be rounded up to the nearest power of
-    //! two. \return pointer to allocated memory to be free'd by the caller with free() returns a null pointer on
+    //! two.
+    //! \return pointer to allocated memory to be free'd by the caller with free_aligned() returns a null pointer on
     //! failure.
     M_FUNC_ATTR_MALLOC void* safe_realloc_aligned(void* block, size_t originalSize, size_t size, size_t alignment);
 
@@ -1030,7 +1031,8 @@ extern "C"
     //! original contents of \a block do not need to be preserved during reallocation
     //! \param[in] size number of bytes to allocate/reallocate to. If zero, free's memory pointed to by \a block
     //! \param[in] alignment requested alignment of the memory allocation. Will be rounded up to the nearest power of
-    //! two. \return pointer to allocated memory to be free'd by the caller with free() returns a null pointer on
+    //! two.
+    //! \return pointer to allocated memory to be free'd by the caller with free_aligned() returns a null pointer on
     //! failure.
     M_FUNC_ATTR_MALLOC void* safe_reallocf_aligned(void** block, size_t originalSize, size_t size, size_t alignment);
 
@@ -1044,7 +1046,8 @@ extern "C"
     //!
     //! This is a convenience wrapper around malloc_aligned
     //! \param[in] size number of bytes to allocate
-    //! \return
+    //! \return pointer to allocated memory to be free'd by the caller with free_page_aligned(). returns a null pointer
+    //! on failure.
     M_FUNC_ATTR_MALLOC void* malloc_page_aligned(size_t size);
 
     //! \fn M_INLINE void free_page_aligned(void* ptr)
@@ -1515,8 +1518,8 @@ template <typename T> M_INLINE void safe_free_page_aligned(T** mem)
 
 #endif
 
-#if defined (SAFE_FREE_BACKWARDS_COMPATIBILITY)
-#    define safe_Free(mem) safe_free_core(mem)
-#    define safe_Free_aligned(mem) safe_free_aligned_core(mem)
+#if defined(SAFE_FREE_BACKWARDS_COMPATIBILITY)
+#    define safe_Free(mem)              safe_free_core(mem)
+#    define safe_Free_aligned(mem)      safe_free_aligned_core(mem)
 #    define safe_Free_page_aligned(mem) safe_free_page_aligned(mem)
 #endif

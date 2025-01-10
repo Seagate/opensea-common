@@ -283,6 +283,7 @@ errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
     errno_t           error  = 0;
     size_t            srclen = safe_strnlen(src, destsz);
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -350,6 +351,7 @@ errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
         errno = error;
         return error;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_strmove_impl(char*       dest,
@@ -363,6 +365,7 @@ errno_t safe_strmove_impl(char*       dest,
     errno_t           error  = 0;
     size_t            srclen = safe_strnlen(src, destsz);
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -415,6 +418,7 @@ errno_t safe_strmove_impl(char*       dest,
         errno        = error;
         return error;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
@@ -429,6 +433,7 @@ errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
     errno_t           error  = 0;
     size_t            srclen = safe_strnlen(src, count);
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -512,6 +517,7 @@ errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
         errno = error;
         return error;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_strnmove_impl(char*       dest,
@@ -526,6 +532,7 @@ errno_t safe_strnmove_impl(char*       dest,
     errno_t           error  = 0;
     size_t            srclen = safe_strnlen(src, count);
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -594,6 +601,7 @@ errno_t safe_strnmove_impl(char*       dest,
         errno = error;
         return error;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_strcat_impl(char* M_RESTRICT       dest,
@@ -608,6 +616,7 @@ errno_t safe_strcat_impl(char* M_RESTRICT       dest,
     size_t            srclen   = safe_strnlen(src, destsz);
     char*             destnull = M_NULLPTR;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -684,6 +693,7 @@ errno_t safe_strcat_impl(char* M_RESTRICT       dest,
         errno = error;
         return error;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_strncat_impl(char* M_RESTRICT       dest,
@@ -699,6 +709,7 @@ errno_t safe_strncat_impl(char* M_RESTRICT       dest,
     size_t            srclen   = safe_strnlen(src, destsz);
     char*             destnull = M_NULLPTR;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -776,6 +787,7 @@ errno_t safe_strncat_impl(char* M_RESTRICT       dest,
         errno = error;
         return error;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 char* safe_String_Token_impl(char* M_RESTRICT       str,
@@ -791,6 +803,7 @@ char* safe_String_Token_impl(char* M_RESTRICT       str,
     char*             token   = M_NULLPTR;
     char*             tokiter = M_NULLPTR;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (strmax == M_NULLPTR)
     {
         error = EINVAL;
@@ -892,11 +905,13 @@ char* safe_String_Token_impl(char* M_RESTRICT       str,
     {
         *saveptr = tokiter;
     }
+    RESTORE_NONNULL_COMPARE
     return token;
 }
 
 size_t safe_strnlen(const char* string, size_t n)
 {
+    DISABLE_NONNULL_COMPARE
 #if defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
     // Does not invoke constraint handler of it's own so we can use this here - TJE
     return strnlen_s(string, n);
@@ -926,6 +941,7 @@ size_t safe_strnlen(const char* string, size_t n)
     }
     return SIZE_T_C(0);
 #endif
+    RESTORE_NONNULL_COMPARE
 }
 
 #if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
@@ -955,6 +971,7 @@ errno_t safe_strdup_impl(char**      dup,
     errno_t           error = 0;
     constraintEnvInfo envInfo;
     errno = 0;
+    DISABLE_NONNULL_COMPARE
     if (dup == M_NULLPTR)
     {
         error = EINVAL;
@@ -999,9 +1016,11 @@ errno_t safe_strdup_impl(char**      dup,
         else
         {
             error = ENOMEM;
-            // TODO: Call constraint handler
+            invoke_Constraint_Handler("safe_strdup: malloc failed",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
         }
     }
+    RESTORE_NONNULL_COMPARE
     return error;
 }
 
@@ -1016,6 +1035,7 @@ errno_t safe_strndup_impl(char**      dup,
     errno_t           error = 0;
     constraintEnvInfo envInfo;
     errno = 0;
+    DISABLE_NONNULL_COMPARE
     if (dup == M_NULLPTR)
     {
         error = EINVAL;
@@ -1059,9 +1079,11 @@ errno_t safe_strndup_impl(char**      dup,
         else
         {
             error = ENOMEM;
-            // TODO: Call constraint handler
+            invoke_Constraint_Handler("safe_strndup: malloc failed", set_Env_Info(&envInfo, file, function, expression, line),
+                                  error);
         }
     }
+    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }

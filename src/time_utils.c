@@ -425,6 +425,7 @@ struct tm* impl_safe_gmtime(const time_t* M_RESTRICT timer,
                             const char*              expression)
 {
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (timer == M_NULLPTR)
     {
         errno = EINVAL;
@@ -463,6 +464,7 @@ struct tm* impl_safe_gmtime(const time_t* M_RESTRICT timer,
         safe_memcpy(buf, sizeof(struct tm), gmtime(timer), sizeof(struct tm));
 #endif
     }
+    RESTORE_NONNULL_COMPARE
     return buf;
 }
 
@@ -474,6 +476,7 @@ struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
                                const char*              expression)
 {
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (timer == M_NULLPTR)
     {
         errno = EINVAL;
@@ -512,6 +515,7 @@ struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
         safe_memcpy(buf, sizeof(struct tm), localtime(timer), sizeof(struct tm));
 #endif
     }
+    RESTORE_NONNULL_COMPARE
     return buf;
 }
 
@@ -526,6 +530,7 @@ errno_t impl_safe_asctime(char*            buf,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (buf == M_NULLPTR)
     {
         error = EINVAL;
@@ -695,6 +700,7 @@ errno_t impl_safe_asctime(char*            buf,
         safe_free(&currentLocale);
 #endif // HAVE_MSFT_SECURE_LIB || HAVE_C11_ANNEX_K
     }
+    RESTORE_NONNULL_COMPARE
     return error;
 }
 
@@ -707,6 +713,7 @@ errno_t impl_safe_ctime(char*         buf,
                         const char*   expression)
 {
     errno_t error;
+    DISABLE_NONNULL_COMPARE
     if (timer == M_NULLPTR)
     {
         constraintEnvInfo envInfo;
@@ -722,6 +729,7 @@ errno_t impl_safe_ctime(char*         buf,
         safe_memset(&cTimeBuf, sizeof(struct tm), 0, sizeof(struct tm));
         error = impl_safe_asctime(buf, bufsz, get_Localtime(timer, &cTimeBuf), true, file, function, line, expression);
     }
+    RESTORE_NONNULL_COMPARE
     return error;
 }
 

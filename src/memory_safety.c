@@ -266,7 +266,8 @@ M_FUNC_ATTR_MALLOC void* realloc_page_aligned(void* alignedPtr, size_t originalS
 
 bool is_Empty(const void* ptrData, size_t lengthBytes)
 {
-    if (ptrData || lengthBytes == SIZE_T_C(0))
+    DISABLE_NONNULL_COMPARE
+    if (ptrData != M_NULLPTR && lengthBytes > SIZE_T_C(0))
     {
         bool byteByByte = true;
         // Allocate single memory page as zeroes to compare for the range
@@ -282,7 +283,11 @@ bool is_Empty(const void* ptrData, size_t lengthBytes)
                 byteByByte       = false;
                 for (size_t iter = SIZE_T_C(0); iter < lengthBytes; iter += increment)
                 {
+#if defined(HAVE_BUILTIN_MEMCMP)
+                    if (__builtin_memcmp(&byteptr[iter], zeroes, increment) != 0)
+#else
                     if (memcmp(&byteptr[iter], zeroes, increment) != 0)
+#endif
                     {
                         safe_free_page_aligned_core(C_CAST(void**, &zeroes));
                         return false;
@@ -306,6 +311,7 @@ bool is_Empty(const void* ptrData, size_t lengthBytes)
         }
         return true;
     }
+    RESTORE_NONNULL_COMPARE
     return false;
 }
 
@@ -317,11 +323,12 @@ bool is_Empty(const void* ptrData, size_t lengthBytes)
 
 void* explicit_zeroes(void* dest, size_t count)
 {
-    if (dest && count > SIZE_T_C(0))
+    DISABLE_NONNULL_COMPARE
+    if (dest != M_NULLPTR && count > SIZE_T_C(0))
     {
 #if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
         return memset_explicit(dest, 0, count);
-#elif defined(HAVE_C11_ANNEX_K) || defined(HAVE_MEMSET_S)
+#elif defined(HAVE_C11_ANNEX_K)
         // use memset_s since it cannot be optimized out
         if (0 == memset_s(dest, count, 0, count))
         {
@@ -372,6 +379,7 @@ void* explicit_zeroes(void* dest, size_t count)
     {
         return M_NULLPTR;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_memset_impl(void*       dest,
@@ -385,6 +393,7 @@ errno_t safe_memset_impl(void*       dest,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -436,14 +445,24 @@ errno_t safe_memset_impl(void*       dest,
         //       manual. Not sure what version to use, so letting meson detect
         //       and set the HAVE_...macros
         explicit_memset(dest, ch,
-                        count);        // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+                        count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #else
         // last attempts to prevent optimization as best we can
 #    if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
+#        if defined(HAVE_BUILTIN_MEMSET)
+        __builtin_memset(dest, ch,
+                         count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#        else
         memset(dest, ch, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#        endif
         asm volatile("" ::: "memory");
 #    elif defined(HAS_BUILT_IN_CLEAR_CACHE)
+#        if defined(HAVE_BUILTIN_MEMSET)
+        __builtin_memset(dest, ch,
+                         count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#        else
         memset(dest, ch, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#        endif
         __builtin___clear_cache(dest, dest + count);
 #    elif IS_MSVC_VERSION(MSVC_2005)
 #        if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                              \
@@ -492,6 +511,7 @@ errno_t safe_memset_impl(void*       dest,
         errno = error;
         return error;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 // malloc in standards leaves malloc'ing size 0 as a undefined behavior.
@@ -853,6 +873,7 @@ errno_t safe_memmove_impl(void*       dest,
     errno_t           error = 0;
     constraintEnvInfo envInfo;
     errno = 0;
+    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -906,6 +927,9 @@ errno_t safe_memmove_impl(void*       dest,
             // need we are calling this because it prevents additional warning
             // from Microsoft's compiler.
             memmove_s(dest, destsz, src, count);
+#elif defined(HAVE_BUILTIN_MEMMOVE)
+            __builtin_memmove(dest, src,
+                              count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #else
             memmove(dest, src, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #endif // HAVE_MSFT_SECURE_LIB
@@ -913,6 +937,7 @@ errno_t safe_memmove_impl(void*       dest,
         errno = 0;
         return error;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 // calls memcpy_s if available, otherwise performs all checks that memcpy_s does
@@ -929,6 +954,7 @@ errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
     errno_t           error = 0;
     constraintEnvInfo envInfo;
     errno = 0;
+    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -989,6 +1015,9 @@ errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
             // need we are calling this because it prevents additional warning
             // from Microsoft's compiler.
             memcpy_s(dest, destsz, src, count);
+#elif defined(HAVE_BUILTIN_MEMCPY)
+            __builtin_memcpy(dest, src,
+                             count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #else
             memcpy(dest, src, count);  // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #endif // HAVE_MSFT_SECURE_LIB
@@ -996,6 +1025,7 @@ errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
         errno = error;
         return error;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
@@ -1011,6 +1041,7 @@ errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
     errno_t           error = 0;
     constraintEnvInfo envInfo;
     errno = 0;
+    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -1081,6 +1112,7 @@ errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
         errno = error;
         return error;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 // allows overlapping ranges
@@ -1097,6 +1129,7 @@ errno_t safe_memcmove_impl(void* M_RESTRICT       dest,
     errno_t           error = 0;
     constraintEnvInfo envInfo;
     errno = 0;
+    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -1189,4 +1222,5 @@ errno_t safe_memcmove_impl(void* M_RESTRICT       dest,
         errno = error;
         return error;
     }
+    RESTORE_NONNULL_COMPARE
 }

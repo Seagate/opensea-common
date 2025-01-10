@@ -105,6 +105,7 @@ errno_t safe_qsort_context_impl(void*        ptr,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (count > RSIZE_T_C(0) && ptr == M_NULLPTR)
     {
         error = EINVAL;
@@ -309,4 +310,5 @@ errno_t safe_qsort_context_impl(void*        ptr,
         errno = error;
         return error;
     }
+    RESTORE_NONNULL_COMPARE
 }

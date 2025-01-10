@@ -50,6 +50,8 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
+    M_NONNULL_PARAM_LIST(1)
+    M_PARAM_WO_SIZE(1, 2)
     errno_t safe_memset_impl(void*       dest,
                              rsize_t     destsz,
                              int         ch,
@@ -88,14 +90,16 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    errno_t safe_memmove_impl(void*       dest,
-                              rsize_t     destsz,
-                              const void* src,
-                              rsize_t     count,
-                              const char* file,
-                              const char* function,
-                              int         line,
-                              const char* expression);
+    M_NONNULL_PARAM_LIST(1, 3)
+    M_PARAM_WO_SIZE(1, 2)
+    M_PARAM_RO_SIZE(3, 4) errno_t safe_memmove_impl(void*       dest,
+                                                    rsize_t     destsz,
+                                                    const void* src,
+                                                    rsize_t     count,
+                                                    const char* file,
+                                                    const char* function,
+                                                    int         line,
+                                                    const char* expression);
 
     //! \fn errno_t safe_memcpy_impl(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t count,
     //! const char* file, const char* function, int line, const char* expression)
@@ -128,14 +132,16 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
-                             rsize_t                destsz,
-                             const void* M_RESTRICT src,
-                             rsize_t                count,
-                             const char*            file,
-                             const char*            function,
-                             int                    line,
-                             const char*            expression);
+    M_NONNULL_PARAM_LIST(1, 3)
+    M_PARAM_WO_SIZE(1, 2)
+    M_PARAM_RO_SIZE(3, 4) errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
+                                                   rsize_t                destsz,
+                                                   const void* M_RESTRICT src,
+                                                   rsize_t                count,
+                                                   const char*            file,
+                                                   const char*            function,
+                                                   int                    line,
+                                                   const char*            expression);
 
     //! \fn errno_t safe_memccpy_impl(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t
     //! count, const char* file, const char* function, int line, const char* expression)
@@ -169,15 +175,17 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
-                              rsize_t                destsz,
-                              const void* M_RESTRICT src,
-                              int                    c,
-                              rsize_t                count,
-                              const char*            file,
-                              const char*            function,
-                              int                    line,
-                              const char*            expression);
+    M_NONNULL_PARAM_LIST(1, 3)
+    M_PARAM_WO_SIZE(1, 2)
+    M_PARAM_RO_SIZE(3, 5) errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
+                                                    rsize_t                destsz,
+                                                    const void* M_RESTRICT src,
+                                                    int                    c,
+                                                    rsize_t                count,
+                                                    const char*            file,
+                                                    const char*            function,
+                                                    int                    line,
+                                                    const char*            expression);
 
     //! \fn errno_t safe_memcmove_impl(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t
     //! count, const char* file, const char* function, int line, const char* expression)
@@ -209,15 +217,17 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    errno_t safe_memcmove_impl(void* M_RESTRICT       dest,
-                               rsize_t                destsz,
-                               const void* M_RESTRICT src,
-                               int                    c,
-                               rsize_t                count,
-                               const char*            file,
-                               const char*            function,
-                               int                    line,
-                               const char*            expression);
+    M_NONNULL_PARAM_LIST(1, 3)
+    M_PARAM_WO_SIZE(1, 2)
+    M_PARAM_RO_SIZE(3, 5) errno_t safe_memcmove_impl(void* M_RESTRICT       dest,
+                                                     rsize_t                destsz,
+                                                     const void* M_RESTRICT src,
+                                                     int                    c,
+                                                     rsize_t                count,
+                                                     const char*            file,
+                                                     const char*            function,
+                                                     int                    line,
+                                                     const char*            expression);
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_malloc_impl(size_t size, const char* file, const char* function, int line,
     //! const char* expression)

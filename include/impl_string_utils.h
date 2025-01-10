@@ -56,6 +56,7 @@ extern "C"
     //! - \a destsz is less than or equal to safe_strnlen(src, destsz); truncation would occur
     //!
     //! - overlap would occur between the source and destination strings.
+    M_NONNULL_PARAM_LIST(1, 3) M_PARAM_RW_SIZE(1, 2) M_PARAM_RO(3) M_NULL_TERM_STRING(3)
     errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
                              rsize_t                destsz,
                              const char* M_RESTRICT src,
@@ -96,6 +97,7 @@ extern "C"
     //! - \a destsz is zero or greater than \a RSIZE_MAX
     //!
     //! - \a destsz is less than or equal to safe_strnlen(src, destsz); truncation would occur
+    M_NONNULL_PARAM_LIST(1, 3) M_PARAM_RW_SIZE(1, 2) M_PARAM_RO(3) M_NULL_TERM_STRING(3)
     errno_t safe_strmove_impl(char*       dest,
                               rsize_t     destsz,
                               const char* src,
@@ -143,6 +145,7 @@ extern "C"
     //!   strnlen_s(src, count); truncation would occur.
     //!
     //! - overlap would occur between the source and destination strings.
+    M_NONNULL_PARAM_LIST(1, 3) M_PARAM_RW_SIZE(1, 2) M_PARAM_RO_SIZE(3, 4)
     errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
                               rsize_t                destsz,
                               const char* M_RESTRICT src,
@@ -190,6 +193,7 @@ extern "C"
     //!
     //! - \a count is greater than or equal to \a destsz, but \a destsz is less than or equal to
     //!   strnlen_s(src, count); truncation would occur.
+    M_NONNULL_PARAM_LIST(1, 3) M_PARAM_RW_SIZE(1, 2) M_PARAM_RO_SIZE(3, 4)
     errno_t safe_strnmove_impl(char*       dest,
                                rsize_t     destsz,
                                const char* src,
@@ -234,6 +238,7 @@ extern "C"
     //! - truncation would occur due to not enough space in \a dest to concatenate \a src
     //!
     //! - overlap would occur between \a src and \a dest strings
+    M_NONNULL_PARAM_LIST(1, 3) M_PARAM_RW_SIZE(1, 2) M_PARAM_RO(3) M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(3)
     errno_t safe_strcat_impl(char* M_RESTRICT       dest,
                              rsize_t                destsz,
                              const char* M_RESTRICT src,
@@ -280,6 +285,7 @@ extern "C"
     //! - truncation would occur due to not enough space in \a dest to concatenate \a src or \a count bytes of \a src
     //!
     //! - overlap would occur between \a src and \a dest strings
+    M_NONNULL_PARAM_LIST(1, 3) M_PARAM_RW_SIZE(1, 2) M_PARAM_RO_SIZE(3, 4) M_NULL_TERM_STRING(1)
     errno_t safe_strncat_impl(char* M_RESTRICT       dest,
                               rsize_t                destsz,
                               const char* M_RESTRICT src,
@@ -334,6 +340,7 @@ extern "C"
     //! - truncation would occur due to not enough space in \a dest to concatenate \a src or \a count bytes of \a src
     //!
     //! - overlap would occur between \a src and \a dest strings
+    M_NONNULL_PARAM_LIST(2, 3, 4) M_PARAM_RW(1) M_PARAM_RW(2) M_PARAM_RO(3) M_PARAM_RW(4) M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(3)
     char* safe_String_Token_impl(char* M_RESTRICT       str,
                                  rsize_t* M_RESTRICT    strmax,
                                  const char* M_RESTRICT delim,
@@ -369,6 +376,7 @@ extern "C"
     //! - \a src is a null pointer
     //!
     //! - \a src is length 0 or greater than RSIZE_MAX
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2)
     errno_t safe_strdup_impl(char**      dup,
                              const char* src,
                              const char* file,
@@ -406,6 +414,7 @@ extern "C"
     //! - \a src is length 0 or greater than RSIZE_MAX
     //!
     //! - \a size is length 0 or greater than RSIZE_MAX
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO_SIZE(2, 3)
     errno_t safe_strndup_impl(char**      dup,
                               const char* src,
                               rsize_t     size,
