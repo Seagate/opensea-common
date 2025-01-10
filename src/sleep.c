@@ -125,11 +125,13 @@ errno_t sleepus(uint32_t microseconds)
         }
         else
         {
+            M_USE_UNUSED(tv);
             errno = ENOSYS;
             error = ENOSYS;
         }
 #    else
         // select function is not available in this version of the windows API
+        M_USE_UNUSED(tv);
         errno = ENOSYS;
         error = ENOSYS;
 #    endif
