@@ -1404,7 +1404,8 @@ M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToCon
                                                     unsigned long long* outputInteger)
 {
     bool result = false;
-    if (strToConvert && outputInteger)
+    DISABLE_NONNULL_COMPARE
+    if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
         eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
         // If everything is a valid hex digit.
@@ -1432,6 +1433,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToCon
             result = false;
         }
     }
+    RESTORE_NONNULL_COMPARE
     return result;
 }
 
@@ -1441,7 +1443,8 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConver
                                                    unsigned long*    outputInteger)
 {
     bool result = false;
-    if (strToConvert && outputInteger)
+    DISABLE_NONNULL_COMPARE
+    if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
         eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
         // If everything is a valid hex digit.
@@ -1469,6 +1472,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConver
             result = false;
         }
     }
+    RESTORE_NONNULL_COMPARE
     return result;
 }
 
@@ -1553,7 +1557,8 @@ M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char*       strToConver
                                                    long long*        outputInteger)
 {
     bool result = false;
-    if (strToConvert && outputInteger)
+    DISABLE_NONNULL_COMPARE
+    if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
         eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
         // If everything is a valid hex digit.
@@ -1581,6 +1586,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char*       strToConver
             result = false;
         }
     }
+    RESTORE_NONNULL_COMPARE
     return result;
 }
 
@@ -1590,7 +1596,8 @@ M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert
                                                   long*             outputInteger)
 {
     bool result = false;
-    if (strToConvert && outputInteger)
+    DISABLE_NONNULL_COMPARE
+    if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
         eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
         // If everything is a valid hex digit.
@@ -1618,6 +1625,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert
             result = false;
         }
     }
+    RESTORE_NONNULL_COMPARE
     return result;
 }
 
@@ -1759,7 +1767,8 @@ M_NODISCARD bool get_And_Validate_Float_Input(const char*       strToConvert,
                                               float*            outputFloat)
 {
     bool result = false;
-    if (strToConvert && outputFloat)
+    DISABLE_NONNULL_COMPARE
+    if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
     {
         if (0 != safe_strtof(outputFloat, strToConvert, unit))
         {
@@ -1778,6 +1787,7 @@ M_NODISCARD bool get_And_Validate_Float_Input(const char*       strToConvert,
             result = true;
         }
     }
+    RESTORE_NONNULL_COMPARE
     return result;
 }
 
@@ -1787,7 +1797,8 @@ M_NODISCARD bool get_And_Validate_Double_Input(const char*       strToConvert,
                                                double*           outputFloat)
 {
     bool result = false;
-    if (strToConvert && outputFloat)
+    DISABLE_NONNULL_COMPARE
+    if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
     {
         if (0 != safe_strtod(outputFloat, strToConvert, unit))
         {
@@ -1806,6 +1817,7 @@ M_NODISCARD bool get_And_Validate_Double_Input(const char*       strToConvert,
             result = true;
         }
     }
+    RESTORE_NONNULL_COMPARE
     return result;
 }
 
@@ -1815,7 +1827,8 @@ M_NODISCARD bool get_And_Validate_LDouble_Input(const char*       strToConvert,
                                                 long double*      outputFloat)
 {
     bool result = false;
-    if (strToConvert && outputFloat)
+    DISABLE_NONNULL_COMPARE
+    if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
     {
         if (0 != safe_strtold(outputFloat, strToConvert, unit))
         {
@@ -1834,6 +1847,7 @@ M_NODISCARD bool get_And_Validate_LDouble_Input(const char*       strToConvert,
             result = true;
         }
     }
+    RESTORE_NONNULL_COMPARE
     return result;
 }
 
@@ -1874,7 +1888,8 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint16(const char*       strToCo
                                                        eAllowedUnitInput unittype,
                                                        uint16_t*         outputInteger)
 {
-    if (strToConvert && outputInteger)
+    DISABLE_NONNULL_COMPARE
+    if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
         uint32_t temp = UINT32_C(0);
         bool     ret  = get_And_Validate_Integer_Input_Uint32(strToConvert, unit, unittype, &temp);
@@ -1895,6 +1910,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint16(const char*       strToCo
     {
         return false;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 M_NODISCARD bool get_And_Validate_Integer_Input_Uint8(const char*       strToConvert,
@@ -1902,7 +1918,8 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint8(const char*       strToCon
                                                       eAllowedUnitInput unittype,
                                                       uint8_t*          outputInteger)
 {
-    if (strToConvert && outputInteger)
+    DISABLE_NONNULL_COMPARE
+    if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
         uint32_t temp = UINT32_C(0);
         bool     ret  = get_And_Validate_Integer_Input_Uint32(strToConvert, unit, unittype, &temp);
@@ -1923,6 +1940,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint8(const char*       strToCon
     {
         return false;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 M_NODISCARD bool get_And_Validate_Integer_Input_Int64(const char*       strToConvert,
@@ -2021,7 +2039,8 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int16(const char*       strToCon
                                                       eAllowedUnitInput unittype,
                                                       int16_t*          outputInteger)
 {
-    if (strToConvert && outputInteger)
+    DISABLE_NONNULL_COMPARE
+    if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
         int32_t temp = INT32_C(0);
         bool    ret  = get_And_Validate_Integer_Input_Int32(strToConvert, unit, unittype, &temp);
@@ -2041,6 +2060,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int16(const char*       strToCon
     {
         return false;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 M_NODISCARD bool get_And_Validate_Integer_Input_Int8(const char*       strToConvert,
@@ -2048,7 +2068,8 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int8(const char*       strToConv
                                                      eAllowedUnitInput unittype,
                                                      int8_t*           outputInteger)
 {
-    if (strToConvert && outputInteger)
+    DISABLE_NONNULL_COMPARE
+    if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
         int32_t temp = INT32_C(0);
         bool    ret  = get_And_Validate_Integer_Input_Int32(strToConvert, unit, unittype, &temp);
@@ -2068,6 +2089,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int8(const char*       strToConv
     {
         return false;
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 #if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
@@ -2078,6 +2100,7 @@ ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter,
 {
     char* currentptr = M_NULLPTR;
     char* endptr     = M_NULLPTR;
+    DISABLE_NONNULL_COMPARE
     if (lineptr == M_NULLPTR || n == M_NULLPTR || stream == M_NULLPTR)
     {
         errno = EINVAL;
@@ -2093,6 +2116,7 @@ ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter,
             return SSIZE_T_C(-1);
         }
     }
+    RESTORE_NONNULL_COMPARE
     currentptr = *lineptr;
     endptr     = *lineptr + *n;
     // read using fgetc until delimiter is encountered in the stream or end of
@@ -2319,14 +2343,16 @@ int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
 
 void print_Return_Enum(const char* funcName, eReturnValues ret)
 {
+    DISABLE_NONNULL_COMPARE
     if (M_NULLPTR == funcName)
     {
-        printf("Unknown funtion returning: ");
+        printf("Unknown function returning: ");
     }
     else
     {
         printf("%s returning: ", funcName);
     }
+    RESTORE_NONNULL_COMPARE
 
     switch (ret)
     {
@@ -2486,10 +2512,12 @@ static void internal_Print_Data_Buffer(const uint8_t* dataBuffer, uint32_t buffe
     uint32_t    offset       = UINT32_C(0);
     const char* offsetFmtStr = "\n  0x%02" PRIX32 " ";
 
+    DISABLE_NONNULL_COMPARE
     if (dataBuffer == M_NULLPTR || bufferLen == UINT32_C(0))
     {
         return;
     }
+    RESTORE_NONNULL_COMPARE
 
     if (showOffset)
     {
@@ -2623,6 +2651,7 @@ errno_t safe_fopen_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (streamptr == M_NULLPTR)
     {
         error = EINVAL;
@@ -2666,6 +2695,7 @@ errno_t safe_fopen_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
         }
 #endif
     }
+    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }
@@ -2681,6 +2711,7 @@ errno_t safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (newstreamptr == M_NULLPTR)
     {
         error = EINVAL;
@@ -2724,6 +2755,7 @@ errno_t safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
         }
 #endif
     }
+    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }
@@ -2741,6 +2773,7 @@ errno_t safe_tmpnam_impl(char*       filename_s,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (filename_s == M_NULLPTR)
     {
         error = EINVAL;
@@ -2802,6 +2835,7 @@ errno_t safe_tmpnam_impl(char*       filename_s,
         }
 #    endif
     }
+    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }
@@ -2815,6 +2849,7 @@ errno_t safe_tmpfile_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (streamptr == M_NULLPTR)
     {
         error = EINVAL;
@@ -2842,6 +2877,7 @@ errno_t safe_tmpfile_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
         }
 #endif
     }
+    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }
@@ -2850,6 +2886,7 @@ char* safe_gets_impl(char* str, rsize_t n, const char* file, const char* functio
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (n == RSIZE_T_C(0))
     {
         error = EINVAL;
@@ -2950,6 +2987,7 @@ char* safe_gets_impl(char* str, rsize_t n, const char* file, const char* functio
         return str;
 #endif
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_strtol_impl(long*                  value,
@@ -2963,6 +3001,7 @@ errno_t safe_strtol_impl(long*                  value,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (value == M_NULLPTR)
     {
         error = EINVAL;
@@ -3004,6 +3043,7 @@ errno_t safe_strtol_impl(long*                  value,
             }
         }
     }
+    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }
@@ -3019,6 +3059,7 @@ errno_t safe_strtoll_impl(long long*             value,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (value == M_NULLPTR)
     {
         error = EINVAL;
@@ -3060,6 +3101,7 @@ errno_t safe_strtoll_impl(long long*             value,
             }
         }
     }
+    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }
@@ -3075,6 +3117,7 @@ errno_t safe_strtoul_impl(unsigned long*         value,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (value == M_NULLPTR)
     {
         error = EINVAL;
@@ -3115,6 +3158,7 @@ errno_t safe_strtoul_impl(unsigned long*         value,
             }
         }
     }
+    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }
@@ -3130,6 +3174,7 @@ errno_t safe_strtoull_impl(unsigned long long*    value,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (value == M_NULLPTR)
     {
         error = EINVAL;
@@ -3170,6 +3215,7 @@ errno_t safe_strtoull_impl(unsigned long long*    value,
             }
         }
     }
+    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }
@@ -3185,6 +3231,7 @@ errno_t safe_strtoimax_impl(intmax_t*              value,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (value == M_NULLPTR)
     {
         error = EINVAL;
@@ -3226,6 +3273,7 @@ errno_t safe_strtoimax_impl(intmax_t*              value,
             }
         }
     }
+    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }
@@ -3241,6 +3289,7 @@ errno_t safe_strtoumax_impl(uintmax_t*             value,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (value == M_NULLPTR)
     {
         error = EINVAL;
@@ -3281,6 +3330,7 @@ errno_t safe_strtoumax_impl(uintmax_t*             value,
             }
         }
     }
+    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }
@@ -3295,6 +3345,7 @@ errno_t safe_strtof_impl(float*                 value,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (value == M_NULLPTR)
     {
         error = EINVAL;
@@ -3334,6 +3385,7 @@ errno_t safe_strtof_impl(float*                 value,
         }
         RESTORE_WARNING_FLOAT_EQUAL
     }
+    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }
@@ -3348,6 +3400,7 @@ errno_t safe_strtod_impl(double*                value,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (value == M_NULLPTR)
     {
         error = EINVAL;
@@ -3387,6 +3440,7 @@ errno_t safe_strtod_impl(double*                value,
         }
         RESTORE_WARNING_FLOAT_EQUAL
     }
+    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }
@@ -3401,6 +3455,7 @@ errno_t safe_strtold_impl(long double*           value,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
     if (value == M_NULLPTR)
     {
         error = EINVAL;
@@ -3440,6 +3495,7 @@ errno_t safe_strtold_impl(long double*           value,
         }
         RESTORE_WARNING_FLOAT_EQUAL
     }
+    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }
@@ -3451,11 +3507,13 @@ errno_t safe_atoi_impl(int*                   value,
                        int                    line,
                        const char*            expression)
 {
+    DISABLE_NONNULL_COMPARE
     if (value == M_NULLPTR)
     {
         errno = EINVAL;
         return EINVAL;
     }
+    RESTORE_NONNULL_COMPARE
     char*   endp  = M_NULLPTR;
     long    temp  = 0L;
     errno_t error = safe_strtol_impl(&temp, str, &endp, BASE_10_DECIMAL, file, function, line, expression);

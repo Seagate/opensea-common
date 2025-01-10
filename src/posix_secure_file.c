@@ -39,7 +39,8 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoChe
     fileAttributes* attrs = M_NULLPTR;
     struct stat     st;
     safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
-    if (filetoCheck && stat(filetoCheck, &st) == 0)
+    DISABLE_NONNULL_COMPARE
+    if (filetoCheck != M_NULLPTR && stat(filetoCheck, &st) == 0)
     {
         attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
         if (attrs != M_NULLPTR)
@@ -67,6 +68,7 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoChe
             attrs->fileModificationTime = st.st_mtime;
         }
     }
+    RESTORE_NONNULL_COMPARE
     return attrs;
 }
 
@@ -75,7 +77,8 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
     fileAttributes* attrs = M_NULLPTR;
     struct stat     st;
     safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
-    if (file && fstat(fileno(file), &st) == 0)
+    DISABLE_NONNULL_COMPARE
+    if (file != M_NULLPTR && fstat(fileno(file), &st) == 0)
     {
         attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
         if (attrs != M_NULLPTR)
@@ -103,6 +106,7 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
             attrs->fileModificationTime = st.st_mtime;
         }
     }
+    RESTORE_NONNULL_COMPARE
     return attrs;
 }
 
@@ -114,7 +118,8 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
 #else
     struct stat st;
     safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
-    if (file && fstat(fileno(file), &st))
+    DISABLE_NONNULL_COMPARE
+    if (file != M_NULLPTR && fstat(fileno(file), &st))
     {
         // device ID and inode
         uniqueID = M_REINTERPRET_CAST(fileUniqueIDInfo*, safe_calloc(1, sizeof(fileUniqueIDInfo)));
@@ -124,6 +129,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
             uniqueID->inode = st.st_ino;
         }
     }
+    RESTORE_NONNULL_COMPARE
 #endif
     return uniqueID;
 }

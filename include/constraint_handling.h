@@ -77,12 +77,14 @@ extern "C"
     //! from
     //! \return returns same pointer as \a envInfo to allow it to be quickly passed to a constraint handler's ptr
     //! parameter
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1)
     static M_INLINE constraintEnvInfo* set_Env_Info(constraintEnvInfo* envInfo,
                                                     const char*        file,
                                                     const char*        function,
                                                     const char*        expression,
                                                     const int          line)
     {
+        DISABLE_NONNULL_COMPARE
         if (envInfo != M_NULLPTR)
         {
             envInfo->version    = CONSTRAINT_HANDLER_ENV_INFO_VERSION;
@@ -92,6 +94,7 @@ extern "C"
             envInfo->expression = expression;
             envInfo->line       = line;
         }
+        RESTORE_NONNULL_COMPARE
         return envInfo;
     }
 
@@ -114,6 +117,7 @@ extern "C"
     //! \param[in] msg the message to print by the constraint handler when an error is encountered.
     //! \param[in] ptr additional error information to output in the constraint handler. Expects constraintEnvInfo*
     //! \param[in] error errno value describing the error that occurred during execution.
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1) M_NULL_TERM_STRING(1)
     void invoke_Constraint_Handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error);
 
 #if defined(__cplusplus)

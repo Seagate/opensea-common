@@ -1203,6 +1203,7 @@ extern "C"
     //! \param[in] ptr2 pointer to the second memory region to check
     //! \param[in] size2 size of the second memory region
     //! \return 0 regions do not overlap. Nonzero means the regions overlap
+    M_PARAM_RO(1) M_PARAM_RO(3)
     static M_INLINE int memory_regions_overlap(const void* M_RESTRICT ptr1,
                                                rsize_t                size1,
                                                const void* M_RESTRICT ptr2,
@@ -1479,6 +1480,7 @@ extern "C"
     //! allocated with an aligned allocation. For example, specifying alignment of 8 at allocation
     //! may mean that the pointer is 8 byte aligned but also 16 byte aligned.
     //! if using this to determine if memory alignment is correct, do get_memalignment(ptr) >= alignment
+    M_PARAM_RO(1)
     static M_INLINE size_t get_memalignment(const void* ptr)
     {
         return M_REINTERPRET_CAST(uintptr_t, ptr) & (~M_REINTERPRET_CAST(uintptr_t, ptr) + 1);

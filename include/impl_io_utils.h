@@ -53,6 +53,7 @@ extern "C"
     //! - \a filename is a null pointer
     //!
     //! - \a mode is a null pointer
+    M_NONNULL_PARAM_LIST(1, 2, 3) M_PARAM_RW(1) M_PARAM_RO(2) M_PARAM_RO(3) M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2)
     errno_t safe_fopen_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
                             const char* M_RESTRICT       filename,
                             const char* M_RESTRICT       mode,
@@ -89,6 +90,7 @@ extern "C"
     //! - \a stream is a null pointer
     //!
     //! - \a mode is a null pointer
+    M_NONNULL_PARAM_LIST(1, 2, 3, 4) M_PARAM_RW(1) M_PARAM_RO(2) M_PARAM_RO(3) M_PARAM_RW(4) M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2)
     errno_t safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
                               const char* M_RESTRICT       filename,
                               const char* M_RESTRICT       mode,
@@ -124,6 +126,7 @@ extern "C"
     //! - \a maxsize is a greater than RSIZE_MAX
     //!
     //! - \a maxsize is less than the generated file name string
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW_SIZE(1, 2)
     errno_t safe_tmpnam_impl(char*       filename_s,
                              rsize_t     maxsize,
                              const char* file,
@@ -150,6 +153,7 @@ extern "C"
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a streamptr is a null pointer
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1)
     errno_t safe_tmpfile_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
                               const char*                  file,
                               const char*                  function,
@@ -182,6 +186,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - endline or eof not encountered after storing `n - 1` characters to the buffer
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW_SIZE(1, 2)
     char* safe_gets_impl(char*       str,
                          rsize_t     n,
                          const char* file,
@@ -217,6 +222,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - \a base is a greater than 36
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2)
     errno_t safe_strtol_impl(long*                  value,
                              const char* M_RESTRICT str,
                              char** M_RESTRICT      endp,
@@ -255,6 +261,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - \a base is a greater than 36
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2)
     errno_t safe_strtoll_impl(long long*             value,
                               const char* M_RESTRICT str,
                               char** M_RESTRICT      endp,
@@ -293,6 +300,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - \a base is a greater than 36
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2)
     errno_t safe_strtoul_impl(unsigned long*         value,
                               const char* M_RESTRICT str,
                               char** M_RESTRICT      endp,
@@ -331,6 +339,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - \a base is a greater than 36
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2)
     errno_t safe_strtoull_impl(unsigned long long*    value,
                                const char* M_RESTRICT str,
                                char** M_RESTRICT      endp,
@@ -369,6 +378,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - \a base is a greater than 36
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2)
     errno_t safe_strtoimax_impl(intmax_t*              value,
                                 const char* M_RESTRICT str,
                                 char** M_RESTRICT      endp,
@@ -407,6 +417,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - \a base is a greater than 36
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2)
     errno_t safe_strtoumax_impl(uintmax_t*             value,
                                 const char* M_RESTRICT str,
                                 char** M_RESTRICT      endp,
@@ -440,6 +451,7 @@ extern "C"
     //! - \a value is a null pointer
     //!
     //! - \a str is a null pointer
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2)
     errno_t safe_strtof_impl(float*                 value,
                              const char* M_RESTRICT str,
                              char** M_RESTRICT      endp,
@@ -472,6 +484,7 @@ extern "C"
     //! - \a value is a null pointer
     //!
     //! - \a str is a null pointer
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2)
     errno_t safe_strtod_impl(double*                value,
                              const char* M_RESTRICT str,
                              char** M_RESTRICT      endp,
@@ -505,6 +518,7 @@ extern "C"
     //! - \a value is a null pointer
     //!
     //! - \a str is a null pointer
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2)
     errno_t safe_strtold_impl(long double*           value,
                               const char* M_RESTRICT str,
                               char** M_RESTRICT      endp,
@@ -540,6 +554,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - There is text still present after performing the conversion
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2)
     errno_t safe_atoi_impl(int*                   value,
                            const char* M_RESTRICT str,
                            const char*            file,
@@ -574,6 +589,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - There is text still present after performing the conversion
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2)
     errno_t safe_atol_impl(long*                  value,
                            const char* M_RESTRICT str,
                            const char*            file,
@@ -608,6 +624,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - There is text still present after performing the conversion
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2)
     errno_t safe_atoll_impl(long long*             value,
                             const char* M_RESTRICT str,
                             const char*            file,
@@ -642,6 +659,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - There is text still present after performing the conversion
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2)
     errno_t safe_atof_impl(double*                value,
                            const char* M_RESTRICT str,
                            const char*            file,

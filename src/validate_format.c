@@ -780,7 +780,8 @@ static M_INLINE eValidateFormatResult validate_Format_Specifier(const char*     
 // would also be good, but not sure the best way to do this right now. -TJE
 int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formatargs)
 {
-    if (format)
+    DISABLE_NONNULL_COMPARE
+    if (format != M_NULLPTR)
     {
         char* offsetToSpecifier = strstr(format, "%"); // if there are no formatting specifiers, just
                                                        // skip all the checks to return zero
@@ -864,5 +865,6 @@ int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formata
                                           // evaluation is limited to C_STR_LITERAL_LIMIT
                                           // which is way below SIZE_MAX
     }
+    RESTORE_NONNULL_COMPARE
     return -1;
 }

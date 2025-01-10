@@ -111,11 +111,13 @@ constraint_handler_func int_set_constraint_handler(constraint_handler_func handl
 void invoke_Constraint_Handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error)
 {
     constraint_handler_func handler = installedhandler;
+    DISABLE_NONNULL_COMPARE
     if (handler == M_NULLPTR)
     {
         installedhandler = safe_abort_handler;
         handler          = installedhandler;
     }
+    RESTORE_NONNULL_COMPARE
     handler(msg, ptr, error);
 }
 

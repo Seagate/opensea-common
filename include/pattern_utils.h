@@ -25,6 +25,7 @@ extern "C"
     //! \param[out] ptrData pointer to the databuffer to fill with random data
     //! \param[in] dataLength size of buffer pointer to by \a ptrData
     //! \return SUCCESS is successful. BAD_PARAMETER is invalid parameter value.
+    M_NONNULL_PARAM_LIST(1) M_PARAM_WO_SIZE(1, 2)
     eReturnValues fill_Random_Pattern_In_Buffer(uint8_t* ptrData, uint32_t dataLength);
 
     //! \fn eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* ptrData, uint32_t dataLength)
@@ -34,6 +35,7 @@ extern "C"
     //! \param[out] ptrData pointer to the databuffer to fill
     //! \param[in] dataLength size of buffer pointer to by \a ptrData
     //! \return SUCCESS is successful. BAD_PARAMETER is invalid parameter value.
+    M_NONNULL_PARAM_LIST(2) M_PARAM_WO_SIZE(2, 3)
     eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* ptrData, uint32_t dataLength);
 
     //! \fn eReturnValues fill_Incrementing_Pattern_In_Buffer(uint8_t incrementStartValue, uint8_t* ptrData, uint32_t
@@ -44,6 +46,7 @@ extern "C"
     //! \param[in] dataLength size of buffer pointer to by \a ptrData
     //! \return SUCCESS is successful.
     //! BAD_PARAMETER is invalid parameter value.
+    M_NONNULL_PARAM_LIST(2) M_PARAM_WO_SIZE(2, 3)
     eReturnValues fill_Incrementing_Pattern_In_Buffer(uint8_t  incrementStartValue,
                                                       uint8_t* ptrData,
                                                       uint32_t dataLength);
@@ -56,6 +59,7 @@ extern "C"
     //! \param[out] ptrData pointer to the databuffer to fill
     //! \param[in] dataLength size of buffer pointer to by \a ptrData
     //! \return SUCCESS is successful. BAD_PARAMETER is invalid parameter value.
+    M_NONNULL_PARAM_LIST(1, 3) M_PARAM_RO_SIZE(1, 2) M_PARAM_WO_SIZE(3, 4)
     eReturnValues fill_ASCII_Pattern_In_Buffer(const char* asciiPattern,
                                                uint32_t    patternLength,
                                                uint8_t*    ptrData,
@@ -79,6 +83,7 @@ extern "C"
     //! \param[in] dataLength = size of the data buffer in bytes.
     //! \return SUCCESS = successfully filled buffer. BAD_PARAMETER = error in
     //!   function parameters
+    M_NONNULL_PARAM_LIST(1, 3) M_PARAM_RO_SIZE(1, 2) M_PARAM_WO_SIZE(3, 4)
     eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t* inPattern,
                                                           uint32_t inpatternLength,
                                                           uint8_t* ptrData,

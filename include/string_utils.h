@@ -186,6 +186,8 @@ extern "C"
     //! \param[in] n maximum number of characters to scan for null terminator
     //! \return 0 if string is null. length of string if null terminator found. \a n if null terminator not found
     //! after scanning \a n characters
+    //M_PARAM_RO_SIZE(1, 2) //Do not use this right now. Need to revisit how we want to do this since
+    //doing this causes some weird behavior with builtin obj size and RSIZE_MAX as a backup maximum length-TJE
     size_t safe_strnlen(const char* string, size_t n);
 
     // if str is a null pointer, returns 0. Internally calls safe_strnlen with size
@@ -196,6 +198,7 @@ extern "C"
     //! \param[in] string pointer to string to find the length of.
     //! \return 0 if string is null. length of string if null terminator found.
     //! Will scan up to RSIZE_MAX characters and may return RSIZE_MAX if null is not found
+    M_PARAM_RO(1) M_NULL_TERM_STRING(1)
     M_FORCEINLINE size_t safe_strlen(const char* string)
     {
 #if defined(HAVE_BUILT_IN_OBJ_SIZE)
@@ -597,6 +600,7 @@ extern "C"
     //! \param[in] destinationSizeBytes number of bytes pointed to by destination
     //! \param[in] source pointer to source string to concatenate onto \a destination.
     //! \return pointer to destination on success, null pointer on error
+    M_NONNULL_PARAM_LIST(1, 3) M_PARAM_RW_SIZE(1, 2) M_PARAM_RO(3) M_NULL_TERM_STRING(3)
     static M_INLINE char* common_String_Concat(char* M_RESTRICT       destination,
                                                size_t                 destinationSizeBytes,
                                                const char* M_RESTRICT source)
@@ -619,6 +623,7 @@ extern "C"
     //! \param[in] source pointer to source string to concatenate onto \a destination.
     //! \param[in] sourceLength number of bytes to use from source for concatenation
     //! \return pointer to destination on success, null pointer on error
+    M_NONNULL_PARAM_LIST(1, 3) M_PARAM_RW_SIZE(1, 2) M_PARAM_RO_SIZE(3, 4) M_NULL_TERM_STRING(3)
     static M_INLINE char* common_String_Concat_Len(char* M_RESTRICT       destination,
                                                    size_t                 destinationSizeBytes,
                                                    const char* M_RESTRICT source,
@@ -835,6 +840,7 @@ extern "C"
     //! \brief swap the bytes in a string. This is useful when interpreting ATA strings
     //! \param[out] stringToChange a pointer to the data containing a string
     //!   that needs to have the bytes swapped. Must be NULL terminated
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) M_NULL_TERM_STRING(1)
     void byte_Swap_String(char* stringToChange);
 
     //! \fn void byte_Swap_String_Len(char* stringToChange, size_t stringlen)
@@ -842,18 +848,21 @@ extern "C"
     //! \param[out] stringToChange a pointer to the data containing a string
     //!   that needs to have the bytes swapped
     //! \param[in] stringlen length to byteswap the string
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW_SIZE(1, 2)
     void byte_Swap_String_Len(char* stringToChange, size_t stringlen);
 
     //! \fn void remove_Whitespace_Left(char* stringToChange)
     //! \brief remove the whitespace at the beginning of a string with no repeating first char in string
     //! \param[out] stringToChange a pointer to the data containing a string
     //! that needs to have the beginning whitespace removed. Must be NULL terminated
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) M_NULL_TERM_STRING(1)
     void remove_Whitespace_Left(char* stringToChange);
 
     //! \fn void remove_Trailing_Whitespace(char* stringToChange)
     //! \brief remove the whitespace at the end of a string
     //! \param[out] stringToChange a pointer to the data containing a string
     //!   that needs to have the ending whitespace removed. Must be NULL terminated
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) M_NULL_TERM_STRING(1)
     void remove_Trailing_Whitespace(char* stringToChange);
 
     //! \fn void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
@@ -861,12 +870,14 @@ extern "C"
     //! \param[out] stringToChange a pointer to the data containing a string
     //!   that needs to have the ending whitespace removed
     //! \param[in] stringlen total length of the string pointed to by \a stringToChange
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW_SIZE(1, 2)
     void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen);
 
     //! \fn void remove_Leading_Whitespace(char* stringToChange)
     //! \brief remove the whitespace at the beginning of a string
     //! \param[out] stringToChange a pointer to the data containing a string
     //! that needs to have the beginning whitespace removed. Must be NULL terminated
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) M_NULL_TERM_STRING(1)
     void remove_Leading_Whitespace(char* stringToChange);
 
     //! \fn void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
@@ -874,12 +885,14 @@ extern "C"
     //! \param[out] stringToChange a pointer to the data containing a string
     //! that needs to have the beginning whitespace removed
     //! \param[in] stringlen total length of the string pointed to by \a stringToChange
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW_SIZE(1, 2)
     void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen);
 
     //! \fn void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
     //! \brief remove the whitespace at the beginning and end of a string
     //! \param[out] stringToChange a pointer to the data containing a string
     //! that needs to have the beginning whitespace removed. Must be NULL terminated
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) M_NULL_TERM_STRING(1)
     void remove_Leading_And_Trailing_Whitespace(char* stringToChange);
 
     //! \fn void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
@@ -887,12 +900,14 @@ extern "C"
     //! \param[out] stringToChange a pointer to the data containing a string
     //! that needs to have the beginning whitespace removed
     //! \param[in] stringlen total length of the string pointed to by \a stringToChange
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW_SIZE(1, 2)
     void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen);
 
     //! \fn void convert_String_To_Upper_Case(char* stringToChange)
     //! \brief Converts entire string to UPPER CASE
     //! \param[out] stringToChange a pointer to the data containing a string
     //! that needs to have the beginning whitespace removed. Must be NULL terminated
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) M_NULL_TERM_STRING(1)
     void convert_String_To_Upper_Case(char* stringToChange);
 
     //! \fn void convert_String_To_Upper_Case(char* stringToChange)
@@ -900,12 +915,14 @@ extern "C"
     //! \param[out] stringToChange a pointer to the data containing a string
     //! that needs to have the beginning whitespace removed.
     //! \param[in] stringlen total length of the string pointed to by \a stringToChange
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW_SIZE(1, 2)
     void convert_String_To_Upper_Case_Len(char* stringToChange, size_t stringlen);
 
     //! \fn void convert_String_To_Lower_Case(char* stringToChange)
     //! \brief Converts entire string to lower case
     //! \param[out] stringToChange a pointer to the data containing a string
     //! that needs to have the beginning whitespace removed. Must be NULL terminated
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) M_NULL_TERM_STRING(1)
     void convert_String_To_Lower_Case(char* stringToChange);
 
     //! \fn void convert_String_To_Lower_Case_Len(char* stringToChange, size_t stringlen)
@@ -913,12 +930,14 @@ extern "C"
     //! \param[out] stringToChange a pointer to the data containing a string
     //! that needs to have the beginning whitespace removed.
     //! \param[in] stringlen total length of the string pointed to by \a stringToChange
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW_SIZE(1, 2)
     void convert_String_To_Lower_Case_Len(char* stringToChange, size_t stringlen);
 
     //! \fn void convert_String_To_Inverse_Case(char* stringToChange)
     //! \brief Converts entire string to opposite case. Lower->Upper and Upper->Lower
     //! \param[out] stringToChange a pointer to the data containing a string
     //! that needs to have the beginning whitespace removed. Must be NULL terminated
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) M_NULL_TERM_STRING(1)
     void convert_String_To_Inverse_Case(char* stringToChange);
 
     //! \fn void convert_String_To_Inverse_Case(char* stringToChange)
@@ -926,6 +945,7 @@ extern "C"
     //! \param[out] stringToChange a pointer to the data containing a string
     //! that needs to have the beginning whitespace removed
     //! \param[in] stringlen total length of the string pointed to by \a stringToChange
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW_SIZE(1, 2)
     void convert_String_To_Inverse_Case_Len(char* stringToChange, size_t stringlen);
 
     //! \fn size_t find_last_occurrence_in_string(const char* originalString, const char* stringToFind)
@@ -933,6 +953,7 @@ extern "C"
     //! \param[in] originalString pointer to the data containing a string that will be searched
     //! \param[in] stringToFind a pointer to the data containing a string that is to be found within \a originalString
     //! \return offset to last occurrence of \a stringToFind in \a originalString
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RO(1) M_PARAM_RO(2)
     size_t find_last_occurrence_in_string(const char* originalString, const char* stringToFind);
 
     //! \fn size_t find_first_occurrence_in_string(const char* originalString, const char* stringToFind)
@@ -940,6 +961,7 @@ extern "C"
     //! \param[in] originalString pointer to the data containing a string that will be searched
     //! \param[in] stringToFind a pointer to the data containing a string that is to be found within \a originalString
     //! \return offset to first occurrence of \a stringToFind in \a originalString
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RO(1) M_PARAM_RO(2) M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2)
     size_t find_first_occurrence_in_string(const char* originalString, const char* stringToFind);
 
     //! \fn bool wildcard_Match(const char* pattern, const char* data)
@@ -950,6 +972,7 @@ extern "C"
     //! \param[in] pattern a pointer to the pattern consisting wildcard chars. Null terminated
     //! \param[in] data a pointer to the data to search. Null terminated.
     //! \return true = found match, false = no match found
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RO(1) M_PARAM_RO(2) M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2)
     bool wildcard_Match(const char* pattern, const char* data);
 
 #if defined(__cplusplus)

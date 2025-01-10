@@ -74,20 +74,26 @@ static M_INLINE void safe_free_reparse_data_buf(REPARSE_DATA_BUFFER** reparse)
 
 int64_t os_Get_File_Size(FILE* filePtr)
 {
-    LARGE_INTEGER fileSize;
-    intptr_t      osfHandle = _get_osfhandle(_fileno(filePtr));
-    // convert the fileptr to a HANDLE
-    HANDLE fileHandle = C_CAST(HANDLE, osfHandle);
-    fileSize.QuadPart = 0; // set to something before we call GetFileSizeEx
-    // use GetFileSizeEx to get the size of the file as a 64bit integer
-    if (GetFileSizeEx(fileHandle, &fileSize))
+    DISABLE_NONNULL_COMPARE
+    if (filePtr != M_NULLPTR)
     {
-        return fileSize.QuadPart;
+        LARGE_INTEGER fileSize;
+        intptr_t      osfHandle = _get_osfhandle(_fileno(filePtr));
+        // convert the fileptr to a HANDLE
+        HANDLE fileHandle = C_CAST(HANDLE, osfHandle);
+        fileSize.QuadPart = 0; // set to something before we call GetFileSizeEx
+        // use GetFileSizeEx to get the size of the file as a 64bit integer
+        if (GetFileSizeEx(fileHandle, &fileSize))
+        {
+            return fileSize.QuadPart;
+        }
+        else
+        {
+            return INT64_C(-1);
+        }
     }
-    else
-    {
-        return INT64_C(-1);
-    }
+    RESTORE_NONNULL_COMPARE
+    return INT64_C(-1);
 }
 
 /*
@@ -264,7 +270,8 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoChe
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64  st;
     safe_memset(&st, sizeof(struct _stat64), 0, sizeof(struct _stat64));
-    if (filetoCheck && _stat64(filetoCheck, &st) == 0)
+    DISABLE_NONNULL_COMPARE
+    if (filetoCheck != M_NULLPTR && _stat64(filetoCheck, &st) == 0)
     {
         attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
         if (attrs)
@@ -289,6 +296,7 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoChe
             win_Get_File_Security_Info_By_Name(filetoCheck, attrs);
         }
     }
+    RESTORE_NONNULL_COMPARE
     return attrs;
 }
 
@@ -297,7 +305,8 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64  st;
     safe_memset(&st, sizeof(struct _stat64), 0, sizeof(struct _stat64));
-    if (file && _fstat64(_fileno(file), &st) == 0)
+    DISABLE_NONNULL_COMPARE
+    if (file != M_NULLPTR && _fstat64(_fileno(file), &st) == 0)
     {
         attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
         if (attrs)
@@ -322,12 +331,14 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
             win_Get_File_Security_Info_By_File(file, attrs);
         }
     }
+    RESTORE_NONNULL_COMPARE
     return attrs;
 }
 
 M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
 {
-    if (file)
+    DISABLE_NONNULL_COMPARE
+    if (file != M_NULLPTR)
     {
         int fd = _fileno(file);   // DO NOT CALL CLOSE ON FD!
         if (fd == WIN_FD_INVALID) //_get_osfhandle says this is a special value
@@ -381,6 +392,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
             return fileId;
         }
     }
+    RESTORE_NONNULL_COMPARE
     return M_NULLPTR;
 }
 
@@ -1324,10 +1336,12 @@ bool os_File_Exists(const char* filetoCheck)
 
 eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_MAX])
 {
-    if (!pathAndFile || !fullPath)
+    DISABLE_NONNULL_COMPARE
+    if (pathAndFile == M_NULLPTR || fullPath == M_NULLPTR)
     {
         return BAD_PARAMETER;
     }
+    RESTORE_NONNULL_COMPARE
     size_t localPathAndFileLength = (safe_strlen(pathAndFile) + 1) * sizeof(TCHAR);
     TCHAR* localpathAndFileBuf    = M_REINTERPRET_CAST(TCHAR*, safe_calloc(localPathAndFileLength, sizeof(TCHAR)));
     DECLARE_ZERO_INIT_ARRAY(TCHAR, fullPathOutput, OPENSEA_PATH_MAX);
@@ -1420,7 +1434,8 @@ bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char
     bool match = false;
     // This function is not just doing strcmp because that will not work.
     // convert these back to the raw structures, then compare them.
-    if (sidsAndDACLstr1 && sidsAndDACLstr2)
+    DISABLE_NONNULL_COMPARE
+    if (sidsAndDACLstr1 != M_NULLPTR && sidsAndDACLstr2 != M_NULLPTR)
     {
         PSECURITY_DESCRIPTOR secDesc1      = M_NULLPTR;
         PSECURITY_DESCRIPTOR secDesc2      = M_NULLPTR;
@@ -1511,5 +1526,6 @@ bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char
             secDesc2 = M_NULLPTR;
         }
     }
+    RESTORE_NONNULL_COMPARE
     return match;
 }

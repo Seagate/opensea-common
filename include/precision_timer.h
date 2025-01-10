@@ -52,11 +52,13 @@ extern "C"
     //! \fn void start_Timer(seatimer_t* timer)
     //! \brief start the timer
     //! \param[in,out] timer pointer to seatimer to start
+    M_NONNULL_PARAM_LIST(1) M_PARAM_WO(1)
     void start_Timer(seatimer_t* timer);
 
     //! \fn void stop_Timer(seatimer_t* timer)
     //! \brief stop the timer
     //! \param[in,out] timer pointer to seatimer to stop
+    M_NONNULL_PARAM_LIST(1) M_PARAM_WO(1)
     void stop_Timer(seatimer_t* timer);
 
     //! \fn uint64_t get_Nano_Seconds(seatimer_t timer)

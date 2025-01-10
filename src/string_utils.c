@@ -1122,10 +1122,12 @@ void remove_Whitespace_Left(char* stringToChange)
 {
     size_t iter = SIZE_T_C(0);
     size_t len  = SIZE_T_C(0);
+    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
+    RESTORE_NONNULL_COMPARE
     len = strspn(stringToChange,
                  " \t\n\v\f"); // only touch spaces at the beginning of the
                                // string, not the whole string
@@ -1146,10 +1148,12 @@ void remove_Whitespace_Left(char* stringToChange)
 void remove_Trailing_Whitespace(char* stringToChange)
 {
     size_t iter = SIZE_T_C(0);
+    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
+    RESTORE_NONNULL_COMPARE
     iter = (safe_strlen(stringToChange));
     if (iter == SIZE_T_C(0))
     {
@@ -1165,10 +1169,12 @@ void remove_Trailing_Whitespace(char* stringToChange)
 
 void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
 {
+    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
         return;
     }
+    RESTORE_NONNULL_COMPARE
 
     size_t iter = stringlen;
     while (iter > SIZE_T_C(0) && safe_isascii(stringToChange[iter - SIZE_T_C(1)]) &&
@@ -1183,10 +1189,12 @@ void remove_Leading_Whitespace(char* stringToChange)
 {
     size_t iter              = SIZE_T_C(0);
     size_t stringToChangeLen = SIZE_T_C(0);
+    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
+    RESTORE_NONNULL_COMPARE
     stringToChangeLen = safe_strlen(stringToChange);
     while (safe_isascii(stringToChange[iter]) && safe_isspace(stringToChange[iter]) && iter < stringToChangeLen)
     {
@@ -1203,11 +1211,12 @@ void remove_Leading_Whitespace(char* stringToChange)
 
 void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
 {
+    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
         return;
     }
-
+    RESTORE_NONNULL_COMPARE
     size_t iter = SIZE_T_C(0);
     while (iter < stringlen && safe_isascii(stringToChange[iter]) && safe_isspace(stringToChange[iter]))
     {
@@ -1224,11 +1233,12 @@ void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
 
 void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
 {
+    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-
+    RESTORE_NONNULL_COMPARE
     size_t stringlen = safe_strlen(stringToChange);
     if (stringlen == SIZE_T_C(0))
     {
@@ -1265,11 +1275,12 @@ void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
 
 void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
 {
+    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
         return;
     }
-
+    RESTORE_NONNULL_COMPARE
     // Remove leading whitespace (calculate for memmove later)
     size_t start = SIZE_T_C(0);
     while (start < stringlen && safe_isascii(stringToChange[start]) && safe_isspace(stringToChange[start]))
@@ -1300,10 +1311,12 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
 
 void convert_String_To_Upper_Case(char* stringToChange)
 {
+    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
+    RESTORE_NONNULL_COMPARE
     for (size_t iter = SIZE_T_C(0); stringToChange[iter] != '\0'; iter++)
     {
         stringToChange[iter] = C_CAST(char, safe_toupper(stringToChange[iter]));
@@ -1312,10 +1325,12 @@ void convert_String_To_Upper_Case(char* stringToChange)
 
 void convert_String_To_Upper_Case_Len(char* stringToChange, size_t stringlen)
 {
+    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
+    RESTORE_NONNULL_COMPARE
     for (size_t iter = SIZE_T_C(0); iter < stringlen; iter++)
     {
         stringToChange[iter] = C_CAST(char, safe_toupper(stringToChange[iter]));
@@ -1324,10 +1339,12 @@ void convert_String_To_Upper_Case_Len(char* stringToChange, size_t stringlen)
 
 void convert_String_To_Lower_Case(char* stringToChange)
 {
+    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
+    RESTORE_NONNULL_COMPARE
     for (size_t iter = SIZE_T_C(0); stringToChange[iter] != '\0'; iter++)
     {
         stringToChange[iter] = C_CAST(char, safe_tolower(stringToChange[iter]));
@@ -1336,10 +1353,12 @@ void convert_String_To_Lower_Case(char* stringToChange)
 
 void convert_String_To_Lower_Case_Len(char* stringToChange, size_t stringlen)
 {
+    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
+    RESTORE_NONNULL_COMPARE
     for (size_t iter = SIZE_T_C(0); iter < stringlen; iter++)
     {
         stringToChange[iter] = C_CAST(char, safe_tolower(stringToChange[iter]));
@@ -1348,10 +1367,12 @@ void convert_String_To_Lower_Case_Len(char* stringToChange, size_t stringlen)
 
 void convert_String_To_Inverse_Case(char* stringToChange)
 {
+    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
+    RESTORE_NONNULL_COMPARE
     for (size_t iter = SIZE_T_C(0); stringToChange[iter] != '\0'; iter++)
     {
         if (safe_islower(stringToChange[iter]))
@@ -1367,10 +1388,12 @@ void convert_String_To_Inverse_Case(char* stringToChange)
 
 void convert_String_To_Inverse_Case_Len(char* stringToChange, size_t stringlen)
 {
+    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
+    RESTORE_NONNULL_COMPARE
     for (size_t iter = SIZE_T_C(0); iter < stringlen; iter++)
     {
         if (safe_islower(stringToChange[iter]))
@@ -1386,11 +1409,12 @@ void convert_String_To_Inverse_Case_Len(char* stringToChange, size_t stringlen)
 
 size_t find_last_occurrence_in_string(const char* originalString, const char* stringToFind)
 {
+    DISABLE_NONNULL_COMPARE
     if (originalString == M_NULLPTR || stringToFind == M_NULLPTR)
     {
         return SIZE_MAX;
     }
-
+    RESTORE_NONNULL_COMPARE
     size_t last_occurrence = SIZE_MAX;
     size_t stringToFindLen = safe_strlen(stringToFind);
     if (stringToFindLen == SIZE_T_C(0))
@@ -1410,11 +1434,12 @@ size_t find_last_occurrence_in_string(const char* originalString, const char* st
 
 size_t find_first_occurrence_in_string(const char* originalString, const char* stringToFind)
 {
+    DISABLE_NONNULL_COMPARE
     if (originalString == M_NULLPTR || stringToFind == M_NULLPTR)
     {
         return SIZE_MAX;
     }
-
+    RESTORE_NONNULL_COMPARE
     const char* partialString = strstr(originalString, stringToFind);
     return (partialString != M_NULLPTR) ? (C_CAST(uintptr_t, partialString) - C_CAST(uintptr_t, originalString))
                                         : SIZE_MAX;
@@ -1422,10 +1447,12 @@ size_t find_first_occurrence_in_string(const char* originalString, const char* s
 
 bool wildcard_Match(const char* pattern, const char* data)
 {
+    DISABLE_NONNULL_COMPARE
     if (pattern == M_NULLPTR || data == M_NULLPTR)
     {
         return false;
     }
+    RESTORE_NONNULL_COMPARE
     if (*pattern == '\0' && *data == '\0')
     {
         return true;

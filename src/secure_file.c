@@ -103,6 +103,7 @@ void free_Secure_File_Info(secureFileInfo** fileInfo)
 bool compare_File_Unique_ID(const fileUniqueIDInfo* a, const fileUniqueIDInfo* b)
 {
     bool equal = false;
+    DISABLE_NONNULL_COMPARE
     if (a != M_NULLPTR && b != M_NULLPTR)
     {
         if (a->inode == b->inode && 0 == memcmp(a->fileid, b->fileid, FILE_UNIQUE_ID_ARR_MAX))
@@ -110,6 +111,7 @@ bool compare_File_Unique_ID(const fileUniqueIDInfo* a, const fileUniqueIDInfo* b
             equal = true;
         }
     }
+    RESTORE_NONNULL_COMPARE
     return equal;
 }
 
@@ -132,8 +134,10 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                                              fileUniqueIDInfo* uniqueIdInfo /*optional*/)
 {
     secureFileInfo* fileInfo = M_REINTERPRET_CAST(secureFileInfo*, safe_calloc(1, sizeof(secureFileInfo)));
-    if (fileInfo && filename && mode) /* Not checking extList and outInfo because it is optional */
+    DISABLE_NONNULL_COMPARE
+    if (fileInfo && filename != M_NULLPTR && mode != M_NULLPTR) /* Not checking extList and outInfo because it is optional */
     {
+        RESTORE_NONNULL_COMPARE
         bool  creatingFile  = false;
         bool  exclusiveFlag = false;
         char* internalmode  = M_CONST_CAST(char*, mode); // we will dup mode if we need to modify it later, so
@@ -625,7 +629,8 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
 // things, flush, etc as needed to make this better.
 M_NODISCARD eSecureFileError secure_Close_File(secureFileInfo* fileInfo)
 {
-    if (fileInfo)
+    DISABLE_NONNULL_COMPARE
+    if (fileInfo != M_NULLPTR)
     {
         fileInfo->error = SEC_FILE_INVALID_FILE;
         if (fileInfo->file != M_NULLPTR)
@@ -653,6 +658,7 @@ M_NODISCARD eSecureFileError secure_Close_File(secureFileInfo* fileInfo)
         }
         return fileInfo->error;
     }
+    RESTORE_NONNULL_COMPARE
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
@@ -663,7 +669,8 @@ M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInf
                                               size_t                     count,
                                               size_t*                    numberread /*optional*/)
 {
-    if (fileInfo)
+    DISABLE_NONNULL_COMPARE
+    if (fileInfo != M_NULLPTR)
     {
         if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
         {
@@ -732,6 +739,7 @@ M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInf
         }
         return fileInfo->error;
     }
+    RESTORE_NONNULL_COMPARE
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
@@ -742,7 +750,8 @@ M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileIn
                                                size_t                     count,
                                                size_t*                    numberwritten /*optional*/)
 {
-    if (fileInfo)
+    DISABLE_NONNULL_COMPARE
+    if (fileInfo != M_NULLPTR)
     {
         if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
         {
@@ -802,12 +811,14 @@ M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileIn
         }
         return fileInfo->error;
     }
+    RESTORE_NONNULL_COMPARE
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
 M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, oscoffset_t offset, int initialPosition)
 {
-    if (fileInfo)
+    DISABLE_NONNULL_COMPARE
+    if (fileInfo != M_NULLPTR)
     {
         if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
         {
@@ -839,12 +850,14 @@ M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, oscoffse
         }
         return fileInfo->error;
     }
+    RESTORE_NONNULL_COMPARE
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
 M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
 {
-    if (fileInfo)
+    DISABLE_NONNULL_COMPARE
+    if (fileInfo != M_NULLPTR)
     {
         if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
         {
@@ -863,12 +876,14 @@ M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
         }
         return fileInfo->error;
     }
+    RESTORE_NONNULL_COMPARE
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
 M_NODISCARD oscoffset_t secure_Tell_File(secureFileInfo* fileInfo)
 {
-    if (fileInfo)
+    DISABLE_NONNULL_COMPARE
+    if (fileInfo != M_NULLPTR)
     {
         if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
         {
@@ -901,12 +916,14 @@ M_NODISCARD oscoffset_t secure_Tell_File(secureFileInfo* fileInfo)
         }
         return -1;
     }
+    RESTORE_NONNULL_COMPARE
     return -1;
 }
 
 eSecureFileError secure_Flush_File(secureFileInfo* fileInfo)
 {
-    if (fileInfo)
+    DISABLE_NONNULL_COMPARE
+    if (fileInfo != M_NULLPTR)
     {
         if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
         {
@@ -931,12 +948,14 @@ eSecureFileError secure_Flush_File(secureFileInfo* fileInfo)
         }
         return fileInfo->error;
     }
+    RESTORE_NONNULL_COMPARE
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
 M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
 {
-    if (fileInfo)
+    DISABLE_NONNULL_COMPARE
+    if (fileInfo != M_NULLPTR)
     {
         if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
         {
@@ -970,12 +989,14 @@ M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
         }
         return fileInfo->error;
     }
+    RESTORE_NONNULL_COMPARE
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
 M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eSecureFileDeleteNameAction deleteAction)
 {
-    if (filename)
+    DISABLE_NONNULL_COMPARE
+    if (filename != M_NULLPTR)
     {
         // first get cannonical name
         DECLARE_ZERO_INIT_ARRAY(char, fullpath, 4096);
@@ -1058,12 +1079,14 @@ M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eS
         }
         return SEC_FILE_FAILURE;
     }
+    RESTORE_NONNULL_COMPARE
     return SEC_FILE_INVALID_PATH;
 }
 
 eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT fileInfo, fpos_t* M_RESTRICT pos)
 {
-    if (fileInfo && pos)
+    DISABLE_NONNULL_COMPARE
+    if (fileInfo != M_NULLPTR && pos != M_NULLPTR)
     {
         if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
         {
@@ -1085,18 +1108,20 @@ eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT fileInfo, fpos_t*
         }
         return fileInfo->error;
     }
-    else if (fileInfo)
+    else if (fileInfo != M_NULLPTR)
     {
         // pos is invalid
         fileInfo->error = SEC_FILE_INVALID_PARAMETER;
         return fileInfo->error;
     }
+    RESTORE_NONNULL_COMPARE
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
 eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos)
 {
-    if (fileInfo && pos)
+    DISABLE_NONNULL_COMPARE
+    if (fileInfo != M_NULLPTR && pos != M_NULLPTR)
     {
         if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
         {
@@ -1118,25 +1143,27 @@ eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos)
         }
         return fileInfo->error;
     }
-    else if (fileInfo)
+    else if (fileInfo != M_NULLPTR)
     {
         // pos is invalid
         fileInfo->error = SEC_FILE_INVALID_PARAMETER;
         return fileInfo->error;
     }
+    RESTORE_NONNULL_COMPARE
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
 FUNC_ATTR_PRINTF(2, 0)
 eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, va_list args)
 {
-    if (fileInfo && fileInfo->file)
+    DISABLE_NONNULL_COMPARE
+    if (fileInfo != M_NULLPTR && fileInfo->file != M_NULLPTR)
     {
         if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
         {
             return SEC_FILE_FAILURE_CLOSING_FILE;
         }
-        if (format)
+        if (format != M_NULLPTR)
         {
             int vfprintfresult = 0;
 #if defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
@@ -1175,19 +1202,21 @@ eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const
         }
         return fileInfo->error;
     }
+    RESTORE_NONNULL_COMPARE
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
 FUNC_ATTR_PRINTF(2, 3)
 eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, ...)
 {
-    if (fileInfo && fileInfo->file)
+    DISABLE_NONNULL_COMPARE
+    if (fileInfo != M_NULLPTR && fileInfo->file != M_NULLPTR)
     {
         if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
         {
             return SEC_FILE_FAILURE_CLOSING_FILE;
         }
-        if (format)
+        if (format != M_NULLPTR)
         {
             va_list args;
             va_start(args, format);
@@ -1202,6 +1231,7 @@ eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const 
         }
         return fileInfo->error;
     }
+    RESTORE_NONNULL_COMPARE
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
@@ -1221,11 +1251,12 @@ char* generate_Log_Name(eLogFileNamingConvention logFileNamingConvention, // req
     DECLARE_ZERO_INIT_ARRAY(char, path, OPENSEA_PATH_MAX);
     char* logExtension  = M_NULLPTR;
     char* generatedName = M_NULLPTR;
+    DISABLE_NONNULL_COMPARE
     if ((deviceIdentifier == M_NULLPTR || deviceIDLen == 0) && logFileNamingConvention != NAMING_BYUSER)
     {
         return M_NULLPTR;
     }
-    if (logPath && logPathLen > 0)
+    if (logPath != M_NULLPTR && logPathLen > 0)
     {
         snprintf(path, OPENSEA_PATH_MAX, "%s", logPath);
         // if there is no path separator at the end of this string, then we need
@@ -1241,7 +1272,7 @@ char* generate_Log_Name(eLogFileNamingConvention logFileNamingConvention, // req
         // will be expanded by secure file to a full path
         snprintf(path, OPENSEA_PATH_MAX, ".%c", SYSTEM_PATH_SEPARATOR);
     }
-    if (logExt && logExtLen > SIZE_T_C(0))
+    if (logExt != M_NULLPTR && logExtLen > SIZE_T_C(0))
     {
         // check if there is already an extension with a dot, otherwise add a
         // dot then the extension
@@ -1339,6 +1370,7 @@ char* generate_Log_Name(eLogFileNamingConvention logFileNamingConvention, // req
         break;
     }
     safe_free(&logExtension);
+    RESTORE_NONNULL_COMPARE
     return generatedName;
 }
 
@@ -1361,6 +1393,7 @@ eReturnValues create_And_Open_Secure_Log_File(
 {
     eReturnValues result = SUCCESS;
     // Step 1: Validate required parameters
+    DISABLE_NONNULL_COMPARE
     if (deviceIdentifier == M_NULLPTR || deviceIDLen == 0 || file == M_NULLPTR || logPathLen > OPENSEA_PATH_MAX ||
         logNameLen > RSIZE_MAX || logExtLen > RSIZE_MAX)
     {
@@ -1379,7 +1412,7 @@ eReturnValues create_And_Open_Secure_Log_File(
     *file = secure_Open_File(logGeneratedName, "wxb", M_NULLPTR, M_NULLPTR, M_NULLPTR);
     // Step 4: return error code depending on what happened from attempting to
     // do all of these steps
-    if (!file)
+    if (file == M_NULLPTR)
     {
         result = MEMORY_FAILURE;
     }
@@ -1393,6 +1426,7 @@ eReturnValues create_And_Open_Secure_Log_File(
         // Should we give more error information here or just call it a
         // failure???-TJE
     }
+    RESTORE_NONNULL_COMPARE
     safe_free(&logGeneratedName);
     return result;
 }

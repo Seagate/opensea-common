@@ -25,7 +25,8 @@ DISABLE_WARNING_4255
 RESTORE_WARNING_4255
 void start_Timer(seatimer_t* timer)
 {
-    if (timer)
+    DISABLE_NONNULL_COMPARE
+    if (timer != M_NULLPTR)
     {
         LARGE_INTEGER tempLargeInt;
         tempLargeInt.QuadPart = 0;
@@ -38,11 +39,13 @@ void start_Timer(seatimer_t* timer)
             }
         }
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 void stop_Timer(seatimer_t* timer)
 {
-    if (timer)
+    DISABLE_NONNULL_COMPARE
+    if (timer != M_NULLPTR)
     {
         LARGE_INTEGER tempLargeInt;
         safe_memset(&tempLargeInt, sizeof(LARGE_INTEGER), 0, sizeof(LARGE_INTEGER));
@@ -55,6 +58,7 @@ void stop_Timer(seatimer_t* timer)
             }
         }
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 uint64_t get_Nano_Seconds(seatimer_t timer)
@@ -98,7 +102,8 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
 // (linux) https://www.man7.org/linux/man-pages/man3/clock_gettime.3.html
 void start_Timer(seatimer_t* timer)
 {
-    if (timer)
+    DISABLE_NONNULL_COMPARE
+    if (timer != M_NULLPTR)
     {
         struct timespec startTimespec;
         int             ret = 0;
@@ -120,11 +125,13 @@ void start_Timer(seatimer_t* timer)
         //       printf("Bad start_timer Ret:  %d\n",ret);
         //    }
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 void stop_Timer(seatimer_t* timer)
 {
-    if (timer)
+    DISABLE_NONNULL_COMPARE
+    if (timer != M_NULLPTR)
     {
         struct timespec stopTimespec;
         int             ret = 0;
@@ -146,6 +153,7 @@ void stop_Timer(seatimer_t* timer)
         //       printf("Bad stop_timer Ret:  %d\n",ret);
         //    }
     }
+    RESTORE_NONNULL_COMPARE
 }
 
 uint64_t get_Nano_Seconds(seatimer_t timer)

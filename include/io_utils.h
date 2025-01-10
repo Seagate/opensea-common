@@ -39,6 +39,7 @@ extern "C"
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
     M_DEPRECATED /*use the bit width specific versions instead!*/
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_PARAM_WO(2)
         bool
         get_And_Validate_Integer_Input(const char* strToConvert, uint64_t* outputInteger);
 
@@ -77,7 +78,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_Uint64(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_Uint64(const char*       strToConvert,
                                                            char**            unit,
                                                            eAllowedUnitInput unittype,
                                                            uint64_t*         outputInteger);
@@ -94,7 +96,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_Uint32(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_Uint32(const char*       strToConvert,
                                                            char**            unit,
                                                            eAllowedUnitInput unittype,
                                                            uint32_t*         outputInteger);
@@ -111,7 +114,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_Uint16(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_Uint16(const char*       strToConvert,
                                                            char**            unit,
                                                            eAllowedUnitInput unittype,
                                                            uint16_t*         outputInteger);
@@ -128,7 +132,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_Uint8(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_Uint8(const char*       strToConvert,
                                                           char**            unit,
                                                           eAllowedUnitInput unittype,
                                                           uint8_t*          outputInteger);
@@ -145,7 +150,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_Int64(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_Int64(const char*       strToConvert,
                                                           char**            unit,
                                                           eAllowedUnitInput unittype,
                                                           int64_t*          outputInteger);
@@ -162,7 +168,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_Int32(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_Int32(const char*       strToConvert,
                                                           char**            unit,
                                                           eAllowedUnitInput unittype,
                                                           int32_t*          outputInteger);
@@ -179,7 +186,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_Int16(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_Int16(const char*       strToConvert,
                                                           char**            unit,
                                                           eAllowedUnitInput unittype,
                                                           int16_t*          outputInteger);
@@ -196,7 +204,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_Int8(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_Int8(const char*       strToConvert,
                                                          char**            unit,
                                                          eAllowedUnitInput unittype,
                                                          int8_t*           outputInteger);
@@ -213,7 +222,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_ULL(const char*         strToConvert,
                                                         char**              unit,
                                                         eAllowedUnitInput   unittype,
                                                         unsigned long long* outputInteger);
@@ -230,7 +240,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_UL(const char*       strToConvert,
                                                        char**            unit,
                                                        eAllowedUnitInput unittype,
                                                        unsigned long*    outputInteger);
@@ -247,7 +258,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_UI(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_UI(const char*       strToConvert,
                                                        char**            unit,
                                                        eAllowedUnitInput unittype,
                                                        unsigned int*     outputInteger);
@@ -264,7 +276,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_US(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_US(const char*       strToConvert,
                                                        char**            unit,
                                                        eAllowedUnitInput unittype,
                                                        unsigned short*   outputInteger);
@@ -281,7 +294,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_UC(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_UC(const char*       strToConvert,
                                                        char**            unit,
                                                        eAllowedUnitInput unittype,
                                                        unsigned char*    outputInteger);
@@ -298,7 +312,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_LL(const char*       strToConvert,
                                                        char**            unit,
                                                        eAllowedUnitInput unittype,
                                                        long long*        outputInteger);
@@ -315,7 +330,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_L(const char*       strToConvert,
                                                       char**            unit,
                                                       eAllowedUnitInput unittype,
                                                       long*             outputInteger);
@@ -332,7 +348,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_I(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_I(const char*       strToConvert,
                                                       char**            unit,
                                                       eAllowedUnitInput unittype,
                                                       int*              outputInteger);
@@ -349,7 +366,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_S(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_S(const char*       strToConvert,
                                                       char**            unit,
                                                       eAllowedUnitInput unittype,
                                                       short*            outputInteger);
@@ -366,7 +384,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputInteger Pointer to the integer to store the output.
     //! \return true if able to read an integer number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Integer_Input_C(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Integer_Input_C(const char*       strToConvert,
                                                       char**            unit,
                                                       eAllowedUnitInput unittype,
                                                       char*             outputInteger);
@@ -383,7 +402,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputFloat Pointer to the float to store the output.
     //! \return true if able to read a float number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Float_Input(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Float_Input(const char*       strToConvert,
                                                   char**            unit,
                                                   eAllowedUnitInput unittype,
                                                   float*            outputFloat);
@@ -400,7 +420,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputFloat Pointer to the double to store the output.
     //! \return true if able to read a double number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_Double_Input(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_Double_Input(const char*       strToConvert,
                                                    char**            unit,
                                                    eAllowedUnitInput unittype,
                                                    double*           outputFloat);
@@ -417,7 +438,8 @@ extern "C"
     //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputFloat Pointer to the long double to store the output.
     //! \return true if able to read a long double number, false if the format is invalid.
-    M_NODISCARD bool get_And_Validate_LDouble_Input(const char*       strToConvert,
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 4) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2) M_PARAM_WO(4)
+    bool get_And_Validate_LDouble_Input(const char*       strToConvert,
                                                     char**            unit,
                                                     eAllowedUnitInput unittype,
                                                     long double*      outputFloat);
@@ -475,6 +497,7 @@ extern "C"
     //! \param[in] stream The input stream to read from.
     //! \return The number of characters read, including the delimiter, but not including the null terminator.
     //! Returns -1 on failure or when end of file is reached.
+    M_NONNULL_PARAM_LIST(2, 3) M_PARAM_RW(1) M_PARAM_RW(2) M_PARAM_RO(3)
     ssize_t getline(char** lineptr, size_t* n, FILE* stream);
 
     //! \fn ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream)
@@ -492,6 +515,7 @@ extern "C"
     //! \param[in] stream The input stream to read from.
     //! \return The number of characters read, including the delimiter, but not including the null terminator.
     //! Returns -1 on failure or when end of file is reached.
+    M_NONNULL_PARAM_LIST(2, 4) M_PARAM_RW(1) M_PARAM_RW(2) M_PARAM_RO(4)
     ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream);
 #endif //!__STDC_ALLOC_LIB__ && (POSIX < 2008)
 
@@ -511,7 +535,8 @@ extern "C"
     //! \param[in] fmt The format string.
     //! \param[in] ... Additional arguments specifying data to format.
     //! \return The number of characters printed (excluding the null terminator), or -1 if an error occurs.
-    M_NODISCARD FUNC_ATTR_PRINTF(2, 3) int asprintf(char** M_RESTRICT strp, const char* M_RESTRICT fmt, ...);
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) FUNC_ATTR_PRINTF(2, 3) 
+    int asprintf(char** M_RESTRICT strp, const char* M_RESTRICT fmt, ...);
 
     //! \fn int vasprintf(char** M_RESTRICT strp, const char* M_RESTRICT fmt, va_list arg)
     //! \brief Allocates a formatted string using a va_list.
@@ -523,7 +548,8 @@ extern "C"
     //! \param[in] fmt The format string.
     //! \param[in] arg A va_list specifying data to format.
     //! \return The number of characters printed (excluding the null terminator), or -1 if an error occurs.
-    M_NODISCARD FUNC_ATTR_PRINTF(2, 0) int vasprintf(char** M_RESTRICT strp, const char* M_RESTRICT fmt, va_list arg);
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO(2) FUNC_ATTR_PRINTF(2, 0) 
+    int vasprintf(char** M_RESTRICT strp, const char* M_RESTRICT fmt, va_list arg);
 
 #endif // asprintf, vasprintf
 
@@ -573,6 +599,7 @@ extern "C"
     //! \return The number of characters that would have been written if the buffer had been sufficiently large, not
     //! including the null terminator.
     //! \note Invokes the constraint handler on error.
+    M_NONNULL_PARAM_LIST(1, 3) M_PARAM_RW(1) M_PARAM_RO(3)
     FUNC_ATTR_PRINTF(3, 4) static M_INLINE int snprintf_err_handle(char* buf, size_t bufsize, const char* format, ...)
     {
         int     n = 0;
@@ -604,6 +631,7 @@ extern "C"
     //! \param[in] format The format string.
     //! \param[in] formatargs The list of arguments for the format string.
     //! \return An integer indicating the result of the verification.
+    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RO(1)
     int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formatargs);
 
     //! \fn eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen)
@@ -621,6 +649,7 @@ extern "C"
     //! \param[out] userInput A pointer to the buffer where the user input will be stored.
     //! \param[in] inputDataLen A pointer to the size of the allocated buffer.
     //! \return An eReturnValues indicating the result of the input operation.
+    M_NONNULL_PARAM_LIST(1, 2, 3) M_PARAM_RO(1) M_PARAM_RW(2) M_PARAM_RW(3)
     eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen);
 
     //! \enum eConsoleColors
@@ -696,6 +725,7 @@ extern "C"
     //! \param[in] bufferLen The length that you want to print out. This can be the length of the buffer, or anything
     //! less than that. \param[in] showPrint Set to true to show printable characters on the side of the hex output for
     //! the buffer. Non-printable characters will be represented as dots.
+    M_NONNULL_IF_NONZERO_PARAM(1, 2) M_PARAM_RO_SIZE(1, 2)
     void print_Data_Buffer(const uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint);
 
     //! \fn void print_Pipe_Data(uint8_t* dataBuffer, uint32_t bufferLen)
@@ -706,6 +736,7 @@ extern "C"
     //! \param[in] dataBuffer A pointer to the data buffer you want to print out.
     //! \param[in] bufferLen The length that you want to print out. This can be the length of the buffer, or anything
     //! less than that.
+    M_NONNULL_IF_NONZERO_PARAM(1, 2) M_PARAM_RO_SIZE(1, 2)
     void print_Pipe_Data(const uint8_t* dataBuffer, uint32_t bufferLen);
 
     //! \fn void print_Return_Enum(const char* funcName, eReturnValues ret)
@@ -715,6 +746,7 @@ extern "C"
     //!
     //! \param[in] funcName Name of the function value returning from.
     //! \param[in] ret Value to humanize.
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1) M_NULL_TERM_STRING(1)
     void print_Return_Enum(const char* funcName, eReturnValues ret);
 
     //! \fn static M_INLINE void flush_stdout(void)
