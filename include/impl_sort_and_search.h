@@ -79,7 +79,8 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a compare is a null pointer
-    M_NONNULL_PARAM_LIST(1, 4) M_PARAM_RW(1)
+    M_NONNULL_PARAM_LIST(1, 4)
+    M_PARAM_RW(1)
     errno_t safe_qsort_impl(void*       ptr,
                             rsize_t     count,
                             rsize_t     size,
@@ -115,7 +116,8 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a compare is a null pointer
-    M_NONNULL_PARAM_LIST(1, 4) M_PARAM_RW(1)
+    M_NONNULL_PARAM_LIST(1, 4)
+    M_PARAM_RW(1)
     errno_t safe_qsort_context_impl(void*        ptr,
                                     rsize_t      count,
                                     rsize_t      size,
@@ -154,16 +156,17 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a compare is a null pointer
-    M_NONNULL_PARAM_LIST(1, 2, 5) M_PARAM_RO(1) M_PARAM_RO(2)
-    void* safe_bsearch_impl(const void* key,
-                            const void* ptr,
-                            rsize_t     count,
-                            rsize_t     size,
-                            comparefn   compare,
-                            const char* file,
-                            const char* function,
-                            int         line,
-                            const char* expression);
+    M_NONNULL_PARAM_LIST(1, 2, 5)
+    M_PARAM_RO(1)
+    M_PARAM_RO(2) void* safe_bsearch_impl(const void* key,
+                                          const void* ptr,
+                                          rsize_t     count,
+                                          rsize_t     size,
+                                          comparefn   compare,
+                                          const char* file,
+                                          const char* function,
+                                          int         line,
+                                          const char* expression);
 
     //! \fn void* safe_bsearch_context_impl(const void* key, void* ptr, rsize_t count, rsize_t size, ctxcomparefn
     //! compare, void* context, const char* file, const char* function, int line, const char* expression)
@@ -195,17 +198,18 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a compare is a null pointer
-    M_NONNULL_PARAM_LIST(1, 2, 5) M_PARAM_RO(1) M_PARAM_RW(2)
-    void* safe_bsearch_context_impl(const void*  key,
-                                    void*        ptr,
-                                    rsize_t      count,
-                                    rsize_t      size,
-                                    ctxcomparefn compare,
-                                    void*        context,
-                                    const char*  file,
-                                    const char*  function,
-                                    int          line,
-                                    const char*  expression);
+    M_NONNULL_PARAM_LIST(1, 2, 5)
+    M_PARAM_RO(1)
+    M_PARAM_RW(2) void* safe_bsearch_context_impl(const void*  key,
+                                                  void*        ptr,
+                                                  rsize_t      count,
+                                                  rsize_t      size,
+                                                  ctxcomparefn compare,
+                                                  void*        context,
+                                                  const char*  file,
+                                                  const char*  function,
+                                                  int          line,
+                                                  const char*  expression);
 
     //! \fn void* safe_lsearch_impl(const void* key, void* base, size_t* nelp, size_t width, comparefn compar, const
     //! char* file, const char* function, int line, const char* expression)
@@ -237,16 +241,17 @@ extern "C"
     //! - \a width is zero
     //!
     //! - \a compar is a null pointer
-    M_NONNULL_PARAM_LIST(1, 2, 3, 5) M_PARAM_RO(1) M_PARAM_RW(2) M_PARAM_RW(3)
-    void* safe_lsearch_impl(const void* key,
-                            void*       base,
-                            size_t*     nelp,
-                            size_t      width,
-                            comparefn   compar,
-                            const char* file,
-                            const char* function,
-                            int         line,
-                            const char* expression);
+    M_NONNULL_PARAM_LIST(1, 2, 3, 5)
+    M_PARAM_RO(1)
+    M_PARAM_RW(2) M_PARAM_RW(3) void* safe_lsearch_impl(const void* key,
+                                                        void*       base,
+                                                        size_t*     nelp,
+                                                        size_t      width,
+                                                        comparefn   compar,
+                                                        const char* file,
+                                                        const char* function,
+                                                        int         line,
+                                                        const char* expression);
 
     //! \fn void* safe_lsearch_context_impl(const void* key, void* base, size_t* nelp, size_t width, ctxcomparefn
     //! compar, void* context, const char* file, const char* function, int line, const char* expression)
@@ -280,17 +285,18 @@ extern "C"
     //! - \a width is zero
     //!
     //! - \a compar is a null pointer
-    M_NONNULL_PARAM_LIST(1, 2, 3, 5) M_PARAM_RO(1) M_PARAM_RW(2) M_PARAM_RW(3)
-    void* safe_lsearch_context_impl(const void*  key,
-                                    void*        base,
-                                    size_t*      nelp,
-                                    size_t       width,
-                                    ctxcomparefn compar,
-                                    void*        context,
-                                    const char*  file,
-                                    const char*  function,
-                                    int          line,
-                                    const char*  expression);
+    M_NONNULL_PARAM_LIST(1, 2, 3, 5)
+    M_PARAM_RO(1)
+    M_PARAM_RW(2) M_PARAM_RW(3) void* safe_lsearch_context_impl(const void*  key,
+                                                                void*        base,
+                                                                size_t*      nelp,
+                                                                size_t       width,
+                                                                ctxcomparefn compar,
+                                                                void*        context,
+                                                                const char*  file,
+                                                                const char*  function,
+                                                                int          line,
+                                                                const char*  expression);
 
     //! \fn void* safe_lfind_impl(const void* key, const void* base, size_t* nelp, size_t width, comparefn compar, const
     //! char* file, const char* function, int line, const char* expression)
@@ -322,16 +328,17 @@ extern "C"
     //! - \a width is zero
     //!
     //! - \a compar is a null pointer
-    M_NONNULL_PARAM_LIST(1, 2, 3, 5) M_PARAM_RO(1) M_PARAM_RO(2) M_PARAM_RW(3)
-    void* safe_lfind_impl(const void* key,
-                          const void* base,
-                          size_t*     nelp,
-                          size_t      width,
-                          comparefn   compar,
-                          const char* file,
-                          const char* function,
-                          int         line,
-                          const char* expression);
+    M_NONNULL_PARAM_LIST(1, 2, 3, 5)
+    M_PARAM_RO(1)
+    M_PARAM_RO(2) M_PARAM_RW(3) void* safe_lfind_impl(const void* key,
+                                                      const void* base,
+                                                      size_t*     nelp,
+                                                      size_t      width,
+                                                      comparefn   compar,
+                                                      const char* file,
+                                                      const char* function,
+                                                      int         line,
+                                                      const char* expression);
 
     //! \fn void* safe_lfind_context_impl(const void* key, const void* base, size_t* nelp, size_t width, ctxcomparefn
     //! compar, void* context, const char* file, const char* function, int line, const char* expression)
@@ -365,17 +372,18 @@ extern "C"
     //! - \a width is zero
     //!
     //! - \a compar is a null pointer
-    M_NONNULL_PARAM_LIST(1, 2, 3, 5) M_PARAM_RO(1) M_PARAM_RO(2) M_PARAM_RW(3)
-    void* safe_lfind_context_impl(const void*  key,
-                                  const void*  base,
-                                  size_t*      nelp,
-                                  size_t       width,
-                                  ctxcomparefn compar,
-                                  void*        context,
-                                  const char*  file,
-                                  const char*  function,
-                                  int          line,
-                                  const char*  expression);
+    M_NONNULL_PARAM_LIST(1, 2, 3, 5)
+    M_PARAM_RO(1)
+    M_PARAM_RO(2) M_PARAM_RW(3) void* safe_lfind_context_impl(const void*  key,
+                                                              const void*  base,
+                                                              size_t*      nelp,
+                                                              size_t       width,
+                                                              ctxcomparefn compar,
+                                                              void*        context,
+                                                              const char*  file,
+                                                              const char*  function,
+                                                              int          line,
+                                                              const char*  expression);
 
 #if defined(__cplusplus)
 }

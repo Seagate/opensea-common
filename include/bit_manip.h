@@ -1634,8 +1634,7 @@ extern "C"
     //!
     //! \param[in,out] byteToSwap pointer to byte to swap nibbles
     //! \sa n_swap_8
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1)
-    static M_INLINE void nibble_Swap(uint8_t* byteToSwap)
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void nibble_Swap(uint8_t* byteToSwap)
     {
         DISABLE_NONNULL_COMPARE
         if (byteToSwap != M_NULLPTR)
@@ -1725,8 +1724,7 @@ extern "C"
     //!
     //! \param[in,out] wordToSwap pointer to word to swap bytes
     //! \sa b_swap_16
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1)
-    static M_INLINE void byte_Swap_16(uint16_t* wordToSwap)
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void byte_Swap_16(uint16_t* wordToSwap)
     {
         DISABLE_NONNULL_COMPARE
         if (wordToSwap != M_NULLPTR)
@@ -1740,8 +1738,7 @@ extern "C"
     //! \brief swaps bytes within a signed word in place
     //!
     //! \param[in,out] signedWordToSwap pointer to word to swap bytes
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1)
-    static M_INLINE void byte_Swap_Int16(int16_t* signedWordToSwap)
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void byte_Swap_Int16(int16_t* signedWordToSwap)
     {
         DISABLE_NONNULL_COMPARE
         if (signedWordToSwap != M_NULLPTR)
@@ -1759,8 +1756,7 @@ extern "C"
     //!
     //! \param[in,out] doubleWordToSwap pointer to dword to swap bytes
     //! \sa b_swap_32
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1)
-    static M_INLINE void byte_Swap_32(uint32_t* doubleWordToSwap)
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void byte_Swap_32(uint32_t* doubleWordToSwap)
     {
         DISABLE_NONNULL_COMPARE
         if (doubleWordToSwap != M_NULLPTR)
@@ -1774,8 +1770,7 @@ extern "C"
     //! \brief swaps bytes within a signed dword in place
     //!
     //! \param[in,out] signedDWord pointer to signed dword to swap bytes
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1)
-    static M_INLINE void byte_Swap_Int32(int32_t* signedDWord)
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void byte_Swap_Int32(int32_t* signedDWord)
     {
         DISABLE_NONNULL_COMPARE
         if (signedDWord != M_NULLPTR)
@@ -1793,8 +1788,7 @@ extern "C"
     //! \brief swaps words within a dword in place
     //!
     //! \param[in,out] doubleWordToSwap pointer to dword to swap words
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1)
-    static M_INLINE void word_Swap_32(uint32_t* doubleWordToSwap)
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void word_Swap_32(uint32_t* doubleWordToSwap)
     {
         DISABLE_NONNULL_COMPARE
         if (doubleWordToSwap != M_NULLPTR)
@@ -1812,8 +1806,7 @@ extern "C"
     //!
     //! \param[in,out] quadWordToSwap pointer to qword to swap bytes
     //! \sa b_swap_64
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1)
-    static M_INLINE void byte_Swap_64(uint64_t* quadWordToSwap)
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void byte_Swap_64(uint64_t* quadWordToSwap)
     {
         DISABLE_NONNULL_COMPARE
         if (quadWordToSwap != M_NULLPTR)
@@ -1827,8 +1820,7 @@ extern "C"
     //! \brief swaps words within a qword in place
     //!
     //! \param[in,out] quadWordToSwap pointer to qword to swap words
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1)
-    static M_INLINE void word_Swap_64(uint64_t* quadWordToSwap)
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void word_Swap_64(uint64_t* quadWordToSwap)
     {
         DISABLE_NONNULL_COMPARE
         if (quadWordToSwap != M_NULLPTR)
@@ -1845,8 +1837,7 @@ extern "C"
     //! \brief swaps dwords within a qword in place
     //!
     //! \param[in,out] quadWordToSwap pointer to qword to swap dwords
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1)
-    static M_INLINE void double_Word_Swap_64(uint64_t* quadWordToSwap)
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void double_Word_Swap_64(uint64_t* quadWordToSwap)
     {
         DISABLE_NONNULL_COMPARE
         if (quadWordToSwap != M_NULLPTR)
@@ -2141,8 +2132,7 @@ extern "C"
     //! \param[in] value big endian value to convert to host endianness
     //! \return returns \a value in the host CPU's endianness
     //! \sa be16_to_host
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1)
-    static M_INLINE void big_To_Little_Endian_16(uint16_t* wordToSwap)
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void big_To_Little_Endian_16(uint16_t* wordToSwap)
     {
         DISABLE_NONNULL_COMPARE
         if (wordToSwap != M_NULLPTR)
@@ -2160,8 +2150,7 @@ extern "C"
     //! \param[in] value big endian value to convert to host endianness
     //! \return returns \a value in the host CPU's endianness
     //! \sa be32_to_host
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1)
-    static M_INLINE void big_To_Little_Endian_32(uint32_t* doubleWordToSwap)
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void big_To_Little_Endian_32(uint32_t* doubleWordToSwap)
     {
         DISABLE_NONNULL_COMPARE
         if (doubleWordToSwap != M_NULLPTR)

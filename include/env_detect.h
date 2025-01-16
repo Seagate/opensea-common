@@ -383,8 +383,9 @@ extern "C"
     //! \param[out] compilerVersionInfo Pointer to the compilerVersion struct.
     //! This will be filled with version information upon successful completion.
     //! \return SUCCESS on successful completion, otherwise a failure code.
-    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_WO(1) M_PARAM_WO(1)
-    eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion compilerVersionInfo);
+    M_NONNULL_PARAM_LIST(1, 2)
+    M_PARAM_WO(1)
+    M_PARAM_WO(1) eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion compilerVersionInfo);
 
     //! \brief Prints the name of the compiler.
     //!
@@ -400,8 +401,7 @@ extern "C"
     //!
     //! \param[in] compilerVersionInfo Pointer to the compilerVersion struct that holds the compiler version
     //! information.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1)
-    void print_Compiler_Version_Info(ptrCompilerVersion compilerVersionInfo);
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1) void print_Compiler_Version_Info(ptrCompilerVersion compilerVersionInfo);
 
     //! \brief Checks if the process is currently running with elevated permissions.
     //!
@@ -438,8 +438,7 @@ extern "C"
     //! completion.
     //! \return SUCCESS if no errors occurred and userName is allocated and ready to be used, BAD_PARAMETER
     //! if a bad pointer was provided, FAILURE if the user name could not be determined.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_WO(1)
-    eReturnValues get_Current_User_Name(char** userName);
+    M_NONNULL_PARAM_LIST(1) M_PARAM_WO(1) eReturnValues get_Current_User_Name(char** userName);
 #endif // ENABLE_READ_USERNAME
 
 #if defined(__cplusplus)

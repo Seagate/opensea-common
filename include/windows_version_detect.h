@@ -24,8 +24,7 @@ extern "C"
     //! \param[in,out] versionNumber pointer to OS version number structure that will hold the result
     //! of reading the version number from the OS.
     //! \return SUCCESS means successfully read the version number. Other values indicate a failure.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_WO(1)
-    eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber);
+    M_NONNULL_PARAM_LIST(1) M_PARAM_WO(1) eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber);
 
     //! \fn bool is_Windows_Vista_Or_Higher(void)
     //! \brief checks if the current execution environment is Windows vista or higher

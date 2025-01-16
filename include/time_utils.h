@@ -222,8 +222,10 @@ extern "C"
     //! \param[in] buffer pointer to char buffer to hold output string. Must be at least 26 characters in size
     //! \param[in] bufferSize size of \a buffer. Must be at least 26 and less than RSIZE_MAX
     //! \return pointer to converted string on success. Null pointer on failure.
-    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RO(1) M_PARAM_WO_SIZE(2, 3)
-    static M_INLINE char* get_Time_String_From_TM_Structure(const struct tm* timeptr, char* buffer, size_t bufferSize)
+    M_NONNULL_PARAM_LIST(1, 2)
+    M_PARAM_RO(1)
+    M_PARAM_WO_SIZE(2, 3) static M_INLINE
+        char* get_Time_String_From_TM_Structure(const struct tm* timeptr, char* buffer, size_t bufferSize)
     {
         if (0 == safe_asctime(buffer, bufferSize, timeptr))
         {
@@ -242,8 +244,10 @@ extern "C"
     //! \param[in] buffer pointer to char buffer to hold output string. Must be at least 26 characters in size
     //! \param[in] bufferSize size of \a buffer. Must be at least 26 and less than RSIZE_MAX
     //! \return pointer to converted string on success. Null pointer on failure.
-    M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RO(1) M_PARAM_WO_SIZE(2, 3)
-    static M_INLINE char* get_Current_Time_String(const time_t* timer, char* buffer, size_t bufferSize)
+    M_NONNULL_PARAM_LIST(1, 2)
+    M_PARAM_RO(1)
+    M_PARAM_WO_SIZE(2, 3) static M_INLINE
+        char* get_Current_Time_String(const time_t* timer, char* buffer, size_t bufferSize)
     {
         if (0 == safe_ctime(buffer, bufferSize, timer))
         {
@@ -284,13 +288,14 @@ extern "C"
     //! \param[out] hours = this is a pointer to a value to hold a number representing hours. Can be M_NULLPTR.
     //! \param[out] minutes = this is a pointer to a value to hold a number representing minutes. Can be M_NULLPTR.
     //! \param[out] seconds = this is a pointer to a value to hold a number representing seconds. Can be M_NULLPTR.
-    M_PARAM_WO(2) M_PARAM_WO(3) M_PARAM_WO(4) M_PARAM_WO(5) M_PARAM_WO(6)
-    void convert_Seconds_To_Displayable_Time(uint64_t  secondsToConvert,
-                                             uint8_t*  years,
-                                             uint16_t* days,
-                                             uint8_t*  hours,
-                                             uint8_t*  minutes,
-                                             uint8_t*  seconds);
+    M_PARAM_WO(2)
+    M_PARAM_WO(3)
+    M_PARAM_WO(4) M_PARAM_WO(5) M_PARAM_WO(6) void convert_Seconds_To_Displayable_Time(uint64_t  secondsToConvert,
+                                                                                       uint8_t*  years,
+                                                                                       uint16_t* days,
+                                                                                       uint8_t*  hours,
+                                                                                       uint8_t*  minutes,
+                                                                                       uint8_t*  seconds);
 
     //! \fn void convert_Seconds_To_Displayable_Time_Double(double  secondsToConvert,
     //!                                              uint8_t*  years,
@@ -306,13 +311,14 @@ extern "C"
     //! \param[out] hours = this is a pointer to a value to hold a number representing hours. Can be M_NULLPTR.
     //! \param[out] minutes = this is a pointer to a value to hold a number representing minutes. Can be M_NULLPTR.
     //! \param[out] seconds = this is a pointer to a value to hold a number representing seconds. Can be M_NULLPTR.
-    M_PARAM_WO(2) M_PARAM_WO(3) M_PARAM_WO(4) M_PARAM_WO(5) M_PARAM_WO(6)
-    void convert_Seconds_To_Displayable_Time_Double(double    secondsToConvert,
-                                                    uint8_t*  years,
-                                                    uint16_t* days,
-                                                    uint8_t*  hours,
-                                                    uint8_t*  minutes,
-                                                    uint8_t*  seconds);
+    M_PARAM_WO(2)
+    M_PARAM_WO(3)
+    M_PARAM_WO(4) M_PARAM_WO(5) M_PARAM_WO(6) void convert_Seconds_To_Displayable_Time_Double(double   secondsToConvert,
+                                                                                              uint8_t* years,
+                                                                                              uint16_t* days,
+                                                                                              uint8_t*  hours,
+                                                                                              uint8_t*  minutes,
+                                                                                              uint8_t*  seconds);
 
     //! \fn void print_Time_To_Screen(const uint8_t*  years,
     //!                               const uint16_t* days,
@@ -328,12 +334,13 @@ extern "C"
     //! \param[in] hours = this is a pointer to a value to hold a number representing hours. Can be M_NULLPTR.
     //! \param[in] minutes = this is a pointer to a value to hold a number representing minutes. Can be M_NULLPTR.
     //! \param[in] seconds = this is a pointer to a value to hold a number representing seconds. Can be M_NULLPTR.
-    M_PARAM_RO(1) M_PARAM_RO(2) M_PARAM_RO(3) M_PARAM_RO(4) M_PARAM_RO(5)
-    void print_Time_To_Screen(const uint8_t*  years,
-                              const uint16_t* days,
-                              const uint8_t*  hours,
-                              const uint8_t*  minutes,
-                              const uint8_t*  seconds);
+    M_PARAM_RO(1)
+    M_PARAM_RO(2)
+    M_PARAM_RO(3) M_PARAM_RO(4) M_PARAM_RO(5) void print_Time_To_Screen(const uint8_t*  years,
+                                                                        const uint16_t* days,
+                                                                        const uint8_t*  hours,
+                                                                        const uint8_t*  minutes,
+                                                                        const uint8_t*  seconds);
 
     //! \fn uint64_t get_Milliseconds_Since_Unix_Epoch(void)
     //! \brief returns the number of milliseconds since January 1, 1970 UTC

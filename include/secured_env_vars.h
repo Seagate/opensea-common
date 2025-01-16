@@ -46,8 +46,8 @@ extern "C"
     //! - ENV_VAR_TAMPERED_ENV_DETECTED tampered environment detected; variable not read.
     //!
     //! - ENV_VAR_FAILURE a failure occurred when trying to read the environment variable such as no more memory.
-    M_NODISCARD M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_PARAM_WO(2)
-    eEnvVarResult get_Environment_Variable(const char* environmentVariableName, char** envVar);
+    M_NODISCARD M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_PARAM_WO(2) eEnvVarResult
+        get_Environment_Variable(const char* environmentVariableName, char** envVar);
 
 #if defined(__cplusplus)
 }

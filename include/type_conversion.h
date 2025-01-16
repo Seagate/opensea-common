@@ -262,15 +262,13 @@ extern "C"
     //! very large number. IEEE 754 floating point can store a number much larger than a 128 bit integer.
     //! \param[in] pData pointer to the 16 byte array to use for conversion to a double
     //! \return 128bit value as a double
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1)
-    double convert_128bit_to_double(const uint8_t* pData);
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1) double convert_128bit_to_double(const uint8_t* pData);
 
     //! \fn void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* decimalValue)
     //! \brief This function converts 4 Byte Representation of a Floating Point Number to a double
     //! \param[in] floatValue 4 byte format value
     //! \param[out] decimalValue corresponding double format value
-    M_NONNULL_PARAM_LIST(2) M_PARAM_WO(2)
-    void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* decimalValue);
+    M_NONNULL_PARAM_LIST(2) M_PARAM_WO(2) void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* decimalValue);
 
 #if defined(__cplusplus)
 }
