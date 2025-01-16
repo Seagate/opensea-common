@@ -1079,8 +1079,8 @@ errno_t safe_strndup_impl(char**      dup,
         else
         {
             error = ENOMEM;
-            invoke_Constraint_Handler("safe_strndup: malloc failed", set_Env_Info(&envInfo, file, function, expression, line),
-                                  error);
+            invoke_Constraint_Handler("safe_strndup: malloc failed",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
         }
     }
     RESTORE_NONNULL_COMPARE

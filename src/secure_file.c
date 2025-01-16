@@ -135,7 +135,8 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
 {
     secureFileInfo* fileInfo = M_REINTERPRET_CAST(secureFileInfo*, safe_calloc(1, sizeof(secureFileInfo)));
     DISABLE_NONNULL_COMPARE
-    if (fileInfo && filename != M_NULLPTR && mode != M_NULLPTR) /* Not checking extList and outInfo because it is optional */
+    if (fileInfo && filename != M_NULLPTR &&
+        mode != M_NULLPTR) /* Not checking extList and outInfo because it is optional */
     {
         RESTORE_NONNULL_COMPARE
         bool  creatingFile  = false;
