@@ -406,6 +406,22 @@ extern "C"
 #    define M_FUNC_ATTR_MALLOC /* this function allocates memory and returns the pointer to you */
 #endif
 
+//! \def M_ALLOC_DEALLOC
+//! \brief Marks functions which function should be used to deallocate memory with an allocating function
+//! \param deallocatorFunc name of the function to deallocate memory
+//! \param argpos position in the deallocator function that the pointer should be placed in to perform the deallocation
+#if IS_GCC_VERSION(11, 0)
+#    define M_ALLOC_DEALLOC(deallocatorFunc, argpos) __attribute__((malloc(deallocatorFunc, argpos)))
+#else
+#    define M_ALLOC_DEALLOC(                                                                                           \
+        deallocatorFunc,                                                                                               \
+        argpos) /* This marks the deallocation function needed by this allocator to be used properly */
+#endif
+
+// TODO: Investigate more about clang's similar allocation attributes:
+// ownership_holds, ownership_returns, ownership_takes (Clang Static Analyzer)
+// https://clang.llvm.org/docs/AttributeReference.html#ownership-holds-ownership-returns-ownership-takes-clang-static-analyzer
+
 //! \def FUNC_ATTR_PRINTF
 //! \brief Marks functions that use printf-style formatting.
 //!
@@ -718,6 +734,56 @@ extern "C"
 #    define M_PARAM_RO_SIZE(arg, sizearg) /* PARAM_ACCESS_RO_SIZE */
 #    define M_PARAM_WO_SIZE(arg, sizearg) /* PARAM_ACCESS_WO_SIZE */
 #    define M_PARAM_RW_SIZE(arg, sizearg) /* PARAM_ACCESS_RW_SIZE */
+#endif
+
+//! \def M_ALLOC_ALIGN
+//! \brief Marks a function as allocating aligned memory with alignment in a specified position
+//!
+//! \code
+//! M_ALLOC_ALIGN(1) char* example_function(alignment);
+//! \endcode
+#if defined __has_attribute
+#    if __has_attribute(alloc_align)
+#        define M_ALLOC_ALIGN(alignmentArg) __attribute__((alloc_align(alignmentArg)))
+#    endif
+#endif
+#if !defined(M_ALLOC_ALIGN)
+#    if IS_GCC_VERSION(4, 9) || IS_CLANG_VERSION(3, 7)
+#        define M_ALLOC_ALIGN(alignmentArg) __attribute__((alloc_align(alignmentArg)))
+#    else
+#        define M_ALLOC_ALIGN(alignmentArg)  /* This allocates aligned memory with alignment at alignmentArg position  \
+                                              */
+#    endif
+#endif
+
+//! \def M_MALLOC_SIZE
+//! \brief Marks a function as allocating memory of a size specified in a specific parameter position
+//!
+//! \code
+//! M_MALLOC_SIZE(1) char* example_function(size);
+//! \endcode
+
+//! \def M_CALLOC_SIZE
+//! \brief Marks a function as allocating memory of a size specified in a 2 positions; one for
+//! number of elements and one for the size of the elements, similar to the calloc function
+//!
+//! \code
+//! M_CALLOC_SIZE(1, 2) char* example_function(elements, size);
+//! \endcode
+#if defined __has_attribute
+#    if __has_attribute(alloc_size)
+#        define M_MALLOC_SIZE(sizearg)             __attribute__((alloc_size(sizearg)))
+#        define M_CALLOC_SIZE(elementarg, sizearg) __attribute__((alloc_size(elementarg, sizearg)))
+#    endif
+#endif
+#if !defined(M_MALLOC_SIZE)
+#    if IS_GCC_VERSION(4, 9) || IS_CLANG_VERSION(3, 7)
+#        define M_MALLOC_SIZE(sizearg)             __attribute__((alloc_size(sizearg)))
+#        define M_CALLOC_SIZE(elementarg, sizearg) __attribute__((alloc_size(elementarg, sizearg)))
+#    else
+#        define M_MALLOC_SIZE(sizearg)             /* allocates memory of size specified in sizearg */
+#        define M_CALLOC_SIZE(elementarg, sizearg) /* allocates memory of size specified by elementarg * sizearg */
+#    endif
 #endif
 
 #if defined(__cplusplus)

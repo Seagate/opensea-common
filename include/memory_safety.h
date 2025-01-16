@@ -50,7 +50,7 @@ extern "C"
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a size is zero
-    M_INLINE M_FUNC_ATTR_MALLOC void* safe_malloc(size_t size)
+    M_INLINE M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* safe_malloc(size_t size)
     {
         return safe_malloc_impl(size, __FILE__, __func__, __LINE__, "safe_malloc(size)");
     }
@@ -90,7 +90,7 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a count * \a size results in an overflow
-    M_INLINE M_FUNC_ATTR_MALLOC void* safe_calloc(size_t count, size_t size)
+    M_INLINE M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* safe_calloc(size_t count, size_t size)
     {
         return safe_calloc_impl(count, size, __FILE__, __func__, __LINE__, "safe_calloc(count, size)");
     }
@@ -120,7 +120,7 @@ extern "C"
     //! \param[in] size number of bytes to allocate/reallocate to. If zero, free's memory pointed to by \a block
     //! \return pointer to allocated memory to be free'd by the caller with free()
     //! returns a null pointer on failure.
-    M_FUNC_ATTR_MALLOC void* safe_realloc(void* block, size_t size);
+    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(2) void* safe_realloc(void* block, size_t size);
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_reallocf(void** block, size_t size)
     //! \brief allocates or reallocates memory pointed to by \a block
@@ -135,7 +135,7 @@ extern "C"
     //! \param[in] size number of bytes to allocate/reallocate to. If zero, free's memory pointed to by \a block
     //! \return pointer to allocated memory to be free'd by the caller with free()
     //! returns a null pointer on failure.
-    M_FUNC_ATTR_MALLOC void* safe_reallocf(void** block, size_t size);
+    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(2) void* safe_reallocf(void** block, size_t size);
 
     //! \fn void safe_free_core(void** mem)
     //! \brief Safely free dynamically allocated memory. This checks
@@ -574,6 +574,13 @@ extern "C"
                                                 // SecureZeroMemory2 is available
 #endif
 
+    //! \brief Frees memory that was allocated with one of malloc_aligned, calloc_aligned, or realloc_aligned
+    //! \param[in] ptr pointer to the aligned memory to free
+    //!
+    //! Different OS's/environments handle freeing aligned memory differently.
+    //! This is a wrapper function around all those differences for a single, simple API call.
+    void free_aligned(void* ptr);
+
     //! \fn  M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment)
     //! \brief Allocates aligned memory based on the specified power of 2 alignment value
     //!
@@ -583,14 +590,8 @@ extern "C"
     //! \param[in] alignment alignment value required. This MUST be a power of 2.
     //! \return pointer to aligned memory on success. null pointer on failure.
     //! the caller must free this memory using free_aligned().
-    M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment);
-
-    //! \brief Frees memory that was allocated with one of malloc_aligned, calloc_aligned, or realloc_aligned
-    //! \param[in] ptr pointer to the aligned memory to free
-    //!
-    //! Different OS's/environments handle freeing aligned memory differently.
-    //! This is a wrapper function around all those differences for a single, simple API call.
-    void free_aligned(void* ptr);
+    M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(2) M_MALLOC_SIZE(1)
+        M_ALLOC_DEALLOC(free_aligned, 1) void* malloc_aligned(size_t size, size_t alignment);
 
     //! \fn void safe_free_aligned_core(void** mem)
     //! \brief Safely free dynamically allocated memory that was aligned at allocation. This checks
@@ -906,7 +907,8 @@ extern "C"
     //! \param[in] size size of each element
     //! \param[in] alignment alignment value required. This MUST be a power of 2.
     //! \return pointer to aligned memory on success, nullpointer on failure.
-    M_FUNC_ATTR_MALLOC void* calloc_aligned(size_t num, size_t size, size_t alignment);
+    M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(3) M_CALLOC_SIZE(1, 2)
+        M_ALLOC_DEALLOC(free_aligned, 1) void* calloc_aligned(size_t num, size_t size, size_t alignment);
 
     //! \brief Allocates/Reallocates aligned memory based on the specified
     //! power of 2 alignment value provided. Original aligned pointer is free'd upon success.
@@ -918,7 +920,9 @@ extern "C"
     //! \param[in] size size of memory block in bytes to allocate
     //! \param[in] alignment alignment value required. This MUST be a power of 2.
     //! \return Pointer to aligned memory on success, null pointer on failure.
-    M_FUNC_ATTR_MALLOC void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t alignment);
+    M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(4) M_MALLOC_SIZE(3)
+        M_ALLOC_DEALLOC(free_aligned,
+                        1) void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t alignment);
 
 #if defined(DEV_ENVIRONMENT)
     //! \fn M_FUNC_ATTR_MALLOC void* safe_malloc_aligned(size_t size, size_t alignment))
@@ -934,7 +938,8 @@ extern "C"
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a size is zero
-    M_INLINE M_FUNC_ATTR_MALLOC void* safe_malloc_aligned(size_t size, size_t alignment)
+    M_INLINE M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(2)
+        M_MALLOC_SIZE(1) void* safe_malloc_aligned(size_t size, size_t alignment)
     {
         return safe_malloc_aligned_impl(size, alignment, __FILE__, __func__, __LINE__,
                                         "safe_malloc_aligned(size, alignment)");
@@ -975,7 +980,8 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a count * \a size results in an overflow
-    M_INLINE M_FUNC_ATTR_MALLOC void* safe_calloc_aligned(size_t count, size_t size, size_t alignment)
+    M_INLINE M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(3)
+        M_CALLOC_SIZE(1, 2) void* safe_calloc_aligned(size_t count, size_t size, size_t alignment)
     {
         return safe_calloc_aligned_impl(count, size, alignment, __FILE__, __func__, __LINE__,
                                         "safe_calloc_aligned(count, size, alignment)");
@@ -1015,7 +1021,8 @@ extern "C"
     //! two.
     //! \return pointer to allocated memory to be free'd by the caller with free_aligned() returns a null pointer on
     //! failure.
-    M_FUNC_ATTR_MALLOC void* safe_realloc_aligned(void* block, size_t originalSize, size_t size, size_t alignment);
+    M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(4)
+        M_MALLOC_SIZE(3) void* safe_realloc_aligned(void* block, size_t originalSize, size_t size, size_t alignment);
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_reallocf(void** block, size_t size)
     //! \brief allocates or reallocates memory pointed to by \a block
@@ -1034,7 +1041,8 @@ extern "C"
     //! two.
     //! \return pointer to allocated memory to be free'd by the caller with free_aligned() returns a null pointer on
     //! failure.
-    M_FUNC_ATTR_MALLOC void* safe_reallocf_aligned(void** block, size_t originalSize, size_t size, size_t alignment);
+    M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(4)
+        M_MALLOC_SIZE(3) void* safe_reallocf_aligned(void** block, size_t originalSize, size_t size, size_t alignment);
 
     //! \fn size_t get_System_Pagesize(void)
     //! \brief Gets the memory page size from a system for the current CPU (often 4096B)
@@ -1048,7 +1056,7 @@ extern "C"
     //! \param[in] size number of bytes to allocate
     //! \return pointer to allocated memory to be free'd by the caller with free_page_aligned(). returns a null pointer
     //! on failure.
-    M_FUNC_ATTR_MALLOC void* malloc_page_aligned(size_t size);
+    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* malloc_page_aligned(size_t size);
 
     //! \fn M_INLINE void free_page_aligned(void* ptr)
     //! \brief convenience function around free_aligned.
@@ -1125,7 +1133,7 @@ extern "C"
     //! \param[in] count The number of elements to allocate.
     //! \param[in] size The size of each element.
     //! \return A pointer to the allocated memory block, or NULL on failure.
-    M_FUNC_ATTR_MALLOC void* calloc_page_aligned(size_t num, size_t size);
+    M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* calloc_page_aligned(size_t num, size_t size);
 
     //! \fn M_FUNC_ATTR_MALLOC void* realloc_page_aligned(void* alignedPtr, size_t originalSize, size_t size)
     //! \brief Allocates or reallocated a memory page aligned block of memory.
@@ -1136,7 +1144,7 @@ extern "C"
     //! not be preserved.
     //! \param[in] size The size of each element.
     //! \return A pointer to the allocated memory block, or NULL on failure.
-    M_FUNC_ATTR_MALLOC void* realloc_page_aligned(void* alignedPtr, size_t originalSize, size_t size);
+    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(3) void* realloc_page_aligned(void* alignedPtr, size_t originalSize, size_t size);
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_malloc_page_aligned(size_t size)
     //! \brief Allocates aligned memory with bounds checking.
@@ -1150,7 +1158,7 @@ extern "C"
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a size is zero
-    M_FUNC_ATTR_MALLOC void* safe_malloc_page_aligned(size_t size);
+    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* safe_malloc_page_aligned(size_t size);
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_calloc_page_aligned(size_t count, size_t size)
     //! \brief Allocates page aligned memory for an array with bounds checking.
@@ -1167,7 +1175,7 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a count * \a size results in an overflow
-    M_FUNC_ATTR_MALLOC void* safe_calloc_page_aligned(size_t count, size_t size);
+    M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* safe_calloc_page_aligned(size_t count, size_t size);
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_realloc_page_aligned(void* block, size_t originalSize, size_t size)
     //! \brief Allocates or reallocated a memory page aligned block of memory. Performs extra bounds checking
@@ -1179,7 +1187,7 @@ extern "C"
     //! not be preserved.
     //! \param[in] size The size of each element.
     //! \return A pointer to the allocated memory block, or NULL on failure.
-    M_FUNC_ATTR_MALLOC void* safe_realloc_page_aligned(void* block, size_t originalSize, size_t size);
+    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(3) void* safe_realloc_page_aligned(void* block, size_t originalSize, size_t size);
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_reallocf_page_aligned(void** block, size_t originalSize, size_t size)
     //! \brief Allocates or reallocated a memory page aligned block of memory. Performs extra bounds checking
@@ -1191,7 +1199,9 @@ extern "C"
     //! not be preserved.
     //! \param[in] size The size of each element.
     //! \return A pointer to the allocated memory block, or NULL on failure.
-    M_FUNC_ATTR_MALLOC void* safe_reallocf_page_aligned(void** block, size_t originalSize, size_t size);
+    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(3) void* safe_reallocf_page_aligned(void** block,
+                                                                         size_t originalSize,
+                                                                         size_t size);
 
     //! \fn static M_INLINE int memory_regions_overlap(const void* M_RESTRICT ptr1,
     //!                                                rsize_t                size1,
@@ -1203,7 +1213,8 @@ extern "C"
     //! \param[in] ptr2 pointer to the second memory region to check
     //! \param[in] size2 size of the second memory region
     //! \return 0 regions do not overlap. Nonzero means the regions overlap
-    M_PARAM_RO(1) M_PARAM_RO(3)
+    M_PARAM_RO(1)
+    M_PARAM_RO(3)
     static M_INLINE int memory_regions_overlap(const void* M_RESTRICT ptr1,
                                                rsize_t                size1,
                                                const void* M_RESTRICT ptr2,
