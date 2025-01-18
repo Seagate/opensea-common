@@ -601,9 +601,11 @@ extern "C"
     //! \return pointer to destination on success, null pointer on error
     M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RW_SIZE(1, 2)
-    M_PARAM_RO(3) M_NULL_TERM_STRING(3) static M_INLINE char* common_String_Concat(char* M_RESTRICT destination,
-                                                                                   size_t destinationSizeBytes,
-                                                                                   const char* M_RESTRICT source)
+    M_PARAM_RO(3)
+    M_NULL_TERM_STRING(3)
+    static M_INLINE char* common_String_Concat(char* M_RESTRICT       destination,
+                                               size_t                 destinationSizeBytes,
+                                               const char* M_RESTRICT source)
     {
         if (0 == safe_strcat(destination, destinationSizeBytes, source))
         {
@@ -625,11 +627,12 @@ extern "C"
     //! \return pointer to destination on success, null pointer on error
     M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RW_SIZE(1, 2)
-    M_PARAM_RO_SIZE(3, 4) M_NULL_TERM_STRING(3) static M_INLINE
-        char* common_String_Concat_Len(char* M_RESTRICT       destination,
-                                       size_t                 destinationSizeBytes,
-                                       const char* M_RESTRICT source,
-                                       int                    sourceLength)
+    M_PARAM_RO_SIZE(3, 4)
+    M_NULL_TERM_STRING(3)
+    static M_INLINE char* common_String_Concat_Len(char* M_RESTRICT       destination,
+                                                   size_t                 destinationSizeBytes,
+                                                   const char* M_RESTRICT source,
+                                                   int                    sourceLength)
     {
         if (0 == safe_strncat(destination, destinationSizeBytes, source, int_to_sizet(sourceLength)))
         {
@@ -959,8 +962,9 @@ extern "C"
     //! \return offset to first occurrence of \a stringToFind in \a originalString
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RO(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2) size_t
-        find_first_occurrence_in_string(const char* originalString, const char* stringToFind);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(1)
+    M_NULL_TERM_STRING(2) size_t find_first_occurrence_in_string(const char* originalString, const char* stringToFind);
 
     //! \fn bool wildcard_Match(const char* pattern, const char* data)
     //! \brief match the string with pattern consisting of wildcard chars.
@@ -972,8 +976,8 @@ extern "C"
     //! \return true = found match, false = no match found
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RO(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(1)
-        M_NULL_TERM_STRING(2) bool wildcard_Match(const char* pattern, const char* data);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2) bool wildcard_Match(const char* pattern, const char* data);
 
 #if defined(__cplusplus)
 }

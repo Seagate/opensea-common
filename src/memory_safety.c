@@ -126,7 +126,7 @@ M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment)
                                                     // front of the return data pointer
         const size_t totalAllocation = size + alignment + requiredExtraBytes;
         temp                         = malloc(totalAllocation);
-        if (temp)
+        if (temp != M_NULLPTR)
         {
             const void* const originalLocation = temp;
             temp += requiredExtraBytes; // allow enough room for storing the

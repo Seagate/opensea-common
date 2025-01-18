@@ -992,7 +992,7 @@ static bool get_User_Name_From_ID(uid_t userID, char** userName)
                     char* temp = M_NULLPTR;
                     dataSize *= 2L;
                     temp = safe_realloc(rawBuffer, dataSize);
-                    if (!temp)
+                    if (temp == M_NULLPTR)
                     {
                         safe_free(&rawBuffer);
                         break;

@@ -49,8 +49,9 @@ extern "C"
     //! BAD_PARAMETER is invalid parameter value.
     M_NONNULL_PARAM_LIST(2)
     M_PARAM_WO_SIZE(2, 3)
-    eReturnValues
-        fill_Incrementing_Pattern_In_Buffer(uint8_t incrementStartValue, uint8_t* ptrData, uint32_t dataLength);
+    eReturnValues fill_Incrementing_Pattern_In_Buffer(uint8_t  incrementStartValue,
+                                                      uint8_t* ptrData,
+                                                      uint32_t dataLength);
 
     //! \fn eReturnValues fill_ASCII_Pattern_In_Buffer(const char* asciiPattern, uint32_t patternLength,
     //!                                                uint8_t* ptrData, uint32_t dataLength)
@@ -62,10 +63,11 @@ extern "C"
     //! \return SUCCESS is successful. BAD_PARAMETER is invalid parameter value.
     M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RO_SIZE(1, 2)
-    M_PARAM_WO_SIZE(3, 4) eReturnValues fill_ASCII_Pattern_In_Buffer(const char* asciiPattern,
-                                                                     uint32_t    patternLength,
-                                                                     uint8_t*    ptrData,
-                                                                     uint32_t    dataLength);
+    M_PARAM_WO_SIZE(3, 4)
+    eReturnValues fill_ASCII_Pattern_In_Buffer(const char* asciiPattern,
+                                               uint32_t    patternLength,
+                                               uint8_t*    ptrData,
+                                               uint32_t    dataLength);
 
     //! \fn eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t* inPattern,
     //!                                                           uint32_t inpatternLength,
@@ -87,10 +89,11 @@ extern "C"
     //!   function parameters
     M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RO_SIZE(1, 2)
-    M_PARAM_WO_SIZE(3, 4) eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t* inPattern,
-                                                                                uint32_t inpatternLength,
-                                                                                uint8_t* ptrData,
-                                                                                uint32_t dataLength);
+    M_PARAM_WO_SIZE(3, 4)
+    eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t* inPattern,
+                                                          uint32_t inpatternLength,
+                                                          uint8_t* ptrData,
+                                                          uint32_t dataLength);
 
 #if defined(__cplusplus)
 }

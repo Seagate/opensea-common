@@ -410,7 +410,7 @@ static char* get_Current_User_SID(void)
         DWORD dwSize = DWORD_C(0);
         GetTokenInformation(hToken, TokenUser, M_NULLPTR, 0, &dwSize);
         PTOKEN_USER pUser = M_REINTERPRET_CAST(PTOKEN_USER, safe_malloc(dwSize));
-        if (pUser)
+        if (pUser != M_NULLPTR)
         {
             safe_memset(pUser, dwSize, 0, dwSize);
             if (GetTokenInformation(hToken, TokenUser, pUser, dwSize, &dwSize))

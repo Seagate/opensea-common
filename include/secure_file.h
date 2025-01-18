@@ -621,8 +621,11 @@ extern "C"
     //! \note This function works like vfprintf_s from the C11 standard for the secure file structure.
     FUNC_ATTR_PRINTF(2, 0)
     M_NONNULL_PARAM_LIST(1, 2)
-    M_PARAM_RW(1) M_PARAM_RO(2) eSecureFileError
-        secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, va_list args);
+    M_PARAM_RW(1)
+    M_PARAM_RO(2)
+    eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo,
+                                          const char* M_RESTRICT     format,
+                                          va_list                    args);
 
     //! \fn FUNC_ATTR_PRINTF(2, 3) eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo,
     //!                                                                 const char* M_RESTRICT format,
@@ -635,8 +638,9 @@ extern "C"
     //! \note This function works like fprintf_s from the C11 standard for the secure file structure.
     FUNC_ATTR_PRINTF(2, 3)
     M_NONNULL_PARAM_LIST(1, 2)
-    M_PARAM_RW(1) M_PARAM_RO(2) eSecureFileError
-        secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, ...);
+    M_PARAM_RW(1)
+    M_PARAM_RO(2)
+    eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, ...);
 
     //! \fn bool os_Directory_Exists(const char* pathToCheck)
     //! \brief Platform-independent helper to check if a directory exists.
@@ -735,8 +739,11 @@ extern "C"
     //! \return Pointer to the generated log file name. Must be free'd by the caller with free()
     M_NONNULL_PARAM_LIST(2)
     M_PARAM_RO_SIZE(2, 3)
-    M_NONNULL_IF_NONZERO_PARAM(4, 5) M_PARAM_RO_SIZE(4, 5) M_NONNULL_IF_NONZERO_PARAM(6, 7) M_PARAM_RO_SIZE(6, 7)
-        M_NONNULL_IF_NONZERO_PARAM(8, 9) M_PARAM_RO_SIZE(8, 9) M_FUNC_ATTR_MALLOC
+    M_NONNULL_IF_NONZERO_PARAM(4, 5)
+    M_PARAM_RO_SIZE(4, 5)
+    M_NONNULL_IF_NONZERO_PARAM(6, 7)
+    M_PARAM_RO_SIZE(6, 7)
+    M_NONNULL_IF_NONZERO_PARAM(8, 9) M_PARAM_RO_SIZE(8, 9) M_FUNC_ATTR_MALLOC
         char* generate_Log_Name(eLogFileNamingConvention logFileNamingConvention,
                                 const char*              deviceIdentifier,
                                 size_t                   deviceIDLen,
@@ -775,8 +782,11 @@ extern "C"
     //! \note This function does not return the name used as that is part of the secureFileInfo.
     M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RO_SIZE(1, 2)
-    M_NONNULL_IF_NONZERO_PARAM(5, 6) M_PARAM_RO_SIZE(5, 6) M_NONNULL_IF_NONZERO_PARAM(7, 8) M_PARAM_RO_SIZE(7, 8)
-        M_NONNULL_IF_NONZERO_PARAM(9, 10) M_PARAM_RO_SIZE(9, 10) eReturnValues
+    M_NONNULL_IF_NONZERO_PARAM(5, 6)
+    M_PARAM_RO_SIZE(5, 6)
+    M_NONNULL_IF_NONZERO_PARAM(7, 8)
+    M_PARAM_RO_SIZE(7, 8)
+    M_NONNULL_IF_NONZERO_PARAM(9, 10) M_PARAM_RO_SIZE(9, 10) eReturnValues
         create_And_Open_Secure_Log_File(const char*              deviceIdentifier,
                                         size_t                   deviceIDLen,
                                         secureFileInfo**         file,

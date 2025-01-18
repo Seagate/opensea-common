@@ -120,9 +120,8 @@ extern "C"
     //! \param[in] error errno value describing the error that occurred during execution.
     M_NONNULL_PARAM_LIST(1)
     M_PARAM_RO(1)
-    M_NULL_TERM_STRING(1) void invoke_Constraint_Handler(const char* M_RESTRICT msg,
-                                                         void* M_RESTRICT       ptr,
-                                                         errno_t                error);
+    M_NULL_TERM_STRING(1)
+    void invoke_Constraint_Handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error);
 
 #if defined(__cplusplus)
 }

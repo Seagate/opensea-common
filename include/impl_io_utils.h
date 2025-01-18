@@ -55,14 +55,17 @@ extern "C"
     //! - \a mode is a null pointer
     M_NONNULL_PARAM_LIST(1, 2, 3)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_PARAM_RO(3) M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2) errno_t
-        safe_fopen_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
-                        const char* M_RESTRICT       filename,
-                        const char* M_RESTRICT       mode,
-                        const char*                  file,
-                        const char*                  function,
-                        int                          line,
-                        const char*                  expression);
+    M_PARAM_RO(2)
+    M_PARAM_RO(3)
+    M_NULL_TERM_STRING(1)
+    M_NULL_TERM_STRING(2)
+    errno_t safe_fopen_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
+                            const char* M_RESTRICT       filename,
+                            const char* M_RESTRICT       mode,
+                            const char*                  file,
+                            const char*                  function,
+                            int                          line,
+                            const char*                  expression);
 
     //! \fn errno_t safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
     //!                               const char* M_RESTRICT       filename,
@@ -94,15 +97,18 @@ extern "C"
     //! - \a mode is a null pointer
     M_NONNULL_PARAM_LIST(1, 2, 3, 4)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_PARAM_RO(3) M_PARAM_RW(4) M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2) errno_t
-        safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
-                          const char* M_RESTRICT       filename,
-                          const char* M_RESTRICT       mode,
-                          FILE* M_RESTRICT             stream,
-                          const char*                  file,
-                          const char*                  function,
-                          int                          line,
-                          const char*                  expression);
+    M_PARAM_RO(2)
+    M_PARAM_RO(3)
+    M_PARAM_RW(4)
+    M_NULL_TERM_STRING(1)
+    M_NULL_TERM_STRING(2) errno_t safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
+                                                    const char* M_RESTRICT       filename,
+                                                    const char* M_RESTRICT       mode,
+                                                    FILE* M_RESTRICT             stream,
+                                                    const char*                  file,
+                                                    const char*                  function,
+                                                    int                          line,
+                                                    const char*                  expression);
 
 #if defined(WANT_SAFE_TMPNAM)
     //! \fn errno_t safe_tmpnam_impl(char*       filename_s,
@@ -231,14 +237,16 @@ extern "C"
     //! - \a base is a greater than 36
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(2) errno_t safe_strtol_impl(long*                  value,
-                                                                 const char* M_RESTRICT str,
-                                                                 char** M_RESTRICT      endp,
-                                                                 int                    base,
-                                                                 const char*            file,
-                                                                 const char*            function,
-                                                                 int                    line,
-                                                                 const char*            expression);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(2)
+    errno_t safe_strtol_impl(long*                  value,
+                             const char* M_RESTRICT str,
+                             char** M_RESTRICT      endp,
+                             int                    base,
+                             const char*            file,
+                             const char*            function,
+                             int                    line,
+                             const char*            expression);
 
     //! \fn errno_t safe_strtoll_impl(long long*             value,
     //!                               const char* M_RESTRICT str,
@@ -271,14 +279,16 @@ extern "C"
     //! - \a base is a greater than 36
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(2) errno_t safe_strtoll_impl(long long*             value,
-                                                                  const char* M_RESTRICT str,
-                                                                  char** M_RESTRICT      endp,
-                                                                  int                    base,
-                                                                  const char*            file,
-                                                                  const char*            function,
-                                                                  int                    line,
-                                                                  const char*            expression);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(2)
+    errno_t safe_strtoll_impl(long long*             value,
+                              const char* M_RESTRICT str,
+                              char** M_RESTRICT      endp,
+                              int                    base,
+                              const char*            file,
+                              const char*            function,
+                              int                    line,
+                              const char*            expression);
 
     //! \fn errno_t safe_strtoul_impl(unsigned long*         value,
     //!                               const char* M_RESTRICT str,
@@ -311,14 +321,16 @@ extern "C"
     //! - \a base is a greater than 36
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(2) errno_t safe_strtoul_impl(unsigned long*         value,
-                                                                  const char* M_RESTRICT str,
-                                                                  char** M_RESTRICT      endp,
-                                                                  int                    base,
-                                                                  const char*            file,
-                                                                  const char*            function,
-                                                                  int                    line,
-                                                                  const char*            expression);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(2)
+    errno_t safe_strtoul_impl(unsigned long*         value,
+                              const char* M_RESTRICT str,
+                              char** M_RESTRICT      endp,
+                              int                    base,
+                              const char*            file,
+                              const char*            function,
+                              int                    line,
+                              const char*            expression);
 
     //! \fn errno_t safe_strtoull_impl(unsigned long long*    value,
     //!                                const char* M_RESTRICT str,
@@ -351,14 +363,16 @@ extern "C"
     //! - \a base is a greater than 36
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(2) errno_t safe_strtoull_impl(unsigned long long*    value,
-                                                                   const char* M_RESTRICT str,
-                                                                   char** M_RESTRICT      endp,
-                                                                   int                    base,
-                                                                   const char*            file,
-                                                                   const char*            function,
-                                                                   int                    line,
-                                                                   const char*            expression);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(2)
+    errno_t safe_strtoull_impl(unsigned long long*    value,
+                               const char* M_RESTRICT str,
+                               char** M_RESTRICT      endp,
+                               int                    base,
+                               const char*            file,
+                               const char*            function,
+                               int                    line,
+                               const char*            expression);
 
     //! \fn errno_t safe_strtoimax_impl(intmax_t*              value,
     //!                                 const char* M_RESTRICT str,
@@ -391,14 +405,16 @@ extern "C"
     //! - \a base is a greater than 36
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(2) errno_t safe_strtoimax_impl(intmax_t*              value,
-                                                                    const char* M_RESTRICT str,
-                                                                    char** M_RESTRICT      endp,
-                                                                    int                    base,
-                                                                    const char*            file,
-                                                                    const char*            function,
-                                                                    int                    line,
-                                                                    const char*            expression);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(2)
+    errno_t safe_strtoimax_impl(intmax_t*              value,
+                                const char* M_RESTRICT str,
+                                char** M_RESTRICT      endp,
+                                int                    base,
+                                const char*            file,
+                                const char*            function,
+                                int                    line,
+                                const char*            expression);
 
     //! \fn errno_t safe_strtoumax_impl(uintmax_t*             value,
     //!                                 const char* M_RESTRICT str,
@@ -431,14 +447,16 @@ extern "C"
     //! - \a base is a greater than 36
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(2) errno_t safe_strtoumax_impl(uintmax_t*             value,
-                                                                    const char* M_RESTRICT str,
-                                                                    char** M_RESTRICT      endp,
-                                                                    int                    base,
-                                                                    const char*            file,
-                                                                    const char*            function,
-                                                                    int                    line,
-                                                                    const char*            expression);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(2)
+    errno_t safe_strtoumax_impl(uintmax_t*             value,
+                                const char* M_RESTRICT str,
+                                char** M_RESTRICT      endp,
+                                int                    base,
+                                const char*            file,
+                                const char*            function,
+                                int                    line,
+                                const char*            expression);
 
     //! \fn errno_t safe_strtof_impl(float*                 value,
     //!                              const char* M_RESTRICT str,
@@ -466,13 +484,15 @@ extern "C"
     //! - \a str is a null pointer
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(2) errno_t safe_strtof_impl(float*                 value,
-                                                                 const char* M_RESTRICT str,
-                                                                 char** M_RESTRICT      endp,
-                                                                 const char*            file,
-                                                                 const char*            function,
-                                                                 int                    line,
-                                                                 const char*            expression);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(2)
+    errno_t safe_strtof_impl(float*                 value,
+                             const char* M_RESTRICT str,
+                             char** M_RESTRICT      endp,
+                             const char*            file,
+                             const char*            function,
+                             int                    line,
+                             const char*            expression);
 
     //! \fn errno_t safe_strtod_impl(double*                value,
     //!                              const char* M_RESTRICT str,
@@ -500,13 +520,15 @@ extern "C"
     //! - \a str is a null pointer
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(2) errno_t safe_strtod_impl(double*                value,
-                                                                 const char* M_RESTRICT str,
-                                                                 char** M_RESTRICT      endp,
-                                                                 const char*            file,
-                                                                 const char*            function,
-                                                                 int                    line,
-                                                                 const char*            expression);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(2)
+    errno_t safe_strtod_impl(double*                value,
+                             const char* M_RESTRICT str,
+                             char** M_RESTRICT      endp,
+                             const char*            file,
+                             const char*            function,
+                             int                    line,
+                             const char*            expression);
 
     //! \fn errno_t safe_strtold_impl(long double*           value,
     //!                               const char* M_RESTRICT str,
@@ -535,13 +557,15 @@ extern "C"
     //! - \a str is a null pointer
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(2) errno_t safe_strtold_impl(long double*           value,
-                                                                  const char* M_RESTRICT str,
-                                                                  char** M_RESTRICT      endp,
-                                                                  const char*            file,
-                                                                  const char*            function,
-                                                                  int                    line,
-                                                                  const char*            expression);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(2)
+    errno_t safe_strtold_impl(long double*           value,
+                              const char* M_RESTRICT str,
+                              char** M_RESTRICT      endp,
+                              const char*            file,
+                              const char*            function,
+                              int                    line,
+                              const char*            expression);
 
     //! \fn errno_t safe_atoi_impl(int*                   value,
     //!                            const char* M_RESTRICT str,
@@ -572,12 +596,14 @@ extern "C"
     //! - There is text still present after performing the conversion
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(2) errno_t safe_atoi_impl(int*                   value,
-                                                               const char* M_RESTRICT str,
-                                                               const char*            file,
-                                                               const char*            function,
-                                                               int                    line,
-                                                               const char*            expression);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(2)
+    errno_t safe_atoi_impl(int*                   value,
+                           const char* M_RESTRICT str,
+                           const char*            file,
+                           const char*            function,
+                           int                    line,
+                           const char*            expression);
 
     //! \fn errno_t safe_atol_impl(long*                  value,
     //!                            const char* M_RESTRICT str,
@@ -608,12 +634,14 @@ extern "C"
     //! - There is text still present after performing the conversion
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(2) errno_t safe_atol_impl(long*                  value,
-                                                               const char* M_RESTRICT str,
-                                                               const char*            file,
-                                                               const char*            function,
-                                                               int                    line,
-                                                               const char*            expression);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(2)
+    errno_t safe_atol_impl(long*                  value,
+                           const char* M_RESTRICT str,
+                           const char*            file,
+                           const char*            function,
+                           int                    line,
+                           const char*            expression);
 
     //! \fn errno_t safe_atoll_impl(long long*             value,
     //!                             const char* M_RESTRICT str,
@@ -644,12 +672,14 @@ extern "C"
     //! - There is text still present after performing the conversion
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(2) errno_t safe_atoll_impl(long long*             value,
-                                                                const char* M_RESTRICT str,
-                                                                const char*            file,
-                                                                const char*            function,
-                                                                int                    line,
-                                                                const char*            expression);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(2)
+    errno_t safe_atoll_impl(long long*             value,
+                            const char* M_RESTRICT str,
+                            const char*            file,
+                            const char*            function,
+                            int                    line,
+                            const char*            expression);
 
     //! \fn errno_t safe_atof_impl(double*                value,
     //!                            const char* M_RESTRICT str,
@@ -680,12 +710,14 @@ extern "C"
     //! - There is text still present after performing the conversion
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_RO(2) M_NULL_TERM_STRING(2) errno_t safe_atof_impl(double*                value,
-                                                               const char* M_RESTRICT str,
-                                                               const char*            file,
-                                                               const char*            function,
-                                                               int                    line,
-                                                               const char*            expression);
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(2)
+    errno_t safe_atof_impl(double*                value,
+                           const char* M_RESTRICT str,
+                           const char*            file,
+                           const char*            function,
+                           int                    line,
+                           const char*            expression);
 
 #if defined(__cplusplus)
 }

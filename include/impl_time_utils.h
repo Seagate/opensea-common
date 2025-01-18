@@ -48,12 +48,13 @@ extern "C"
     //! - \a buf is a null pointer
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RO(1)
-    M_PARAM_RW(2) struct tm* impl_safe_gmtime(const time_t* M_RESTRICT timer,
-                                              struct tm* M_RESTRICT    buf,
-                                              const char*              file,
-                                              const char*              function,
-                                              int                      line,
-                                              const char*              expression);
+    M_PARAM_RW(2)
+    struct tm* impl_safe_gmtime(const time_t* M_RESTRICT timer,
+                                struct tm* M_RESTRICT    buf,
+                                const char*              file,
+                                const char*              function,
+                                int                      line,
+                                const char*              expression);
 
     //! \fn struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
     //!                                   struct tm* M_RESTRICT    buf,
@@ -80,12 +81,13 @@ extern "C"
     //! - \a buf is a null pointer
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RO(1)
-    M_PARAM_RW(2) struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
-                                                 struct tm* M_RESTRICT    buf,
-                                                 const char*              file,
-                                                 const char*              function,
-                                                 int                      line,
-                                                 const char*              expression);
+    M_PARAM_RW(2)
+    struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
+                                   struct tm* M_RESTRICT    buf,
+                                   const char*              file,
+                                   const char*              function,
+                                   int                      line,
+                                   const char*              expression);
 
     //! \fn errno_t impl_safe_asctime(char*            buf,
     //!                               rsize_t          bufsz,
@@ -121,14 +123,15 @@ extern "C"
     //! - member of \a time_ptr is out of normal range
     M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RW_SIZE(1, 2)
-    M_PARAM_RO(3) errno_t impl_safe_asctime(char*            buf,
-                                            rsize_t          bufsz,
-                                            const struct tm* time_ptr,
-                                            bool             ctime,
-                                            const char*      file,
-                                            const char*      function,
-                                            int              line,
-                                            const char*      expression);
+    M_PARAM_RO(3)
+    errno_t impl_safe_asctime(char*            buf,
+                              rsize_t          bufsz,
+                              const struct tm* time_ptr,
+                              bool             ctime,
+                              const char*      file,
+                              const char*      function,
+                              int              line,
+                              const char*      expression);
 
     //! \fn errno_t impl_safe_ctime(char*            buf,
     //!                               rsize_t          bufsz,
@@ -160,13 +163,14 @@ extern "C"
     //! - \a bufsz > RSIZE_MAX
     M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RW_SIZE(1, 2)
-    M_PARAM_RO(3) errno_t impl_safe_ctime(char*         buf,
-                                          rsize_t       bufsz,
-                                          const time_t* timer,
-                                          const char*   file,
-                                          const char*   function,
-                                          int           line,
-                                          const char*   expression);
+    M_PARAM_RO(3)
+    errno_t impl_safe_ctime(char*         buf,
+                            rsize_t       bufsz,
+                            const time_t* timer,
+                            const char*   file,
+                            const char*   function,
+                            int           line,
+                            const char*   expression);
 
 #if defined(__cplusplus)
 }

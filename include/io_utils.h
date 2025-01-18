@@ -516,8 +516,8 @@ extern "C"
     //! Returns -1 on failure or when end of file is reached.
     M_NONNULL_PARAM_LIST(2, 4)
     M_PARAM_RW(1)
-    M_PARAM_RW(2) M_PARAM_RO(4) ssize_t
-        getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream);
+    M_PARAM_RW(2)
+    M_PARAM_RO(4) ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream);
 #endif //!__STDC_ALLOC_LIB__ && (POSIX < 2008)
 
 // Defining asprintf and vasprintf for all systems that do not have these
@@ -602,8 +602,8 @@ extern "C"
     //! \note Invokes the constraint handler on error.
     M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RW(1)
-    M_PARAM_RO(3) FUNC_ATTR_PRINTF(3, 4) static M_INLINE
-        int snprintf_err_handle(char* buf, size_t bufsize, const char* format, ...)
+    M_PARAM_RO(3)
+    FUNC_ATTR_PRINTF(3, 4) static M_INLINE int snprintf_err_handle(char* buf, size_t bufsize, const char* format, ...)
     {
         int     n = 0;
         va_list args;
@@ -654,8 +654,8 @@ extern "C"
     //! \return An eReturnValues indicating the result of the input operation.
     M_NONNULL_PARAM_LIST(1, 2, 3)
     M_PARAM_RO(1)
-    M_PARAM_RW(2) M_PARAM_RW(3) eReturnValues
-        get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen);
+    M_PARAM_RW(2)
+    M_PARAM_RW(3) eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen);
 
     //! \enum eConsoleColors
     //! \brief Enum representing console colors.
