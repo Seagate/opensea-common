@@ -786,6 +786,44 @@ extern "C"
 #    endif
 #endif
 
+//! \def M_FILE_DESCRIPTOR
+//! \brief Marks a parameter in a function as being a unix file descriptor (int fd)
+#if defined __has_attribute
+#    if __has_attribute(fd_arg)
+#        define M_FILE_DESCRIPTOR(argnum) __attribute__((fd_arg(argnum)))
+#    endif
+#endif
+#if !defined(M_FILE_DESCRIPTOR)
+#    define M_FILE_DESCRIPTOR(argnum)  /* parameter # argnum is an integer file descriptor number that must be opened  \
+                                        */
+#endif
+
+//! \def M_FILE_DESCRIPTOR_R
+//! \brief Marks a parameter in a function as being a unix file descriptor (int fd) and that the function may read from
+//! it
+#if defined __has_attribute
+#    if __has_attribute(fd_arg_read)
+#        define M_FILE_DESCRIPTOR_R(argnum) __attribute__((fd_arg_read(argnum)))
+#    endif
+#endif
+#if !defined(M_FILE_DESCRIPTOR_R)
+#    define M_FILE_DESCRIPTOR_R(argnum)    /* parameter # argnum is an integer file descriptor number that must be opened \
+                                              with read permissions */
+#endif
+
+//! \def M_FILE_DESCRIPTOR_W
+//! \brief Marks a parameter in a function as being a unix file descriptor (int fd) and that the function may write to
+//! it
+#if defined __has_attribute
+#    if __has_attribute(fd_arg_write)
+#        define M_FILE_DESCRIPTOR_W(argnum) __attribute__((fd_arg_write(argnum)))
+#    endif
+#endif
+#if !defined(M_FILE_DESCRIPTOR_W)
+#    define M_FILE_DESCRIPTOR_W(argnum)    /* parameter # argnum is an integer file descriptor number that must be opened \
+                                              with write permissions */
+#endif
+
 #if defined(__cplusplus)
 }
 #endif
