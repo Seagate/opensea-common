@@ -173,7 +173,7 @@ void free_aligned(void* ptr)
     free(ptr);
 #else
     // original pointer
-    if (ptr)
+    if (ptr != M_NULLPTR)
     {
         // find the starting address from the original allocation.
         void* tempPtr = ptr - sizeof(size_t); // this gets us to where it was stored
@@ -189,10 +189,10 @@ M_FUNC_ATTR_MALLOC void* calloc_aligned(size_t num, size_t size, size_t alignmen
     // call malloc aligned and memset
     void*  zeroedMem = M_NULLPTR;
     size_t numSize   = num * size;
-    if (numSize)
+    if (numSize > SIZE_T_C(0))
     {
         zeroedMem = malloc_aligned(numSize, alignment);
-        if (zeroedMem)
+        if (zeroedMem != M_NULLPTR)
         {
             safe_memset(zeroedMem, numSize, 0, numSize);
         }
@@ -228,7 +228,7 @@ M_FUNC_ATTR_MALLOC void* realloc_aligned(void* alignedPtr, size_t originalSize, 
 M_FUNC_ATTR_MALLOC void* malloc_page_aligned(size_t size)
 {
     size_t pageSize = get_System_Pagesize();
-    if (pageSize)
+    if (pageSize > SIZE_T_C(0))
     {
         return malloc_aligned(size, pageSize);
     }
@@ -241,7 +241,7 @@ M_FUNC_ATTR_MALLOC void* malloc_page_aligned(size_t size)
 M_FUNC_ATTR_MALLOC void* calloc_page_aligned(size_t num, size_t size)
 {
     size_t pageSize = get_System_Pagesize();
-    if (pageSize)
+    if (pageSize > SIZE_T_C(0))
     {
         return calloc_aligned(num, size, get_System_Pagesize());
     }
@@ -254,7 +254,7 @@ M_FUNC_ATTR_MALLOC void* calloc_page_aligned(size_t num, size_t size)
 M_FUNC_ATTR_MALLOC void* realloc_page_aligned(void* alignedPtr, size_t originalSize, size_t size)
 {
     size_t pageSize = get_System_Pagesize();
-    if (pageSize)
+    if (pageSize > SIZE_T_C(0))
     {
         return realloc_aligned(alignedPtr, originalSize, size, get_System_Pagesize());
     }
@@ -277,7 +277,7 @@ bool is_Empty(const void* ptrData, size_t lengthBytes)
         if (sysPageSize != SIZE_T_C(0) && get_memalignment(ptrData) >= sysPageSize)
         {
             uint8_t* zeroes = C_CAST(uint8_t*, calloc_page_aligned(sysPageSize, sizeof(uint8_t)));
-            if (zeroes)
+            if (zeroes != M_NULLPTR)
             {
                 size_t increment = M_Min(sysPageSize, lengthBytes);
                 byteByByte       = false;

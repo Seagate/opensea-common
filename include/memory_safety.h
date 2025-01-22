@@ -478,7 +478,7 @@ extern "C"
 
     static M_INLINE void safe_free_dirent_list(struct dirent*** list)
     {
-        if (list)
+        if (list != M_NULLPTR)
         {
             safe_free_core(M_REINTERPRET_CAST(void**, &list));
         }

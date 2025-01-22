@@ -34,7 +34,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
     {
         // Now that we know whether or not it's a server version and have gotten
         // the version number, set the appropriate string for the OS.
-        if (operatingSystemName)
+        if (operatingSystemName != M_NULLPTR)
         {
             bool isWindowsServer = is_Windows_Server_OS();
             bool isWindowsPE     = is_Windows_PE();
@@ -263,7 +263,7 @@ bool is_Running_Elevated(void)
             }
         }
     }
-    if (currentProcess)
+    if (currentProcess != M_NULLPTR && currentProcess != INVALID_HANDLE_VALUE)
     {
         CloseHandle(currentProcess);
     }

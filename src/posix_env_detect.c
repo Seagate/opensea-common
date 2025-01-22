@@ -32,7 +32,7 @@ static int lin_file_filter(const struct dirent* entry, const char* stringMatch)
     int    match          = 0;
     size_t filenameLength = safe_strlen(entry->d_name) + safe_strlen("/etc/") + 1;
     char*  filename       = M_REINTERPRET_CAST(char*, safe_calloc(filenameLength, sizeof(char)));
-    if (filename)
+    if (filename != M_NULLPTR)
     {
         struct stat s;
         snprintf(filename, filenameLength, "/etc/%s", entry->d_name);
@@ -44,7 +44,7 @@ static int lin_file_filter(const struct dirent* entry, const char* stringMatch)
             {
                 // non-zero means valid match. zero means not a match
                 char* inString = strstr(entry->d_name, stringMatch);
-                if (inString)
+                if (inString != M_NULLPTR)
                 {
                     // found a file!
                     // make sure the string to match is at the end of the
@@ -88,7 +88,7 @@ static M_INLINE void close_lin_release_file(FILE* release)
 static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
 {
     bool gotLinuxInfo = false;
-    if (operatingSystemName)
+    if (operatingSystemName != M_NULLPTR)
     {
         bool etcRelease    = os_File_Exists("/etc/os-release");
         bool usrLibRelease = os_File_Exists("/usr/lib/os-release");
@@ -159,13 +159,13 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
 static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
 {
     char* etcFileMem = M_NULLPTR;
-    if (dirent_entry_name)
+    if (dirent_entry_name != M_NULLPTR)
     {
         size_t  fileNameLength = safe_strlen(dirent_entry_name) + safe_strlen("/etc/") + 1;
         char*   fileName       = M_REINTERPRET_CAST(char*, safe_calloc(fileNameLength, sizeof(char)));
         FILE*   release        = M_NULLPTR;
         errno_t fileopenerr    = 0;
-        if (fileName)
+        if (fileName != M_NULLPTR)
         {
             snprintf(fileName, fileNameLength, "/etc/%s", dirent_entry_name);
             fileopenerr = safe_fopen(&release, fileName, "r");
@@ -181,7 +181,7 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
                     if (releaseSize > 0)
                     {
                         etcFileMem = M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, releaseSize), sizeof(char)));
-                        if (etcFileMem)
+                        if (etcFileMem != M_NULLPTR)
                         {
                             if (fread(etcFileMem, sizeof(char), C_CAST(size_t, releaseSize), release) !=
                                     C_CAST(size_t, releaseSize) ||
@@ -206,7 +206,7 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
 static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSystemName)
 {
     bool gotLinuxInfo = false;
-    if (operatingSystemName)
+    if (operatingSystemName != M_NULLPTR)
     {
         // try other release files before /etc/issue. More are here than are
         // implemented: http://linuxmafia.com/faq/Admin/release-files.html This
@@ -233,10 +233,10 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
                 else
                 {
                     char* releaseFile = read_Linux_etc_File_For_OS_Info(osrelease[releaseIter]->d_name);
-                    if (releaseFile)
+                    if (releaseFile != M_NULLPTR)
                     {
                         gotLinuxInfo = true;
-                        if (operatingSystemName)
+                        if (operatingSystemName != M_NULLPTR)
                         {
                             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s",
                                      C_CAST(int, safe_strlen(releaseFile)), releaseFile);
@@ -256,10 +256,10 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
         {
             // For now, only reading the first entry...this SHOULD be ok.
             char* versionFile = read_Linux_etc_File_For_OS_Info(osversion[0]->d_name);
-            if (versionFile)
+            if (versionFile != M_NULLPTR)
             {
                 gotLinuxInfo = true;
-                if (operatingSystemName)
+                if (operatingSystemName != M_NULLPTR)
                 {
                     snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, safe_strlen(versionFile)),
                              versionFile);
@@ -276,10 +276,10 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
             // something as friendly and useful as we would like that the other
             // version files provide.
             char* lsbreleaseFile = read_Linux_etc_File_For_OS_Info(osrelease[lsbReleaseOffset]->d_name);
-            if (lsbreleaseFile)
+            if (lsbreleaseFile != M_NULLPTR)
             {
                 gotLinuxInfo = true;
-                if (operatingSystemName)
+                if (operatingSystemName != M_NULLPTR)
                 {
                     snprintf(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, safe_strlen(lsbreleaseFile)),
                              lsbreleaseFile);
@@ -321,7 +321,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
 static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
 {
     bool gotLinuxInfo = false;
-    if (operatingSystemName)
+    if (operatingSystemName != M_NULLPTR)
     {
         // read this file and get the linux name
         FILE*   issue       = M_NULLPTR;
@@ -338,7 +338,7 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
                 if (issueSize > 0)
                 {
                     char* issueMemory = M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, issueSize), sizeof(char)));
-                    if (issueMemory)
+                    if (issueMemory != M_NULLPTR)
                     {
                         if (fread(issueMemory, sizeof(char), C_CAST(size_t, issueSize), issue) ==
                                 C_CAST(size_t, issueSize) &&
@@ -388,7 +388,7 @@ static bool get_Version_From_Uname_Str(const char* verStr,
                                               // pointer as we iterate through the string.
         uint16_t versionoffset = UINT16_C(0);
         size_t   verseplen     = safe_strlen(validVerSeperators);
-        if (prefix)
+        if (prefix != M_NULLPTR)
         {
             // move the pointer past the prefix.
             strscan += safe_strlen(prefix);
@@ -420,7 +420,7 @@ static bool get_Version_From_Uname_Str(const char* verStr,
                 strscan = endptr;
                 // now check if endptr is at the end of the string, or is a
                 // valid version seperator to move past
-                if (endptr)
+                if (endptr != M_NULLPTR)
                 {
                     size_t iter     = SIZE_T_C(0);
                     bool   validsep = false;
@@ -543,7 +543,7 @@ static eReturnValues get_FreeBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
         ret = FAILURE;
     }
     // set the OS Name
-    if (operatingSystemName)
+    if (operatingSystemName != M_NULLPTR)
     {
         if (ret != FAILURE)
         {
@@ -578,7 +578,7 @@ static eReturnValues get_SunOS_Ver_And_Name(ptrOSVersionNumber versionNumber,
         ret = FAILURE;
     }
     // set OS name as Solaris "unixUname.version" for the OS Name
-    if (operatingSystemName)
+    if (operatingSystemName != M_NULLPTR)
     {
         snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Solaris %s", unixUname->version);
     }
@@ -615,7 +615,7 @@ static eReturnValues get_Darwin_Ver_And_Name(ptrOSVersionNumber versionNumber,
     }
     // set the OS Name from the major numbers starting with "Puma"
     // https://en.wikipedia.org/wiki/Darwin_(operating_system)
-    if (operatingSystemName)
+    if (operatingSystemName != M_NULLPTR)
     {
         switch (versionNumber->versionType.macOSVersion.majorVersion)
         {
@@ -675,7 +675,7 @@ static eReturnValues get_AIX_Ver_And_Name(ptrOSVersionNumber versionNumber,
     {
         versionNumber->versionType.aixVersion.minorVersion = M_STATIC_CAST(uint16_t, temp);
     }
-    if (operatingSystemName)
+    if (operatingSystemName != M_NULLPTR)
     {
         snprintf(&operatingSystemName[0], OS_NAME_SIZE, "AIX %" PRIu16 ".%" PRIu16 "",
                  versionNumber->versionType.aixVersion.majorVersion,
@@ -695,7 +695,7 @@ static eReturnValues get_Dragonfly_Ver_And_Name(ptrOSVersionNumber versionNumber
     {
         versionNumber->versionType.dragonflyVersion.majorVersion = list[0];
         versionNumber->versionType.dragonflyVersion.minorVersion = list[1];
-        if (operatingSystemName)
+        if (operatingSystemName != M_NULLPTR)
         {
             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Dragonfly BSD %" PRIu16 ".%" PRIu16 "",
                      versionNumber->versionType.dragonflyVersion.majorVersion,
@@ -705,7 +705,7 @@ static eReturnValues get_Dragonfly_Ver_And_Name(ptrOSVersionNumber versionNumber
     else
     {
         ret = FAILURE;
-        if (operatingSystemName)
+        if (operatingSystemName != M_NULLPTR)
         {
             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Dragonfly BSD Version");
         }
@@ -728,7 +728,7 @@ static eReturnValues get_OpenBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
     {
         versionNumber->versionType.openBSDVersion.minorVersion = M_STATIC_CAST(uint16_t, temp);
     }
-    if (operatingSystemName)
+    if (operatingSystemName != M_NULLPTR)
     {
         snprintf(&operatingSystemName[0], OS_NAME_SIZE, "OpenBSD %" PRIu16 ".%" PRIu16 "",
                  versionNumber->versionType.openBSDVersion.majorVersion,
@@ -749,7 +749,7 @@ static eReturnValues get_NetBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
         versionNumber->versionType.netBSDVersion.majorVersion = list[0];
         versionNumber->versionType.netBSDVersion.minorVersion = list[1];
         versionNumber->versionType.netBSDVersion.revision     = list[2];
-        if (operatingSystemName)
+        if (operatingSystemName != M_NULLPTR)
         {
             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "NetBSD %s", unixUname->release);
         }
@@ -757,7 +757,7 @@ static eReturnValues get_NetBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
     else
     {
         ret = FAILURE;
-        if (operatingSystemName)
+        if (operatingSystemName != M_NULLPTR)
         {
             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown NetBSD Version");
         }
@@ -776,7 +776,7 @@ static eReturnValues get_OSF1_Ver_And_Name(ptrOSVersionNumber versionNumber,
     {
         versionNumber->versionType.tru64Version.majorVersion = list[0];
         versionNumber->versionType.tru64Version.minorVersion = list[1];
-        if (operatingSystemName)
+        if (operatingSystemName != M_NULLPTR)
         {
             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Tru64 %s", unixUname->release);
         }
@@ -784,7 +784,7 @@ static eReturnValues get_OSF1_Ver_And_Name(ptrOSVersionNumber versionNumber,
     else
     {
         ret = FAILURE;
-        if (operatingSystemName)
+        if (operatingSystemName != M_NULLPTR)
         {
             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Tru64 Version");
         }
@@ -803,7 +803,7 @@ static eReturnValues get_HPUX_Ver_And_Name(ptrOSVersionNumber versionNumber,
     {
         versionNumber->versionType.hpuxVersion.majorVersion = list[0];
         versionNumber->versionType.hpuxVersion.minorVersion = list[1];
-        if (operatingSystemName)
+        if (operatingSystemName != M_NULLPTR)
         {
             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "HP-UX %" PRIu16 ".%" PRIu16 "",
                      versionNumber->versionType.hpuxVersion.majorVersion,
@@ -813,7 +813,7 @@ static eReturnValues get_HPUX_Ver_And_Name(ptrOSVersionNumber versionNumber,
     else
     {
         ret = FAILURE;
-        if (operatingSystemName)
+        if (operatingSystemName != M_NULLPTR)
         {
             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown HP-UX Version");
         }
@@ -833,7 +833,7 @@ static eReturnValues get_VMKernel_Ver_And_Name(ptrOSVersionNumber versionNumber,
         versionNumber->versionType.esxiVersion.majorVersion = list[0];
         versionNumber->versionType.esxiVersion.minorVersion = list[1];
         versionNumber->versionType.esxiVersion.revision     = list[2];
-        if (operatingSystemName)
+        if (operatingSystemName != M_NULLPTR)
         {
             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "ESXi %s", unixUname->release);
         }
@@ -841,7 +841,7 @@ static eReturnValues get_VMKernel_Ver_And_Name(ptrOSVersionNumber versionNumber,
     else
     {
         ret = FAILURE;
-        if (operatingSystemName)
+        if (operatingSystemName != M_NULLPTR)
         {
             snprintf(&operatingSystemName[0], OS_NAME_SIZE, "Unknown ESXi Version");
         }
@@ -955,7 +955,7 @@ static size_t get_Sys_Username_Max_Length(void)
 static bool get_User_Name_From_ID(uid_t userID, char** userName)
 {
     bool success = false;
-    if (userName)
+    if (userName != M_NULLPTR)
     {
         if (userID == ROOT_UID_VAL)
         {
@@ -983,7 +983,7 @@ static bool get_User_Name_From_ID(uid_t userID, char** userName)
                                   // it fails to read
             }
             rawBuffer = M_REINTERPRET_CAST(char*, safe_calloc(dataSize, sizeof(char)));
-            if (rawBuffer)
+            if (rawBuffer != M_NULLPTR)
             {
                 while (ERANGE == (error = getpwuid_r(userID, &userInfoBuf, rawBuffer, dataSize, &userInfo)))
                 {
@@ -1024,7 +1024,7 @@ static bool get_User_Name_From_ID(uid_t userID, char** userName)
             explicit_zeroes(userInfo, sizeof(struct passwd));
 #    else  // defined (POSIX_2001) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
             struct passwd* userInfo = getpwuid(userID);
-            if (userInfo)
+            if (userInfo != M_NULLPTR)
             {
                 size_t userNameLength =
                     safe_strlen(userInfo->pw_name) + 1; // add 1 to ensure room for M_NULLPTR termination
@@ -1057,7 +1057,7 @@ static bool get_User_Name_From_ID(uid_t userID, char** userName)
 eReturnValues get_Current_User_Name(char** userName)
 {
     eReturnValues ret = SUCCESS;
-    if (userName)
+    if (userName != M_NULLPTR)
     {
         if (!get_User_Name_From_ID(getuid(), userName))
         {

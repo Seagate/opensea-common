@@ -597,7 +597,7 @@ static M_INLINE eValidateFormatResult validate_Format_Pointer(const char*       
 static M_INLINE eValidateFormatResult validate_WStr_Conversion(const wchar_t* string)
 {
     eValidateFormatResult result = VALIDATE_FORMAT_SUCCESS;
-    if (string)
+    if (string != M_NULLPTR)
     {
         char*     charStr          = M_NULLPTR;
         size_t    charStrSize      = SIZE_T_C(0);
@@ -853,7 +853,7 @@ int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formata
 
                 // get next specifier, if any
                 offsetToSpecifier = strstr(offsetToSpecifier, "%");
-                if (offsetToSpecifier)
+                if (offsetToSpecifier != M_NULLPTR)
                 {
                     M_VALIDATE_FORMAT_RETURN_VAL(
                         update_Format_Offset(format, offsetToSpecifier, &formatoffset, formatLength))

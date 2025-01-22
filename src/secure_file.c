@@ -174,7 +174,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                 return fileInfo;
             }
             char* thex = strchr(internalmode, 'x');
-            if (thex)
+            if (thex != M_NULLPTR)
             {
                 // remove it since it is not supported outside C11 and a few
                 // \libraries that use it as an extension
@@ -367,7 +367,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
             //         anyone can rename an extension, but it should help make
             //         sure the file being opened is closer to what is expected
             //         by the caller
-            if (extList)
+            if (extList != M_NULLPTR)
             {
                 fileExt* currentExtension = M_CONST_CAST(fileExt*, extList); // we will increment this pointer as
                                                                              // needed, so it cannot be const
@@ -401,7 +401,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
             // file attributes. If no match, return an error This may be done
             // again later after opening the file since some things will not be
             // available without opening the file handle.
-            if (expectedFileInfo)
+            if (expectedFileInfo != M_NULLPTR)
             {
                 // check device ID and inode. These are unique on POSIX as a
                 // file ID. Windows is not far enough along to get this info
@@ -506,7 +506,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                 // compare against
                 fileInfo->uniqueID = os_Get_File_Unique_Identifying_Information(fileInfo->file);
                 // compre to provided unique ID
-                if (uniqueIdInfo)
+                if (uniqueIdInfo != M_NULLPTR)
                 {
                     if (!compare_File_Unique_ID(uniqueIdInfo, fileInfo->uniqueID))
                     {
@@ -529,7 +529,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                 }
                 fileInfo->attributes = os_Get_File_Attributes_By_File(fileInfo->file);
                 // compare to user provided attributes
-                if (expectedFileInfo)
+                if (expectedFileInfo != M_NULLPTR)
                 {
                     // devid and inode already checked, but if user didn't
                     // provide unique id, it will not hurt to check again
@@ -618,7 +618,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
         }
         safe_free(&intFileName);
     }
-    else if (fileInfo)
+    else if (fileInfo != M_NULLPTR)
     {
         fileInfo->file  = M_NULLPTR;
         fileInfo->error = SEC_FILE_FAILURE;
@@ -696,7 +696,7 @@ M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInf
             }
             readres = fread(buffer, elementsize, count, fileInfo->file);
 #endif
-            if (numberread)
+            if (numberread != M_NULLPTR)
             {
                 *numberread = readres;
             }
@@ -773,7 +773,7 @@ M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileIn
                 return fileInfo->error;
             }
             writeres = fwrite(buffer, elementsize, count, fileInfo->file);
-            if (numberwritten)
+            if (numberwritten != M_NULLPTR)
             {
                 *numberwritten = writeres;
             }

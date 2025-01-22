@@ -202,7 +202,7 @@ static void* safe_lwork(const void* key,
         }
 
         /* lfind() shall return when the key was not found. */
-        if (!addelem)
+        if (addelem == LWORK_MODE_FIND)
         {
             errno = error;
             return (M_NULLPTR);
@@ -390,7 +390,7 @@ static void* safe_lwork_context(const void*  key,
         }
 
         /* lfind() shall return when the key was not found. */
-        if (!addelem)
+        if (addelem == LWORK_MODE_FIND)
         {
             errno = error;
             return (M_NULLPTR);

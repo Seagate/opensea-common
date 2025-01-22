@@ -32,7 +32,7 @@ void safe_ignore_handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno
 
 static M_INLINE void print_Additional_Error_Info(constraintEnvInfo* envInfo, FILE* stream)
 {
-    if (envInfo)
+    if (envInfo != M_NULLPTR)
     {
         if (envInfo->version == CONSTRAINT_HANDLER_ENV_INFO_VERSION && envInfo->size == sizeof(constraintEnvInfo))
         {

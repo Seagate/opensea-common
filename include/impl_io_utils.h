@@ -101,14 +101,15 @@ extern "C"
     M_PARAM_RO(3)
     M_PARAM_RW(4)
     M_NULL_TERM_STRING(1)
-    M_NULL_TERM_STRING(2) errno_t safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
-                                                    const char* M_RESTRICT       filename,
-                                                    const char* M_RESTRICT       mode,
-                                                    FILE* M_RESTRICT             stream,
-                                                    const char*                  file,
-                                                    const char*                  function,
-                                                    int                          line,
-                                                    const char*                  expression);
+    M_NULL_TERM_STRING(2)
+    errno_t safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
+                              const char* M_RESTRICT       filename,
+                              const char* M_RESTRICT       mode,
+                              FILE* M_RESTRICT             stream,
+                              const char*                  file,
+                              const char*                  function,
+                              int                          line,
+                              const char*                  expression);
 
 #if defined(WANT_SAFE_TMPNAM)
     //! \fn errno_t safe_tmpnam_impl(char*       filename_s,

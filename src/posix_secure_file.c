@@ -236,7 +236,8 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             outputError,
             "Error: The path contains too many directories. Please reduce the number of directories in the path and "
             "try again. Must be less than %zd directories in the path.\n",
-            SSIZE_MAX);
+            M_STATIC_CAST(ssize_t,
+                          SSIZE_MAX)); // This cast fixes some weird warnings in some cross-compilers for ARM CPUs
         safe_free(&path_copy);
         return false;
     }
@@ -592,7 +593,7 @@ eReturnValues os_Create_Secure_Directory(const char* filePath)
 eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_MAX])
 {
     char* resolvedPath = realpath(pathAndFile, fullPath);
-    if (resolvedPath)
+    if (resolvedPath != M_NULLPTR)
     {
         return SUCCESS;
     }

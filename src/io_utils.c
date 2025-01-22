@@ -42,8 +42,8 @@ eReturnValues get_Simple_Text_Output_Protocol_Ptr(void** pOutput)
     EFI_GUID      outputGuid = EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL_GUID;
     UINTN         nodeCount  = 0;
 
-    if (!gBS) // make sure global boot services pointer is valid before
-              // accessing it.
+    if (gBS == M_NULLPTR) // make sure global boot services pointer is valid before
+                          // accessing it.
     {
         return MEMORY_FAILURE;
     }
@@ -74,8 +74,8 @@ void close_Simple_Text_Output_Protocol_Ptr(void** pOutput)
     EFI_GUID    outputGuid = EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL_GUID;
     UINTN       nodeCount  = 0;
 
-    if (!gBS) // make sure global boot services pointer is valid before
-              // accessing it.
+    if (gBS == M_NULLPTR) // make sure global boot services pointer is valid before
+                          // accessing it.
     {
         return;
     }
@@ -686,7 +686,7 @@ typedef struct sconsoleColorCap
 // if the complete reset is needed (0m)
 static void get_Console_Color_Capabilities(ptrConsoleColorCap colorCapabilities)
 {
-    if (colorCapabilities)
+    if (colorCapabilities != M_NULLPTR)
     {
         eKnownTERM term = get_Terminal_Type();
         safe_memset(colorCapabilities, sizeof(consoleColorCap), 0, sizeof(consoleColorCap));
@@ -1171,7 +1171,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
 #    elif defined(__sun) && defined(__SunOS_5_6)
     // use getpassphrase since it can return longer passwords than getpass
     char* eraseme = getpassphrase(prompt);
-    if (eraseme)
+    if (eraseme != M_NULLPTR)
     {
         errno_t erasedup = safe_strdup(userInput, eraseme);
         // immediately clear the original buffer to make sure it cannot be
@@ -1197,7 +1197,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     // which is why it only gets used in this else case as a backup in case the
     // OS we are supporting doesn't support any other available method.-TJE
     char* eraseme = getpass(prompt);
-    if (eraseme)
+    if (eraseme != M_NULLPTR)
     {
         errno_t erasedup = safe_strdup(userInput, eraseme);
         // immediately clear the original buffer to make sure it cannot be

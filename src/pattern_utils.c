@@ -26,7 +26,7 @@ eReturnValues fill_Random_Pattern_In_Buffer(uint8_t* ptrData, uint32_t dataLengt
     size_t localPtrDataLen =
         ((dataLength + sizeof(uint32_t)) - 1) / sizeof(uint32_t); // round up to nearest uint32 amount
     uint32_t* localPtr = M_REINTERPRET_CAST(uint32_t*, safe_calloc(localPtrDataLen, sizeof(uint32_t)));
-    if (!localPtr)
+    if (localPtr == M_NULLPTR)
     {
         return MEMORY_FAILURE;
     }
@@ -47,7 +47,7 @@ eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* ptrData, 
     size_t localPtrDataLen =
         ((dataLength + sizeof(uint32_t)) - 1) / sizeof(uint32_t); // round up to nearest uint32 amount
     uint32_t* localPtr = M_REINTERPRET_CAST(uint32_t*, safe_calloc(localPtrDataLen, sizeof(uint32_t)));
-    if (!localPtr)
+    if (localPtr == M_NULLPTR)
     {
         return MEMORY_FAILURE;
     }

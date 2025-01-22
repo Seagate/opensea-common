@@ -36,7 +36,7 @@ void print_Errno_To_Screen(errno_t error)
     if (errorStringLen > 0 && errorStringLen < RSIZE_MAX)
     {
         char* errorString = M_REINTERPRET_CAST(char*, safe_calloc(errorStringLen + SIZE_T_C(1), sizeof(char)));
-        if (errorString)
+        if (errorString != M_NULLPTR)
         {
             errno_t truncated = strerror_s(errorString, errorStringLen + SIZE_T_C(1), error);
             if (truncated != 0)

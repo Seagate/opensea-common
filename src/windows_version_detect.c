@@ -56,7 +56,7 @@ eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
         TCHAR*             systemPathBuf = M_REINTERPRET_CAST(TCHAR*, safe_calloc(OPENSEA_PATH_MAX, sizeof(TCHAR)));
         CONST TCHAR*       systemPath    = &systemPathBuf[0];
 
-        if (!systemPath)
+        if (systemPath == M_NULLPTR)
         {
             return MEMORY_FAILURE;
         }

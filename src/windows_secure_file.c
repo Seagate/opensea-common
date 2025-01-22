@@ -115,7 +115,7 @@ static bool win_File_Attributes_By_Name(const char* filename, LPWIN32_FILE_ATTRI
     {
         size_t pathCheckLength     = (safe_strlen(filename) + 1) * sizeof(TCHAR);
         TCHAR* localPathToCheckBuf = M_REINTERPRET_CAST(TCHAR*, safe_calloc(pathCheckLength, sizeof(TCHAR)));
-        if (!localPathToCheckBuf)
+        if (localPathToCheckBuf == M_NULLPTR)
         {
             return false;
         }
@@ -163,7 +163,7 @@ static bool win_Get_File_Security_Info_By_Name(const char* filename, fileAttribu
     {
         size_t pathCheckLength     = (safe_strlen(filename) + 1) * sizeof(TCHAR);
         TCHAR* localPathToCheckBuf = M_REINTERPRET_CAST(TCHAR*, safe_calloc(pathCheckLength, sizeof(TCHAR)));
-        if (!localPathToCheckBuf)
+        if (localPathToCheckBuf == M_NULLPTR)
         {
             return false;
         }
@@ -274,7 +274,7 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoChe
     if (filetoCheck != M_NULLPTR && _stat64(filetoCheck, &st) == 0)
     {
         attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
-        if (attrs)
+        if (attrs != M_NULLPTR)
         {
             WIN32_FILE_ATTRIBUTE_DATA winAttributes;
             safe_memset(&winAttributes, sizeof(WIN32_FILE_ATTRIBUTE_DATA), 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
@@ -309,7 +309,7 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
     if (file != M_NULLPTR && _fstat64(_fileno(file), &st) == 0)
     {
         attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
-        if (attrs)
+        if (attrs != M_NULLPTR)
         {
             BY_HANDLE_FILE_INFORMATION winAttributes;
             safe_memset(&winAttributes, sizeof(BY_HANDLE_FILE_INFORMATION), 0, sizeof(BY_HANDLE_FILE_INFORMATION));
@@ -367,7 +367,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
                 // full 128bit identifier available
                 fileUniqueIDInfo* fileId =
                     M_REINTERPRET_CAST(fileUniqueIDInfo*, safe_calloc(1, sizeof(fileUniqueIDInfo)));
-                if (fileId)
+                if (fileId != M_NULLPTR)
                 {
                     fileId->volsn = winfileid.VolumeSerialNumber;
                     safe_memcpy(&fileId->fileid[0], FILE_UNIQUE_ID_ARR_MAX, &winfileid.FileId.Identifier[0],
@@ -382,7 +382,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
         if (TRUE == GetFileInformationByHandle(msftHandle, &winfileinfo))
         {
             fileUniqueIDInfo* fileId = M_REINTERPRET_CAST(fileUniqueIDInfo*, safe_calloc(1, sizeof(fileUniqueIDInfo)));
-            if (fileId)
+            if (fileId != M_NULLPTR)
             {
                 fileId->volsn = winfileinfo.dwVolumeSerialNumber;
                 safe_memcpy(&fileId->fileid[0], FILE_UNIQUE_ID_ARR_MAX, &winfileinfo.nFileIndexHigh, sizeof(DWORD));
@@ -434,7 +434,7 @@ static char* get_Current_User_SID(void)
 static bool is_Root_Path(const char* path)
 {
     bool isroot = false;
-    if (path)
+    if (path != M_NULLPTR)
     {
         // Check is for a drive letter + :
         // trailing \ is not checked because it is stripped off by win_dirname
@@ -451,10 +451,10 @@ static bool is_Root_Path(const char* path)
 /* this expects path seperators to be '\\' otherwise it will fail */
 static char* win_dirname(char* path)
 {
-    if (path)
+    if (path != M_NULLPTR)
     {
         char* lastseperator = strrchr(path, '\\');
-        if (lastseperator)
+        if (lastseperator != M_NULLPTR)
         {
             if (!is_Root_Path(lastseperator))
             {
@@ -990,7 +990,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     /* Now num_of_dirs indicates # of dirs we must check */
     safe_free(&path_copy);
     dirs = M_REINTERPRET_CAST(char**, safe_malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)));
-    if (!dirs)
+    if (dirs == M_NULLPTR)
     {
         /* Handle error */
         return false;
@@ -1053,7 +1053,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             // attributes
             size_t newlen = safe_strlen(dirptr) + 2;
             dirptr        = M_REINTERPRET_CAST(char*, safe_calloc(newlen, sizeof(char)));
-            if (dirptr)
+            if (dirptr != M_NULLPTR)
             {
                 safe_memcpy(dirptr, newlen, dirs[i], newlen - 2);
                 safe_strcat(dirptr, newlen, "\\");
@@ -1069,7 +1069,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 #endif //_DEBUG
 
         attrs = os_Get_File_Attributes_By_Name(dirptr);
-        if (!attrs)
+        if (attrs != M_NULLPTR)
         {
             /* handle error */
             secure = false;
@@ -1103,7 +1103,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             {
                 PREPARSE_DATA_BUFFER reparseData =
                     M_REINTERPRET_CAST(PREPARSE_DATA_BUFFER, safe_malloc(sizeof(REPARSE_DATA_BUFFER) + MAX_PATH));
-                if (reparseData)
+                if (reparseData != M_NULLPTR)
                 {
                     DWORD bytesRead = DWORD_C(0);
                     safe_memset(reparseData, sizeof(REPARSE_DATA_BUFFER) + MAX_PATH, 0,
@@ -1123,7 +1123,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                         if (bufferSize > 0 && bufferSize != SIZE_MAX)
                         {
                             reparsePath = M_REINTERPRET_CAST(char*, safe_calloc(bufferSize + 1, sizeof(char)));
-                            if (reparsePath)
+                            if (reparsePath != M_NULLPTR)
                             {
                                 size_t conversionSize = SIZE_T_C(0);
 #if defined(HAVE_MSFT_SECURE_LIB)
@@ -1279,7 +1279,7 @@ eReturnValues os_Create_Directory(const char* filePath)
     BOOL   returnValue    = FALSE;
     size_t filePathLength = (safe_strlen(filePath) + 1) * sizeof(TCHAR);
     TCHAR* pathNameBuf    = M_REINTERPRET_CAST(TCHAR*, safe_calloc(filePathLength, sizeof(TCHAR)));
-    if (pathNameBuf)
+    if (pathNameBuf != M_NULLPTR)
     {
         CONST TCHAR* pathName = &pathNameBuf[0];
         _stprintf_s(pathNameBuf, filePathLength, TEXT("%hs"), filePath);
@@ -1345,7 +1345,7 @@ eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_
     size_t localPathAndFileLength = (safe_strlen(pathAndFile) + 1) * sizeof(TCHAR);
     TCHAR* localpathAndFileBuf    = M_REINTERPRET_CAST(TCHAR*, safe_calloc(localPathAndFileLength, sizeof(TCHAR)));
     DECLARE_ZERO_INIT_ARRAY(TCHAR, fullPathOutput, OPENSEA_PATH_MAX);
-    if (!localpathAndFileBuf)
+    if (localpathAndFileBuf == M_NULLPTR)
     {
         return FAILURE;
     }
@@ -1513,13 +1513,13 @@ bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char
                 }
             }
         }
-        if (secDesc1)
+        if (secDesc1 != M_NULLPTR)
         {
             SecureZeroMemory(secDesc1, secDesc1len);
             LocalFree(secDesc1);
             secDesc1 = M_NULLPTR;
         }
-        if (secDesc2)
+        if (secDesc2 != M_NULLPTR)
         {
             SecureZeroMemory(secDesc2, secDesc2len);
             LocalFree(secDesc2);

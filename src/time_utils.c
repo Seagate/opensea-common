@@ -290,31 +290,31 @@ void convert_Seconds_To_Displayable_Time_Double(double    secondsToConvert,
 {
     double tempCalcValue = secondsToConvert;
     // get seconds up to a maximum of 60
-    if (seconds)
+    if (seconds != M_NULLPTR)
     {
         *seconds = C_CAST(uint8_t, fmod(tempCalcValue, 60.0));
     }
     tempCalcValue /= 60.0;
     // get minutes up to a maximum of 60
-    if (minutes)
+    if (minutes != M_NULLPTR)
     {
         *minutes = C_CAST(uint8_t, fmod(tempCalcValue, 60.0));
     }
     tempCalcValue /= 60.0;
     // get hours up to a maximum of 24
-    if (hours)
+    if (hours != M_NULLPTR)
     {
         *hours = C_CAST(uint8_t, fmod(tempCalcValue, 24.0));
     }
     tempCalcValue /= 24.0;
     // get days up to 365
-    if (days)
+    if (days != M_NULLPTR)
     {
         *days = C_CAST(uint16_t, fmod(tempCalcValue, 365.0));
     }
     tempCalcValue /= 365.0;
     // get years
-    if (years)
+    if (years != M_NULLPTR)
     {
         *years = C_CAST(uint8_t, tempCalcValue);
     }
@@ -329,31 +329,31 @@ void convert_Seconds_To_Displayable_Time(uint64_t  secondsToConvert,
 {
     uint64_t tempCalcValue = secondsToConvert;
     // get seconds up to a maximum of 60
-    if (seconds)
+    if (seconds != M_NULLPTR)
     {
         *seconds = C_CAST(uint8_t, tempCalcValue % UINT64_C(60));
     }
     tempCalcValue /= UINT64_C(60);
     // get minutes up to a maximum of 60
-    if (minutes)
+    if (minutes != M_NULLPTR)
     {
         *minutes = C_CAST(uint8_t, tempCalcValue % UINT64_C(60));
     }
     tempCalcValue /= UINT64_C(60);
     // get hours up to a maximum of 24
-    if (hours)
+    if (hours != M_NULLPTR)
     {
         *hours = C_CAST(uint8_t, tempCalcValue % UINT64_C(24));
     }
     tempCalcValue /= UINT64_C(24);
     // get days up to 365
-    if (days)
+    if (days != M_NULLPTR)
     {
         *days = C_CAST(uint16_t, tempCalcValue % UINT64_C(365));
     }
     tempCalcValue /= UINT64_C(365);
     // get years
-    if (years)
+    if (years != M_NULLPTR)
     {
         *years = C_CAST(uint8_t, tempCalcValue);
     }

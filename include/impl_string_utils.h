@@ -363,14 +363,15 @@ extern "C"
     M_PARAM_RO(3)
     M_PARAM_RW(4)
     M_NULL_TERM_STRING(1)
-    M_NULL_TERM_STRING(3) char* safe_String_Token_impl(char* M_RESTRICT       str,
-                                                       rsize_t* M_RESTRICT    strmax,
-                                                       const char* M_RESTRICT delim,
-                                                       char** M_RESTRICT      saveptr,
-                                                       const char*            file,
-                                                       const char*            function,
-                                                       int                    line,
-                                                       const char*            expression);
+    M_NULL_TERM_STRING(3)
+    char* safe_String_Token_impl(char* M_RESTRICT       str,
+                                 rsize_t* M_RESTRICT    strmax,
+                                 const char* M_RESTRICT delim,
+                                 char** M_RESTRICT      saveptr,
+                                 const char*            file,
+                                 const char*            function,
+                                 int                    line,
+                                 const char*            expression);
 
     //! \fn errno_t safe_strdup_impl(char**      dup,
     //!                              const char* src,

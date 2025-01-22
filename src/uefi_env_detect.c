@@ -72,7 +72,7 @@ bool is_Running_Elevated()
 eReturnValues get_Current_User_Name(char** userName)
 {
     eReturnValues ret = SUCCESS;
-    if (userName)
+    if (userName != M_NULLPTR)
     {
         // while unix functions are there, they are all stubs, so we're just
         // going to return "efi" as the username.
