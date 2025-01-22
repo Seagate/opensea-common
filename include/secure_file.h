@@ -437,6 +437,19 @@ extern "C"
     //! \note This structure is optional, but if you want to only open files with specific extensions, this will
     //! evaluate that based on the passed-in list. The list is terminated by a final entry with the string "ext"
     //! set to a NULL pointer.
+    //! \code
+    //! myFileExtension[] = {
+    //! { "extension", false },
+    //! { M_NULLPTR, false }};
+    //! \endcode
+    //! \code
+    //! myFileExtension[] = {
+    //! { "ext1", false },
+    //! { "ext2", false },
+    //! { "ext3", false },
+    //! { "ext4", false },
+    //! { M_NULLPTR, false }};
+    //! \endcode
     typedef struct sfileExt
     {
         //! \var ext
@@ -743,16 +756,17 @@ extern "C"
     M_PARAM_RO_SIZE(4, 5)
     M_NONNULL_IF_NONZERO_PARAM(6, 7)
     M_PARAM_RO_SIZE(6, 7)
-    M_NONNULL_IF_NONZERO_PARAM(8, 9) M_PARAM_RO_SIZE(8, 9) M_FUNC_ATTR_MALLOC
-        char* generate_Log_Name(eLogFileNamingConvention logFileNamingConvention,
-                                const char*              deviceIdentifier,
-                                size_t                   deviceIDLen,
-                                const char*              logPath,
-                                size_t                   logPathLen,
-                                const char*              logName,
-                                size_t                   logNameLen,
-                                const char*              logExt,
-                                size_t                   logExtLen);
+    M_NONNULL_IF_NONZERO_PARAM(8, 9)
+    M_PARAM_RO_SIZE(8, 9)
+    M_FUNC_ATTR_MALLOC char* generate_Log_Name(eLogFileNamingConvention logFileNamingConvention,
+                                               const char*              deviceIdentifier,
+                                               size_t                   deviceIDLen,
+                                               const char*              logPath,
+                                               size_t                   logPathLen,
+                                               const char*              logName,
+                                               size_t                   logNameLen,
+                                               const char*              logExt,
+                                               size_t                   logExtLen);
 
     //! \fn eReturnValues create_And_Open_Secure_Log_File(const char* deviceIdentifier,
     //!                                                   size_t deviceIDLen,
@@ -786,17 +800,18 @@ extern "C"
     M_PARAM_RO_SIZE(5, 6)
     M_NONNULL_IF_NONZERO_PARAM(7, 8)
     M_PARAM_RO_SIZE(7, 8)
-    M_NONNULL_IF_NONZERO_PARAM(9, 10) M_PARAM_RO_SIZE(9, 10) eReturnValues
-        create_And_Open_Secure_Log_File(const char*              deviceIdentifier,
-                                        size_t                   deviceIDLen,
-                                        secureFileInfo**         file,
-                                        eLogFileNamingConvention logFileNamingConvention,
-                                        const char*              logPath,
-                                        size_t                   logPathLen,
-                                        const char*              logName,
-                                        size_t                   logNameLen,
-                                        const char*              logExt,
-                                        size_t                   logExtLen);
+    M_NONNULL_IF_NONZERO_PARAM(9, 10)
+    M_PARAM_RO_SIZE(9, 10)
+    eReturnValues create_And_Open_Secure_Log_File(const char*              deviceIdentifier,
+                                                  size_t                   deviceIDLen,
+                                                  secureFileInfo**         file,
+                                                  eLogFileNamingConvention logFileNamingConvention,
+                                                  const char*              logPath,
+                                                  size_t                   logPathLen,
+                                                  const char*              logName,
+                                                  size_t                   logNameLen,
+                                                  const char*              logExt,
+                                                  size_t                   logExtLen);
 
 #if defined(__cplusplus)
 }
