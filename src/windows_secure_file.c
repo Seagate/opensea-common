@@ -123,7 +123,7 @@ static bool win_File_Attributes_By_Name(const char* filename, LPWIN32_FILE_ATTRI
         _stprintf_s(localPathToCheckBuf, pathCheckLength, TEXT("%hs"), filename);
 
         BOOL gotAttributes = GetFileAttributesEx(localPathToCheck, GetFileExInfoStandard, attributes);
-        if (gotAttributes)
+        if (MSFT_BOOL_TRUE(gotAttributes))
         {
             success = true;
         }
@@ -184,8 +184,8 @@ static bool win_Get_File_Security_Info_By_Name(const char* filename, fileAttribu
         {
             ULONG tempLen = ULONG_C(0);
             LPSTR temp    = M_NULLPTR;
-            if (TRUE == ConvertSecurityDescriptorToStringSecurityDescriptorA(secDescriptor, SDDL_REVISION, secInfo,
-                                                                             &temp, &tempLen))
+            if (MSFT_BOOL_TRUE(ConvertSecurityDescriptorToStringSecurityDescriptorA(secDescriptor, SDDL_REVISION, secInfo,
+                                                                             &temp, &tempLen)))
             {
                 /* do not use strdup or strndup here. There are some extra nulls
                  * at the end of what Windows allocates that we are preserving
@@ -240,8 +240,8 @@ static bool win_Get_File_Security_Info_By_File(FILE* file, fileAttributes* attrs
         {
             ULONG tempLen = ULONG_C(0);
             LPSTR temp    = M_NULLPTR;
-            if (TRUE == ConvertSecurityDescriptorToStringSecurityDescriptorA(secDescriptor, SDDL_REVISION, secInfo,
-                                                                             &temp, &tempLen))
+            if (MSFT_BOOL_TRUE(ConvertSecurityDescriptorToStringSecurityDescriptorA(secDescriptor, SDDL_REVISION, secInfo,
+                                                                             &temp, &tempLen)))
             {
                 /* do not use strdup or strndup here. There are some extra nulls
                  * at the end of what Windows allocates that we are preserving
@@ -362,7 +362,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
             // fall back to old method to get this
             FILE_ID_INFO winfileid;
             safe_memset(&winfileid, sizeof(FILE_ID_INFO), 0, sizeof(FILE_ID_INFO));
-            if (TRUE == GetFileInformationByHandleEx(msftHandle, FileIdInfo, &winfileid, sizeof(FILE_ID_INFO)))
+            if (MSFT_BOOL_TRUE(GetFileInformationByHandleEx(msftHandle, FileIdInfo, &winfileid, sizeof(FILE_ID_INFO))))
             {
                 // full 128bit identifier available
                 fileUniqueIDInfo* fileId =
@@ -379,7 +379,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
 #endif // Windows vista API
         BY_HANDLE_FILE_INFORMATION winfileinfo;
         safe_memset(&winfileinfo, sizeof(BY_HANDLE_FILE_INFORMATION), 0, sizeof(BY_HANDLE_FILE_INFORMATION));
-        if (TRUE == GetFileInformationByHandle(msftHandle, &winfileinfo))
+        if (MSFT_BOOL_TRUE(GetFileInformationByHandle(msftHandle, &winfileinfo)))
         {
             fileUniqueIDInfo* fileId = M_REINTERPRET_CAST(fileUniqueIDInfo*, safe_calloc(1, sizeof(fileUniqueIDInfo)));
             if (fileId != M_NULLPTR)
@@ -629,7 +629,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
     bool                 allowEveryoneGroup              = false;
     do
     {
-        if (FALSE == ConvertStringSidToSidA(mySidStr, &mySid))
+        if (MSFT_BOOL_FALSE(ConvertStringSidToSidA(mySidStr, &mySid)))
         {
             /* Handle Error */
             set_dir_security_output_error_message(outputError,
@@ -637,15 +637,15 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
             secure = false;
             break;
         }
-        if (FALSE == IsValidSid(mySid))
+        if (MSFT_BOOL_FALSE(IsValidSid(mySid)))
         {
             /* Handle Error */
             set_dir_security_output_error_message(outputError, "Invalid sid\n");
             secure = false;
             break;
         }
-        if (FALSE == ConvertStringSecurityDescriptorToSecurityDescriptorA(securityDescriptorString, SDDL_REVISION,
-                                                                          &secdesc, &secdesclen))
+        if (MSFT_BOOL_FALSE(ConvertStringSecurityDescriptorToSecurityDescriptorA(securityDescriptorString, SDDL_REVISION,
+                                                                          &secdesc, &secdesclen)))
         {
             /* Handle Error */
             set_dir_security_output_error_message(
@@ -653,28 +653,28 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
             secure = false;
             break;
         }
-        if (FALSE == IsValidSecurityDescriptor(secdesc))
+        if (MSFT_BOOL_FALSE(IsValidSecurityDescriptor(secdesc)))
         {
             /* Handle Error */
             set_dir_security_output_error_message(outputError, "Invalid security descriptor\n");
             secure = false;
             break;
         }
-        if (FALSE == GetSecurityDescriptorOwner(secdesc, &userSid, &defaultOwner))
+        if (MSFT_BOOL_FALSE(GetSecurityDescriptorOwner(secdesc, &userSid, &defaultOwner)))
         {
             /* Handle Error */
             set_dir_security_output_error_message(outputError, "Failed to get security descriptor owner\n");
             secure = false;
             break;
         }
-        if (FALSE == IsValidSid(userSid))
+        if (MSFT_BOOL_FALSE(IsValidSid(userSid)))
         {
             /* Handle Error */
             set_dir_security_output_error_message(outputError, "Invalid SID for security descriptor owner\n");
             secure = false;
             break;
         }
-        if (!EqualSid(mySid, userSid) && !is_Secure_Well_Known_SID(userSid, false))
+        if (MSFT_BOOL_FALSE(EqualSid(mySid, userSid)) && !is_Secure_Well_Known_SID(userSid, false))
         {
             if (get_System_Volume(windowsSystemVolume, MAX_PATH))
             {
@@ -683,7 +683,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                 {
                     const char* WindowsTrustedInstallSID = "S-1-5-80-956008885-3418522649-1831038044-1853292631-"
                                                            "2271478464";
-                    if (FALSE == ConvertStringSidToSidA(WindowsTrustedInstallSID, &winTI))
+                    if (MSFT_BOOL_FALSE(ConvertStringSidToSidA(WindowsTrustedInstallSID, &winTI)))
                     {
                         secure = false;
                         break;
@@ -707,7 +707,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
        //      listed here.
                     if (strcmp(dirptr, windowsSystemVolume) == 0)
                     {
-                        if (EqualSid(userSid, winTI))
+                        if (MSFT_BOOL_TRUE(EqualSid(userSid, winTI)))
                         {
                             // This case the Windows trusted installer is found
                             // and can be trusted. This should only happen on
@@ -725,7 +725,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                              * user/system/administrator */
                             secure          = false;
                             char* sidString = M_NULLPTR;
-                            if (ConvertSidToStringSidA(userSid, &sidString))
+                            if (MSFT_BOOL_TRUE(ConvertSidToStringSidA(userSid, &sidString)))
                             {
                                 set_dir_security_output_error_message(
                                     outputError, "Directory (%s) owned by SID (not trusted): %s\n", dirptr, sidString);
@@ -742,7 +742,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                      * user/system/administrator */
                     secure          = false;
                     char* sidString = M_NULLPTR;
-                    if (ConvertSidToStringSidA(userSid, &sidString))
+                    if (MSFT_BOOL_TRUE(ConvertSidToStringSidA(userSid, &sidString)))
                     {
                         set_dir_security_output_error_message(
                             outputError, "Directory (%s) owned by SID (not trusted): %s\n", dirptr, sidString);
@@ -758,7 +758,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                  * user/system/administrator */
                 secure          = false;
                 char* sidString = M_NULLPTR;
-                if (ConvertSidToStringSidA(userSid, &sidString))
+                if (MSFT_BOOL_TRUE(ConvertSidToStringSidA(userSid, &sidString)))
                 {
                     set_dir_security_output_error_message(
                         outputError, "Directory (%s) owned by SID (not trusted): %s\n", dirptr, sidString);
@@ -794,7 +794,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
             }
         }
 
-        if (FALSE == GetSecurityDescriptorDacl(secdesc, &daclPresent, &dacl, &daclDefault))
+        if (MSFT_BOOL_FALSE(GetSecurityDescriptorDacl(secdesc, &daclPresent, &dacl, &daclDefault)))
         {
             /* Handle Error */
             secure = false;
@@ -803,7 +803,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
             break;
         }
 
-        if (FALSE == daclPresent || dacl == M_NULLPTR)
+        if (MSFT_BOOL_FALSE(daclPresent) || dacl == M_NULLPTR)
         {
             /* Missing DACL, so cannot verify permissions */
             secure = false;
@@ -811,7 +811,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
             break;
         }
 
-        if (FALSE == IsValidAcl(dacl))
+        if (MSFT_BOOL_FALSE(IsValidAcl(dacl)))
         {
             /* Handle Error */
             secure = false;
@@ -824,17 +824,17 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
         for (DWORD iter = DWORD_C(0); secure && iter < dacl->AceCount; ++iter)
         {
             ACE_HEADER* aceHeader = M_NULLPTR;
-            if (GetAce(dacl, iter, C_CAST(void**, &aceHeader)))
+            if (MSFT_BOOL_TRUE(GetAce(dacl, iter, C_CAST(void**, &aceHeader))))
             {
                 if (aceHeader->AceType == ACCESS_ALLOWED_ACE_TYPE)
                 {
                     PACCESS_ALLOWED_ACE allowedACE = C_CAST(PACCESS_ALLOWED_ACE, aceHeader);
                     ACCESS_MASK         accessMask = allowedACE->Mask;
                     PSID                aceSID     = C_CAST(PSID, &allowedACE->SidStart);
-                    if (IsValidSid(aceSID))
+                    if (MSFT_BOOL_TRUE(IsValidSid(aceSID)))
                     {
                         if (accessMask & (FILE_GENERIC_WRITE | FILE_APPEND_DATA) &&
-                            (!EqualSid(mySid, aceSID) &&
+                            (MSFT_BOOL_FALSE(EqualSid(mySid, aceSID)) &&
                              !is_Secure_Well_Known_SID(aceSID, allowUsersAndAuthenticatedUsers)))
                         {
                             LPCSTR everyoneGroup = "S-1-1-0";
@@ -844,11 +844,11 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                             }
 
                             if (!(allowEveryoneGroup && everyoneGroupSID != M_NULLPTR &&
-                                  EqualSid(aceSID, everyoneGroupSID)))
+                                  MSFT_BOOL_TRUE(EqualSid(aceSID, everyoneGroupSID))))
                             {
                                 char* sidString = M_NULLPTR;
                                 secure          = false;
-                                if (ConvertSidToStringSidA(aceSID, &sidString))
+                                if (MSFT_BOOL_TRUE(ConvertSidToStringSidA(aceSID, &sidString)))
                                 {
                                     set_dir_security_output_error_message(
                                         outputError,
@@ -863,7 +863,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                             else
                             {
                                 char* sidString = M_NULLPTR;
-                                if (ConvertSidToStringSidA(aceSID, &sidString))
+                                if (MSFT_BOOL_TRUE(ConvertSidToStringSidA(aceSID, &sidString)))
                                 {
                                     printf("Trusted SID: %s\n", sidString);
                                     LocalFree(sidString);
@@ -876,7 +876,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                         else
                         {
                             char* sidString = M_NULLPTR;
-                            if (ConvertSidToStringSidA(aceSID, &sidString))
+                            if (MSFT_BOOL_TRUE(ConvertSidToStringSidA(aceSID, &sidString)))
                             {
                                 printf("Trusted SID: %s\n", sidString);
                             }
@@ -1286,7 +1286,7 @@ eReturnValues os_Create_Directory(const char* filePath)
 
         returnValue = CreateDirectory(pathName, M_NULLPTR);
         safe_free_tchar(&pathNameBuf);
-        if (returnValue == FALSE)
+        if (MSFT_BOOL_FALSE(returnValue))
         {
 #if defined(_DEBUG)
             print_Windows_Error_To_Screen(GetLastError());
@@ -1463,46 +1463,46 @@ bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char
         BOOL                 defaultdacl2  = FALSE;
         BOOL                 dacl1present  = FALSE;
         BOOL                 dacl2present  = FALSE;
-        if (TRUE == ConvertStringSecurityDescriptorToSecurityDescriptorA(sidsAndDACLstr1, SDDL_REVISION, &secDesc1,
-                                                                         &secDesc1len))
+        if (MSFT_BOOL_TRUE(ConvertStringSecurityDescriptorToSecurityDescriptorA(sidsAndDACLstr1, SDDL_REVISION, &secDesc1,
+                                                                         &secDesc1len)))
         {
             validdesc1 = IsValidSecurityDescriptor(secDesc1);
         }
-        if (TRUE == ConvertStringSecurityDescriptorToSecurityDescriptorA(sidsAndDACLstr2, SDDL_REVISION, &secDesc2,
-                                                                         &secDesc2len))
+        if (MSFT_BOOL_TRUE(ConvertStringSecurityDescriptorToSecurityDescriptorA(sidsAndDACLstr2, SDDL_REVISION, &secDesc2,
+                                                                         &secDesc2len)))
         {
             validdesc2 = IsValidSecurityDescriptor(secDesc2);
         }
         if (validdesc1 && validdesc2)
         {
-            if (GetSecurityDescriptorOwner(secDesc1, &owner1, &defaultown1))
+            if (MSFT_BOOL_TRUE(GetSecurityDescriptorOwner(secDesc1, &owner1, &defaultown1)))
             {
                 validown1 = IsValidSid(owner1);
             }
-            if (GetSecurityDescriptorGroup(secDesc1, &group1, &defaultgroup1))
+            if (MSFT_BOOL_TRUE(GetSecurityDescriptorGroup(secDesc1, &group1, &defaultgroup1)))
             {
                 validgroup1 = IsValidSid(group1);
             }
-            if (GetSecurityDescriptorOwner(secDesc2, &owner2, &defaultown2))
+            if (MSFT_BOOL_TRUE(GetSecurityDescriptorOwner(secDesc2, &owner2, &defaultown2)))
             {
                 validown2 = IsValidSid(owner2);
             }
-            if (GetSecurityDescriptorGroup(secDesc2, &group2, &defaultgroup2))
+            if (MSFT_BOOL_TRUE(GetSecurityDescriptorGroup(secDesc2, &group2, &defaultgroup2)))
             {
                 validgroup2 = IsValidSid(group2);
             }
             // Now that we have read all of the possible values....lets compare
             // everything
-            if ((validown1 && validown2 && defaultown1 == defaultown2 && EqualSid(owner1, owner2)) &&
-                (validgroup1 && validgroup2 && defaultgroup1 == defaultgroup2 && EqualSid(group1, group2)))
+            if ((validown1 && validown2 && defaultown1 == defaultown2 && MSFT_BOOL_TRUE(EqualSid(owner1, owner2))) &&
+                (validgroup1 && validgroup2 && defaultgroup1 == defaultgroup2 && MSFT_BOOL_TRUE(EqualSid(group1, group2))))
             {
                 // owner and group are the same.
                 // Compare the dacls
-                if (GetSecurityDescriptorDacl(secDesc1, &dacl1present, &dacl1, &defaultdacl1))
+                if (MSFT_BOOL_TRUE(GetSecurityDescriptorDacl(secDesc1, &dacl1present, &dacl1, &defaultdacl1)))
                 {
                     validdacl1 = IsValidAcl(dacl1);
                 }
-                if (GetSecurityDescriptorDacl(secDesc2, &dacl2present, &dacl2, &defaultdacl2))
+                if (MSFT_BOOL_TRUE(GetSecurityDescriptorDacl(secDesc2, &dacl2present, &dacl2, &defaultdacl2)))
                 {
                     validdacl2 = IsValidAcl(dacl2);
                 }

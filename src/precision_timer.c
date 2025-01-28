@@ -30,10 +30,10 @@ void start_Timer(seatimer_t* timer)
     {
         LARGE_INTEGER tempLargeInt;
         tempLargeInt.QuadPart = 0;
-        if (TRUE == QueryPerformanceCounter(&tempLargeInt)) // according to MSDN this will always return
-                                                            // success on XP and later systems
+        if (MSFT_BOOL_TRUE(QueryPerformanceCounter(&tempLargeInt))) // according to MSDN this will always return
+                                                                    // success on XP and later systems
         {
-            if (tempLargeInt.QuadPart >= 0)
+            if (tempLargeInt.QuadPart >= LONGLONG_C(0))
             {
                 timer->timerStart = C_CAST(uint64_t, tempLargeInt.QuadPart);
             }
@@ -49,10 +49,10 @@ void stop_Timer(seatimer_t* timer)
     {
         LARGE_INTEGER tempLargeInt;
         safe_memset(&tempLargeInt, sizeof(LARGE_INTEGER), 0, sizeof(LARGE_INTEGER));
-        if (TRUE == QueryPerformanceCounter(&tempLargeInt)) // according to MSDN this will always return
-                                                            // success on XP and later systems
+        if (MSFT_BOOL_TRUE(QueryPerformanceCounter(&tempLargeInt))) // according to MSDN this will always return
+                                                                    // success on XP and later systems
         {
-            if (tempLargeInt.QuadPart >= 0)
+            if (tempLargeInt.QuadPart >= LONGLONG_C(0))
             {
                 timer->timerStop = C_CAST(uint64_t, tempLargeInt.QuadPart);
             }
@@ -68,9 +68,9 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
     uint64_t      seconds            = UINT64_C(0);
     uint64_t      nanoSeconds        = UINT64_C(0);
     safe_memset(&frequency, sizeof(LARGE_INTEGER), 0, sizeof(LARGE_INTEGER));
-    if (TRUE == QueryPerformanceFrequency(&frequency))
+    if (MSFT_BOOL_TRUE(QueryPerformanceFrequency(&frequency)))
     {
-        if (frequency.QuadPart > 0) // no equals since this is used in division
+        if (frequency.QuadPart > LONGLONG_C(0)) // no equals since this is used in division
                                     // and don't want to divide by zero
         {
             ticksPerNanosecond /= C_CAST(uint64_t, frequency.QuadPart);

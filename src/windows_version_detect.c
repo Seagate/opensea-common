@@ -79,7 +79,7 @@ eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
         }
 
         HMODULE hMod = INVALID_HANDLE_VALUE;
-        if (TRUE == GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, systemPathBuf, &hMod))
+        if (MSFT_BOOL_TRUE(GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, systemPathBuf, &hMod)))
         {
             if (hMod != INVALID_HANDLE_VALUE)
             {

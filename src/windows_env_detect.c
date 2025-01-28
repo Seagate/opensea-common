@@ -283,7 +283,7 @@ eReturnValues get_Current_User_Name(char** userName)
     {
         DWORD localNameLength = UNLEN + 1; // start with this for input
         DECLARE_ZERO_INIT_ARRAY(TCHAR, localName, UNLEN + 1);
-        if (TRUE == GetUserName(localName, &localNameLength))
+        if (MSFT_BOOL_TRUE(GetUserName(localName, &localNameLength)))
         {
             const char* isAdmin = " (admin)"; // This will be concatenated to the string if
                                               // running as administrator since we only get the
