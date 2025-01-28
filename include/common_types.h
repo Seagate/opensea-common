@@ -264,11 +264,23 @@ typedef int32_t intptr_t;
 //! This macro appends the 'ULL' suffix to a constant to define it as an unsigned long long constant.
 #    define ULONGLONG_C(c) (c##ULL)
 
+//! \def LONGLONG_C
+//! \brief Defines a macro for long long constants.
+//!
+//! This macro appends the 'LL' suffix to a constant to define it as an long long constant.
+#    define LONGLONG_C(c) (c##LL)
+
 //! \def ULONG_C
 //! \brief Defines a macro for unsigned long constants.
 //!
 //! This macro appends the 'UL' suffix to a constant to define it as an unsigned long constant.
 #    define ULONG_C(c) (c##UL)
+
+//! \def LONG_C
+//! \brief Defines a macro for long constants.
+//!
+//! This macro appends the 'L' suffix to a constant to define it as an long constant.
+#    define LONG_C(c) (c##L)
 
 //! \def DWORD_C
 //! \brief Defines a macro for unsigned long constants.
@@ -305,6 +317,18 @@ typedef int32_t intptr_t;
 //!
 //! This macro appends the 'U' suffix to a constant to define it as an unsigned int constant.
 #    define UINT_C(c) (c##U)
+
+//! \def MSFT_BOOL_TRUE
+//! \brief Macro to wrap check for true. Since BOOL is an int, it's better to check != FALSE.
+//! The reason for this is while TRUE is defined as 1 an API may return any non-zero value if it doesn't
+//! explicitly return TRUE. So this is safer to use since it's either zero or not zero.
+#    define MSFT_BOOL_TRUE(value) ((value) != FALSE)
+
+//! \def MSFT_BOOL_FALSE
+//! \brief Macro to wrap check for true. Since BOOL is an int, it's better to check == FALSE
+//! The reason for this is while TRUE is defined as 1 an API may return any non-zero value if it doesn't
+//! explicitly return TRUE. So this is safer to use since it's either zero or not zero.
+#    define MSFT_BOOL_FALSE(value) ((value) == FALSE)
 #endif
 
 #if !defined(SSIZE_MAX) && !defined(SSIZE_MIN) && !defined(SSIZE_T_DEFINED)
@@ -743,9 +767,17 @@ typedef int32_t intptr_t;
 #elif defined(USING_C23)
 #    define M_STATIC_ASSERT(condition, message) static_assert(condition, #    message)
 #elif defined(USING_C11)
-#    include <assert.h>
-#    define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #    message)
-#else
+#    if IS_MSVC_VERSION(MSVC_2019_16_8) /* Need new enough Windows SDK for this to be available - TJE */
+#        if defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN10_20348
+#            include <assert.h>
+#            define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #    message)
+#        endif
+#    elif !defined (_MSC_VER)
+#        include <assert.h>
+#        define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #    message)
+#    endif
+#endif
+#if !defined (M_STATIC_ASSERT)
 // Generic way to do this. Not as good messaging but should work about the same
 #    define M_STATIC_ASSERT(condition, message) typedef char static_assertion_##message[(condition) ? 1 : -1]
 #endif

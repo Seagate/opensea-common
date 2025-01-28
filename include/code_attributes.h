@@ -348,7 +348,13 @@ extern "C"
 //!
 //! Examples of standard library functions with noreturn: abort, exit, _Exit, quick_exit, thrd_exit, longjmp.
 #if defined USING_C11 && !defined USING_C23
-#    include <stdnoreturn.h>
+#    if IS_MSVC_VERSION(MSVC_2019_16_8) /* Need new enough Windows SDK for this to be available - TJE */
+#        if defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN10_20348
+#            include <stdnoreturn.h>
+#        endif
+#    elif !defined (_MSC_VER)
+#        include <stdnoreturn.h>
+#    endif
 #endif
 #if defined(__cplusplus)
 #    if defined(USING_CPP11) && defined __has_cpp_attribute
@@ -484,9 +490,19 @@ extern "C"
 #    define M_ALIGNOF(x) alignof(x)
 #    define M_ALIGNAS(x) alignas(x)
 #elif defined(USING_C11)
-#    define M_ALIGNOF(x) _Alignof(x)
-#    define M_ALIGNAS(x) _Alignas(x)
-#else
+#    if IS_MSVC_VERSION(MSVC_2019_16_8) /* Need new enough Windows SDK for this to be available - TJE */
+#        if defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN10_20348
+#            include <stdalign.h>
+#            define M_ALIGNOF(x) _Alignof(x)
+#            define M_ALIGNAS(x) _Alignas(x)
+#        endif
+#    elif !defined(_MSC_VER)
+#        include <stdalign.h>
+#        define M_ALIGNOF(x) _Alignof(x)
+#        define M_ALIGNAS(x) _Alignas(x)
+#    endif
+#endif
+#if !defined (M_ALIGNOF)
 #    if IS_GCC_VERSION(2, 7) || IS_CLANG_VERSION(1, 0)
 #        define M_ALIGNOF(x) __alignof__(x)
 #        define M_ALIGNAS(x) __attribute__((aligned(x)))
