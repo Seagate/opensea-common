@@ -1236,7 +1236,7 @@ eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const 
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
-char* generate_Log_Name(eLogFileNamingConvention logFileNamingConvention, // required
+M_FUNC_ATTR_MALLOC char* generate_Log_Name(eLogFileNamingConvention logFileNamingConvention, // required
                         const char*              deviceIdentifier,        // required
                         size_t                   deviceIDLen,             // required
                         const char*              logPath, // optional /*requested path to output to. Will be checked for
