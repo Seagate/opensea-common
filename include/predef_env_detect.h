@@ -162,7 +162,7 @@
 //! \param[in] msvcver msvc version that _MSC_VER can be set to in various versions.
 //! Use one of the definitions above for easy use
 #if defined(_MSC_VER)
-#    define IS_MSVC_VERSION(msvcver) (_MSC_VER > (msvcver))
+#    define IS_MSVC_VERSION(msvcver) (_MSC_VER >= (msvcver))
 #else
 #    define IS_MSVC_VERSION(msvcver) (0)
 #endif
@@ -172,7 +172,7 @@
 //! \param[in] msvcfullver msvc version that _MSC_FULL_VER can be set to in various versions.
 //! Use one of the definitions above for easy use
 #if defined(_MSC_FULL_VER)
-#    define IS_MSVC_FULL_VERSION(msvcfullver) (_MSC_FULL_VER > (msvcfullver))
+#    define IS_MSVC_FULL_VERSION(msvcfullver) (_MSC_FULL_VER >= (msvcfullver))
 #else
 #    define IS_MSVC_FULL_VERSION(msvcfullver) (0)
 #endif
