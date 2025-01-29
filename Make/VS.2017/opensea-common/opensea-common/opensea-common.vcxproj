@@ -678,8 +678,7 @@
     <ClInclude Include="..\..\..\..\include\memory_safety.h" />
     <ClInclude Include="..\..\..\..\include\opensea_common_version.h" />
     <ClInclude Include="..\..\..\..\include\pattern_utils.h" />
-    <ClInclude Include="..\..\..\..\include\sort_and_search.h" />
-    <ClInclude Include="..\..\..\..\include\precision_timer.h" />
+        <ClInclude Include="..\..\..\..\include\precision_timer.h" />
     <ClInclude Include="..\..\..\..\include\predef_env_detect.h" />
     <ClInclude Include="..\..\..\..\include\prng.h" />
     <ClInclude Include="..\..\..\..\include\secured_env_vars.h" />
@@ -721,7 +720,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\safe_lsearch.c" />
     <ClCompile Include="..\..\..\..\src\safe_qsort.c" />
-    <ClCompile Include="..\..\..\..\src\sort_and_search.c" />
     <ClCompile Include="..\..\..\..\src\posix_secure_file.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">true</ExcludedFromBuild>
