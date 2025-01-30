@@ -31,7 +31,7 @@
 #include <string.h>
 #include <time.h>
 
-time_t CURRENT_TIME = 0;
+time_t CURRENT_TIME = M_STATIC_CAST(time_t, 0);
 // NOTE: Do not use the DECLARE_ZERO_INIT_ARRAY here as it will not compile
 // correctly for a global variable like this.
 //       Instead we are manually setting all bytes to zero the old fashioned way
@@ -47,15 +47,25 @@ M_STATIC_ASSERT(sizeof(time_t) >= 8, time_t_is_not_64_bits);
 bool get_current_timestamp(void)
 {
     bool retStatus = true;
-    if (strcmp(CURRENT_TIME_STRING, "") == 0)
+    if (strcmp(CURRENT_TIME_STRING, "") == 0 || strcmp(CURRENT_TIME_STRING, "CAL_TIME_NOT_AVAILABLE") == 0)
     {
         struct tm logTime;
         safe_memset(&logTime, sizeof(struct tm), 0, sizeof(struct tm));
         CURRENT_TIME = time(M_NULLPTR);
-        safe_memset(CURRENT_TIME_STRING, SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING), 0,
-                    SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING));
-        retStatus = M_ToBool(strftime(CURRENT_TIME_STRING, CURRENT_TIME_STRING_LENGTH, "%Y%m%dT%H%M%S",
-                                      get_Localtime(&CURRENT_TIME, &logTime)) > 0);
+        if (CURRENT_TIME == TIME_T_ERROR)
+        {
+            safe_memset(CURRENT_TIME_STRING, SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING), 0,
+                        SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING));
+            retStatus = false;
+            snprintf(CURRENT_TIME_STRING, CURRENT_TIME_STRING_LENGTH, "CAL_TIME_NOT_AVAILABLE");
+        }
+        else
+        {
+            safe_memset(CURRENT_TIME_STRING, SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING), 0,
+                        SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING));
+            retStatus = M_ToBool(strftime(CURRENT_TIME_STRING, CURRENT_TIME_STRING_LENGTH, "%Y%m%dT%H%M%S",
+                                        get_Localtime(&CURRENT_TIME, &logTime)) > 0);
+        }
     }
     return retStatus;
 }
@@ -66,7 +76,7 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
     uint64_t msSinceJan1970 = UINT64_C(0);
     // Check for C11's standardized API call.
     // Also check that TIME_UTC is defined, because if it is not, then this will
-    // not work. This apparently causes an error in mingww64 environment in
+    // not work. This apparently causes an error in mingw64 environment in
     // msys2 since this function is missing, but C11 is defined.
 #if defined(USING_C11) && defined(TIME_UTC)
     struct timespec now;
@@ -184,11 +194,15 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
             //       This is not currently taken into account -TJE
             struct tm nowstruct;
             time_t    currentTime = time(M_NULLPTR);
+            if (currentTime == TIME_T_ERROR)
+            {
+                return UINT64_C(0);
+            }
             safe_memset(&nowstruct, sizeof(struct tm), 0, sizeof(struct tm));
             // to get the milliseconds, need to convert this to struct tm, then
             // calculate this.
             get_UTCtime(&currentTime, &nowstruct);
-            uint64_t currentyear = (C_CAST(uint64_t, nowstruct.tm_year) + UINT64_C(1900));
+            uint64_t currentyear = (M_STATIC_CAST(uint64_t, nowstruct.tm_year) + UINT64_C(1900));
             if (currentyear >= UINT64_C(1970))
             {
                 // need to account for leap years before calculating below. This

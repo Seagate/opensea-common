@@ -582,6 +582,14 @@ typedef int32_t intptr_t;
 #    define RSIZE_MAX (SIZE_MAX >> 1)
 #endif //! RSIZE_MAX
 
+//! \def TIME_T_ERROR
+//! \brief The error value for an invalid time_t, such as on output from time()
+#if defined(USING_CPP98)
+#    define TIME_T_ERROR static_cast<time_t>(-1)
+#else // C
+#    define TIME_T_ERROR ((time_t)(-1))
+#endif
+
 //! \def M_DECLARE_ENUM
 //! \brief Declares an enum or enum class based on the detected C++ standard.
 //!
