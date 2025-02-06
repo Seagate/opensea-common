@@ -1703,7 +1703,7 @@ extern "C"
     //!
     //! \param[in] value value to byte swap
     //! \return returns \a value with bytes swapped
-    M_NODISCARD static M_INLINE uint64_t by_swap_64(uint64_t value)
+    M_NODISCARD static M_INLINE uint64_t b_swap_64(uint64_t value)
     {
 #if defined(HAVE_BUILTIN_BSWAP)
         return __builtin_bswap64(value);
@@ -1716,6 +1716,10 @@ extern "C"
             (value & UINT64_C(0x000000000000FF00) << 40) | (value & UINT64_C(0x00000000000000FF) << 56));
 #endif
     }
+
+    //! \def by_swap_64
+    //! \brief macro to catch incorrect name for b_swap_64 function in case it is used elsewhere.
+    #define by_swap_64(value) b_swap_64(value)
 
     //! \fn void byte_Swap_16(uint16_t* wordToSwap)
     //! \brief swaps bytes within a word in place
@@ -1811,7 +1815,7 @@ extern "C"
         DISABLE_NONNULL_COMPARE
         if (quadWordToSwap != M_NULLPTR)
         {
-            *quadWordToSwap = by_swap_64(*quadWordToSwap);
+            *quadWordToSwap = b_swap_64(*quadWordToSwap);
         }
         RESTORE_NONNULL_COMPARE
     }
@@ -1949,7 +1953,7 @@ extern "C"
 #if defined(ENV_BIG_ENDIAN)
         return value;
 #else // Assume little endian
-    return by_swap_64(value);
+    return b_swap_64(value);
 #endif
     }
 
@@ -2006,7 +2010,7 @@ extern "C"
 #if defined(ENV_BIG_ENDIAN)
         return value;
 #else // Assume little endian
-    return by_swap_64(value);
+    return b_swap_64(value);
 #endif
     }
 
@@ -2061,7 +2065,7 @@ extern "C"
     M_NODISCARD static M_INLINE uint64_t host_to_le64(uint64_t value)
     {
 #if defined(ENV_BIG_ENDIAN)
-        return by_swap_64(value);
+        return b_swap_64(value);
 #else // Assume little endian
     return value;
 #endif
@@ -2118,7 +2122,7 @@ extern "C"
     M_NODISCARD static M_INLINE uint64_t le64_to_host(uint64_t value)
     {
 #if defined(ENV_BIG_ENDIAN)
-        return by_swap_64(value);
+        return b_swap_64(value);
 #else // Assume little endian
     return value;
 #endif
