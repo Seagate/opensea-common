@@ -1236,17 +1236,18 @@ eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const 
     return SEC_FILE_INVALID_SECURE_FILE;
 }
 
-M_FUNC_ATTR_MALLOC char* generate_Log_Name(eLogFileNamingConvention logFileNamingConvention, // required
-                        const char*              deviceIdentifier,        // required
-                        size_t                   deviceIDLen,             // required
-                        const char*              logPath, // optional /*requested path to output to. Will be checked for
-                                                          // security. If NULL, current directory will be used*/
-                        size_t      logPathLen,           // may be 0
-                        const char* logName,              // optional /*name of the log file from the drive,
-                                                          // FARM, DST, etc*/
-                        size_t      logNameLen,           // may be 0
-                        const char* logExt,   // optional /*extension for the log file. If NULL, set to .bin*/
-                        size_t      logExtLen // may be 0
+M_FUNC_ATTR_MALLOC char* generate_Log_Name(
+    eLogFileNamingConvention logFileNamingConvention, // required
+    const char*              deviceIdentifier,        // required
+    size_t                   deviceIDLen,             // required
+    const char*              logPath,                 // optional /*requested path to output to. Will be checked for
+                                                      // security. If NULL, current directory will be used*/
+    size_t      logPathLen,                           // may be 0
+    const char* logName,                              // optional /*name of the log file from the drive,
+                                                      // FARM, DST, etc*/
+    size_t      logNameLen,                           // may be 0
+    const char* logExt,                               // optional /*extension for the log file. If NULL, set to .bin*/
+    size_t      logExtLen                             // may be 0
 )
 {
     DECLARE_ZERO_INIT_ARRAY(char, path, OPENSEA_PATH_MAX);

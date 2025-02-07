@@ -64,7 +64,7 @@ bool get_current_timestamp(void)
             safe_memset(CURRENT_TIME_STRING, SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING), 0,
                         SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING));
             retStatus = M_ToBool(strftime(CURRENT_TIME_STRING, CURRENT_TIME_STRING_LENGTH, "%Y%m%dT%H%M%S",
-                                        get_Localtime(&CURRENT_TIME, &logTime)) > 0);
+                                          get_Localtime(&CURRENT_TIME, &logTime)) > 0);
         }
     }
     return retStatus;

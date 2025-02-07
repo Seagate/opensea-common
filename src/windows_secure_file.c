@@ -184,8 +184,8 @@ static bool win_Get_File_Security_Info_By_Name(const char* filename, fileAttribu
         {
             ULONG tempLen = ULONG_C(0);
             LPSTR temp    = M_NULLPTR;
-            if (MSFT_BOOL_TRUE(ConvertSecurityDescriptorToStringSecurityDescriptorA(secDescriptor, SDDL_REVISION, secInfo,
-                                                                             &temp, &tempLen)))
+            if (MSFT_BOOL_TRUE(ConvertSecurityDescriptorToStringSecurityDescriptorA(secDescriptor, SDDL_REVISION,
+                                                                                    secInfo, &temp, &tempLen)))
             {
                 /* do not use strdup or strndup here. There are some extra nulls
                  * at the end of what Windows allocates that we are preserving
@@ -240,8 +240,8 @@ static bool win_Get_File_Security_Info_By_File(FILE* file, fileAttributes* attrs
         {
             ULONG tempLen = ULONG_C(0);
             LPSTR temp    = M_NULLPTR;
-            if (MSFT_BOOL_TRUE(ConvertSecurityDescriptorToStringSecurityDescriptorA(secDescriptor, SDDL_REVISION, secInfo,
-                                                                             &temp, &tempLen)))
+            if (MSFT_BOOL_TRUE(ConvertSecurityDescriptorToStringSecurityDescriptorA(secDescriptor, SDDL_REVISION,
+                                                                                    secInfo, &temp, &tempLen)))
             {
                 /* do not use strdup or strndup here. There are some extra nulls
                  * at the end of what Windows allocates that we are preserving
@@ -644,8 +644,8 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
             secure = false;
             break;
         }
-        if (MSFT_BOOL_FALSE(ConvertStringSecurityDescriptorToSecurityDescriptorA(securityDescriptorString, SDDL_REVISION,
-                                                                          &secdesc, &secdesclen)))
+        if (MSFT_BOOL_FALSE(ConvertStringSecurityDescriptorToSecurityDescriptorA(securityDescriptorString,
+                                                                                 SDDL_REVISION, &secdesc, &secdesclen)))
         {
             /* Handle Error */
             set_dir_security_output_error_message(
@@ -1463,13 +1463,13 @@ bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char
         BOOL                 defaultdacl2  = FALSE;
         BOOL                 dacl1present  = FALSE;
         BOOL                 dacl2present  = FALSE;
-        if (MSFT_BOOL_TRUE(ConvertStringSecurityDescriptorToSecurityDescriptorA(sidsAndDACLstr1, SDDL_REVISION, &secDesc1,
-                                                                         &secDesc1len)))
+        if (MSFT_BOOL_TRUE(ConvertStringSecurityDescriptorToSecurityDescriptorA(sidsAndDACLstr1, SDDL_REVISION,
+                                                                                &secDesc1, &secDesc1len)))
         {
             validdesc1 = IsValidSecurityDescriptor(secDesc1);
         }
-        if (MSFT_BOOL_TRUE(ConvertStringSecurityDescriptorToSecurityDescriptorA(sidsAndDACLstr2, SDDL_REVISION, &secDesc2,
-                                                                         &secDesc2len)))
+        if (MSFT_BOOL_TRUE(ConvertStringSecurityDescriptorToSecurityDescriptorA(sidsAndDACLstr2, SDDL_REVISION,
+                                                                                &secDesc2, &secDesc2len)))
         {
             validdesc2 = IsValidSecurityDescriptor(secDesc2);
         }
@@ -1494,7 +1494,8 @@ bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char
             // Now that we have read all of the possible values....lets compare
             // everything
             if ((validown1 && validown2 && defaultown1 == defaultown2 && MSFT_BOOL_TRUE(EqualSid(owner1, owner2))) &&
-                (validgroup1 && validgroup2 && defaultgroup1 == defaultgroup2 && MSFT_BOOL_TRUE(EqualSid(group1, group2))))
+                (validgroup1 && validgroup2 && defaultgroup1 == defaultgroup2 &&
+                 MSFT_BOOL_TRUE(EqualSid(group1, group2))))
             {
                 // owner and group are the same.
                 // Compare the dacls

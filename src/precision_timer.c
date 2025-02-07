@@ -71,7 +71,7 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
     if (MSFT_BOOL_TRUE(QueryPerformanceFrequency(&frequency)))
     {
         if (frequency.QuadPart > LONGLONG_C(0)) // no equals since this is used in division
-                                    // and don't want to divide by zero
+                                                // and don't want to divide by zero
         {
             ticksPerNanosecond /= C_CAST(uint64_t, frequency.QuadPart);
             seconds =
