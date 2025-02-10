@@ -415,9 +415,9 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                 while (currentExtension && currentExtension->ext != M_NULLPTR)
                 {
                     char* extension = strrchr(fileInfo->fullpath, '.');
-                    if (extension &&
-                        (strcmp(extension, currentExtension->ext) == 0 ||
-                         (currentExtension->caseInsensitive && strcasecmp(extension, currentExtension->ext) == 0)))
+                    if (extension != M_NULLPTR &&
+                        ((strcmp(extension, currentExtension->ext) == 0 || strcmp(extension + 1, currentExtension->ext) == 0) ||
+                         (currentExtension->caseInsensitive && (strcasecmp(extension, currentExtension->ext) == 0 || strcasecmp(extension + 1, currentExtension->ext) == 0))))
                     {
                         // valid extension
                         foundValidExtension = true;

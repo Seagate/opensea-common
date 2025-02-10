@@ -437,17 +437,18 @@ extern "C"
     //! \note This structure is optional, but if you want to only open files with specific extensions, this will
     //! evaluate that based on the passed-in list. The list is terminated by a final entry with the string "ext"
     //! set to a NULL pointer.
+    //! \note File extension strings should include the "." character, however without a dot will also be accepted.
     //! \code
     //! myFileExtension[] = {
-    //! { "extension", false },
+    //! { ".extension", false },
     //! { M_NULLPTR, false }};
     //! \endcode
     //! \code
     //! myFileExtension[] = {
-    //! { "ext1", false },
-    //! { "ext2", false },
-    //! { "ext3", false },
-    //! { "ext4", false },
+    //! { ".ext1", false },
+    //! { ".ext2", false },
+    //! { ".ext3", false },
+    //! { ".ext4", false },
     //! { M_NULLPTR, false }};
     //! \endcode
     typedef struct sfileExt
