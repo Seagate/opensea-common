@@ -1445,7 +1445,7 @@ size_t find_first_occurrence_in_string(const char* originalString, const char* s
                                         : SIZE_MAX;
 }
 
-bool wildcard_Match(const char* pattern, const char* data)
+static M_INLINE bool wildcard_match_internal(const char* pattern, const char* data, bool caseInsensitive)
 {
     DISABLE_NONNULL_COMPARE
     if (pattern == M_NULLPTR || data == M_NULLPTR)
@@ -1457,13 +1457,24 @@ bool wildcard_Match(const char* pattern, const char* data)
     {
         return true;
     }
-    if (*pattern == *data || *pattern == '?')
+    if (*pattern == *data || *pattern == '?' || (caseInsensitive && safe_toupper(*pattern) == safe_toupper(*data)))
     {
-        return *data != '\0' && wildcard_Match(pattern + 1, data + 1);
+        return *data != '\0' && wildcard_match_internal(pattern + 1, data + 1, caseInsensitive);
     }
     if (*pattern == '*')
     {
-        return wildcard_Match(pattern + 1, data) || (*data != '\0' && wildcard_Match(pattern, data + 1));
+        return wildcard_match_internal(pattern + 1, data, caseInsensitive) ||
+               (*data != '\0' && wildcard_match_internal(pattern, data + 1, caseInsensitive));
     }
     return false;
+}
+
+bool wildcard_case_match(const char* pattern, const char* data)
+{
+    return wildcard_match_internal(pattern, data, true);
+}
+
+bool wildcard_match(const char* pattern, const char* data)
+{
+    return wildcard_match_internal(pattern, data, false);
 }

@@ -968,6 +968,7 @@ extern "C"
 
     //! \fn bool wildcard_Match(const char* pattern, const char* data)
     //! \brief match the string with pattern consisting of wildcard chars.
+    //! Character matching is case sensitive
     //!
     //! A single char wildcard match is '?'
     //! A multi char wildcard match is '*'
@@ -977,7 +978,26 @@ extern "C"
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RO(1)
     M_PARAM_RO(2)
-    M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2) bool wildcard_Match(const char* pattern, const char* data);
+    M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2) bool wildcard_match(const char* pattern, const char* data);
+
+//! \def wildcard_Match
+//! \brief definition to match uppercase M in function name to lowercase named function.
+//! This is for backwards compatibility.
+#define wildcard_Match(pattern, data) wildcard_match(pattern, data)
+
+    //! \fn bool wildcard_case_match(const char* pattern, const char* data)
+    //! \brief match the string with pattern consisting of wildcard chars.
+    //! Character matching is case insensitive
+    //!
+    //! A single char wildcard match is '?'
+    //! A multi char wildcard match is '*'
+    //! \param[in] pattern a pointer to the pattern consisting wildcard chars. Null terminated
+    //! \param[in] data a pointer to the data to search. Null terminated.
+    //! \return true = found match, false = no match found
+    M_NONNULL_PARAM_LIST(1, 2)
+    M_PARAM_RO(1)
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2) bool wildcard_case_match(const char* pattern, const char* data);
 
 #if defined(__cplusplus)
 }
