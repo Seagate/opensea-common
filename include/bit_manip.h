@@ -1717,9 +1717,9 @@ extern "C"
 #endif
     }
 
-    //! \def by_swap_64
-    //! \brief macro to catch incorrect name for b_swap_64 function in case it is used elsewhere.
-    #define by_swap_64(value) b_swap_64(value)
+//! \def by_swap_64
+//! \brief macro to catch incorrect name for b_swap_64 function in case it is used elsewhere.
+#define by_swap_64(value) b_swap_64(value)
 
     //! \fn void byte_Swap_16(uint16_t* wordToSwap)
     //! \brief swaps bytes within a word in place
