@@ -35,7 +35,7 @@ extern "C"
 
 //! \def OPENSEA_COMMON_MAJOR_VERSION
 //! \brief Defines the major version number for the opensea-common library.
-#define OPENSEA_COMMON_MAJOR_VERSION 5
+#define OPENSEA_COMMON_MAJOR_VERSION 6
 
 //! \def OPENSEA_COMMON_MINOR_VERSION
 //! \brief Defines the minor version number for the opensea-common library.
