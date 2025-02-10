@@ -164,6 +164,15 @@ FUNC_ATTR_PRINTF(2, 3) static void set_dir_security_output_error_message(char** 
     {
         va_list args;
         va_start(args, format);
+
+        // If an error message is already present, then we need to free it before
+        // creating a new one to prevent a memory leak
+        if (*outputError != M_NULLPTR)
+        {
+            explicit_zeroes(*outputError, safe_strlen(*outputError));
+            safe_free(outputError);
+        }
+
         int result = vasprintf(outputError, format, args);
         va_end(args);
         if (result < 0 && *outputError != M_NULLPTR)

@@ -581,21 +581,17 @@ FUNC_ATTR_PRINTF(2, 3) static void set_dir_security_output_error_message(char** 
         va_list args;
         va_start(args, format);
 
-#if IS_CLANG_VERSION(3, 0)
-#    pragma clang diagnostic push
-#    pragma clang diagnostic ignored "-Wformat-nonliteral"
-#elif IS_GCC_VERSION(4, 1)
-#    pragma GCC diagnostic push
-#    pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#endif
+        // If an error message is already present, then we need to free it before
+        // creating a new one to prevent a memory leak
+        if (*outputError != M_NULLPTR)
+        {
+            explicit_zeroes(*outputError, safe_strlen(*outputError));
+            safe_free(outputError);
+        }
 
+        DISABLE_WARNING_FORMAT_NONLITERAL
         int result = vasprintf(outputError, format, args);
-
-#if IS_CLANG_VERSION(3, 0)
-#    pragma clang diagnostic pop
-#elif IS_GCC_VERSION(4, 1)
-#    pragma GCC diagnostic pop
-#endif
+        RESTORE_WARNING_FORMAT_NONLITERAL
 
         va_end(args);
         if (result < 0 && *outputError != M_NULLPTR)
