@@ -438,6 +438,8 @@ extern "C"
     //! evaluate that based on the passed-in list. The list is terminated by a final entry with the string "ext"
     //! set to a NULL pointer.
     //! \note File extension strings should include the "." character, however without a dot will also be accepted.
+    //! \note Wildcards are allowed in matching the file extension. Use '?' for a single character wildcard and '*' for
+    //! a multi character wildcard
     //! \code
     //! myFileExtension[] = {
     //! { ".extension", false },
@@ -449,6 +451,11 @@ extern "C"
     //! { ".ext2", false },
     //! { ".ext3", false },
     //! { ".ext4", false },
+    //! { M_NULLPTR, false }};
+    //! \endcode
+    //! \code
+    //! myFileExtension[] = {
+    //! { ".A?", false },
     //! { M_NULLPTR, false }};
     //! \endcode
     typedef struct sfileExt
