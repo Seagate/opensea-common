@@ -44,13 +44,41 @@ errno_t sleepns(uint64_t nanoseconds)
     }
     else
     {
-        if (FALSE == SetWaitableTimer(nanotimer, &timeval, 0, M_NULLPTR, M_NULLPTR, FALSE))
+        if (MSFT_BOOL_FALSE(SetWaitableTimer(nanotimer, &timeval, 0, M_NULLPTR, M_NULLPTR, FALSE)))
         {
             error = ENOSYS;
         }
         else
         {
-            WaitForSingleObject(nanotimer, INFINITE);
+            DWORD waitres = WaitForSingleObject(nanotimer, INFINITE);
+            if (waitres == WAIT_FAILED)
+            {
+                switch (GetLastError())
+                {
+                case ERROR_INVALID_FUNCTION:
+                    error = ENOSYS;
+                    break;
+                default:
+                    error = EFAULT;
+                    break;
+                }
+            }
+            else if (waitres == WAIT_OBJECT_0)
+            {
+                error = 0;
+            }
+            else if (waitres == WAIT_TIMEOUT)
+            {
+                error = ETIMEDOUT;
+            }
+            else if (waitres == WAIT_ABANDONED)
+            {
+                error = EOWNERDEAD;
+            }
+            else
+            {
+                error = EFAULT;
+            }
         }
         CloseHandle(nanotimer);
     }
