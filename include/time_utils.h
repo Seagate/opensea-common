@@ -356,6 +356,50 @@ extern "C"
     //! \return number of milliseconds. 0 if an error occurs
     uint64_t get_Milliseconds_Since_Unix_Epoch(void);
 
+#if !defined(TIME_UTC)
+// Checking for TIME_UTC definition in order to figure out if the C11 API for timespec_get is available
+
+//! \def TIME_UTC
+//! \brief C11 implementation specific value to use as base for timespec_get function
+#    define TIME_UTC 1
+
+#    if !defined(POSIX_1993) && !defined _POSIX_MONOTONIC_CLOCK
+    //! \struct timespec
+    //! \brief Structure representing a time value with seconds and nanoseconds.
+    //!
+    //! This structure is used to represent time with a resolution of seconds and nanoseconds.
+    //! It is commonly used in functions like timespec_get to obtain high-resolution time values.
+    //! This definition is provided for systems where timespec_get is not otherwise available.
+    //!
+    //! \var time_t timespec::tv_sec
+    //! The number of seconds.
+    //!
+    //! \var int32_t timespec::tv_nsec
+    //! The number of nanoseconds. Note that Windows uses long, but int32_t is used here to ensure 32-bit compatibility.
+    struct timespec
+    {
+        time_t  tv_sec;  //!< Seconds
+        int32_t tv_nsec; //!< Nanoseconds
+    };
+
+#    endif
+
+#    define NEED_TIMESPEC_GET
+
+    //! \fn int timespec_get(struct timespec *ts, int base)
+    //! \brief   Sets the current calendar time in a timespec structure.
+    //!
+    //! This function sets the current calendar time in the given timespec structure
+    //! based on the specified time base. It is useful for obtaining high-resolution
+    //! time values.
+    //! \param[in] ts Pointer to a timespec structure to be filled with the current time.
+    //! \param[in] base The time base to use. Typically, TIME_UTC is used to specify
+    //! Coordinated Universal Time (UTC).
+    //! \return The value of \a base to indicate success (non-zero) or failure (zero).
+    //! \see https://en.cppreference.com/w/c/chrono/timespec_get
+    int timespec_get(struct timespec* ts, int base);
+#endif // TIME_UTC
+
 #if defined(__cplusplus)
 }
 #endif

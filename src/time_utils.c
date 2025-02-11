@@ -70,18 +70,244 @@ bool get_current_timestamp(void)
     return retStatus;
 }
 
+#if defined(NEED_TIMESPEC_GET)
+#    if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_2000
+static M_INLINE int win_filetime_to_struct_timespec(struct timespec* ts, int base)
+{
+    int res = 0;
+    // Use the function in the link below, but MSFT also documents another
+    // way to do this, which is what we've implemented -TJE
+    // https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-rtltimetosecondssince1970
+    FILETIME       ftnow;
+    FILETIME       epochfile;
+    SYSTEMTIME     epoch;
+    ULARGE_INTEGER nowAsInt;
+    ULARGE_INTEGER epochAsInt;
+    safe_memset(&ftnow, sizeof(FILETIME), 0, sizeof(FILETIME));
+    safe_memset(&epochfile, sizeof(FILETIME), 0, sizeof(FILETIME));
+    safe_memset(&epoch, sizeof(SYSTEMTIME), 0, sizeof(SYSTEMTIME));
+    safe_memset(&nowAsInt, sizeof(ULARGE_INTEGER), 0, sizeof(ULARGE_INTEGER));
+    safe_memset(&epochAsInt, sizeof(ULARGE_INTEGER), 0, sizeof(ULARGE_INTEGER));
+    epoch.wYear      = WORD_C(1970);
+    epoch.wMonth     = WORD_C(1);
+    epoch.wSecond    = WORD_C(0); // MSFT says to set to first second.
+    epoch.wDayOfWeek = WORD_C(4); // Thursday
+    epoch.wDay       = WORD_C(1);
+    GetSystemTimeAsFileTime(&ftnow);
+    safe_memcpy(&nowAsInt, sizeof(ULARGE_INTEGER), &ftnow,
+                sizeof(FILETIME)); // these are both 8 bytes in size, so it SHOULD
+                                   // be fine and MSFT says to do this-TJE
+    SystemTimeToFileTime(&epoch, &epochfile);
+    safe_memcpy(&epochAsInt, sizeof(ULARGE_INTEGER), &epochfile,
+                sizeof(FILETIME));                // these are both 8 bytes in size, so it SHOULD
+                                                  // be fine and MSFT says to do this-TJE
+    if (nowAsInt.QuadPart >= epochAsInt.QuadPart) // this should always be true, but seems like
+                                                  // microsoft is likely checking this, so
+                                                  // checking this as well-TJE
+    {
+        uint64_t nsSinceJan1970 = C_CAST(uint64_t, (nowAsInt.QuadPart - epochAsInt.QuadPart));
+        // subtracting the 2 large integers gives 100
+        // nanosecond intervals since jan 1, 1970
+        ts->tv_sec  = C_CAST(time_t, nsSinceJan1970 / UINT64_C(1000000000));
+        ts->tv_nsec = C_CAST(int32_t, nsSinceJan1970 % UINT64_C(1000000000));
+        res         = base;
+    }
+    return res;
+}
+#    endif // WIN_API_TARGET_VERSION >= WIN_API_TARGET_2000
+
+#    if IS_MSVC_VERSION(MSVC_2003)
+static M_INLINE int win_ftime64_to_struct_timespec(struct timespec* ts, int base)
+{
+    // Microsoft also has ftime, ftime64 and ftime_s
+    // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/ftime-s-ftime32-s-ftime64-s?view=msvc-170
+    struct __timeb64 timenow;
+    int              res       = 0;
+    int              memsetret = safe_memset(&timenow, sizeof(struct __timeb64), 0, sizeof(struct __timeb64));
+#        if IS_MSVC_VERSION(MSVC_2005)
+    if (0 == memsetret && 0 == _ftime64_s(&timenow)) // Can use _s version
+    {
+        ts->tv_sec  = timenow.time;
+        ts->tv_nsec = C_CAST(int32_t, C_CAST(uint64_t, timenow.millitm) * UINT64_C(1000000));
+        res         = base;
+    }
+#        else  // VS2003
+    if (0 == memsetret)
+    {
+        _ftime64(&timenow); // Can use _ftime64 back to Win98
+        ts->tv_sec  = timenow.time;
+        ts->tv_nsec = C_CAST(int32_t, C_CAST(uint64_t, timenow.millitm) * UINT64_C(1000000));
+        res         = base;
+    }
+#        endif // VS2005 check
+    return res;
+}
+#    endif // IS_MSVC_VERSION(MSVC_2003)
+
+static M_INLINE int struct_tm_to_struct_timespec(struct timespec* ts, int base)
+{
+    int res = 0;
+    // time_t is not guaranteed to always be a specific number of units.
+    // This can be system specific/library specific. so to convert using
+    // old standards, take a current time_t, convert it to struct tm,
+    // then calculate it. If time_t is 32bits, then this will not work
+    // past 2038. To detect this, we just need to check if the current
+    // year is less than 1970. If it is, it could be a roll over problem
+    // or some other clock issue. in that case, just return 0. NOTE:
+    // This code seems to work until approximately the year 275705. The
+    // following year I've noticed can be off by a day. There is
+    // probably a missing
+    //       adjustment factor somewhere else, but this is close
+    //       enough-TJE
+    // NOTE: To take into account leap seconds you need a table, or you
+    // can average 1 every 1.5 years:
+    // https://www.nist.gov/pml/time-and-frequency-division/leap-seconds-faqs#often
+    //       This is not currently taken into account -TJE
+    struct tm nowstruct;
+    time_t    currentTime = time(M_NULLPTR);
+    if (currentTime == TIME_T_ERROR)
+    {
+        return UINT64_C(0);
+    }
+    safe_memset(&nowstruct, sizeof(struct tm), 0, sizeof(struct tm));
+    get_UTCtime(&currentTime, &nowstruct);
+    uint64_t currentyear = (M_STATIC_CAST(uint64_t, nowstruct.tm_year) + UINT64_C(1900));
+    if (currentyear >= UINT64_C(1970))
+    {
+        // need to account for leap years before calculating below. This
+        // will get how many leap years there are between the current
+        // year and 1970 to add to number of days for adjustment
+        uint64_t leapyears = (currentyear - UINT64_C(1970)) / UINT64_C(4);
+        // now subtract the number of skipped leap years (every 100
+        // years unless divible by 400). This needs to be number since
+        // 1970
+        uint64_t skippedleapyears = UINT64_C(0);
+        // years 2000 and 2400 are leap years, but 1700, 1800, 1900,
+        // 2100, 2200, and 2300 are not. To get skipped leap years, need
+        // to calculate based on number of centuries that have passed
+        // since 1970, then check how many have skipped leap year. No
+        // need to worry about this until at least 2100, however if you
+        // skip the year 2000, this causes a problem in 24606 where it
+        // will be off by 1 day.-TJE
+        if (currentyear >= UINT64_C(2000)) // start at 2000 since it is the first
+                                           // century after 1970.
+        {
+            // at least year 2100, so need to handle skipped leap years
+            // and how many of these have occurred
+            uint64_t centuriesSince1970 = ((currentyear - UINT64_C(1970)) / UINT64_C(100)) - UINT64_C(1);
+            // use a loop to check each century, starting in 2100 to see
+            // if it was a skipped leap year or not.
+            uint64_t checkCentury = UINT64_C(2100);
+            while (checkCentury <= (UINT64_C(2100) + (centuriesSince1970 * UINT64_C(100))))
+            {
+                if (checkCentury % UINT64_C(400) != UINT64_C(0))
+                {
+                    // This century does not have a leap year
+                    skippedleapyears += UINT64_C(1);
+                }
+                checkCentury += UINT64_C(100);
+            }
+        }
+        leapyears -= skippedleapyears;
+        // Need to detect if the leap year is in the current year and if
+        // it has occured already or not.
+        if (currentyear % UINT64_C(4) == UINT64_C(0))
+        {
+            bool adjustforcurrentleapyear = true;
+            // leap year is in the current year, unless it is a year to
+            // skip a leap year (every 100 years, unless divisible by
+            // 400)
+            if (currentyear % UINT64_C(100) == UINT64_C(0) && currentyear % UINT64_C(400) != UINT64_C(0))
+            {
+                // currently in a century year without a leap year. No
+                // need for the adjustment below
+                adjustforcurrentleapyear = false;
+            }
+            if (adjustforcurrentleapyear)
+            {
+                // Check if it is past february 29th already or not.
+                if (nowstruct.tm_mon < 2)
+                {
+                    // february or january
+                    if (nowstruct.tm_mon == 0 || (nowstruct.tm_mon == 1 && nowstruct.tm_mday <= 29))
+                    {
+                        // subtract 1 from leapyears since it has not
+                        // yet occurred for the current year
+                        leapyears -= UINT64_C(1);
+                    }
+                }
+            }
+        }
+        // use tm_sec, tm_min, tm_hour, tm_year, and tm_yday to convert
+        // this.-TJE
+        // NOTE: This was moved here to simplify the get time since unix epoch code and is left as is since it otherwise
+        // works fine.-TJE
+        uint64_t msSinceJan1970 = (C_CAST(uint64_t, nowstruct.tm_sec) * UINT64_C(1000)) +
+                                  (C_CAST(uint64_t, nowstruct.tm_min) * UINT64_C(60000)) +
+                                  (C_CAST(uint64_t, nowstruct.tm_hour) * UINT64_C(3600000)) +
+                                  ((C_CAST(uint64_t, nowstruct.tm_yday) + leapyears) * UINT64_C(86400000)) +
+                                  ((currentyear - UINT64_C(1970)) * UINT64_C(31536000000));
+        ts->tv_sec  = C_CAST(time_t, msSinceJan1970 / UINT64_C(1000));
+        ts->tv_nsec = C_CAST(int32_t, msSinceJan1970 %
+                                          UINT64_C(1000)); // should set zero, but this is the correct way to set this
+        res         = base;
+    }
+    return res;
+}
+
+int timespec_get(struct timespec* ts, int base)
+{
+    int res = 0;
+    if (base != TIME_UTC)
+    {
+        return res;
+    }
+#    if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_2000
+    res = win_filetime_to_struct_timespec(ts, base);
+    if (res == base)
+    {
+        return res;
+    }
+#    elif IS_MSVC_VERSION(MSVC_2003)
+    res = win_ftime64_to_struct_timespec(ts, base);
+    if (res == base)
+    {
+        return res;
+    }
+#    elif defined(POSIX_1993) && defined _POSIX_MONOTONIC_CLOCK
+    // This uses the same structure and is best to use when available
+    if (0 == clock_gettime(CLOCK_REALTIME, ts))
+    {
+        res = base;
+        return res;
+    }
+#    elif defined(BSD4_2) || defined(POSIX_2001) || defined(SVR4_ENV) || defined(USING_SUS2)
+    // using gettimeofday function as a backup
+    // NOTE: ftime and ftime64 are another possible API but that has been long obsolete...longer than this method.
+    // https://man.freebsd.org/cgi/man.cgi?query=ftime&sektion=3&n=1
+    // https://www.ibm.com/docs/en/zos/2.4.0?topic=functions-ftime-ftime64-set-date-time
+    struct timeval timenow;
+    safe_memset(&timenow, sizeof(struct timeval), 0, sizeof(struct timeval));
+    if (0 == gettimeofday(&timenow, M_NULLPTR))
+    {
+        ts->tv_sec  = timenow.tv_sec;
+        ts->tv_nsec = C_CAST(int32_t, timenow.tv_usec) * INT32_C(1000) res = base;
+        return res;
+    }
+#    endif
+    res = struct_tm_to_struct_timespec(ts, base);
+    return res;
+}
+#endif // NEED_TIMESPEC_GET
+
 // returns number of milliseconds since 1970 UTC
 uint64_t get_Milliseconds_Since_Unix_Epoch(void)
 {
     uint64_t msSinceJan1970 = UINT64_C(0);
     // Check for C11's standardized API call.
-    // Also check that TIME_UTC is defined, because if it is not, then this will
-    // not work. This apparently causes an error in mingw64 environment in
-    // msys2 since this function is missing, but C11 is defined.
-#if defined(USING_C11) && defined(TIME_UTC)
     struct timespec now;
     safe_memset(&now, sizeof(struct timespec), 0, sizeof(struct timespec));
-    if (0 != timespec_get(&now, TIME_UTC))
+    if (TIME_UTC == timespec_get(&now, TIME_UTC))
     {
         // NOTE: Technically this is a time since the system's epoch as C
         // standard does not set an epoch.
@@ -89,208 +315,6 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
         //       not the Unix epoch, so this is fine for now - TJE
         msSinceJan1970 =
             (C_CAST(uint64_t, now.tv_sec) * UINT64_C(1000)) + (C_CAST(uint64_t, now.tv_nsec) / UINT64_C(1000000));
-    }
-    else
-#endif // C11
-    {
-#if defined(POSIX_1993) && defined _POSIX_MONOTONIC_CLOCK
-        // POSIX gettimeofday() or clock_gettime(CLOCK_REALTIME, ts)
-        // https://pubs.opengroup.org/onlinepubs/9699919799/functions/clock_getres.html
-        // NOTE: Using clock_gettime since it's more accurate and not affected
-        // by time-skew
-        struct timespec posixnow;
-        safe_memset(&posixnow, sizeof(struct timespec), 0, sizeof(struct timespec));
-        if (0 == clock_gettime(CLOCK_REALTIME, &posixnow))
-        {
-            msSinceJan1970 = (C_CAST(uint64_t, posixnow.tv_sec) * UINT64_C(1000)) +
-                             (C_CAST(uint64_t, posixnow.tv_nsec) / UINT64_C(1000000));
-        }
-        else
-#elif defined(BSD4_2) || defined(POSIX_2001) || defined(SVR4_ENV) || defined(USING_SUS2)
-        // using gettimeofday function
-        // NOTE: ftime and ftime64 are another possible API but that has been long obsolete...longer than this method.
-        // https://man.freebsd.org/cgi/man.cgi?query=ftime&sektion=3&n=1
-        // https://www.ibm.com/docs/en/zos/2.4.0?topic=functions-ftime-ftime64-set-date-time
-        struct timeval timenow;
-        safe_memset(&timenow, sizeof(struct timeval), 0, sizeof(struct timeval));
-        if (0 == gettimeofday(&timenow, M_NULLPTR))
-        {
-            msSinceJan1970 = (C_CAST(uint64_t, timenow.tv_sec) * UINT64_C(1000)) +
-                             (C_CAST(uint64_t, timenow.tv_usec) / UINT64_C(1000));
-        }
-        else
-#elif defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_2000
-        // Use the function in the link below, but MSFT also documents another
-        // way to do this, which is what we've implemented -TJE
-        // https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-rtltimetosecondssince1970
-        // Microsoft also has ftime, ftime64 and ftime_s
-        // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/ftime-s-ftime32-s-ftime64-s?view=msvc-170
-        FILETIME       ftnow;
-        FILETIME       epochfile;
-        SYSTEMTIME     epoch;
-        ULARGE_INTEGER nowAsInt;
-        ULARGE_INTEGER epochAsInt;
-        safe_memset(&ftnow, sizeof(FILETIME), 0, sizeof(FILETIME));
-        safe_memset(&epochfile, sizeof(FILETIME), 0, sizeof(FILETIME));
-        safe_memset(&epoch, sizeof(SYSTEMTIME), 0, sizeof(SYSTEMTIME));
-        safe_memset(&nowAsInt, sizeof(ULARGE_INTEGER), 0, sizeof(ULARGE_INTEGER));
-        safe_memset(&epochAsInt, sizeof(ULARGE_INTEGER), 0, sizeof(ULARGE_INTEGER));
-        epoch.wYear      = WORD_C(1970);
-        epoch.wMonth     = WORD_C(1);
-        epoch.wSecond    = WORD_C(0); // MSFT says to set to first second.
-        epoch.wDayOfWeek = WORD_C(4); // Thursday
-        epoch.wDay       = WORD_C(1);
-        GetSystemTimeAsFileTime(&ftnow);
-        safe_memcpy(&nowAsInt, sizeof(ULARGE_INTEGER), &ftnow,
-                    sizeof(FILETIME)); // these are both 8 bytes in size, so it SHOULD
-                                       // be fine and MSFT says to do this-TJE
-        SystemTimeToFileTime(&epoch, &epochfile);
-        safe_memcpy(&epochAsInt, sizeof(ULARGE_INTEGER), &epochfile,
-                    sizeof(FILETIME));                // these are both 8 bytes in size, so it SHOULD
-                                                      // be fine and MSFT says to do this-TJE
-        if (nowAsInt.QuadPart >= epochAsInt.QuadPart) // this should always be true, but seems like
-                                                      // microsoft is likely checking this, so
-                                                      // checking this as well-TJE
-        {
-            msSinceJan1970 = C_CAST(uint64_t, (nowAsInt.QuadPart - epochAsInt.QuadPart)) /
-                             UINT64_C(10000); // subtracting the 2 large integers gives 100
-                                              // nanosecond intervals since jan 1, 1970, so
-                                              // divide by 10000 to get milliseconds (divide
-                                              // by 10000000 to get seconds)
-        }
-        else
-#elif IS_MSVC_VERSION(MSVC_2003)
-        struct __timeb64 timenow;
-        int              memsetret = safe_memset(&timenow, sizeof(struct __timeb64), 0, sizeof(struct __timeb64));
-#    if IS_MSVC_VERSION(MSVC_2005)
-        if (0 == memsetret && 0 == _ftime64_s(&timenow)) // Can use _s version
-        {
-#    else  // VS2003
-        if (0 == memsetret)
-        {
-            _ftime64(&timenow); // Can use _ftime64 back to Win98
-#    endif // VS2005 check
-            msSinceJan1970 = (C_CAST(uint64_t, timenow.time) * UINT64_C(1000)) + C_CAST(uint64_t, timenow.millitm);
-        }
-        else
-
-#endif // OS unique methods to get this info
-        {
-            // time_t is not guaranteed to always be a specific number of units.
-            // This can be system specific/library specific. so to convert using
-            // old standards, take a current time_t, convert it to struct tm,
-            // then calculate it. If time_t is 32bits, then this will not work
-            // past 2038. To detect this, we just need to check if the current
-            // year is less than 1970. If it is, it could be a roll over problem
-            // or some other clock issue. in that case, just return 0. NOTE:
-            // This code seems to work until approximately the year 275705. The
-            // following year I've noticed can be off by a day. There is
-            // probably a missing
-            //       adjustment factor somewhere else, but this is close
-            //       enough-TJE
-            // NOTE: To take into account leap seconds you need a table, or you
-            // can average 1 every 1.5 years:
-            // https://www.nist.gov/pml/time-and-frequency-division/leap-seconds-faqs#often
-            //       This is not currently taken into account -TJE
-            struct tm nowstruct;
-            time_t    currentTime = time(M_NULLPTR);
-            if (currentTime == TIME_T_ERROR)
-            {
-                return UINT64_C(0);
-            }
-            safe_memset(&nowstruct, sizeof(struct tm), 0, sizeof(struct tm));
-            // to get the milliseconds, need to convert this to struct tm, then
-            // calculate this.
-            get_UTCtime(&currentTime, &nowstruct);
-            uint64_t currentyear = (M_STATIC_CAST(uint64_t, nowstruct.tm_year) + UINT64_C(1900));
-            if (currentyear >= UINT64_C(1970))
-            {
-                // need to account for leap years before calculating below. This
-                // will get how many leap years there are between the current
-                // year and 1970 to add to number of days for adjustment
-                uint64_t leapyears = (currentyear - UINT64_C(1970)) / UINT64_C(4);
-                // now subtract the number of skipped leap years (every 100
-                // years unless divible by 400). This needs to be number since
-                // 1970
-                uint64_t skippedleapyears = UINT64_C(0);
-                // years 2000 and 2400 are leap years, but 1700, 1800, 1900,
-                // 2100, 2200, and 2300 are not. To get skipped leap years, need
-                // to calculate based on number of centuries that have passed
-                // since 1970, then check how many have skipped leap year. No
-                // need to worry about this until at least 2100, however if you
-                // skip the year 2000, this causes a problem in 24606 where it
-                // will be off by 1 day.-TJE
-                if (currentyear >= UINT64_C(2000)) // start at 2000 since it is the first
-                                                   // century after 1970.
-                {
-                    // at least year 2100, so need to handle skipped leap years
-                    // and how many of these have occurred
-                    uint64_t centuriesSince1970 = ((currentyear - UINT64_C(1970)) / UINT64_C(100)) - UINT64_C(1);
-                    // use a loop to check each century, starting in 2100 to see
-                    // if it was a skipped leap year or not.
-                    uint64_t checkCentury = UINT64_C(2100);
-                    while (checkCentury <= (UINT64_C(2100) + (centuriesSince1970 * UINT64_C(100))))
-                    {
-                        if (checkCentury % UINT64_C(400) != UINT64_C(0))
-                        {
-                            // This century does not have a leap year
-                            skippedleapyears += UINT64_C(1);
-                        }
-                        checkCentury += UINT64_C(100);
-                    }
-                }
-                leapyears -= skippedleapyears;
-                // Need to detect if the leap year is in the current year and if
-                // it has occured already or not.
-                if (currentyear % UINT64_C(4) == UINT64_C(0))
-                {
-                    bool adjustforcurrentleapyear = true;
-                    // leap year is in the current year, unless it is a year to
-                    // skip a leap year (every 100 years, unless divisible by
-                    // 400)
-                    if (currentyear % UINT64_C(100) == UINT64_C(0) && currentyear % UINT64_C(400) != UINT64_C(0))
-                    {
-                        // currently in a century year without a leap year. No
-                        // need for the adjustment below
-                        adjustforcurrentleapyear = false;
-                    }
-                    if (adjustforcurrentleapyear)
-                    {
-                        // Check if it is past february 29th already or not.
-                        if (nowstruct.tm_mon < 2)
-                        {
-                            // february or january
-                            if (nowstruct.tm_mon == 0 || (nowstruct.tm_mon == 1 && nowstruct.tm_mday <= 29))
-                            {
-                                // subtract 1 from leapyears since it has not
-                                // yet occurred for the current year
-                                leapyears -= UINT64_C(1);
-                            }
-                        }
-                    }
-                }
-                // use tm_sec, tm_min, tm_hour, tm_year, and tm_yday to convert
-                // this.-TJE
-                msSinceJan1970 = (C_CAST(uint64_t, nowstruct.tm_sec) * UINT64_C(1000)) +
-                                 (C_CAST(uint64_t, nowstruct.tm_min) * UINT64_C(60000)) +
-                                 (C_CAST(uint64_t, nowstruct.tm_hour) * UINT64_C(3600000)) +
-                                 ((C_CAST(uint64_t, nowstruct.tm_yday) + leapyears) * UINT64_C(86400000)) +
-                                 ((currentyear - UINT64_C(1970)) * UINT64_C(31536000000));
-            }
-            else
-            {
-                // some weird time skew issue or 32bit time_t 2038 issue, so
-                // just return zero for an invalid value.-TJE NOTE: with a 32bit
-                // time_t you could probably implement a clever workaround to
-                // adjust it to a correct year, but that is not worth
-                //       implmenting in this code. I don't even know which
-                //       modern OS is using a 32bit time_t in 2024. -TJE If a
-                //       workaround to adjust the year was implemented, it would
-                //       likely only work until some future time where the same
-                //       32bit problem happens again.-TJE
-                msSinceJan1970 = UINT64_C(0);
-            }
-        }
     }
     return msSinceJan1970;
 }
