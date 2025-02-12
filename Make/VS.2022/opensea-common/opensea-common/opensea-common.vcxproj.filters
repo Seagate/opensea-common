@@ -24,6 +24,9 @@
     <ClInclude Include="..\..\..\..\include\common_types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\constraint_handling.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\..\include\env_detect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -84,6 +87,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\bit_manip.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\constraint_handling.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\env_detect.c">

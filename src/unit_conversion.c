@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
-// 
-// \file unit_conversion.c
-// \brief Implements various functions for converting between different types of units.
+
+//! \file unit_conversion.c
+//! \brief Implements various functions for converting between different types of units
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "unit_conversion.h"
 #include "io_utils.h"
@@ -19,8 +16,8 @@
 
 eReturnValues metric_Unit_Convert(double* byteValue, char** metricUnit)
 {
-    eReturnValues ret = SUCCESS;
-    uint8_t unitCounter = 0;
+    eReturnValues ret         = SUCCESS;
+    uint8_t       unitCounter = UINT8_C(0);
 
     if (!byteValue || !metricUnit || !*metricUnit)
     {
@@ -69,8 +66,8 @@ eReturnValues metric_Unit_Convert(double* byteValue, char** metricUnit)
 
 eReturnValues capacity_Unit_Convert(double* byteValue, char** capacityUnit)
 {
-    eReturnValues ret = SUCCESS;
-    uint8_t unitCounter = 0;
+    eReturnValues ret         = SUCCESS;
+    uint8_t       unitCounter = UINT8_C(0);
 
     if (!byteValue || !capacityUnit || !*capacityUnit)
     {
@@ -117,44 +114,43 @@ eReturnValues capacity_Unit_Convert(double* byteValue, char** capacityUnit)
     return ret;
 }
 
-int16_t celsius_To_Fahrenheit(int16_t* celsius)
+int16_t celsius_To_Fahrenheit(const int16_t* celsius)
 {
-    int16_t fahrenheit = 0;
-    fahrenheit = C_CAST(int16_t, (*celsius * (9.0 / 5.0)) + 32.0);
+    // rewrote order of operations to be better for integer math.
+    // formula is C * (9/5) + 32. To scale better for int math we use
+    //            ((C * 9) + 160) / 5
+    int16_t fahrenheit =
+        ((*celsius * INT16_C(9)) + INT16_C(160)) / INT16_C(5); // NOLINT(bugprone-narrowing-conversions)
     return fahrenheit;
 }
 
-int16_t fahrenheit_To_celsius(int16_t* fahrenheit)
+int16_t fahrenheit_To_celsius(const int16_t* fahrenheit)
 {
-    int16_t celsius = 0;
-    celsius = C_CAST(int16_t, (*fahrenheit - 32.0) * (5.0 / 9.0));
+    int16_t celsius = ((*fahrenheit - INT16_C(32)) * INT16_C(5)) / INT16_C(9); // NOLINT(bugprone-narrowing-conversions)
     return celsius;
 }
 
-int16_t celsius_To_Kelvin(int16_t* celsius)
+int16_t celsius_To_Kelvin(const int16_t* celsius)
 {
-    int16_t kelvin = 0;
-    kelvin = C_CAST(int16_t, *celsius + 273.15);
+    int16_t kelvin = *celsius + INT16_C(273); // NOLINT(bugprone-narrowing-conversions)
     return kelvin;
 }
 
-int16_t fahrenheit_To_Kelvin(int16_t* fahrenheit)
+int16_t fahrenheit_To_Kelvin(const int16_t* fahrenheit)
 {
-    int16_t kelvin = 0;
-    kelvin = C_CAST(int16_t, (5.0 / 9.0) * (*fahrenheit - 32.0) + 273.15);
+    int16_t kelvin = fahrenheit_To_celsius(fahrenheit) + INT16_C(273); // NOLINT(bugprone-narrowing-conversions)
     return kelvin;
 }
 
-int16_t kelvin_To_Celsius(int16_t* kelvin)
+int16_t kelvin_To_Celsius(const int16_t* kelvin)
 {
-    int16_t celsius = 0;
-    celsius = C_CAST(int16_t, *kelvin - 273.15);
+    int16_t celsius = *kelvin - INT16_C(273); // NOLINT(bugprone-narrowing-conversions)
     return celsius;
 }
 
-int16_t kelvin_To_Fahrenheit(int16_t* kelvin)
+int16_t kelvin_To_Fahrenheit(const int16_t* kelvin)
 {
-    int16_t fahrenheit = 0;
-    fahrenheit = C_CAST(int16_t, (9.0 / 5.0) * (*kelvin - 273.15) + 32.0);
+    int16_t fahrenheit =
+        ((kelvin_To_Celsius(kelvin) * INT16_C(9)) / INT16_C(5)) + INT16_C(32); // NOLINT(bugprone-narrowing-conversions)
     return fahrenheit;
 }

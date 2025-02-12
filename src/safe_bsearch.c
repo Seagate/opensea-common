@@ -1,29 +1,35 @@
 // SPDX-License-Identifier: BSD-3-Clause and MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
-// 
-// \file safe_bsearch.c
-// \brief Defines safe_bsearch_context which behaves similarly to bsearch_s with a context parameter.
-//        This code is adapted from FreeBSD's qsort.c under BSD 3-clause license
-//        Modifications are licensed under MPL 2.0
-//Modifications:
-//             checks for null, sizes as required for C11 annex k bsearch_s
-//             set errno as needed
-//             change to comparison function with context parameter
-//             casts changed to M_CONST_CAST to resolve warnings
-//             variable scope changed to within for loop for lim and cmp
 
-#include "sort_and_search.h"
+//! \file safe_bsearch.c
+//! \brief Defines safe_bsearch_context which behaves similarly to bsearch_s with
+//! a context parameter.
+//! \details This code is adapted from FreeBSD's bsearch.c under BSD 3-clause license.
+//! Modifications are licensed under MPL 2.0
+//! Modifications:
+//!
+//! - checks for null, sizes as required for C11 annex k bsearch_s
+//!
+//! - set errno as needed
+//!
+//! - change to comparison function with context parameter
+//!
+//! - casts changed to M_CONST_CAST to resolve warnings
+//!
+//! - variable scope changed to within for loop for lim and cmp
+//!
+//! - call constraint handler for errors detected per C11 Annex K
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 #include "code_attributes.h"
 #include "common_types.h"
+#include "constraint_handling.h"
+#include "sort_and_search.h"
 #include "type_conversion.h"
 
 /*-
@@ -74,28 +80,69 @@
  * look at item 3.
  */
 
-void* safe_bsearch_context(const void* key, void* ptr, rsize_t count, rsize_t size, ctxcomparefn compare, void* context)
+void* safe_bsearch_context_impl(const void*  key,
+                                void*        ptr,
+                                rsize_t      count,
+                                rsize_t      size,
+                                ctxcomparefn compare,
+                                void*        context,
+                                const char*  file,
+                                const char*  function,
+                                int          line,
+                                const char*  expression)
 {
-    if (count > 0 && (key == M_NULLPTR || ptr == M_NULLPTR || compare == M_NULLPTR))
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
+    DISABLE_NONNULL_COMPARE
+    if (count > RSIZE_T_C(0) && ptr == M_NULLPTR)
     {
-        errno = EINVAL;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_bsearch_context: count > 0 && ptr == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
         return M_NULLPTR;
     }
-    else if (count > RSIZE_MAX || size > RSIZE_MAX)
+    else if (count > RSIZE_T_C(0) && compare == M_NULLPTR)
     {
-        errno = ERANGE;
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_bsearch_context: count > 0 && compare == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (count > RSIZE_T_C(0) && key == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_bsearch_context: count > 0 && key == NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (count > RSIZE_MAX)
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_bsearch_context: count > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (size > RSIZE_MAX)
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_bsearch_context: size > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
         return M_NULLPTR;
     }
     else
     {
         const char* base = ptr;
-        const void* p = M_NULLPTR;
+        const void* p    = M_NULLPTR;
+        errno            = 0;
 
-        errno = 0;
-
-        for (size_t lim = count; lim != 0; lim >>= 1)
+        for (size_t lim = count; lim != SIZE_T_C(0); lim >>= 1)
         {
-            p = base + (lim >> 1) * size;
+            p       = base + (lim >> 1) * size;
             int cmp = compare(key, p, context);
             if (cmp == 0)
             {
@@ -106,8 +153,9 @@ void* safe_bsearch_context(const void* key, void* ptr, rsize_t count, rsize_t si
                 /* key > p: move right */
                 base = C_CAST(const char*, p) + size;
                 lim--;
-            }		/* else move left */
+            } /* else move left */
         }
     }
+    RESTORE_NONNULL_COMPARE
     return M_NULLPTR;
 }
