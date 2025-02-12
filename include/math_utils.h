@@ -36,7 +36,7 @@ extern "C"
 //! \return returns the maximum of two values
 #define M_Max(a, b) (((a) > (b)) ? (a) : (b))
 
-// clang-format off
+    // clang-format off
 #if defined(USING_C11) && defined (HAVE_C11_GENERIC_SELECTION)
 // NOTE: On the int rounding macros for unsigned char and unsigned short, the 1 is cast to those types to avoid
 //       making the type wider and generating a truncation error at assignment.

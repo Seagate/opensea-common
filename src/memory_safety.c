@@ -1019,7 +1019,7 @@ errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
             __builtin_memcpy(dest, src,
                              count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #else
-            memcpy(dest, src, count);  // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+            memcpy(dest, src, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #endif // HAVE_MSFT_SECURE_LIB
         }
         errno = error;

@@ -47,7 +47,7 @@ eReturnValues replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char* n
     safe_memset(ptr, ptrLen + 1, 0,
                 ptrLen); // destsz has + 1 for null terminator not included in strlen.
     fullLength = (OPENSEA_PATH_MAX - safe_strlen(fullPath));
-    snprintf(ptr, fullLength, "%s", newFileName);
+    snprintf_err_handle(ptr, fullLength, "%s", newFileName);
     return SUCCESS;
 }
 
@@ -954,7 +954,7 @@ M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, oscoffse
 #elif defined(POSIX_2001)
             seekres = fseeko(fileInfo->file, offset, initialPosition);
 #else
-            seekres         = fseek(fileInfo->file, offset, initialPosition);
+            seekres = fseek(fileInfo->file, offset, initialPosition);
 #endif
             if (seekres == 0)
             {
@@ -1023,7 +1023,7 @@ M_NODISCARD oscoffset_t secure_Tell_File(secureFileInfo* fileInfo)
 #elif defined(POSIX_2001)
             tellres = ftello(fileInfo->file);
 #else
-            tellres         = ftell(fileInfo->file);
+            tellres = ftell(fileInfo->file);
 #endif
             if (tellres >= 0)
             {
@@ -1414,7 +1414,7 @@ M_FUNC_ATTR_MALLOC char* generate_Log_Name(
     }
     if (logPath != M_NULLPTR && logPathLen > 0)
     {
-        snprintf(path, OPENSEA_PATH_MAX, "%s", logPath);
+        snprintf_err_handle(path, OPENSEA_PATH_MAX, "%s", logPath);
         // if there is no path separator at the end of this string, then we need
         // to append one before using this path below
         if (path[safe_strnlen(path, OPENSEA_PATH_MAX) - 1] != SYSTEM_PATH_SEPARATOR)
@@ -1426,7 +1426,7 @@ M_FUNC_ATTR_MALLOC char* generate_Log_Name(
     {
         // set to relative current working directory ./ or .\\ in Windows. This
         // will be expanded by secure file to a full path
-        snprintf(path, OPENSEA_PATH_MAX, ".%c", SYSTEM_PATH_SEPARATOR);
+        snprintf_err_handle(path, OPENSEA_PATH_MAX, ".%c", SYSTEM_PATH_SEPARATOR);
     }
     if (logExt != M_NULLPTR && logExtLen > SIZE_T_C(0))
     {

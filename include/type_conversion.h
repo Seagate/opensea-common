@@ -225,7 +225,7 @@ extern "C"
     size_t ulonglong_to_sizet(unsigned long long val);
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-// clang-format off
+    // clang-format off
 //! \def to_sizet
 //! \brief C11 generic selection macro to call the appropriate x_to_sizet function based on the typeof \a X
 //! \param[in] X the value to convert. It's type is used to call the correct function for the conversion.

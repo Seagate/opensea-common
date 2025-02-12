@@ -743,7 +743,7 @@ extern "C"
 //! \param[in] minor minor version of FreeBSD to check for
 //! \param[in] patch patch version of FreeBSD to check for
 #if defined(__FreeBSD__) && defined(__FreeBSD_version)
-#    define FREEBSD_FULL_VERSION_ENCODE(major, minor, revision) ((major)*100000 + (minor)*1000 + (revision))
+#    define FREEBSD_FULL_VERSION_ENCODE(major, minor, revision) ((major) * 100000 + (minor) * 1000 + (revision))
 #    define IS_FREEBSD_VERSION(major, minor, revision)                                                                 \
         (__FreeBSD_version >= FREEBSD_FULL_VERSION_ENCODE(major, minor, revision))
 #else
@@ -756,7 +756,7 @@ extern "C"
 //! \param[in] minor minor version of NetBSD to check for
 //! \param[in] patch patch version of NetBSD to check for
 #if defined(__NetBSD__) && defined(__NetBSD_Version__)
-#    define NETBSD_VERSION_ENCODE(major, minor, patch) ((major)*100000000 + (minor)*1000000 + (patch)*100)
+#    define NETBSD_VERSION_ENCODE(major, minor, patch) ((major) * 100000000 + (minor) * 1000000 + (patch) * 100)
 #    define IS_NETBSD_VERSION(major, minor, patch)     (__NetBSD_Version__ >= NETBSD_VERSION_ENCODE(major, minor, patch))
 #else
 #    define IS_NETBSD_VERSION(major, minor, patch) (0)

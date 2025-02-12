@@ -504,7 +504,7 @@ errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
         // many cases as standard which is why it's down here.-TJE
         error = strncpy_s(dest, destsz, src, count);
 #else
-        error        = safe_memccpy(dest, destsz, src, '\0', count);
+        error = safe_memccpy(dest, destsz, src, '\0', count);
         if (srclen < count)
         {
             dest[srclen] = '\0'; // ensuring NULL termination

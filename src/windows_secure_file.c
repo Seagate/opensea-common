@@ -1360,13 +1360,13 @@ eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_
     //       that compiler.-TJE Microsoft also has a S extension for strings to
     //       specify single char with wprintf and wide char for printf that may
     //       also be used as needed-TJE
-    snprintf(fullPath, OPENSEA_PATH_MAX, "%ls", fullPathOutput);
+    snprintf_err_handle(fullPath, OPENSEA_PATH_MAX, "%ls", fullPathOutput);
 #else
 #    if defined(_MSC_VER)
     // Microsoft uses hs but this is not standard and using %s is the standard
-    snprintf(fullPath, OPENSEA_PATH_MAX, "%hs", fullPathOutput);
+    snprintf_err_handle(fullPath, OPENSEA_PATH_MAX, "%hs", fullPathOutput);
 #    else
-    snprintf(fullPath, OPENSEA_PATH_MAX, "%s", fullPathOutput);
+    snprintf_err_handle(fullPath, OPENSEA_PATH_MAX, "%s", fullPathOutput);
 #    endif
 #endif
     // Check if this file even exists to make this more like the behavior of the

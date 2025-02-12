@@ -598,7 +598,7 @@ extern "C"
     //! \param[in] format The format string.
     //! \param[in] ... Additional arguments for the format string.
     //! \return The number of characters that would have been written if the buffer had been sufficiently large, not
-    //! including the null terminator.
+    //! including the null terminator. On error, this will always add a null terminator at the end of the buffer.
     //! \note Invokes the constraint handler on error.
     M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RW(1)
@@ -620,6 +620,7 @@ extern "C"
 
         if (n < 0 || int_to_sizet(n) >= bufsize)
         {
+            buf[bufsize - 1] = 0;
             constraintEnvInfo envInfo;
             errno = EINVAL;
             invoke_Constraint_Handler("snprintf_error_handler_macro: error in snprintf",

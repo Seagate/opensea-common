@@ -270,13 +270,13 @@ eArchitecture get_Compiled_Architecture(void)
 #elif defined __powerpc64__ || defined __PPC64__ || defined __ppc64__ || defined _ARCH_PPC64 || defined _ARCH_PPC64
     return OPENSEA_ARCH_POWERPC64;
 #elif defined __powerpc__ || defined __POWERPC__ || defined __PPC__ || defined __ppc__ || defined _ARCH_PPC ||         \
-    defined _M_PPC || defined _ARCH_PPC
+    defined   _M_PPC || defined _ARCH_PPC
     return OPENSEA_ARCH_POWERPC;
 #elif defined __sparc__ || defined __sparc
     return OPENSEA_ARCH_SPARC;
 #elif defined __s390__ || defined __s390x__ || defined __zarch__ || defined __370__ || defined __THW_370__
     return OPENSEA_ARCH_SYSTEMZ;
-#elif defined                                                                                  __mips__
+#elif defined __mips__
     return OPENSEA_ARCH_MIPS;
 #else
     return OPENSEA_ARCH_UNKNOWN;
@@ -375,18 +375,18 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     *compilerUsed = OPENSEA_COMPILER_MICROSOFT_VISUAL_C_CPP;
 #    define MS_VERSION_STRING_LENGTH 10
     DECLARE_ZERO_INIT_ARRAY(char, msVersion, MS_VERSION_STRING_LENGTH);
-    snprintf(msVersion, MS_VERSION_STRING_LENGTH, "%u", _MSC_FULL_VER);
+    snprintf_err_handle(msVersion, MS_VERSION_STRING_LENGTH, "%u", _MSC_FULL_VER);
     DECLARE_ZERO_INIT_ARRAY(char, msMajor, 3);
     DECLARE_ZERO_INIT_ARRAY(char, msMinor, 3);
     DECLARE_ZERO_INIT_ARRAY(char, msPatch, 6);
-    snprintf(msMajor, 3, "%.2s", &msVersion[0]);
-    snprintf(msMinor, 3, "%.2s", &msVersion[2]);
-    snprintf(msPatch, 6, "%.5s", &msVersion[4]);
+    snprintf_err_handle(msMajor, 3, "%.2s", &msVersion[0]);
+    snprintf_err_handle(msMinor, 3, "%.2s", &msVersion[2]);
+    snprintf_err_handle(msPatch, 6, "%.5s", &msVersion[4]);
     compilerVersionInfo->major = C_CAST(uint16_t, strtoul(msMajor, M_NULLPTR, BASE_10_DECIMAL));
     compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(msMinor, M_NULLPTR, BASE_10_DECIMAL));
     compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(msPatch, M_NULLPTR, BASE_10_DECIMAL));
 #elif defined __MINGW64__
-    *compilerUsed = OPENSEA_COMPILER_MINGW;
+    *compilerUsed              = OPENSEA_COMPILER_MINGW;
     compilerVersionInfo->major = __MINGW64_VERSION_MAJOR;
     compilerVersionInfo->minor = __MINGW64_VERSION_MINOR;
     compilerVersionInfo->patch = 0;
@@ -405,13 +405,13 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     *compilerUsed = OPENSEA_COMPILER_HP_A_CPP;
 #    define HP_ACC_VERSION_STRING_LENGTH 7
     DECLARE_ZERO_INIT_ARRAY(char, hpVersion, HP_ACC_VERSION_STRING_LENGTH);
-    snprintf(hpVersion, HP_ACC_VERSION_STRING_LENGTH, "%u", __HP_aCC);
+    snprintf_err_handle(hpVersion, HP_ACC_VERSION_STRING_LENGTH, "%u", __HP_aCC);
     DECLARE_ZERO_INIT_ARRAY(char, hpMajor, 3);
     DECLARE_ZERO_INIT_ARRAY(char, hpMinor, 3);
     DECLARE_ZERO_INIT_ARRAY(char, hpPatch, 3);
-    snprintf(hpMajor, 3, "%.2s", &hpVersion[0]);
-    snprintf(hpMinor, 3, "%.2s", &hpVersion[2]);
-    snprintf(hpPatch, 3, "%.2s", &hpVersion[4]);
+    snprintf_err_handle(hpMajor, 3, "%.2s", &hpVersion[0]);
+    snprintf_err_handle(hpMinor, 3, "%.2s", &hpVersion[2]);
+    snprintf_err_handle(hpPatch, 3, "%.2s", &hpVersion[4]);
     compilerVersionInfo->major = C_CAST(uint16_t, strtoul(hpMajor, M_NULLPTR, BASE_10_DECIMAL));
     compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(hpMinor, M_NULLPTR, BASE_10_DECIMAL));
     compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(hpPatch, M_NULLPTR, BASE_10_DECIMAL));
@@ -434,13 +434,13 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     *compilerUsed = OPENSEA_COMPILER_INTEL_C_CPP;
 #    define INTEL_VERSION_STRING_MAX_LENGTH 4;
     DECLARE_ZERO_INIT_ARRAY(char, intelVersion, 4);
-    snprintf(intelVersion, INTEL_VERSION_STRING_MAX_LENGTH, "%u", __INTEL_COMPILER);
+    snprintf_err_handle(intelVersion, INTEL_VERSION_STRING_MAX_LENGTH, "%u", __INTEL_COMPILER);
     DECLARE_ZERO_INIT_ARRAY(char, intelMajor, 2);
     DECLARE_ZERO_INIT_ARRAY(char, intelMinor, 2);
     DECLARE_ZERO_INIT_ARRAY(char, intelPatch, 2);
-    snprintf(intelMajor, 2, "%.1s", &intelVersion[0]);
-    snprintf(intelMinor, 2, "%.1s", &intelVersion[1]);
-    snprintf(intelPatch, 2, "%.1s", &intelVersion[2]);
+    snprintf_err_handle(intelMajor, 2, "%.1s", &intelVersion[0]);
+    snprintf_err_handle(intelMinor, 2, "%.1s", &intelVersion[1]);
+    snprintf_err_handle(intelPatch, 2, "%.1s", &intelVersion[2]);
     compilerVersionInfo->major = C_CAST(uint16_t, strtoul(intelMajor, M_NULLPTR, BASE_0_AUTO));
     compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(intelMinor, M_NULLPTR, BASE_0_AUTO));
     compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(intelPatch, M_NULLPTR, BASE_0_AUTO));
@@ -455,7 +455,7 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
                                                               // as 0x5100. Need to put extra code in here to fix
                                                               // this when we actually support this compiler.
     compilerVersionInfo->patch = M_Nibble0(__SUNPRO_C);
-#elif defined                       __GNUC__ // CYGWIN?
+#elif defined __GNUC__ // CYGWIN?
     // GCC C/C++ compiler
     *compilerUsed              = OPENSEA_COMPILER_GCC;
     compilerVersionInfo->major = __GNUC__;

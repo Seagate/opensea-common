@@ -725,7 +725,7 @@ typedef int32_t intptr_t;
 //! \param size The size of the array.
 #    if IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0)
 #        define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                   \
-            type_name array_name[size] = {[0 ...((size)-1)] = 0}
+            type_name array_name[size] = {[0 ...((size) - 1)] = 0}
 #    elif USING_C23
 #        define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) type_name array_name[size] = {}
 #    else
@@ -771,18 +771,18 @@ typedef int32_t intptr_t;
 //! M_STATIC_ASSET(condition, this_is_my_example_error)
 //! \endcode
 #if defined(USING_CPP11) && defined(__cpp_static_assert)
-#    define M_STATIC_ASSERT(condition, message) static_assert(condition, #    message)
+#    define M_STATIC_ASSERT(condition, message) static_assert(condition, #message)
 #elif defined(USING_C23)
-#    define M_STATIC_ASSERT(condition, message) static_assert(condition, #    message)
+#    define M_STATIC_ASSERT(condition, message) static_assert(condition, #message)
 #elif defined(USING_C11)
 #    if IS_MSVC_VERSION(MSVC_2019_16_8) /* Need new enough Windows SDK for this to be available - TJE */
 #        if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN10_20348
 #            include <assert.h>
-#            define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #            message)
+#            define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #message)
 #        endif
 #    elif !defined(_MSC_VER)
 #        include <assert.h>
-#        define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #        message)
+#        define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #message)
 #    endif
 #endif
 #if !defined(M_STATIC_ASSERT)

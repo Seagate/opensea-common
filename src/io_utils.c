@@ -1067,7 +1067,7 @@ static M_INLINE void fclose_term(FILE* term)
 // but avoiding that for now-TJE
 eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen)
 {
-    eReturnValues  ret = SUCCESS;
+    eReturnValues ret = SUCCESS;
 #    if defined(POSIX_2001) && defined(_POSIX_JOB_CONTROL) // https://linux.die.net/man/7/posixoptions
     struct termios defaultterm;
     struct termios currentterm;
@@ -2248,7 +2248,7 @@ M_NODISCARD FUNC_ATTR_PRINTF(2, 0) int vasprintf(char** M_RESTRICT strp, const c
 #endif // asprintf, vasprintf
 
 #if defined(_MSC_VER) && _MSC_VER <= MSVC_2013 && defined _WIN32
-int                                                       snprintf(char* buffer, size_t bufsz, const char* format, ...)
+int snprintf(char* buffer, size_t bufsz, const char* format, ...)
 {
     int     charCount = -1;
     va_list args;

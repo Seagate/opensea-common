@@ -32,31 +32,31 @@ eReturnValues metric_Unit_Convert(double* byteValue, char** metricUnit)
     switch (unitCounter)
     {
     case 0:
-        snprintf(*metricUnit, UNIT_STRING_LENGTH, "B");
+        snprintf_err_handle(*metricUnit, UNIT_STRING_LENGTH, "B");
         break;
     case 1:
-        snprintf(*metricUnit, UNIT_STRING_LENGTH, "KB");
+        snprintf_err_handle(*metricUnit, UNIT_STRING_LENGTH, "KB");
         break;
     case 2:
-        snprintf(*metricUnit, UNIT_STRING_LENGTH, "MB");
+        snprintf_err_handle(*metricUnit, UNIT_STRING_LENGTH, "MB");
         break;
     case 3:
-        snprintf(*metricUnit, UNIT_STRING_LENGTH, "GB");
+        snprintf_err_handle(*metricUnit, UNIT_STRING_LENGTH, "GB");
         break;
     case 4:
-        snprintf(*metricUnit, UNIT_STRING_LENGTH, "TB");
+        snprintf_err_handle(*metricUnit, UNIT_STRING_LENGTH, "TB");
         break;
     case 5:
-        snprintf(*metricUnit, UNIT_STRING_LENGTH, "PB");
+        snprintf_err_handle(*metricUnit, UNIT_STRING_LENGTH, "PB");
         break;
     case 6:
-        snprintf(*metricUnit, UNIT_STRING_LENGTH, "EB");
+        snprintf_err_handle(*metricUnit, UNIT_STRING_LENGTH, "EB");
         break;
     case 7:
-        snprintf(*metricUnit, UNIT_STRING_LENGTH, "ZB");
+        snprintf_err_handle(*metricUnit, UNIT_STRING_LENGTH, "ZB");
         break;
     case 8:
-        snprintf(*metricUnit, UNIT_STRING_LENGTH, "YB");
+        snprintf_err_handle(*metricUnit, UNIT_STRING_LENGTH, "YB");
         break;
     default:
         ret = FAILURE;
@@ -82,31 +82,31 @@ eReturnValues capacity_Unit_Convert(double* byteValue, char** capacityUnit)
     switch (unitCounter)
     {
     case 0:
-        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "B");
+        snprintf_err_handle(*capacityUnit, UNIT_STRING_LENGTH, "B");
         break;
     case 1:
-        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "KiB");
+        snprintf_err_handle(*capacityUnit, UNIT_STRING_LENGTH, "KiB");
         break;
     case 2:
-        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "MiB");
+        snprintf_err_handle(*capacityUnit, UNIT_STRING_LENGTH, "MiB");
         break;
     case 3:
-        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "GiB");
+        snprintf_err_handle(*capacityUnit, UNIT_STRING_LENGTH, "GiB");
         break;
     case 4:
-        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "TiB");
+        snprintf_err_handle(*capacityUnit, UNIT_STRING_LENGTH, "TiB");
         break;
     case 5:
-        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "PiB");
+        snprintf_err_handle(*capacityUnit, UNIT_STRING_LENGTH, "PiB");
         break;
     case 6:
-        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "EiB");
+        snprintf_err_handle(*capacityUnit, UNIT_STRING_LENGTH, "EiB");
         break;
     case 7:
-        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "ZiB");
+        snprintf_err_handle(*capacityUnit, UNIT_STRING_LENGTH, "ZiB");
         break;
     case 8:
-        snprintf(*capacityUnit, UNIT_STRING_LENGTH, "YiB");
+        snprintf_err_handle(*capacityUnit, UNIT_STRING_LENGTH, "YiB");
         break;
     default:
         ret = FAILURE;

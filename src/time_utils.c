@@ -57,7 +57,7 @@ bool get_current_timestamp(void)
             safe_memset(CURRENT_TIME_STRING, SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING), 0,
                         SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING));
             retStatus = false;
-            snprintf(CURRENT_TIME_STRING, CURRENT_TIME_STRING_LENGTH, "CAL_TIME_NOT_AVAILABLE");
+            snprintf_err_handle(CURRENT_TIME_STRING, CURRENT_TIME_STRING_LENGTH, "CAL_TIME_NOT_AVAILABLE");
         }
         else
         {
@@ -704,11 +704,11 @@ errno_t impl_safe_asctime(char*            buf,
         //  is %d which has a leading zero. To be technically correct in replacing
         //  this, need to set locale to english instead of localized locale first.
         //  After that is done, it can be reverted back.
-        bool restoreLocale = false;
+        bool  restoreLocale = false;
         char* currentLocale = M_NULLPTR;
         // Turn off constraint handling since it is possible we will receive NULL and want to continue execution -TJE
         eConstraintHandler currentHandler = set_Constraint_Handler(ERR_IGNORE);
-        error = safe_strdup(&currentLocale, setlocale(LC_TIME, M_NULLPTR));
+        error                             = safe_strdup(&currentLocale, setlocale(LC_TIME, M_NULLPTR));
         // Restore previous constraint handler
         set_Constraint_Handler(currentHandler);
         if (error == 0 && currentLocale != M_NULLPTR && setlocale(LC_TIME, "en-us.utf8"))

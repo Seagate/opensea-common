@@ -71,7 +71,7 @@ extern "C"
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
 //! - \a size is zero
-#    define safe_malloc(size) safe_malloc_impl(size, __FILE__, __func__, __LINE__, "safe_malloc(" #    size ")")
+#    define safe_malloc(size) safe_malloc_impl(size, __FILE__, __func__, __LINE__, "safe_malloc(" #size ")")
 #endif
 
 #if defined(DEV_ENVIRONMENT)
@@ -394,7 +394,7 @@ extern "C"
     }
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-// clang-format off
+    // clang-format off
 //! \def safe_free(mem)
 //! \brief Generic selection macro to select the correct helper function
 //! for safely freeing memory for the type of \a mem
@@ -850,7 +850,7 @@ extern "C"
     }
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-// clang-format off
+    // clang-format off
 //! \def safe_free_aligned(mem)
 //! \brief Generic selection macro to select the correct helper function
 //! for safely freeing aligned memory for the type of \a mem
@@ -1077,7 +1077,7 @@ extern "C"
     }
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-// clang-format off
+    // clang-format off
 //! \def safe_free_page_aligned(mem)
 //! \brief Generic selection macro to select the correct helper function
 //! for safely freeing page aligned memory for the type of \a mem

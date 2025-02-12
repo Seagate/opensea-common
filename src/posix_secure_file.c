@@ -126,7 +126,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
         if (uniqueID != M_NULLPTR)
         {
             uniqueID->deviceid = st.st_dev;
-            uniqueID->inode = st.st_ino;
+            uniqueID->inode    = st.st_ino;
         }
     }
     RESTORE_NONNULL_COMPARE

@@ -83,70 +83,70 @@ extern "C"
 //!
 //! This macro extracts the lower 32 bits from a 64-bit integer and casts it to int32_t.
 //! \param l The 64-bit integer from which to extract the lower 32 bits.
-#define M_DoubleWordInt0(l) (M_STATIC_CAST(int32_t, (((l)&UINT64_C(0x00000000FFFFFFFF)) >> 0)))
+#define M_DoubleWordInt0(l) (M_STATIC_CAST(int32_t, (((l) & UINT64_C(0x00000000FFFFFFFF)) >> 0)))
 
 //! \def M_DoubleWordInt1
 //! \brief Extracts the upper 32 bits from a 64-bit integer and casts it to int32_t.
 //!
 //! This macro extracts the upper 32 bits from a 64-bit integer and casts it to int32_t.
 //! \param l The 64-bit integer from which to extract the upper 32 bits.
-#define M_DoubleWordInt1(l) (M_STATIC_CAST(int32_t, (((l)&UINT64_C(0xFFFFFFFF00000000)) >> 32)))
+#define M_DoubleWordInt1(l) (M_STATIC_CAST(int32_t, (((l) & UINT64_C(0xFFFFFFFF00000000)) >> 32)))
 
 //! \def M_Word0
 //! \brief Extracts the lowest 16 bits from a 64-bit integer and casts it to uint16_t.
 //!
 //! This macro extracts the lowest 16 bits from a 64-bit integer and casts it to uint16_t.
 //! \param l The 64-bit integer from which to extract the lowest 16 bits.
-#define M_Word0(l) (M_STATIC_CAST(uint16_t, (((l)&UINT64_C(0x000000000000FFFF)) >> 0)))
+#define M_Word0(l) (M_STATIC_CAST(uint16_t, (((l) & UINT64_C(0x000000000000FFFF)) >> 0)))
 
 //! \def M_Word1
 //! \brief Extracts the second lowest 16 bits from a 64-bit integer and casts it to uint16_t.
 //!
 //! This macro extracts the second lowest 16 bits from a 64-bit integer and casts it to uint16_t.
 //! \param l The 64-bit integer from which to extract the second lowest 16 bits.
-#define M_Word1(l) (M_STATIC_CAST(uint16_t, (((l)&UINT64_C(0x00000000FFFF0000)) >> 16)))
+#define M_Word1(l) (M_STATIC_CAST(uint16_t, (((l) & UINT64_C(0x00000000FFFF0000)) >> 16)))
 
 //! \def M_Word2
 //! \brief Extracts the second highest 16 bits from a 64-bit integer and casts it to uint16_t.
 //!
 //! This macro extracts the second highest 16 bits from a 64-bit integer and casts it to uint16_t.
 //! \param l The 64-bit integer from which to extract the second highest 16 bits.
-#define M_Word2(l) (M_STATIC_CAST(uint16_t, (((l)&UINT64_C(0x0000FFFF00000000)) >> 32)))
+#define M_Word2(l) (M_STATIC_CAST(uint16_t, (((l) & UINT64_C(0x0000FFFF00000000)) >> 32)))
 
 //! \def M_Word3
 //! \brief Extracts the highest 16 bits from a 64-bit integer and casts it to uint16_t.
 //!
 //! This macro extracts the highest 16 bits from a 64-bit integer and casts it to uint16_t.
 //! \param l The 64-bit integer from which to extract the highest 16 bits.
-#define M_Word3(l) (M_STATIC_CAST(uint16_t, (((l)&UINT64_C(0xFFFF000000000000)) >> 48)))
+#define M_Word3(l) (M_STATIC_CAST(uint16_t, (((l) & UINT64_C(0xFFFF000000000000)) >> 48)))
 
 //! \def M_WordInt0
 //! \brief Extracts the lowest 16 bits from a 64-bit integer and casts it to int16_t.
 //!
 //! This macro extracts the lowest 16 bits from a 64-bit integer and casts it to int16_t.
 //! \param l The 64-bit integer from which to extract the lowest 16 bits.
-#define M_WordInt0(l) (M_STATIC_CAST(int16_t, (((l)&UINT64_C(0x000000000000FFFF)) >> 0)))
+#define M_WordInt0(l) (M_STATIC_CAST(int16_t, (((l) & UINT64_C(0x000000000000FFFF)) >> 0)))
 
 //! \def M_WordInt1
 //! \brief Extracts the second lowest 16 bits from a 64-bit integer and casts it to int16_t.
 //!
 //! This macro extracts the second lowest 16 bits from a 64-bit integer and casts it to int16_t.
 //! \param l The 64-bit integer from which to extract the second lowest 16 bits.
-#define M_WordInt1(l) (M_STATIC_CAST(int16_t, (((l)&UINT64_C(0x00000000FFFF0000)) >> 16)))
+#define M_WordInt1(l) (M_STATIC_CAST(int16_t, (((l) & UINT64_C(0x00000000FFFF0000)) >> 16)))
 
 //! \def M_WordInt2
 //! \brief Extracts the second highest 16 bits from a 64-bit integer and casts it to int16_t.
 //!
 //! This macro extracts the second highest 16 bits from a 64-bit integer and casts it to int16_t.
 //! \param l The 64-bit integer from which to extract the second highest 16 bits.
-#define M_WordInt2(l) (M_STATIC_CAST(int16_t, (((l)&UINT64_C(0x0000FFFF00000000)) >> 32)))
+#define M_WordInt2(l) (M_STATIC_CAST(int16_t, (((l) & UINT64_C(0x0000FFFF00000000)) >> 32)))
 
 //! \def M_WordInt3
 //! \brief Extracts the highest 16 bits from a 64-bit integer and casts it to int16_t.
 //!
 //! This macro extracts the highest 16 bits from a 64-bit integer and casts it to int16_t.
 //! \param l The 64-bit integer from which to extract the highest 16 bits.
-#define M_WordInt3(l) (M_STATIC_CAST(int16_t, (((l)&UINT64_C(0xFFFF000000000000)) >> 48)))
+#define M_WordInt3(l) (M_STATIC_CAST(int16_t, (((l) & UINT64_C(0xFFFF000000000000)) >> 48)))
 
 //! \def BITSPERBYTE
 //! \brief Defines the number of bits per byte.
@@ -159,119 +159,119 @@ extern "C"
 //!
 //! This macro sets the nth byte to all 1s by shifting the maximum value of a byte (UINT8_MAX) left by n * 8 bits.
 //! \param n The byte position to set to all 1s.
-#define M_ByteN(n) ((UINT8_MAX << ((n)*BITSPERBYTE)))
+#define M_ByteN(n) ((UINT8_MAX << ((n) * BITSPERBYTE)))
 
 //! \def M_Byte0
 //! \brief Extracts the lowest byte from a 64-bit integer and casts it to uint8_t.
 //!
 //! This macro extracts the lowest byte from a 64-bit integer and casts it to uint8_t.
 //! \param l The 64-bit integer from which to extract the lowest byte.
-#define M_Byte0(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0x00000000000000FF)) >> 0)))
+#define M_Byte0(l) (M_STATIC_CAST(uint8_t, (((l) & UINT64_C(0x00000000000000FF)) >> 0)))
 
 //! \def M_Byte1
 //! \brief Extracts the second lowest byte from a 64-bit integer and casts it to uint8_t.
 //!
 //! This macro extracts the second lowest byte from a 64-bit integer and casts it to uint8_t.
 //! \param l The 64-bit integer from which to extract the second lowest byte.
-#define M_Byte1(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0x000000000000FF00)) >> 8)))
+#define M_Byte1(l) (M_STATIC_CAST(uint8_t, (((l) & UINT64_C(0x000000000000FF00)) >> 8)))
 
 //! \def M_Byte2
 //! \brief Extracts the third lowest byte from a 64-bit integer and casts it to uint8_t.
 //!
 //! This macro extracts the third lowest byte from a 64-bit integer and casts it to uint8_t.
 //! \param l The 64-bit integer from which to extract the third lowest byte.
-#define M_Byte2(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0x0000000000FF0000)) >> 16)))
+#define M_Byte2(l) (M_STATIC_CAST(uint8_t, (((l) & UINT64_C(0x0000000000FF0000)) >> 16)))
 
 //! \def M_Byte3
 //! \brief Extracts the fourth lowest byte from a 64-bit integer and casts it to uint8_t.
 //!
 //! This macro extracts the fourth lowest byte from a 64-bit integer and casts it to uint8_t.
 //! \param l The 64-bit integer from which to extract the fourth lowest byte.
-#define M_Byte3(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0x00000000FF000000)) >> 24)))
+#define M_Byte3(l) (M_STATIC_CAST(uint8_t, (((l) & UINT64_C(0x00000000FF000000)) >> 24)))
 
 //! \def M_Byte4
 //! \brief Extracts the fifth lowest byte from a 64-bit integer and casts it to uint8_t.
 //!
 //! This macro extracts the fifth lowest byte from a 64-bit integer and casts it to uint8_t.
 //! \param l The 64-bit integer from which to extract the fifth lowest byte.
-#define M_Byte4(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0x000000FF00000000)) >> 32)))
+#define M_Byte4(l) (M_STATIC_CAST(uint8_t, (((l) & UINT64_C(0x000000FF00000000)) >> 32)))
 
 //! \def M_Byte5
 //! \brief Extracts the sixth lowest byte from a 64-bit integer and casts it to uint8_t.
 //!
 //! This macro extracts the sixth lowest byte from a 64-bit integer and casts it to uint8_t.
 //! \param l The 64-bit integer from which to extract the sixth lowest byte.
-#define M_Byte5(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0x0000FF0000000000)) >> 40)))
+#define M_Byte5(l) (M_STATIC_CAST(uint8_t, (((l) & UINT64_C(0x0000FF0000000000)) >> 40)))
 
 //! \def M_Byte6
 //! \brief Extracts the seventh lowest byte from a 64-bit integer and casts it to uint8_t.
 //!
 //! This macro extracts the seventh lowest byte from a 64-bit integer and casts it to uint8_t.
 //! \param l The 64-bit integer from which to extract the seventh lowest byte.
-#define M_Byte6(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0x00FF000000000000)) >> 48)))
+#define M_Byte6(l) (M_STATIC_CAST(uint8_t, (((l) & UINT64_C(0x00FF000000000000)) >> 48)))
 
 //! \def M_Byte7
 //! \brief Extracts the highest byte from a 64-bit integer and casts it to uint8_t.
 //!
 //! This macro extracts the highest byte from a 64-bit integer and casts it to uint8_t.
 //! \param l The 64-bit integer from which to extract the highest byte.
-#define M_Byte7(l) (M_STATIC_CAST(uint8_t, (((l)&UINT64_C(0xFF00000000000000)) >> 56)))
+#define M_Byte7(l) (M_STATIC_CAST(uint8_t, (((l) & UINT64_C(0xFF00000000000000)) >> 56)))
 
 //! \def M_ByteInt0
 //! \brief Extracts the lowest byte from a 64-bit integer and casts it to int8_t.
 //!
 //! This macro extracts the lowest byte from a 64-bit integer and casts it to int8_t.
 //! \param l The 64-bit integer from which to extract the lowest byte.
-#define M_ByteInt0(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0x00000000000000FF)) >> 0)))
+#define M_ByteInt0(l) (M_STATIC_CAST(int8_t, (((l) & UINT64_C(0x00000000000000FF)) >> 0)))
 
 //! \def M_ByteInt1
 //! \brief Extracts the second lowest byte from a 64-bit integer and casts it to int8_t.
 //!
 //! This macro extracts the second lowest byte from a 64-bit integer and casts it to int8_t.
 //! \param l The 64-bit integer from which to extract the second lowest byte.
-#define M_ByteInt1(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0x000000000000FF00)) >> 8)))
+#define M_ByteInt1(l) (M_STATIC_CAST(int8_t, (((l) & UINT64_C(0x000000000000FF00)) >> 8)))
 
 //! \def M_ByteInt2
 //! \brief Extracts the third lowest byte from a 64-bit integer and casts it to int8_t.
 //!
 //! This macro extracts the third lowest byte from a 64-bit integer and casts it to int8_t.
 //! \param l The 64-bit integer from which to extract the third lowest byte.
-#define M_ByteInt2(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0x0000000000FF0000)) >> 16)))
+#define M_ByteInt2(l) (M_STATIC_CAST(int8_t, (((l) & UINT64_C(0x0000000000FF0000)) >> 16)))
 
 //! \def M_ByteInt3
 //! \brief Extracts the fourth lowest byte from a 64-bit integer and casts it to int8_t.
 //!
 //! This macro extracts the fourth lowest byte from a 64-bit integer and casts it to int8_t.
 //! \param l The 64-bit integer from which to extract the fourth lowest byte.
-#define M_ByteInt3(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0x00000000FF000000)) >> 24)))
+#define M_ByteInt3(l) (M_STATIC_CAST(int8_t, (((l) & UINT64_C(0x00000000FF000000)) >> 24)))
 
 //! \def M_ByteInt4
 //! \brief Extracts the fifth lowest byte from a 64-bit integer and casts it to int8_t.
 //!
 //! This macro extracts the fifth lowest byte from a 64-bit integer and casts it to int8_t.
 //! \param l The 64-bit integer from which to extract the fifth lowest byte.
-#define M_ByteInt4(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0x000000FF00000000)) >> 32)))
+#define M_ByteInt4(l) (M_STATIC_CAST(int8_t, (((l) & UINT64_C(0x000000FF00000000)) >> 32)))
 
 //! \def M_ByteInt5
 //! \brief Extracts the sixth lowest byte from a 64-bit integer and casts it to int8_t.
 //!
 //! This macro extracts the sixth lowest byte from a 64-bit integer and casts it to int8_t.
 //! \param l The 64-bit integer from which to extract the sixth lowest byte.
-#define M_ByteInt5(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0x0000FF0000000000)) >> 40)))
+#define M_ByteInt5(l) (M_STATIC_CAST(int8_t, (((l) & UINT64_C(0x0000FF0000000000)) >> 40)))
 
 //! \def M_ByteInt6
 //! \brief Extracts the seventh lowest byte from a 64-bit integer and casts it to int8_t.
 //!
 //! This macro extracts the seventh lowest byte from a 64-bit integer and casts it to int8_t.
 //! \param l The 64-bit integer from which to extract the seventh lowest byte.
-#define M_ByteInt6(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0x00FF000000000000)) >> 48)))
+#define M_ByteInt6(l) (M_STATIC_CAST(int8_t, (((l) & UINT64_C(0x00FF000000000000)) >> 48)))
 
 //! \def M_ByteInt7
 //! \brief Extracts the highest byte from a 64-bit integer and casts it to int8_t.
 //!
 //! This macro extracts the highest byte from a 64-bit integer and casts it to int8_t.
 //! \param l The 64-bit integer from which to extract the highest byte.
-#define M_ByteInt7(l) (M_STATIC_CAST(int8_t, (((l)&UINT64_C(0xFF00000000000000)) >> 56)))
+#define M_ByteInt7(l) (M_STATIC_CAST(int8_t, (((l) & UINT64_C(0xFF00000000000000)) >> 56)))
 
 //! \def M_Nibble0
 //! \brief Extracts the lowest nibble (4 bits) from a value and casts it to uint8_t.
@@ -601,7 +601,7 @@ extern "C"
             int16_t  i16; /*!< set/get as a int16_t value */
             int32_t  i32; /*!< set/get as a int32_t value */
             int64_t  i64; /*!< set/get as a int64_t value */
-        };                /*< Annonymous union for setting/getting different integer types without lots of casting */
+        }; /*< Annonymous union for setting/getting different integer types without lots of casting */
     } genericint_t;
 
     //! \fn static M_INLINE bool is_generic_int_valid(genericint_t genint)
@@ -2306,12 +2306,12 @@ extern "C"
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #    define count_leading_zeros(value)                                                                                 \
-        _Generic((value), unsigned char                                                                                \
-                 : count_leading_zeros_uc, unsigned short                                                              \
-                 : count_leading_zeros_us, unsigned int                                                                \
-                 : count_leading_zeros_ui, unsigned long                                                               \
-                 : count_leading_zeros_ul, unsigned long long                                                          \
-                 : count_leading_zeros_ull)(value)
+        _Generic((value),                                                                                              \
+            unsigned char: count_leading_zeros_uc,                                                                     \
+            unsigned short: count_leading_zeros_us,                                                                    \
+            unsigned int: count_leading_zeros_ui,                                                                      \
+            unsigned long: count_leading_zeros_ul,                                                                     \
+            unsigned long long: count_leading_zeros_ull)(value)
 #else
 #    define count_leading_zeros(value)                                                                                 \
         (sizeof(value) == sizeof(unsigned char)    ? count_leading_zeros_uc(value)                                     \
@@ -2398,12 +2398,12 @@ extern "C"
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #    define count_leading_ones(value)                                                                                  \
-        _Generic((value), unsigned char                                                                                \
-                 : count_leading_ones_uc, unsigned short                                                               \
-                 : count_leading_ones_us, unsigned int                                                                 \
-                 : count_leading_ones_ui, unsigned long                                                                \
-                 : count_leading_ones_ul, unsigned long long                                                           \
-                 : count_leading_ones_ull)(value)
+        _Generic((value),                                                                                              \
+            unsigned char: count_leading_ones_uc,                                                                      \
+            unsigned short: count_leading_ones_us,                                                                     \
+            unsigned int: count_leading_ones_ui,                                                                       \
+            unsigned long: count_leading_ones_ul,                                                                      \
+            unsigned long long: count_leading_ones_ull)(value)
 #else
 #    define count_leading_ones(value)                                                                                  \
         (sizeof(value) == sizeof(unsigned char)    ? count_leading_ones_uc(value)                                      \
@@ -2565,12 +2565,12 @@ extern "C"
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #    define count_trailing_zeros(value)                                                                                \
-        _Generic((value), unsigned char                                                                                \
-                 : count_trailing_zeros_uc, unsigned short                                                             \
-                 : count_trailing_zeros_us, unsigned int                                                               \
-                 : count_trailing_zeros_ui, unsigned long                                                              \
-                 : count_trailing_zeros_ul, unsigned long long                                                         \
-                 : count_trailing_zeros_ull)(value)
+        _Generic((value),                                                                                              \
+            unsigned char: count_trailing_zeros_uc,                                                                    \
+            unsigned short: count_trailing_zeros_us,                                                                   \
+            unsigned int: count_trailing_zeros_ui,                                                                     \
+            unsigned long: count_trailing_zeros_ul,                                                                    \
+            unsigned long long: count_trailing_zeros_ull)(value)
 #else
 #    define count_trailing_zeros(value)                                                                                \
         (sizeof(value) == sizeof(unsigned char)    ? count_trailing_zeros_uc(value)                                    \
@@ -2657,12 +2657,12 @@ extern "C"
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #    define count_trailing_ones(value)                                                                                 \
-        _Generic((value), unsigned char                                                                                \
-                 : count_trailing_ones_uc, unsigned short                                                              \
-                 : count_trailing_ones_us, unsigned int                                                                \
-                 : count_trailing_ones_ui, unsigned long                                                               \
-                 : count_trailing_ones_ul, unsigned long long                                                          \
-                 : count_trailing_ones_ull)(value)
+        _Generic((value),                                                                                              \
+            unsigned char: count_trailing_ones_uc,                                                                     \
+            unsigned short: count_trailing_ones_us,                                                                    \
+            unsigned int: count_trailing_ones_ui,                                                                      \
+            unsigned long: count_trailing_ones_ul,                                                                     \
+            unsigned long long: count_trailing_ones_ull)(value)
 #else
 #    define count_trailing_ones(value)                                                                                 \
         (sizeof(value) == sizeof(unsigned char)    ? count_trailing_ones_uc(value)                                     \
@@ -2809,12 +2809,12 @@ extern "C"
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #    define first_leading_one(value)                                                                                   \
-        _Generic((value), unsigned char                                                                                \
-                 : first_leading_one_uc, unsigned short                                                                \
-                 : first_leading_one_us, unsigned int                                                                  \
-                 : first_leading_one_ui, unsigned long                                                                 \
-                 : first_leading_one_ul, unsigned long long                                                            \
-                 : first_leading_one_ull)(value)
+        _Generic((value),                                                                                              \
+            unsigned char: first_leading_one_uc,                                                                       \
+            unsigned short: first_leading_one_us,                                                                      \
+            unsigned int: first_leading_one_ui,                                                                        \
+            unsigned long: first_leading_one_ul,                                                                       \
+            unsigned long long: first_leading_one_ull)(value)
 #else
 #    define first_leading_one(value)                                                                                   \
         (sizeof(value) == sizeof(unsigned char)    ? first_leading_one_uc(value)                                       \
@@ -2901,12 +2901,12 @@ extern "C"
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #    define first_leading_zero(value)                                                                                  \
-        _Generic((value), unsigned char                                                                                \
-                 : first_leading_zero_uc, unsigned short                                                               \
-                 : first_leading_zero_us, unsigned int                                                                 \
-                 : first_leading_zero_ui, unsigned long                                                                \
-                 : first_leading_zero_ul, unsigned long long                                                           \
-                 : first_leading_zero_ull)(value)
+        _Generic((value),                                                                                              \
+            unsigned char: first_leading_zero_uc,                                                                      \
+            unsigned short: first_leading_zero_us,                                                                     \
+            unsigned int: first_leading_zero_ui,                                                                       \
+            unsigned long: first_leading_zero_ul,                                                                      \
+            unsigned long long: first_leading_zero_ull)(value)
 #else
 #    define first_leading_zero(value)                                                                                  \
         (sizeof(value) == sizeof(unsigned char)    ? first_leading_zero_uc(value)                                      \
@@ -3036,12 +3036,12 @@ extern "C"
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #    define count_ones(value)                                                                                          \
-        _Generic((value), unsigned char                                                                                \
-                 : count_ones_uc, unsigned short                                                                       \
-                 : count_ones_us, unsigned int                                                                         \
-                 : count_ones_ui, unsigned long                                                                        \
-                 : count_ones_ul, unsigned long long                                                                   \
-                 : count_ones_ull)(value)
+        _Generic((value),                                                                                              \
+            unsigned char: count_ones_uc,                                                                              \
+            unsigned short: count_ones_us,                                                                             \
+            unsigned int: count_ones_ui,                                                                               \
+            unsigned long: count_ones_ul,                                                                              \
+            unsigned long long: count_ones_ull)(value)
 #else
 #    define count_ones(value)                                                                                          \
         (sizeof(value) == sizeof(unsigned char)    ? count_ones_uc(value)                                              \
@@ -3128,12 +3128,12 @@ extern "C"
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #    define count_zeros(value)                                                                                         \
-        _Generic((value), unsigned char                                                                                \
-                 : count_zeros_uc, unsigned short                                                                      \
-                 : count_zeros_us, unsigned int                                                                        \
-                 : count_zeros_ui, unsigned long                                                                       \
-                 : count_zeros_ul, unsigned long long                                                                  \
-                 : count_zeros_ull)(value)
+        _Generic((value),                                                                                              \
+            unsigned char: count_zeros_uc,                                                                             \
+            unsigned short: count_zeros_us,                                                                            \
+            unsigned int: count_zeros_ui,                                                                              \
+            unsigned long: count_zeros_ul,                                                                             \
+            unsigned long long: count_zeros_ull)(value)
 #else
 #    define count_zeros(value)                                                                                         \
         (sizeof(value) == sizeof(unsigned char)    ? count_zeros_uc(value)                                             \
@@ -3210,12 +3210,12 @@ extern "C"
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #    define has_single_bit(value)                                                                                      \
-        _Generic((value), unsigned char                                                                                \
-                 : has_single_bit_uc, unsigned short                                                                   \
-                 : has_single_bit_us, unsigned int                                                                     \
-                 : has_single_bit_ui, unsigned long                                                                    \
-                 : has_single_bit_ul, unsigned long long                                                               \
-                 : has_single_bit_ull)(value)
+        _Generic((value),                                                                                              \
+            unsigned char: has_single_bit_uc,                                                                          \
+            unsigned short: has_single_bit_us,                                                                         \
+            unsigned int: has_single_bit_ui,                                                                           \
+            unsigned long: has_single_bit_ul,                                                                          \
+            unsigned long long: has_single_bit_ull)(value)
 #else
 #    define has_single_bit(value)                                                                                      \
         (sizeof(value) == sizeof(unsigned char)    ? has_single_bit_uc(value)                                          \
@@ -3302,12 +3302,12 @@ extern "C"
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #    define get_req_bit_width(value)                                                                                   \
-        _Generic((value), unsigned char                                                                                \
-                 : get_req_bit_width_uc, unsigned short                                                                \
-                 : get_req_bit_width_us, unsigned int                                                                  \
-                 : get_req_bit_width_ui, unsigned long                                                                 \
-                 : get_req_bit_width_ul, unsigned long long                                                            \
-                 : get_req_bit_width_ull)(value)
+        _Generic((value),                                                                                              \
+            unsigned char: get_req_bit_width_uc,                                                                       \
+            unsigned short: get_req_bit_width_us,                                                                      \
+            unsigned int: get_req_bit_width_ui,                                                                        \
+            unsigned long: get_req_bit_width_ul,                                                                       \
+            unsigned long long: get_req_bit_width_ull)(value)
 #else
 #    define get_req_bit_width(value)                                                                                   \
         (sizeof(value) == sizeof(unsigned char)    ? get_req_bit_width_uc(value)                                       \
@@ -3394,12 +3394,12 @@ extern "C"
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #    define bit_floor(value)                                                                                           \
-        _Generic((value), unsigned char                                                                                \
-                 : bit_floor_uc, unsigned short                                                                        \
-                 : bit_floor_us, unsigned int                                                                          \
-                 : bit_floor_ui, unsigned long                                                                         \
-                 : bit_floor_ul, unsigned long long                                                                    \
-                 : bit_floor_ull)(value)
+        _Generic((value),                                                                                              \
+            unsigned char: bit_floor_uc,                                                                               \
+            unsigned short: bit_floor_us,                                                                              \
+            unsigned int: bit_floor_ui,                                                                                \
+            unsigned long: bit_floor_ul,                                                                               \
+            unsigned long long: bit_floor_ull)(value)
 #else
 #    define bit_floor(value)                                                                                           \
         (sizeof(value) == sizeof(unsigned char)    ? bit_floor_uc(value)                                               \
@@ -3486,12 +3486,12 @@ extern "C"
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #    define bit_ceil(value)                                                                                            \
-        _Generic((value), unsigned char                                                                                \
-                 : bit_ceil_uc, unsigned short                                                                         \
-                 : bit_ceil_us, unsigned int                                                                           \
-                 : bit_ceil_ui, unsigned long                                                                          \
-                 : bit_ceil_ul, unsigned long long                                                                     \
-                 : bit_ceil_ull)(value)
+        _Generic((value),                                                                                              \
+            unsigned char: bit_ceil_uc,                                                                                \
+            unsigned short: bit_ceil_us,                                                                               \
+            unsigned int: bit_ceil_ui,                                                                                 \
+            unsigned long: bit_ceil_ul,                                                                                \
+            unsigned long long: bit_ceil_ull)(value)
 #else
 #    define bit_ceil(value)                                                                                            \
         (sizeof(value) == sizeof(unsigned char)    ? bit_ceil_uc(value)                                                \
@@ -3573,12 +3573,12 @@ extern "C"
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #    define rotate_left(value, count)                                                                                  \
-        _Generic((value), unsigned char                                                                                \
-                 : rotate_left_uc, unsigned short                                                                      \
-                 : rotate_left_us, unsigned int                                                                        \
-                 : rotate_left_ui, unsigned long                                                                       \
-                 : rotate_left_ul, unsigned long long                                                                  \
-                 : rotate_left_ull)(value, count)
+        _Generic((value),                                                                                              \
+            unsigned char: rotate_left_uc,                                                                             \
+            unsigned short: rotate_left_us,                                                                            \
+            unsigned int: rotate_left_ui,                                                                              \
+            unsigned long: rotate_left_ul,                                                                             \
+            unsigned long long: rotate_left_ull)(value, count)
 #else
 #    define rotate_left(value, count)                                                                                  \
         (sizeof(value) == sizeof(unsigned char)    ? rotate_left_uc((unsigned char)(value), count)                     \
@@ -3660,12 +3660,12 @@ extern "C"
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #    define rotate_right(value, count)                                                                                 \
-        _Generic((value), unsigned char                                                                                \
-                 : rotate_right_uc, unsigned short                                                                     \
-                 : rotate_right_us, unsigned int                                                                       \
-                 : rotate_right_ui, unsigned long                                                                      \
-                 : rotate_right_ul, unsigned long long                                                                 \
-                 : rotate_right_ull)(value, count)
+        _Generic((value),                                                                                              \
+            unsigned char: rotate_right_uc,                                                                            \
+            unsigned short: rotate_right_us,                                                                           \
+            unsigned int: rotate_right_ui,                                                                             \
+            unsigned long: rotate_right_ul,                                                                            \
+            unsigned long long: rotate_right_ull)(value, count)
 #else
 #    define rotate_right(value, count)                                                                                 \
         (sizeof(value) == sizeof(unsigned char)    ? rotate_right_uc((unsigned char)(value), count)                    \

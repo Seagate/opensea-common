@@ -108,7 +108,7 @@ errno_t sleepns(uint64_t nanoseconds)
     delayTime.tv_sec  = M_STATIC_CAST(time_t, nanoseconds / NANOSECONDS_PER_SECOND);
     delayTime.tv_nsec = M_STATIC_CAST(long int, (nanoseconds % NANOSECONDS_PER_SECOND));
 #        endif
-    int sleepres      = 0;
+    int sleepres = 0;
     do
     {
         sleepres = nanosleep(&delayTime, &delayTime);
