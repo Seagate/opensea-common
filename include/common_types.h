@@ -776,16 +776,16 @@ typedef int32_t intptr_t;
 #    define M_STATIC_ASSERT(condition, message) static_assert(condition, #    message)
 #elif defined(USING_C11)
 #    if IS_MSVC_VERSION(MSVC_2019_16_8) /* Need new enough Windows SDK for this to be available - TJE */
-#        if defined (WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN10_20348
+#        if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN10_20348
 #            include <assert.h>
-#            define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #    message)
+#            define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #            message)
 #        endif
-#    elif !defined (_MSC_VER)
+#    elif !defined(_MSC_VER)
 #        include <assert.h>
-#        define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #    message)
+#        define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #        message)
 #    endif
 #endif
-#if !defined (M_STATIC_ASSERT)
+#if !defined(M_STATIC_ASSERT)
 // Generic way to do this. Not as good messaging but should work about the same
 #    define M_STATIC_ASSERT(condition, message) typedef char static_assertion_##message[(condition) ? 1 : -1]
 #endif

@@ -263,7 +263,7 @@
 //! \def RESTORE_WARNING_4255
 //! \brief restores MSVC warning 4255 back to being enabled.
 #if IS_MSVC_VERSION(MSVC_2010) && !defined(__clang__)
-#    define DISABLE_WARNING_4255 __pragma(warning(push)) __pragma(warning(disable: 4255))
+#    define DISABLE_WARNING_4255 __pragma(warning(push)) __pragma(warning(disable : 4255))
 
 #    define RESTORE_WARNING_4255 __pragma(warning(pop))
 #else
@@ -850,7 +850,7 @@ extern "C"
 //! \details These warning disables are only needed in MSVC for the C11 generic min/max implementations.
 //! Without them you get a warning about applying a unary - on an unsigned type.
 #if IS_MSVC_VERSION(MSVC_2012) && !defined(__clang__)
-#    define DISABLE_WARNING_4146 __pragma(warning(push)) __pragma(warning(disable: 4146))
+#    define DISABLE_WARNING_4146 __pragma(warning(push)) __pragma(warning(disable : 4146))
 #    define RESTORE_WARNING_4146 __pragma(warning(pop))
 #else
 #    define DISABLE_WARNING_4146
@@ -885,7 +885,7 @@ extern "C"
         _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wzero-length-array\"")
 #    define RESTORE_WARNING_ZERO_LENGTH_ARRAY _Pragma("clang diagnostic pop")
 #elif IS_MSVC_VERSION(MSVC_2005)
-#    define DISABLE_WARNING_ZERO_LENGTH_ARRAY __pragma(warning(push)) __pragma(warning(disable: 4200))
+#    define DISABLE_WARNING_ZERO_LENGTH_ARRAY __pragma(warning(push)) __pragma(warning(disable : 4200))
 #    define RESTORE_WARNING_ZERO_LENGTH_ARRAY __pragma(warning(pop))
 #else
 #    define DISABLE_WARNING_ZERO_LENGTH_ARRAY
@@ -906,7 +906,7 @@ extern "C"
         _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"")
 #    define RESTORE_WARNING_FORMAT_NONLITERAL _Pragma("GCC diagnostic pop")
 #elif IS_MSVC_VERSION(MSVC_2005)
-#    define DISABLE_WARNING_FORMAT_NONLITERAL __pragma(warning(push)) __pragma(warning(disable: 4774))
+#    define DISABLE_WARNING_FORMAT_NONLITERAL __pragma(warning(push)) __pragma(warning(disable : 4774))
 #    define RESTORE_WARNING_FORMAT_NONLITERAL __pragma(warning(pop))
 #else
 #    define DISABLE_WARNING_FORMAT_NONLITERAL
