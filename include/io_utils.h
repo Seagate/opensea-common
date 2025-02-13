@@ -569,6 +569,11 @@ extern "C"
     //! \param[in] ... Additional arguments specifying data to format.
     //! \return The number of characters that would have been written if the buffer had been sufficiently large, not
     //! including the null terminator.
+    M_NONNULL_PARAM_LIST(3)
+    M_NONNULL_IF_NONZERO_PARAM(1, 2)
+    M_NULL_TERM_STRING(3)
+    M_PARAM_RW(1)
+    M_PARAM_RO(3)
     int snprintf(char* buffer, size_t bufsz, const char* format, ...);
 
     //! \fn int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
@@ -582,6 +587,11 @@ extern "C"
     //! \param[in] args A va_list specifying data to format.
     //! \return The number of characters that would have been written if the buffer had been sufficiently large, not
     //! including the null terminator.
+    M_NONNULL_PARAM_LIST(3)
+    M_NONNULL_IF_NONZERO_PARAM(1, 2)
+    M_NULL_TERM_STRING(3)
+    M_PARAM_RW(1)
+    M_PARAM_RO(3)
     int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args);
 
 #endif
@@ -600,7 +610,9 @@ extern "C"
     //! \return The number of characters that would have been written if the buffer had been sufficiently large, not
     //! including the null terminator. On error, this will always add a null terminator at the end of the buffer.
     //! \note Invokes the constraint handler on error.
-    M_NONNULL_PARAM_LIST(1, 3)
+    M_NONNULL_PARAM_LIST(3)
+    M_NONNULL_IF_NONZERO_PARAM(1, 2)
+    M_NULL_TERM_STRING(3)
     M_PARAM_RW(1)
     M_PARAM_RO(3)
     FUNC_ATTR_PRINTF(3, 4) static M_INLINE int snprintf_err_handle(char* buf, size_t bufsize, const char* format, ...)
@@ -618,9 +630,12 @@ extern "C"
         RESTORE_WARNING_FORMAT_NONLITERAL
         va_end(args);
 
-        if (n < 0 || int_to_sizet(n) >= bufsize)
+        if (n < 0 || (buf != M_NULLPTR && bufsize != 0 && int_to_sizet(n) >= bufsize))
         {
-            buf[bufsize - 1] = 0;
+            if (buf != M_NULLPTR && bufsize > 0)
+            {
+                buf[bufsize - 1] = 0;
+            }
             constraintEnvInfo envInfo;
             errno = EINVAL;
             invoke_Constraint_Handler("snprintf_error_handler_macro: error in snprintf",
