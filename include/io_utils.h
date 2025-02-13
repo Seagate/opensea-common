@@ -651,6 +651,7 @@ extern "C"
     //! \param[in] formatargs The list of arguments for the format string.
     //! \return An integer indicating the result of the verification.
     M_NONNULL_PARAM_LIST(1)
+    M_NULL_TERM_STRING(1)
     M_PARAM_RO(1) int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formatargs);
 
     //! \fn eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen)
@@ -669,6 +670,7 @@ extern "C"
     //! \param[in] inputDataLen A pointer to the size of the allocated buffer.
     //! \return An eReturnValues indicating the result of the input operation.
     M_NONNULL_PARAM_LIST(1, 2, 3)
+    M_NULL_TERM_STRING(1)
     M_PARAM_RO(1)
     M_PARAM_RW(2)
     M_PARAM_RW(3) eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen);
