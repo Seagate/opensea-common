@@ -11,6 +11,7 @@
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "time_utils.h"
+#include "bit_manip.h"
 #include "common_types.h"
 #include "io_utils.h"
 #include "memory_safety.h"
@@ -43,6 +44,18 @@ M_STATIC_ASSERT(SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING) >= 26, current_time_str
 
 // cannot support 32bit time_t properly!
 M_STATIC_ASSERT(sizeof(time_t) >= 8, time_t_is_not_64_bits);
+
+// Leap years occur every 4 years.
+// Every 100 years you skip a leap year, unless it has been 400 years in which case you do not skip the leap year
+static M_INLINE bool is_Year_A_Leap_Year(int year)
+{
+    bool isLeapYear = false;
+    if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))
+    {
+        isLeapYear = true;
+    }
+    return isLeapYear;
+}
 
 bool get_current_timestamp(void)
 {
@@ -299,6 +312,79 @@ int timespec_get(struct timespec* ts, int base)
     return res;
 }
 #endif // NEED_TIMESPEC_GET
+
+#define JAN_1_1970_DAY_OF_WEEK   4 // Thursday
+#define UNIX_EPOCH_STARTING_YEAR 1970
+#define C_STRUCT_TM_YEARS_START  1900 // struct tm defines tm_year as a counter since 1900
+#define DAYS_IN_WEEK             7
+#define C_STRUCT_TM_MONTH_JAN    0
+#define C_STRUCT_TM_MONTH_FEB    1
+#define C_STRUCT_TM_MONTH_DEC    11
+
+struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, struct tm* time)
+{
+    DISABLE_NONNULL_COMPARE
+    if (time != M_NULLPTR)
+    {
+        const int days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        int       year            = JAN_1_1970_DAY_OF_WEEK;
+        int       month           = 0;
+        int       day             = 0;
+        int       yday            = 0;
+        const int secPerMin       = 60;
+        const int secPerHour      = 3600;
+        const int secPerDay       = 86400;
+        const int daysPerYear     = 365;
+        const int daysPerLeapYear = 366;
+        const int secPerYear      = secPerDay * daysPerYear;
+        const int secPerLeapYear  = secPerDay * daysPerLeapYear;
+
+        int64_t seconds = M_STATIC_CAST(int64_t, milliseconds / UINT64_C(1000));
+        int64_t remsec  = seconds;
+
+        while (remsec >= (is_Year_A_Leap_Year(year) ? secPerLeapYear : secPerYear))
+        {
+            remsec -= is_Year_A_Leap_Year(year) ? secPerLeapYear : secPerYear;
+            year += UINT16_C(1);
+        }
+
+        for (month = C_STRUCT_TM_MONTH_JAN; month <= C_STRUCT_TM_MONTH_DEC; month += 1)
+        {
+            int daysInMonth = days_in_month[month];
+            if (month == C_STRUCT_TM_MONTH_FEB && is_Year_A_Leap_Year(year))
+            {
+                daysInMonth += 1;
+            }
+            if (remsec < (secPerDay * daysInMonth))
+            {
+                day = M_STATIC_CAST(int, (remsec / M_STATIC_CAST(int64_t, secPerDay)) + INT64_C(1)); // 1 based index
+                yday += day - 1;                                                                     // 0 based index
+                remsec %= secPerDay;
+                break;
+            }
+            remsec -= secPerDay * daysInMonth;
+            yday += daysInMonth;
+        }
+
+        int hour = M_STATIC_CAST(int, (remsec / M_STATIC_CAST(int64_t, secPerHour)));
+        remsec %= M_STATIC_CAST(int64_t, secPerHour);
+        int minute = M_STATIC_CAST(int, (remsec / M_STATIC_CAST(int64_t, secPerMin)));
+        remsec %= M_STATIC_CAST(int64_t, secPerMin);
+        int second = M_STATIC_CAST(int, remsec);
+
+        time->tm_year  = year - C_STRUCT_TM_YEARS_START;
+        time->tm_mon   = month;
+        time->tm_mday  = day;
+        time->tm_yday  = yday;
+        time->tm_hour  = hour;
+        time->tm_min   = minute;
+        time->tm_sec   = second;
+        time->tm_isdst = -1;
+        time->tm_wday  = ((seconds / secPerDay) + JAN_1_1970_DAY_OF_WEEK) % DAYS_IN_WEEK;
+    }
+    RESTORE_NONNULL_COMPARE
+    return time;
+}
 
 // returns number of milliseconds since 1970 UTC
 uint64_t get_Milliseconds_Since_Unix_Epoch(void)

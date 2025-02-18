@@ -356,6 +356,16 @@ extern "C"
     //! \return number of milliseconds. 0 if an error occurs
     uint64_t get_Milliseconds_Since_Unix_Epoch(void);
 
+    //! \fn struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, struct tm *time)
+    //! \brief converts a number of milliseconds representing time since the unix epoch of
+    //! January 1, 1970 UTC to struct tm representing this value
+    //! \param[in] milliseconds number of milliseconds since Jan 1, 1970 UTC to convert
+    //! \param[in] time pointer to user allocated struct tm to fill in.
+    //! \return pointer to user provided \a time parameter
+    M_NONNULL_PARAM_LIST(2)
+    M_PARAM_WO(2)
+    struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, struct tm* time);
+
 #if !defined(TIME_UTC)
 // Checking for TIME_UTC definition in order to figure out if the C11 API for timespec_get is available
 
