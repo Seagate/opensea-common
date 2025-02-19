@@ -78,7 +78,7 @@ extern "C"
     //! \return returns same pointer as \a envInfo to allow it to be quickly passed to a constraint handler's ptr
     //! parameter
     M_NONNULL_PARAM_LIST(1)
-    M_PARAM_RW(1)
+    M_PARAM_WO(1)
     static M_INLINE constraintEnvInfo* set_Env_Info(constraintEnvInfo* envInfo,
                                                     const char*        file,
                                                     const char*        function,
