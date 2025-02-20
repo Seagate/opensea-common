@@ -528,6 +528,10 @@ extern "C"
 //! \endcode
 //!
 //! \sa M_NONNULL_PARAM_LIST, M_PARAM_RO, M_PARAM_WO, M_PARAM_RW
+//! \note This attribute is only used in debug builds (_DEBUG defined). This is due to how this
+//! attribute gets handled during optimizations and may cause crashes by removing checks for NULL that a
+//! function may still be performing (such as safe_memcpy). When developing in debug mode this will help
+//! generate warnings about incorrect usage while preserving runtime checks in optimized released builds
 
 //! \def M_NONNULL_PARAM_LIST(...)
 //! \brief Marks specific pointer parameters of a function as non-null.
@@ -544,20 +548,29 @@ extern "C"
 //! \endcode
 //!
 //! \sa M_ALL_PARAMS_NONNULL, M_PARAM_RO, M_PARAM_WO, M_PARAM_RW
-#if defined __has_attribute
-#    if __has_attribute(nonnull)
-#        define M_ALL_PARAMS_NONNULL      __attribute__((nonnull))
-#        define M_NONNULL_PARAM_LIST(...) __attribute__((nonnull(__VA_ARGS__)))
+//! \note This attribute is only used in debug builds (_DEBUG defined). This is due to how this
+//! attribute gets handled during optimizations and may cause crashes by removing checks for NULL that a
+//! function may still be performing (such as safe_memcpy). When developing in debug mode this will help
+//! generate warnings about incorrect usage while preserving runtime checks in optimized released builds
+#if !defined (_DEBUG)
+#    if defined __has_attribute
+#        if __has_attribute(nonnull)
+#            define M_ALL_PARAMS_NONNULL      __attribute__((nonnull))
+#            define M_NONNULL_PARAM_LIST(...) __attribute__((nonnull(__VA_ARGS__)))
+#        endif
 #    endif
-#endif
-#if !defined(M_ALL_PARAMS_NONNULL)
-#    if IS_GCC_VERSION(3, 3)
-#        define M_ALL_PARAMS_NONNULL      __attribute__((nonnull))
-#        define M_NONNULL_PARAM_LIST(...) __attribute__((nonnull(__VA_ARGS__)))
-#    else
-#        define M_ALL_PARAMS_NONNULL      /*NONNULL*/
-#        define M_NONNULL_PARAM_LIST(...) /*NONNULL*/
+#    if !defined(M_ALL_PARAMS_NONNULL)
+#        if IS_GCC_VERSION(3, 3)
+#            define M_ALL_PARAMS_NONNULL      __attribute__((nonnull))
+#            define M_NONNULL_PARAM_LIST(...) __attribute__((nonnull(__VA_ARGS__)))
+#        else
+#            define M_ALL_PARAMS_NONNULL      /*NONNULL*/
+#            define M_NONNULL_PARAM_LIST(...) /*NONNULL*/
+#        endif
 #    endif
+#else
+#    define M_ALL_PARAMS_NONNULL      /*NONNULL*/
+#    define M_NONNULL_PARAM_LIST(...) /*NONNULL*/
 #endif
 
 //! \def M_NONNULL_IF_NONZERO_PARAM(arg, sizearg)
