@@ -552,7 +552,7 @@ extern "C"
 //! attribute gets handled during optimizations and may cause crashes by removing checks for NULL that a
 //! function may still be performing (such as safe_memcpy). When developing in debug mode this will help
 //! generate warnings about incorrect usage while preserving runtime checks in optimized released builds
-#if !defined (_DEBUG)
+#if defined (_DEBUG)
 #    if defined __has_attribute
 #        if __has_attribute(nonnull)
 #            define M_ALL_PARAMS_NONNULL      __attribute__((nonnull))
