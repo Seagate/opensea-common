@@ -437,7 +437,7 @@ bool is_size_t_max(size_t val)
 
 void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* decimalValue)
 {
-    int32_t exponent = M_STATIC_CAST(int32_t, get_8bit_range_uint32(floatValue, 30, 23) - 127);
+    int32_t exponent = M_STATIC_CAST(int32_t, get_8bit_range_uint32(floatValue, 30, 23)) - INT32_C(127);
     double  sign =
         pow(-1.0, M_STATIC_CAST(double, floatValue >> 31)); // shift sign bit to bit 0. Same as getbitrange 31, 31
 
@@ -445,7 +445,7 @@ void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* decimalValue)
     double mantisa = 1.0;
     for (uint8_t i = UINT8_C(0); i < 23; i++)
     {
-        mantisa += M_STATIC_CAST(double, floatValue& BIT0) * pow(2.0, power);
+        mantisa += M_STATIC_CAST(double, floatValue & BIT0) * pow(2.0, power);
         power++;
         floatValue >>= 1; // right shift to look at next bit next time through the loop
     }
