@@ -1788,6 +1788,15 @@ extern "C"
         RESTORE_NONNULL_COMPARE
     }
 
+    //! \fn uint32_t w_swap_32(uint32_t dword)
+    //! \brief swaps words within a dword and returns the value
+    //!
+    //! \param[in] dword dword to swap words
+    static M_INLINE uint32_t w_swap_32(uint32_t dword)
+    {
+        return ((dword & UINT32_C(0x0000FFFF)) << 16) | ((dword & UINT32_C(0xFFFF0000)) >> 16);
+    }
+
     //! \fn void word_Swap_32(uint32_t* doubleWordToSwap)
     //! \brief swaps words within a dword in place
     //!
@@ -1797,8 +1806,7 @@ extern "C"
         DISABLE_NONNULL_COMPARE
         if (doubleWordToSwap != M_NULLPTR)
         {
-            *doubleWordToSwap =
-                ((*doubleWordToSwap & UINT32_C(0x0000FFFF)) << 16) | ((*doubleWordToSwap & UINT32_C(0xFFFF0000)) >> 16);
+            *doubleWordToSwap = w_swap_32(*doubleWordToSwap);
         }
         RESTORE_NONNULL_COMPARE
     }
