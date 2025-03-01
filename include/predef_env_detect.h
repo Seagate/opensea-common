@@ -986,6 +986,29 @@ extern "C"
 #    define RESTORE_NONNULL_COMPARE
 #endif
 
+//! \def DISABLE_WARNING_UNDEF
+//! \brief Disables warning about checking a macro in #if that is not defined.
+//! Only use this when including external headers that cause this issue. This warning should not occur
+//! within opensea-libs
+
+//! \def RESTORE_WARNING_UNDEF
+//! \brief Restores warning about checking a macro in #if that is not defined.
+//! Only use this when including external headers that cause this issue. This warning should not occur
+//! within opensea-libs
+#if IS_CLANG_VERSION(2, 8)
+#    define DISABLE_WARNING_UNDEF                                                                                \
+        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wundef\"")
+#    define RESTORE_WARNING_UNDEF _Pragma("clang diagnostic pop")
+#elif IS_GCC_VERSION(3, 0)
+#    define DISABLE_WARNING_UNDEF                                                                                \
+        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wundef\"")
+#    define RESTORE_WARNING_UNDEF _Pragma("GCC diagnostic pop")
+#else
+#    define DISABLE_WARNING_UNDEF
+#    define RESTORE_WARNING_UNDEF
+#endif
+
+
 #if defined(__INTELLISENSE__) || defined(__clang_analyzer__) || defined(__CDT_PARSER__)
 //! \def DEV_ENVIRONMENT
 //! \brief Defined to help create different help pop-ups within an IDE.

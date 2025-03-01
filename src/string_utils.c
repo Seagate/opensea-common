@@ -1425,7 +1425,7 @@ size_t find_last_occurrence_in_string(const char* originalString, const char* st
     const char* stringToCompare = originalString;
     while ((stringToCompare = strstr(stringToCompare, stringToFind)) != M_NULLPTR)
     {
-        last_occurrence = C_CAST(uintptr_t, stringToCompare) - C_CAST(uintptr_t, originalString);
+        last_occurrence = safe_strlen(stringToCompare);
         stringToCompare += stringToFindLen; // Move past the current found substring
     }
 

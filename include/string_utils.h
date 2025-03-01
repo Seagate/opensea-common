@@ -950,7 +950,7 @@ extern "C"
     //! \brief Find the last occurrence of one string within another string
     //! \param[in] originalString pointer to the data containing a string that will be searched
     //! \param[in] stringToFind a pointer to the data containing a string that is to be found within \a originalString
-    //! \return offset to last occurrence of \a stringToFind in \a originalString
+    //! \return offset to last occurrence of \a stringToFind in \a originalString. The offset will be from the end of the string
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RO(1)
     M_PARAM_RO(2) size_t find_last_occurrence_in_string(const char* originalString, const char* stringToFind);
