@@ -30,6 +30,7 @@ CFLAGS += -c -fPIC -I.
 LFLAGS ?= -Wall
 LIB_SRC_FILES = \
     $(SRC_DIR)bit_manip.c\
+	$(SRC_DIR)constraint_handling.c\
     $(SRC_DIR)env_detect.c\
     $(SRC_DIR)error_translation.c\
 	$(SRC_DIR)io_utils.c\
@@ -40,9 +41,13 @@ LIB_SRC_FILES = \
 	$(SRC_DIR)posix_secure_file.c\
 	$(SRC_DIR)precision_timer.c\
 	$(SRC_DIR)prng.c\
+	$(SRC_DIR)safe_bsearch.c\
+	$(SRC_DIR)safe_lsearch.c\
+	$(SRC_DIR)safe_qsort.c\
 	$(SRC_DIR)secure_file.c\
 	$(SRC_DIR)secured_env_vars.c\
 	$(SRC_DIR)sleep.c\
+	$(SRC_DIR)sort_and_search.c\
 	$(SRC_DIR)string_utils.c\
 	$(SRC_DIR)time_utils.c\
 	$(SRC_DIR)type_conversion.c\

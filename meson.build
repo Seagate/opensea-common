@@ -97,6 +97,7 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
   '-Wcomment',
   '-Wsequence-point',
   '-Wreturn-type',
+  '-Wpointer-bool-conversion',
   '-fvisibility=hidden', #to work similarly to Window's DLL import/export
   ]
 
@@ -211,6 +212,11 @@ elif c.get_id().contains('msvc')
     '/d2guard4', #control flow guard
   ]
 
+  if target_machine.cpu_family() == 'x86_64' or target_machine.cpu_family() == 'x86'
+    # https://learn.microsoft.com/en-us/cpp/build/reference/qintel-jcc-erratum?view=msvc-170
+    warning_flags += '/QIntel-jcc-erratum'
+  endif
+
   if c.has_argument('/std:c17')
     c_std = 'c17'
   endif
@@ -247,7 +253,12 @@ if get_option('username').enabled()
   global_cpp_args += ['-DENABLE_READ_USERNAME']
 endif
 
+if get_option('directorysecurity').disabled()
+  global_cpp_args += ['-DDISABLE_SECURE_FILE_PATH_CHECK']
+endif
+
 src_files = ['src/bit_manip.c', 
+            'src/constraint_handling.c',
             'src/env_detect.c', 
             'src/error_translation.c',
             'src/io_utils.c',
@@ -259,6 +270,10 @@ src_files = ['src/bit_manip.c',
             'src/secure_file.c',
             'src/secured_env_vars.c',
             'src/sleep.c',
+            'src/sort_and_search.c',
+            'src/safe_qsort.c',
+            'src/safe_bsearch.c',
+            'src/safe_lsearch.c',
             'src/string_utils.c',
             'src/time_utils.c',
             'src/type_conversion.c',
