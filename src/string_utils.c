@@ -864,10 +864,13 @@ char* safe_String_Token_impl(char* M_RESTRICT       str,
         if (*saveptr == M_NULLPTR)
         {
             *saveptr = M_NULLPTR;
-            error    = EINVAL;
-            invoke_Constraint_Handler("safe_String_Token: *saveptr = NULL on non-initial call",
-                                      set_Env_Info(&envInfo, file, function, expression, line), error);
-            errno = error;
+			if (*strmax != RSIZE_T_C(0)) 
+			{
+				error    = EINVAL;
+				invoke_Constraint_Handler("safe_String_Token: *saveptr = NULL on non-initial call",
+										  set_Env_Info(&envInfo, file, function, expression, line), error);
+				errno = error;
+			}
             return M_NULLPTR;
         }
     }
@@ -884,7 +887,7 @@ char* safe_String_Token_impl(char* M_RESTRICT       str,
     }
     if (*strmax == RSIZE_T_C(0))
     {
-        if (*tokiter != '\0')
+        if (*tokiter != M_NULLPTR) //'\0')
         {
             *saveptr = M_NULLPTR;
             error    = ERANGE;
@@ -892,8 +895,14 @@ char* safe_String_Token_impl(char* M_RESTRICT       str,
                                       "string without encountering null terminator",
                                       set_Env_Info(&envInfo, file, function, expression, line), error);
             errno = error;
+			return M_NULLPTR;
         }
-        return M_NULLPTR;
+        else
+		{
+			*saveptr = tokiter;
+			*saveptr = M_NULLPTR;
+			return token;
+		}
     }
     if (*tokiter)
     {
