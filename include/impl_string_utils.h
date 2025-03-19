@@ -312,15 +312,15 @@ extern "C"
                               int                    line,
                               const char*            expression);
 
-    //! \fn char* safe_String_Token_impl(char* M_RESTRICT       str,
-    //!                                  rsize_t* M_RESTRICT    strmax,
-    //!                                  const char* M_RESTRICT delim,
-    //!                                  char** M_RESTRICT      saveptr,
-    //!                                  const char*            file,
-    //!                                  const char*            function,
-    //!                                  int                    line,
-    //!                                  const char*            expression)
-    //! \brief internal implementation of safe_String_Token
+    //! \fn char* safe_strtok_impl(char* M_RESTRICT       str,
+    //!                            rsize_t* M_RESTRICT    strmax,
+    //!                            const char* M_RESTRICT delim,
+    //!                            char** M_RESTRICT      saveptr,
+    //!                            const char*            file,
+    //!                            const char*            function,
+    //!                            int                    line,
+    //!                            const char*            expression)
+    //! \brief internal implementation of safe_strtok
     //!
     //! Works like C11 annex K's strtok_s
     //! Finds the next token in a null-terminated byte string pointed to by \a str.
@@ -331,10 +331,10 @@ extern "C"
     //! with the values stored by the previous call.
     //! This version performs the bounds checking described in C11 annex K.
     //! \param[in] str pointer to the null-terminated byte string to tokenize
-    //! \param[in] strmax pointer to an object which initially holds the size of \a str: safe_String_Token stores
+    //! \param[in] strmax pointer to an object which initially holds the size of \a str: safe_strtok stores
     //! the number of characters that remain to be examined
     //! \param[in] delim pointer to the null-terminated byte string identifying delimiters
-    //! \param[in] saveptr 	pointer to an object of type char*, which is used by safe_String_Token to store its
+    //! \param[in] saveptr 	pointer to an object of type char*, which is used by safe_strtok to store its
     //! internal state
     //! \param[in] file The source file name where this function is called.
     //! \param[in] function The function name where this function is called.
@@ -364,14 +364,14 @@ extern "C"
     M_PARAM_RW(4)
     M_NULL_TERM_STRING(1)
     M_NULL_TERM_STRING(3)
-    char* safe_String_Token_impl(char* M_RESTRICT       str,
-                                 rsize_t* M_RESTRICT    strmax,
-                                 const char* M_RESTRICT delim,
-                                 char** M_RESTRICT      saveptr,
-                                 const char*            file,
-                                 const char*            function,
-                                 int                    line,
-                                 const char*            expression);
+    char* safe_strtok_impl(char* M_RESTRICT       str,
+                           rsize_t* M_RESTRICT    strmax,
+                           const char* M_RESTRICT delim,
+                           char** M_RESTRICT      saveptr,
+                           const char*            file,
+                           const char*            function,
+                           int                    line,
+                           const char*            expression);
 
     //! \fn errno_t safe_strdup_impl(char**      dup,
     //!                              const char* src,
