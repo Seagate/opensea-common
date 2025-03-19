@@ -170,16 +170,44 @@ char* safe_strtok_impl(char* M_RESTRICT str,
     /*
      * Skip (span) leading delimiters (s += strspn(s, delim), sort of).
      */
-    //TODO: Need strmax check to stay in bounds
-cont:
-    c = *str++;
-    *strmax -= RSIZE_T_C(1); // Seagate modification
-    for (spanp = M_CONST_CAST(char*, delim); (sc = *spanp++) != 0;)
+    //Seagate modification:
+    //This code previously used a goto.
+    //In order to stay within bounds of str, this was removed to check strmax > 0 each time through.
+    while (*strmax > RSIZE_T_C(0))
     {
-        if (c == sc)
+        bool breakdelimloop = false;
+        c = *str++;
+        *strmax -= RSIZE_T_C(1); // Seagate modification
+        for (spanp = M_CONST_CAST(char*, delim); (sc = *spanp++) != 0 && !breakdelimloop;)
         {
-            goto cont;
+            if (c == sc)
+            {
+                breakdelimloop = true;
+                break;
+            }
         }
+        if (breakdelimloop)
+        {
+            continue;
+        }
+        else
+        {
+            break;
+        }
+    }
+    if (*strmax == 0 && c != 0)
+    {
+        // Seagate modification
+        // If this is reached then end of the string was reached without a null terminator then this is an error
+        // Finding null terminator should happen in the loop above, so this check exists in case the string is modified
+        // while being tokenized.
+        *saveptr = M_NULLPTR;
+        error    = ERANGE;
+        invoke_Constraint_Handler("safe_strtok: reached end of source "
+                                "string without encountering null terminator while scanning for first non-deliminator",
+                                set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return (M_NULLPTR);
     }
 
     if (c == 0)
