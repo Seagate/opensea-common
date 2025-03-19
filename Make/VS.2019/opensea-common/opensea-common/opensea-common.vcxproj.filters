@@ -182,5 +182,8 @@
     <ClCompile Include="..\..\..\..\src\safe_qsort.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\src\safe_strtok.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

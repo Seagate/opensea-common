@@ -105,6 +105,7 @@
     <ClCompile Include="..\..\..\..\src\safe_bsearch.c" />
     <ClCompile Include="..\..\..\..\src\safe_lsearch.c" />
     <ClCompile Include="..\..\..\..\src\safe_qsort.c" />
+    <ClCompile Include="..\..\..\..\src\safe_strtok.c" />
     <ClCompile Include="..\..\..\..\src\secured_env_vars.c" />
     <ClCompile Include="..\..\..\..\src\secure_file.c" />
     <ClCompile Include="..\..\..\..\src\sleep.c" />

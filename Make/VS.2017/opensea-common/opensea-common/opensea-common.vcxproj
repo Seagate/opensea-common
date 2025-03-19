@@ -720,6 +720,7 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\safe_lsearch.c" />
     <ClCompile Include="..\..\..\..\src\safe_qsort.c" />
+    <ClCompile Include="..\..\..\..\src\safe_strtok.c" />
     <ClCompile Include="..\..\..\..\src\posix_secure_file.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">true</ExcludedFromBuild>

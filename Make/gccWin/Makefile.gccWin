@@ -72,6 +72,7 @@ LIB_SRC_FILES = \
 	$(SRC_DIR)safe_bsearch.c\
 	$(SRC_DIR)safe_lsearch.c\
 	$(SRC_DIR)safe_qsort.c\
+	$(SRC_DIR)safe_strtok.c\
 	$(SRC_DIR)secure_file.c\
 	$(SRC_DIR)secured_env_vars.c\
 	$(SRC_DIR)sleep.c\

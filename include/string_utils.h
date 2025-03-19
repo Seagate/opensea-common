@@ -644,11 +644,11 @@ extern "C"
         }
     }
 
-    //! \fn char* safe_String_Token(char* M_RESTRICT       str,
+    //! \fn char* safe_strtok(char* M_RESTRICT       str,
     //!                             rsize_t* M_RESTRICT    strmax,
     //!                             const char* M_RESTRICT delim,
     //!                             char** M_RESTRICT      saveptr)
-    //! \brief safe_String_Token works like C11 annex K's strtok_s
+    //! \brief safe_strtok works like C11 annex K's strtok_s
     //!
     //! Finds the next token in a null-terminated byte string pointed to by \a str.
     //! The separator characters are identified by null-terminated byte string pointed to by \a delim.
@@ -658,10 +658,10 @@ extern "C"
     //! with the values stored by the previous call.
     //! This version performs the bounds checking described in C11 annex K.
     //! \param[in] str pointer to the null-terminated byte string to tokenize
-    //! \param[in] strmax ointer to an object which initially holds the size of \a str: safe_String_Token stores
+    //! \param[in] strmax ointer to an object which initially holds the size of \a str: safe_strtok stores
     //! the number of characters that remain to be examined
     //! \param[in] delim pointer to the null-terminated byte string identifying delimiters
-    //! \param[in] saveptr 	pointer to an object of type char*, which is used by safe_String_Token to store its
+    //! \param[in] saveptr 	pointer to an object of type char*, which is used by safe_strtok to store its
     //! internal state
     //! \return pointer to token on success, null pointer on error
     //! \note The following errors are detected at runtime and call the installed constraint handler:
@@ -681,17 +681,17 @@ extern "C"
     //!
     //! - overlap would occur between \a src and \a dest strings
 #if defined(DEV_ENVIRONMENT)
-    M_INLINE char* safe_String_Token(char* M_RESTRICT       str,
-                                     rsize_t* M_RESTRICT    strmax,
-                                     const char* M_RESTRICT delim,
-                                     char** M_RESTRICT      saveptr)
+    M_INLINE char* safe_strtok(char* M_RESTRICT       str,
+                               rsize_t* M_RESTRICT    strmax,
+                               const char* M_RESTRICT delim,
+                               char** M_RESTRICT      saveptr)
     {
-        return safe_String_Token_impl(str, strmax, delim, saveptr, __FILE__, __func__, __LINE__,
-                                      "safe_strncat(str, strmax, delim, saveptr)");
+        return safe_strtok_impl(str, strmax, delim, saveptr, __FILE__, __func__, __LINE__,
+                                "safe_strtok(str, strmax, delim, saveptr)");
     }
 #else
-//! \def safe_String_Token
-//! \brief safe_String_Token works like C11 annex K's strtok_s
+//! \def safe_strtok
+//! \brief safe_strtok works like C11 annex K's strtok_s
 //!
 //! Finds the next token in a null-terminated byte string pointed to by \a str.
 //! The separator characters are identified by null-terminated byte string pointed to by \a delim.
@@ -701,10 +701,10 @@ extern "C"
 //! with the values stored by the previous call.
 //! This version performs the bounds checking described in C11 annex K.
 //! \param[in] str pointer to the null-terminated byte string to tokenize
-//! \param[in] strmax ointer to an object which initially holds the size of \a str: safe_String_Token stores
+//! \param[in] strmax ointer to an object which initially holds the size of \a str: safe_strtok stores
 //! the number of characters that remain to be examined
 //! \param[in] delim pointer to the null-terminated byte string identifying delimiters
-//! \param[in] saveptr 	pointer to an object of type char*, which is used by safe_String_Token to store its
+//! \param[in] saveptr 	pointer to an object of type char*, which is used by safe_strtok to store its
 //! internal state
 //! \return pointer to token on success, null pointer on error
 //! \note The following errors are detected at runtime and call the installed constraint handler:
@@ -723,10 +723,12 @@ extern "C"
 //! - truncation would occur due to not enough space in \a dest to concatenate \a src or \a count bytes of \a src
 //!
 //! - overlap would occur between \a src and \a dest strings
-#    define safe_String_Token(str, strmax, delim, saveptr)                                                             \
-        safe_String_Token_impl(str, strmax, delim, saveptr, __FILE__, __func__, __LINE__,                              \
-                               "safe_String_Token(" #str ", " #strmax ", " #delim ", " #saveptr ")")
+#    define safe_strtok(str, strmax, delim, saveptr)                                                                   \
+        safe_strtok_impl(str, strmax, delim, saveptr, __FILE__, __func__, __LINE__,                                    \
+                         "safe_strtok(" #str ", " #strmax ", " #delim ", " #saveptr ")")
 #endif
+
+#define safe_String_Token(str, strmax, delim, saveptr) safe_strtok(str, strmax, delim, saveptr)
 
     //! \def common_String_Token
     //! \brief backwards compatible wrapper around safe_String_Token
@@ -950,7 +952,8 @@ extern "C"
     //! \brief Find the last occurrence of one string within another string
     //! \param[in] originalString pointer to the data containing a string that will be searched
     //! \param[in] stringToFind a pointer to the data containing a string that is to be found within \a originalString
-    //! \return offset to last occurrence of \a stringToFind in \a originalString. The offset will be from the end of the string
+    //! \return offset to last occurrence of \a stringToFind in \a originalString. The offset will be from the end of
+    //! the string
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RO(1)
     M_PARAM_RO(2) size_t find_last_occurrence_in_string(const char* originalString, const char* stringToFind);
