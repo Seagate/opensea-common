@@ -720,6 +720,44 @@ extern "C"
                            int                    line,
                            const char*            expression);
 
+    //! \fn FUNC_ATTR_PRINTF(3, 4) int impl_snprintf_err_handle(const char* file,
+    //!                                                         const char* function,
+    //!                                                         int         line,
+    //!                                                         const char* expression,
+    //!                                                         char*       buf, 
+    //!                                                         size_t      bufsize,
+    //!                                                         const char* format, 
+    //!                                                         ...)
+    //! \brief Not exactly the same as snprintf_s, just checking that the return code is as expected when using this
+    //! function to detect errors or truncation.
+    //! \details This function does NOT do bounds checking.
+    //! \see https://wiki.sei.cmu.edu/confluence/display/c/ERR33-C.+Detect+and+handle+standard+library+errors
+    //! \todo Implement a safe_snprintf that works as C11 annex k specifies.
+    //! \param[in] file The source file name where this function is called.
+    //! \param[in] function The function name where this function is called.
+    //! \param[in] line The line number where this function is called.
+    //! \param[in] expression The expression being evaluated.
+    //! \param[out] buf TThe buffer to write the formatted string to.
+    //! \param[in] bufsize The size of the buffer.
+    //! \param[in] format The format string.
+    //! \param[in] ... Additional arguments for the format string.
+    //! \return The number of characters that would have been written if the buffer had been sufficiently large, not
+    //! including the null terminator. On error, this will always add a null terminator at the end of the buffer.
+    //! \note Invokes the constraint handler on error.
+    M_NONNULL_PARAM_LIST(7)
+    M_NONNULL_IF_NONZERO_PARAM(5, 6)
+    M_NULL_TERM_STRING(7)
+    M_PARAM_RW(5)
+    M_PARAM_RO(7)
+    FUNC_ATTR_PRINTF(7, 8) int impl_snprintf_err_handle(const char* file,
+                             const char* function,
+                             int         line,
+                             const char* expression,
+                             char*       buf, 
+                             size_t      bufsize, 
+                             const char* format, 
+                             ...);
+
 #if defined(__cplusplus)
 }
 #endif

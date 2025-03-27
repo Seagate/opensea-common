@@ -596,53 +596,10 @@ extern "C"
 
 #endif
 
-    //! \fn FUNC_ATTR_PRINTF(3, 4) static M_INLINE int snprintf_err_handle(char* buf, size_t bufsize,
-    //! const char* format, ...)
-    //! \brief Not exactly the same as snprintf_s, just checking that the return code is as expected when using this
-    //! function to detect errors or truncation.
-    //! \details This function does NOT do bounds checking.
-    //! \see https://wiki.sei.cmu.edu/confluence/display/c/ERR33-C.+Detect+and+handle+standard+library+errors
-    //! \todo Implement a safe_snprintf that works as C11 annex k specifies.
-    //! \param[out] buf TThe buffer to write the formatted string to.
-    //! \param[in] bufsize The size of the buffer.
-    //! \param[in] format The format string.
-    //! \param[in] ... Additional arguments for the format string.
-    //! \return The number of characters that would have been written if the buffer had been sufficiently large, not
-    //! including the null terminator. On error, this will always add a null terminator at the end of the buffer.
-    //! \note Invokes the constraint handler on error.
-    M_NONNULL_PARAM_LIST(3)
-    M_NONNULL_IF_NONZERO_PARAM(1, 2)
-    M_NULL_TERM_STRING(3)
-    M_PARAM_RW(1)
-    M_PARAM_RO(3)
-    FUNC_ATTR_PRINTF(3, 4) static M_INLINE int snprintf_err_handle(char* buf, size_t bufsize, const char* format, ...)
-    {
-        int     n = 0;
-        va_list args;
-        va_start(args, format);
-        // Disabling this warning in GCC and Clang for now. It only seems to show in Windows at the moment-TJE
-        DISABLE_WARNING_FORMAT_NONLITERAL
-        // NOLINTBEGIN(clang-analyzer-valist.Uninitialized,clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-        // - false positive
-        n = vsnprintf(buf, bufsize, format, args);
-        // NOLINTEND(clang-analyzer-valist.Uninitialized,clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-        // - false positive
-        RESTORE_WARNING_FORMAT_NONLITERAL
-        va_end(args);
-
-        if (n < 0 || (buf != M_NULLPTR && bufsize != 0 && int_to_sizet(n) >= bufsize))
-        {
-            if (buf != M_NULLPTR && bufsize > 0)
-            {
-                buf[bufsize - 1] = 0;
-            }
-            constraintEnvInfo envInfo;
-            errno = EINVAL;
-            invoke_Constraint_Handler("snprintf_error_handler_macro: error in snprintf",
-                                      set_Env_Info(&envInfo, __FILE__, __func__, M_NULLPTR, __LINE__), EINVAL);
-        }
-        return n;
-    }
+    //! \def snprintf_err_handle(buf, bufsize, format, ...)
+    //! \brief macro wrapper for the implementation of snprintf_err_handle
+    //! This wrapper passes in file, function, line, expression to the real implementation function
+    #define snprintf_err_handle(buf, bufsize, format, ...) impl_snprintf_err_handle(__FILE__, __func__, __LINE__, "snprintf_err_handle(" #buf ", " #bufsize ", " #format ", va args)", buf, bufsize, format, ##__VA_ARGS__)
 
     //! \fn int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formatargs)
     //! \brief Checks for the same conditions as printf_s in C11 annex K.
