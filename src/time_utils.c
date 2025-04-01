@@ -327,7 +327,7 @@ struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, str
     if (time != M_NULLPTR)
     {
         const int days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-        int       year            = JAN_1_1970_DAY_OF_WEEK;
+        int       year            = 0;
         int       month           = 0;
         int       day             = 0;
         int       yday            = 0;
@@ -372,7 +372,7 @@ struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, str
         remsec %= M_STATIC_CAST(int64_t, secPerMin);
         int second = M_STATIC_CAST(int, remsec);
 
-        time->tm_year  = year - C_STRUCT_TM_YEARS_START;
+        time->tm_year  = (year + UNIX_EPOCH_STARTING_YEAR) - C_STRUCT_TM_YEARS_START;
         time->tm_mon   = month;
         time->tm_mday  = day;
         time->tm_yday  = yday;
