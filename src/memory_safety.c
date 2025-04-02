@@ -47,7 +47,7 @@ size_t get_System_Pagesize(void)
     // use get page size:
     // http://man7.org/linux/man-pages/man2/getpagesize.2.html note marked
     // legacy in SUSv2, but checking it if posix is missing for some reason
-    return int_to_sizet(getpagesize())
+    return int_to_sizet(getpagesize());
 #elif defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
     SYSTEM_INFO winSysInfo;
     safe_memset(&winSysInfo, sizeof(SYSTEM_INFO), 0, sizeof(SYSTEM_INFO));
