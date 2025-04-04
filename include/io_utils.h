@@ -596,10 +596,13 @@ extern "C"
 
 #endif
 
-    //! \def snprintf_err_handle(buf, bufsize, format, ...)
-    //! \brief macro wrapper for the implementation of snprintf_err_handle
-    //! This wrapper passes in file, function, line, expression to the real implementation function
-    #define snprintf_err_handle(buf, bufsize, format, ...) impl_snprintf_err_handle(__FILE__, __func__, __LINE__, "snprintf_err_handle(" #buf ", " #bufsize ", " #format ", va args)", buf, bufsize, format, ##__VA_ARGS__)
+//! \def snprintf_err_handle(buf, bufsize, format, ...)
+//! \brief macro wrapper for the implementation of snprintf_err_handle
+//! This wrapper passes in file, function, line, expression to the real implementation function
+#define snprintf_err_handle(buf, bufsize, format, ...)                                                                 \
+    impl_snprintf_err_handle(__FILE__, __func__, __LINE__,                                                             \
+                             "snprintf_err_handle(" #buf ", " #bufsize ", " #format ", va args)", buf, bufsize,        \
+                             format, ##__VA_ARGS__)
 
     //! \fn int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formatargs)
     //! \brief Checks for the same conditions as printf_s in C11 annex K.

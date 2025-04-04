@@ -1067,7 +1067,7 @@ static M_INLINE void fclose_term(FILE* term)
 // but avoiding that for now-TJE
 eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen)
 {
-    eReturnValues ret = SUCCESS;
+    eReturnValues  ret = SUCCESS;
 #    if defined(POSIX_2001) && defined(_POSIX_JOB_CONTROL) // https://linux.die.net/man/7/posixoptions
     struct termios defaultterm;
     struct termios currentterm;
@@ -1366,29 +1366,38 @@ static bool is_Allowed_Unit_For_Get_And_Validate_Input(const char* unit, eAllowe
 
 typedef enum integerInputStrTypeEnum
 {
-    INT_INPUT_INVALID,
-    INT_INPUT_DECIMAL = 10,
-    INT_INPUT_HEX     = 16
+    INT_INPUT_INVALID           = 0,
+    INT_INPUT_DECIMAL_WITH_UINT = 10,
+    INT_INPUT_DECIMAL           = 10,
+    INT_INPUT_HEX               = 16
 } eintergetInputStrType;
 
-static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str)
+static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str, eAllowedUnitInput unittype)
 {
     eintergetInputStrType type = INT_INPUT_DECIMAL;
+
     if (str != M_NULLPTR)
     {
-        const char* temp = str;
-        while (*temp != '\0')
+        if (unittype == ALLOW_UNIT_NONE)
         {
-            if ((!safe_isxdigit(*temp)) && (*temp != 'x') && (*temp != 'h'))
+            const char* temp = str;
+            while (*temp != '\0')
             {
-                type = INT_INPUT_INVALID;
-                break;
+                if ((!safe_isxdigit(*temp)) && (*temp != 'x') && (*temp != 'h'))
+                {
+                    type = INT_INPUT_INVALID;
+                    break;
+                }
+                else if (!safe_isdigit(*temp))
+                {
+                    type = INT_INPUT_HEX;
+                }
+                ++temp;
             }
-            else if (!safe_isdigit(*temp))
-            {
-                type = INT_INPUT_HEX;
-            }
-            ++temp;
+        }
+        else
+        {
+            type = INT_INPUT_DECIMAL_WITH_UINT;
         }
     }
     else
@@ -1407,7 +1416,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToCon
     DISABLE_NONNULL_COMPARE
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
-        eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
+        eintergetInputStrType strType = get_Input_Str_Type(strToConvert, unittype);
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
@@ -1446,7 +1455,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConver
     DISABLE_NONNULL_COMPARE
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
-        eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
+        eintergetInputStrType strType = get_Input_Str_Type(strToConvert, unittype);
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
@@ -1560,7 +1569,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char*       strToConver
     DISABLE_NONNULL_COMPARE
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
-        eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
+        eintergetInputStrType strType = get_Input_Str_Type(strToConvert, unittype);
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
@@ -1599,7 +1608,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert
     DISABLE_NONNULL_COMPARE
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
-        eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
+        eintergetInputStrType strType = get_Input_Str_Type(strToConvert, unittype);
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
@@ -3596,9 +3605,9 @@ int impl_snprintf_err_handle(const char* file,
                              const char* function,
                              int         line,
                              const char* expression,
-                             char*       buf, 
-                             size_t      bufsize, 
-                             const char* format, 
+                             char*       buf,
+                             size_t      bufsize,
+                             const char* format,
                              ...)
 {
     int     n = 0;
@@ -3623,7 +3632,7 @@ int impl_snprintf_err_handle(const char* file,
         constraintEnvInfo envInfo;
         errno = EINVAL;
         invoke_Constraint_Handler("snprintf_error_handler_macro: error in snprintf",
-                                    set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
+                                  set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
     }
     return n;
 }
