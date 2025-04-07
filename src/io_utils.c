@@ -1371,17 +1371,18 @@ typedef enum integerInputStrTypeEnum
     INT_INPUT_HEX     = 16
 } eintergetInputStrType;
 
-static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str)
+static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str, eAllowedUnitInput unittype)
 {
     eintergetInputStrType type = INT_INPUT_DECIMAL;
     if (str != M_NULLPTR)
     {
+        bool        checkUnit = false;
         const char* temp = str;
         while (*temp != '\0')
         {
             if ((!safe_isxdigit(*temp)) && (*temp != 'x') && (*temp != 'h'))
             {
-                type = INT_INPUT_INVALID;
+                checkUnit = true;
                 break;
             }
             else if (!safe_isdigit(*temp))
@@ -1389,6 +1390,10 @@ static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str)
                 type = INT_INPUT_HEX;
             }
             ++temp;
+        }
+        if (!is_Allowed_Unit_For_Get_And_Validate_Input(temp, unittype))
+        {
+            type = INT_INPUT_INVALID;
         }
     }
     else
@@ -1407,15 +1412,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToCon
     DISABLE_NONNULL_COMPARE
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
-        eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
+        eintergetInputStrType strType = get_Input_Str_Type(strToConvert, unittype);
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
             if (0 != safe_strtoull(outputInteger, strToConvert, unit, strType))
-            {
-                result = false;
-            }
-            else if (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
             {
                 result = false;
             }
@@ -1446,15 +1447,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConver
     DISABLE_NONNULL_COMPARE
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
-        eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
+        eintergetInputStrType strType = get_Input_Str_Type(strToConvert, unittype);
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
             if (0 != safe_strtoul(outputInteger, strToConvert, unit, strType))
-            {
-                result = false;
-            }
-            else if (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
             {
                 result = false;
             }
@@ -1560,15 +1557,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char*       strToConver
     DISABLE_NONNULL_COMPARE
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
-        eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
+        eintergetInputStrType strType = get_Input_Str_Type(strToConvert, unittype);
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
             if (0 != safe_strtoll(outputInteger, strToConvert, unit, strType))
-            {
-                result = false;
-            }
-            else if (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
             {
                 result = false;
             }
@@ -1599,15 +1592,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert
     DISABLE_NONNULL_COMPARE
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
-        eintergetInputStrType strType = get_Input_Str_Type(strToConvert);
+        eintergetInputStrType strType = get_Input_Str_Type(strToConvert, unittype);
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
             if (0 != safe_strtol(outputInteger, strToConvert, unit, strType))
-            {
-                result = false;
-            }
-            else if (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
             {
                 result = false;
             }
