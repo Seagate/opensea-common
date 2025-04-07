@@ -1378,13 +1378,11 @@ static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str, eAllow
     eintergetInputStrType type = INT_INPUT_DECIMAL;
     if (str != M_NULLPTR)
     {
-        bool        checkUnit = false;
         const char* temp = str;
         while (*temp != '\0')
         {
             if ((!safe_isxdigit(*temp)) && (*temp != 'x') && (*temp != 'h'))
             {
-                checkUnit = true;
                 break;
             }
             else if (!safe_isdigit(*temp))
