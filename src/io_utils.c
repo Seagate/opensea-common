@@ -1238,9 +1238,11 @@ static M_INLINE bool is_Allowed_Datasize_Unit(const char* unit)
 static M_INLINE bool is_Allowed_Sector_Size_Unit(const char* unit)
 {
     bool allowed = false;
-    if (strcmp(unit, "l") == 0 // used by some utilities to indicate a count is in
-                               // logical sectors instead of physical sectors
-        || strcmp(unit, "p") == 0 || strcmp(unit, "logical") == 0 || strcmp(unit, "physical") == 0)
+    // l is used by some utilities to indicate a count is in
+    // logical sectors instead of physical sectors
+    // an empty unit should be allowed for default behavior for these kinds of options. - TJE
+    if (strcmp(unit, "l") == 0 
+        || strcmp(unit, "p") == 0 || strcmp(unit, "logical") == 0 || strcmp(unit, "physical") == 0 || strcmp(unit, "") == 0)
     {
         allowed = true;
     }
