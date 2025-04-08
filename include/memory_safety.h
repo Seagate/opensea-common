@@ -20,10 +20,24 @@
 
 #include <stdlib.h>
 #include <string.h> //to pull in memset for anything that includes this file
+#if defined(noreturn)
+// This is a workaround for a Windows issue with something in wchar.h when compiling with clang
+// Since noreturn is defined, something in a header included from wchar tries to declspec(noreturn) which it cannot do
+// since it conflicts with this definition.
+// This backs up the current definition, undefines noreturn, includes wchar.h, then restores the noreturn definition 
+// once more to resolve the problem.
+#define noreturn_workaround noreturn
+#define noret_workaround_defined
+#undef noreturn
+#endif
 #include <wchar.h>
+#if defined(noret_workaround_defined) && defined(noreturn_workaround)
+#define noreturn noreturn_workaround
+#endif
 
 #if defined(_WIN32)
-#    include "windows_version_detect.h" //for determining if securezeromemory2 is available and setting the pragma to include the required library.
+// for determining if securezeromemory2 is available and setting the pragma to include the required library.
+#    include "windows_version_detect.h" 
 #elif defined(POSIX_1990) || defined(BSD4_2)
 #    include <dirent.h>
 #endif
