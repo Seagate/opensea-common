@@ -170,13 +170,13 @@ char* safe_strtok_impl(char* M_RESTRICT       str,
     /*
      * Skip (span) leading delimiters (s += strspn(s, delim), sort of).
      */
-    //Seagate modification:
-    //This code previously used a goto.
-    //In order to stay within bounds of str, this was removed to check strmax > 0 each time through.
+    // Seagate modification:
+    // This code previously used a goto.
+    // In order to stay within bounds of str, this was removed to check strmax > 0 each time through.
     while (*strmax > RSIZE_T_C(0))
     {
         bool breakdelimloop = false;
-        c = *str++;
+        c                   = *str++;
         *strmax -= RSIZE_T_C(1); // Seagate modification
         for (spanp = M_CONST_CAST(char*, delim); (sc = *spanp++) != 0 && !breakdelimloop;)
         {
@@ -203,9 +203,10 @@ char* safe_strtok_impl(char* M_RESTRICT       str,
         // while being tokenized.
         *saveptr = M_NULLPTR;
         error    = ERANGE;
-        invoke_Constraint_Handler("safe_strtok: reached end of source "
-                                "string without encountering null terminator while scanning for first non-deliminator",
-                                set_Env_Info(&envInfo, file, function, expression, line), error);
+        invoke_Constraint_Handler(
+            "safe_strtok: reached end of source "
+            "string without encountering null terminator while scanning for first non-deliminator",
+            set_Env_Info(&envInfo, file, function, expression, line), error);
         errno = error;
         return (M_NULLPTR);
     }

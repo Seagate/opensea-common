@@ -724,9 +724,9 @@ extern "C"
     //!                                                         const char* function,
     //!                                                         int         line,
     //!                                                         const char* expression,
-    //!                                                         char*       buf, 
+    //!                                                         char*       buf,
     //!                                                         size_t      bufsize,
-    //!                                                         const char* format, 
+    //!                                                         const char* format,
     //!                                                         ...)
     //! \brief Not exactly the same as snprintf_s, just checking that the return code is as expected when using this
     //! function to detect errors or truncation.
@@ -749,14 +749,15 @@ extern "C"
     M_NULL_TERM_STRING(7)
     M_PARAM_RW(5)
     M_PARAM_RO(7)
-    FUNC_ATTR_PRINTF(7, 8) int impl_snprintf_err_handle(const char* file,
-                             const char* function,
-                             int         line,
-                             const char* expression,
-                             char*       buf, 
-                             size_t      bufsize, 
-                             const char* format, 
-                             ...);
+    FUNC_ATTR_PRINTF(7, 8)
+    int impl_snprintf_err_handle(const char* file,
+                                 const char* function,
+                                 int         line,
+                                 const char* expression,
+                                 char*       buf,
+                                 size_t      bufsize,
+                                 const char* format,
+                                 ...);
 
 #if defined(__cplusplus)
 }

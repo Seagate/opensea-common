@@ -1241,8 +1241,8 @@ static M_INLINE bool is_Allowed_Sector_Size_Unit(const char* unit)
     // l is used by some utilities to indicate a count is in
     // logical sectors instead of physical sectors
     // an empty unit should be allowed for default behavior for these kinds of options. - TJE
-    if (strcmp(unit, "l") == 0 
-        || strcmp(unit, "p") == 0 || strcmp(unit, "logical") == 0 || strcmp(unit, "physical") == 0 || strcmp(unit, "") == 0)
+    if (strcmp(unit, "l") == 0 || strcmp(unit, "p") == 0 || strcmp(unit, "logical") == 0 ||
+        strcmp(unit, "physical") == 0 || strcmp(unit, "") == 0)
     {
         allowed = true;
     }
@@ -3585,9 +3585,9 @@ int impl_snprintf_err_handle(const char* file,
                              const char* function,
                              int         line,
                              const char* expression,
-                             char*       buf, 
-                             size_t      bufsize, 
-                             const char* format, 
+                             char*       buf,
+                             size_t      bufsize,
+                             const char* format,
                              ...)
 {
     int     n = 0;
@@ -3612,7 +3612,7 @@ int impl_snprintf_err_handle(const char* file,
         constraintEnvInfo envInfo;
         errno = EINVAL;
         invoke_Constraint_Handler("snprintf_error_handler_macro: error in snprintf",
-                                    set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
+                                  set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
     }
     return n;
 }
