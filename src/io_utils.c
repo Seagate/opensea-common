@@ -1228,7 +1228,7 @@ static M_INLINE bool is_Allowed_Datasize_Unit(const char* unit)
     // allowed units must match exactly at the end of the string!
     if (strcmp(unit, "B") == 0 || strcmp(unit, "KB") == 0 || strcmp(unit, "KiB") == 0 || strcmp(unit, "MB") == 0 ||
         strcmp(unit, "MiB") == 0 || strcmp(unit, "GB") == 0 || strcmp(unit, "GiB") == 0 || strcmp(unit, "TB") == 0 ||
-        strcmp(unit, "TiB") == 0 || strcmp(unit, "BLOCKS") == 0 || strcmp(unit, "SECTORS") == 0)
+        strcmp(unit, "TiB") == 0 || strcmp(unit, "BLOCKS") == 0 || strcmp(unit, "SECTORS") == 0 || strcmp(unit,"") == 0)
     {
         allowed = true;
     }
@@ -1271,6 +1271,7 @@ static M_INLINE bool is_Allowed_Power_Unit(const char* unit)
     bool allowed = false;
     if (strcmp(unit, "w") == 0     // watts
         || strcmp(unit, "mw") == 0 // milliwatts
+        || strcmp(unit, "") == 0   // no unit, default expected for the given option
     )
     {
         allowed = true;
@@ -1283,6 +1284,7 @@ static M_INLINE bool is_Allowed_Volts_Unit(const char* unit)
     bool allowed = false;
     if (strcmp(unit, "v") == 0     // volts
         || strcmp(unit, "mv") == 0 // millivolts
+        || strcmp(unit, "") == 0   // no unit, default expected for the given option
     )
     {
         allowed = true;
@@ -1295,6 +1297,7 @@ static M_INLINE bool is_Allowed_Amps_Unit(const char* unit)
     bool allowed = false;
     if (strcmp(unit, "a") == 0     // amps
         || strcmp(unit, "ma") == 0 // milliamps
+        || strcmp(unit, "") == 0   // no unit, default expected for the given option
     )
     {
         allowed = true;
@@ -1308,6 +1311,7 @@ static M_INLINE bool is_Allowed_Temperature_Unit(const char* unit)
     if (strcmp(unit, "c") == 0    // celsius
         || strcmp(unit, "f") == 0 // fahrenheit
         || strcmp(unit, "k") == 0 // kelvin
+        || strcmp(unit, "") == 0  // no unit, default expected for the given option
     )
     {
         allowed = true;
