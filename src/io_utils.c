@@ -1258,6 +1258,7 @@ static M_INLINE bool is_Allowed_Time_Unit(const char* unit)
         || strcmp(unit, "s") == 0  // seconds
         || strcmp(unit, "m") == 0  // minutes
         || strcmp(unit, "h") == 0  // hours
+        || strcmp(unit, "") == 0 //no unit, default expected for the given option
     )
     {
         allowed = true;
