@@ -1228,7 +1228,8 @@ static M_INLINE bool is_Allowed_Datasize_Unit(const char* unit)
     // allowed units must match exactly at the end of the string!
     if (strcmp(unit, "B") == 0 || strcmp(unit, "KB") == 0 || strcmp(unit, "KiB") == 0 || strcmp(unit, "MB") == 0 ||
         strcmp(unit, "MiB") == 0 || strcmp(unit, "GB") == 0 || strcmp(unit, "GiB") == 0 || strcmp(unit, "TB") == 0 ||
-        strcmp(unit, "TiB") == 0 || strcmp(unit, "BLOCKS") == 0 || strcmp(unit, "SECTORS") == 0 || strcmp(unit,"") == 0)
+        strcmp(unit, "TiB") == 0 || strcmp(unit, "BLOCKS") == 0 || strcmp(unit, "SECTORS") == 0 ||
+        strcmp(unit, "") == 0)
     {
         allowed = true;
     }
@@ -1258,7 +1259,7 @@ static M_INLINE bool is_Allowed_Time_Unit(const char* unit)
         || strcmp(unit, "s") == 0  // seconds
         || strcmp(unit, "m") == 0  // minutes
         || strcmp(unit, "h") == 0  // hours
-        || strcmp(unit, "") == 0 //no unit, default expected for the given option
+        || strcmp(unit, "") == 0   // no unit, default expected for the given option
     )
     {
         allowed = true;
