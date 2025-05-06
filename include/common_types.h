@@ -174,7 +174,7 @@ typedef off_t oscoffset_t;
 //! \def UINTPTR_MAX
 //! \brief Defines the maximum value for uintptr_t on 64-bit systems.
 #        define UINTPTR_MAX UINT64_MAX
-#    endif
+#    endif //!UINTPTR_MAX
 
 #    if !defined(INTPTR_MAX)
     //! \typedef intptr_t
@@ -187,10 +187,10 @@ typedef off_t oscoffset_t;
 //! \brief Defines the maximum value for intptr_t on 64-bit systems.
 #        define INTPTR_MAX INT64_MAX
 
-//! \def INTMAX_MIN
-//! \brief Defines the minimum value for intmax_t on 64-bit systems.
-#        define INTMAX_MIN INT64_MIN
-#    endif
+//! \def INTPTR_MIN
+//! \brief Defines the minimum value for intptr_t on 64-bit systems.
+#        define INTPTR_MIN INT64_MIN
+#    endif //!INTPTR_MAX
 
 //! \def SIZE_T_C
 //! \brief Defines a macro for size_t constants on 64-bit systems.
