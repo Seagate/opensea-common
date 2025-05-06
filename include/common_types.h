@@ -220,7 +220,7 @@ typedef uint32_t uintptr_t;
 //! \def UINTPTR_MAX
 //! \brief Defines the maximum value for uintptr_t on 32-bit systems.
 #        define UINTPTR_MAX UINT32_MAX
-#    endif
+#    endif //!UINTPTR_MAX
 
 #    if !defined(INTPTR_MAX)
 //! \typedef intptr_t
@@ -233,10 +233,10 @@ typedef int32_t intptr_t;
 //! \brief Defines the maximum value for intptr_t on 32-bit systems.
 #        define INTPTR_MAX INT32_MAX
 
-//! \def INTMAX_MIN
-//! \brief Defines the minimum value for intmax_t on 32-bit systems.
-#        define INTMAX_MIN INT32_MIN
-#    endif
+//! \def INTPTR_MIN
+//! \brief Defines the minimum value for intptr_t on 32-bit systems.
+#        define INTPTR_MIN INT32_MIN
+#    endif //INTPTR_MAX
 
 //! \def SIZE_T_C
 //! \brief Defines a macro for size_t constants on 32-bit systems.
