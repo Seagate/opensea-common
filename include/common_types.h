@@ -299,8 +299,14 @@ extern "C"
         MISSING_INFORMATION = 33,  /* file is missing information inorder to be parsed correctly */
         TRUNCATED_FILE = 34,       /* file is truncated and might be missing data for parsing it correctly */
         INSECURE_PATH = 35,
-        UNKNOWN
-    );
+        DEVICE_BUSY = 36,
+        DEVICE_INVALID = 37,
+        DEVICE_DISCONNECTED = 38,
+        UNKNOWN);
+
+    //! \enum eDataTransferDirection
+    //! \brief Enum representing data transfer directions.
+    //!
 
     M_DECLARE_ENUM(eDataTransferDirection,
         XFER_NO_DATA,
