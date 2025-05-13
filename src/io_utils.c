@@ -2459,6 +2459,15 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
     case INSECURE_PATH:
         printf("INSECURE PATH\n");
         break;
+    case DEVICE_BUSY:
+        printf("DEVICE BUSY\n");
+        break;
+    case DEVICE_INVALID:
+        printf("DEVICE INVALID\n");
+        break;
+    case DEVICE_DISCONNECTED:
+        printf("DEVICE DISCONNECTED\n");
+        break;
     case UNKNOWN:
         printf("UNKNOWN\n");
         break;

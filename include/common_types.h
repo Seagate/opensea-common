@@ -927,8 +927,14 @@ typedef int32_t intptr_t;
         TRUNCATED_FILE = 34,
         /*!< Path is insecure. */
         INSECURE_PATH = 35,
+        /*!< Device handle reported busy and cannot be opened. */
+        DEVICE_BUSY = 36,
+        /*!< invalid device handle specified (not connected or present on the system) */
+        DEVICE_INVALID = 37,
+        /*!< Device disconnected since being opened and is no longer available. */
+        DEVICE_DISCONNECTED = 38,
         /*!< Unknown error. */
-        UNKNOWN = 36);
+        UNKNOWN);
 
     //! \enum eDataTransferDirection
     //! \brief Enum representing data transfer directions.
