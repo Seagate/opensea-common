@@ -192,23 +192,29 @@ typedef off_t oscoffset_t;
 #        define INTPTR_MIN INT64_MIN
 #    endif //! INTPTR_MAX
 
+#    if !defined(SIZE_T_C)
 //! \def SIZE_T_C
 //! \brief Defines a macro for size_t constants on 64-bit systems.
 //!
 //! This macro appends the 'ULL' suffix to a constant to define it as a size_t constant.
-#    define SIZE_T_C(c) UINT64_C(c)
+#        define SIZE_T_C(c) UINT64_C(c)
+#    endif
 
+#    if !defined(RSIZE_T_C)
 //! \def RSIZE_T_C
 //! \brief Defines a macro for rsize_t constants on 64-bit systems.
 //!
 //! This macro appends the 'ULL' suffix to a constant to define it as a rsize_t constant.
-#    define RSIZE_T_C(c) UINT64_C(c)
+#        define RSIZE_T_C(c) UINT64_C(c)
+#    endif
 
+#    if !defined(SSIZE_T_C)
 //! \def SSIZE_T_C
 //! \brief Defines a macro for ssize_t constants on 64-bit systems.
 //!
 //! This macro appends the 'LL' suffix to a constant to define it as a ssize_t constant.
-#    define SSIZE_T_C(c) INT64_C(c)
+#        define SSIZE_T_C(c) INT64_C(c)
+#    endif
 #else // ENV_32BIT
 #    if !defined(UINTPTR_MAX)
 //! \typedef uintptr_t
@@ -238,23 +244,29 @@ typedef int32_t intptr_t;
 #        define INTPTR_MIN INT32_MIN
 #    endif // INTPTR_MAX
 
+#    if !defined(SIZE_T_C)
 //! \def SIZE_T_C
 //! \brief Defines a macro for size_t constants on 32-bit systems.
 //!
 //! This macro appends the 'U' suffix to a constant to define it as a size_t constant.
-#    define SIZE_T_C(c)  UINT32_C(c)
+#        define SIZE_T_C(c) UINT32_C(c)
+#    endif
 
+#    if !defined(RSIZE_T_C)
 //! \def RSIZE_T_C
 //! \brief Defines a macro for rsize_t constants on 32-bit systems.
 //!
 //! This macro appends the 'U' suffix to a constant to define it as a rsize_t constant.
-#    define RSIZE_T_C(c) UINT32_C(c)
+#        define RSIZE_T_C(c) UINT32_C(c)
+#    endif
 
+#    if !defined(SSIZE_T_C)
 //! \def SSIZE_T_C
 //! \brief Defines a macro for ssize_t constants on 32-bit systems.
 //!
 //! This macro appends the 'L' suffix to a constant to define it as a ssize_t constant.
-#    define SSIZE_T_C(c) INT32_C(c)
+#        define SSIZE_T_C(c) INT32_C(c)
+#    endif
 #endif
 
 #if defined(_WIN32)
