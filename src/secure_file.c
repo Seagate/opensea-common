@@ -262,13 +262,12 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                     // instead for strndup
                     lastsep = lastwinsep;
                 }
-#else
-                // for linux if file is to be created in "/"
-                if (safe_strlen(filename) == safe_strlen(lastsep))
+#endif //_WIN32
+       // path only. No file name
+                uintptr_t duplen = C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, filename);
+                if (duplen == 0)
                 {
-                    // this will copy only "/" in the initFileName
-                    if (0 != safe_strndup(&intFileName, filename,
-                                          C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, filename) + 1))
+                    if (0 != safe_strndup(&intFileName, filename, 1))
                     {
                         fileInfo->error = SEC_FILE_INVALID_PATH;
                         set_Secure_File_error_message(
@@ -277,10 +276,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                         return fileInfo;
                     }
                 }
-                else
-#endif //_WIN32
-       // path only. No file name
-                if (0 != safe_strndup(&intFileName, filename, C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, filename)))
+                else if (0 != safe_strndup(&intFileName, filename, duplen))
                 {
                     fileInfo->error = SEC_FILE_INVALID_PATH;
                     set_Secure_File_error_message(
