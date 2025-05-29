@@ -264,7 +264,19 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                 }
 #endif //_WIN32
        // path only. No file name
-                if (0 != safe_strndup(&intFileName, filename, C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, filename)))
+                uintptr_t duplen = C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, filename);
+                if (duplen == 0)
+                {
+                    if (0 != safe_strndup(&intFileName, filename, 1))
+                    {
+                        fileInfo->error = SEC_FILE_INVALID_PATH;
+                        set_Secure_File_error_message(
+                            M_CONST_CAST(char**, &fileInfo->errorString),
+                            "Failed setting up path for security verification - path + file name provided");
+                        return fileInfo;
+                    }
+                }
+                else if (0 != safe_strndup(&intFileName, filename, duplen))
                 {
                     fileInfo->error = SEC_FILE_INVALID_PATH;
                     set_Secure_File_error_message(
@@ -561,6 +573,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
         {
             errno_t fopenError = 0;
             fileInfo->file     = M_NULLPTR;
+            printf("opening %s\n", fileInfo->fullpath);
             fopenError         = safe_fopen(&fileInfo->file, fileInfo->fullpath, internalmode);
             if (fopenError == 0 && fileInfo->file != M_NULLPTR)
             {
