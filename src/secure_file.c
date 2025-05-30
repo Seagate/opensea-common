@@ -573,6 +573,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
         {
             errno_t fopenError = 0;
             fileInfo->file     = M_NULLPTR;
+            printf("opening %s\n", fileInfo->fullpath);
             fopenError         = safe_fopen(&fileInfo->file, fileInfo->fullpath, internalmode);
             if (fopenError == 0 && fileInfo->file != M_NULLPTR)
             {

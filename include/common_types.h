@@ -143,14 +143,14 @@ typedef off_t oscoffset_t;
     typedef int errno_t;
 #endif //! HAVE_C11_ANNEX_K && !HAVE_MSFT_SECURE_LIB
 
-#if defined(USING_C23) || defined(USING_CPP23)
+#if defined(__cpp_size_t_suffix) || defined (__c_size_t_suffix)
 //! \def SIZE_T_C
 //! \brief Defines a macro for size_t constants in C23 or C++23.
 //!
 //! This macro appends the 'ZU' suffix to a constant to define it as a size_t constant.
 //! \param c The constant to be defined as a size_t constant.
 #    if !defined(SIZE_T_C)
-#        define SIZE_T_C(c) (c##ZU)
+#        define SIZE_T_C(c) (c##UZ)
 #    endif // SIZE_T_C
 
 //! \def SSIZE_T_C
@@ -161,7 +161,7 @@ typedef off_t oscoffset_t;
 #    if !defined(SSIZE_T_C)
 #        define SSIZE_T_C(c) (c##Z)
 #    endif // SSIZE_T_C
-#endif     // C23 or C++23
+#endif     // size t suffix support
 
 #if defined(ENV_64BIT)
 #    if !defined(UINTPTR_MAX)
@@ -192,23 +192,29 @@ typedef off_t oscoffset_t;
 #        define INTPTR_MIN INT64_MIN
 #    endif //! INTPTR_MAX
 
+#    if !defined(SIZE_T_C)
 //! \def SIZE_T_C
 //! \brief Defines a macro for size_t constants on 64-bit systems.
 //!
 //! This macro appends the 'ULL' suffix to a constant to define it as a size_t constant.
-#    define SIZE_T_C(c) UINT64_C(c)
+#        define SIZE_T_C(c) UINT64_C(c)
+#    endif
 
+#    if !defined(RSIZE_T_C)
 //! \def RSIZE_T_C
 //! \brief Defines a macro for rsize_t constants on 64-bit systems.
 //!
 //! This macro appends the 'ULL' suffix to a constant to define it as a rsize_t constant.
-#    define RSIZE_T_C(c) UINT64_C(c)
+#        define RSIZE_T_C(c) UINT64_C(c)
+#    endif
 
+#    if !defined(SSIZE_T_C)
 //! \def SSIZE_T_C
 //! \brief Defines a macro for ssize_t constants on 64-bit systems.
 //!
 //! This macro appends the 'LL' suffix to a constant to define it as a ssize_t constant.
-#    define SSIZE_T_C(c) INT64_C(c)
+#        define SSIZE_T_C(c) INT64_C(c)
+#    endif
 #else // ENV_32BIT
 #    if !defined(UINTPTR_MAX)
 //! \typedef uintptr_t
@@ -238,23 +244,29 @@ typedef int32_t intptr_t;
 #        define INTPTR_MIN INT32_MIN
 #    endif // INTPTR_MAX
 
+#    if !defined(SIZE_T_C)
 //! \def SIZE_T_C
 //! \brief Defines a macro for size_t constants on 32-bit systems.
 //!
 //! This macro appends the 'U' suffix to a constant to define it as a size_t constant.
-#    define SIZE_T_C(c)  UINT32_C(c)
+#        define SIZE_T_C(c) UINT32_C(c)
+#    endif
 
+#    if !defined(RSIZE_T_C)
 //! \def RSIZE_T_C
 //! \brief Defines a macro for rsize_t constants on 32-bit systems.
 //!
 //! This macro appends the 'U' suffix to a constant to define it as a rsize_t constant.
-#    define RSIZE_T_C(c) UINT32_C(c)
+#        define RSIZE_T_C(c) UINT32_C(c)
+#    endif
 
+#    if !defined(SSIZE_T_C)
 //! \def SSIZE_T_C
 //! \brief Defines a macro for ssize_t constants on 32-bit systems.
 //!
 //! This macro appends the 'L' suffix to a constant to define it as a ssize_t constant.
-#    define SSIZE_T_C(c) INT32_C(c)
+#        define SSIZE_T_C(c) INT32_C(c)
+#    endif
 #endif
 
 #if defined(_WIN32)
@@ -732,7 +744,7 @@ typedef int32_t intptr_t;
 #        if defined(USING_C99)
     static M_INLINE void zero_init_array(void* array, size_t element_size, size_t element_count)
     {
-#            if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
+#            if defined(HAVE_MEMSET_EXPLICIT)
         memset_explicit(array, 0, element_size * element_count);
 #            elif defined(HAVE_C11_ANNEX_K) || defined(HAVE_MEMSET_S)
         memset_s(array, element_size * element_count, 0, element_size * element_count);

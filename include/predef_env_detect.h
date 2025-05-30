@@ -1173,4 +1173,27 @@ extern "C"
 
 #if defined(__cplusplus)
 }
+
+//! \def DISABLE_WARNING_OLD_STYLE_CAST
+//! \brief Disables warning about checking a macro in #if that is not defined.
+//! Only use this when including external headers that cause this issue. This warning should not occur
+//! within opensea-libs
+
+//! \def RESTORE_WARNING_OLD_STYLE_CAST
+//! \brief Restores warning about checking a macro in #if that is not defined.
+//! Only use this when including external headers that cause this issue. This warning should not occur
+//! within opensea-libs
+#    if IS_CLANG_VERSION(3, 0)
+#        define DISABLE_WARNING_OLD_STYLE_CAST                                                                         \
+            _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wold-style-cast\"")
+#        define RESTORE_WARNING_OLD_STYLE_CAST _Pragma("clang diagnostic pop")
+#    elif IS_GCC_VERSION(4, 2)
+#        define DISABLE_WARNING_OLD_STYLE_CAST                                                                         \
+            _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wold-style-cast\"")
+#        define RESTORE_WARNING_OLD_STYLE_CAST _Pragma("GCC diagnostic pop")
+#    else
+#        define DISABLE_WARNING_OLD_STYLE_CAST
+#        define RESTORE_WARNING_OLD_STYLE_CAST
+#    endif
+
 #endif
