@@ -150,7 +150,7 @@ typedef off_t oscoffset_t;
 //! This macro appends the 'ZU' suffix to a constant to define it as a size_t constant.
 //! \param c The constant to be defined as a size_t constant.
 #    if !defined(SIZE_T_C)
-#        define SIZE_T_C(c) (c##ZU)
+#        define SIZE_T_C(c) (c##UZ)
 #    endif // SIZE_T_C
 
 //! \def SSIZE_T_C
