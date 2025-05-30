@@ -143,7 +143,7 @@ typedef off_t oscoffset_t;
     typedef int errno_t;
 #endif //! HAVE_C11_ANNEX_K && !HAVE_MSFT_SECURE_LIB
 
-#if defined(USING_C23) || defined(USING_CPP23)
+#if defined(__cpp_size_t_suffix) || defined (__c_size_t_suffix)
 //! \def SIZE_T_C
 //! \brief Defines a macro for size_t constants in C23 or C++23.
 //!
@@ -161,7 +161,7 @@ typedef off_t oscoffset_t;
 #    if !defined(SSIZE_T_C)
 #        define SSIZE_T_C(c) (c##Z)
 #    endif // SSIZE_T_C
-#endif     // C23 or C++23
+#endif     // size t suffix support
 
 #if defined(ENV_64BIT)
 #    if !defined(UINTPTR_MAX)
