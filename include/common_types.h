@@ -744,7 +744,7 @@ typedef int32_t intptr_t;
 #        if defined(USING_C99)
     static M_INLINE void zero_init_array(void* array, size_t element_size, size_t element_count)
     {
-#            if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
+#            if defined(HAVE_MEMSET_EXPLICIT)
         memset_explicit(array, 0, element_size * element_count);
 #            elif defined(HAVE_C11_ANNEX_K) || defined(HAVE_MEMSET_S)
         memset_s(array, element_size * element_count, 0, element_size * element_count);

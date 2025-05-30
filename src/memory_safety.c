@@ -326,7 +326,7 @@ void* explicit_zeroes(void* dest, size_t count)
     DISABLE_NONNULL_COMPARE
     if (dest != M_NULLPTR && count > SIZE_T_C(0))
     {
-#if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
+#if defined(HAVE_MEMSET_EXPLICIT)
         return memset_explicit(dest, 0, count);
 #elif defined(HAVE_C11_ANNEX_K)
         // use memset_s since it cannot be optimized out
@@ -433,7 +433,7 @@ errno_t safe_memset_impl(void*       dest,
             errno = error;
             return error;
         }
-#if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
+#if defined(HAVE_MEMSET_EXPLICIT)
         memset_explicit(dest, ch,
                         count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #elif IS_NETBSD_VERSION(7, 0, 0) || defined(HAVE_EXPLICIT_MEMSET)
