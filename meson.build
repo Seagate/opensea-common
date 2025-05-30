@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-project('opensea-common', 'c', license: 'MPL-2.0', version: '4.1.0', default_options : ['warning_level=2'])
+project('opensea-common', 'c', license: 'MPL-2.0', version: '6.0.1', default_options : ['warning_level=2'])
 
 c = meson.get_compiler('c')
 
@@ -67,7 +67,6 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
   '-Wimplicit-fallthrough',
   '-D_GLIBCXX_ASSERTIONS',
   '-fstrict-flex-arrays=1', #NOTE: Using level 1 since Windows often uses [1] at the end of it's structures. opensea-*libs has used this in a few places too.
-  '-fstack-protector-strong',
   '-fno-delete-null-pointer-checks',
   '-fno-strict-overflow',
   '-fno-strict-aliasing',
@@ -97,12 +96,26 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
   '-Wcomment',
   '-Wsequence-point',
   '-Wreturn-type',
+  '-Wpointer-bool-conversion',
   '-fvisibility=hidden', #to work similarly to Window's DLL import/export
   ]
 
   if c.get_id().contains('gcc') and c.version().version_compare('>=10.0')
     #only enable the sign conversion warning on versions 10 and up because it is way too noisy on earlier GCC versions than it is useful-TJE
     warning_flags += '-Wsign-conversion'
+  endif
+
+  if target_machine.system() != 'sunos'
+    warning_flags += '-fstack-protector-strong'
+  else
+    #Illumos will support this, but solaris will not due to library differences in the systems
+    if meson.version().version_compare('>=1.2.0')
+      if target_machine.kernel() == 'illumos'
+        warning_flags += '-fstack-protector-strong'
+      endif
+    else
+    # TODO: Backup method to detect illumos vs solaris
+    endif
   endif
 
   if c.get_id().contains('gcc') and target_machine.system() == 'windows'
@@ -211,6 +224,11 @@ elif c.get_id().contains('msvc')
     '/d2guard4', #control flow guard
   ]
 
+  if target_machine.cpu_family() == 'x86_64' or target_machine.cpu_family() == 'x86'
+    # https://learn.microsoft.com/en-us/cpp/build/reference/qintel-jcc-erratum?view=msvc-170
+    warning_flags += '/QIntel-jcc-erratum'
+  endif
+
   if c.has_argument('/std:c17')
     c_std = 'c17'
   endif
@@ -247,7 +265,12 @@ if get_option('username').enabled()
   global_cpp_args += ['-DENABLE_READ_USERNAME']
 endif
 
+if get_option('directorysecurity').disabled()
+  global_cpp_args += ['-DDISABLE_SECURE_FILE_PATH_CHECK']
+endif
+
 src_files = ['src/bit_manip.c', 
+            'src/constraint_handling.c',
             'src/env_detect.c', 
             'src/error_translation.c',
             'src/io_utils.c',
@@ -259,6 +282,11 @@ src_files = ['src/bit_manip.c',
             'src/secure_file.c',
             'src/secured_env_vars.c',
             'src/sleep.c',
+            'src/sort_and_search.c',
+            'src/safe_qsort.c',
+            'src/safe_bsearch.c',
+            'src/safe_lsearch.c',
+            'src/safe_strtok.c',
             'src/string_utils.c',
             'src/time_utils.c',
             'src/type_conversion.c',

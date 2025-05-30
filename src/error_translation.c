@@ -1,45 +1,44 @@
 // SPDX-License-Identifier: MPL-2.0
-//
-// Do NOT modify or remove this copyright and license
-//
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
-//
-// This software is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-//
-// ******************************************************************************************
-// 
-// \file error_translation.c
-// \brief functions to translate error codes from errno, windows errors, or uefi errors to a string
+
+//! \file error_translation.c
+//! \brief functions to translate error codes from errno, windows errors, or uefi errors to a string
+//! \copyright
+//! Do NOT modify or remove this copyright and license
+//!
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//!
+//! This software is subject to the terms of the Mozilla Public License, v. 2.0.
+//! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "error_translation.h"
 #include "memory_safety.h"
 #include "type_conversion.h"
 
-#include <string.h>
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
-#if defined (UEFI_C_SOURCE)
-    #include <Uefi.h>
-    #include <Uefi/UefiBaseType.h> //for EFI_STATUS definitions
-#elif defined (_WIN32)
-    #include <windows.h>
-    #include <tchar.h>
+#if defined(UEFI_C_SOURCE)
+#    include <Uefi.h>
+#    include <Uefi/UefiBaseType.h> //for EFI_STATUS definitions
+#elif defined(_WIN32)
+#    include <tchar.h>
+DISABLE_WARNING_4255
+#    include <windows.h>
+RESTORE_WARNING_4255
 #endif
 
-#define ERROR_STRING_BUFFER_LENGTH 1024
+#define ERROR_STRING_BUFFER_LENGTH SIZE_T_C(1024)
 void print_Errno_To_Screen(errno_t error)
 {
-#if defined (HAVE_C11_ANNEX_K)
+#if defined(HAVE_C11_ANNEX_K)
     size_t errorStringLen = strerrorlen_s(error);
     if (errorStringLen > 0 && errorStringLen < RSIZE_MAX)
     {
-        char *errorString = C_CAST(char*, safe_calloc(errorStringLen + 1, sizeof(char)));
-        if (errorString)
+        char* errorString = M_REINTERPRET_CAST(char*, safe_calloc(errorStringLen + SIZE_T_C(1), sizeof(char)));
+        if (errorString != M_NULLPTR)
         {
-            errno_t truncated = strerror_s(errorString, errorStringLen + 1, error);
+            errno_t truncated = strerror_s(errorString, errorStringLen + SIZE_T_C(1), error);
             if (truncated != 0)
             {
                 printf("%d - %s (truncated)\n", error, errorString);
@@ -59,7 +58,7 @@ void print_Errno_To_Screen(errno_t error)
     {
         printf("%d - <Unable to convert error to string>\n", error);
     }
-#elif defined (__STDC_SECURE_LIB__) //This is a MSFT definition for their original _s functions that sometimes differ from the C11 standard
+#elif defined(HAVE_MSFT_SECURE_LIB)
     DECLARE_ZERO_INIT_ARRAY(char, errorString, ERROR_STRING_BUFFER_LENGTH);
     if (0 == strerror_s(errorString, ERROR_STRING_BUFFER_LENGTH, error))
     {
@@ -69,45 +68,49 @@ void print_Errno_To_Screen(errno_t error)
     {
         printf("%d - <Unable to convert error to string>\n", error);
     }
-#elif defined (HAVE_POSIX_STRERR_R) || defined (HAVE_GNU_STRERR_R) || defined (POSIX_2001) || defined (_GNU_SOURCE)
-    #if defined (HAVE_POSIX_STRERR_R) && defined (HAVE_GNU_STRERR_R)
-        #error "strerror_r is either POSIX or GNU compatible, but not both. Define only one of HAVE_POSIX_STRERR_R or HAVE_GNU_STRERR_R"
-    #endif //HAVE_POSIX_STRERR_R && HAVE_GNU_STRERR_R
-    //GNU/POSIX strerror_r. Beware, GNU version works different-TJE
-    //POSIX version available since glibc 2.3.4, but not POSIX-compliant until glibc 2.13
-    //GNU version available since glibc 2.0
-    //https://www.man7.org/linux/man-pages/man3/strerror.3.html
-    //https://pubs.opengroup.org/onlinepubs/9699919799/functions/strerror.html
-    //https://www.gnu.org/software/gnulib/manual/html_node/strerror_005fr.html
-    //There is brief mention of xstrerror, but I cannot find any documentation on it anywhere.-TJE
-    #if (defined (POSIX_2001) && !defined (_GNU_SOURCE)) || defined (HAVE_POSIX_STRERR_R)
-        //POSIX version
-        DECLARE_ZERO_INIT_ARRAY(char, errorString, ERROR_STRING_BUFFER_LENGTH);
-        if (0 == strerror_r(error, errorString, ERROR_STRING_BUFFER_LENGTH))
-        {
-            errorString[ERROR_STRING_BUFFER_LENGTH - 1] = '\0';//While it should be null terminated, there are known bugs on some systems where it is not!
-            printf("%d - %s\n", error, errorString);
-        }
-        else
-        {
-            printf("%d - <Unable to convert error to string>\n", error);
-        }
-    #elif defined (HAVE_GNU_STRERR_R) || defined (_GNU_SOURCE)
-        //GNU version
-        DECLARE_ZERO_INIT_ARRAY(char, errorString, ERROR_STRING_BUFFER_LENGTH);
-        char *errmsg = strerror_r(error, errorString, ERROR_STRING_BUFFER_LENGTH);
-        if (errmsg != M_NULLPTR)
-        {
-            errorString[ERROR_STRING_BUFFER_LENGTH - 1] = '\0';//While it should be null terminated, there are known bugs on some systems where it is not!
-            printf("%d - %s\n", error, errmsg);
-        }
-        else
-        {
-            printf("%d - <Unable to convert error to string>\n", error);
-        }
-    #else
-        #error "Error detectiong POSIX strerror_r vs GNU strerror_r"
-    #endif
+#elif defined(HAVE_POSIX_STRERR_R) || defined(HAVE_GNU_STRERR_R) || defined(POSIX_2001) || defined(_GNU_SOURCE)
+#    if defined(HAVE_POSIX_STRERR_R) && defined(HAVE_GNU_STRERR_R)
+#        error                                                                                                         \
+            "strerror_r is either POSIX or GNU compatible, but not both. Define only one of HAVE_POSIX_STRERR_R or HAVE_GNU_STRERR_R"
+#    endif // HAVE_POSIX_STRERR_R && HAVE_GNU_STRERR_R
+// GNU/POSIX strerror_r. Beware, GNU version works different-TJE
+// POSIX version available since glibc 2.3.4, but not POSIX-compliant until
+// glibc 2.13 GNU version available since glibc 2.0
+// https://www.man7.org/linux/man-pages/man3/strerror.3.html
+// https://pubs.opengroup.org/onlinepubs/9699919799/functions/strerror.html
+// https://www.gnu.org/software/gnulib/manual/html_node/strerror_005fr.html
+// There is brief mention of xstrerror, but I cannot find any documentation on
+// it anywhere.-TJE
+#    if (defined(POSIX_2001) && !defined(_GNU_SOURCE)) || defined(HAVE_POSIX_STRERR_R)
+    // POSIX version
+    DECLARE_ZERO_INIT_ARRAY(char, errorString, ERROR_STRING_BUFFER_LENGTH);
+    if (0 == strerror_r(error, errorString, ERROR_STRING_BUFFER_LENGTH))
+    {
+        errorString[ERROR_STRING_BUFFER_LENGTH - SIZE_T_C(1)] = '\0'; // While it should be null terminated, there are
+                                                                      // known bugs on some systems where it is not!
+        printf("%d - %s\n", error, errorString);
+    }
+    else
+    {
+        printf("%d - <Unable to convert error to string>\n", error);
+    }
+#    elif defined(HAVE_GNU_STRERR_R) || defined(_GNU_SOURCE)
+    // GNU version
+    DECLARE_ZERO_INIT_ARRAY(char, errorString, ERROR_STRING_BUFFER_LENGTH);
+    char* errmsg = strerror_r(error, errorString, ERROR_STRING_BUFFER_LENGTH);
+    if (errmsg != M_NULLPTR)
+    {
+        errorString[ERROR_STRING_BUFFER_LENGTH - SIZE_T_C(1)] = '\0'; // While it should be null terminated, there are
+                                                                      // known bugs on some systems where it is not!
+        printf("%d - %s\n", error, errmsg);
+    }
+    else
+    {
+        printf("%d - <Unable to convert error to string>\n", error);
+    }
+#    else
+#        error "Error detection POSIX strerror_r vs GNU strerror_r"
+#    endif
 #else
     char* temp = strerror(error);
     if (temp != M_NULLPTR)
@@ -121,9 +124,9 @@ void print_Errno_To_Screen(errno_t error)
 #endif
 }
 
-#if defined (UEFI_C_SOURCE)
-//Use %d to print this out or the output look really strange
-#define PRI_UINTN "d"
+#if defined(UEFI_C_SOURCE)
+// Use %d to print this out or the output look really strange
+#    define PRI_UINTN "d"
 void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus)
 {
     switch (efiStatus)
@@ -251,16 +254,20 @@ void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus)
     }
 }
 
-#elif defined (_WIN32)
+#elif defined(_WIN32)
 void print_Windows_Error_To_Screen(winsyserror_t windowsError)
 {
     LPTSTR windowsErrorString = M_NULLPTR;
-    //Originally used: MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT)
-    //switched to MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US) to keep output consistent with all other verbose output.-TJE
-    //I would love to remove the cast, but I cannot figure out how to do it and keep out the warnings from MSVC - TJE
+    // Originally used: MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT)
+    // switched to MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US) to keep output
+    // consistent with all other verbose output.-TJE I would love to remove the
+    // cast, but I cannot figure out how to do it and keep out the warnings from
+    // MSVC - TJE
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        M_NULLPTR, windowsError, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), C_CAST(LPTSTR, &windowsErrorString), 0, M_NULLPTR);
-    //This cast is necessary to tell the Windows API to allocate the string, but it is necessary. Without it, this will not work.
+                  M_NULLPTR, windowsError, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+                  C_CAST(LPTSTR, &windowsErrorString), 0, M_NULLPTR);
+    // This cast is necessary to tell the Windows API to allocate the string,
+    // but it is necessary. Without it, this will not work.
     _tprintf_s(TEXT("%lu - %s\n"), windowsError, windowsErrorString);
     LocalFree(windowsErrorString);
 }
