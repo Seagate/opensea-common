@@ -380,7 +380,9 @@ struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, str
         time->tm_min   = minute;
         time->tm_sec   = second;
         time->tm_isdst = -1;
-        time->tm_wday  = M_STATIC_CAST(int, ((seconds / M_STATIC_CAST(int64_t, secPerDay)) + M_STATIC_CAST(int64_t, JAN_1_1970_DAY_OF_WEEK)) % M_STATIC_CAST(int64_t, DAYS_IN_WEEK));
+        time->tm_wday  = M_STATIC_CAST(
+            int, ((seconds / M_STATIC_CAST(int64_t, secPerDay)) + M_STATIC_CAST(int64_t, JAN_1_1970_DAY_OF_WEEK)) %
+                     M_STATIC_CAST(int64_t, DAYS_IN_WEEK));
     }
     RESTORE_NONNULL_COMPARE
     return time;

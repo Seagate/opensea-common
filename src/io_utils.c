@@ -1454,7 +1454,8 @@ M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToCon
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
-            if (0 != safe_strtoull(outputInteger, strToConvert, unit, strType) || (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
+            if (0 != safe_strtoull(outputInteger, strToConvert, unit, strType) ||
+                (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
             {
                 result = false;
             }
@@ -1485,7 +1486,8 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConver
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
-            if (0 != safe_strtoul(outputInteger, strToConvert, unit, strType) || (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
+            if (0 != safe_strtoul(outputInteger, strToConvert, unit, strType) ||
+                (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
             {
                 result = false;
             }
@@ -1591,7 +1593,8 @@ M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char*       strToConver
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
-            if (0 != safe_strtoll(outputInteger, strToConvert, unit, strType) || (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
+            if (0 != safe_strtoll(outputInteger, strToConvert, unit, strType) ||
+                (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
             {
                 result = false;
             }
@@ -1622,7 +1625,8 @@ M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
-            if (0 != safe_strtol(outputInteger, strToConvert, unit, strType) || (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
+            if (0 != safe_strtol(outputInteger, strToConvert, unit, strType) ||
+                (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
             {
                 result = false;
             }
@@ -1781,7 +1785,9 @@ M_NODISCARD bool get_And_Validate_Float_Input(const char*       strToConvert,
     DISABLE_NONNULL_COMPARE
     if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
     {
-        if (0 != safe_strtof(outputFloat, strToConvert, unit) || (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype)) || (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
+        if (0 != safe_strtof(outputFloat, strToConvert, unit) ||
+            (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype)) ||
+            (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
         {
             result = false;
         }
@@ -1803,7 +1809,9 @@ M_NODISCARD bool get_And_Validate_Double_Input(const char*       strToConvert,
     DISABLE_NONNULL_COMPARE
     if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
     {
-        if (0 != safe_strtod(outputFloat, strToConvert, unit) || (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype)) || (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
+        if (0 != safe_strtod(outputFloat, strToConvert, unit) ||
+            (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype)) ||
+            (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
         {
             result = false;
         }
@@ -1825,7 +1833,9 @@ M_NODISCARD bool get_And_Validate_LDouble_Input(const char*       strToConvert,
     DISABLE_NONNULL_COMPARE
     if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
     {
-        if (0 != safe_strtold(outputFloat, strToConvert, unit) || (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype)) || (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
+        if (0 != safe_strtold(outputFloat, strToConvert, unit) ||
+            (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype)) ||
+            (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
         {
             result = false;
         }

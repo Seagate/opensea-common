@@ -108,11 +108,11 @@ bool get_Bytes_To_16(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t
 
 enum eGenericIntMaxBits
 {
-    GENERIC_INT_8BIT_MAX = 7,
+    GENERIC_INT_8BIT_MAX  = 7,
     GENERIC_INT_16BIT_MAX = 15,
     GENERIC_INT_32BIT_MAX = 31,
     GENERIC_INT_64BIT_MAX = 63,
-    GENERIC_INT_MAX_BIT = 63
+    GENERIC_INT_MAX_BIT   = 63
 };
 
 //! \fn static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
@@ -257,8 +257,6 @@ static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsi
     }
     return out;
 }
-
-
 
 //! \fn genericint_t gen_64bit_range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
 //! \brief internal function to get bit range in a qword (uint64_t)
