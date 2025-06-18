@@ -1517,7 +1517,7 @@ extern "C"
 //! \warning Do not use on heap allocated memory!
 //! \param[in] array stack array to determine the size of.
 //! \return number of bytes allocated on the stack for the array
-#define SIZE_OF_STACK_ARRAY(array) (sizeof(array) / sizeof((*array)))
+#define SIZE_OF_STACK_ARRAY(array) (sizeof(array) / sizeof((*(array))))
 
 #if defined(__cplusplus)
 }

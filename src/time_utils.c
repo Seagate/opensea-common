@@ -355,14 +355,14 @@ struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, str
             {
                 daysInMonth += 1;
             }
-            if (remsec < (secPerDay * daysInMonth))
+            if (remsec < (M_STATIC_CAST(int64_t, secPerDay) * M_STATIC_CAST(int64_t, daysInMonth)))
             {
                 day = M_STATIC_CAST(int, (remsec / M_STATIC_CAST(int64_t, secPerDay)) + INT64_C(1)); // 1 based index
                 yday += day - 1;                                                                     // 0 based index
                 remsec %= secPerDay;
                 break;
             }
-            remsec -= secPerDay * daysInMonth;
+            remsec -= (M_STATIC_CAST(int64_t, secPerDay) * M_STATIC_CAST(int64_t, daysInMonth));
             yday += daysInMonth;
         }
 
@@ -380,7 +380,7 @@ struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, str
         time->tm_min   = minute;
         time->tm_sec   = second;
         time->tm_isdst = -1;
-        time->tm_wday  = ((seconds / secPerDay) + JAN_1_1970_DAY_OF_WEEK) % DAYS_IN_WEEK;
+        time->tm_wday  = M_STATIC_CAST(int, ((seconds / M_STATIC_CAST(int64_t, secPerDay)) + M_STATIC_CAST(int64_t, JAN_1_1970_DAY_OF_WEEK)) % M_STATIC_CAST(int64_t, DAYS_IN_WEEK));
     }
     RESTORE_NONNULL_COMPARE
     return time;

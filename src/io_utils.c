@@ -546,35 +546,29 @@ typedef enum eKnownTERMEnum
     // Add more terminal types to use for various color output formats
 } eKnownTERM;
 
-// other things to potentially look for:
-//     "GNOME_TERMINAL_SERVICE"
-//     "GNOME_TERMINAL_SCREEN"
-//     "TERM_PROGRAM"         <---git bash and msys2 in windows use this and set
-//     it to "mintty". TERM is set to xterm "TERM_PROGRAM_VERSION" <---git bash
-//     and msys2 in windows use this for mintty version number
-// See this for more info: https://github.com/termstandard/colors
-static eKnownTERM get_Terminal_Type(void)
+M_PARAM_WO(1)
+M_NONNULL_PARAM_LIST(1)
+static eKnownTERM get_Term_From_Env_TERM(bool* haveCompleteMatch)
 {
-    eKnownTERM terminalType      = TERM_UNKNOWN;
-    char*      termEnv           = M_NULLPTR;
-    bool       haveCompleteMatch = false;
+    eKnownTERM terminalType = TERM_UNKNOWN;
+    char*      termEnv      = M_NULLPTR;
     if (get_Environment_Variable("TERM", &termEnv) == ENV_VAR_SUCCESS && termEnv != M_NULLPTR)
     {
         // do exact matches up top, then search for substrings
         if (strcmp(termEnv, "xterm-256color") == 0)
         {
-            terminalType      = TERM_XTERM_256COLOR;
-            haveCompleteMatch = true;
+            terminalType       = TERM_XTERM_256COLOR;
+            *haveCompleteMatch = true;
         }
         else if (strcmp(termEnv, "aixterm") == 0)
         {
-            terminalType      = TERM_AIXTERM;
-            haveCompleteMatch = true;
+            terminalType       = TERM_AIXTERM;
+            *haveCompleteMatch = true;
         }
         else if (strcmp(termEnv, "sun-color") == 0)
         {
-            terminalType      = TERM_SUN_COLOR;
-            haveCompleteMatch = true;
+            terminalType       = TERM_SUN_COLOR;
+            *haveCompleteMatch = true;
         }
         else if (strcmp(termEnv, "xterm") == 0)
         {
@@ -595,14 +589,14 @@ static eKnownTERM get_Terminal_Type(void)
                     (linVer.versionType.linuxVersion.majorVersion >= 3 &&
                      linVer.versionType.linuxVersion.minorVersion > 16))
                 {
-                    terminalType      = TERM_LINUX_256COLOR;
-                    haveCompleteMatch = true;
+                    terminalType       = TERM_LINUX_256COLOR;
+                    *haveCompleteMatch = true;
                 }
                 else
                 {
                     // limited to 16 colors...which is fine
-                    terminalType      = TERM_LINUX_COLOR;
-                    haveCompleteMatch = true;
+                    terminalType       = TERM_LINUX_COLOR;
+                    *haveCompleteMatch = true;
                 }
             }
             else
@@ -621,42 +615,70 @@ static eKnownTERM get_Terminal_Type(void)
             terminalType = TERM_GENERIC_COLOR;
         }
     }
-    if (!haveCompleteMatch)
+    safe_free(&termEnv);
+    return terminalType;
+}
+
+M_PARAM_WO(1)
+M_NONNULL_PARAM_LIST(1)
+static eKnownTERM get_Term_From_Env_COLORTERM(bool* haveCompleteMatch)
+{
+    eKnownTERM terminalType = TERM_UNKNOWN;
+    char*      termEnv      = M_NULLPTR;
+    if (get_Environment_Variable("COLORTERM", &termEnv) == ENV_VAR_SUCCESS && termEnv != M_NULLPTR)
     {
-        if (get_Environment_Variable("COLORTERM", &termEnv) == ENV_VAR_SUCCESS && termEnv != M_NULLPTR)
+        // check what this is set to.
+        // truecolor seems to mean supports 256 colors
+        if (strcmp(termEnv, "gnome-terminal") == 0)
         {
-            // check what this is set to.
-            // truecolor seems to mean supports 256 colors
-            if (strcmp(termEnv, "gnome-terminal") == 0)
+            // centos6 reports "gnome-terminal" which seems to support 256
+            // colors output mode
+            if (terminalType == TERM_XTERM)
             {
-                // centos6 reports "gnome-terminal" which seems to support 256
-                // colors output mode
-                if (terminalType == TERM_XTERM)
-                {
-                    terminalType      = TERM_GNOME_256COLOR;
-                    haveCompleteMatch = true;
-                }
-                else
-                {
-                    terminalType      = TERM_GNOME_COLOR;
-                    haveCompleteMatch = true;
-                }
+                terminalType       = TERM_GNOME_256COLOR;
+                *haveCompleteMatch = true;
             }
-            else if (strstr(termEnv, "truecolor") || strncmp(termEnv, "vte", 3) == 0)
+            else
             {
-                terminalType      = TERM_TRUECOLOR_256COLOR;
-                haveCompleteMatch = true;
-            }
-            else // this case is generic and a "last" effort in this part. If
-                 // "COLORTERM" is set, assume it has some color output
-                 // support
-            {
-                terminalType = TERM_GENERIC_COLOR;
+                terminalType       = TERM_GNOME_COLOR;
+                *haveCompleteMatch = true;
             }
         }
+        else if (strstr(termEnv, "truecolor") || strncmp(termEnv, "vte", 3) == 0)
+        {
+            terminalType       = TERM_TRUECOLOR_256COLOR;
+            *haveCompleteMatch = true;
+        }
+        else // this case is generic and a "last" effort in this part. If
+             // "COLORTERM" is set, assume it has some color output
+             // support
+        {
+            terminalType = TERM_GENERIC_COLOR;
+        }
+    }
+    safe_free(&termEnv);
+    return terminalType;
+}
+
+// other things to potentially look for:
+//     "GNOME_TERMINAL_SERVICE"
+//     "GNOME_TERMINAL_SCREEN"
+//     "TERM_PROGRAM"         <---git bash and msys2 in windows use this and set
+//     it to "mintty". TERM is set to xterm "TERM_PROGRAM_VERSION" <---git bash
+//     and msys2 in windows use this for mintty version number
+// See this for more info: https://github.com/termstandard/colors
+static eKnownTERM get_Terminal_Type(void)
+{
+    eKnownTERM terminalType      = TERM_UNKNOWN;
+    bool       haveCompleteMatch = false;
+    terminalType                 = get_Term_From_Env_TERM(&haveCompleteMatch);
+    if (terminalType == TERM_UNKNOWN || !haveCompleteMatch)
+    {
+        terminalType = get_Term_From_Env_COLORTERM(&haveCompleteMatch);
     }
     if (!haveCompleteMatch)
     {
+        char* termEnv = M_NULLPTR;
         if (get_Environment_Variable("COLORFGBR", &termEnv) == ENV_VAR_SUCCESS && termEnv != M_NULLPTR)
         {
             // this environment variable is found in kde for forground and
@@ -665,8 +687,8 @@ static eKnownTERM get_Terminal_Type(void)
             // indication of what color support is available
             terminalType = TERM_GENERIC_COLOR;
         }
+        safe_free(&termEnv);
     }
-    safe_free(&termEnv);
     return terminalType;
 }
 
@@ -729,6 +751,273 @@ static void get_Console_Color_Capabilities(ptrConsoleColorCap colorCapabilities)
     }
 }
 
+static void set_Console_Background_Color(eConsoleColors backgroundColor, consoleColorCap consoleCap)
+{
+    uint8_t backgroundColorInt = UINT8_MAX;
+    switch (backgroundColor)
+    {
+    case CONSOLE_COLOR_CURRENT:
+        break;
+    case CONSOLE_COLOR_BLACK:
+        backgroundColorInt = 40;
+        break;
+    case CONSOLE_COLOR_RED:
+        backgroundColorInt = 41;
+        break;
+    case CONSOLE_COLOR_GREEN:
+        backgroundColorInt = 42;
+        break;
+    case CONSOLE_COLOR_YELLOW:
+        backgroundColorInt = 43;
+        break;
+    case CONSOLE_COLOR_BLUE:
+        backgroundColorInt = 44;
+        break;
+    case CONSOLE_COLOR_MAGENTA:
+        backgroundColorInt = 45;
+        break;
+    case CONSOLE_COLOR_CYAN:
+        backgroundColorInt = 46;
+        break;
+    case CONSOLE_COLOR_WHITE:
+        backgroundColorInt = 47;
+        break;
+    case CONSOLE_COLOR_GRAY:
+        backgroundColorInt = 100;
+        break;
+    case CONSOLE_COLOR_BRIGHT_RED:
+        backgroundColorInt = 101;
+        break;
+    case CONSOLE_COLOR_BRIGHT_GREEN:
+        backgroundColorInt = 102;
+        break;
+    case CONSOLE_COLOR_BRIGHT_YELLOW:
+        backgroundColorInt = 103;
+        break;
+    case CONSOLE_COLOR_BRIGHT_BLUE:
+        backgroundColorInt = 104;
+        break;
+    case CONSOLE_COLOR_BRIGHT_MAGENTA:
+        backgroundColorInt = 105;
+        break;
+    case CONSOLE_COLOR_BRIGHT_CYAN:
+        backgroundColorInt = 106;
+        break;
+    case CONSOLE_COLOR_BRIGHT_WHITE:
+        backgroundColorInt = 107;
+        break;
+    case CONSOLE_COLOR_DEFAULT:
+    default:
+        // aixterm does not list this, so will need to test it!
+        // otherwise reset with 0m will be as close as we get
+        backgroundColorInt = 49;
+        break;
+    }
+    // if background colors do not work, may need to try the "invert"
+    // trick to make it happen using a format like \033[7;nm or
+    // \033[7;1;nm
+    if (backgroundColorInt != UINT8_MAX)
+    {
+        uint8_t back256Color = UINT8_MAX;
+        if (backgroundColorInt < 100)
+        {
+            back256Color = backgroundColorInt - 40; // 256 colors start at 0
+        }
+        else
+        {
+            back256Color = backgroundColorInt - 100 + 8; // 256 bright colors start at 8
+        }
+        if (backgroundColorInt == 49 || !consoleCap.use256ColorFormat ||
+            (consoleCap.use256ColorFormat && consoleCap.eightBackgroundColorsOnly))
+        {
+            // use the inversion method with 7;intensity;colorm
+            if (consoleCap.useInvertFormatForBackgroundColors)
+            {
+                // more background colors are available using the
+                // inversion method (maybe) convert the color to a
+                // foreground color first
+                backgroundColorInt -= 10;
+                if (consoleCap.useIntensityBitFormat && backgroundColorInt >= 90)
+                {
+                    printf("\033[7;1;%" PRIu8 "m", backgroundColorInt - 60);
+                }
+                else if (consoleCap.eightColorsOnly && backgroundColorInt >= 90)
+                {
+                    printf("\033[7;%" PRIu8 "m", backgroundColorInt - 60);
+                }
+                else
+                {
+                    if (consoleCap.useIntensityBitFormat)
+                    {
+                        printf("\033[7;0;%" PRIu8 "m", backgroundColorInt);
+                    }
+                    else
+                    {
+                        printf("\033[7;%" PRIu8 "m", backgroundColorInt);
+                    }
+                }
+            }
+            else
+            {
+                // print the background request
+                if (consoleCap.useIntensityBitFormat && backgroundColorInt >= 100)
+                {
+                    printf("\033[1;%" PRIu8 "m", backgroundColorInt - 60);
+                }
+                else if (consoleCap.eightColorsOnly && backgroundColorInt >= 100)
+                {
+                    printf("\033[%" PRIu8 "m", backgroundColorInt - 60);
+                }
+                else
+                {
+                    if (consoleCap.useIntensityBitFormat)
+                    {
+                        printf("\033[0;%" PRIu8 "m", backgroundColorInt);
+                    }
+                    else
+                    {
+                        printf("\033[%" PRIu8 "m", backgroundColorInt);
+                    }
+                }
+            }
+        }
+        else
+        {
+            printf("\033[48;5;%" PRIu8 "m", back256Color);
+        }
+    }
+}
+
+static void set_Console_Foreground_Color(eConsoleColors foregroundColor, consoleColorCap consoleCap)
+{
+    uint8_t foregroundColorInt = UINT8_MAX;
+    switch (foregroundColor)
+    {
+    case CONSOLE_COLOR_CURRENT:
+        break;
+    case CONSOLE_COLOR_BLACK:
+        foregroundColorInt = 30;
+        break;
+    case CONSOLE_COLOR_RED:
+        foregroundColorInt = 31;
+        break;
+    case CONSOLE_COLOR_GREEN:
+        foregroundColorInt = 32;
+        break;
+    case CONSOLE_COLOR_YELLOW:
+        foregroundColorInt = 33;
+        break;
+    case CONSOLE_COLOR_BLUE:
+        foregroundColorInt = 34;
+        break;
+    case CONSOLE_COLOR_MAGENTA:
+        foregroundColorInt = 35;
+        break;
+    case CONSOLE_COLOR_CYAN:
+        foregroundColorInt = 36;
+        break;
+    case CONSOLE_COLOR_WHITE:
+        foregroundColorInt = 37;
+        break;
+    case CONSOLE_COLOR_GRAY:
+        foregroundColorInt = 90;
+        break;
+    case CONSOLE_COLOR_BRIGHT_RED:
+        foregroundColorInt = 91;
+        break;
+    case CONSOLE_COLOR_BRIGHT_GREEN:
+        foregroundColorInt = 92;
+        break;
+    case CONSOLE_COLOR_BRIGHT_YELLOW:
+        foregroundColorInt = 93;
+        break;
+    case CONSOLE_COLOR_BRIGHT_BLUE:
+        foregroundColorInt = 94;
+        break;
+    case CONSOLE_COLOR_BRIGHT_MAGENTA:
+        foregroundColorInt = 95;
+        break;
+    case CONSOLE_COLOR_BRIGHT_CYAN:
+        foregroundColorInt = 96;
+        break;
+    case CONSOLE_COLOR_BRIGHT_WHITE:
+        foregroundColorInt = 97;
+        break;
+    case CONSOLE_COLOR_DEFAULT:
+    default:
+        // aixterm does not list this, so will need to test it!
+        // otherwise reset with 0m will be as close as we get
+        foregroundColorInt = 39;
+        break;
+    }
+    if (foregroundColorInt != UINT8_MAX)
+    {
+        uint8_t fore256Color = UINT8_MAX;
+        if (foregroundColorInt < 90)
+        {
+            fore256Color = foregroundColorInt - 30; // 256 colors start at 0
+        }
+        else
+        {
+            fore256Color = foregroundColorInt - 90 + 8; // 256 bright colors start at 8
+        }
+        if (foregroundColorInt == 39 || !consoleCap.use256ColorFormat)
+        {
+            // print the foreground request
+            if (consoleCap.useInvertFormatForBackgroundColors)
+            {
+                // more background colors are available using the
+                // inversion method (maybe)
+                if (consoleCap.useIntensityBitFormat && foregroundColorInt >= 90)
+                {
+                    printf("\033[27;1;%" PRIu8 "m", foregroundColorInt - 60);
+                }
+                else if (consoleCap.eightColorsOnly && foregroundColorInt >= 90)
+                {
+                    printf("\033[27;%" PRIu8 "m", foregroundColorInt - 60);
+                }
+                else
+                {
+                    if (consoleCap.useIntensityBitFormat)
+                    {
+                        printf("\033[27;0;%" PRIu8 "m", foregroundColorInt);
+                    }
+                    else
+                    {
+                        printf("\033[27;%" PRIu8 "m", foregroundColorInt);
+                    }
+                }
+            }
+            else
+            {
+                if (consoleCap.useIntensityBitFormat && foregroundColorInt >= 90)
+                {
+                    printf("\033[1;%" PRIu8 "m", foregroundColorInt - 60);
+                }
+                else if (consoleCap.eightColorsOnly && foregroundColorInt >= 90)
+                {
+                    printf("\033[%" PRIu8 "m", foregroundColorInt - 60);
+                }
+                else
+                {
+                    if (consoleCap.useIntensityBitFormat)
+                    {
+                        printf("\033[0;%" PRIu8 "m", foregroundColorInt);
+                    }
+                    else
+                    {
+                        printf("\033[%" PRIu8 "m", foregroundColorInt);
+                    }
+                }
+            }
+        }
+        else
+        {
+            printf("\033[38;5;%" PRIu8 "m", fore256Color);
+        }
+    }
+}
+
 void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eConsoleColors backgroundColor)
 {
     static consoleColorCap consoleCap;
@@ -760,8 +1049,7 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
             //   not work for an OS we are supporting. Can ifdef or check for
             //   other things
             // set the string for each color that needs to be set.
-            uint8_t foregroundColorInt = UINT8_MAX;
-            uint8_t backgroundColorInt = UINT8_MAX;
+
             // Checking for env variable COLORTERM is one method, or COLORFGBG,
             // or if TERM is set to sun-color, xterm-256color, true-color, or
             // gnome-terminal will work for 256color when debugging a unix-like
@@ -784,264 +1072,8 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
             // at all, but that is much more complicated to
             //   implement in here right now.
             // http://jdebp.uk./Softwares/nosh/guide/commands/TerminalCapabilities.xml
-            switch (backgroundColor)
-            {
-            case CONSOLE_COLOR_CURRENT:
-                break;
-            case CONSOLE_COLOR_BLACK:
-                backgroundColorInt = 40;
-                break;
-            case CONSOLE_COLOR_RED:
-                backgroundColorInt = 41;
-                break;
-            case CONSOLE_COLOR_GREEN:
-                backgroundColorInt = 42;
-                break;
-            case CONSOLE_COLOR_YELLOW:
-                backgroundColorInt = 43;
-                break;
-            case CONSOLE_COLOR_BLUE:
-                backgroundColorInt = 44;
-                break;
-            case CONSOLE_COLOR_MAGENTA:
-                backgroundColorInt = 45;
-                break;
-            case CONSOLE_COLOR_CYAN:
-                backgroundColorInt = 46;
-                break;
-            case CONSOLE_COLOR_WHITE:
-                backgroundColorInt = 47;
-                break;
-            case CONSOLE_COLOR_GRAY:
-                backgroundColorInt = 100;
-                break;
-            case CONSOLE_COLOR_BRIGHT_RED:
-                backgroundColorInt = 101;
-                break;
-            case CONSOLE_COLOR_BRIGHT_GREEN:
-                backgroundColorInt = 102;
-                break;
-            case CONSOLE_COLOR_BRIGHT_YELLOW:
-                backgroundColorInt = 103;
-                break;
-            case CONSOLE_COLOR_BRIGHT_BLUE:
-                backgroundColorInt = 104;
-                break;
-            case CONSOLE_COLOR_BRIGHT_MAGENTA:
-                backgroundColorInt = 105;
-                break;
-            case CONSOLE_COLOR_BRIGHT_CYAN:
-                backgroundColorInt = 106;
-                break;
-            case CONSOLE_COLOR_BRIGHT_WHITE:
-                backgroundColorInt = 107;
-                break;
-            case CONSOLE_COLOR_DEFAULT:
-            default:
-                // aixterm does not list this, so will need to test it!
-                // otherwise reset with 0m will be as close as we get
-                backgroundColorInt = 49;
-                break;
-            }
-            // if background colors do not work, may need to try the "invert"
-            // trick to make it happen using a format like \033[7;nm or
-            // \033[7;1;nm
-            if (backgroundColorInt != UINT8_MAX)
-            {
-                uint8_t back256Color = UINT8_MAX;
-                if (backgroundColorInt < 100)
-                {
-                    back256Color = backgroundColorInt - 40; // 256 colors start at 0
-                }
-                else
-                {
-                    back256Color = backgroundColorInt - 100 + 8; // 256 bright colors start at 8
-                }
-                if (backgroundColorInt == 49 || !consoleCap.use256ColorFormat ||
-                    (consoleCap.use256ColorFormat && consoleCap.eightBackgroundColorsOnly))
-                {
-                    // use the inversion method with 7;intensity;colorm
-                    if (consoleCap.useInvertFormatForBackgroundColors)
-                    {
-                        // more background colors are available using the
-                        // inversion method (maybe) convert the color to a
-                        // foreground color first
-                        backgroundColorInt -= 10;
-                        if (consoleCap.useIntensityBitFormat && backgroundColorInt >= 90)
-                        {
-                            printf("\033[7;1;%" PRIu8 "m", backgroundColorInt - 60);
-                        }
-                        else if (consoleCap.eightColorsOnly && backgroundColorInt >= 90)
-                        {
-                            printf("\033[7;%" PRIu8 "m", backgroundColorInt - 60);
-                        }
-                        else
-                        {
-                            if (consoleCap.useIntensityBitFormat)
-                            {
-                                printf("\033[7;0;%" PRIu8 "m", backgroundColorInt);
-                            }
-                            else
-                            {
-                                printf("\033[7;%" PRIu8 "m", backgroundColorInt);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // print the background request
-                        if (consoleCap.useIntensityBitFormat && backgroundColorInt >= 100)
-                        {
-                            printf("\033[1;%" PRIu8 "m", backgroundColorInt - 60);
-                        }
-                        else if (consoleCap.eightColorsOnly && backgroundColorInt >= 100)
-                        {
-                            printf("\033[%" PRIu8 "m", backgroundColorInt - 60);
-                        }
-                        else
-                        {
-                            if (consoleCap.useIntensityBitFormat)
-                            {
-                                printf("\033[0;%" PRIu8 "m", backgroundColorInt);
-                            }
-                            else
-                            {
-                                printf("\033[%" PRIu8 "m", backgroundColorInt);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    printf("\033[48;5;%" PRIu8 "m", back256Color);
-                }
-            }
-
-            switch (foregroundColor)
-            {
-            case CONSOLE_COLOR_CURRENT:
-                break;
-            case CONSOLE_COLOR_BLACK:
-                foregroundColorInt = 30;
-                break;
-            case CONSOLE_COLOR_RED:
-                foregroundColorInt = 31;
-                break;
-            case CONSOLE_COLOR_GREEN:
-                foregroundColorInt = 32;
-                break;
-            case CONSOLE_COLOR_YELLOW:
-                foregroundColorInt = 33;
-                break;
-            case CONSOLE_COLOR_BLUE:
-                foregroundColorInt = 34;
-                break;
-            case CONSOLE_COLOR_MAGENTA:
-                foregroundColorInt = 35;
-                break;
-            case CONSOLE_COLOR_CYAN:
-                foregroundColorInt = 36;
-                break;
-            case CONSOLE_COLOR_WHITE:
-                foregroundColorInt = 37;
-                break;
-            case CONSOLE_COLOR_GRAY:
-                foregroundColorInt = 90;
-                break;
-            case CONSOLE_COLOR_BRIGHT_RED:
-                foregroundColorInt = 91;
-                break;
-            case CONSOLE_COLOR_BRIGHT_GREEN:
-                foregroundColorInt = 92;
-                break;
-            case CONSOLE_COLOR_BRIGHT_YELLOW:
-                foregroundColorInt = 93;
-                break;
-            case CONSOLE_COLOR_BRIGHT_BLUE:
-                foregroundColorInt = 94;
-                break;
-            case CONSOLE_COLOR_BRIGHT_MAGENTA:
-                foregroundColorInt = 95;
-                break;
-            case CONSOLE_COLOR_BRIGHT_CYAN:
-                foregroundColorInt = 96;
-                break;
-            case CONSOLE_COLOR_BRIGHT_WHITE:
-                foregroundColorInt = 97;
-                break;
-            case CONSOLE_COLOR_DEFAULT:
-            default:
-                // aixterm does not list this, so will need to test it!
-                // otherwise reset with 0m will be as close as we get
-                foregroundColorInt = 39;
-                break;
-            }
-            if (foregroundColorInt != UINT8_MAX)
-            {
-                uint8_t fore256Color = UINT8_MAX;
-                if (foregroundColorInt < 90)
-                {
-                    fore256Color = foregroundColorInt - 30; // 256 colors start at 0
-                }
-                else
-                {
-                    fore256Color = foregroundColorInt - 90 + 8; // 256 bright colors start at 8
-                }
-                if (foregroundColorInt == 39 || !consoleCap.use256ColorFormat)
-                {
-                    // print the foreground request
-                    if (consoleCap.useInvertFormatForBackgroundColors)
-                    {
-                        // more background colors are available using the
-                        // inversion method (maybe)
-                        if (consoleCap.useIntensityBitFormat && foregroundColorInt >= 90)
-                        {
-                            printf("\033[27;1;%" PRIu8 "m", foregroundColorInt - 60);
-                        }
-                        else if (consoleCap.eightColorsOnly && foregroundColorInt >= 90)
-                        {
-                            printf("\033[27;%" PRIu8 "m", foregroundColorInt - 60);
-                        }
-                        else
-                        {
-                            if (consoleCap.useIntensityBitFormat)
-                            {
-                                printf("\033[27;0;%" PRIu8 "m", foregroundColorInt);
-                            }
-                            else
-                            {
-                                printf("\033[27;%" PRIu8 "m", foregroundColorInt);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (consoleCap.useIntensityBitFormat && foregroundColorInt >= 90)
-                        {
-                            printf("\033[1;%" PRIu8 "m", foregroundColorInt - 60);
-                        }
-                        else if (consoleCap.eightColorsOnly && foregroundColorInt >= 90)
-                        {
-                            printf("\033[%" PRIu8 "m", foregroundColorInt - 60);
-                        }
-                        else
-                        {
-                            if (consoleCap.useIntensityBitFormat)
-                            {
-                                printf("\033[0;%" PRIu8 "m", foregroundColorInt);
-                            }
-                            else
-                            {
-                                printf("\033[%" PRIu8 "m", foregroundColorInt);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    printf("\033[38;5;%" PRIu8 "m", fore256Color);
-                }
-            }
+            set_Console_Background_Color(backgroundColor, consoleCap);
+            set_Console_Foreground_Color(foregroundColor, consoleCap);
         }
     }
 }
@@ -1165,8 +1197,8 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     }
     else
     {
-        *inputDataLen = safe_strlen(*userInput) + 1; // add one since this adds to the buffer size and that is what we
-                                                     // are returning in all other cases-TJE
+        *inputDataLen = safe_strlen(*userInput) + 1; // add one since this adds to the buffer size and that is what
+                                                     // we are returning in all other cases-TJE
     }
 #    elif defined(__sun) && defined(__SunOS_5_6)
     // use getpassphrase since it can return longer passwords than getpass
@@ -1422,11 +1454,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToCon
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
-            if (0 != safe_strtoull(outputInteger, strToConvert, unit, strType))
-            {
-                result = false;
-            }
-            else if (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE)
+            if (0 != safe_strtoull(outputInteger, strToConvert, unit, strType) || (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
             {
                 result = false;
             }
@@ -1457,11 +1485,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConver
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
-            if (0 != safe_strtoul(outputInteger, strToConvert, unit, strType))
-            {
-                result = false;
-            }
-            else if (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE)
+            if (0 != safe_strtoul(outputInteger, strToConvert, unit, strType) || (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
             {
                 result = false;
             }
@@ -1567,11 +1591,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char*       strToConver
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
-            if (0 != safe_strtoll(outputInteger, strToConvert, unit, strType))
-            {
-                result = false;
-            }
-            else if (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE)
+            if (0 != safe_strtoll(outputInteger, strToConvert, unit, strType) || (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
             {
                 result = false;
             }
@@ -1602,11 +1622,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
-            if (0 != safe_strtol(outputInteger, strToConvert, unit, strType))
-            {
-                result = false;
-            }
-            else if (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE)
+            if (0 != safe_strtol(outputInteger, strToConvert, unit, strType) || (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
             {
                 result = false;
             }
@@ -1765,15 +1781,7 @@ M_NODISCARD bool get_And_Validate_Float_Input(const char*       strToConvert,
     DISABLE_NONNULL_COMPARE
     if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
     {
-        if (0 != safe_strtof(outputFloat, strToConvert, unit))
-        {
-            result = false;
-        }
-        else if (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
-        {
-            result = false;
-        }
-        else if (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE)
+        if (0 != safe_strtof(outputFloat, strToConvert, unit) || (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype)) || (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
         {
             result = false;
         }
@@ -1795,15 +1803,7 @@ M_NODISCARD bool get_And_Validate_Double_Input(const char*       strToConvert,
     DISABLE_NONNULL_COMPARE
     if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
     {
-        if (0 != safe_strtod(outputFloat, strToConvert, unit))
-        {
-            result = false;
-        }
-        else if (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
-        {
-            result = false;
-        }
-        else if (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE)
+        if (0 != safe_strtod(outputFloat, strToConvert, unit) || (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype)) || (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
         {
             result = false;
         }
@@ -1825,15 +1825,7 @@ M_NODISCARD bool get_And_Validate_LDouble_Input(const char*       strToConvert,
     DISABLE_NONNULL_COMPARE
     if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
     {
-        if (0 != safe_strtold(outputFloat, strToConvert, unit))
-        {
-            result = false;
-        }
-        else if (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype))
-        {
-            result = false;
-        }
-        else if (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE)
+        if (0 != safe_strtold(outputFloat, strToConvert, unit) || (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype)) || (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
         {
             result = false;
         }
@@ -2548,58 +2540,67 @@ static void internal_Print_Data_Buffer(const uint8_t* dataBuffer, uint32_t buffe
         }
         // we print out 2 (0x) + printf formatting width + 2 (spaces) then the
         // offsets
-        fputs(spacePad, stdout);
+        int fputsret = fputs(spacePad, stdout);
+        if (fputsret == EOF)
+        {
+            perror("Error writing space padding to screen for internal_Print_Data_Buffer");
+        }
         switch (bufferLen)
         {
         case 0:
             break;
         case 1:
-            fputs("0", stdout);
+            fputsret = fputs("0", stdout);
             break;
         case 2:
-            fputs("0  1", stdout);
+            fputsret = fputs("0  1", stdout);
             break;
         case 3:
-            fputs("0  1  2", stdout);
+            fputsret = fputs("0  1  2", stdout);
             break;
         case 4:
-            fputs("0  1  2  3", stdout);
+            fputsret = fputs("0  1  2  3", stdout);
             break;
         case 5:
-            fputs("0  1  2  3  4", stdout);
+            fputsret = fputs("0  1  2  3  4", stdout);
             break;
         case 6:
-            fputs("0  1  2  3  4  5", stdout);
+            fputsret = fputs("0  1  2  3  4  5", stdout);
             break;
         case 7:
-            fputs("0  1  2  3  4  5  6", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6", stdout);
             break;
         case 8:
-            fputs("0  1  2  3  4  5  6  7", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7", stdout);
             break;
         case 9:
-            fputs("0  1  2  3  4  5  6  7  8", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8", stdout);
             break;
         case 0xA:
-            fputs("0  1  2  3  4  5  6  7  8  9", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9", stdout);
             break;
         case 0xB:
-            fputs("0  1  2  3  4  5  6  7  8  9  A", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A", stdout);
             break;
         case 0xC:
-            fputs("0  1  2  3  4  5  6  7  8  9  A  B", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B", stdout);
             break;
         case 0xD:
-            fputs("0  1  2  3  4  5  6  7  8  9  A  B  C", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C", stdout);
             break;
         case 0xE:
-            fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D", stdout);
             break;
         case 0xF:
-            fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D  E", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D  E", stdout);
             break;
         default:
-            fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F", stdout);
+            break;
+        }
+        if (fputsret == EOF)
+        {
+            perror("Error writing hex columns in internal_Print_Data_Buffer");
         }
     }
 
@@ -2623,16 +2624,22 @@ static void internal_Print_Data_Buffer(const uint8_t* dataBuffer, uint32_t buffe
         }
         else
         {
-            fputs("\n  ", stdout);
+            if (fputs("\n  ", stdout) == EOF)
+            {
+                perror("Error writing newline and space padding in internal_Print_Data_Buffer");
+            }
         }
         if (buffLen < buffLenModifier)
         {
             buffLenModifier = buffLen;
         }
-        fputs(create_data_line_output(line, &dataBuffer[offset], buffLenModifier, showPrint), stdout);
+        if (fputs(create_data_line_output(line, &dataBuffer[offset], buffLenModifier, showPrint), stdout) == EOF)
+        {
+            perror("Error writing hex output in internal_Print_Data_Buffer");
+        }
     }
 
-    fputs("\n\n", stdout);
+    M_STATIC_CAST(void, fputs("\n\n", stdout)); // Not checking for EOF because this is not worth it at this point
 }
 
 void print_Data_Buffer(const uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)

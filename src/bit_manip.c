@@ -15,6 +15,7 @@
 #include "predef_env_detect.h"
 #include "type_conversion.h"
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 //! \fn static M_INLINE size_t get_Bytes_Abs_Range(size_t msb, size_t lsb)
@@ -105,6 +106,15 @@ bool get_Bytes_To_16(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t
     }
 }
 
+enum eGenericIntMaxBits
+{
+    GENERIC_INT_8BIT_MAX = 7,
+    GENERIC_INT_16BIT_MAX = 15,
+    GENERIC_INT_32BIT_MAX = 31,
+    GENERIC_INT_64BIT_MAX = 63,
+    GENERIC_INT_MAX_BIT = 63
+};
+
 //! \fn static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
 //!                                            M_ATTR_UNUSED size_t outputsize,
 //!                                            uint8_t              msb,
@@ -123,7 +133,7 @@ static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
 {
     genericint_t out;
     safe_memset(&out, sizeof(genericint_t), 0, sizeof(genericint_t));
-    if (msb > 7 || lsb > 7)
+    if (msb > GENERIC_INT_8BIT_MAX || lsb > GENERIC_INT_8BIT_MAX)
     {
         errno = ERANGE;
     }
@@ -153,7 +163,7 @@ static M_INLINE genericint_t gen_16bit_range(genericint_t input, size_t outputsi
 {
     genericint_t out;
     safe_memset(&out, sizeof(genericint_t), 0, sizeof(genericint_t));
-    if (msb > 15 || lsb > 15)
+    if (msb > GENERIC_INT_16BIT_MAX || lsb > GENERIC_INT_16BIT_MAX)
     {
         errno = ERANGE;
     }
@@ -199,7 +209,7 @@ static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsi
 {
     genericint_t out;
     safe_memset(&out, sizeof(genericint_t), 0, sizeof(genericint_t));
-    if (msb > 31 || lsb > 31)
+    if (msb > GENERIC_INT_32BIT_MAX || lsb > GENERIC_INT_32BIT_MAX)
     {
         errno = ERANGE;
     }
@@ -248,6 +258,8 @@ static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsi
     return out;
 }
 
+
+
 //! \fn genericint_t gen_64bit_range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
 //! \brief internal function to get bit range in a qword (uint64_t)
 //!
@@ -260,7 +272,7 @@ static M_INLINE genericint_t gen_64bit_range(genericint_t input, size_t outputsi
 {
     genericint_t out;
     safe_memset(&out, sizeof(genericint_t), 0, sizeof(genericint_t));
-    if (msb > 63 || lsb > 63)
+    if (msb > GENERIC_INT_64BIT_MAX || lsb > GENERIC_INT_64BIT_MAX)
     {
         errno = ERANGE;
     }
@@ -330,7 +342,7 @@ genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_
     {
         errno = EINVAL;
     }
-    else if (msb > 63 || lsb > 63)
+    else if (msb > GENERIC_INT_MAX_BIT || lsb > GENERIC_INT_MAX_BIT)
     {
         errno = ERANGE;
     }
@@ -349,6 +361,9 @@ genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_
             break;
         case sizeof(uint64_t):
             out = gen_64bit_range(input, outputsize, msb, lsb);
+            break;
+        default:
+            perror("Error in generic get bit range function");
             break;
         }
     }

@@ -118,7 +118,7 @@ void free_Secure_File_Info(secureFileInfo** fileInfo)
             }
             if ((*fileInfo)->errorString != M_NULLPTR)
             {
-                explicit_zeroes(M_CONST_CAST(void**, (*fileInfo)->errorString), safe_strlen((*fileInfo)->errorString));
+                explicit_zeroes(M_CONST_CAST(void*, (*fileInfo)->errorString), safe_strlen((*fileInfo)->errorString));
                 safe_free_core(M_CONST_CAST(void**, &(*fileInfo)->errorString));
             }
             explicit_zeroes(*fileInfo, sizeof(secureFileInfo));
