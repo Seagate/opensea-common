@@ -434,8 +434,8 @@ errno_t safe_memset_impl(void*       dest,
             return error;
         }
 #if defined(HAVE_MEMSET_EXPLICIT)
-        memset_explicit(dest, ch,
-                        count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        memset_explicit(dest, ch, // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+                        count);   // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #elif IS_NETBSD_VERSION(7, 0, 0) || defined(HAVE_EXPLICIT_MEMSET)
         // https://man.netbsd.org/NetBSD-8.0/explicit_memset.3
         // https://docs.oracle.com/cd/E88353_01/html/E37843/explicit-memset-3c.html
@@ -450,16 +450,16 @@ errno_t safe_memset_impl(void*       dest,
         // last attempts to prevent optimization as best we can
 #    if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
 #        if defined(HAVE_BUILTIN_MEMSET)
-        __builtin_memset(dest, ch,
-                         count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        __builtin_memset(dest, ch, // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+                         count);   // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #        else
         memset(dest, ch, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #        endif
         asm volatile("" ::: "memory");
 #    elif defined(HAS_BUILT_IN_CLEAR_CACHE)
 #        if defined(HAVE_BUILTIN_MEMSET)
-        __builtin_memset(dest, ch,
-                         count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        __builtin_memset(dest, ch, // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+                         count);   // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #        else
         memset(dest, ch, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #        endif
@@ -470,8 +470,8 @@ errno_t safe_memset_impl(void*       dest,
              (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
         // SecureZeroMemory2 calls FillVolatileMemory which we can use here to
         // do the same thing
-        FillVolatileMemory(dest, count,
-                           ch); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        FillVolatileMemory(dest, count, // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+                           ch);         // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #        elif defined(_M_AMD64) || (!defined(_M_CEE) && defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
         // NOTE: Using the securezeromemory implementation in this case
         volatile char* vptr = M_REINTERPRET_CAST(volatile char*, dest);
@@ -928,8 +928,8 @@ errno_t safe_memmove_impl(void*       dest,
             // from Microsoft's compiler.
             memmove_s(dest, destsz, src, count);
 #elif defined(HAVE_BUILTIN_MEMMOVE)
-            __builtin_memmove(dest, src,
-                              count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+            __builtin_memmove(dest, src, // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+                              count);    // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #else
             memmove(dest, src, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #endif // HAVE_MSFT_SECURE_LIB
@@ -1016,8 +1016,8 @@ errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
             // from Microsoft's compiler.
             memcpy_s(dest, destsz, src, count);
 #elif defined(HAVE_BUILTIN_MEMCPY)
-            __builtin_memcpy(dest, src,
-                             count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+            __builtin_memcpy(dest, src, // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+                             count);    // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #else
             memcpy(dest, src, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #endif // HAVE_MSFT_SECURE_LIB

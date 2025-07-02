@@ -467,20 +467,41 @@ static bool get_Version_From_Uname_Str(const char* verStr,
     }
 }
 
+typedef enum eLinuxVersionFiles
+{
+    LINUX_VERSION_FILE_OS_RELEASE      = 0,
+    LINUX_VERSION_FILE_DISTRO_SPECIFIC = 1,
+    LINUX_VERSION_FILE_ETC_ISSUE       = 2,
+    LINUX_VERSION_FILE_MAX
+} eLinuxVersionFiles;
+
+enum ePOSIXVersionFieldCounts
+{
+    LINUX_KERNEL_VERSION_FIELDS     = 4,
+    OLD_LINUX_KERNEL_VERSION_FIELDS = 3,
+    FREEBSD_VERSION_FIELDS          = 2,
+    DRAGONFLYBSD_VERSION_FIELDS     = 2,
+    SUNOS_VERSION_FIELDS            = 3,
+    DARWIN_VERSION_FIELDS           = 3,
+    NETBSD_VERSION_FIELDS           = 3,
+    OSF1_VERSION_FIELDS             = 2,
+    HPUX_VERSION_FIELDS             = 2,
+    ESXI_VERSION_FIELDS             = 3,
+};
+
 static eReturnValues get_Linux_Ver_And_Name(ptrOSVersionNumber versionNumber,
                                             char*              operatingSystemName,
                                             struct utsname*    unixUname)
 {
-    eReturnValues ret              = SUCCESS;
-    bool          linuxOSNameFound = false;
-    uint8_t       linuxOSInfoCount = UINT8_C(0);
-    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 4);
-#define LINUX_OS_INFO_COUNT_MAX_METHODS_TO_ATTEMPT (3)
+    eReturnValues      ret              = SUCCESS;
+    bool               linuxOSNameFound = false;
+    eLinuxVersionFiles linuxOSInfoCount = LINUX_VERSION_FILE_OS_RELEASE;
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, LINUX_KERNEL_VERSION_FIELDS);
     versionNumber->osVersioningIdentifier = OS_LINUX;
     // linux kernels are versioned as
     // kernel.major.minor-securityAndBugFixes-SomeString older linux
     // kernels don't have the -securityAndBugFixes on the end
-    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".-", list, 4))
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".-", list, LINUX_KERNEL_VERSION_FIELDS))
     {
         versionNumber->versionType.linuxVersion.kernelVersion             = list[0];
         versionNumber->versionType.linuxVersion.majorVersion              = list[1];
@@ -490,7 +511,7 @@ static eReturnValues get_Linux_Ver_And_Name(ptrOSVersionNumber versionNumber,
     else
     {
         // retry in case of old kernel
-        if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".-", list, 3))
+        if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".-", list, OLD_LINUX_KERNEL_VERSION_FIELDS))
         {
             versionNumber->versionType.linuxVersion.kernelVersion             = list[0];
             versionNumber->versionType.linuxVersion.majorVersion              = list[1];
@@ -502,18 +523,20 @@ static eReturnValues get_Linux_Ver_And_Name(ptrOSVersionNumber versionNumber,
             ret = FAILURE;
         }
     }
-    while (!linuxOSNameFound && linuxOSInfoCount < LINUX_OS_INFO_COUNT_MAX_METHODS_TO_ATTEMPT)
+    while (!linuxOSNameFound && linuxOSInfoCount < LINUX_VERSION_FILE_MAX)
     {
         switch (linuxOSInfoCount)
         {
-        case 0:
+        case LINUX_VERSION_FILE_OS_RELEASE:
             linuxOSNameFound = get_Linux_Info_From_OS_Release_File(operatingSystemName);
             break;
-        case 1:
+        case LINUX_VERSION_FILE_DISTRO_SPECIFIC:
             linuxOSNameFound = get_Linux_Info_From_Distribution_Specific_Files(operatingSystemName);
             break;
-        case 2:
+        case LINUX_VERSION_FILE_ETC_ISSUE:
             linuxOSNameFound = get_Linux_Info_From_ETC_Issue(operatingSystemName);
+            break;
+        case LINUX_VERSION_FILE_MAX:
             break;
         }
         ++linuxOSInfoCount;
@@ -531,10 +554,10 @@ static eReturnValues get_FreeBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
                                               struct utsname*    unixUname)
 {
     eReturnValues ret = SUCCESS;
-    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, FREEBSD_VERSION_FIELDS);
     versionNumber->osVersioningIdentifier = OS_FREEBSD;
     // FreeBSD version is stored as Major.Minor-SomeString
-    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, 2))
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, FREEBSD_VERSION_FIELDS))
     {
         versionNumber->versionType.freeBSDVersion.majorVersion = list[0];
         versionNumber->versionType.freeBSDVersion.minorVersion = list[1];
@@ -565,10 +588,10 @@ static eReturnValues get_SunOS_Ver_And_Name(ptrOSVersionNumber versionNumber,
                                             struct utsname*    unixUname)
 {
     eReturnValues ret = SUCCESS;
-    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, SUNOS_VERSION_FIELDS);
     versionNumber->osVersioningIdentifier = OS_SOLARIS;
     // Solaris stores the SunOS version in release
-    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, 3))
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, SUNOS_VERSION_FIELDS))
     {
         versionNumber->versionType.solarisVersion.sunOSMajorVersion = list[0];
         versionNumber->versionType.solarisVersion.sunOSMinorVersion = list[1];
@@ -587,7 +610,7 @@ static eReturnValues get_SunOS_Ver_And_Name(ptrOSVersionNumber versionNumber,
     if (safe_strlen(unixUname->version) > 0 && safe_isdigit(unixUname->version[0]))
     {
         // set OS name as Solaris x.x
-        if (get_Version_From_Uname_Str(unixUname->version, M_NULLPTR, ".", list, 3))
+        if (get_Version_From_Uname_Str(unixUname->version, M_NULLPTR, ".", list, SUNOS_VERSION_FIELDS))
         {
             versionNumber->versionType.solarisVersion.solarisMajorVersion = list[0];
             versionNumber->versionType.solarisVersion.solarisMinorVersion = list[1];
@@ -602,9 +625,9 @@ static eReturnValues get_Darwin_Ver_And_Name(ptrOSVersionNumber versionNumber,
                                              struct utsname*    unixUname)
 {
     eReturnValues ret = SUCCESS;
-    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, DARWIN_VERSION_FIELDS);
     versionNumber->osVersioningIdentifier = OS_MACOSX;
-    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, 3))
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, DARWIN_VERSION_FIELDS))
     {
         versionNumber->versionType.macOSVersion.majorVersion = list[0];
         versionNumber->versionType.macOSVersion.minorVersion = list[1];
@@ -690,9 +713,9 @@ static eReturnValues get_Dragonfly_Ver_And_Name(ptrOSVersionNumber versionNumber
                                                 struct utsname*    unixUname)
 {
     eReturnValues ret = SUCCESS;
-    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, DRAGONFLYBSD_VERSION_FIELDS);
     versionNumber->osVersioningIdentifier = OS_DRAGONFLYBSD;
-    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, 2))
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, DRAGONFLYBSD_VERSION_FIELDS))
     {
         versionNumber->versionType.dragonflyVersion.majorVersion = list[0];
         versionNumber->versionType.dragonflyVersion.minorVersion = list[1];
@@ -743,9 +766,9 @@ static eReturnValues get_NetBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
                                              struct utsname*    unixUname)
 {
     eReturnValues ret = SUCCESS;
-    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, NETBSD_VERSION_FIELDS);
     versionNumber->osVersioningIdentifier = OS_NETBSD;
-    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, 3))
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, NETBSD_VERSION_FIELDS))
     {
         versionNumber->versionType.netBSDVersion.majorVersion = list[0];
         versionNumber->versionType.netBSDVersion.minorVersion = list[1];
@@ -771,9 +794,9 @@ static eReturnValues get_OSF1_Ver_And_Name(ptrOSVersionNumber versionNumber,
                                            struct utsname*    unixUname)
 {
     eReturnValues ret = SUCCESS;
-    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, OSF1_VERSION_FIELDS);
     versionNumber->osVersioningIdentifier = OS_TRU64;
-    if (get_Version_From_Uname_Str(unixUname->release, "V", ".", list, 2))
+    if (get_Version_From_Uname_Str(unixUname->release, "V", ".", list, OSF1_VERSION_FIELDS))
     {
         versionNumber->versionType.tru64Version.majorVersion = list[0];
         versionNumber->versionType.tru64Version.minorVersion = list[1];
@@ -798,9 +821,9 @@ static eReturnValues get_HPUX_Ver_And_Name(ptrOSVersionNumber versionNumber,
                                            struct utsname*    unixUname)
 {
     eReturnValues ret = SUCCESS;
-    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 2);
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, HPUX_VERSION_FIELDS);
     versionNumber->osVersioningIdentifier = OS_HPUX;
-    if (get_Version_From_Uname_Str(unixUname->release, "B.", ".", list, 2))
+    if (get_Version_From_Uname_Str(unixUname->release, "B.", ".", list, HPUX_VERSION_FIELDS))
     {
         versionNumber->versionType.hpuxVersion.majorVersion = list[0];
         versionNumber->versionType.hpuxVersion.minorVersion = list[1];
@@ -827,9 +850,9 @@ static eReturnValues get_VMKernel_Ver_And_Name(ptrOSVersionNumber versionNumber,
                                                struct utsname*    unixUname)
 {
     eReturnValues ret = SUCCESS;
-    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, 3);
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, ESXI_VERSION_FIELDS);
     versionNumber->osVersioningIdentifier = OS_ESX;
-    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, 3))
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, ESXI_VERSION_FIELDS))
     {
         versionNumber->versionType.esxiVersion.majorVersion = list[0];
         versionNumber->versionType.esxiVersion.minorVersion = list[1];

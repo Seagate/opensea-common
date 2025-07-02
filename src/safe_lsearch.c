@@ -38,15 +38,18 @@
  * unchanged, you can do what ever you want with this file.
  */
 
-#define LWORK_MODE_SEARCH 1
-#define LWORK_MODE_FIND   0
+typedef enum eLworkModeEnum
+{
+    LWORK_MODE_SEARCH = 1,
+    LWORK_MODE_FIND   = 0
+} eLworkMode;
 
 static void* safe_lwork(const void* key,
                         const void* base,
                         size_t*     nelp,
                         size_t      width,
                         comparefn   compar,
-                        int         addelem,
+                        eLworkMode  addelem,
                         const char* file,
                         const char* function,
                         int         line,
@@ -83,7 +86,7 @@ static void* safe_lwork(const void* key,
                         size_t*     nelp,
                         size_t      width,
                         comparefn   compar,
-                        int         addelem,
+                        eLworkMode  addelem,
                         const char* file,
                         const char* function,
                         int         line,
@@ -229,7 +232,7 @@ static void* safe_lwork_context(const void*  key,
                                 size_t       width,
                                 ctxcomparefn compar,
                                 void*        context,
-                                int          addelem,
+                                eLworkMode   addelem,
                                 const char*  file,
                                 const char*  function,
                                 int          line,
@@ -271,7 +274,7 @@ static void* safe_lwork_context(const void*  key,
                                 size_t       width,
                                 ctxcomparefn compar,
                                 void*        context,
-                                int          addelem,
+                                eLworkMode   addelem,
                                 const char*  file,
                                 const char*  function,
                                 int          line,

@@ -201,9 +201,9 @@ extern "C"
     //! - \a compare is a null pointer
     M_NONNULL_PARAM_LIST(1, 2, 5)
     M_PARAM_RO(1)
-    M_PARAM_RW(2)
+    M_PARAM_RO(2)
     void* safe_bsearch_context_impl(const void*  key,
-                                    void*        ptr,
+                                    const void*  ptr,
                                     rsize_t      count,
                                     rsize_t      size,
                                     ctxcomparefn compare,

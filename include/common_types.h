@@ -143,7 +143,7 @@ typedef off_t oscoffset_t;
     typedef int errno_t;
 #endif //! HAVE_C11_ANNEX_K && !HAVE_MSFT_SECURE_LIB
 
-#if defined(__cpp_size_t_suffix) || defined (__c_size_t_suffix)
+#if defined(__cpp_size_t_suffix) || defined(__c_size_t_suffix)
 //! \def SIZE_T_C
 //! \brief Defines a macro for size_t constants in C23 or C++23.
 //!
@@ -769,6 +769,33 @@ typedef int32_t intptr_t;
 #            define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) type_name array_name[size] = {0}
 #        endif
 #    endif
+
+//! \def DECLARE_ALIGNED_ZERO_INIT_ARRAY
+//! \brief Declares and zero-initializes an array to a specified alignment
+//!
+//! This macro declares and zero-initializes an array to ensure all elements are set to zero.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! \param type_name The type of the array elements.
+//! \param array_name The name of the array.
+//! \param size The size of the array.
+//! \param align The requested alignment to use with alignas()
+#    if IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0)
+#        define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                    \
+            M_ALIGNAS(align) type_name array_name[size] = {[0 ...((size) - 1)] = 0}
+#    elif USING_C23
+#        define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                    \
+            M_ALIGNAS(align) type_name array_name[size] = {}
+#    else
+#        if defined(USING_C99)
+#            define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                \
+                M_ALIGNAS(align) type_name array_name[size];                                                           \
+                zero_init_array(array_name, sizeof(type_name), size)
+#        else
+#            define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                \
+                M_ALIGNAS(align) type_name array_name[size] = {0}
+#        endif
+#    endif
+
 #endif
 
 //! \def M_STATIC_ASSERT
@@ -1101,4 +1128,22 @@ template <typename T, size_t N> void zero_init_array(T (&array)[N])
 #    define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                       \
         type_name array_name[size];                                                                                    \
         zero_init_array(array_name)
+
+//! \def DECLARE_ALIGNED_ZERO_INIT_ARRAY
+//! \brief Declares and zero-initializes an array as a specified alignment
+//!
+//! This macro declares and zero-initializes an array to ensure all elements are set to zero.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//!
+//! \param type_name The type of the array elements.
+//! \param array_name The name of the array.
+//! \param size The size of the array.
+//! \param align The requested alignment to use with alignas()
+//! \note This does not use memset to handle non-trivial types.
+//!       A compiler may optimize this to memset though if it detects that this
+//!       is a zero initialization of the data.
+#    define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                        \
+        M_ALIGNAS(align) type_name array_name[size];                                                                   \
+        zero_init_array(array_name)
+
 #endif // C++98 and no DECLARE_ZERO_INIT_ARRAY
