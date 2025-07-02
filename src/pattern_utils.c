@@ -90,7 +90,7 @@ eReturnValues fill_ASCII_Pattern_In_Buffer(const char* asciiPattern,
     RESTORE_NONNULL_COMPARE
     for (uint32_t iter = UINT32_C(0); iter < dataLength; iter += patternLength)
     {
-        safe_memcpy(&ptrData[iter], dataLength, asciiPattern, M_Min(patternLength, dataLength - iter));
+        safe_memcpy(&ptrData[iter], dataLength - iter, asciiPattern, M_Min(patternLength, dataLength - iter));
     }
     return SUCCESS;
 }
@@ -108,7 +108,7 @@ eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t* inPattern,
     RESTORE_NONNULL_COMPARE
     for (uint32_t iter = UINT32_C(0); iter < dataLength; iter += inpatternLength)
     {
-        safe_memcpy(&ptrData[iter], dataLength, inPattern, M_Min(inpatternLength, dataLength - iter));
+        safe_memcpy(&ptrData[iter], dataLength - iter, inPattern, M_Min(inpatternLength, dataLength - iter));
     }
     return SUCCESS;
 }
