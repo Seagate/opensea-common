@@ -92,33 +92,122 @@ extern "C"
 //! \param l The 64-bit integer from which to extract the upper 32 bits.
 #define M_DoubleWordInt1(l) (M_STATIC_CAST(int32_t, (((l) & UINT64_C(0xFFFFFFFF00000000)) >> 32)))
 
+#if defined(HAVE_C11_GENERIC_SELECTION)
+    //! \fn get_Word0_uint64(uint64_t value)
+    //! \brief Extracts the lowest 16 bits from a 64-bit integer and casts it to uint16_t.
+    //! \param value The 64-bit integer from which to extract the lowest 16 bits.
+    //! \return uint16_t for lowest 16 bits
+    static M_INLINE uint16_t get_Word0_uint64(uint64_t value)
+    {
+        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0x000000000000FFFF)));
+    }
+
+    //! \fn get_Word0_uint32(uint32_t value)
+    //! \brief Extracts the lowest 16 bits from a 32-bit integer and casts it to uint16_t.
+    //! \param value The 32-bit integer from which to extract the lowest 16 bits.
+    //! \return uint16_t for lowest 16 bits
+    static M_INLINE uint16_t get_Word0_uint32(uint32_t value)
+    {
+        return M_STATIC_CAST(uint16_t, (value & UINT32_C(0x0000FFFF)));
+    }
+
 //! \def M_Word0
 //! \brief Extracts the lowest 16 bits from a 64-bit integer and casts it to uint16_t.
 //!
 //! This macro extracts the lowest 16 bits from a 64-bit integer and casts it to uint16_t.
 //! \param l The 64-bit integer from which to extract the lowest 16 bits.
-#define M_Word0(l) (M_STATIC_CAST(uint16_t, (((l) & UINT64_C(0x000000000000FFFF)) >> 0)))
+#    define M_Word0(value) _Generic((value), uint32_t: get_Word0_uint32, uint64_t: get_Word0_uint64)(value)
+
+    //! \fn get_Word1_uint64(uint64_t value)
+    //! \brief Extracts the second lowest 16 bits from a 64-bit integer and casts it to uint16_t.
+    //! \param value The 64-bit integer from which to extract the lowest 16 bits.
+    //! \return uint16_t for second lowest 16 bits
+    static M_INLINE uint16_t get_Word1_uint64(uint64_t value)
+    {
+        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0x00000000FFFF0000)));
+    }
+
+    //! \fn get_Word1_uint32(uint32_t value)
+    //! \brief Extracts the highest 16 bits from a 32-bit integer and casts it to uint16_t.
+    //! \param value The 32-bit integer from which to extract the highest 16 bits.
+    //! \return uint16_t for highest 16 bits
+    static M_INLINE uint16_t get_Word1_uint32(uint32_t value)
+    {
+        return M_STATIC_CAST(uint16_t, (value & UINT32_C(0xFFFF0000)));
+    }
 
 //! \def M_Word1
 //! \brief Extracts the second lowest 16 bits from a 64-bit integer and casts it to uint16_t.
 //!
 //! This macro extracts the second lowest 16 bits from a 64-bit integer and casts it to uint16_t.
 //! \param l The 64-bit integer from which to extract the second lowest 16 bits.
-#define M_Word1(l) (M_STATIC_CAST(uint16_t, (((l) & UINT64_C(0x00000000FFFF0000)) >> 16)))
+#    define M_Word1(value) _Generic((value), uint32_t: get_Word1_uint32, uint64_t: get_Word1_uint64)(value)
+
+    //! \fn get_Word2_uint64(uint64_t value)
+    //! \brief Extracts the second highest 16 bits from a 64-bit integer and casts it to uint16_t.
+    //!
+    //! This macro extracts the second highest 16 bits from a 64-bit integer and casts it to uint16_t.
+    //! \param value The 64-bit integer from which to extract the second highest 16 bits.
+    //! \return uint16_t for second highest 16 bits
+    static M_INLINE uint16_t get_Word2_uint64(uint64_t value)
+    {
+        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0x0000FFFF00000000)));
+    }
 
 //! \def M_Word2
 //! \brief Extracts the second highest 16 bits from a 64-bit integer and casts it to uint16_t.
 //!
 //! This macro extracts the second highest 16 bits from a 64-bit integer and casts it to uint16_t.
 //! \param l The 64-bit integer from which to extract the second highest 16 bits.
-#define M_Word2(l) (M_STATIC_CAST(uint16_t, (((l) & UINT64_C(0x0000FFFF00000000)) >> 32)))
+#    define M_Word2(value) _Generic((value), uint64_t: get_Word2_uint64)(value)
+
+    //! \fn get_Word3_uint64(uint64_t value)
+    //! \brief Extracts the highest 16 bits from a 64-bit integer and casts it to uint16_t.
+    //!
+    //! This macro extracts the highest 16 bits from a 64-bit integer and casts it to uint16_t.
+    //! \param value The 64-bit integer from which to extract the highest 16 bits.
+    //! \return uint16_t of the highest 16 bits.
+    static M_INLINE uint16_t get_Word3_uint64(uint64_t value)
+    {
+        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0xFFFF000000000000)));
+    }
 
 //! \def M_Word3
 //! \brief Extracts the highest 16 bits from a 64-bit integer and casts it to uint16_t.
 //!
 //! This macro extracts the highest 16 bits from a 64-bit integer and casts it to uint16_t.
 //! \param l The 64-bit integer from which to extract the highest 16 bits.
-#define M_Word3(l) (M_STATIC_CAST(uint16_t, (((l) & UINT64_C(0xFFFF000000000000)) >> 48)))
+#    define M_Word3(value) _Generic((value), uint64_t: get_Word3_uint64)(value)
+
+#else
+//! \def M_Word0
+//! \brief Extracts the lowest 16 bits from a 64-bit integer and casts it to uint16_t.
+//!
+//! This macro extracts the lowest 16 bits from a 64-bit integer and casts it to uint16_t.
+//! \param l The 64-bit integer from which to extract the lowest 16 bits.
+#    define M_Word0(l) (M_STATIC_CAST(uint16_t, (((l) & UINT64_C(0x000000000000FFFF)) >> 0)))
+
+//! \def M_Word1
+//! \brief Extracts the second lowest 16 bits from a 64-bit integer and casts it to uint16_t.
+//!
+//! This macro extracts the second lowest 16 bits from a 64-bit integer and casts it to uint16_t.
+//! \param l The 64-bit integer from which to extract the second lowest 16 bits.
+#    define M_Word1(l) (M_STATIC_CAST(uint16_t, (((l) & UINT64_C(0x00000000FFFF0000)) >> 16)))
+
+//! \def M_Word2
+//! \brief Extracts the second highest 16 bits from a 64-bit integer and casts it to uint16_t.
+//!
+//! This macro extracts the second highest 16 bits from a 64-bit integer and casts it to uint16_t.
+//! \param l The 64-bit integer from which to extract the second highest 16 bits.
+#    define M_Word2(l) (M_STATIC_CAST(uint16_t, (((l) & UINT64_C(0x0000FFFF00000000)) >> 32)))
+
+//! \def M_Word3
+//! \brief Extracts the highest 16 bits from a 64-bit integer and casts it to uint16_t.
+//!
+//! This macro extracts the highest 16 bits from a 64-bit integer and casts it to uint16_t.
+//! \param l The 64-bit integer from which to extract the highest 16 bits.
+#    define M_Word3(l) (M_STATIC_CAST(uint16_t, (((l) & UINT64_C(0xFFFF000000000000)) >> 48)))
+#endif
 
 //! \def M_WordInt0
 //! \brief Extracts the lowest 16 bits from a 64-bit integer and casts it to int16_t.
@@ -619,6 +708,8 @@ extern "C"
         case sizeof(uint32_t):
         case sizeof(uint64_t):
             good = true;
+            break;
+        default:
             break;
         }
         return good;

@@ -176,9 +176,9 @@ char* safe_strtok_impl(char* M_RESTRICT       str,
     while (*strmax > RSIZE_T_C(0))
     {
         bool breakdelimloop = false;
-        c                   = *str++;
+        c                   = C_CAST(unsigned char, *str++);
         *strmax -= RSIZE_T_C(1); // Seagate modification
-        for (spanp = M_CONST_CAST(char*, delim); (sc = *spanp++) != 0 && !breakdelimloop;)
+        for (spanp = M_CONST_CAST(char*, delim); (sc = C_CAST(unsigned char, *spanp++)) != 0 && !breakdelimloop;)
         {
             if (c == sc)
             {
@@ -227,12 +227,12 @@ char* safe_strtok_impl(char* M_RESTRICT       str,
     // Seagate modification: Added staying within bounds of memory with strmax > 0
     for (; *strmax > RSIZE_T_C(0);)
     {
-        c = *str++;
+        c = C_CAST(unsigned char, *str++);
         *strmax -= RSIZE_T_C(1); // Seagate modification
         spanp = M_CONST_CAST(char*, delim);
         do
         {
-            if ((sc = *spanp++) == c)
+            if ((sc = C_CAST(unsigned char, *spanp++)) == c)
             {
                 if (c == 0)
                 {

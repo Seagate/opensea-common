@@ -81,7 +81,7 @@
  */
 
 void* safe_bsearch_context_impl(const void*  key,
-                                void*        ptr,
+                                const void*  ptr,
                                 rsize_t      count,
                                 rsize_t      size,
                                 ctxcomparefn compare,
