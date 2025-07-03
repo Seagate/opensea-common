@@ -478,6 +478,19 @@ bool is_Windows_11_Version_23H2_Or_Higher(void)
     return isWindows11_23H2OrHigher;
 }
 
+bool is_Windows_11_Version_24H2_Or_Higher(void)
+{
+    bool            isWindows11_24H2OrHigher = false;
+    OSVersionNumber windowsVersion;
+    safe_memset(&windowsVersion, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
+    read_Win_Version(&windowsVersion);
+    if (windowsVersion.versionType.windowsVersion.majorVersion >= 10 && windowsVersion.versionType.windowsVersion.buildNumber >= 26100)
+    {
+        isWindows11_24H2OrHigher = true;
+    }
+    return isWindows11_24H2OrHigher;
+}
+
 bool is_Windows_Server_OS(void)
 {
     static bool checkedForServer = false;

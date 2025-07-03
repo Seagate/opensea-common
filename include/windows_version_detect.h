@@ -148,6 +148,7 @@ extern "C"
     bool is_Windows_11_Version_21H2_Or_Higher(void);
     bool is_Windows_11_Version_22H2_Or_Higher(void);
     bool is_Windows_11_Version_23H2_Or_Higher(void);
+    bool is_Windows_11_Version_24H2_Or_Higher(void);
 
     //-----------------------------------------------------------------------------
     //
