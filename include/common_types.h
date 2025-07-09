@@ -143,7 +143,7 @@ typedef off_t oscoffset_t;
     typedef int errno_t;
 #endif //! HAVE_C11_ANNEX_K && !HAVE_MSFT_SECURE_LIB
 
-#if defined(__cpp_size_t_suffix) || defined (__c_size_t_suffix)
+#if defined(__cpp_size_t_suffix) || defined(__c_size_t_suffix)
 //! \def SIZE_T_C
 //! \brief Defines a macro for size_t constants in C23 or C++23.
 //!
