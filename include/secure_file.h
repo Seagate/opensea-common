@@ -472,6 +472,21 @@ extern "C"
         bool caseInsensitive;
     } fileExt;
 
+    //! \def FILE_EXT_LIST_END
+    //! \brief Helper macro to easily insert the end of the file extension list.
+    #define FILE_EXT_LIST_END { M_NULLPTR, false }
+
+    //! \def FILE_EXT_LIST_DECL
+    //! \brief Helper macro to create a list of file extensions for secure file. Automatically appends
+    //! FILE_EXT_LIST_END for the user to make sure the list always terminates correctly
+    //! \code
+    //! list[] = FILE_EXT_LIST_DECL({".bin", false});
+    //! \endcode
+    //! \code
+    //! list[] = FILE_EXT_LIST_DECL({".bin", false}, {".json", true});
+    //! \endcode
+    #define FILE_EXT_LIST_DECL(...) {__VA_ARGS__, FILE_EXT_LIST_END}
+
     //! \fn M_NODISCARD secureFileInfo* secure_Open_File(const char* filename,
     //!                                                  const char* mode,
     //!                                                  const fileExt* extList /*optional*/,
