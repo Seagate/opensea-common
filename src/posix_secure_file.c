@@ -399,7 +399,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             if (!recurseSecure)
             {
 #    if defined(_DEBUG)
-                printf("recursive link check failed\n");
+                print_str("recursive link check failed\n");
 #    endif
                 secure = false;
                 safe_free(&link);
@@ -421,7 +421,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
 #if !defined(UEFI_C_SOURCE)
 #    if defined(_DEBUG)
-        printf("Checking UIDs\n");
+        print_str("Checking UIDs\n");
 #    endif
         if ((buf.st_uid != my_uid) && (buf.st_uid != ROOT_UID_VAL))
         {
@@ -432,7 +432,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             if (my_uid == ROOT_UID_VAL)
             {
 #    if defined(_DEBUG)
-                printf("root UID detected, getting user's ID\n");
+                print_str("root UID detected, getting user's ID\n");
 #    endif
                 uid_t sudouid = get_sudo_uid();
 #    if defined(_DEBUG)

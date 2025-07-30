@@ -504,7 +504,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         ret = FAILURE;
     }
     set_Input_Console_Mode(defaultConMode);
-    printf("\n");
+    print_str("\n");
     return ret;
 }
 
@@ -1039,7 +1039,7 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
         if (foregroundColor == CONSOLE_COLOR_DEFAULT && backgroundColor == CONSOLE_COLOR_DEFAULT)
         {
             // reset or normal
-            printf("\033[0m");
+            print_str("\033[0m");
         }
         else
         {
@@ -1135,7 +1135,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         {
             fclose_term(term);
         }
-        printf("\n");
+        print_str("\n");
         return FAILURE;
     }
     // now read the input with getline
@@ -1160,14 +1160,14 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         {
             fclose_term(term);
         }
-        printf("\n");
+        print_str("\n");
         return FAILURE;
     }
     if (devtty)
     {
         fclose_term(term);
     }
-    printf("\n");
+    print_str("\n");
 #    elif IS_FREEBSD_VERSION(4, 6, 0) || (defined(__OpenBSD__) && defined OpenBSD2_9)
     // use readpassphrase instead
     // use BUFSIZ buffer as that should be more than enough to read this
@@ -2343,7 +2343,7 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
     DISABLE_NONNULL_COMPARE
     if (M_NULLPTR == funcName)
     {
-        printf("Unknown function returning: ");
+        print_str("Unknown function returning: ");
     }
     else
     {
@@ -2354,129 +2354,129 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
     switch (ret)
     {
     case SUCCESS:
-        printf("SUCCESS\n");
+        print_str("SUCCESS\n");
         break;
     case FAILURE:
-        printf("FAILURE\n");
+        print_str("FAILURE\n");
         break;
     case NOT_SUPPORTED:
-        printf("NOT SUPPORTED\n");
+        print_str("NOT SUPPORTED\n");
         break;
     case COMMAND_FAILURE:
-        printf("COMMAND FAILURE\n");
+        print_str("COMMAND FAILURE\n");
         break;
     case IN_PROGRESS:
-        printf("IN PROGRESS\n");
+        print_str("IN PROGRESS\n");
         break;
     case ABORTED:
-        printf("ABORTED\n");
+        print_str("ABORTED\n");
         break;
     case BAD_PARAMETER:
-        printf("BAD PARAMETER\n");
+        print_str("BAD PARAMETER\n");
         break;
     case MEMORY_FAILURE:
-        printf("MEMORY FAILURE\n");
+        print_str("MEMORY FAILURE\n");
         break;
     case OS_PASSTHROUGH_FAILURE:
-        printf("OS PASSTHROUGH FAILURE\n");
+        print_str("OS PASSTHROUGH FAILURE\n");
         break;
     case LIBRARY_MISMATCH:
-        printf("LIBRARY MISMATCH\n");
+        print_str("LIBRARY MISMATCH\n");
         break;
     case FROZEN:
-        printf("FROZEN\n");
+        print_str("FROZEN\n");
         break;
     case PERMISSION_DENIED:
-        printf("PERMISSION DENIED\n");
+        print_str("PERMISSION DENIED\n");
         break;
     case FILE_OPEN_ERROR:
-        printf("FILE OPEN ERROR\n");
+        print_str("FILE OPEN ERROR\n");
         break;
     case WARN_INCOMPLETE_RFTRS:
-        printf("WARNING INCOMPLETE RTFRS\n");
+        print_str("WARNING INCOMPLETE RTFRS\n");
         break;
     case OS_COMMAND_TIMEOUT:
-        printf("COMMAND TIMEOUT\n");
+        print_str("COMMAND TIMEOUT\n");
         break;
     case WARN_NOT_ALL_DEVICES_ENUMERATED:
-        printf("WARNING NOT ALL DEVICES ENUMERATED\n");
+        print_str("WARNING NOT ALL DEVICES ENUMERATED\n");
         break;
     case WARN_INVALID_CHECKSUM:
-        printf("WARN INVALID CHECKSUM\n");
+        print_str("WARN INVALID CHECKSUM\n");
         break;
     case OS_COMMAND_NOT_AVAILABLE:
-        printf("OS COMMAND NOT AVAILABLE\n");
+        print_str("OS COMMAND NOT AVAILABLE\n");
         break;
     case OS_COMMAND_BLOCKED:
-        printf("OS COMMAND BLOCKED\n");
+        print_str("OS COMMAND BLOCKED\n");
         break;
     case COMMAND_INTERRUPTED:
-        printf("COMMAND INTERRUPTED\n");
+        print_str("COMMAND INTERRUPTED\n");
         break;
     case VALIDATION_FAILURE:
-        printf("VALIDATION FAILURE\n");
+        print_str("VALIDATION FAILURE\n");
         break;
     case STRIP_HDR_FOOTER_FAILURE:
-        printf("STRIP HDR FOOTER FAILURE\n");
+        print_str("STRIP HDR FOOTER FAILURE\n");
         break;
     case PARSE_FAILURE:
-        printf("PARSE FAILURE\n");
+        print_str("PARSE FAILURE\n");
         break;
     case INVALID_LENGTH:
-        printf("INVALID LENGTH\n");
+        print_str("INVALID LENGTH\n");
         break;
     case ERROR_WRITING_FILE:
-        printf("ERROR WRITING FILE\n");
+        print_str("ERROR WRITING FILE\n");
         break;
     case TIMEOUT:
-        printf("TIMEOUT\n");
+        print_str("TIMEOUT\n");
         break;
     case OS_TIMEOUT_TOO_LARGE:
-        printf("OS TIMEOUT TOO LARGE\n");
+        print_str("OS TIMEOUT TOO LARGE\n");
         break;
     case PARSING_EXCEPTION_FAILURE:
-        printf("PARSING EXCEPTION FAILURE\n");
+        print_str("PARSING EXCEPTION FAILURE\n");
         break;
     case POWER_CYCLE_REQUIRED:
-        printf("POWER CYCLE REQUIRED\n");
+        print_str("POWER CYCLE REQUIRED\n");
         break;
     case DIR_CREATION_FAILED:
-        printf("DIR CREATION FAILED\n");
+        print_str("DIR CREATION FAILED\n");
         break;
     case FILE_READ_ERROR:
-        printf("FILE READ ERROR\n");
+        print_str("FILE READ ERROR\n");
         break;
     case DEVICE_ACCESS_DENIED:
-        printf("DEVICE ACCESS DENIED\n");
+        print_str("DEVICE ACCESS DENIED\n");
         break;
     case NOT_PARSED:
-        printf("NOT PARSED\n");
+        print_str("NOT PARSED\n");
         break;
     case MISSING_INFORMATION:
-        printf("MISSING INFORMATION\n");
+        print_str("MISSING INFORMATION\n");
         break;
     case TRUNCATED_FILE:
-        printf("TRUNCATED FILE\n");
+        print_str("TRUNCATED FILE\n");
         break;
     case INSECURE_PATH:
-        printf("INSECURE PATH\n");
+        print_str("INSECURE PATH\n");
         break;
     case DEVICE_BUSY:
-        printf("DEVICE BUSY\n");
+        print_str("DEVICE BUSY\n");
         break;
     case DEVICE_INVALID:
-        printf("DEVICE INVALID\n");
+        print_str("DEVICE INVALID\n");
         break;
     case DEVICE_DISCONNECTED:
-        printf("DEVICE DISCONNECTED\n");
+        print_str("DEVICE DISCONNECTED\n");
         break;
     case UNKNOWN:
-        printf("UNKNOWN\n");
+        print_str("UNKNOWN\n");
         break;
         // NO DEFAULT CASE! This will cause warnings when an enum value is not
         // in this switch-case so that it is never out of date!
     }
-    printf("\n");
+    print_str("\n");
 }
 
 #define DATA_LINE_BUFFER_LENGTH (70)

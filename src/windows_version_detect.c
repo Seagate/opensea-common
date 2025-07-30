@@ -522,7 +522,7 @@ bool is_Windows_PE(void)
                                           KEY_READ, &keyHandle))
         {
 #if defined(_DEBUG)
-            printf("Found HKLM\\SYSTEM\\CurrentControlSet\\Control\\MiniNT\n");
+            print_str("Found HKLM\\SYSTEM\\CurrentControlSet\\Control\\MiniNT\n");
 #endif
             isWindowsPE = true;
             RegCloseKey(keyHandle);
@@ -533,7 +533,7 @@ bool is_Windows_PE(void)
                                           KEY_READ, &keyHandle))
         {
 #if defined(_DEBUG)
-            printf("Found HKLM\\SYSTEM\\ControlSet001\\Control\\MiniNT\n");
+            print_str("Found HKLM\\SYSTEM\\ControlSet001\\Control\\MiniNT\n");
 #endif
             isWindowsPE = true;
             RegCloseKey(keyHandle);

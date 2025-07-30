@@ -23,41 +23,41 @@ void print_Architecture(eArchitecture arch)
     switch (arch)
     {
     case OPENSEA_ARCH_X86:
-        printf("X86");
+        print_str("X86");
         break;
     case OPENSEA_ARCH_X86_64:
-        printf("X86_64");
+        print_str("X86_64");
         break;
     case OPENSEA_ARCH_ARM:
-        printf("ARM");
+        print_str("ARM");
         break;
     case OPENSEA_ARCH_ARM64:
-        printf("ARM64");
+        print_str("ARM64");
         break;
     case OPENSEA_ARCH_POWERPC:
-        printf("PPC");
+        print_str("PPC");
         break;
     case OPENSEA_ARCH_POWERPC64:
-        printf("PPC64");
+        print_str("PPC64");
         break;
     case OPENSEA_ARCH_IA_64:
-        printf("IA64");
+        print_str("IA64");
         break;
     case OPENSEA_ARCH_SPARC:
-        printf("SPARC");
+        print_str("SPARC");
         break;
     case OPENSEA_ARCH_ALPHA:
-        printf("Alpha");
+        print_str("Alpha");
         break;
     case OPENSEA_ARCH_SYSTEMZ:
-        printf("SystemZ");
+        print_str("SystemZ");
         break;
     case OPENSEA_ARCH_MIPS:
-        printf("MIPS");
+        print_str("MIPS");
         break;
     case OPENSEA_ARCH_UNKNOWN:
     case OPENSEA_ARCH_RESERVED:
-        printf("Unknown Architecture");
+        print_str("Unknown Architecture");
         break;
     }
 }
@@ -69,51 +69,51 @@ void print_Endianness(eEndianness endian, bool shortPrint)
     case OPENSEA_LITTLE_ENDIAN:
         if (shortPrint)
         {
-            printf("LSB");
+            print_str("LSB");
         }
         else
         {
-            printf("Little Endian");
+            print_str("Little Endian");
         }
         break;
     case OPENSEA_BIG_ENDIAN:
         if (shortPrint)
         {
-            printf("MSB");
+            print_str("MSB");
         }
         else
         {
-            printf("Big Endian");
+            print_str("Big Endian");
         }
         break;
     case OPENSEA_LITTLE_WORD_ENDIAN:
         if (shortPrint)
         {
-            printf("LSW");
+            print_str("LSW");
         }
         else
         {
-            printf("Little Endian (Word)");
+            print_str("Little Endian (Word)");
         }
         break;
     case OPENSEA_BIG_WORD_ENDIAN:
         if (shortPrint)
         {
-            printf("MSW");
+            print_str("MSW");
         }
         else
         {
-            printf("Big Endian (Word)");
+            print_str("Big Endian (Word)");
         }
         break;
     case OPENSEA_UNKNOWN_ENDIAN:
         if (shortPrint)
         {
-            printf("???");
+            print_str("???");
         }
         else
         {
-            printf("Unknown Endianness");
+            print_str("Unknown Endianness");
         }
         break;
     }
@@ -124,47 +124,47 @@ void print_OS_Type(eOSType osType)
     switch (osType)
     {
     case OS_WINDOWS:
-        printf("Windows");
+        print_str("Windows");
         break;
     case OS_LINUX:
-        printf("Linux");
+        print_str("Linux");
         break;
     case OS_FREEBSD:
-        printf("FreeBSD");
+        print_str("FreeBSD");
         break;
     case OS_SOLARIS:
-        printf("Solaris");
+        print_str("Solaris");
         break;
     case OS_MACOSX:
-        printf("Mac OSX");
+        print_str("Mac OSX");
         break;
     case OS_AIX:
-        printf("AIX");
+        print_str("AIX");
         break;
     case OS_TRU64:
-        printf("TRU64");
+        print_str("TRU64");
         break;
     case OS_OPENBSD:
-        printf("OpenBSD");
+        print_str("OpenBSD");
         break;
     case OS_NETBSD:
-        printf("NetBSD");
+        print_str("NetBSD");
         break;
     case OS_DRAGONFLYBSD:
-        printf("Dragonfly BSD");
+        print_str("Dragonfly BSD");
         break;
     case OS_HPUX:
-        printf("HP UX");
+        print_str("HP UX");
         break;
     case OS_ESX:
-        printf("VMWare ESXi");
+        print_str("VMWare ESXi");
         break;
     case OS_UEFI:
-        printf("UEFI");
+        print_str("UEFI");
         break;
     case OS_UNKNOWN:
     default:
-        printf("Unknown OS");
+        print_str("Unknown OS");
         break;
     }
 }
@@ -240,7 +240,7 @@ void print_OS_Version(ptrOSVersionNumber versionNumber)
         break;
     case OS_UNKNOWN:
     default:
-        printf("Unknown OS Version");
+        print_str("Unknown OS Version");
         break;
     }
 }
@@ -473,35 +473,35 @@ void print_Compiler(eCompiler compilerUsed)
     switch (compilerUsed)
     {
     case OPENSEA_COMPILER_MICROSOFT_VISUAL_C_CPP:
-        printf("Microsoft Visual C/C++");
+        print_str("Microsoft Visual C/C++");
         break;
     case OPENSEA_COMPILER_GCC:
-        printf("GCC");
+        print_str("GCC");
         break;
     case OPENSEA_COMPILER_CLANG:
-        printf("Clang");
+        print_str("Clang");
         break;
     case OPENSEA_COMPILER_MINGW:
-        printf("MinGW");
+        print_str("MinGW");
         break;
     case OPENSEA_COMPILER_INTEL_C_CPP:
-        printf("Intel C/C++");
+        print_str("Intel C/C++");
         break;
     case OPENSEA_COMPILER_SUNPRO_C_CPP:
-        printf("Oracle Sunpro C/C++");
+        print_str("Oracle Sunpro C/C++");
         break;
     case OPENSEA_COMPILER_IBM_XL_C_CPP:
-        printf("IBM XL C/C++");
+        print_str("IBM XL C/C++");
         break;
     case OPENSEA_COMPILER_IBM_SYSTEMZ_C_CPP:
-        printf("IBM XL C/C++ for SystemZ");
+        print_str("IBM XL C/C++ for SystemZ");
         break;
     case OPENSEA_COMPILER_HP_A_CPP:
-        printf("HP aCC");
+        print_str("HP aCC");
         break;
     case OPENSEA_COMPILER_UNKNOWN:
         // default:
-        printf("Unknown Compiler");
+        print_str("Unknown Compiler");
         break;
     }
 }
