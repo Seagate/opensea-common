@@ -19,7 +19,7 @@ MAJOR=6
 #Change the Minor version when new features are added. 
 MINOR=0
 #Change the patch version when only bug fixes are made.
-PATCH=1
+PATCH=3
 
 DESC_ACCEPTANCE_LEVEL=certified
 
