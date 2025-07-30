@@ -10,8 +10,8 @@
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "constraint_handling.h"
 #include "error_translation.h"
+#include "constraint_handling.h"
 #include "memory_safety.h"
 #include "string_utils.h"
 #include "type_conversion.h"
@@ -32,7 +32,7 @@ RESTORE_WARNING_4255
 
 #define ERROR_STRING_BUFFER_LENGTH SIZE_T_C(1024)
 
-char *get_strerror(errno_t error)
+char* get_strerror(errno_t error)
 {
 #if defined(HAVE_C11_ANNEX_K)
     size_t errorStringLen = strerrorlen_s(error);
@@ -67,7 +67,7 @@ char *get_strerror(errno_t error)
         }
         else
         {
-            safe_free(errorString);
+            safe_free(&errorString);
             return M_NULLPTR;
         }
     }
@@ -95,13 +95,14 @@ char *get_strerror(errno_t error)
     {
         if (0 == strerror_r(error, errorString, ERROR_STRING_BUFFER_LENGTH))
         {
-            errorString[ERROR_STRING_BUFFER_LENGTH - SIZE_T_C(1)] = '\0'; // While it should be null terminated, there are
-                                                                        // known bugs on some systems where it is not!
+            errorString[ERROR_STRING_BUFFER_LENGTH - SIZE_T_C(1)] =
+                '\0'; // While it should be null terminated, there are
+                      // known bugs on some systems where it is not!
             return errorString;
         }
         else
         {
-            safe_free(errorString);
+            safe_free(&errorString);
             return errorString;
         }
     }
@@ -114,17 +115,18 @@ char *get_strerror(errno_t error)
     char* errorStringBuf = M_REINTERPRET_CAST(char*, safe_calloc(ERROR_STRING_BUFFER_LENGTH, sizeof(char)));
     if (errorStringBuf != M_NULLPTR)
     {
-        char* errorString = M_NULLPTR;
+        char*              errorString    = M_NULLPTR;
         eConstraintHandler currentHandler = set_Constraint_Handler(ERR_IGNORE);
-        errno_t duperr = 0;
-        char* errmsg = strerror_r(error, errorStringBuf, ERROR_STRING_BUFFER_LENGTH);
+        errno_t            duperr         = 0;
+        char*              errmsg         = strerror_r(error, errorStringBuf, ERROR_STRING_BUFFER_LENGTH);
         if (errmsg != M_NULLPTR)
         {
-            errorStringBuf[ERROR_STRING_BUFFER_LENGTH - SIZE_T_C(1)] = '\0'; // While it should be null terminated, there are
-                                                                             // known bugs on some systems where it is not!
+            errorStringBuf[ERROR_STRING_BUFFER_LENGTH - SIZE_T_C(1)] =
+                '\0'; // While it should be null terminated, there are
+                      // known bugs on some systems where it is not!
             duperr = safe_strdup(&errorString, errmsg);
             set_Constraint_Handler(currentHandler);
-            safe_free(errorStringBuf);
+            safe_free(&errorStringBuf);
             if (duperr == 0)
             {
                 return errorString;
@@ -136,7 +138,7 @@ char *get_strerror(errno_t error)
         }
         else
         {
-            safe_free(errorStringBuf);
+            safe_free(&errorStringBuf);
             return M_NULLPTR;
         }
     }
@@ -148,10 +150,10 @@ char *get_strerror(errno_t error)
 #        error "Error detection POSIX strerror_r vs GNU strerror_r"
 #    endif
 #else
-    //use safe_strdup after disabling abort due to null to make this simpler code.
-    char* errorString = M_NULLPTR;
+    // use safe_strdup after disabling abort due to null to make this simpler code.
+    char*              errorString    = M_NULLPTR;
     eConstraintHandler currentHandler = set_Constraint_Handler(ERR_IGNORE);
-    errno_t duperr = safe_strdup(&errorString, strerror(error));
+    errno_t            duperr         = safe_strdup(&errorString, strerror(error));
     set_Constraint_Handler(currentHandler);
     if (0 == duperr)
     {
@@ -166,11 +168,11 @@ char *get_strerror(errno_t error)
 
 void print_Errno_To_Screen(errno_t error)
 {
-    char *errormsg = get_strerror(error);
+    char* errormsg = get_strerror(error);
     if (errormsg != M_NULLPTR)
     {
         printf("%d - %s\n", error, errormsg);
-        safe_free(errormsg);
+        safe_free(&errormsg);
     }
     else
     {

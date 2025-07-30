@@ -472,6 +472,8 @@ extern "C"
         bool caseInsensitive;
     } fileExt;
 
+    // clang-format off
+    
     //! \def FILE_EXT_LIST_END
     //! \brief Helper macro to easily insert the end of the file extension list.
     #define FILE_EXT_LIST_END { M_NULLPTR, false }
@@ -486,6 +488,8 @@ extern "C"
     //! list[] = FILE_EXT_LIST_DECL({".bin", false}, {".json", true});
     //! \endcode
     #define FILE_EXT_LIST_DECL(...) {__VA_ARGS__, FILE_EXT_LIST_END}
+
+    // clang-format on
 
     //! \fn M_NODISCARD secureFileInfo* secure_Open_File(const char* filename,
     //!                                                  const char* mode,

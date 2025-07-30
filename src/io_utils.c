@@ -3648,3 +3648,30 @@ int impl_snprintf_err_handle(const char* file,
     }
     return n;
 }
+
+errno_t checked_fputs(const char* nofmt, FILE* out)
+{
+    DISABLE_NONNULL_COMPARE
+    if (nofmt == M_NULLPTR || out == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+    RESTORE_NONNULL_COMPARE
+    if (fputs(nofmt, out) == EOF)
+    {
+        errno_t error  = errno;
+        char*   errmsg = get_strerror(error);
+        if (ferror(out))
+        {
+            fprintf(stderr, "fputs failed (stream error): %s\n", errmsg == M_NULLPTR ? "unknown error" : errmsg);
+        }
+        else
+        {
+            fprintf(stderr, "fputs failed (unknown reason): %s\n", errmsg == M_NULLPTR ? "unknown error" : errmsg);
+        }
+        flush_stderr();
+        safe_free(&errmsg);
+        return error;
+    }
+    return 0;
+}
