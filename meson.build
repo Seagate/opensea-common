@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-project('opensea-common', 'c', license: 'MPL-2.0', version: '6.0.2', default_options : ['warning_level=2'])
+project('opensea-common', 'c', license: 'MPL-2.0', version: '6.0.3', default_options : ['warning_level=2'])
 
 c = meson.get_compiler('c')
 
@@ -66,7 +66,7 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
   '-Wint-to-pointer-cast',
   '-Wimplicit-fallthrough',
   '-D_GLIBCXX_ASSERTIONS',
-  '-fstrict-flex-arrays=1', #NOTE: Using level 1 since Windows often uses [1] at the end of it's structures. opensea-*libs has used this in a few places too.
+  '-fstrict-flex-arrays=3',
   '-fno-delete-null-pointer-checks',
   '-fno-strict-overflow',
   '-fno-strict-aliasing',

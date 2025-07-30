@@ -136,6 +136,11 @@ extern "C"
     //! \return true means Windows 11 Version 23H2 or later, false means OS earlier than 23H2
     bool is_Windows_11_Version_23H2_Or_Higher(void);
 
+    //! \fn bool is_Windows_11_Version_24H2_Or_Higher(void)
+    //! \brief Checks if the current OS is Windows 11 Version 24H2 or higher.
+    //! \return true means Windows 11 Version 24H2 or later, false means OS earlier than 24H2
+    bool is_Windows_11_Version_24H2_Or_Higher(void);
+
     //! \fn bool is_Windows_PE(void)
     //! \brief Checks if the application is currently running in the Windows Pre-Installation Environment (PE).
     //! \return true means running in PE, false means running in standard Windows
