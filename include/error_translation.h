@@ -13,11 +13,18 @@
 #pragma once
 
 #include "common_types.h"
+#include "code_attributes.h"
 
 #if defined(__cplusplus)
 extern "C"
 {
 #endif
+
+    //! \brief returns an allocated buffer with translation of the errno value
+    //!
+    //! \param[in] error The error number to translate
+    //! \return M_NULLPTR if memory cannot be allocated or error cannot be translated. Pointer to string successful.
+    M_FUNC_ATTR_MALLOC char *get_strerror(errno_t error);
 
     //! \brief Prints the error number and its meaning to the screen.
     //!
