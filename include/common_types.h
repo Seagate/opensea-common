@@ -546,6 +546,12 @@ typedef int32_t intptr_t;
 //! This macro can be used within UINTwidth_C type macros as needed.
 #define OBSOLETE 0
 
+//! \def UNUSED
+//! \brief Defines a macro for an unused field set to zero
+//!
+//! This macro can be used within UINTwidth_C type macros as needed.
+#define UNUSED 0
+
 //! \def M_NULLPTR
 //! \brief Defines a macro for nullptr to handle different standards and environments.
 //!
