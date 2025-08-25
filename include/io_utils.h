@@ -20,7 +20,9 @@
 #include "common_types.h"
 #include "constraint_handling.h"
 #include "env_detect.h"
+#include "error_translation.h"
 #include "impl_io_utils.h"
+#include "memory_safety.h"
 #include "type_conversion.h"
 #include <stdarg.h>
 #include <stdio.h>
@@ -1627,6 +1629,27 @@ extern "C"
 #    define safe_atof(value, str)                                                                                      \
         safe_atof_impl(value, str, __FILE__, __func__, __LINE__, "safe_atof(" #value ", " #str ")")
 #endif
+
+    //! \fn errno_t checked_fputs(const char* nofmt, FILE* out)
+    //! \brief calls fputs and checks for EOF on error. Will output an error to stderr
+    //!        if the error can be translated successfully.
+    //! \param[in] nofmt the string to write. This cannot include any formatting (ex: %s).
+    //!                  If formatting is required, fprintf should be used instead.
+    //! \param[in] out the file pointer to write the string to.  Newlines, tabs, etc are allowed.
+    //! \return returns 0 on success and errno otherwise. EINVAL if either parameter is null.
+    M_NONNULL_PARAM_LIST(1, 2)
+    M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2) errno_t checked_fputs(const char* nofmt, FILE* out);
+
+    //! \fn errno_t print_str(const char* nofmt)
+    //! \brief similar to puts, but does not write a newline automatically.
+    //!        Calls checked_fputs with second argument set to stdout
+    //! \param[in] nofmt The string to write. Does not include any formatting (ex: %s) as it will be ignored.
+    //!                  Use printf for formatted strings. Newlines, tabs, etc are allowed.
+    //! \return returns 0 on success and errno otherwise.
+    M_NONNULL_PARAM_LIST(1) M_NULL_TERM_STRING(1) M_PARAM_RO(1) static M_INLINE errno_t print_str(const char* nofmt)
+    {
+        return checked_fputs(nofmt, stdout);
+    }
 
 #if defined(__cplusplus)
 }

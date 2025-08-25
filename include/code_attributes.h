@@ -362,8 +362,6 @@ extern "C"
 #            define M_NORETURN [[noreturn]]
 #        endif
 #    endif
-#elif defined noreturn
-#    define M_NORETURN noreturn
 #elif defined __has_c_attribute
 #    if __has_c_attribute(noreturn)
 #        define M_NORETURN [[noreturn]]
@@ -372,6 +370,8 @@ extern "C"
 #    elif __has_c_attribute(___Noreturn__)
 #        define M_NORETURN [[___Noreturn__]]
 #    endif
+#elif defined noreturn
+#    define M_NORETURN noreturn
 #endif
 #if !defined M_NORETURN
 #    if defined __has_attribute
