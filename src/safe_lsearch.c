@@ -190,7 +190,7 @@ static void* safe_lwork(const void* key,
     }
     else
     {
-        uint8_t* ep   = M_CONST_CAST(uint8_t*, base);
+        uint8_t* ep   = M_CONST_CAST(uint8_t*, M_REINTERPRET_CAST(const uint8_t*, base));
         uint8_t* endp = M_NULLPTR;
         for (endp = M_REINTERPRET_CAST(uint8_t*, ep + width * (*nelp)); ep < endp; ep += width)
         {
@@ -378,7 +378,7 @@ static void* safe_lwork_context(const void*  key,
     }
     else
     {
-        uint8_t* ep   = M_CONST_CAST(uint8_t*, base);
+        uint8_t* ep   = M_CONST_CAST(uint8_t*, M_REINTERPRET_CAST(const uint8_t*, base));
         uint8_t* endp = M_NULLPTR;
         for (endp = M_REINTERPRET_CAST(uint8_t*, ep + width * (*nelp)); ep < endp; ep += width)
         {

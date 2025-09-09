@@ -661,7 +661,7 @@ errno_t safe_strcat_impl(char* M_RESTRICT       dest,
         errno = error;
         return error;
     }
-    else if ((destsz + M_STATIC_CAST(uintptr_t, destnull)) <= srclen) // truncation
+    else if ((destsz + M_REINTERPRET_CAST(uintptr_t, destnull)) <= srclen) // truncation
     {
         dest[0] = 0;
         error   = ERANGE;
@@ -754,8 +754,8 @@ errno_t safe_strncat_impl(char* M_RESTRICT       dest,
         errno = error;
         return error;
     }
-    else if (((destsz + M_STATIC_CAST(uintptr_t, destnull)) <= srclen) ||
-             ((destsz + M_STATIC_CAST(uintptr_t, destnull)) <= count)) // truncation
+    else if (((destsz + M_REINTERPRET_CAST(uintptr_t, destnull)) <= srclen) ||
+             ((destsz + M_REINTERPRET_CAST(uintptr_t, destnull)) <= count)) // truncation
     {
         dest[0] = 0;
         error   = ERANGE;
@@ -888,7 +888,7 @@ errno_t safe_strdup_impl(char**      dup,
             errno = error;
             return error;
         }
-        *dup = malloc(srclen + RSIZE_T_C(1));
+        *dup = M_REINTERPRET_CAST(char*, malloc(srclen + RSIZE_T_C(1)));
         if (*dup != M_NULLPTR)
         {
             safe_memcpy(*dup, srclen + RSIZE_T_C(1), src, srclen);
@@ -951,7 +951,7 @@ errno_t safe_strndup_impl(char**      dup,
     }
     else
     {
-        *dup = safe_malloc(size + RSIZE_T_C(1));
+        *dup = M_REINTERPRET_CAST(char*, safe_malloc(size + RSIZE_T_C(1)));
         if (*dup != M_NULLPTR)
         {
             safe_memcpy(*dup, size + 1, src, size);
