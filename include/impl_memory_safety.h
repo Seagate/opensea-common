@@ -250,11 +250,11 @@ extern "C"
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a size is zero
-    M_FUNC_ATTR_MALLOC void* safe_malloc_impl(size_t      size,
-                                              const char* file,
-                                              const char* function,
-                                              int         line,
-                                              const char* expression);
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* safe_malloc_impl(size_t      size,
+                                                                           const char* file,
+                                                                           const char* function,
+                                                                           int         line,
+                                                                           const char* expression);
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_calloc_impl(size_t count, size_t size, const char* file, const char* function,
     //! int line, const char* expression)
@@ -276,12 +276,12 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a count * \a size results in an overflow
-    M_FUNC_ATTR_MALLOC void* safe_calloc_impl(size_t      count,
-                                              size_t      size,
-                                              const char* file,
-                                              const char* function,
-                                              int         line,
-                                              const char* expression);
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* safe_calloc_impl(size_t      count,
+                                                                              size_t      size,
+                                                                              const char* file,
+                                                                              const char* function,
+                                                                              int         line,
+                                                                              const char* expression);
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_malloc_aligned_impl(size_t size, size_t alignment, const char* file, const
     //! char* function, int line, const char* expression)
@@ -301,12 +301,13 @@ extern "C"
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a size is zero
-    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) M_ALLOC_ALIGN(2) void* safe_malloc_aligned_impl(size_t      size,
-                                                                                        size_t      alignment,
-                                                                                        const char* file,
-                                                                                        const char* function,
-                                                                                        int         line,
-                                                                                        const char* expression);
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1)
+        M_ALLOC_ALIGN(2) void* safe_malloc_aligned_impl(size_t      size,
+                                                        size_t      alignment,
+                                                        const char* file,
+                                                        const char* function,
+                                                        int         line,
+                                                        const char* expression);
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_calloc_aligned_impl(size_t count, size_t size, size_t alignment, const char*
     //! file, const char* function, int line, const char* expression)
@@ -329,13 +330,14 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a count * \a size results in an overflow
-    M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) M_ALLOC_ALIGN(3) void* safe_calloc_aligned_impl(size_t      count,
-                                                                                           size_t      size,
-                                                                                           size_t      alignment,
-                                                                                           const char* file,
-                                                                                           const char* function,
-                                                                                           int         line,
-                                                                                           const char* expression);
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2)
+        M_ALLOC_ALIGN(3) void* safe_calloc_aligned_impl(size_t      count,
+                                                        size_t      size,
+                                                        size_t      alignment,
+                                                        const char* file,
+                                                        const char* function,
+                                                        int         line,
+                                                        const char* expression);
 
 #if defined(__cplusplus)
 }
