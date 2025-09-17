@@ -114,16 +114,25 @@ extern "C"
 #define DETECT_GNU_ATTR(attr) __has_attribute(attr)
 
 //! \def M_RESTRICT
-//! \brief Defines the restrict keyword based on the compiler and C standard version.
+//! \brief Defines the restrict keyword for pointer aliasing optimization.
 //!
-//! This macro defines the restrict keyword to optimize pointer usage.
-//! If using C99 and MSVC 2005 without C11, it defines M_RESTRICT as __restrict.
-//! Otherwise, it defines M_RESTRICT as restrict. If not using C99, it leaves M_RESTRICT undefined.
+//! This macro defines M_RESTRICT to enable compiler optimizations by indicating
+//! that pointers do not alias. It adapts based on compiler and language standard:
+//! - In C99 or later, it uses `restrict`.
+//! - In MSVC (2005+), it uses `__restrict`.
+//! - In GCC or Clang, it uses `__restrict__`.
+//! - If none apply, it leaves M_RESTRICT empty.
 #if defined USING_C99
 #    if IS_MSVC_VERSION(MSVC_2005) && !defined USING_C11
 #        define M_RESTRICT __restrict
 #    else
 #        define M_RESTRICT restrict
+#    endif
+#else
+#    if IS_GCC_VERSION(3, 1) || IS_CLANG_VERSION(1, 0)
+#        define M_RESTRICT __restrict__
+#    elif IS_MSVC_VERSION(MSVC_2005)
+#        define M_RESTRICT __restrict
 #    endif
 #endif
 
@@ -260,24 +269,6 @@ extern "C"
 #    define M_FALLTHROUGH /*FALLTHRU*/
 #endif
 
-//! \def M_USE_UNUSED
-//! \brief Marks a variable as used to avoid compiler warnings about unused variables.
-//!
-//! This macro is used within a function to mark a variable as used, preventing compiler warnings
-//! about unused variables. It casts the variable to void.
-//!
-//! \param var The variable to mark as used.
-//!
-//! \code
-//! void Func(int unusedVar)
-//! {
-//!     M_USE_UNUSED(unusedVar);
-//!     // Function implementation
-//! }
-//! \endcode
-//! \author TJE
-#define M_USE_UNUSED(var) M_STATIC_CAST(void, var)
-
     //! \def M_ATTR_UNUSED
     //! \brief Marks a variable, function, or parameter as unused to avoid compiler warnings.
     //!
@@ -286,7 +277,6 @@ extern "C"
     //! - For C++17 and later, it uses [[maybe_unused]].
     //! - For C23, it uses [[maybe_unused]] or [[__maybe_unused__]].
     //! - For GCC and Clang, it uses __attribute__((unused)).
-    //! - For MSVC, it uses __pragma(warning(suppress : 4100 4101)).
     //! - If no support is detected, it inserts a comment to indicate unused.
     //!
     //! \code
@@ -319,13 +309,38 @@ extern "C"
 #else
 #    if DETECT_GNU_ATTR(unused) || (IS_GCC_FULL_VERSION(2, 95, 3) || IS_CLANG_VERSION(1, 0))
 #        define M_ATTR_UNUSED __attribute__((unused))
-#    elif defined(_MSC_VER)
-#        define M_ATTR_UNUSED __pragma(warning(suppress : 4100 4101))
 #    endif
 #endif
 
 #if !defined(M_ATTR_UNUSED)
 #    define M_ATTR_UNUSED /*UNUSED*/
+#endif
+
+//! \def M_USE_UNUSED
+//! \brief Marks a variable as used to avoid compiler warnings about unused variables.
+//!
+//! This macro is used within a function to mark a variable as used, preventing compiler warnings
+//! about unused variables. It casts the variable to void.
+//!
+//! \param var The variable to mark as used.
+//!
+//! \code
+//! void Func(int unusedVar)
+//! {
+//!     M_USE_UNUSED(unusedVar);
+//!     // Function implementation
+//! }
+//! \endcode
+//! \author TJE
+#if defined(_MSC_VER) && !defined(__clang__)
+#    define M_USE_UNUSED(var)                                                                                          \
+        do                                                                                                             \
+        {                                                                                                              \
+            MSVC_PRAGMA(warning(suppress : 4100 4101));                                                                \
+            M_STATIC_CAST(void, var);                                                                                  \
+        } while (0)
+#else
+#    define M_USE_UNUSED(var) M_STATIC_CAST(void, var)
 #endif
 
 //! \def M_DEPRECATED
@@ -370,8 +385,8 @@ extern "C"
 #        define M_DEPRECATED             __attribute__((deprecated))
 #        define M_DEPRECATED_REASON(msg) __attribute__((deprecated(msg)))
 #    elif IS_MSVC_VERSION(MSVC_2017_15_9)
-#        define M_DEPRECATED             __declspec(deprecated) __pragma(warning(suppress : 4996))
-#        define M_DEPRECATED_REASON(msg) __declspec(deprecated(msg)) __pragma(warning(suppress : 4996))
+#        define M_DEPRECATED             __declspec(deprecated) MSVC_PRAGMA(warning(suppress : 4996))
+#        define M_DEPRECATED_REASON(msg) __declspec(deprecated(msg)) MSVC_PRAGMA(warning(suppress : 4996))
 #    endif
 #endif
 
@@ -670,7 +685,7 @@ extern "C"
 #endif
 
 #if !defined(DLL_EXPORT)
-#    define DLL_IMPORT /* no equivalent */
+#    define DLL_EXPORT /* no equivalent */
 #endif
 #if !defined(DLL_IMPORT)
 #    define DLL_IMPORT /* no equivalent */
