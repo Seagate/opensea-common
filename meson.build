@@ -398,6 +398,9 @@ attributeTest = ''' #include <stdio.h>
 attributeTestResult = c.compiles(attributeTest, name : '__has_c_attribute for compiler specific attributes')
 if attributeTestResult == false
   global_cpp_args += ['-DNO_COMPILER_UNIQUE_C_ATTRIBUTES']
+  if not c.get_id().contains('msvc')
+    global_cpp_args += ['-DFORCE_GNU_STYLE_ATTRIBUTES']
+  endif
 endif
 
 #check which version of strerror_r is available, posix or GNU
