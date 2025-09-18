@@ -96,10 +96,11 @@ extern "C"
 #        if defined(__has_c_attribute)
 #            define DETECT_STD_ATTR(attr) __has_c_attribute(attr)
 #            define DETECT_STD_ATTR_CHECK
-#            if defined(_MSC_VER) && !defined(__clang__)
+#            if (defined(_MSC_VER) && !defined(__clang__)) || defined (NO_COMPILER_UNIQUE_C_ATTRIBUTES)
 // MSVC has a bug where a namespaced attribute causes a parsing error for "unexpected token" on ':'.
 // This is a workaround to bypass this problem. Eventually MSVC will probably fix this, and when that happens,
 // this check can be updated with a version number to check the compiler against
+// NOTE: OpenBSD with clang 16.0.6 also does not support this, so added NO_COMPILER_UNIQUE_C_ATTRIBUTES to work around this too.
 #                define DETECT_STD_ATTR_QUAL(attr) 0
 #            else
 #                define DETECT_STD_ATTR_QUAL(attr) __has_c_attribute(attr)

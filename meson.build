@@ -147,12 +147,15 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
     '-Wl,-z,now'
   ]
 
+  #test if setting _FORTIFY_SOURCE higher than default generates a warning
+  #this issue showed up on Rocky Linux 8 and we don't want to generate extra noise
+  #due to trying to follow openssf best practices
   fortifytest = ''' #include <stdio.h>
                       int main() {
                           return 0;
                       }
                   '''
-  fortifyresult = c.compiles(fortifytest, name : '_FORTIFY_OVERRIDE', args : ['-U_FORTIFY_SOURCE', '-D_FORTIFY_SOURCE=5', '-Werror'])
+  fortifyresult = c.compiles(fortifytest, name : 'Set _FORTIFY_SOURCE to highest possible level without warnings', args : ['-U_FORTIFY_SOURCE', '-D_FORTIFY_SOURCE=5', '-Werror'])
   if fortifyresult == true
     warning_flags += ['-U_FORTIFY_SOURCE', '-D_FORTIFY_SOURCE=3']
   endif
@@ -326,16 +329,75 @@ elif c.has_function('SecureZeroMemory', prefix : '#include <windows.h>')
   global_cpp_args += ['-DHAVE_MSFT_SECURE_ZERO_MEMORY', '-DNO_HAVE_MSFT_SECURE_ZERO_MEMORY2']
 endif
 
-if c.has_header_symbol('stddef.h', '_Generic')
+# Test support for _Generic keyword. May not be available in some cases.
+gernericSelectionTest = ''' 
+                      long add_long(long x, long y)
+                      {
+                        return x + y;
+                      }
+                      int add_int(int x, int y)
+                      {
+                        return x + y;
+                      }
+                      short add_short(short x, short y)
+                      {
+                        return x + y;
+                      }
+                      char add_char(char x, char y)
+                      {
+                        return x + y;
+                      }
+                      #    define add(x, y)                                                           \
+                      _Generic((x),                                                                   \
+                        long:  add_long,                                                              \
+                        int:   add_int,                                                               \
+                        short: add_short,                                                             \
+                        char:  add_char)                                                              \
+                        (x, y)
+                      int main() {
+                          long lx = 890,   ly = 9741;
+                          int ix = 23,     iy = 72354;
+                          short sx = 2324, sy = 634;
+                          char cx = 12,    cy = 2;
+
+                          long lr  = add(lx, ly);
+                          int ir   = add(ix, iy);
+                          short sr = add(sx, sy);
+                          char cr  = add(cx, cy);
+                          (void)lr;
+                          (void)ir;
+                          (void)sr;
+                          (void)cr;
+                          return 0;
+                      }
+                  '''
+genericargs = []
+if c.get_id().contains('msvc') and c.has_argument('/std:c17')
+  genericargs += '/std:c17'
+endif
+genericSelectionTestResult = c.compiles(gernericSelectionTest, name : 'Generic Selection Support', args : genericargs)
+if genericSelectionTestResult == true
   global_cpp_args += ['-DHAVE_C11_GENERIC_SELECTION']
 endif
 
-
-#test if setting _FORTIFY_SOURCE higher than default generates a warning
-#this issue showed up on Rocky Linux 8 and we don't want to generate extra noise
-#due to trying to follow openssf best practices
-if target_machine.system() != 'windows'
-    
+# Test support for __has_c_attribute for namespaced attribtues (compiler unique)
+# Some compilers do not support this properly and throw errors about using the : symbol
+# MSVC does not like this and Clang 16.0.6 in openBSD also complains.
+attributeTest = ''' #include <stdio.h>
+                      #if defined (__has_c_attribute)
+                      #    if __has_c_attribute(clang::unused)
+                      #        define HAS_CLANG_UNUSED
+                      #    elif __has_c_attribute(gnu::unused)
+                      #        define HAS_GCC_UNUSED
+                      #    endif
+                      #endif
+                      int main() {
+                          return 0;
+                      }
+                  '''
+attributeTestResult = c.compiles(attributeTest, name : '__has_c_attribute for compiler specific attributes')
+if attributeTestResult == false
+  global_cpp_args += ['-DNO_COMPILER_UNIQUE_C_ATTRIBUTES']
 endif
 
 #check which version of strerror_r is available, posix or GNU
