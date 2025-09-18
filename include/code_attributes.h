@@ -669,6 +669,10 @@ extern "C"
 #    elif DETECT_STD_ATTR_QUAL(gnu::dllexport) && DETECT_STD_ATTR_QUAL(gnu::dllimport)
 #        define DLL_EXPORT [[gnu::dllexport]]
 #        define DLL_IMPORT [[gnu::dllimport]]
+#    elif DETECT_STD_ATTR_QUAL(clang::visibility)
+#        define DLL_EXPORT [[clang::visibility("default")]]
+#    elif DETECT_STD_ATTR_QUAL(gnu::visibility)
+#        define DLL_EXPORT [[gnu::visibility("default")]]
 #    endif
 #else
 #    if DETECT_GNU_ATTR(dllexport) && DETECT_GNU_ATTR(dllimport)
