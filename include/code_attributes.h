@@ -102,6 +102,7 @@ extern "C"
 // this check can be updated with a version number to check the compiler against
 // NOTE: OpenBSD with clang 16.0.6 also does not support this, so added NO_COMPILER_UNIQUE_C_ATTRIBUTES to work around this too.
 #                define DETECT_STD_ATTR_QUAL(attr) 0
+#                
 #            else
 #                define DETECT_STD_ATTR_QUAL(attr) __has_c_attribute(attr)
 #            endif
@@ -676,10 +677,6 @@ extern "C"
 #    elif IS_MSVC_VERSION(MSVC_4_0)
 #        define DLL_EXPORT __declspec(dllexport)
 #        define DLL_IMPORT __declspec(dllimport)
-#    elif DETECT_STD_ATTR_QUAL(clang::visibility)
-#        define DLL_EXPORT [[clang::visibility("default")]]
-#    elif DETECT_STD_ATTR_QUAL(gnu::visibility)
-#        define DLL_EXPORT [[gnu::visibility("default")]]
 #    elif DETECT_GNU_ATTR(visibility) || (IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0))
 #        define DLL_EXPORT __attribute__((visibility("default")))
 #    endif
