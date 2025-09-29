@@ -2088,7 +2088,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int8(const char*       strToConv
     RESTORE_NONNULL_COMPARE
 }
 
-#if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
+#if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(HAVE_GETLINE)
 // getdelim and getline are not available, so define them ourselves for our own
 // use
 

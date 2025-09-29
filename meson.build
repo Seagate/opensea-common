@@ -329,6 +329,30 @@ elif c.has_function('SecureZeroMemory', prefix : '#include <windows.h>')
   global_cpp_args += ['-DHAVE_MSFT_SECURE_ZERO_MEMORY', '-DNO_HAVE_MSFT_SECURE_ZERO_MEMORY2']
 endif
 
+if c.has_function('gmtime_r', prefix : '#include <time.h>')
+  global_cpp_args += ['-DHAVE_GMTIME_R']
+endif
+
+if c.has_function('gmtime_s', prefix : '#define __STDC_WANT_LIB_EXT1__ 1\n#include <time.h>\n')
+  global_cpp_args += ['-DHAVE_GMTIME_S']
+endif 
+
+if c.has_function('localtime_r', prefix : '#include <time.h>')
+  global_cpp_args += ['-DHAVE_LOCALTIME_R']
+endif
+
+if c.has_function('localtime_s', prefix : '#define __STDC_WANT_LIB_EXT1__ 1\n#include <time.h>\n')
+  global_cpp_args += ['-DHAVE_LOCALTIME_S']
+endif 
+
+if c.has_function('getdelim', prefix : '#include <stdio.h>')
+  global_cpp_args += ['-DHAVE_GETDELIM']
+endif
+
+if c.has_function('getline', prefix : '#include <stdio.h>')
+  global_cpp_args += ['-DHAVE_GETLINE']
+endif
+
 # Test support for _Generic keyword. May not be available in some cases.
 gernericSelectionTest = ''' 
                       long add_long(long x, long y)

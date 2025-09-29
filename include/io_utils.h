@@ -482,7 +482,7 @@ extern "C"
 // clang-format on
 #endif // C11
 
-#if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
+#if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined (HAVE_GETLINE)
     //! \fn ssize_t getline(char** lineptr, size_t* n, FILE* stream)
     //! \brief Reads an entire line from a stream.
     //!
