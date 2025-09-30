@@ -443,6 +443,22 @@ if c.has_function('strerror_r', prefix : '#include <string.h>')
   endif
 endif
 
+# 64bit off_t
+if c.has_type('off_t', prefix: '#include <sys/types.h>')
+  if c.sizeof('off_t', prefix: '#include <sys/types.h>') < 8
+    global_cpp_args += ['-D_FILE_OFFSET_BITS=64']
+  endif
+endif
+
+# Check if time_t is 64-bit. If not, try getting 64bit time_t
+if c.sizeof('time_t', prefix: '#include <time.h>') < 8
+  if c.sizeof('time_t', prefix: '#define _TIME_BITS 64\n#include <time.h>') >= 8
+    global_cpp_args += ['-D_TIME_BITS=64']
+  else
+    error('64bit time_t is required for this project')
+  endif
+endif
+
 if target_machine.system() == 'windows'
   src_files += ['src/windows_env_detect.c', 'src/windows_secure_file.c', 'src/windows_version_detect.c']
   if c.get_define('__MINGW32__') != ''
@@ -455,6 +471,10 @@ if target_machine.system() == 'windows'
     global_cpp_args += ['-DHAVE_NTIFS']
   endif
   global_cpp_args += ['-D_CRT_NONSTDC_NO_DEPRECATE', '-D_CRT_SECURE_NO_WARNINGS']
+  # Need to define this if not present for mingw64
+  if not c.has_type('FILE_ID_INFO', prefix : '#include <WinBase.h>')
+    global_cpp_args += ['-DNO_FILE_ID_INFO']
+  endif
 else
   # assuming POSIX if not windows for now.
   src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']

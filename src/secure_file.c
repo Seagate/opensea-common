@@ -779,7 +779,7 @@ M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInf
         if (fileInfo->file)
         {
             size_t readres = SIZE_T_C(0);
-#if defined(HAVE_MSFT_SECURE_LIB)
+#if defined(HAVE_MSFT_SECURE_LIB) && !defined (__MINGW32__)
             readres = fread_s(buffer, buffersize, elementsize, count, fileInfo->file);
 #else
             if (buffer == M_NULLPTR)
