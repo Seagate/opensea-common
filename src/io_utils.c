@@ -2931,7 +2931,7 @@ char* safe_gets_impl(char* str, rsize_t n, const char* file, const char* functio
     }
     else
     {
-#if defined(HAVE_MSFT_SECURE_LIB) && !defined (__MINGW32__)
+#if defined(HAVE_MSFT_SECURE_LIB) && !defined(__MINGW32__)
         char* ret = gets_s(str, n);
         errno     = error;
         return ret;

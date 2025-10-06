@@ -404,6 +404,13 @@ if genericSelectionTestResult == true
   global_cpp_args += ['-DHAVE_C11_GENERIC_SELECTION']
 endif
 
+constexprTest = ''' int main (void) { constexpr int i = 50; int j = 0; return j / i; }'''
+constexprTestResult = c.compiles(constexprTest, name : 'Constexpr Support')
+if constexprTestResult == true
+  global_cpp_args += ['-DHAVE_CONSTEXPR']
+endif
+
+
 # Test support for __has_c_attribute for namespaced attribtues (compiler unique)
 # Some compilers do not support this properly and throw errors about using the : symbol
 # MSVC does not like this and Clang 16.0.6 in openBSD also complains.

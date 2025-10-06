@@ -186,7 +186,8 @@ extern "C"
 #        elif DETECT_STD_ATTR_QUAL(msvc::noinline)
 #            define M_NOINLINE [[msvc::noinline]]
 #        endif
-#    else
+#    endif
+#    if !defined(M_NOINLINE)
 #        if DETECT_GNU_ATTR(noinline) || (IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0))
 #            define M_NOINLINE __attribute__((noinline))
 #        elif IS_MSVC_VERSION(MSVC_6_0)
@@ -218,7 +219,8 @@ extern "C"
 #        elif DETECT_STD_ATTR_QUAL(msvc::forceinline)
 #            define M_FORCEINLINE [[msvc::forceinline]]
 #        endif
-#    else
+#    endif
+#    if !defined(M_FORCEINLINE)
 #        if DETECT_GNU_ATTR(always_inline) || (IS_GCC_FULL_VERSION(4, 1, 3) || IS_CLANG_VERSION(1, 0))
 #            define M_FORCEINLINE __attribute__((always_inline)) M_INLINE
 #        elif IS_MSVC_VERSION(MSVC_6_0)
@@ -256,7 +258,8 @@ extern "C"
 #    elif DETECT_STD_ATTR_QUAL(gcc::fallthrough)
 #        define M_FALLTHROUGH [[gcc::fallthrough]]
 #    endif
-#else
+#endif
+#if !defined(M_FALLTHROUGH)
 #    if DETECT_GNU_ATTR(fallthrough) || (IS_GCC_VERSION(7, 0) || IS_CLANG_VERSION(3, 9))
 #        define M_FALLTHROUGH                                                                                          \
             do                                                                                                         \
@@ -309,7 +312,8 @@ extern "C"
 #    elif DETECT_STD_ATTR_QUAL(gnu::unused)
 #        define M_ATTR_UNUSED [[gnu::unused]]
 #    endif
-#else
+#endif
+#if !defined(M_ATTR_UNUSED)
 #    if DETECT_GNU_ATTR(unused) || (IS_GCC_FULL_VERSION(2, 95, 3) || IS_CLANG_VERSION(1, 0))
 #        define M_ATTR_UNUSED __attribute__((unused))
 #    endif
@@ -383,7 +387,8 @@ extern "C"
 #        define M_DEPRECATED             [[gnu::deprecated]]
 #        define M_DEPRECATED_REASON(msg) [[gnu::deprecated(msg)]]
 #    endif
-#else
+#endif
+#if !defined(M_DEPRECATED)
 #    if DETECT_GNU_ATTR(deprecated) || (IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(3, 0))
 #        define M_DEPRECATED             __attribute__((deprecated))
 #        define M_DEPRECATED_REASON(msg) __attribute__((deprecated(msg)))
@@ -428,7 +433,8 @@ extern "C"
 #    elif DETECT_STD_ATTR_QUAL(gnu::warn_unused_result)
 #        define M_NODISCARD [[gnu::warn_unused_result]]
 #    endif
-#else
+#endif
+#if !defined(M_NODISCARD)
 #    if DETECT_GNU_ATTR(nodiscard)
 #        define M_NODISCARD __attribute__((nodiscard))
 #    elif DETECT_GNU_ATTR(warn_unused_result) || (IS_GCC_VERSION(3, 4) || IS_CLANG_VERSION(1, 0))
@@ -486,7 +492,8 @@ extern "C"
 #    elif DETECT_STD_ATTR_QUAL(gnu::noreturn)
 #        define M_NORETURN [[gnu::noreturn]]
 #    endif
-#else
+#endif
+#if !defined(M_NORETURN)
 #    if defined(noreturn)
 #        define M_NORETURN noreturn
 #    elif DETECT_GNU_ATTR(noreturn) || (IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0))
@@ -529,7 +536,8 @@ extern "C"
 #                define M_ALLOC_DEALLOC(deallocatorFunc, argpos) [[gnu::malloc(deallocatorFunc, argpos)]]
 #            endif
 #        endif
-#    else
+#    endif
+#    if !defined(M_FUNC_ATTR_MALLOC)
 #        if DETECT_GNU_ATTR(malloc) || IS_CLANG_VERSION(1, 0) || IS_GCC_FULL_VERSION(4, 1, 3)
 #            define M_FUNC_ATTR_MALLOC __attribute__((malloc))
 #            if IS_GCC_VERSION(11, 0)
@@ -614,7 +622,8 @@ extern "C"
 #            define FUNC_ATTR_SCANF(formatargpos, varargpos)   [[gnu::format(scanf, formatargpos, varargpos)]]
 #            define FUNC_ATTR_SCANF_S(formatargpos, varargpos) [[gnu::format(scanf, formatargpos, varargpos)]]
 #        endif
-#    else
+#    endif
+#    if !defined(FUNC_ATTR_PRINTF)
 #        if DETECT_GNU_ATTR(format) || (IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0))
 #            define FUNC_ATTR_PRINTF(formatargpos, varargpos)  __attribute__((format(printf, formatargpos, varargpos)))
 #            define FUNC_ATTR_SCANF(formatargpos, varargpos)   __attribute__((format(scanf, formatargpos, varargpos)))
@@ -675,7 +684,8 @@ extern "C"
 #    elif DETECT_STD_ATTR_QUAL(gnu::visibility)
 #        define DLL_EXPORT [[gnu::visibility("default")]]
 #    endif
-#else
+#endif
+#if !defined(DLL_EXPORT)
 #    if DETECT_GNU_ATTR(dllexport) && DETECT_GNU_ATTR(dllimport)
 #        define DLL_EXPORT __attribute__((dllexport))
 #        define DLL_IMPORT __attribute__((dllimport))
@@ -782,7 +792,8 @@ extern "C"
 #            define M_ALL_PARAMS_NONNULL      [[gnu::nonnull]]
 #            define M_NONNULL_PARAM_LIST(...) [[gnu::nonnull(__VA_ARGS__)]]
 #        endif
-#    else
+#    endif
+#    if !defined(M_ALL_PARAMS_NONNULL)
 #        if DETECT_GNU_ATTR(nonnull) || IS_GCC_VERSION(3, 3)
 #            define M_ALL_PARAMS_NONNULL      __attribute__((nonnull))
 #            define M_NONNULL_PARAM_LIST(...) __attribute__((nonnull(__VA_ARGS__)))
@@ -851,7 +862,8 @@ extern "C"
                     [[gnu::nonnull_if_nonzero(arg, sizearg)]] [[gnu::nonnull_if_nonzero(arg, countarg)]]
 #            endif
 #        endif
-#    else
+#    endif
+#    if !defined(M_NONNULL_IF_NONZERO_SIZE)
 #        if DETECT_GNU_ATTR(nonnull_if_nonzero)
 #            define M_NONNULL_IF_NONZERO_SIZE(arg, sizearg) __attribute__((nonnull_if_nonzero(arg, sizearg)))
 #            if IS_GCC_VERSION(16, 0)
@@ -898,7 +910,8 @@ extern "C"
 #        elif DETECT_STD_ATTR_QUAL(gnu::null_terminated_string_arg)
 #            define M_NULL_TERM_STRING(arg) [[gnu::null_terminated_string_arg(arg)]]
 #        endif
-#    else
+#    endif
+#    if !defined(M_NULL_TERM_STRING)
 #        if DETECT_GNU_ATTR(null_terminated_string_arg)
 #            define M_NULL_TERM_STRING(arg) __attribute__((null_terminated_string_arg(arg)))
 #        endif
@@ -908,6 +921,55 @@ extern "C"
 #if !defined(M_NULL_TERM_STRING)
 #    define M_NULL_TERM_STRING(arg) /*NULL_TERMINATED_STRING_ARGUMENT*/
 #endif
+
+//! \def M_DIAG_IF(condition, message, level)
+//! \brief If supported, uses clang's diagnose_if attribute to generate errors or
+//! warnings based on the provided condition
+//! \param condition the condition to evaluate
+//! \param message the message to display if this condition does not pass
+//! \param level set to "warning" for a warning to be emitted and "error"
+//! to generate a compilation error for the condition
+//! \note This attribute must appear AFTER a function definition, not before it unlike
+//! (most) other attributes which may be used in either location
+//! \note All evaluations must be constant and cannot include casts. Functions can be used, but if they
+//! do not produce a constant result, then they are ignored and no diagnostic is provided.
+//! \note Can be used to check for M_NULLPTR for void* only like myvoidptr == M_NULLPTR
+//! \note To check for other types of null pointers, such as a string, do either (!strptr) or in C23
+//! constexpr const char* nullstr = M_NULLPTR; strptr == nullstr
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(clang::diagnose_if)
+#            define M_DIAGNOSE_IF(condition, message, level) [[clang::diagnose_if((condition), message, level)]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::diagnose_if)
+#            define M_DIAGNOSE_IF(condition, message, level) [[gnu::diagnose_if((condition), message, level)]]
+#        endif
+#    endif
+#    if !defined(M_DIAGNOSE_IF)
+#        if DETECT_GNU_ATTR(diagnose_if)
+#            define M_DIAGNOSE_IF(condition, message, level) __attribute__((diagnose_if((condition), message, level)))
+#        endif
+#    endif
+#endif
+
+#if !defined(M_DIAGNOSE_IF)
+#    define M_DIAGNOSE_IF(condition, message, level /*DIAGNOSE_IF_NOT_SUPPORTED*/)
+#endif
+
+//! \def M_DIAG_WARNING(condition, message)
+//! \brief Convenience macro for M_DIAGNOSE_IF to generate a warning
+#define M_DIAG_WARNING(condition, message) M_DIAGNOSE_IF((condition), message, "warning")
+
+//! \def M_DIAG_WARN(condition, message)
+//! \brief Convenience macro for M_DIAGNOSE_IF to generate a warning
+#define M_DIAG_WARN(condition, message) M_DIAG_WARNING((condition), message)
+
+//! \def M_DIAG_ERROR(condition, message)
+//! \brief Convenience macro for M_DIAGNOSE_IF to generate an error
+#define M_DIAG_ERROR(condition, message) M_DIAGNOSE_IF((condition), message, "error")
+
+//! \def M_DIAG_ERR(condition, message)
+//! \brief Convenience macro for M_DIAGNOSE_IF to generate an error
+#define M_DIAG_ERR(condition, message) M_DIAG_ERROR((condition), message)
 
 //! \def M_RETURNS_NONNULL
 //! \brief Marks a function as returning a non-null pointer.
@@ -931,7 +993,8 @@ extern "C"
 #        elif DETECT_STD_ATTR_QUAL(gnu::returns_nonnull)
 #            define M_RETURNS_NONNULL [[gnu::returns_nonnull]]
 #        endif
-#    else
+#    endif
+#    if !defined(M_RETURNS_NONNULL)
 #        if DETECT_GNU_ATTR(returns_nonnull)
 #            define M_RETURNS_NONNULL __attribute__((returns_nonnull))
 #        elif defined(SAL_INCLUDED) && defined(_Ret_notnull_) /* SAL.h */
@@ -1059,7 +1122,8 @@ extern "C"
 #            define M_PARAM_WO_SIZE(arg, sizearg) [[gnu::access(write_only, arg, sizearg)]]
 #            define M_PARAM_RW_SIZE(arg, sizearg) [[gnu::access(read_write, arg, sizearg)]]
 #        endif
-#    else
+#    endif
+#    if !defined(M_PARAM_RO)
 #        if DETECT_GNU_ATTR(access)
 #            define M_PARAM_RO(arg)               __attribute__((access(read_only, arg)))
 #            define M_PARAM_WO(arg)               __attribute__((access(write_only, arg)))
@@ -1103,7 +1167,8 @@ extern "C"
 #        elif DETECT_STD_ATTR_QUAL(gnu::alloc_align)
 #            define M_ALLOC_ALIGN(alignmentArg) [[gnu::alloc_align(alignmentArg)]]
 #        endif
-#    else
+#    endif
+#    if !defined(M_ALLOC_ALIGN)
 #        if DETECT_GNU_ATTR(alloc_align) || (IS_GCC_VERSION(4, 9) || IS_CLANG_VERSION(3, 7))
 #            define M_ALLOC_ALIGN(alignmentArg) __attribute__((alloc_align(alignmentArg)))
 #        endif
@@ -1138,7 +1203,8 @@ extern "C"
 #            define M_MALLOC_SIZE(sizearg)             [[gnu::alloc_size(sizearg)]]
 #            define M_CALLOC_SIZE(elementarg, sizearg) [[gnu::alloc_size(elementarg, sizearg)]]
 #        endif
-#    else
+#    endif
+#    if !defined(M_MALLOC_SIZE)
 #        if DETECT_GNU_ATTR(alloc_size) || (IS_GCC_VERSION(4, 9) || IS_CLANG_VERSION(3, 7))
 #            define M_MALLOC_SIZE(sizearg)             __attribute__((alloc_size(sizearg)))
 #            define M_CALLOC_SIZE(elementarg, sizearg) __attribute__((alloc_size(elementarg, sizearg)))
@@ -1163,7 +1229,8 @@ extern "C"
 #        elif DETECT_STD_ATTR_QUAL(gnu::fd_arg)
 #            define M_FILE_DESCRIPTOR(argnum) [[gnu::fd_arg(argnum)]]
 #        endif
-#    else
+#    endif
+#    if !defined(M_FILE_DESCRIPTOR)
 #        if DETECT_GNU_ATTR(fd_arg)
 #            define M_FILE_DESCRIPTOR(argnum) __attribute__((fd_arg(argnum)))
 #        endif
@@ -1184,7 +1251,8 @@ extern "C"
 #        elif DETECT_STD_ATTR_QUAL(gnu::fd_arg_read)
 #            define M_FILE_DESCRIPTOR_R(argnum) [[gnu::fd_arg_read(argnum)]]
 #        endif
-#    else
+#    endif
+#    if !defined(M_FILE_DESCRIPTOR_R)
 #        if DETECT_GNU_ATTR(fd_arg_read)
 #            define M_FILE_DESCRIPTOR_R(argnum) __attribute__((fd_arg_read(argnum)))
 #        endif
@@ -1205,7 +1273,8 @@ extern "C"
 #        elif DETECT_STD_ATTR_QUAL(gnu::fd_arg_write)
 #            define M_FILE_DESCRIPTOR_W(argnum) [[gnu::fd_arg_write(argnum)]]
 #        endif
-#    else
+#    endif
+#    if !defined(M_FILE_DESCRIPTOR_W)
 #        if DETECT_GNU_ATTR(fd_arg_write)
 #            define M_FILE_DESCRIPTOR_W(argnum) __attribute__((fd_arg_write(argnum)))
 #        endif

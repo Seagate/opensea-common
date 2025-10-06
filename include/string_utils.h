@@ -180,6 +180,7 @@ extern "C"
     //! \note Sets errno to ERANGE if \a c is not in the range of unsigned char and is not EOF.
     int safe_toupper(int c);
 
+#if defined(DEV_ENVIRONMENT)
     //! \fn size_t safe_strnlen(const char* string, size_t n)
     //! \brief Returns length of string or \a n if null terminator not found
     //! \param[in] string pointer to string to find the length of.
@@ -188,7 +189,21 @@ extern "C"
     //! after scanning \a n characters
     // M_PARAM_RO_SIZE(1, 2) //Do not use this right now. Need to revisit how we want to do this since
     // doing this causes some weird behavior with builtin obj size and RSIZE_MAX as a backup maximum length-TJE
-    size_t safe_strnlen(const char* string, size_t n);
+    M_INLINE size_t safe_strnlen(const char* string, size_t n)
+    {
+        return safe_strnlen_impl(string, n);
+    }
+#else
+//! \def safe_strnlen(string, n)
+//! \brief Returns length of string or \a n if null terminator not found
+//! \param[in] string pointer to string to find the length of.
+//! \param[in] n maximum number of characters to scan for null terminator
+//! \return 0 if string is null. length of string if null terminator found. \a n if null terminator not found
+//! after scanning \a n characters
+// M_PARAM_RO_SIZE(1, 2) //Do not use this right now. Need to revisit how we want to do this since
+// doing this causes some weird behavior with builtin obj size and RSIZE_MAX as a backup maximum length-TJE
+#    define safe_strnlen(string, n) safe_strnlen_impl(string, n)
+#endif
 
     // if str is a null pointer, returns 0. Internally calls safe_strnlen with size
     // set to RSIZE_MAX If __builtin_object_size can determine the amount of memory

@@ -1264,12 +1264,18 @@ extern "C"
     //! \param[in] ptr2 pointer to the second memory region to check
     //! \param[in] size2 size of the second memory region
     //! \return 0 regions do not overlap. Nonzero means the regions overlap
-    M_PARAM_RO(1)
-    M_PARAM_RO(3)
+    M_PARAM_RO_SIZE(1, 2)
+    M_PARAM_RO_SIZE(3, 4)
     static M_INLINE int memory_regions_overlap(const void* M_RESTRICT ptr1,
                                                rsize_t                size1,
                                                const void* M_RESTRICT ptr2,
                                                rsize_t                size2)
+        M_DIAG_WARN(ptr1 == M_NULLPTR, "ptr1 is NULL. Possible usage error")
+            M_DIAG_WARN(size1 == 0, "size1 is zero. Possible usage error")
+                M_DIAG_WARN(size1 > RSIZE_MAX, "size1 > RSIZE_MAX. Possible usage error")
+                    M_DIAG_WARN(ptr2 == M_NULLPTR, "ptr2 is NULL. Possible usage error")
+                        M_DIAG_WARN(size2 == 0, "size1 is zero. Possible usage error")
+                            M_DIAG_WARN(size2 > RSIZE_MAX, "size > RSIZE_MAX. Possible usage error")
     {
         // casting a null pointer to uintptr_t results in a zero. This should be
         // safe.

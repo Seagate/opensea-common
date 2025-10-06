@@ -43,8 +43,8 @@
 
 static void* safe_lwork(const void* key,
                         const void* base,
-                        size_t*     nelp,
-                        size_t      width,
+                        rsize_t*    nelp,
+                        rsize_t     width,
                         comparefn   compar,
                         int         addelem,
                         const char* file,
@@ -54,8 +54,8 @@ static void* safe_lwork(const void* key,
 
 void* safe_lsearch_impl(const void* key,
                         void*       base,
-                        size_t*     nelp,
-                        size_t      width,
+                        rsize_t*    nelp,
+                        rsize_t     width,
                         comparefn   compar,
                         const char* file,
                         const char* function,
@@ -67,8 +67,8 @@ void* safe_lsearch_impl(const void* key,
 
 void* safe_lfind_impl(const void* key,
                       const void* base,
-                      size_t*     nelp,
-                      size_t      width,
+                      rsize_t*    nelp,
+                      rsize_t     width,
                       comparefn   compar,
                       const char* file,
                       const char* function,
@@ -80,8 +80,8 @@ void* safe_lfind_impl(const void* key,
 
 static void* safe_lwork(const void* key,
                         const void* base,
-                        size_t*     nelp,
-                        size_t      width,
+                        rsize_t*    nelp,
+                        rsize_t     width,
                         comparefn   compar,
                         int         addelem,
                         const char* file,
@@ -188,6 +188,22 @@ static void* safe_lwork(const void* key,
         errno = error;
         return M_NULLPTR;
     }
+    else if (width == RSIZE_T_C(0))
+    {
+        error = ERANGE;
+        if (addelem == LWORK_MODE_FIND)
+        {
+            invoke_Constraint_Handler("safe_lfind: width == 0",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch: width == 0",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
+        }
+        errno = error;
+        return M_NULLPTR;
+    }
     else
     {
         uint8_t* ep   = M_CONST_CAST(uint8_t*, M_REINTERPRET_CAST(const uint8_t*, base));
@@ -225,8 +241,8 @@ static void* safe_lwork(const void* key,
 
 static void* safe_lwork_context(const void*  key,
                                 const void*  base,
-                                size_t*      nelp,
-                                size_t       width,
+                                rsize_t*     nelp,
+                                rsize_t      width,
                                 ctxcomparefn compar,
                                 void*        context,
                                 int          addelem,
@@ -237,8 +253,8 @@ static void* safe_lwork_context(const void*  key,
 
 void* safe_lsearch_context_impl(const void*  key,
                                 void*        base,
-                                size_t*      nelp,
-                                size_t       width,
+                                rsize_t*     nelp,
+                                rsize_t      width,
                                 ctxcomparefn compar,
                                 void*        context,
                                 const char*  file,
@@ -252,8 +268,8 @@ void* safe_lsearch_context_impl(const void*  key,
 
 void* safe_lfind_context_impl(const void*  key,
                               const void*  base,
-                              size_t*      nelp,
-                              size_t       width,
+                              rsize_t*     nelp,
+                              rsize_t      width,
                               ctxcomparefn compar,
                               void*        context,
                               const char*  file,
@@ -267,8 +283,8 @@ void* safe_lfind_context_impl(const void*  key,
 
 static void* safe_lwork_context(const void*  key,
                                 const void*  base,
-                                size_t*      nelp,
-                                size_t       width,
+                                rsize_t*     nelp,
+                                rsize_t      width,
                                 ctxcomparefn compar,
                                 void*        context,
                                 int          addelem,
@@ -371,6 +387,22 @@ static void* safe_lwork_context(const void*  key,
         else
         {
             invoke_Constraint_Handler("safe_lsearch_context: width > RSIZE_MAX",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
+        }
+        errno = error;
+        return M_NULLPTR;
+    }
+    else if (width == RSIZE_T_C(0))
+    {
+        error = ERANGE;
+        if (addelem == LWORK_MODE_FIND)
+        {
+            invoke_Constraint_Handler("safe_lfind_context: width == 0",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch_context: width == 0",
                                       set_Env_Info(&envInfo, file, function, expression, line), error);
         }
         errno = error;
