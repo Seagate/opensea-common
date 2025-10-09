@@ -783,8 +783,8 @@ int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formata
     DISABLE_NONNULL_COMPARE
     if (format != M_NULLPTR)
     {
-        char* offsetToSpecifier = strstr(format, "%"); // if there are no formatting specifiers, just
-                                                       // skip all the checks to return zero
+        char* offsetToSpecifier = M_CONST_CAST(char*, strstr(format, "%")); // if there are no formatting specifiers,
+                                                                            // just skip all the checks to return zero
         size_t formatoffset = SIZE_T_C(0);
         if (offsetToSpecifier != M_NULLPTR)
         {

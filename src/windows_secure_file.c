@@ -353,7 +353,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
         {
             return M_NULLPTR;
         }
-#if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_VISTA
+#if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_VISTA && !defined (NO_FILE_ID_INFO)
         if (is_Windows_Vista_Or_Higher()) // This ex function is only available
                                           // on Vista and later OSs according to
                                           // MSFT docs

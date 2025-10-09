@@ -52,7 +52,31 @@ extern "C"
     //! \def COMPARE_FUNC_TYPES
     //! \brief defined when the typedefs for comparfn and ctxcomparefn are available
 #    define COMPARE_FUNC_TYPES
+
+#    if defined(HAVE_CONSTEXPR)
+    constexpr comparefn    nullcompare    = M_NULLPTR;
+    constexpr ctxcomparefn nullctxcompare = M_NULLPTR;
+#        define M_IS_NULL_COMPARE(ptr)    ((ptr) == nullcompare)
+#        define M_IS_NULL_CTXCOMPARE(ptr) ((ptr) == nullctxcompare)
+#    else
+#        define M_IS_NULL_COMPARE(ptr)    (!(ptr))
+#        define M_IS_NULL_CTXCOMPARE(ptr) (!(ptr))
+#    endif
+
 #endif // COMPARE_FUNC_TYPES
+
+#if defined(HAVE_CONSTEXPR)
+    constexpr void* nullalgvoid = M_NULLPTR;
+#    define M_IS_NULL_ALG_VOID(ptr) ((ptr) == nullalgvoid)
+    constexpr const void* nullalgconstvoid = M_NULLPTR;
+#    define M_IS_NULL_ALG_CONST_VOID(ptr) ((ptr) == nullalgconstvoid)
+    constexpr rsize_t* nullalgrsizet = M_NULLPTR;
+#    define M_IS_NULL_ALG_RSIZE_T(ptr) ((ptr) == nullalgrsizet)
+#else
+#    define M_IS_NULL_ALG_VOID(ptr)       (!(ptr))
+#    define M_IS_NULL_ALG_CONST_VOID(ptr) (!(ptr))
+#    define M_IS_NULL_ALG_RSIZE_T(ptr)    (!(ptr))
+#endif
 
     //! \fn errno_t safe_qsort_impl(void* ptr, rsize_t count, rsize_t size, comparefn compare, const char* file, const
     //! char* function, int line, const char* expression)
@@ -74,11 +98,11 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a ptr is a null pointer
+    //! - \a size or \a count > RSIZE_MAX
     //!
-    //! - \a count or \a size is zero
+    //! - \a ptr is a null pointer and \a count > 0
     //!
-    //! - \a compare is a null pointer
+    //! - \a compare is a null pointer and \a count > 0
     M_NONNULL_PARAM_LIST(1, 4)
     M_PARAM_RW(1)
     errno_t safe_qsort_impl(void*       ptr,
@@ -88,7 +112,14 @@ extern "C"
                             const char* file,
                             const char* function,
                             int         line,
-                            const char* expression);
+                            const char* expression)
+        // clang-format off
+        M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_ALG_VOID(ptr), "ptr is NULL and count > 0")
+        M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_COMPARE(compare), "compare function is NULL and count > 0")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(size > RSIZE_MAX, "size > RSIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_qsort_context_impl(void* ptr, rsize_t count, rsize_t size, ctxcomparefn compare, void* context,
     //! const char* file, const char* function, int line, const char* expression)
@@ -111,11 +142,11 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a ptr is a null pointer
+    //! - \a size or \a count > RSIZE_MAX
     //!
-    //! - \a count or \a size is zero
+    //! - \a ptr is a null pointer and \a count > 0
     //!
-    //! - \a compare is a null pointer
+    //! - \a compare is a null pointer and \a count > 0
     M_NONNULL_PARAM_LIST(1, 4)
     M_PARAM_RW(1)
     errno_t safe_qsort_context_impl(void*        ptr,
@@ -126,7 +157,14 @@ extern "C"
                                     const char*  file,
                                     const char*  function,
                                     int          line,
-                                    const char*  expression);
+                                    const char*  expression)
+        // clang-format off
+        M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_ALG_VOID(ptr), "ptr is NULL and count > 0")
+        M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_CTXCOMPARE(compare), "compare function is NULL and count > 0")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(size > RSIZE_MAX, "size > RSIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn void* safe_bsearch_impl(const void* key, const void* ptr, rsize_t count, rsize_t size, comparefn compare,
     //! const char* file, const char* function, int line, const char* expression)
@@ -149,13 +187,13 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a key is a null pointer
+    //! - \a key is a null pointer and \a count > 0
     //!
-    //! - \a ptr is a null pointer
+    //! - \a ptr is a null pointer and \a count > 0
     //!
-    //! - \a count or \a size is zero
+    //! - \a count or \a size is > RSIZE_MAX
     //!
-    //! - \a compare is a null pointer
+    //! - \a compare is a null pointer and \a count > 0
     M_NONNULL_PARAM_LIST(1, 2, 5)
     M_PARAM_RO(1)
     M_PARAM_RO(2)
@@ -167,7 +205,15 @@ extern "C"
                             const char* file,
                             const char* function,
                             int         line,
-                            const char* expression);
+                            const char* expression)
+        // clang-format off
+        M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_ALG_CONST_VOID(ptr), "ptr is NULL and count > 0")
+        M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_COMPARE(compare), "compare function is NULL and count > 0")
+        M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_ALG_CONST_VOID(key), "count > 0 and NULL key")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(size > RSIZE_MAX, "size > RSIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn void* safe_bsearch_context_impl(const void* key, void* ptr, rsize_t count, rsize_t size, ctxcomparefn
     //! compare, void* context, const char* file, const char* function, int line, const char* expression)
@@ -192,13 +238,13 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a key is a null pointer
+    //! - \a key is a null pointer and \a count > 0
     //!
-    //! - \a ptr is a null pointer
+    //! - \a ptr is a null pointer and \a count > 0
     //!
-    //! - \a count or \a size is zero
+    //! - \a count or \a size is > RSIZE_MAX
     //!
-    //! - \a compare is a null pointer
+    //! - \a compare is a null pointer and \a count > 0
     M_NONNULL_PARAM_LIST(1, 2, 5)
     M_PARAM_RO(1)
     M_PARAM_RW(2)
@@ -211,9 +257,17 @@ extern "C"
                                     const char*  file,
                                     const char*  function,
                                     int          line,
-                                    const char*  expression);
+                                    const char*  expression)
+        // clang-format off
+        M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_ALG_CONST_VOID(ptr), "ptr is NULL and count > 0")
+        M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_CTXCOMPARE(compare), "compare function is NULL and count > 0")
+        M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_ALG_CONST_VOID(key), "count > 0 and NULL key")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(size > RSIZE_MAX, "size > RSIZE_MAX")
+        // clang-format on
+        ;
 
-    //! \fn void* safe_lsearch_impl(const void* key, void* base, size_t* nelp, size_t width, comparefn compar, const
+    //! \fn void* safe_lsearch_impl(const void* key, void* base, rsize_t* nelp, rsize_t width, comparefn compar, const
     //! char* file, const char* function, int line, const char* expression)
     //!
     //! \brief Searches an array linearly with bounds checking.
@@ -234,30 +288,44 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a key is a null pointer
-    //!
-    //! - \a base is a null pointer
-    //!
     //! - \a nelp is a null pointer
     //!
-    //! - \a width is zero
+    //! - \a *nelp > RSIZE_T_C(0) && \a base == M_NULLPTR
     //!
-    //! - \a compar is a null pointer
+    //! - \a *nelp > RSIZE_T_C(0) && \a compar == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_T_C(0) && \a key == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_MAX
+    //!
+    //! - \a width > RSIZE_MAX
+    //!
+    //! - \a width == 0
     M_NONNULL_PARAM_LIST(1, 2, 3, 5)
     M_PARAM_RO(1)
     M_PARAM_RW(2)
     M_PARAM_RW(3)
     void* safe_lsearch_impl(const void* key,
                             void*       base,
-                            size_t*     nelp,
-                            size_t      width,
+                            rsize_t*    nelp,
+                            rsize_t     width,
                             comparefn   compar,
                             const char* file,
                             const char* function,
                             int         line,
-                            const char* expression);
+                            const char* expression)
+        // clang-format off
+        M_DIAG_ERROR(M_IS_NULL_ALG_RSIZE_T(nelp), "nelp is NULL")
+        M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_ALG_VOID(base), "nelp > 0 and NULL base")
+        M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_COMPARE(compar), "nelp > 0 and NULL compare function")
+        M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_ALG_CONST_VOID(key), "nelp > 0 and NULL key")
+        M_DIAG_ERROR(*nelp > RSIZE_MAX, "nelp > RSIZE_MAX")
+        M_DIAG_ERROR(width > RSIZE_MAX, "width > RSIZE_MAX")
+        M_DIAG_ERROR(width == SIZE_T_C(0), "width == 0")
+        // clang-format on
+        ;
 
-    //! \fn void* safe_lsearch_context_impl(const void* key, void* base, size_t* nelp, size_t width, ctxcomparefn
+    //! \fn void* safe_lsearch_context_impl(const void* key, void* base, rsize_t* nelp, rsize_t width, ctxcomparefn
     //! compar, void* context, const char* file, const char* function, int line, const char* expression)
     //!
     //! \brief Searches an array linearly with bounds checking and an optional context parameter.
@@ -280,32 +348,46 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a key is a null pointer
-    //!
-    //! - \a base is a null pointer
-    //!
     //! - \a nelp is a null pointer
     //!
-    //! - \a width is zero
+    //! - \a *nelp > RSIZE_T_C(0) && \a base == M_NULLPTR
     //!
-    //! - \a compar is a null pointer
+    //! - \a *nelp > RSIZE_T_C(0) && \a compar == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_T_C(0) && \a key == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_MAX
+    //!
+    //! - \a width > RSIZE_MAX
+    //!
+    //! - \a width == 0
     M_NONNULL_PARAM_LIST(1, 2, 3, 5)
     M_PARAM_RO(1)
     M_PARAM_RW(2)
     M_PARAM_RW(3)
     void* safe_lsearch_context_impl(const void*  key,
                                     void*        base,
-                                    size_t*      nelp,
-                                    size_t       width,
+                                    rsize_t*     nelp,
+                                    rsize_t      width,
                                     ctxcomparefn compar,
                                     void*        context,
                                     const char*  file,
                                     const char*  function,
                                     int          line,
-                                    const char*  expression);
+                                    const char*  expression)
+        // clang-format off
+        M_DIAG_ERROR(M_IS_NULL_ALG_RSIZE_T(nelp), "nelp is NULL")
+        M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_ALG_VOID(base), "nelp > 0 and NULL base")
+        M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_CTXCOMPARE(compar), "nelp > 0 and NULL compare function")
+        M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_ALG_CONST_VOID(key), "nelp > 0 and NULL key")
+        M_DIAG_ERROR(*nelp > RSIZE_MAX, "nelp > RSIZE_MAX")
+        M_DIAG_ERROR(width > RSIZE_MAX, "width > RSIZE_MAX")
+        M_DIAG_ERROR(width == RSIZE_T_C(0), "width == 0")
+        // clang-format on
+        ;
 
-    //! \fn void* safe_lfind_impl(const void* key, const void* base, size_t* nelp, size_t width, comparefn compar, const
-    //! char* file, const char* function, int line, const char* expression)
+    //! \fn void* safe_lfind_impl(const void* key, const void* base, rsize_t* nelp, rsize_t width, comparefn compar,
+    //! const char* file, const char* function, int line, const char* expression)
     //!
     //! \brief Searches an array linearly for an element with bounds checking.
     //!
@@ -325,30 +407,44 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a key is a null pointer
-    //!
-    //! - \a base is a null pointer
-    //!
     //! - \a nelp is a null pointer
     //!
-    //! - \a width is zero
+    //! - \a *nelp > RSIZE_T_C(0) && \a base == M_NULLPTR
     //!
-    //! - \a compar is a null pointer
+    //! - \a *nelp > RSIZE_T_C(0) && \a compar == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_T_C(0) && \a key == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_MAX
+    //!
+    //! - \a width > RSIZE_MAX
+    //!
+    //! - \a width == 0
     M_NONNULL_PARAM_LIST(1, 2, 3, 5)
     M_PARAM_RO(1)
     M_PARAM_RO(2)
     M_PARAM_RW(3)
     void* safe_lfind_impl(const void* key,
                           const void* base,
-                          size_t*     nelp,
-                          size_t      width,
+                          rsize_t*    nelp,
+                          rsize_t     width,
                           comparefn   compar,
                           const char* file,
                           const char* function,
                           int         line,
-                          const char* expression);
+                          const char* expression)
+        // clang-format off
+        M_DIAG_ERROR(M_IS_NULL_ALG_RSIZE_T(nelp), "nelp is NULL")
+        M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_ALG_VOID(base), "nelp > 0 and NULL base")
+        M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_COMPARE(compar), "nelp > 0 and NULL compare function")
+        M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_ALG_CONST_VOID(key), "nelp > 0 and NULL key")
+        M_DIAG_ERROR(*nelp > RSIZE_MAX, "nelp > RSIZE_MAX")
+        M_DIAG_ERROR(width > RSIZE_MAX, "width > RSIZE_MAX")
+        M_DIAG_ERROR(width == SIZE_T_C(0), "width == 0")
+        // clang-format on
+        ;
 
-    //! \fn void* safe_lfind_context_impl(const void* key, const void* base, size_t* nelp, size_t width, ctxcomparefn
+    //! \fn void* safe_lfind_context_impl(const void* key, const void* base, rsize_t* nelp, rsize_t width, ctxcomparefn
     //! compar, void* context, const char* file, const char* function, int line, const char* expression)
     //!
     //! \brief Searches an array linearly for an element with bounds checking and an optional context parameter.
@@ -371,29 +467,43 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a key is a null pointer
-    //!
-    //! - \a base is a null pointer
-    //!
     //! - \a nelp is a null pointer
     //!
-    //! - \a width is zero
+    //! - \a *nelp > RSIZE_T_C(0) && \a base == M_NULLPTR
     //!
-    //! - \a compar is a null pointer
+    //! - \a *nelp > RSIZE_T_C(0) && \a compar == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_T_C(0) && \a key == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_MAX
+    //!
+    //! - \a width > RSIZE_MAX
+    //!
+    //! - \a width == 0
     M_NONNULL_PARAM_LIST(1, 2, 3, 5)
     M_PARAM_RO(1)
     M_PARAM_RO(2)
     M_PARAM_RW(3)
     void* safe_lfind_context_impl(const void*  key,
                                   const void*  base,
-                                  size_t*      nelp,
-                                  size_t       width,
+                                  rsize_t*     nelp,
+                                  rsize_t      width,
                                   ctxcomparefn compar,
                                   void*        context,
                                   const char*  file,
                                   const char*  function,
                                   int          line,
-                                  const char*  expression);
+                                  const char*  expression)
+        // clang-format off
+        M_DIAG_ERROR(M_IS_NULL_ALG_RSIZE_T(nelp), "nelp is NULL")
+        M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_ALG_VOID(base), "nelp > 0 and NULL base")
+        M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_CTXCOMPARE(compar), "nelp > 0 and NULL compare function")
+        M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_ALG_CONST_VOID(key), "nelp > 0 and NULL key")
+        M_DIAG_ERROR(*nelp > RSIZE_MAX, "nelp > RSIZE_MAX")
+        M_DIAG_ERROR(width > RSIZE_MAX, "width > RSIZE_MAX")
+        M_DIAG_ERROR(width == SIZE_T_C(0), "width == 0")
+        // clang-format on
+        ;
 
 #if defined(__cplusplus)
 }

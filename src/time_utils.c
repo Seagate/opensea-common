@@ -566,7 +566,7 @@ struct tm* impl_safe_gmtime(const time_t* M_RESTRICT timer,
     }
     else
     {
-#if (defined(POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined(USING_C23)
+#if (defined(POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined(HAVE_GMTIME_R)
         // POSIX or C2x (C23 right now) have gmtime_r to use
         return gmtime_r(timer, buf);
 #elif defined(HAVE_C11_ANNEX_K) || (defined(HAVE_MSFT_SECURE_LIB) && defined(_CRT_USE_CONFORMING_ANNEX_K_TIME) &&      \
@@ -617,7 +617,7 @@ struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
     }
     else
     {
-#if (defined(POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined(USING_C23)
+#if (defined(POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined(HAVE_LOCALTIME_R)
         // POSIX or C2x (C23 right now) have localtime_r to use
         return localtime_r(timer, buf);
 #elif defined(HAVE_C11_ANNEX_K) || (defined(HAVE_MSFT_SECURE_LIB) && defined(_CRT_USE_CONFORMING_ANNEX_K_TIME) &&      \

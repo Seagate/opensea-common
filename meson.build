@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-project('opensea-common', 'c', license: 'MPL-2.0', version: '6.0.3', default_options : ['warning_level=2'])
+project('opensea-common', 'c', license: 'MPL-2.0', version: '6.0.4', default_options : ['warning_level=2'])
 
 c = meson.get_compiler('c')
 
@@ -98,6 +98,8 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
   '-Wreturn-type',
   '-Wpointer-bool-conversion',
   '-fvisibility=hidden', #to work similarly to Window's DLL import/export
+  '-Wmismatched-dealloc',
+  '-Wfree-nonheap-object',
   ]
 
   if c.get_id().contains('gcc') and c.version().version_compare('>=10.0')
@@ -145,12 +147,15 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
     '-Wl,-z,now'
   ]
 
+  #test if setting _FORTIFY_SOURCE higher than default generates a warning
+  #this issue showed up on Rocky Linux 8 and we don't want to generate extra noise
+  #due to trying to follow openssf best practices
   fortifytest = ''' #include <stdio.h>
                       int main() {
                           return 0;
                       }
                   '''
-  fortifyresult = c.compiles(fortifytest, name : '_FORTIFY_OVERRIDE', args : ['-U_FORTIFY_SOURCE', '-D_FORTIFY_SOURCE=5', '-Werror'])
+  fortifyresult = c.compiles(fortifytest, name : 'Set _FORTIFY_SOURCE to highest possible level without warnings', args : ['-U_FORTIFY_SOURCE', '-D_FORTIFY_SOURCE=5', '-Werror'])
   if fortifyresult == true
     warning_flags += ['-U_FORTIFY_SOURCE', '-D_FORTIFY_SOURCE=3']
   endif
@@ -324,16 +329,109 @@ elif c.has_function('SecureZeroMemory', prefix : '#include <windows.h>')
   global_cpp_args += ['-DHAVE_MSFT_SECURE_ZERO_MEMORY', '-DNO_HAVE_MSFT_SECURE_ZERO_MEMORY2']
 endif
 
-if c.has_header_symbol('stddef.h', '_Generic')
+if c.has_function('gmtime_r', prefix : '#include <time.h>')
+  global_cpp_args += ['-DHAVE_GMTIME_R']
+endif
+
+if c.has_function('gmtime_s', prefix : '#define __STDC_WANT_LIB_EXT1__ 1\n#include <time.h>\n')
+  global_cpp_args += ['-DHAVE_GMTIME_S']
+endif 
+
+if c.has_function('localtime_r', prefix : '#include <time.h>')
+  global_cpp_args += ['-DHAVE_LOCALTIME_R']
+endif
+
+if c.has_function('localtime_s', prefix : '#define __STDC_WANT_LIB_EXT1__ 1\n#include <time.h>\n')
+  global_cpp_args += ['-DHAVE_LOCALTIME_S']
+endif 
+
+if c.has_function('getdelim', prefix : '#include <stdio.h>')
+  global_cpp_args += ['-DHAVE_GETDELIM']
+endif
+
+if c.has_function('getline', prefix : '#include <stdio.h>')
+  global_cpp_args += ['-DHAVE_GETLINE']
+endif
+
+# Test support for _Generic keyword. May not be available in some cases.
+gernericSelectionTest = ''' 
+                      long add_long(long x, long y)
+                      {
+                        return x + y;
+                      }
+                      int add_int(int x, int y)
+                      {
+                        return x + y;
+                      }
+                      short add_short(short x, short y)
+                      {
+                        return x + y;
+                      }
+                      char add_char(char x, char y)
+                      {
+                        return x + y;
+                      }
+                      #    define add(x, y)                                                           \
+                      _Generic((x),                                                                   \
+                        long:  add_long,                                                              \
+                        int:   add_int,                                                               \
+                        short: add_short,                                                             \
+                        char:  add_char)                                                              \
+                        (x, y)
+                      int main() {
+                          long lx = 890,   ly = 9741;
+                          int ix = 23,     iy = 72354;
+                          short sx = 2324, sy = 634;
+                          char cx = 12,    cy = 2;
+
+                          long lr  = add(lx, ly);
+                          int ir   = add(ix, iy);
+                          short sr = add(sx, sy);
+                          char cr  = add(cx, cy);
+                          (void)lr;
+                          (void)ir;
+                          (void)sr;
+                          (void)cr;
+                          return 0;
+                      }
+                  '''
+genericargs = []
+if c.get_id().contains('msvc') and c.has_argument('/std:c17')
+  genericargs += '/std:c17'
+endif
+genericSelectionTestResult = c.compiles(gernericSelectionTest, name : 'Generic Selection Support', args : genericargs)
+if genericSelectionTestResult == true
   global_cpp_args += ['-DHAVE_C11_GENERIC_SELECTION']
 endif
 
+constexprTest = ''' int main (void) { constexpr int i = 50; int j = 0; return j / i; }'''
+constexprTestResult = c.compiles(constexprTest, name : 'Constexpr Support')
+if constexprTestResult == true
+  global_cpp_args += ['-DHAVE_CONSTEXPR']
+endif
 
-#test if setting _FORTIFY_SOURCE higher than default generates a warning
-#this issue showed up on Rocky Linux 8 and we don't want to generate extra noise
-#due to trying to follow openssf best practices
-if target_machine.system() != 'windows'
-    
+
+# Test support for __has_c_attribute for namespaced attribtues (compiler unique)
+# Some compilers do not support this properly and throw errors about using the : symbol
+# MSVC does not like this and Clang 16.0.6 in openBSD also complains.
+attributeTest = ''' #include <stdio.h>
+                      #if defined (__has_c_attribute)
+                      #    if __has_c_attribute(clang::unused)
+                      #        define HAS_CLANG_UNUSED
+                      #    elif __has_c_attribute(gnu::unused)
+                      #        define HAS_GCC_UNUSED
+                      #    endif
+                      #endif
+                      int main() {
+                          return 0;
+                      }
+                  '''
+attributeTestResult = c.compiles(attributeTest, name : '__has_c_attribute for compiler specific attributes')
+if attributeTestResult == false
+  global_cpp_args += ['-DNO_COMPILER_UNIQUE_C_ATTRIBUTES']
+  if not c.get_id().contains('msvc')
+    global_cpp_args += ['-DFORCE_GNU_STYLE_ATTRIBUTES']
+  endif
 endif
 
 #check which version of strerror_r is available, posix or GNU
@@ -352,6 +450,22 @@ if c.has_function('strerror_r', prefix : '#include <string.h>')
   endif
 endif
 
+# 64bit off_t
+if c.has_type('off_t', prefix: '#include <sys/types.h>')
+  if c.sizeof('off_t', prefix: '#include <sys/types.h>') < 8
+    global_cpp_args += ['-D_FILE_OFFSET_BITS=64']
+  endif
+endif
+
+# Check if time_t is 64-bit. If not, try getting 64bit time_t
+if c.sizeof('time_t', prefix: '#include <time.h>') < 8
+  if c.sizeof('time_t', prefix: '#define _TIME_BITS 64\n#include <time.h>') >= 8
+    global_cpp_args += ['-D_TIME_BITS=64']
+  else
+    error('64bit time_t is required for this project')
+  endif
+endif
+
 if target_machine.system() == 'windows'
   src_files += ['src/windows_env_detect.c', 'src/windows_secure_file.c', 'src/windows_version_detect.c']
   if c.get_define('__MINGW32__') != ''
@@ -364,6 +478,10 @@ if target_machine.system() == 'windows'
     global_cpp_args += ['-DHAVE_NTIFS']
   endif
   global_cpp_args += ['-D_CRT_NONSTDC_NO_DEPRECATE', '-D_CRT_SECURE_NO_WARNINGS']
+  # Need to define this if not present for mingw64
+  if not c.has_type('FILE_ID_INFO', prefix : '#include <WinBase.h>')
+    global_cpp_args += ['-DNO_FILE_ID_INFO']
+  endif
 else
   # assuming POSIX if not windows for now.
   src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']

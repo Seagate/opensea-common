@@ -401,7 +401,8 @@ extern "C"
     //!
     //! \param[in] compilerVersionInfo Pointer to the compilerVersion struct that holds the compiler version
     //! information.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1) void print_Compiler_Version_Info(ptrCompilerVersion compilerVersionInfo);
+    M_NONNULL_PARAM_LIST(1)
+    M_PARAM_RO(1) void print_Compiler_Version_Info(const ptrCompilerVersion compilerVersionInfo);
 
     //! \brief Checks if the process is currently running with elevated permissions.
     //!
