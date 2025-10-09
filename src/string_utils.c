@@ -504,7 +504,7 @@ errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
         // many cases as standard which is why it's down here.-TJE
         error = strncpy_s(dest, destsz, src, count);
 #else
-        error = safe_memccpy(dest, destsz, src, '\0', count);
+        error        = safe_memccpy(dest, destsz, src, '\0', count);
         if (srclen < count)
         {
             dest[srclen] = '\0'; // ensuring NULL termination
@@ -1173,6 +1173,84 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
     size_t end = stringlen;
     while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
            safe_isspace(stringToChange[end - SIZE_T_C(1)]))
+    {
+        end--;
+    }
+
+    // Calculate new length after removing whitespace
+    size_t newlen = end - start;
+
+    // If there's leading whitespace, shift the string to the start
+    if (start > SIZE_T_C(0))
+    {
+        safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
+    }
+
+    // Null-terminate the string after the last non-whitespace character
+    stringToChange[newlen] = '\0';
+}
+
+void remove_Leading_And_Trailing_Control_Char(char* stringToChange)
+{
+    DISABLE_NONNULL_COMPARE
+    if (stringToChange == M_NULLPTR)
+    {
+        return;
+    }
+    RESTORE_NONNULL_COMPARE
+    size_t stringlen = safe_strlen(stringToChange);
+    if (stringlen == SIZE_T_C(0))
+    {
+        return;
+    }
+
+    // Remove leading whitespace (calculate for memmove later)
+    size_t start = SIZE_T_C(0);
+    while (start < stringlen && safe_isascii(stringToChange[start]) && safe_iscntrl(stringToChange[start]))
+    {
+        start++;
+    }
+
+    // Remove trailing whitespace
+    size_t end = stringlen;
+    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
+           safe_iscntrl(stringToChange[end - SIZE_T_C(1)]))
+    {
+        end--;
+    }
+
+    // Calculate new length after removing whitespace
+    size_t newlen = end - start;
+
+    // If there's leading whitespace, shift the string to the start
+    if (start > SIZE_T_C(0))
+    {
+        safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
+    }
+
+    // Null-terminate the string after the last non-whitespace character
+    stringToChange[newlen] = '\0';
+}
+
+void remove_Leading_And_Trailing_Control_Char_Len(char* stringToChange, size_t stringlen)
+{
+    DISABLE_NONNULL_COMPARE
+    if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
+    {
+        return;
+    }
+    RESTORE_NONNULL_COMPARE
+    // Remove leading whitespace (calculate for memmove later)
+    size_t start = SIZE_T_C(0);
+    while (start < stringlen && safe_isascii(stringToChange[start]) && safe_iscntrl(stringToChange[start]))
+    {
+        start++;
+    }
+
+    // Remove trailing whitespace
+    size_t end = stringlen;
+    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
+           safe_iscntrl(stringToChange[end - SIZE_T_C(1)]))
     {
         end--;
     }

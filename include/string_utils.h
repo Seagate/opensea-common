@@ -905,6 +905,21 @@ extern "C"
     M_NONNULL_PARAM_LIST(1)
     M_PARAM_RW_SIZE(1, 2) void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen);
 
+    //! \fn void remove_Leading_And_Trailing_Control_Char(char* stringToChange)
+    //! \brief remove the control char at the beginning and end of a string
+    //! \param[out] stringToChange a pointer to the data containing a string
+    //! that needs to have the beginning and trailing control char removed. Must be NULL terminated
+    M_NONNULL_PARAM_LIST(1)
+    M_PARAM_RW(1) M_NULL_TERM_STRING(1) void remove_Leading_And_Trailing_Control_Char(char* stringToChange);
+
+    //! \fn void remove_Leading_And_Trailing_Control_Char_Len(char* stringToChange, size_t stringlen)
+    //! \brief remove the control char at the beginning and end of a string of a specified length
+    //! \param[out] stringToChange a pointer to the data containing a string
+    //! that needs to have the beginning and trailing control char removed
+    //! \param[in] stringlen total length of the string pointed to by \a stringToChange
+    M_NONNULL_PARAM_LIST(1)
+    M_PARAM_RW_SIZE(1, 2) void remove_Leading_And_Trailing_Control_Char_Len(char* stringToChange, size_t stringlen);
+
     //! \fn void convert_String_To_Upper_Case(char* stringToChange)
     //! \brief Converts entire string to UPPER CASE
     //! \param[out] stringToChange a pointer to the data containing a string
