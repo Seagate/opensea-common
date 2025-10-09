@@ -136,7 +136,7 @@ void* safe_bsearch_context_impl(const void*  key,
     }
     else
     {
-        const char* base = ptr;
+        const char* base = M_REINTERPRET_CAST(const char*, ptr);
         const void* p    = M_NULLPTR;
         errno            = 0;
 

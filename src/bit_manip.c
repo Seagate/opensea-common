@@ -148,6 +148,7 @@ static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
                                                                                      // since UINT8_C() does not apply U
         out.issigned = input.issigned;
     }
+    M_USE_UNUSED(outputsize);
     return out;
 }
 

@@ -506,7 +506,7 @@ void print_Compiler(eCompiler compilerUsed)
     }
 }
 
-void print_Compiler_Version_Info(ptrCompilerVersion compilerVersionInfo)
+void print_Compiler_Version_Info(const ptrCompilerVersion compilerVersionInfo)
 {
     printf("%" PRIu16 ".%" PRIu16 ".%" PRIu16 "", compilerVersionInfo->major, compilerVersionInfo->minor,
            compilerVersionInfo->patch);

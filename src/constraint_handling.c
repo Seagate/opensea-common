@@ -84,6 +84,9 @@ void safe_ignore_handler(M_ATTR_UNUSED const char* M_RESTRICT msg,
                          M_ATTR_UNUSED void* M_RESTRICT       ptr,
                          M_ATTR_UNUSED errno_t                error)
 {
+    M_USE_UNUSED(msg);
+    M_USE_UNUSED(ptr);
+    M_USE_UNUSED(error);
     return; // NOLINT(readability-redundant-control-flow)
 }
 
