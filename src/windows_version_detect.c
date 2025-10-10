@@ -42,13 +42,13 @@ typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(POSVERSIONINFOEXW);
 
 eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
 {
-    eReturnValues ret                  = SUCCESS;
+    eReturnValues ret                  = M_ACCESS_ENUM(eReturnValues, SUCCESS);
     static DWORD  winMajor             = DWORD_C(0);
     static DWORD  winMinor             = DWORD_C(0);
     static DWORD  winBuild             = DWORD_C(0);
     static bool   readVersionFromNTDLL = false;
     safe_memset(versionNumber, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
-    versionNumber->osVersioningIdentifier = OS_WINDOWS;
+    versionNumber->osVersioningIdentifier = M_ACCESS_ENUM(eOSType, OS_WINDOWS);
 
     if (!readVersionFromNTDLL)
     {
@@ -58,7 +58,7 @@ eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
 
         if (systemPath == M_NULLPTR)
         {
-            return MEMORY_FAILURE;
+            return M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE);
         }
 
         UINT directoryStringLength = GetSystemDirectory(systemPathBuf, OPENSEA_PATH_MAX);
@@ -68,20 +68,20 @@ eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
             // error
             safe_free_tchar(&systemPathBuf);
             systemPath = M_NULLPTR;
-            return FAILURE;
+            return M_ACCESS_ENUM(eReturnValues, FAILURE);
         }
         // I'm using this Microsoft provided call to concatenate strings since
         // it will concatenate properly for ansi or wide strings depending on
         // whether UNICODE is set or not - TJE
         if (S_OK != StringCchCat(systemPathBuf, OPENSEA_PATH_MAX, ntdll))
         {
-            return FAILURE;
+            return M_ACCESS_ENUM(eReturnValues, FAILURE);
         }
 
-        HMODULE hMod = INVALID_HANDLE_VALUE;
+        HMODULE hMod = M_NULLPTR;
         if (MSFT_BOOL_TRUE(GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, systemPathBuf, &hMod)))
         {
-            if (hMod != INVALID_HANDLE_VALUE)
+            if (hMod != M_NULLPTR)
             {
                 RtlGetVersionPtr rtlgetverptr =
                     C_CAST(RtlGetVersionPtr, C_CAST(void*, GetProcAddress(hMod, "RtlGetVersion")));
@@ -100,18 +100,18 @@ eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
                         winMajor                                               = osInfo.dwMajorVersion;
                         winMinor                                               = osInfo.dwMinorVersion;
                         winBuild                                               = osInfo.dwBuildNumber;
-                        ret                                                    = SUCCESS;
+                        ret                                                    = M_ACCESS_ENUM(eReturnValues, SUCCESS);
                         readVersionFromNTDLL                                   = true;
                     }
                 }
                 else
                 {
-                    ret = FAILURE;
+                    ret = M_ACCESS_ENUM(eReturnValues, FAILURE);
                 }
             }
             else
             {
-                ret = FAILURE;
+                ret = M_ACCESS_ENUM(eReturnValues, FAILURE);
             }
         }
         safe_free_tchar(&systemPathBuf);

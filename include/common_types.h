@@ -55,8 +55,9 @@
 //! \def _FILE_OFFSET_BITS
 //! \brief Enables large file support on 32-bit systems.
 //!
-//! This macro is defined to allow reading larger files on 32-bit operating systems without limitations. It sets the
-//! file offset bits to 64. \note If _FILE_OFFSET_BITS is already defined and is less than 64, it is redefined to 64.
+//! This macro is defined to allow reading larger files on 32-bit operating systems without limitations. 
+//! It sets the file offset bits to 64. 
+//! \note If _FILE_OFFSET_BITS is already defined and is less than 64, it is redefined to 64.
 #if !defined(_FILE_OFFSET_BITS)
 #    define _FILE_OFFSET_BITS 64
 #elif _FILE_OFFSET_BITS < 64

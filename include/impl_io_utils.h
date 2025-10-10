@@ -19,12 +19,67 @@
 
 #include "code_attributes.h"
 #include "common_types.h"
+#include "type_conversion.h"
 
 #include <stdio.h>
 
 #if defined(__cplusplus)
 extern "C"
 {
+#endif
+
+// Methods to detect errors at compile time for clang with diagnose_if attributes.
+// This is not perfect, but having constexpr is far more helpful and truthful for these comparisons
+// than the workaround. diagnose_if does not allow casts of any kinds so trying to compare directly
+// to a NULL or M_NULLPTR is not allowed. !ptr is allowed, but may not work in some systems/libraries
+// so using the constexpr is preferred since it is a more direct match for the error condition in all
+// scenarios. - TJE
+
+// Note: This can only be checked like this in both C23 with constexpr and without C23 due to the restrict qualifiers
+// used on this type of check.
+#define M_NULL_OUTSTREAM_CHECK(ptr) (!(ptr))
+
+#if defined(HAVE_CONSTEXPR)
+    constexpr FILE*               nullstreamptr   = M_NULLPTR;
+    constexpr char*               nulliochar      = M_NULLPTR;
+    constexpr const char*         nullioconstchar = M_NULLPTR;
+    constexpr int*                nullint         = M_NULLPTR;
+    constexpr long*               nulllong        = M_NULLPTR;
+    constexpr long long*          nulllonglong    = M_NULLPTR;
+    constexpr unsigned long*      nullulong       = M_NULLPTR;
+    constexpr unsigned long long* nullulonglong   = M_NULLPTR;
+    constexpr intmax_t*           nullintmax      = M_NULLPTR;
+    constexpr uintmax_t*          nulluintmax     = M_NULLPTR;
+    constexpr float*              nullfloat       = M_NULLPTR;
+    constexpr double*             nulldouble      = M_NULLPTR;
+    constexpr long double*        nullldouble     = M_NULLPTR;
+#    define M_NULL_STREAM_CHECK(ptr)        ((ptr) == nullstreamptr)
+#    define M_NULL_IO_CHAR_CHECK(ptr)       ((ptr) == nulliochar)
+#    define M_NULL_IO_CONST_CHAR_CHECK(ptr) ((ptr) == nullioconstchar)
+#    define M_NULL_IO_INT_CHECK(ptr)        ((ptr) == nullint)
+#    define M_NULL_IO_LONG_CHECK(ptr)       ((ptr) == nulllong)
+#    define M_NULL_IO_LONGLONG_CHECK(ptr)   ((ptr) == nulllonglong)
+#    define M_NULL_IO_ULONG_CHECK(ptr)      ((ptr) == nullulong)
+#    define M_NULL_IO_ULONGLONG_CHECK(ptr)  ((ptr) == nullulonglong)
+#    define M_NULL_IO_INTMAX_CHECK(ptr)     ((ptr) == nullintmax)
+#    define M_NULL_IO_UINTMAX_CHECK(ptr)    ((ptr) == nulluintmax)
+#    define M_NULL_IO_FLOAT_CHECK(ptr)      ((ptr) == nullfloat)
+#    define M_NULL_IO_DOUBLE_CHECK(ptr)     ((ptr) == nulldouble)
+#    define M_NULL_IO_LDOUBLE_CHECK(ptr)    ((ptr) == nullldouble)
+#else
+#    define M_NULL_STREAM_CHECK(ptr)        (!(ptr))
+#    define M_NULL_IO_CHAR_CHECK(ptr)       (!(ptr))
+#    define M_NULL_IO_CONST_CHAR_CHECK(ptr) (!(ptr))
+#    define M_NULL_IO_INT_CHECK(ptr)        (!(ptr))
+#    define M_NULL_IO_LONG_CHECK(ptr)       (!(ptr))
+#    define M_NULL_IO_LONGLONG_CHECK(ptr)   (!(ptr))
+#    define M_NULL_IO_ULONG_CHECK(ptr)      (!(ptr))
+#    define M_NULL_IO_ULONGLONG_CHECK(ptr)  (!(ptr))
+#    define M_NULL_IO_INTMAX_CHECK(ptr)     (!(ptr))
+#    define M_NULL_IO_UINTMAX_CHECK(ptr)    (!(ptr))
+#    define M_NULL_IO_FLOAT_CHECK(ptr)      (!(ptr))
+#    define M_NULL_IO_DOUBLE_CHECK(ptr)     (!(ptr))
+#    define M_NULL_IO_LDOUBLE_CHECK(ptr)    (!(ptr))
 #endif
 
     //! \fn errno_t safe_fopen_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
@@ -65,7 +120,13 @@ extern "C"
                             const char*                  file,
                             const char*                  function,
                             int                          line,
-                            const char*                  expression);
+                            const char*                  expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_OUTSTREAM_CHECK(streamptr), "streamptr is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(filename), "filename is NULL") 
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(mode), "mode is NULL")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
     //!                               const char* M_RESTRICT       filename,
@@ -109,9 +170,24 @@ extern "C"
                               const char*                  file,
                               const char*                  function,
                               int                          line,
-                              const char*                  expression);
+                              const char*                  expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_OUTSTREAM_CHECK(newstreamptr), "newstreamptr is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(filename), "filename is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(mode), "mode is NULL")
+        M_DIAG_ERROR(M_NULL_STREAM_CHECK(stream), "stream is NULL")
+        // clang-format on
+        ;
 
 #if defined(WANT_SAFE_TMPNAM)
+
+#    if !defined(TMP_MAX_S)
+#        define TMP_MAX_S TMP_MAX
+#    endif
+#    if !defined(L_tmpnam_s)
+#        define L_tmpnam_s L_tmpnam
+#    endif
+
     //! \fn errno_t safe_tmpnam_impl(char*       filename_s,
     //!                              rsize_t     maxsize,
     //!                              const char* file,
@@ -144,7 +220,13 @@ extern "C"
                              const char* file,
                              const char* function,
                              int         line,
-                             const char* expression);
+                             const char* expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_CHAR_CHECK(filename_s), "filename_s is NULL")
+        M_DIAG_ERROR(maxsize > RSIZE_MAX, "maxsize > RSIZE_MAX")
+        M_DIAG_WARNING(maxsize < L_tmpnam_s, "maxsize < L_tmpname_s which may cause a failure in this function")
+        // clang-format on
+        ;
 #endif // WANT_SAFE_TMPNAM
 
     //! \fn errno_t safe_tmpfile_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
@@ -171,7 +253,11 @@ extern "C"
                               const char*                  file,
                               const char*                  function,
                               int                          line,
-                              const char*                  expression);
+                              const char*                  expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_OUTSTREAM_CHECK(streamptr), "streamptr is NULL")
+        // clang-format on
+        ;
 
     //! \fn char* safe_gets_impl(char*       str,
     //!                          rsize_t     n,
@@ -201,12 +287,13 @@ extern "C"
     //! - endline or eof not encountered after storing `n - 1` characters to the buffer
     M_NONNULL_PARAM_LIST(1)
     M_PARAM_RW_SIZE(1, 2)
-    char* safe_gets_impl(char*       str,
-                         rsize_t     n,
-                         const char* file,
-                         const char* function,
-                         int         line,
-                         const char* expression);
+    char* safe_gets_impl(char* str, rsize_t n, const char* file, const char* function, int line, const char* expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_CHAR_CHECK(str), "str is NULL") 
+        M_DIAG_ERROR(n == 0, "n is zero")
+        M_DIAG_ERROR(n > RSIZE_MAX, "n > RSIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strtol_impl(long*                  value,
     //!                              const char* M_RESTRICT str,
@@ -247,7 +334,13 @@ extern "C"
                              const char*            file,
                              const char*            function,
                              int                    line,
-                             const char*            expression);
+                             const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_LONG_CHECK(value), "value is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
+        M_DIAG_ERROR(base > 36, "base > 36")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strtoll_impl(long long*             value,
     //!                               const char* M_RESTRICT str,
@@ -289,7 +382,13 @@ extern "C"
                               const char*            file,
                               const char*            function,
                               int                    line,
-                              const char*            expression);
+                              const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_LONGLONG_CHECK(value), "value is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
+        M_DIAG_ERROR(base > 36, "base > 36")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strtoul_impl(unsigned long*         value,
     //!                               const char* M_RESTRICT str,
@@ -331,7 +430,13 @@ extern "C"
                               const char*            file,
                               const char*            function,
                               int                    line,
-                              const char*            expression);
+                              const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_ULONG_CHECK(value), "value is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
+        M_DIAG_ERROR(base > 36, "base > 36")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strtoull_impl(unsigned long long*    value,
     //!                                const char* M_RESTRICT str,
@@ -373,7 +478,13 @@ extern "C"
                                const char*            file,
                                const char*            function,
                                int                    line,
-                               const char*            expression);
+                               const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_ULONGLONG_CHECK(value), "value is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
+        M_DIAG_ERROR(base > 36, "base > 36")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strtoimax_impl(intmax_t*              value,
     //!                                 const char* M_RESTRICT str,
@@ -415,7 +526,13 @@ extern "C"
                                 const char*            file,
                                 const char*            function,
                                 int                    line,
-                                const char*            expression);
+                                const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_INTMAX_CHECK(value), "value is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
+        M_DIAG_ERROR(base > 36, "base > 36")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strtoumax_impl(uintmax_t*             value,
     //!                                 const char* M_RESTRICT str,
@@ -457,7 +574,13 @@ extern "C"
                                 const char*            file,
                                 const char*            function,
                                 int                    line,
-                                const char*            expression);
+                                const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_UINTMAX_CHECK(value), "value is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
+        M_DIAG_ERROR(base > 36, "base > 36")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strtof_impl(float*                 value,
     //!                              const char* M_RESTRICT str,
@@ -493,7 +616,12 @@ extern "C"
                              const char*            file,
                              const char*            function,
                              int                    line,
-                             const char*            expression);
+                             const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_FLOAT_CHECK(value), "value is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strtod_impl(double*                value,
     //!                              const char* M_RESTRICT str,
@@ -529,7 +657,12 @@ extern "C"
                              const char*            file,
                              const char*            function,
                              int                    line,
-                             const char*            expression);
+                             const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_DOUBLE_CHECK(value), "value is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strtold_impl(long double*           value,
     //!                               const char* M_RESTRICT str,
@@ -566,7 +699,12 @@ extern "C"
                               const char*            file,
                               const char*            function,
                               int                    line,
-                              const char*            expression);
+                              const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_LDOUBLE_CHECK(value), "value is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_atoi_impl(int*                   value,
     //!                            const char* M_RESTRICT str,
@@ -604,7 +742,12 @@ extern "C"
                            const char*            file,
                            const char*            function,
                            int                    line,
-                           const char*            expression);
+                           const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_INT_CHECK(value), "value is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_atol_impl(long*                  value,
     //!                            const char* M_RESTRICT str,
@@ -642,7 +785,12 @@ extern "C"
                            const char*            file,
                            const char*            function,
                            int                    line,
-                           const char*            expression);
+                           const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_LONG_CHECK(value), "value is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_atoll_impl(long long*             value,
     //!                             const char* M_RESTRICT str,
@@ -680,7 +828,12 @@ extern "C"
                             const char*            file,
                             const char*            function,
                             int                    line,
-                            const char*            expression);
+                            const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_LONGLONG_CHECK(value), "value is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_atof_impl(double*                value,
     //!                            const char* M_RESTRICT str,
@@ -718,7 +871,12 @@ extern "C"
                            const char*            file,
                            const char*            function,
                            int                    line,
-                           const char*            expression);
+                           const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_DOUBLE_CHECK(value), "value is NULL")
+        M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
+        // clang-format on
+        ;
 
     //! \fn FUNC_ATTR_PRINTF(3, 4) int impl_snprintf_err_handle(const char* file,
     //!                                                         const char* function,
@@ -757,7 +915,12 @@ extern "C"
                                  char*       buf,
                                  size_t      bufsize,
                                  const char* format,
-                                 ...);
+                                 ...)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_CHAR_CHECK(buf) && bufsize != 0, "buf is NULL and bufsize != 0")
+        M_DIAG_ERROR(!M_NULL_IO_CHAR_CHECK(buf) && (bufsize == 0 || bufsize > RSIZE_MAX), "bufsize is out of range (1-RSIZE_MAX allowed)")
+        // clang-format on
+        ;
 
 #if defined(__cplusplus)
 }

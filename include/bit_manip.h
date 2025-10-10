@@ -92,7 +92,7 @@ extern "C"
 //! \param l The 64-bit integer from which to extract the upper 32 bits.
 #define M_DoubleWordInt1(l) (M_STATIC_CAST(int32_t, (((l) & UINT64_C(0xFFFFFFFF00000000)) >> 32)))
 
-#if defined(HAVE_C11_GENERIC_SELECTION)
+#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
     //! \fn get_Word0_uint64(uint64_t value)
     //! \brief Extracts the lowest 16 bits from a 64-bit integer and casts it to uint16_t.
     //! \param value The 64-bit integer from which to extract the lowest 16 bits.

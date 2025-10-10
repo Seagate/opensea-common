@@ -302,11 +302,11 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
 {
     if (foregroundBackground)
     {
-        set_Console_Foreground_Background_Colors(consoleColor, CONSOLE_COLOR_CURRENT);
+        set_Console_Foreground_Background_Colors(consoleColor, M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_CURRENT));
     }
     else
     {
-        set_Console_Foreground_Background_Colors(CONSOLE_COLOR_CURRENT, consoleColor);
+        set_Console_Foreground_Background_Colors(M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_CURRENT), consoleColor);
     }
 }
 
@@ -326,123 +326,123 @@ void set_Console_Foreground_Background_Colors(eConsoleColors foregroundColor, eC
     theColor = get_Console_Current_Color(); // get current colors after defaults
                                             // are setup.
     // now change what is requested
-    if (foregroundColor != CONSOLE_COLOR_CURRENT)
+    if (foregroundColor != M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_CURRENT))
     {
         // clear out foreground bits, then set the requested color
         theColor &= 0xFFF0; // foreground are lowest 4 bits
         switch (foregroundColor)
         {
-        case CONSOLE_COLOR_BLUE:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BLUE):
             theColor |= FOREGROUND_BLUE;
             break;
-        case CONSOLE_COLOR_BRIGHT_BLUE:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BRIGHT_BLUE):
             theColor |= FOREGROUND_BLUE | FOREGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_GREEN:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_GREEN):
             theColor |= FOREGROUND_GREEN;
             break;
-        case CONSOLE_COLOR_BRIGHT_GREEN:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BRIGHT_GREEN):
             theColor |= FOREGROUND_GREEN | FOREGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_RED:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_RED):
             theColor |= FOREGROUND_RED;
             break;
-        case CONSOLE_COLOR_BRIGHT_RED:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BRIGHT_RED):
             theColor |= FOREGROUND_RED | FOREGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_BLACK:
-            theColor |= 0; // this should mean no colors or black
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BLACK):
+            theColor |= WORD_C(0); // this should mean no colors or black
             break;
-        case CONSOLE_COLOR_YELLOW:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_YELLOW):
             theColor |= FOREGROUND_RED | FOREGROUND_GREEN;
             break;
-        case CONSOLE_COLOR_BRIGHT_YELLOW:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BRIGHT_YELLOW):
             theColor |= FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_CYAN:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_CYAN):
             theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN;
             break;
-        case CONSOLE_COLOR_BRIGHT_CYAN:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BRIGHT_CYAN):
             theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_MAGENTA:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_MAGENTA):
             theColor |= FOREGROUND_BLUE | FOREGROUND_RED;
             break;
-        case CONSOLE_COLOR_BRIGHT_MAGENTA:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BRIGHT_MAGENTA):
             theColor |= FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_BRIGHT_WHITE:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BRIGHT_WHITE):
             theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_GRAY:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_GRAY):
             theColor |= FOREGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_WHITE:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_WHITE):
             theColor |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
             break;
-        case CONSOLE_COLOR_DEFAULT: // fall through to default
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_DEFAULT): // fall through to default
         default:
-            theColor |= (defaultColorValue & 0x000F);
+            theColor |= (defaultColorValue & WORD_C(0x000F));
             break;
         }
     }
-    if (backgroundColor != CONSOLE_COLOR_CURRENT)
+    if (backgroundColor != M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_CURRENT))
     {
         // clear out background bits, then set the requested color
         theColor &= 0xFF0F; // foreground are middle 4 bits
         switch (backgroundColor)
         {
-        case CONSOLE_COLOR_BLUE:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BLUE):
             theColor |= BACKGROUND_BLUE;
             break;
-        case CONSOLE_COLOR_BRIGHT_BLUE:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BRIGHT_BLUE):
             theColor |= BACKGROUND_BLUE | BACKGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_GREEN:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_GREEN):
             theColor |= BACKGROUND_GREEN;
             break;
-        case CONSOLE_COLOR_BRIGHT_GREEN:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BRIGHT_GREEN):
             theColor |= BACKGROUND_GREEN | BACKGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_RED:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_RED):
             theColor |= BACKGROUND_RED;
             break;
-        case CONSOLE_COLOR_BRIGHT_RED:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BRIGHT_RED):
             theColor |= BACKGROUND_RED | BACKGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_BLACK:
-            theColor |= 0; // this should mean no colors or black
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BLACK):
+            theColor |= WORD_C(0); // this should mean no colors or black
             break;
-        case CONSOLE_COLOR_YELLOW:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_YELLOW):
             theColor |= BACKGROUND_RED | BACKGROUND_GREEN;
             break;
-        case CONSOLE_COLOR_BRIGHT_YELLOW:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BRIGHT_YELLOW):
             theColor |= BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_CYAN:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_CYAN):
             theColor |= BACKGROUND_BLUE | BACKGROUND_GREEN;
             break;
-        case CONSOLE_COLOR_BRIGHT_CYAN:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BRIGHT_CYAN):
             theColor |= BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_MAGENTA:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_MAGENTA):
             theColor |= BACKGROUND_BLUE | BACKGROUND_RED;
             break;
-        case CONSOLE_COLOR_BRIGHT_MAGENTA:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BRIGHT_MAGENTA):
             theColor |= BACKGROUND_BLUE | BACKGROUND_RED | BACKGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_BRIGHT_WHITE:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_BRIGHT_WHITE):
             theColor |= BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_GRAY:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_GRAY):
             theColor |= BACKGROUND_INTENSITY;
             break;
-        case CONSOLE_COLOR_WHITE:
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_WHITE):
             theColor |= BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED;
             break;
-        case CONSOLE_COLOR_DEFAULT: // fall through to default
+        case M_ACCESS_ENUM(eConsoleColors, CONSOLE_COLOR_DEFAULT): // fall through to default
         default:
-            theColor |= (defaultColorValue & 0x00F0);
+            theColor |= (defaultColorValue & WORD_C(0x00F0));
             break;
         }
     }
@@ -476,7 +476,7 @@ static bool set_Input_Console_Mode(DWORD mode)
 
 eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen)
 {
-    eReturnValues ret            = SUCCESS;
+    eReturnValues ret            = M_ACCESS_ENUM(eReturnValues, SUCCESS);
     DWORD         defaultConMode = get_Input_Console_Default_Mode();
     DWORD         conMode        = defaultConMode;
     conMode &= C_CAST(DWORD, ~(ENABLE_ECHO_INPUT));
@@ -487,7 +487,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     {
         if (getline(userInput, inputDataLen, stdin) <= 0)
         {
-            ret = FAILURE;
+            ret = M_ACCESS_ENUM(eReturnValues, FAILURE);
         }
         else
         {
@@ -501,7 +501,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     }
     else
     {
-        ret = FAILURE;
+        ret = M_ACCESS_ENUM(eReturnValues, FAILURE);
     }
     set_Input_Console_Mode(defaultConMode);
     print_str("\n");
@@ -1364,7 +1364,7 @@ static bool is_Allowed_Unit_For_Get_And_Validate_Input(const char* unit, eAllowe
     {
         switch (unittype)
         {
-        case ALLOW_UNIT_NONE:
+        case M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE):
             if (strcmp(unit, "") == 0)
             {
                 allowed = true;
@@ -1374,30 +1374,30 @@ static bool is_Allowed_Unit_For_Get_And_Validate_Input(const char* unit, eAllowe
                 allowed = false;
             }
             break;
-        case ALLOW_UNIT_DATASIZE:
+        case M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_DATASIZE):
             allowed = is_Allowed_Datasize_Unit(unit);
             break;
-        case ALLOW_UNIT_SECTOR_TYPE:
+        case M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_SECTOR_TYPE):
             allowed = is_Allowed_Sector_Size_Unit(unit);
             break;
-        case ALLOW_UNIT_TIME:
+        case M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_TIME):
             allowed = is_Allowed_Time_Unit(unit);
             break;
-        case ALLOW_UNIT_POWER:
+        case M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_POWER):
             allowed = is_Allowed_Power_Unit(unit);
             break;
-        case ALLOW_UNIT_VOLTS:
+        case M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_VOLTS):
             allowed = is_Allowed_Volts_Unit(unit);
             break;
-        case ALLOW_UNIT_AMPS:
+        case M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_AMPS):
             allowed = is_Allowed_Amps_Unit(unit);
             break;
-        case ALLOW_UNIT_TEMPERATURE:
+        case M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_TEMPERATURE):
             allowed = is_Allowed_Temperature_Unit(unit);
             break;
         }
     }
-    else if (unittype == ALLOW_UNIT_NONE && unit == M_NULLPTR)
+    else if (unittype == M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE) && unit == M_NULLPTR)
     {
         allowed = true;
     }
@@ -1455,7 +1455,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToCon
         if (strType != INT_INPUT_INVALID)
         {
             if (0 != safe_strtoull(outputInteger, strToConvert, unit, strType) ||
-                (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
+                (unit == M_NULLPTR && unittype != M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE)))
             {
                 result = false;
             }
@@ -1487,7 +1487,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConver
         if (strType != INT_INPUT_INVALID)
         {
             if (0 != safe_strtoul(outputInteger, strToConvert, unit, strType) ||
-                (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
+                (unit == M_NULLPTR && unittype != M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE)))
             {
                 result = false;
             }
@@ -1594,7 +1594,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char*       strToConver
         if (strType != INT_INPUT_INVALID)
         {
             if (0 != safe_strtoll(outputInteger, strToConvert, unit, strType) ||
-                (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
+                (unit == M_NULLPTR && unittype != M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE)))
             {
                 result = false;
             }
@@ -1626,7 +1626,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert
         if (strType != INT_INPUT_INVALID)
         {
             if (0 != safe_strtol(outputInteger, strToConvert, unit, strType) ||
-                (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
+                (unit == M_NULLPTR && unittype != M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE)))
             {
                 result = false;
             }
@@ -1787,7 +1787,7 @@ M_NODISCARD bool get_And_Validate_Float_Input(const char*       strToConvert,
     {
         if (0 != safe_strtof(outputFloat, strToConvert, unit) ||
             (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype)) ||
-            (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
+            (unit == M_NULLPTR && unittype != M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE)))
         {
             result = false;
         }
@@ -1811,7 +1811,7 @@ M_NODISCARD bool get_And_Validate_Double_Input(const char*       strToConvert,
     {
         if (0 != safe_strtod(outputFloat, strToConvert, unit) ||
             (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype)) ||
-            (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
+            (unit == M_NULLPTR && unittype != M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE)))
         {
             result = false;
         }
@@ -1835,7 +1835,7 @@ M_NODISCARD bool get_And_Validate_LDouble_Input(const char*       strToConvert,
     {
         if (0 != safe_strtold(outputFloat, strToConvert, unit) ||
             (unit && !is_Allowed_Unit_For_Get_And_Validate_Input(*unit, unittype)) ||
-            (unit == M_NULLPTR && unittype != ALLOW_UNIT_NONE))
+            (unit == M_NULLPTR && unittype != M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE)))
         {
             result = false;
         }
@@ -1852,7 +1852,8 @@ M_NODISCARD bool get_And_Validate_LDouble_Input(const char*       strToConvert,
 // integer type instead for best error handling.
 M_DEPRECATED bool get_And_Validate_Integer_Input(const char* strToConvert, uint64_t* outputInteger)
 {
-    return get_And_Validate_Integer_Input_Uint64(strToConvert, M_NULLPTR, ALLOW_UNIT_NONE, outputInteger);
+    return get_And_Validate_Integer_Input_Uint64(strToConvert, M_NULLPTR,
+                                                 M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE), outputInteger);
 }
 
 M_NODISCARD bool get_And_Validate_Integer_Input_Uint32(const char*       strToConvert,
@@ -2089,7 +2090,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int8(const char*       strToConv
     RESTORE_NONNULL_COMPARE
 }
 
-#if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
+#if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(HAVE_GETLINE)
 // getdelim and getline are not available, so define them ourselves for our own
 // use
 
@@ -2166,7 +2167,7 @@ ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter,
                 return SSIZE_T_C(-1);
             }
 #    endif // SSIZE_MAX
-            temp = safe_reallocf(C_CAST(void**, lineptr), newsize);
+            temp = M_REINTERPRET_CAST(char*, safe_reallocf(C_CAST(void**, lineptr), newsize));
             if (temp == M_NULLPTR)
             {
                 errno = ENOMEM;
@@ -2353,124 +2354,124 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
 
     switch (ret)
     {
-    case SUCCESS:
+    case M_ACCESS_ENUM(eReturnValues, SUCCESS):
         print_str("SUCCESS\n");
         break;
-    case FAILURE:
+    case M_ACCESS_ENUM(eReturnValues, FAILURE):
         print_str("FAILURE\n");
         break;
-    case NOT_SUPPORTED:
+    case M_ACCESS_ENUM(eReturnValues, NOT_SUPPORTED):
         print_str("NOT SUPPORTED\n");
         break;
-    case COMMAND_FAILURE:
+    case M_ACCESS_ENUM(eReturnValues, COMMAND_FAILURE):
         print_str("COMMAND FAILURE\n");
         break;
-    case IN_PROGRESS:
+    case M_ACCESS_ENUM(eReturnValues, IN_PROGRESS):
         print_str("IN PROGRESS\n");
         break;
-    case ABORTED:
+    case M_ACCESS_ENUM(eReturnValues, ABORTED):
         print_str("ABORTED\n");
         break;
-    case BAD_PARAMETER:
+    case M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER):
         print_str("BAD PARAMETER\n");
         break;
-    case MEMORY_FAILURE:
+    case M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE):
         print_str("MEMORY FAILURE\n");
         break;
-    case OS_PASSTHROUGH_FAILURE:
+    case M_ACCESS_ENUM(eReturnValues, OS_PASSTHROUGH_FAILURE):
         print_str("OS PASSTHROUGH FAILURE\n");
         break;
-    case LIBRARY_MISMATCH:
+    case M_ACCESS_ENUM(eReturnValues, LIBRARY_MISMATCH):
         print_str("LIBRARY MISMATCH\n");
         break;
-    case FROZEN:
+    case M_ACCESS_ENUM(eReturnValues, FROZEN):
         print_str("FROZEN\n");
         break;
-    case PERMISSION_DENIED:
+    case M_ACCESS_ENUM(eReturnValues, PERMISSION_DENIED):
         print_str("PERMISSION DENIED\n");
         break;
-    case FILE_OPEN_ERROR:
+    case M_ACCESS_ENUM(eReturnValues, FILE_OPEN_ERROR):
         print_str("FILE OPEN ERROR\n");
         break;
-    case WARN_INCOMPLETE_RFTRS:
+    case M_ACCESS_ENUM(eReturnValues, WARN_INCOMPLETE_RFTRS):
         print_str("WARNING INCOMPLETE RTFRS\n");
         break;
-    case OS_COMMAND_TIMEOUT:
+    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_TIMEOUT):
         print_str("COMMAND TIMEOUT\n");
         break;
-    case WARN_NOT_ALL_DEVICES_ENUMERATED:
+    case M_ACCESS_ENUM(eReturnValues, WARN_NOT_ALL_DEVICES_ENUMERATED):
         print_str("WARNING NOT ALL DEVICES ENUMERATED\n");
         break;
-    case WARN_INVALID_CHECKSUM:
+    case M_ACCESS_ENUM(eReturnValues, WARN_INVALID_CHECKSUM):
         print_str("WARN INVALID CHECKSUM\n");
         break;
-    case OS_COMMAND_NOT_AVAILABLE:
+    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_NOT_AVAILABLE):
         print_str("OS COMMAND NOT AVAILABLE\n");
         break;
-    case OS_COMMAND_BLOCKED:
+    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_BLOCKED):
         print_str("OS COMMAND BLOCKED\n");
         break;
-    case COMMAND_INTERRUPTED:
+    case M_ACCESS_ENUM(eReturnValues, COMMAND_INTERRUPTED):
         print_str("COMMAND INTERRUPTED\n");
         break;
-    case VALIDATION_FAILURE:
+    case M_ACCESS_ENUM(eReturnValues, VALIDATION_FAILURE):
         print_str("VALIDATION FAILURE\n");
         break;
-    case STRIP_HDR_FOOTER_FAILURE:
+    case M_ACCESS_ENUM(eReturnValues, STRIP_HDR_FOOTER_FAILURE):
         print_str("STRIP HDR FOOTER FAILURE\n");
         break;
-    case PARSE_FAILURE:
+    case M_ACCESS_ENUM(eReturnValues, PARSE_FAILURE):
         print_str("PARSE FAILURE\n");
         break;
-    case INVALID_LENGTH:
+    case M_ACCESS_ENUM(eReturnValues, INVALID_LENGTH):
         print_str("INVALID LENGTH\n");
         break;
-    case ERROR_WRITING_FILE:
+    case M_ACCESS_ENUM(eReturnValues, ERROR_WRITING_FILE):
         print_str("ERROR WRITING FILE\n");
         break;
-    case TIMEOUT:
+    case M_ACCESS_ENUM(eReturnValues, TIMEOUT):
         print_str("TIMEOUT\n");
         break;
-    case OS_TIMEOUT_TOO_LARGE:
+    case M_ACCESS_ENUM(eReturnValues, OS_TIMEOUT_TOO_LARGE):
         print_str("OS TIMEOUT TOO LARGE\n");
         break;
-    case PARSING_EXCEPTION_FAILURE:
+    case M_ACCESS_ENUM(eReturnValues, PARSING_EXCEPTION_FAILURE):
         print_str("PARSING EXCEPTION FAILURE\n");
         break;
-    case POWER_CYCLE_REQUIRED:
+    case M_ACCESS_ENUM(eReturnValues, POWER_CYCLE_REQUIRED):
         print_str("POWER CYCLE REQUIRED\n");
         break;
-    case DIR_CREATION_FAILED:
+    case M_ACCESS_ENUM(eReturnValues, DIR_CREATION_FAILED):
         print_str("DIR CREATION FAILED\n");
         break;
-    case FILE_READ_ERROR:
+    case M_ACCESS_ENUM(eReturnValues, FILE_READ_ERROR):
         print_str("FILE READ ERROR\n");
         break;
-    case DEVICE_ACCESS_DENIED:
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_ACCESS_DENIED):
         print_str("DEVICE ACCESS DENIED\n");
         break;
-    case NOT_PARSED:
+    case M_ACCESS_ENUM(eReturnValues, NOT_PARSED):
         print_str("NOT PARSED\n");
         break;
-    case MISSING_INFORMATION:
+    case M_ACCESS_ENUM(eReturnValues, MISSING_INFORMATION):
         print_str("MISSING INFORMATION\n");
         break;
-    case TRUNCATED_FILE:
+    case M_ACCESS_ENUM(eReturnValues, TRUNCATED_FILE):
         print_str("TRUNCATED FILE\n");
         break;
-    case INSECURE_PATH:
+    case M_ACCESS_ENUM(eReturnValues, INSECURE_PATH):
         print_str("INSECURE PATH\n");
         break;
-    case DEVICE_BUSY:
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_BUSY):
         print_str("DEVICE BUSY\n");
         break;
-    case DEVICE_INVALID:
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_INVALID):
         print_str("DEVICE INVALID\n");
         break;
-    case DEVICE_DISCONNECTED:
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_DISCONNECTED):
         print_str("DEVICE DISCONNECTED\n");
         break;
-    case UNKNOWN:
+    case M_ACCESS_ENUM(eReturnValues, UNKNOWN):
         print_str("UNKNOWN\n");
         break;
         // NO DEFAULT CASE! This will cause warnings when an enum value is not
@@ -2947,7 +2948,7 @@ char* safe_gets_impl(char* str, rsize_t n, const char* file, const char* functio
     }
     else
     {
-#if defined(HAVE_MSFT_SECURE_LIB)
+#if defined(HAVE_MSFT_SECURE_LIB) && !defined(__MINGW32__)
         char* ret = gets_s(str, n);
         errno     = error;
         return ret;
