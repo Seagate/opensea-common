@@ -496,7 +496,7 @@ void print_Time_To_Screen(const uint8_t*  years,
         printf(" %" PRIu8 " year", *years);
         if (*years > 1)
         {
-            printf("s");
+            print_str("s");
         }
     }
     if (days && *days > 0)
@@ -504,7 +504,7 @@ void print_Time_To_Screen(const uint8_t*  years,
         printf(" %" PRIu16 " day", *days);
         if (*days > 1)
         {
-            printf("s");
+            print_str("s");
         }
     }
     if (hours && *hours > 0)
@@ -512,7 +512,7 @@ void print_Time_To_Screen(const uint8_t*  years,
         printf(" %" PRIu8 " hour", *hours);
         if (*hours > 1)
         {
-            printf("s");
+            print_str("s");
         }
     }
     if (minutes && *minutes > 0)
@@ -520,7 +520,7 @@ void print_Time_To_Screen(const uint8_t*  years,
         printf(" %" PRIu8 " minute", *minutes);
         if (*minutes > 1)
         {
-            printf("s");
+            print_str("s");
         }
     }
     if (seconds && *seconds > 0)
@@ -528,12 +528,12 @@ void print_Time_To_Screen(const uint8_t*  years,
         printf(" %" PRIu8 " second", *seconds);
         if (*seconds > 1)
         {
-            printf("s");
+            print_str("s");
         }
     }
     if (years || days || hours || minutes || seconds)
     {
-        printf(" ");
+        print_str(" ");
     }
 }
 

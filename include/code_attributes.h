@@ -494,12 +494,14 @@ extern "C"
 #    endif
 #endif
 #if !defined(M_NORETURN)
-#    if defined(noreturn)
-#        define M_NORETURN noreturn
-#    elif DETECT_GNU_ATTR(noreturn) || (IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0))
+#    if DETECT_GNU_ATTR(noreturn) || (IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0))
 #        define M_NORETURN __attribute__((noreturn))
 #    elif IS_MSVC_VERSION(MSVC_6_0)
 #        define M_NORETURN __declspec(noreturn)
+#    elif defined(noreturn)
+#        define M_NORETURN noreturn
+#    elif defined(SAL_INCLUDED) && defined(_Check_return_) /*from sal.h*/
+#        define M_NODISCARD _Check_return_
 #    endif
 #endif
 

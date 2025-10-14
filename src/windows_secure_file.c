@@ -540,7 +540,7 @@ static bool get_System_Volume(char* winSysVol, size_t winSysVolLen)
             if (ENV_VAR_SUCCESS != get_Environment_Variable("SystemDrive", &systemDrive))
             {
 #if defined(_DEBUG)
-                printf("Failed reading the system drive environment variable.\n");
+                print_str("Failed reading the system drive environment variable.\n");
 #endif //_DEBUG
             }
             else

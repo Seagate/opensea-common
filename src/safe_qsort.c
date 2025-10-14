@@ -93,6 +93,9 @@ static M_INLINE char* med3(char* a, char* b, char* c, ctxcomparefn cmp, void* th
                                 : (cmp(b, c, thunk) > 0 ? b : (cmp(a, c, thunk) < 0 ? a : c));
 }
 
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+// Disabling clang-tidy check since this code comes from another author and I do not need to
+// attempt to refactor this - TJE
 errno_t safe_qsort_context_impl(void*        ptr,
                                 rsize_t      count,
                                 rsize_t      size,
@@ -312,3 +315,4 @@ errno_t safe_qsort_context_impl(void*        ptr,
     }
     RESTORE_NONNULL_COMPARE
 }
+// NOLINTEND(readability-function-cognitive-complexity)
