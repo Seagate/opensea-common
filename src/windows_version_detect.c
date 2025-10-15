@@ -13,6 +13,7 @@
 #include "windows_version_detect.h"
 #include "common_types.h"
 #include "env_detect.h"
+#include "io_utils.h"
 #include "memory_safety.h"
 #include "type_conversion.h"
 
