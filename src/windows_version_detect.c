@@ -524,7 +524,7 @@ bool is_Windows_PE(void)
                                                           0, KEY_READ, &keyHandle))
         {
 #if defined(_DEBUG)
-            printf("Found HKLM\\SOFTWARE\\Microsoft\\Windows "
+            print_str("Found HKLM\\SOFTWARE\\Microsoft\\Windows "
                    "NT\\CurrentVersion\\WinPE\n");
 #endif
             isWindowsPE = true;
