@@ -419,11 +419,28 @@ extern "C"
 //!
 //! \note This attribute must be used before other attributes are added otherwise compilation errors may occur.
 //! \author TJE
+
+//! \def M_NODISCARD_REASON
+//! \brief Marks functions, variables, or parameters as nodiscard to avoid compiler warnings.
+//! This version allows specifying a reason for the no discard to be emitted. This will only work when the language
+//! supports a reason, otherwise this is the same as M_NODISCARD.
+//!
+//!
+//! \note This attribute must be used before other attributes are added otherwise compilation errors may occur.
+//! \author TJE
 #if defined(DETECT_STD_ATTR_CHECK)
 #    if DETECT_STD_ATTR(nodiscard)
 #        define M_NODISCARD [[nodiscard]]
+#        if defined USING_CPP20 && DETECT_STD_ATTR(nodiscard) >= 201907L
+#            define M_NODISCARD_REASON(msg) [[nodiscard(msg)]]
+#        elif DETECT_STD_ATTR(nodiscard) >= 202003L
+#            define M_NODISCARD_REASON(msg) [[nodiscard(msg)]]
+#        endif
 #    elif DETECT_STD_ATTR(__nodiscard__)
 #        define M_NODISCARD [[__nodiscard__]]
+#        if DETECT_STD_ATTR(__nodiscard__) >= 202003L
+#            define M_NODISCARD_REASON(msg) [[__nodiscard__(msg)]]
+#        endif
 #    elif DETECT_STD_ATTR_QUAL(clang::nodiscard)
 #        define M_NODISCARD [[clang::nodiscard]]
 #    elif DETECT_STD_ATTR_QUAL(gnu::nodiscard)
@@ -446,6 +463,10 @@ extern "C"
 
 #if !defined(M_NODISCARD)
 #    define M_NODISCARD /*NODISCARD*/
+#endif
+
+#if !defined(M_NODISCARD_REASON)
+#    define M_NODISCARD_REASON(msg) M_NODISCARD /*msg not available*/
 #endif
 
 //! \def M_NORETURN
@@ -501,7 +522,7 @@ extern "C"
 #    elif defined(noreturn)
 #        define M_NORETURN noreturn
 #    elif defined(SAL_INCLUDED) && defined(_Check_return_) /*from sal.h*/
-#        define M_NODISCARD _Check_return_
+#        define M_NORETURN _Check_return_
 #    endif
 #endif
 
