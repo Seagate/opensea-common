@@ -779,11 +779,6 @@ errno_t impl_safe_asctime(char*            buf,
             safe_memset(buf, bufsz, 0, bufsz);
             error = EINVAL;
             errno = error;
-            return error;
-        }
-        else
-        {
-            return error;
         }
 #else
         //  strftime is recommended to be used. Using format %c will return the
