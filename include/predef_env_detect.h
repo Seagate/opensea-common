@@ -1139,6 +1139,9 @@ extern "C"
 #    if __has_builtin(__builtin_stdc_rotate_right)
 #        define HAVE_BUILT_IN_STDC_ROTATE_RIGHT
 #    endif
+#    if __has_builtin(__builtin_unreachable)
+#        define HAVE_BUILT_IN_UNREACHABLE
+#    endif
 #endif //__has_builtin
 
 #if !defined(HAVE_BUILT_IN_OBJ_SIZE) && IS_GCC_VERSION(4, 1)
