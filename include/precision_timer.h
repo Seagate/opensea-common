@@ -2,36 +2,40 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All
+// Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-// 
+//
 // \file highrestimer.c
-// \brief Defines functions to time operations using a high resolution timer in a cross-platform way
+// \brief Defines functions to time operations using a high resolution timer in
+// a cross-platform way
 //
 
 #pragma once
 
-#include "common_types.h"
 #include "code_attributes.h"
+#include "common_types.h"
 #include "memory_safety.h"
 
-#if defined (__cplusplus)
+#if defined(__cplusplus)
 extern "C"
 {
 #endif
 
     typedef struct _seatimer_t
     {
-        uint64_t timerStart;//system specific count value. Do not use directly. May be NS, CPU ticks, or some other system specific value
-        uint64_t timerStop;//system specific count value. Do not use directly. May be NS, CPU ticks, or some other system specific value
-    }seatimer_t;
+        uint64_t timerStart; // system specific count value. Do not use directly. May
+                             // be NS, CPU ticks, or some other system specific value
+        uint64_t timerStop;  // system specific count value. Do not use directly. May
+                             // be NS, CPU ticks, or some other system specific value
+    } seatimer_t;
 
-    static M_INLINE void safe_free_seatimer(seatimer_t **timer)
+    static M_INLINE void safe_free_seatimer(seatimer_t** timer)
     {
         safe_Free(M_REINTERPRET_CAST(void**, timer));
     }
@@ -40,10 +44,12 @@ extern "C"
     //
     // void start_Timer(seatimer_t *timer)
     //
-    // \brief   Description: set's timerStart in a seatimer_t structure that will be used later when calculating how long the timer ran for.
+    // \brief   Description: set's timerStart in a seatimer_t structure that will be
+    // used later when calculating how long the timer ran for.
     //
     // Entry:
-    //      \param[in,out] timer - pointer to a seatimer_t structure that will be used for the timer.
+    //      \param[in,out] timer - pointer to a seatimer_t structure that will be
+    //      used for the timer.
     //
     // Exit:
     //      \return VOID
@@ -55,10 +61,12 @@ extern "C"
     //
     // void stop_Timer(seatimer_t *timer)
     //
-    // \brief   Description: set's timerStop in a seatimer_t structure that will be used later when calculating how long the timer ran for.
+    // \brief   Description: set's timerStop in a seatimer_t structure that will be
+    // used later when calculating how long the timer ran for.
     //
     // Entry:
-    //      \param[in,out] timer - pointer to a seatimer_t structure that will be used for the timer.
+    //      \param[in,out] timer - pointer to a seatimer_t structure that will be
+    //      used for the timer.
     //
     // Exit:
     //      \return VOID
@@ -70,10 +78,12 @@ extern "C"
     //
     // uint64_t get_Nano_Seconds(seatimer_t timer)
     //
-    // \brief   Description: Gets the number of nano seconds elapsed between timerStart and timerStop
+    // \brief   Description: Gets the number of nano seconds elapsed between
+    // timerStart and timerStop
     //
     // Entry:
-    //      \param[in] timer - pointer to a seatimer_t structure that will be used for the timer.
+    //      \param[in] timer - pointer to a seatimer_t structure that will be used
+    //      for the timer.
     //
     // Exit:
     //      \return uint64_t value representing the number of nanoseconds elapsed.
@@ -85,10 +95,12 @@ extern "C"
     //
     // double get_Micro_Seconds(seatimer_t timer)
     //
-    // \brief   Description: Gets the number of micro seconds elapsed between timerStart and timerStop
+    // \brief   Description: Gets the number of micro seconds elapsed between
+    // timerStart and timerStop
     //
     // Entry:
-    //      \param[in] timer - pointer to a seatimer_t structure that will be used for the timer.
+    //      \param[in] timer - pointer to a seatimer_t structure that will be used
+    //      for the timer.
     //
     // Exit:
     //      \return double value representing the number of microseconds elapsed.
@@ -100,10 +112,12 @@ extern "C"
     //
     // double get_Milli_Seconds(seatimer_t timer)
     //
-    // \brief   Description: Gets the number of milli seconds elapsed between timerStart and timerStop
+    // \brief   Description: Gets the number of milli seconds elapsed between
+    // timerStart and timerStop
     //
     // Entry:
-    //      \param[in] timer - pointer to a seatimer_t structure that will be used for the timer.
+    //      \param[in] timer - pointer to a seatimer_t structure that will be used
+    //      for the timer.
     //
     // Exit:
     //      \return double value representing the number of milliseconds elapsed.
@@ -115,10 +129,12 @@ extern "C"
     //
     // double get_Seconds(seatimer_t timer)
     //
-    // \brief   Description: Gets the number of seconds elapsed between timerStart and timerStop
+    // \brief   Description: Gets the number of seconds elapsed between timerStart
+    // and timerStop
     //
     // Entry:
-    //      \param[in] timer - pointer to a seatimer_t structure that will be used for the timer.
+    //      \param[in] timer - pointer to a seatimer_t structure that will be used
+    //      for the timer.
     //
     // Exit:
     //      \return double value representing the number of seconds elapsed.
@@ -126,7 +142,6 @@ extern "C"
     //-----------------------------------------------------------------------------
     double get_Seconds(seatimer_t timer);
 
-
-#if defined (__cplusplus)
+#if defined(__cplusplus)
 }
 #endif

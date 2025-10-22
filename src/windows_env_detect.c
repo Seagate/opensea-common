@@ -2,45 +2,48 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2012-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2012-2024 Seagate Technology LLC and/or its Affiliates, All
+// Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-// 
+//
 // \file windows_env_detect.c
-// \brief Functions for env_detect.h for Windows to get username (if enabled) and read OS information.
+// \brief Functions for env_detect.h for Windows to get username (if enabled)
+// and read OS information.
 //
 
 #include "common_types.h"
-#include "type_conversion.h"
 #include "memory_safety.h"
-#include "windows_version_detect.h"
 #include "string_utils.h"
+#include "type_conversion.h"
+#include "windows_version_detect.h"
 
 #include <windows.h>
 
 #include <strsafe.h> //needed in the code written to get the windows version since I'm using a Microsoft provided string concatenation call-tje
-#if defined (ENABLE_READ_USERNAME)
-    #include <lmcons.h> //for UNLEN
+#if defined(ENABLE_READ_USERNAME)
+#    include <lmcons.h> //for UNLEN
 #endif
 #include <string.h>
 
-eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char *operatingSystemName)
+eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char* operatingSystemName)
 {
     eReturnValues ret = read_Win_Version(versionNumber);
     if (ret == SUCCESS)
     {
-        //Now that we know whether or not it's a server version and have gotten the version number, set the appropriate string for the OS.
+        // Now that we know whether or not it's a server version and have gotten the
+        // version number, set the appropriate string for the OS.
         if (operatingSystemName)
         {
             bool isWindowsServer = is_Windows_Server_OS();
-            bool isWindowsPE = is_Windows_PE();
+            bool isWindowsPE     = is_Windows_PE();
             switch (versionNumber->versionType.windowsVersion.majorVersion)
             {
-            case 10://Win 10 or Server 2016
+            case 10: // Win 10 or Server 2016
                 switch (versionNumber->versionType.windowsVersion.minorVersion)
                 {
                 case 0:
@@ -147,7 +150,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
                     break;
                 }
                 break;
-            case 6://Vista through 8.1
+            case 6: // Vista through 8.1
                 switch (versionNumber->versionType.windowsVersion.minorVersion)
                 {
                 case 3:
@@ -202,7 +205,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
                     break;
                 }
                 break;
-            case 5://2000 through XP
+            case 5: // 2000 through XP
                 switch (versionNumber->versionType.windowsVersion.minorVersion)
                 {
                 case 2:
@@ -248,12 +251,12 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
 
 bool is_Running_Elevated(void)
 {
-    bool isElevated = false;
+    bool   isElevated     = false;
     HANDLE currentProcess = M_NULLPTR;
     if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &currentProcess))
     {
         TOKEN_ELEVATION elevation;
-        DWORD returnedSize = sizeof(TOKEN_ELEVATION);
+        DWORD           returnedSize = sizeof(TOKEN_ELEVATION);
         if (GetTokenInformation(currentProcess, TokenElevation, &elevation, sizeof(elevation), &returnedSize))
         {
             if (elevation.TokenIsElevated)
@@ -269,40 +272,44 @@ bool is_Running_Elevated(void)
     return isElevated;
 }
 
-#if defined (ENABLE_READ_USERNAME)
-//Gets the user name for who is running the process
-//https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getusernamea?redirectedfrom=MSDN
-//NOTE: Not using Ex version at this time to avoid linking yet another library. This can be added if necessary, or this doesn't do quite what we want it to do. -TJE
-eReturnValues get_Current_User_Name(char **userName)
+#if defined(ENABLE_READ_USERNAME)
+// Gets the user name for who is running the process
+// https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getusernamea?redirectedfrom=MSDN
+// NOTE: Not using Ex version at this time to avoid linking yet another library.
+// This can be added if necessary, or this doesn't do quite what we want it to
+// do. -TJE
+eReturnValues get_Current_User_Name(char** userName)
 {
     eReturnValues ret = SUCCESS;
     if (userName)
     {
-        DWORD localNameLength = UNLEN + 1;//start with this for input
+        DWORD localNameLength = UNLEN + 1; // start with this for input
         DECLARE_ZERO_INIT_ARRAY(TCHAR, localName, UNLEN + 1);
         if (TRUE == GetUserName(localName, &localNameLength))
         {
-            const char *isAdmin = " (admin)";//This will be concatenated to the string if running as administrator since we only get the user's name in Windows.
+            const char* isAdmin = " (admin)"; // This will be concatenated to the string if running as
+                                              // administrator since we only get the user's name in
+                                              // Windows.
             size_t usernameLength = _tcslen(localName) + safe_strlen(isAdmin) + 1;
-            *userName = C_CAST(char*, safe_calloc(usernameLength, sizeof(char)));
+            *userName             = C_CAST(char*, safe_calloc(usernameLength, sizeof(char)));
             if (*userName)
             {
-#if defined UNICODE
+#    if defined UNICODE
                 size_t charsConverted = 0;
-                //convert output to a char string
+                // convert output to a char string
                 if (wcstombs_s(&charsConverted, *userName, usernameLength, localName, usernameLength))
                 {
                     safe_free(userName);
                     ret = FAILURE;
                 }
-#else
-                //just copy it over after allocating
+#    else
+                // just copy it over after allocating
                 if (strcpy_s(*userName, usernameLength, localName))
                 {
                     safe_free(userName);
                     return FAILURE;
                 }
-#endif
+#    endif
                 if (is_Running_Elevated())
                 {
                     if (strcat_s(*userName, usernameLength, isAdmin))
@@ -328,4 +335,4 @@ eReturnValues get_Current_User_Name(char **userName)
     }
     return ret;
 }
-#endif //ENABLE_READ_USERNAME
+#endif // ENABLE_READ_USERNAME

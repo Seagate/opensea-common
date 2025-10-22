@@ -2,40 +2,42 @@
 //
 // Do NOT modify or remove this copyright and license
 //
-// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+// Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All
+// Rights Reserved
 //
 // This software is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // ******************************************************************************************
-// 
+//
 // \file string_utils.h
 // \brief Implements various functions to work with C style strings.
 //        Many of these implement best practices for safety as well.
 
-#include "env_detect.h"
-#include "common_types.h"
 #include "string_utils.h"
+#include "common_types.h"
+#include "env_detect.h"
+#include "math_utils.h"
 #include "memory_safety.h"
 #include "type_conversion.h"
-#include "math_utils.h"
 
-#include <string.h>
 #include <ctype.h>
 #include <limits.h>
 #include <stdio.h>
+#include <string.h>
 
-//making it look similar to a std lib function like isPrint.
+// making it look similar to a std lib function like isPrint.
 int is_ASCII(int c)
 {
-    //this should be even faster than the if/else approach in CPU cycles
-    //instead of branching, this bit manipulation will operate quicker.
-    //Basically it will check for any bits outside of 7F being set to 1 returning a positive value if they are-TJE
+    // this should be even faster than the if/else approach in CPU cycles
+    // instead of branching, this bit manipulation will operate quicker.
+    // Basically it will check for any bits outside of 7F being set to 1 returning
+    // a positive value if they are-TJE
     return !(c & ~0x7F);
 }
 
-//This is good for checks on "is<>", not for "to<>"
+// This is good for checks on "is<>", not for "to<>"
 static int handle_eof(int result)
 {
     if (result == EOF)
@@ -229,8 +231,9 @@ int safe_isspace(int c)
     }
 }
 
-//isblank added in C99
-//May need version check if we run into an environment that does not support this check-TJE
+// isblank added in C99
+// May need version check if we run into an environment that does not support
+// this check-TJE
 int safe_isblank(int c)
 {
     if (is_valid_unsigned_char_range(c))
@@ -273,34 +276,39 @@ int safe_ispunct(int c)
     }
 }
 
-//these string concatenation functions currently use snprintf for portability.
-//We can look into using strlcat (BSD, glibc 2.38+) or strcpy_s (Annex_k, MSVC) as well to improve performance
-// when these other calls are available.-TJE
-//https://sourceware.org/glibc/wiki/FAQ#Why_no_strlcpy_.2F_strlcat.3F
-// Using memccpy as it is available nearly everywhere and is significantly faster
-//https://developers.redhat.com/blog/2019/08/12/efficient-string-copying-and-concatenation-in-c#
+// these string concatenation functions currently use snprintf for portability.
+// We can look into using strlcat (BSD, glibc 2.38+) or strcpy_s (Annex_k, MSVC)
+// as well to improve performance
+//  when these other calls are available.-TJE
+// https://sourceware.org/glibc/wiki/FAQ#Why_no_strlcpy_.2F_strlcat.3F
+//  Using memccpy as it is available nearly everywhere and is significantly
+//  faster
+// https://developers.redhat.com/blog/2019/08/12/efficient-string-copying-and-concatenation-in-c#
 char* common_String_Concat(char* destination, size_t destinationSizeBytes, const char* source)
 {
-    //TODO: Overlapping range detection
+    // TODO: Overlapping range detection
     if (destination && source && destinationSizeBytes > 0)
     {
-#if defined (POSIX_2001) || defined (_MSC_VER) || defined (__MINGW32__) || defined (USING_C23) || defined (BSD4_4)
-        char* p = C_CAST(char*, destination + safe_strnlen(destination, destinationSizeBytes));
-        size_t destinationSizeBytesAvailable = destinationSizeBytes - (C_CAST(uintptr_t, p) - C_CAST(uintptr_t, destination));
+#if defined(POSIX_2001) || defined(_MSC_VER) || defined(__MINGW32__) || defined(USING_C23) || defined(BSD4_4)
+        char*  p = C_CAST(char*, destination + safe_strnlen(destination, destinationSizeBytes));
+        size_t destinationSizeBytesAvailable =
+            destinationSizeBytes - (C_CAST(uintptr_t, p) - C_CAST(uintptr_t, destination));
         if (M_NULLPTR == memccpy(p, source, '\0', destinationSizeBytesAvailable))
         {
-            //add null terminator to the destination, overwriting last byte written to stay in bounds -TJE
+            // add null terminator to the destination, overwriting last byte written
+            // to stay in bounds -TJE
             destination[destinationSizeBytes - int_to_sizet(1)] = '\0';
         }
         return destination;
-#elif (defined (__FreeBSD__) && __FreeBSD__ >= 4) || (defined (__OpenBSD__) && defined(OpenBSD2_4)) || (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 1040000300L)
-        //use strlcat
-        //FreeBSD 3.3 and later
-        //openBSD 2.4 and later
-        //netbsd  1.4.3
+#elif (defined(__FreeBSD__) && __FreeBSD__ >= 4) || (defined(__OpenBSD__) && defined(OpenBSD2_4)) ||                   \
+    (defined(__NetBSD__) && defined(__NetBSD_Version__) && __NetBSD_Version >= 1040000300L)
+        // use strlcat
+        // FreeBSD 3.3 and later
+        // openBSD 2.4 and later
+        // netbsd  1.4.3
         strlcat(destination, source, destinationSizeBytes);
         return destination;
-#elif defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
+#elif defined(__STDC_SECURE_LIB__) || defined(HAVE_C11_ANNEX_K)
         if (0 == strcat_s(destination, destinationSizeBytes, source))
         {
             return destination;
@@ -309,23 +317,24 @@ char* common_String_Concat(char* destination, size_t destinationSizeBytes, const
         {
             return M_NULLPTR;
         }
-#else //memccpy, strlcat/strcpy not available
+#else // memccpy, strlcat/strcpy not available
         size_t duplen = safe_strlen(destination);
-        char* dup = C_CAST(char*, safe_calloc(duplen + 1, sizeof(char)));
+        char*  dup    = C_CAST(char*, safe_calloc(duplen + 1, sizeof(char)));
         if (dup)
         {
             memcpy(dup, destination, duplen + 1);
-#if defined (HAVE_C11_ANNEX_K)
+#    if defined(HAVE_C11_ANNEX_K)
             snprintf_s(destination, destinationSizeBytes, "%s%s", dup, source);
-#elif defined (__STDC_SECURE_LIB__)//microsoft _snprintf_s has DIFFERENT parameters...we should be using a method above when possible.-TJE
+#    elif defined(__STDC_SECURE_LIB__) // microsoft _snprintf_s has DIFFERENT parameters...we
+                                       // should be using a method above when possible.-TJE
             _snprintf_s(destination, destinationSizeBytes, _TRUNCATE, "%s%s", dup, source);
-#else
+#    else
             snprintf(destination, destinationSizeBytes, "%s%s", dup, source);
-#endif
+#    endif
             safe_free(&dup);
             return destination;
         }
-#endif   
+#endif
     }
     return M_NULLPTR;
 }
@@ -334,31 +343,35 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
 {
     if (destination && source && destinationSizeBytes > 0 && sourceLength > 0)
     {
-#if defined (POSIX_2001) || defined (_MSC_VER) || defined (__MINGW32__) || defined (USING_C23)
-        char* p = C_CAST(char*, destination + safe_strnlen(destination, destinationSizeBytes));
-        size_t destinationSizeBytesAvailable = destinationSizeBytes - (C_CAST(uintptr_t, p) - C_CAST(uintptr_t, destination));
+#if defined(POSIX_2001) || defined(_MSC_VER) || defined(__MINGW32__) || defined(USING_C23)
+        char*  p = C_CAST(char*, destination + safe_strnlen(destination, destinationSizeBytes));
+        size_t destinationSizeBytesAvailable =
+            destinationSizeBytes - (C_CAST(uintptr_t, p) - C_CAST(uintptr_t, destination));
         if (M_NULLPTR == memccpy(p, source, '\0', M_Min(destinationSizeBytesAvailable, int_to_sizet(sourceLength))))
         {
             if (int_to_sizet(sourceLength) >= destinationSizeBytesAvailable)
             {
-                //add null terminator to the destination, overwriting last byte written to stay in bounds -TJE
+                // add null terminator to the destination, overwriting last byte written
+                // to stay in bounds -TJE
                 destination[destinationSizeBytes - int_to_sizet(1)] = '\0';
             }
             else
             {
-                //append a null terminator after the last written byte of the string - TJE
+                // append a null terminator after the last written byte of the string -
+                // TJE
                 destination[destinationSizeBytes - destinationSizeBytesAvailable + int_to_sizet(sourceLength)] = '\0';
             }
         }
         return destination;
-#elif (defined (__FreeBSD__) && __FreeBSD__ >= 4) || (defined (__OpenBSD__) && defined(OpenBSD2_4)) || (defined (__NetBSD__) && defined (__NetBSD_Version__) && __NetBSD_Version >= 1040000300L)
-        //use strlcat
-        //FreeBSD 3.3 and later
-        //openBSD 2.4 and later
-        //netbsd  1.4.3
+#elif (defined(__FreeBSD__) && __FreeBSD__ >= 4) || (defined(__OpenBSD__) && defined(OpenBSD2_4)) ||                   \
+    (defined(__NetBSD__) && defined(__NetBSD_Version__) && __NetBSD_Version >= 1040000300L)
+        // use strlcat
+        // FreeBSD 3.3 and later
+        // openBSD 2.4 and later
+        // netbsd  1.4.3
         strlcat(destination, source, M_Min(destinationSizeBytesAvailable, int_to_sizet(sourceLength)));
         return destination;
-#elif defined (__STDC_SECURE_LIB__) || defined (HAVE_C11_ANNEX_K)
+#elif defined(__STDC_SECURE_LIB__) || defined(HAVE_C11_ANNEX_K)
         if (0 == strncat_s(destination, destinationSizeBytes, source, sourceLength))
         {
             return destination;
@@ -367,19 +380,20 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
         {
             return M_NULLPTR;
         }
-#else //memccpy, strlcat/strcpy not available
+#else // memccpy, strlcat/strcpy not available
         size_t duplen = safe_strlen(destination);
-        char* dup = C_CAST(char*, safe_calloc(duplen + 1, sizeof(char)));
+        char*  dup    = C_CAST(char*, safe_calloc(duplen + 1, sizeof(char)));
         if (dup)
         {
             memcpy(dup, destination, duplen + 1);
-#if defined (HAVE_C11_ANNEX_K)
+#    if defined(HAVE_C11_ANNEX_K)
             snprintf_s(destination, destinationSizeBytes, "%s%.*s", dup, sourceLength, source);
-#elif defined (__STDC_SECURE_LIB__)//microsoft _snprintf_s has DIFFERENT parameters...we should be using a method above when possible.-TJE
+#    elif defined(__STDC_SECURE_LIB__) // microsoft _snprintf_s has DIFFERENT parameters...we
+                                       // should be using a method above when possible.-TJE
             _snprintf_s(destination, destinationSizeBytes, _TRUNCATE, "%s%.*s", dup, sourceLength, source);
-#else
+#    else
             snprintf(destination, destinationSizeBytes, "%s%.*s", dup, sourceLength, source);
-#endif
+#    endif
             safe_free(&dup);
             return destination;
         }
@@ -388,15 +402,18 @@ char* common_String_Concat_Len(char* destination, size_t destinationSizeBytes, c
     return M_NULLPTR;
 }
 
-char* safe_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, const char* M_RESTRICT delim, char** M_RESTRICT saveptr)
+char* safe_String_Token(char* M_RESTRICT       str,
+                        rsize_t* M_RESTRICT    strmax,
+                        const char* M_RESTRICT delim,
+                        char** M_RESTRICT      saveptr)
 {
-#if defined (HAVE_C11_ANNEX_K)
+#if defined(HAVE_C11_ANNEX_K)
     return strtok_s(str, strmax, delim, saveptr);
-#elif defined (POSIX_2001) || defined (__STDC_SECURE_LIB__)
+#elif defined(POSIX_2001) || defined(__STDC_SECURE_LIB__)
     char* token = M_NULLPTR;
     if (str != M_NULLPTR)
     {
-        //Initial call of the function. Perform some validation
+        // Initial call of the function. Perform some validation
         if (saveptr == M_NULLPTR || strmax == M_NULLPTR)
         {
             errno = EINVAL;
@@ -408,7 +425,7 @@ char* safe_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, const 
             return M_NULLPTR;
         }
     }
-    if (strmax == M_NULLPTR)//letting strtok_r and strtok_s validate delim and saveptr
+    if (strmax == M_NULLPTR) // letting strtok_r and strtok_s validate delim and saveptr
     {
         errno = EINVAL;
         return M_NULLPTR;
@@ -418,13 +435,13 @@ char* safe_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, const 
         errno = EINVAL;
         return M_NULLPTR;
     }
-#if defined (POSIX_2001)
+#    if defined(POSIX_2001)
     token = strtok_r(str, delim, saveptr);
-#elif defined (__STDC_SECURE_LIB__)
+#    elif defined(__STDC_SECURE_LIB__)
     token = strtok_s(str, delim, saveptr);
-#else
-    #error "Missing strtok_r equivalent function for emulation of C11 strtok_s behavior"
-#endif
+#    else
+#        error "Missing strtok_r equivalent function for emulation of C11 strtok_s behavior"
+#    endif
     if (token)
     {
         if (*saveptr)
@@ -438,10 +455,10 @@ char* safe_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, const 
     }
     return token;
 #else
-    //Do not have a system provided strtok_s, strtok_r implementation, so using our own that works as closely as posisble
-    //to C11 annex K strtok_s
+    // Do not have a system provided strtok_s, strtok_r implementation, so using
+    // our own that works as closely as posisble to C11 annex K strtok_s
     char* token = M_NULLPTR;
-    char* end = M_NULLPTR;
+    char* end   = M_NULLPTR;
     if (strmax == M_NULLPTR || delim == M_NULLPTR || saveptr == M_NULLPTR)
     {
         errno = EINVAL;
@@ -454,21 +471,21 @@ char* safe_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, const 
     }
     if (str != M_NULLPTR)
     {
-        //Initial call of the function. Perform some validation
+        // Initial call of the function. Perform some validation
         if (saveptr == M_NULLPTR || strmax == M_NULLPTR)
         {
             errno = EINVAL;
             return M_NULLPTR;
         }
         *saveptr = str;
-        *strmax = safe_strlen(str);
+        *strmax  = safe_strlen(str);
     }
     token = *saveptr;
-    end = *saveptr + *strmax;
+    end   = *saveptr + *strmax;
     if (*end == '\0')
     {
         *saveptr = end;
-        *strmax = C_CAST(uintptr_t, end) - C_CAST(uintptr_t, str);
+        *strmax  = C_CAST(uintptr_t, end) - C_CAST(uintptr_t, str);
         return str;
     }
     while (*strmax > 0 && *token && !strchr(delim, *token))
@@ -478,14 +495,14 @@ char* safe_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, const 
     }
     if (*token)
     {
-        *token = '\0';
+        *token   = '\0';
         *saveptr = token + 1;
         (*strmax)--;
     }
     else
     {
         *saveptr = end;
-        token = M_NULLPTR;
+        token    = M_NULLPTR;
     }
     return token;
 
@@ -494,9 +511,9 @@ char* safe_String_Token(char* M_RESTRICT str, rsize_t* M_RESTRICT strmax, const 
 
 size_t safe_strnlen(const char* string, size_t n)
 {
-#if defined (HAVE_C11_ANNEX_K) || defined (__STDC_SECURE_LIB__)
+#if defined(HAVE_C11_ANNEX_K) || defined(__STDC_SECURE_LIB__)
     return strnlen_s(string, n);
-#elif defined (POSIX_2008) || defined (USING_SUS4) || defined (HAVE_STRNLEN) /*also glibc 2.0, openbsd 4.8*/
+#elif defined(POSIX_2008) || defined(USING_SUS4) || defined(HAVE_STRNLEN) /*also glibc 2.0, openbsd 4.8*/
     if (string != M_NULLPTR)
     {
         return strnlen(string, n);
@@ -506,7 +523,8 @@ size_t safe_strnlen(const char* string, size_t n)
         return 0;
     }
 #else
-    //implement this ourselves with memchr after making sure string is not a null pointer
+    // implement this ourselves with memchr after making sure string is not a null
+    // pointer
     if (string != M_NULLPTR)
     {
         const char* found = memchr(string, '\0', n);
@@ -523,7 +541,7 @@ size_t safe_strnlen(const char* string, size_t n)
 #endif
 }
 
-#if !defined (__STDC_ALLOC_LIB__) && !defined (POSIX_2008) && !defined (USING_C23)
+#if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
 M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size)
 {
     size_t length = safe_strnlen(src, size);
@@ -543,7 +561,7 @@ M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size)
         return M_NULLPTR;
     }
 }
-#endif //checks for strndup
+#endif // checks for strndup
 
 void byte_Swap_String_Len(char* stringToChange, size_t stringlen)
 {
@@ -552,14 +570,14 @@ void byte_Swap_String_Len(char* stringToChange, size_t stringlen)
         for (size_t stringIter = 0; stringIter < stringlen - 1; stringIter += 2)
         {
             // Swap the characters
-            char temp = stringToChange[stringIter];
-            stringToChange[stringIter] = stringToChange[stringIter + 1];
+            char temp                      = stringToChange[stringIter];
+            stringToChange[stringIter]     = stringToChange[stringIter + 1];
             stringToChange[stringIter + 1] = temp;
         }
     }
 }
 
-//use this to swap the bytes in a string...useful for ATA strings
+// use this to swap the bytes in a string...useful for ATA strings
 void byte_Swap_String(char* stringToChange)
 {
     size_t stringlen = safe_strlen(stringToChange);
@@ -568,8 +586,8 @@ void byte_Swap_String(char* stringToChange)
         for (size_t stringIter = 0; stringIter < stringlen - 1; stringIter += 2)
         {
             // Swap the characters
-            char temp = stringToChange[stringIter];
-            stringToChange[stringIter] = stringToChange[stringIter + 1];
+            char temp                      = stringToChange[stringIter];
+            stringToChange[stringIter]     = stringToChange[stringIter + 1];
             stringToChange[stringIter + 1] = temp;
         }
     }
@@ -578,18 +596,21 @@ void byte_Swap_String(char* stringToChange)
 void remove_Whitespace_Left(char* stringToChange)
 {
     size_t iter = 0;
-    size_t len = 0;
+    size_t len  = 0;
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    len = strspn(stringToChange, " \t\n\v\f"); //only touch spaces at the beginning of the string, not the whole string
+    len = strspn(stringToChange,
+                 " \t\n\v\f"); // only touch spaces at the beginning of the
+                               // string, not the whole string
     if (len == 0)
     {
         return;
     }
 
-    while ((iter < (safe_strlen(stringToChange) - 1) && stringToChange[iter]))  // having issues with the isspace command leaving extra chars in the string
+    while ((iter < (safe_strlen(stringToChange) - 1) && stringToChange[iter])) // having issues with the isspace command
+                                                                               // leaving extra chars in the string
     {
         stringToChange[iter] = stringToChange[iter + len];
         iter++;
@@ -610,7 +631,7 @@ void remove_Trailing_Whitespace(char* stringToChange)
     }
     while (iter > 0 && safe_isascii(stringToChange[iter - 1]) && safe_isspace(stringToChange[iter - 1]))
     {
-        stringToChange[iter - 1] = '\0'; //replace spaces with null terminators
+        stringToChange[iter - 1] = '\0'; // replace spaces with null terminators
         iter--;
     }
 }
@@ -632,7 +653,7 @@ void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
 
 void remove_Leading_Whitespace(char* stringToChange)
 {
-    size_t iter = 0;
+    size_t iter              = 0;
     size_t stringToChangeLen = 0;
     if (stringToChange == M_NULLPTR)
     {
@@ -646,7 +667,9 @@ void remove_Leading_Whitespace(char* stringToChange)
     if (iter > 0)
     {
         safe_memmove(&stringToChange[0], stringToChangeLen, &stringToChange[iter], stringToChangeLen - iter);
-        memset(&stringToChange[stringToChangeLen - iter], 0, iter);//should this be a null? Or a space? Leaving as null for now since it seems to work...
+        memset(&stringToChange[stringToChangeLen - iter], 0,
+               iter); // should this be a null? Or a space? Leaving as null for now
+                      // since it seems to work...
     }
 }
 
@@ -666,7 +689,8 @@ void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
     if (iter > 0)
     {
         safe_memmove(stringToChange, stringlen, &stringToChange[iter], stringlen - iter);
-        memset(&stringToChange[stringlen - iter], 0, iter); // Null-terminate the shifted string
+        memset(&stringToChange[stringlen - iter], 0,
+               iter); // Null-terminate the shifted string
     }
 }
 
@@ -862,7 +886,8 @@ size_t find_first_occurrence_in_string(const char* originalString, const char* s
     }
 
     const char* partialString = strstr(originalString, stringToFind);
-    return (partialString != M_NULLPTR) ? (C_CAST(uintptr_t, partialString) - C_CAST(uintptr_t, originalString)) : SIZE_MAX;
+    return (partialString != M_NULLPTR) ? (C_CAST(uintptr_t, partialString) - C_CAST(uintptr_t, originalString))
+                                        : SIZE_MAX;
 }
 
 bool wildcard_Match(const char* pattern, const char* data)
