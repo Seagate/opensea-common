@@ -484,6 +484,7 @@ enum ePOSIXVersionFieldCounts
     SUNOS_VERSION_FIELDS            = 3,
     DARWIN_VERSION_FIELDS           = 3,
     NETBSD_VERSION_FIELDS           = 3,
+    OPENBSD_VERSION_FIELDS          = 2,
     OSF1_VERSION_FIELDS             = 2,
     HPUX_VERSION_FIELDS             = 2,
     ESXI_VERSION_FIELDS             = 3,
@@ -557,7 +558,7 @@ static eReturnValues get_FreeBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
     DECLARE_ZERO_INIT_ARRAY(uint16_t, list, FREEBSD_VERSION_FIELDS);
     versionNumber->osVersioningIdentifier = OS_FREEBSD;
     // FreeBSD version is stored as Major.Minor-SomeString
-    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, FREEBSD_VERSION_FIELDS))
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".-", list, FREEBSD_VERSION_FIELDS))
     {
         versionNumber->versionType.freeBSDVersion.majorVersion = list[0];
         versionNumber->versionType.freeBSDVersion.minorVersion = list[1];
@@ -715,7 +716,7 @@ static eReturnValues get_Dragonfly_Ver_And_Name(ptrOSVersionNumber versionNumber
     eReturnValues ret = SUCCESS;
     DECLARE_ZERO_INIT_ARRAY(uint16_t, list, DRAGONFLYBSD_VERSION_FIELDS);
     versionNumber->osVersioningIdentifier = OS_DRAGONFLYBSD;
-    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, DRAGONFLYBSD_VERSION_FIELDS))
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".-", list, DRAGONFLYBSD_VERSION_FIELDS))
     {
         versionNumber->versionType.dragonflyVersion.majorVersion = list[0];
         versionNumber->versionType.dragonflyVersion.minorVersion = list[1];
@@ -742,21 +743,26 @@ static eReturnValues get_OpenBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
                                               struct utsname*    unixUname)
 {
     eReturnValues ret                     = SUCCESS;
-    unsigned long temp                    = 0UL;
+    DECLARE_ZERO_INIT_ARRAY(uint16_t, list, OPENBSD_VERSION_FIELDS);
     versionNumber->osVersioningIdentifier = OS_OPENBSD;
-    if (0 == safe_strtoul(&temp, unixUname->version, M_NULLPTR, BASE_10_DECIMAL))
+    if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, OPENBSD_VERSION_FIELDS))
     {
-        versionNumber->versionType.openBSDVersion.majorVersion = M_STATIC_CAST(uint16_t, temp);
+        versionNumber->versionType.openBSDVersion.majorVersion = list[0];
+        versionNumber->versionType.openBSDVersion.minorVersion = list[1];
+        if (operatingSystemName != M_NULLPTR)
+        {
+            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "OpenBSD %" PRIu16 ".%" PRIu16 "",
+                                versionNumber->versionType.openBSDVersion.majorVersion,
+                                versionNumber->versionType.openBSDVersion.minorVersion);
+        }
     }
-    if (0 == safe_strtoul(&temp, unixUname->version, M_NULLPTR, BASE_10_DECIMAL))
+    else
     {
-        versionNumber->versionType.openBSDVersion.minorVersion = M_STATIC_CAST(uint16_t, temp);
-    }
-    if (operatingSystemName != M_NULLPTR)
-    {
-        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "OpenBSD %" PRIu16 ".%" PRIu16 "",
-                            versionNumber->versionType.openBSDVersion.majorVersion,
-                            versionNumber->versionType.openBSDVersion.minorVersion);
+        ret = FAILURE;
+        if (operatingSystemName != M_NULLPTR)
+        {
+            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Unknown OpenBSD Version");
+        }
     }
     return ret;
 }
