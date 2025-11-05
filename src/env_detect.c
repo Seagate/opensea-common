@@ -400,12 +400,16 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     compilerVersionInfo->major = __clang_major__;
     compilerVersionInfo->minor = __clang_minor__;
     compilerVersionInfo->patch = __clang_patchlevel__;
-#elif defined __HP_aCC
+#elif defined __HP_aCC || defined __HP_cc
     // untested
     *compilerUsed = OPENSEA_COMPILER_HP_A_CPP;
 #    define HP_ACC_VERSION_STRING_LENGTH 7
     DECLARE_ZERO_INIT_ARRAY(char, hpVersion, HP_ACC_VERSION_STRING_LENGTH);
+#    if defined __HP_cc
+    snprintf_err_handle(hpVersion, HP_ACC_VERSION_STRING_LENGTH, "%u", __HP_cc);
+#    else
     snprintf_err_handle(hpVersion, HP_ACC_VERSION_STRING_LENGTH, "%u", __HP_aCC);
+#    endif
     DECLARE_ZERO_INIT_ARRAY(char, hpMajor, 3);
     DECLARE_ZERO_INIT_ARRAY(char, hpMinor, 3);
     DECLARE_ZERO_INIT_ARRAY(char, hpPatch, 3);

@@ -213,6 +213,7 @@ elif c.get_id().contains('msvc')
         '/w14311',  # 'variable': pointer truncation from 'type' to 'type'
         '/w14312',  # 'operation': conversion from 'type1' to 'type2' of greater size
         '/w14319',  # 'operator': zero extending 'type1' to 'type2' of greater size
+        '/w14702',  # warning for unreachable code
         #Treat the following as errors
         '/we4431',  # missing type specifier - int assumed. Note: C no longer supports default-int
         '/we4905',  # wide string literal cast to 'LPSTR'

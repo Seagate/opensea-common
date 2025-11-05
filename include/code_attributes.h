@@ -52,7 +52,7 @@ extern "C"
 //! non-standard attributes (i.e. gnu::fallthrough, clang::fallthrough, msvc::fallthrough).
 //! \code
 //! #if defined(DETECT_STD_ATTR_CHECK)
-//! #    if DETECT_STD_ATTR(clang::fallthrough)
+//! #    if DETECT_STD_ATTR(fallthrough)
 //! ...do something
 //! \endcode
 
@@ -528,6 +528,67 @@ extern "C"
 
 #if !defined(M_NORETURN)
 #    define M_NORETURN /*NORETURN*/
+#endif
+
+//! \def M_UNREACHABLE()
+//! \brief A macro that inserts an unreachable function to help the compiler optimize code paths.
+//!
+//! \details This macro should be used in places where the code should never reach. This is
+//! useful for optimizations only and does not replace error handling or eliminate warnings.
+//! For C++23 it uses std::unreachable() if available.
+//! For C23 it uses the unreachable convenience macro if available.
+//! For GCC and Clang it uses __builtin_unreachable().
+//! For MSVC it uses __assume(0).
+//! If no support is detected, it defines a simple unreachable function that does nothing.
+//! \code
+//! switch(value)
+//! {
+//!     case 1:
+//!         ...
+//!         break;
+//!     case 2:
+//!         ...
+//!         break;
+//!     default:
+//!         M_UNREACHABLE();
+//!         break;
+//! }
+//! \endcode
+//! \code
+//! enum SomeEnum { thing1, thing2 };
+//! switch(value)
+//! {
+//!     case thing1:
+//!         ...
+//!         return;
+//!     case thing2:
+//!         ...
+//!         return;
+//! }
+//! M_UNREACHABLE();
+//! \endcode
+//! \code
+//! int someFunction(int value)
+//! {
+//!     if(value == 1)
+//!     {
+//!         abort();
+//!         M_UNREACHABLE();
+//!     }
+//!     do more stuff...
+//! \endcode
+#if defined(USING_CPP23) && defined (__cpp_lib_unreachable) && (__cpp_lib_unreachable >= 202202L)
+#include <utility> // for std::unreachable
+#    define M_UNREACHABLE() (std::unreachable())
+#elif defined (unreachable) // C23
+#    define M_UNREACHABLE() (unreachable())
+#elif defined (HAVE_BUILT_IN_UNREACHABLE) || (IS_CLANG_VERSION(3, 2) || IS_GCC_VERSION(4, 5))
+#    define M_UNREACHABLE() (__builtin_unreachable())
+#elif IS_MSVC_VERSION(MSVC_2003)
+#    define M_UNREACHABLE() (__assume(0))
+#else
+M_NORETURN M_INLINE void unreachable_func(void) {}
+#    define M_UNREACHABLE() (unreachable_func())
 #endif
 
 //! \def M_FUNC_ATTR_MALLOC

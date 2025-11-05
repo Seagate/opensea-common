@@ -55,8 +55,8 @@
 //! \def _FILE_OFFSET_BITS
 //! \brief Enables large file support on 32-bit systems.
 //!
-//! This macro is defined to allow reading larger files on 32-bit operating systems without limitations. 
-//! It sets the file offset bits to 64. 
+//! This macro is defined to allow reading larger files on 32-bit operating systems without limitations.
+//! It sets the file offset bits to 64.
 //! \note If _FILE_OFFSET_BITS is already defined and is less than 64, it is redefined to 64.
 #if !defined(_FILE_OFFSET_BITS)
 #    define _FILE_OFFSET_BITS 64
@@ -688,14 +688,14 @@ typedef int32_t intptr_t;
         {                                                                                                              \
             __VA_ARGS__                                                                                                \
         } __attribute__((packed, aligned(alignmentval))) name
-#elif IS_MSVC_VERSION(MSVC_2005) && !defined(__clang__)
+#elif IS_MSVC_VERSION(MSVC_2005)
 #    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
-        __pragma(pack(push, alignmentval));                                                                            \
+        MSVC_PRAGMA(pack(push, alignmentval));                                                                         \
         typedef struct s_##name                                                                                        \
         {                                                                                                              \
             __VA_ARGS__                                                                                                \
         } name;                                                                                                        \
-        __pragma(pack(pop))
+        MSVC_PRAGMA(pack(pop))
 #else
 #    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
         typedef struct s_##name                                                                                        \
@@ -717,17 +717,40 @@ typedef int32_t intptr_t;
         {                                                                                                              \
             __VA_ARGS__                                                                                                \
         } __attribute__((packed)) name
-#elif IS_MSVC_VERSION(MSVC_2005) && !defined(__clang__)
-#    define M_PACKED_STRUCT(name, ...)                                                                                 \
-        __pragma(pack(push, 1));                                                                                       \
-        typedef struct s_##name                                                                                        \
-        {                                                                                                              \
-            __VA_ARGS__                                                                                                \
-        } name;                                                                                                        \
-        __pragma(pack(pop))
+#elif IS_MSVC_VERSION(MSVC_2005)
+#    define M_PACKED_STRUCT(name, ...) M_PACK_ALIGN_STRUCT(name, 1, __VA_ARGS__)
 #else
 #    define M_PACKED_STRUCT(name, ...)                                                                                 \
         typedef struct s_##name                                                                                        \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } name
+#endif
+
+//! \def M_PACKED_UNION
+//! \brief Defines a packed union
+//!
+//! This macro defines a packed union to ensure the union is packed as small as possible.
+//! It attempts to provide a compatible definition for various compilers.
+//! \param name The name of the union
+//! \param ... The union members.
+#if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
+#    define M_PACKED_UNION(name, ...)                                                                                  \
+        union name                                                                                                     \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } __attribute__((packed)) name
+#elif IS_MSVC_VERSION(MSVC_2005)
+#    define M_PACKED_UNION(name, ...)                                                                                  \
+        MSVC_PRAGMA(pack(push, 1));                                                                                    \
+        union name                                                                                                     \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } name;                                                                                                        \
+        MSVC_PRAGMA(pack(pop))
+#else
+#    define M_PACKED_UNION(name, ...)                                                                                  \
+        union name                                                                                                     \
         {                                                                                                              \
             __VA_ARGS__                                                                                                \
         } name
