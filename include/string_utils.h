@@ -213,7 +213,7 @@ extern "C"
     //! \param[in] string pointer to string to find the length of.
     //! \return 0 if string is null. length of string if null terminator found.
     //! Will scan up to RSIZE_MAX characters and may return RSIZE_MAX if null is not found
-    M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char* string)
+    M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_INLINE size_t safe_strlen(const char* string)
     {
 #if defined(HAVE_BUILT_IN_OBJ_SIZE)
         return safe_strnlen(string, __builtin_object_size(string, 0) != SIZE_MAX ? __builtin_object_size(string, 0)
