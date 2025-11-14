@@ -1032,6 +1032,23 @@ extern "C"
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2) bool wildcard_case_match(const char* pattern, const char* data);
 
+    //! \fn int string_version_compare(const char* string1, const char* string2)
+    //! \brief Works like GNU's strvercmp function to compare two strings.
+    //! \details Compares two strings taking into account numerical substrings as numbers
+    //! rather than as text. For example, "file9.txt" is less than "file10.txt".
+    //! Both strings must be null-terminated ASCII strings.
+    //! This resolves issues where jan1, jan10, jan2 would come out from alphacompare when
+    //! the caller wants jan1, jan2, jan10 instead.
+    //! \param[in] string1 pointer to the first null-terminated string to compare
+    //! \param[in] string2 pointer to the second null-terminated string to compare
+    //! \return negative value if \a string1 < \a string2, zero if they are equal,
+    //! positive value if \a string1 > \a string2
+    //! \note Performance not quite as good as GNU version.
+    M_NONNULL_PARAM_LIST(1, 2)
+    M_PARAM_RO(1)
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2) int string_version_compare(const char* string1, const char* string2);
+
 #if defined(__cplusplus)
 }
 #endif
