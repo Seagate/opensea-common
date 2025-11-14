@@ -20,12 +20,16 @@
 
 #if !defined(_WIN32)
 #    include <dirent.h>
-#else
+#endif     //_WIN32
+
+// This is a list of systems where we need the old prototype for the scandir comparison
+// function. Newer systems use the struct dirent** version
+// This is based on reading man pages online and looking at the definitions and may not be complete
+#if defined(_WIN32) || (!IS_FREEBSD_VERSION(9, 0, 0) && !IS_NETBSD_VERSION(8, 0, 0) && !IS_OPENBSD_VERSION(5, 2, 0))
 #    if !defined(NEED_OLD_SCANDIR_CMP_FUNC_TYPE)
 #        define NEED_OLD_SCANDIR_CMP_FUNC_TYPE
 #    endif // NEED_OLD_SCANDIR_CMP_FUNC_TYPE
-#endif     //_WIN32
-
+#endif     // !IS_FREEBSD_VERSION(9,0,0)
 #if defined(__cplusplus)
 extern "C"
 {
