@@ -26,7 +26,9 @@
 #    endif //! HAVE_WIN_BSWAP
 #endif     //_MSC_VER
 
-#if defined(__has_include)
+// C++ should not include this. It has issues loading this and it's names for some unknown reason.
+// <bit> header for C++ is better to use in C++ mode.
+#if defined(__has_include) && !defined(__cplusplus)
 #    if __has_include(<stdbit.h>)
 #        include <stdbit.h>
 #        define HAVE_STDC_BIT
