@@ -9,7 +9,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -55,8 +55,9 @@
 //! \def _FILE_OFFSET_BITS
 //! \brief Enables large file support on 32-bit systems.
 //!
-//! This macro is defined to allow reading larger files on 32-bit operating systems without limitations. It sets the
-//! file offset bits to 64. \note If _FILE_OFFSET_BITS is already defined and is less than 64, it is redefined to 64.
+//! This macro is defined to allow reading larger files on 32-bit operating systems without limitations.
+//! It sets the file offset bits to 64.
+//! \note If _FILE_OFFSET_BITS is already defined and is less than 64, it is redefined to 64.
 #if !defined(_FILE_OFFSET_BITS)
 #    define _FILE_OFFSET_BITS 64
 #elif _FILE_OFFSET_BITS < 64
@@ -143,14 +144,14 @@ typedef off_t oscoffset_t;
     typedef int errno_t;
 #endif //! HAVE_C11_ANNEX_K && !HAVE_MSFT_SECURE_LIB
 
-#if defined(USING_C23) || defined(USING_CPP23)
+#if defined(__cpp_size_t_suffix) || defined(__c_size_t_suffix)
 //! \def SIZE_T_C
 //! \brief Defines a macro for size_t constants in C23 or C++23.
 //!
 //! This macro appends the 'ZU' suffix to a constant to define it as a size_t constant.
 //! \param c The constant to be defined as a size_t constant.
 #    if !defined(SIZE_T_C)
-#        define SIZE_T_C(c) (c##ZU)
+#        define SIZE_T_C(c) (c##UZ)
 #    endif // SIZE_T_C
 
 //! \def SSIZE_T_C
@@ -161,7 +162,7 @@ typedef off_t oscoffset_t;
 #    if !defined(SSIZE_T_C)
 #        define SSIZE_T_C(c) (c##Z)
 #    endif // SSIZE_T_C
-#endif     // C23 or C++23
+#endif     // size t suffix support
 
 #if defined(ENV_64BIT)
 #    if !defined(UINTPTR_MAX)
@@ -174,7 +175,7 @@ typedef off_t oscoffset_t;
 //! \def UINTPTR_MAX
 //! \brief Defines the maximum value for uintptr_t on 64-bit systems.
 #        define UINTPTR_MAX UINT64_MAX
-#    endif
+#    endif //! UINTPTR_MAX
 
 #    if !defined(INTPTR_MAX)
     //! \typedef intptr_t
@@ -187,28 +188,34 @@ typedef off_t oscoffset_t;
 //! \brief Defines the maximum value for intptr_t on 64-bit systems.
 #        define INTPTR_MAX INT64_MAX
 
-//! \def INTMAX_MIN
-//! \brief Defines the minimum value for intmax_t on 64-bit systems.
-#        define INTMAX_MIN INT64_MIN
-#    endif
+//! \def INTPTR_MIN
+//! \brief Defines the minimum value for intptr_t on 64-bit systems.
+#        define INTPTR_MIN INT64_MIN
+#    endif //! INTPTR_MAX
 
+#    if !defined(SIZE_T_C)
 //! \def SIZE_T_C
 //! \brief Defines a macro for size_t constants on 64-bit systems.
 //!
 //! This macro appends the 'ULL' suffix to a constant to define it as a size_t constant.
-#    define SIZE_T_C(c) UINT64_C(c)
+#        define SIZE_T_C(c) UINT64_C(c)
+#    endif
 
+#    if !defined(RSIZE_T_C)
 //! \def RSIZE_T_C
 //! \brief Defines a macro for rsize_t constants on 64-bit systems.
 //!
 //! This macro appends the 'ULL' suffix to a constant to define it as a rsize_t constant.
-#    define RSIZE_T_C(c) UINT64_C(c)
+#        define RSIZE_T_C(c) UINT64_C(c)
+#    endif
 
+#    if !defined(SSIZE_T_C)
 //! \def SSIZE_T_C
 //! \brief Defines a macro for ssize_t constants on 64-bit systems.
 //!
 //! This macro appends the 'LL' suffix to a constant to define it as a ssize_t constant.
-#    define SSIZE_T_C(c) INT64_C(c)
+#        define SSIZE_T_C(c) INT64_C(c)
+#    endif
 #else // ENV_32BIT
 #    if !defined(UINTPTR_MAX)
 //! \typedef uintptr_t
@@ -220,7 +227,7 @@ typedef uint32_t uintptr_t;
 //! \def UINTPTR_MAX
 //! \brief Defines the maximum value for uintptr_t on 32-bit systems.
 #        define UINTPTR_MAX UINT32_MAX
-#    endif
+#    endif //! UINTPTR_MAX
 
 #    if !defined(INTPTR_MAX)
 //! \typedef intptr_t
@@ -233,28 +240,34 @@ typedef int32_t intptr_t;
 //! \brief Defines the maximum value for intptr_t on 32-bit systems.
 #        define INTPTR_MAX INT32_MAX
 
-//! \def INTMAX_MIN
-//! \brief Defines the minimum value for intmax_t on 32-bit systems.
-#        define INTMAX_MIN INT32_MIN
-#    endif
+//! \def INTPTR_MIN
+//! \brief Defines the minimum value for intptr_t on 32-bit systems.
+#        define INTPTR_MIN INT32_MIN
+#    endif // INTPTR_MAX
 
+#    if !defined(SIZE_T_C)
 //! \def SIZE_T_C
 //! \brief Defines a macro for size_t constants on 32-bit systems.
 //!
 //! This macro appends the 'U' suffix to a constant to define it as a size_t constant.
-#    define SIZE_T_C(c)  UINT32_C(c)
+#        define SIZE_T_C(c) UINT32_C(c)
+#    endif
 
+#    if !defined(RSIZE_T_C)
 //! \def RSIZE_T_C
 //! \brief Defines a macro for rsize_t constants on 32-bit systems.
 //!
 //! This macro appends the 'U' suffix to a constant to define it as a rsize_t constant.
-#    define RSIZE_T_C(c) UINT32_C(c)
+#        define RSIZE_T_C(c) UINT32_C(c)
+#    endif
 
+#    if !defined(SSIZE_T_C)
 //! \def SSIZE_T_C
 //! \brief Defines a macro for ssize_t constants on 32-bit systems.
 //!
 //! This macro appends the 'L' suffix to a constant to define it as a ssize_t constant.
-#    define SSIZE_T_C(c) INT32_C(c)
+#        define SSIZE_T_C(c) INT32_C(c)
+#    endif
 #endif
 
 #if defined(_WIN32)
@@ -534,6 +547,12 @@ typedef int32_t intptr_t;
 //! This macro can be used within UINTwidth_C type macros as needed.
 #define OBSOLETE 0
 
+//! \def UNUSED
+//! \brief Defines a macro for an unused field set to zero
+//!
+//! This macro can be used within UINTwidth_C type macros as needed.
+#define UNUSED 0
+
 //! \def M_NULLPTR
 //! \brief Defines a macro for nullptr to handle different standards and environments.
 //!
@@ -669,14 +688,14 @@ typedef int32_t intptr_t;
         {                                                                                                              \
             __VA_ARGS__                                                                                                \
         } __attribute__((packed, aligned(alignmentval))) name
-#elif IS_MSVC_VERSION(MSVC_2005) && !defined(__clang__)
+#elif IS_MSVC_VERSION(MSVC_2005)
 #    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
-        __pragma(pack(push, alignmentval));                                                                            \
+        MSVC_PRAGMA(pack(push, alignmentval));                                                                         \
         typedef struct s_##name                                                                                        \
         {                                                                                                              \
             __VA_ARGS__                                                                                                \
         } name;                                                                                                        \
-        __pragma(pack(pop))
+        MSVC_PRAGMA(pack(pop))
 #else
 #    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
         typedef struct s_##name                                                                                        \
@@ -698,17 +717,40 @@ typedef int32_t intptr_t;
         {                                                                                                              \
             __VA_ARGS__                                                                                                \
         } __attribute__((packed)) name
-#elif IS_MSVC_VERSION(MSVC_2005) && !defined(__clang__)
-#    define M_PACKED_STRUCT(name, ...)                                                                                 \
-        __pragma(pack(push, 1));                                                                                       \
-        typedef struct s_##name                                                                                        \
-        {                                                                                                              \
-            __VA_ARGS__                                                                                                \
-        } name;                                                                                                        \
-        __pragma(pack(pop))
+#elif IS_MSVC_VERSION(MSVC_2005)
+#    define M_PACKED_STRUCT(name, ...) M_PACK_ALIGN_STRUCT(name, 1, __VA_ARGS__)
 #else
 #    define M_PACKED_STRUCT(name, ...)                                                                                 \
         typedef struct s_##name                                                                                        \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } name
+#endif
+
+//! \def M_PACKED_UNION
+//! \brief Defines a packed union
+//!
+//! This macro defines a packed union to ensure the union is packed as small as possible.
+//! It attempts to provide a compatible definition for various compilers.
+//! \param name The name of the union
+//! \param ... The union members.
+#if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
+#    define M_PACKED_UNION(name, ...)                                                                                  \
+        union name                                                                                                     \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } __attribute__((packed)) name
+#elif IS_MSVC_VERSION(MSVC_2005)
+#    define M_PACKED_UNION(name, ...)                                                                                  \
+        MSVC_PRAGMA(pack(push, 1));                                                                                    \
+        union name                                                                                                     \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } name;                                                                                                        \
+        MSVC_PRAGMA(pack(pop))
+#else
+#    define M_PACKED_UNION(name, ...)                                                                                  \
+        union name                                                                                                     \
         {                                                                                                              \
             __VA_ARGS__                                                                                                \
         } name
@@ -732,7 +774,7 @@ typedef int32_t intptr_t;
 #        if defined(USING_C99)
     static M_INLINE void zero_init_array(void* array, size_t element_size, size_t element_count)
     {
-#            if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
+#            if defined(HAVE_MEMSET_EXPLICIT)
         memset_explicit(array, 0, element_size * element_count);
 #            elif defined(HAVE_C11_ANNEX_K) || defined(HAVE_MEMSET_S)
         memset_s(array, element_size * element_count, 0, element_size * element_count);
@@ -757,6 +799,33 @@ typedef int32_t intptr_t;
 #            define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) type_name array_name[size] = {0}
 #        endif
 #    endif
+
+//! \def DECLARE_ALIGNED_ZERO_INIT_ARRAY
+//! \brief Declares and zero-initializes an array to a specified alignment
+//!
+//! This macro declares and zero-initializes an array to ensure all elements are set to zero.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! \param type_name The type of the array elements.
+//! \param array_name The name of the array.
+//! \param size The size of the array.
+//! \param align The requested alignment to use with alignas()
+#    if IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0)
+#        define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                    \
+            M_ALIGNAS(align) type_name array_name[size] = {[0 ...((size) - 1)] = 0}
+#    elif USING_C23
+#        define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                    \
+            M_ALIGNAS(align) type_name array_name[size] = {}
+#    else
+#        if defined(USING_C99)
+#            define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                \
+                M_ALIGNAS(align) type_name array_name[size];                                                           \
+                zero_init_array(array_name, sizeof(type_name), size)
+#        else
+#            define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                \
+                M_ALIGNAS(align) type_name array_name[size] = {0}
+#        endif
+#    endif
+
 #endif
 
 //! \def M_STATIC_ASSERT
@@ -927,8 +996,14 @@ typedef int32_t intptr_t;
         TRUNCATED_FILE = 34,
         /*!< Path is insecure. */
         INSECURE_PATH = 35,
+        /*!< Device handle reported busy and cannot be opened. */
+        DEVICE_BUSY = 36,
+        /*!< invalid device handle specified (not connected or present on the system) */
+        DEVICE_INVALID = 37,
+        /*!< Device disconnected since being opened and is no longer available. */
+        DEVICE_DISCONNECTED = 38,
         /*!< Unknown error. */
-        UNKNOWN = 36);
+        UNKNOWN);
 
     //! \enum eDataTransferDirection
     //! \brief Enum representing data transfer directions.
@@ -1083,4 +1158,22 @@ template <typename T, size_t N> void zero_init_array(T (&array)[N])
 #    define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                       \
         type_name array_name[size];                                                                                    \
         zero_init_array(array_name)
+
+//! \def DECLARE_ALIGNED_ZERO_INIT_ARRAY
+//! \brief Declares and zero-initializes an array as a specified alignment
+//!
+//! This macro declares and zero-initializes an array to ensure all elements are set to zero.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//!
+//! \param type_name The type of the array elements.
+//! \param array_name The name of the array.
+//! \param size The size of the array.
+//! \param align The requested alignment to use with alignas()
+//! \note This does not use memset to handle non-trivial types.
+//!       A compiler may optimize this to memset though if it detects that this
+//!       is a zero initialization of the data.
+#    define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                        \
+        M_ALIGNAS(align) type_name array_name[size];                                                                   \
+        zero_init_array(array_name)
+
 #endif // C++98 and no DECLARE_ZERO_INIT_ARRAY

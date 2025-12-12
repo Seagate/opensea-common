@@ -5,7 +5,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -353,7 +353,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
         {
             return M_NULLPTR;
         }
-#if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_VISTA
+#if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_VISTA && !defined (NO_FILE_ID_INFO)
         if (is_Windows_Vista_Or_Higher()) // This ex function is only available
                                           // on Vista and later OSs according to
                                           // MSFT docs
@@ -540,7 +540,7 @@ static bool get_System_Volume(char* winSysVol, size_t winSysVolLen)
             if (ENV_VAR_SUCCESS != get_Environment_Variable("SystemDrive", &systemDrive))
             {
 #if defined(_DEBUG)
-                printf("Failed reading the system drive environment variable.\n");
+                print_str("Failed reading the system drive environment variable.\n");
 #endif //_DEBUG
             }
             else

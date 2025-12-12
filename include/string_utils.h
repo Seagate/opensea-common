@@ -5,7 +5,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -180,6 +180,7 @@ extern "C"
     //! \note Sets errno to ERANGE if \a c is not in the range of unsigned char and is not EOF.
     int safe_toupper(int c);
 
+#if defined(DEV_ENVIRONMENT)
     //! \fn size_t safe_strnlen(const char* string, size_t n)
     //! \brief Returns length of string or \a n if null terminator not found
     //! \param[in] string pointer to string to find the length of.
@@ -188,7 +189,21 @@ extern "C"
     //! after scanning \a n characters
     // M_PARAM_RO_SIZE(1, 2) //Do not use this right now. Need to revisit how we want to do this since
     // doing this causes some weird behavior with builtin obj size and RSIZE_MAX as a backup maximum length-TJE
-    size_t safe_strnlen(const char* string, size_t n);
+    M_INLINE size_t safe_strnlen(const char* string, size_t n)
+    {
+        return safe_strnlen_impl(string, n);
+    }
+#else
+//! \def safe_strnlen(string, n)
+//! \brief Returns length of string or \a n if null terminator not found
+//! \param[in] string pointer to string to find the length of.
+//! \param[in] n maximum number of characters to scan for null terminator
+//! \return 0 if string is null. length of string if null terminator found. \a n if null terminator not found
+//! after scanning \a n characters
+// M_PARAM_RO_SIZE(1, 2) //Do not use this right now. Need to revisit how we want to do this since
+// doing this causes some weird behavior with builtin obj size and RSIZE_MAX as a backup maximum length-TJE
+#    define safe_strnlen(string, n) safe_strnlen_impl(string, n)
+#endif
 
     // if str is a null pointer, returns 0. Internally calls safe_strnlen with size
     // set to RSIZE_MAX If __builtin_object_size can determine the amount of memory
@@ -198,7 +213,11 @@ extern "C"
     //! \param[in] string pointer to string to find the length of.
     //! \return 0 if string is null. length of string if null terminator found.
     //! Will scan up to RSIZE_MAX characters and may return RSIZE_MAX if null is not found
-    M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char* string)
+#if defined(_MSC_VER) && !defined(__clang__)
+    M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_INLINE size_t safe_strlen(const char* string)
+#else
+M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char* string)
+#endif
     {
 #if defined(HAVE_BUILT_IN_OBJ_SIZE)
         return safe_strnlen(string, __builtin_object_size(string, 0) != SIZE_MAX ? __builtin_object_size(string, 0)
@@ -905,6 +924,21 @@ extern "C"
     M_NONNULL_PARAM_LIST(1)
     M_PARAM_RW_SIZE(1, 2) void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen);
 
+    //! \fn void remove_Leading_And_Trailing_Control_Char(char* stringToChange)
+    //! \brief remove the control char at the beginning and end of a string
+    //! \param[out] stringToChange a pointer to the data containing a string
+    //! that needs to have the beginning and trailing control char removed. Must be NULL terminated
+    M_NONNULL_PARAM_LIST(1)
+    M_PARAM_RW(1) M_NULL_TERM_STRING(1) void remove_Leading_And_Trailing_Control_Char(char* stringToChange);
+
+    //! \fn void remove_Leading_And_Trailing_Control_Char_Len(char* stringToChange, size_t stringlen)
+    //! \brief remove the control char at the beginning and end of a string of a specified length
+    //! \param[out] stringToChange a pointer to the data containing a string
+    //! that needs to have the beginning and trailing control char removed
+    //! \param[in] stringlen total length of the string pointed to by \a stringToChange
+    M_NONNULL_PARAM_LIST(1)
+    M_PARAM_RW_SIZE(1, 2) void remove_Leading_And_Trailing_Control_Char_Len(char* stringToChange, size_t stringlen);
+
     //! \fn void convert_String_To_Upper_Case(char* stringToChange)
     //! \brief Converts entire string to UPPER CASE
     //! \param[out] stringToChange a pointer to the data containing a string
@@ -1001,6 +1035,23 @@ extern "C"
     M_PARAM_RO(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2) bool wildcard_case_match(const char* pattern, const char* data);
+
+    //! \fn int string_version_compare(const char* string1, const char* string2)
+    //! \brief Works like GNU's strvercmp function to compare two strings.
+    //! \details Compares two strings taking into account numerical substrings as numbers
+    //! rather than as text. For example, "file9.txt" is less than "file10.txt".
+    //! Both strings must be null-terminated ASCII strings.
+    //! This resolves issues where jan1, jan10, jan2 would come out from alphacompare when
+    //! the caller wants jan1, jan2, jan10 instead.
+    //! \param[in] string1 pointer to the first null-terminated string to compare
+    //! \param[in] string2 pointer to the second null-terminated string to compare
+    //! \return negative value if \a string1 < \a string2, zero if they are equal,
+    //! positive value if \a string1 > \a string2
+    //! \note Performance not quite as good as GNU version.
+    M_NONNULL_PARAM_LIST(1, 2)
+    M_PARAM_RO(1)
+    M_PARAM_RO(2)
+    M_NULL_TERM_STRING(1) M_NULL_TERM_STRING(2) int string_version_compare(const char* string1, const char* string2);
 
 #if defined(__cplusplus)
 }

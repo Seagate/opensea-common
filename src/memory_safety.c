@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -70,7 +70,8 @@ size_t get_System_Pagesize(void)
 //       using the EDK2, malloc will provide an 8-byte alignment, so it may be
 //       possible to do some aligned allocations using it without extra work.
 //       but we can revist that later.
-M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_DEALLOC(free_aligned, 1) M_ALLOC_ALIGN(2)
+    M_MALLOC_SIZE(1) void* malloc_aligned(size_t size, size_t alignment)
 {
 #if !defined(__MINGW32__) && !defined(UEFI_C_SOURCE) && defined(USING_C11) && !defined(_MSC_VER) &&                    \
     (!defined(THIS_IS_GLIBC) || IS_GLIBC_VERSION(2, 16))
@@ -148,7 +149,7 @@ M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment)
 #endif // UEFI vs compiler/OS specific capabilities check
 }
 
-void free_aligned(void* ptr)
+M_PARAM_WO(1) void free_aligned(void* ptr)
 {
     // NOTE: Can probably consolidate this a bit for the cases calling free,
     // however these macros match what is being done in
@@ -184,7 +185,8 @@ void free_aligned(void* ptr)
 #endif // UEFI vs compiler/OS specific capabilities check
 }
 
-M_FUNC_ATTR_MALLOC void* calloc_aligned(size_t num, size_t size, size_t alignment)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(3) M_CALLOC_SIZE(1, 2)
+    M_ALLOC_DEALLOC(free_aligned, 1) void* calloc_aligned(size_t num, size_t size, size_t alignment)
 {
     // call malloc aligned and memset
     void*  zeroedMem = M_NULLPTR;
@@ -199,8 +201,11 @@ M_FUNC_ATTR_MALLOC void* calloc_aligned(size_t num, size_t size, size_t alignmen
     }
     return zeroedMem;
 }
-
-M_FUNC_ATTR_MALLOC void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t alignment)
+M_NODISCARD
+M_PARAM_RW_SIZE(1, 2)
+M_ALLOC_ALIGN(4)
+M_MALLOC_SIZE(3)
+void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t alignment)
 {
     void* temp = M_NULLPTR;
     if (size == SIZE_T_C(0))
@@ -225,7 +230,7 @@ M_FUNC_ATTR_MALLOC void* realloc_aligned(void* alignedPtr, size_t originalSize, 
     return temp;
 }
 
-M_FUNC_ATTR_MALLOC void* malloc_page_aligned(size_t size)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* malloc_page_aligned(size_t size)
 {
     size_t pageSize = get_System_Pagesize();
     if (pageSize > SIZE_T_C(0))
@@ -238,7 +243,7 @@ M_FUNC_ATTR_MALLOC void* malloc_page_aligned(size_t size)
     }
 }
 
-M_FUNC_ATTR_MALLOC void* calloc_page_aligned(size_t num, size_t size)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* calloc_page_aligned(size_t num, size_t size)
 {
     size_t pageSize = get_System_Pagesize();
     if (pageSize > SIZE_T_C(0))
@@ -250,8 +255,9 @@ M_FUNC_ATTR_MALLOC void* calloc_page_aligned(size_t num, size_t size)
         return M_NULLPTR;
     }
 }
-
-M_FUNC_ATTR_MALLOC void* realloc_page_aligned(void* alignedPtr, size_t originalSize, size_t size)
+M_NODISCARD
+M_PARAM_RW_SIZE(1, 2)
+M_MALLOC_SIZE(3) void* realloc_page_aligned(void* alignedPtr, size_t originalSize, size_t size)
 {
     size_t pageSize = get_System_Pagesize();
     if (pageSize > SIZE_T_C(0))
@@ -264,7 +270,7 @@ M_FUNC_ATTR_MALLOC void* realloc_page_aligned(void* alignedPtr, size_t originalS
     }
 }
 
-bool is_Empty(const void* ptrData, size_t lengthBytes)
+M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* ptrData, size_t lengthBytes)
 {
     DISABLE_NONNULL_COMPARE
     if (ptrData != M_NULLPTR && lengthBytes > SIZE_T_C(0))
@@ -321,12 +327,12 @@ bool is_Empty(const void* ptrData, size_t lengthBytes)
 #    endif
 #endif
 
-void* explicit_zeroes(void* dest, size_t count)
+M_NONNULL_PARAM_LIST(1) M_PARAM_WO_SIZE(1, 2) void* explicit_zeroes(void* dest, size_t count)
 {
     DISABLE_NONNULL_COMPARE
     if (dest != M_NULLPTR && count > SIZE_T_C(0))
     {
-#if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
+#if defined(HAVE_MEMSET_EXPLICIT)
         return memset_explicit(dest, 0, count);
 #elif defined(HAVE_C11_ANNEX_K)
         // use memset_s since it cannot be optimized out
@@ -433,9 +439,9 @@ errno_t safe_memset_impl(void*       dest,
             errno = error;
             return error;
         }
-#if defined(USING_C23) || defined(HAVE_MEMSET_EXPLICIT)
-        memset_explicit(dest, ch,
-                        count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+#if defined(HAVE_MEMSET_EXPLICIT)
+        memset_explicit(dest, ch, // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+                        count);   // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #elif IS_NETBSD_VERSION(7, 0, 0) || defined(HAVE_EXPLICIT_MEMSET)
         // https://man.netbsd.org/NetBSD-8.0/explicit_memset.3
         // https://docs.oracle.com/cd/E88353_01/html/E37843/explicit-memset-3c.html
@@ -450,16 +456,16 @@ errno_t safe_memset_impl(void*       dest,
         // last attempts to prevent optimization as best we can
 #    if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
 #        if defined(HAVE_BUILTIN_MEMSET)
-        __builtin_memset(dest, ch,
-                         count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        __builtin_memset(dest, ch, // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+                         count);   // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #        else
         memset(dest, ch, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #        endif
         asm volatile("" ::: "memory");
 #    elif defined(HAS_BUILT_IN_CLEAR_CACHE)
 #        if defined(HAVE_BUILTIN_MEMSET)
-        __builtin_memset(dest, ch,
-                         count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        __builtin_memset(dest, ch, // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+                         count);   // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #        else
         memset(dest, ch, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #        endif
@@ -470,8 +476,8 @@ errno_t safe_memset_impl(void*       dest,
              (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
         // SecureZeroMemory2 calls FillVolatileMemory which we can use here to
         // do the same thing
-        FillVolatileMemory(dest, count,
-                           ch); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        FillVolatileMemory(dest, count, // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+                           ch);         // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #        elif defined(_M_AMD64) || (!defined(_M_CEE) && defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
         // NOTE: Using the securezeromemory implementation in this case
         volatile char* vptr = M_REINTERPRET_CAST(volatile char*, dest);
@@ -516,11 +522,8 @@ errno_t safe_memset_impl(void*       dest,
 
 // malloc in standards leaves malloc'ing size 0 as a undefined behavior.
 // this version will always return a null pointer if the size is zero
-M_FUNC_ATTR_MALLOC void* safe_malloc_impl(size_t      size,
-                                          const char* file,
-                                          const char* function,
-                                          int         line,
-                                          const char* expression)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(
+    1) void* safe_malloc_impl(size_t size, const char* file, const char* function, int line, const char* expression)
 {
     constraintEnvInfo envInfo;
     if (size == SIZE_T_C(0))
@@ -539,12 +542,12 @@ M_FUNC_ATTR_MALLOC void* safe_malloc_impl(size_t      size,
 // avoiding undefined behavior allocing zero size and avoiding alloc'ing less
 // memory due to an overflow If alloc'ing zero or alloc would overflow size_t
 // from count * size, then return a null pointer
-M_FUNC_ATTR_MALLOC void* safe_calloc_impl(size_t      count,
-                                          size_t      size,
-                                          const char* file,
-                                          const char* function,
-                                          int         line,
-                                          const char* expression)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* safe_calloc_impl(size_t      count,
+                                                                          size_t      size,
+                                                                          const char* file,
+                                                                          const char* function,
+                                                                          int         line,
+                                                                          const char* expression)
 {
     constraintEnvInfo envInfo;
     if (count == SIZE_T_C(0))
@@ -579,7 +582,7 @@ M_FUNC_ATTR_MALLOC void* safe_calloc_impl(size_t      count,
 
 // if passed a null pointer, behaves as safe_Malloc
 // if size is zero, will perform free and return NULL ptr
-M_FUNC_ATTR_MALLOC void* safe_realloc(void* block, size_t size)
+M_NODISCARD M_PARAM_RW(1) M_MALLOC_SIZE(2) void* safe_realloc(void* block, size_t size)
 {
     if (block == M_NULLPTR)
     {
@@ -612,7 +615,7 @@ M_FUNC_ATTR_MALLOC void* safe_realloc(void* block, size_t size)
 // if size is zero, will perform free and return NULL ptr
 // if realloc fails, free's original block
 // free's original block if realloc fails
-M_FUNC_ATTR_MALLOC void* safe_reallocf(void** block, size_t size)
+M_NODISCARD M_PARAM_RW(1) M_MALLOC_SIZE(2) void* safe_reallocf(void** block, size_t size)
 {
     if (block == M_NULLPTR)
     {
@@ -685,12 +688,12 @@ static size_t aligned_Size_Round_Up(size_t size, size_t alignment)
 
 // malloc in standards leaves malloc'ing size 0 as a undefined behavior.
 // this version will always return a null pointer if the size is zero
-M_FUNC_ATTR_MALLOC void* safe_malloc_aligned_impl(size_t      size,
-                                                  size_t      alignment,
-                                                  const char* file,
-                                                  const char* function,
-                                                  int         line,
-                                                  const char* expression)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) M_ALLOC_ALIGN(2) void* safe_malloc_aligned_impl(size_t      size,
+                                                                                                size_t      alignment,
+                                                                                                const char* file,
+                                                                                                const char* function,
+                                                                                                int         line,
+                                                                                                const char* expression)
 {
     constraintEnvInfo envInfo;
     if (size == SIZE_T_C(0))
@@ -712,13 +715,14 @@ M_FUNC_ATTR_MALLOC void* safe_malloc_aligned_impl(size_t      size,
 // avoiding undefined behavior allocing zero size and avoiding alloc'ing less
 // memory due to an overflow If alloc'ing zero or alloc would overflow size_t
 // from count * size, then return a null pointer
-M_FUNC_ATTR_MALLOC void* safe_calloc_aligned_impl(size_t      count,
-                                                  size_t      size,
-                                                  size_t      alignment,
-                                                  const char* file,
-                                                  const char* function,
-                                                  int         line,
-                                                  const char* expression)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2)
+    M_ALLOC_ALIGN(3) void* safe_calloc_aligned_impl(size_t      count,
+                                                    size_t      size,
+                                                    size_t      alignment,
+                                                    const char* file,
+                                                    const char* function,
+                                                    int         line,
+                                                    const char* expression)
 {
     constraintEnvInfo envInfo;
     if (count == SIZE_T_C(0))
@@ -762,7 +766,11 @@ M_FUNC_ATTR_MALLOC void* safe_calloc_aligned_impl(size_t      count,
 
 // if passed a null pointer, behaves as safe_Malloc
 // if size is zero, will perform free and return NULL ptr
-M_FUNC_ATTR_MALLOC void* safe_realloc_aligned(void* block, size_t originalSize, size_t size, size_t alignment)
+M_NODISCARD
+M_PARAM_RW_SIZE(1, 2)
+M_ALLOC_ALIGN(4)
+M_MALLOC_SIZE(3)
+void* safe_realloc_aligned(void* block, size_t originalSize, size_t size, size_t alignment)
 {
     if (block == M_NULLPTR)
     {
@@ -797,7 +805,11 @@ M_FUNC_ATTR_MALLOC void* safe_realloc_aligned(void* block, size_t originalSize, 
 // if size is zero, will perform free and return NULL ptr
 // if realloc fails, free's original block
 // free's original block if realloc fails
-M_FUNC_ATTR_MALLOC void* safe_reallocf_aligned(void** block, size_t originalSize, size_t size, size_t alignment)
+M_NODISCARD
+M_PARAM_RW(1)
+M_ALLOC_ALIGN(4)
+M_MALLOC_SIZE(3)
+void* safe_reallocf_aligned(void** block, size_t originalSize, size_t size, size_t alignment)
 {
     if (block == M_NULLPTR)
     {
@@ -829,7 +841,7 @@ M_FUNC_ATTR_MALLOC void* safe_reallocf_aligned(void** block, size_t originalSize
 
 // malloc in standards leaves malloc'ing size 0 as a undefined behavior.
 // this version will always return a null pointer if the size is zero
-M_FUNC_ATTR_MALLOC void* safe_malloc_page_aligned(size_t size)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* safe_malloc_page_aligned(size_t size)
 {
     return safe_malloc_aligned(size, get_System_Pagesize());
 }
@@ -837,14 +849,15 @@ M_FUNC_ATTR_MALLOC void* safe_malloc_page_aligned(size_t size)
 // avoiding undefined behavior allocing zero size and avoiding alloc'ing less
 // memory due to an overflow If alloc'ing zero or alloc would overflow size_t
 // from count * size, then return a null pointer
-M_FUNC_ATTR_MALLOC void* safe_calloc_page_aligned(size_t count, size_t size)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* safe_calloc_page_aligned(size_t count, size_t size)
 {
     return safe_calloc_aligned(count, size, get_System_Pagesize());
 }
 
 // if passed a null pointer, behaves as safe_Malloc
 // if size is zero, will perform free and return NULL ptr
-M_FUNC_ATTR_MALLOC void* safe_realloc_page_aligned(void* block, size_t originalSize, size_t size)
+M_NODISCARD M_PARAM_RW_SIZE(1, 2)
+    M_MALLOC_SIZE(3) void* safe_realloc_page_aligned(void* block, size_t originalSize, size_t size)
 {
     return safe_realloc_aligned(block, originalSize, size, get_System_Pagesize());
 }
@@ -854,7 +867,9 @@ M_FUNC_ATTR_MALLOC void* safe_realloc_page_aligned(void* block, size_t originalS
 // if size is zero, will perform free and return NULL ptr
 // if realloc fails, free's original block
 // free's original block if realloc fails
-M_FUNC_ATTR_MALLOC void* safe_reallocf_page_aligned(void** block, size_t originalSize, size_t size)
+M_NODISCARD
+M_PARAM_RW(1)
+M_MALLOC_SIZE(3) void* safe_reallocf_page_aligned(void** block, size_t originalSize, size_t size)
 {
     return safe_reallocf_aligned(block, originalSize, size, get_System_Pagesize());
 }
@@ -928,8 +943,8 @@ errno_t safe_memmove_impl(void*       dest,
             // from Microsoft's compiler.
             memmove_s(dest, destsz, src, count);
 #elif defined(HAVE_BUILTIN_MEMMOVE)
-            __builtin_memmove(dest, src,
-                              count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+            __builtin_memmove(dest, src, // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+                              count);    // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #else
             memmove(dest, src, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #endif // HAVE_MSFT_SECURE_LIB
@@ -1016,8 +1031,8 @@ errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
             // from Microsoft's compiler.
             memcpy_s(dest, destsz, src, count);
 #elif defined(HAVE_BUILTIN_MEMCPY)
-            __builtin_memcpy(dest, src,
-                             count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+            __builtin_memcpy(dest, src, // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+                             count);    // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #else
             memcpy(dest, src, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #endif // HAVE_MSFT_SECURE_LIB
@@ -1203,11 +1218,11 @@ errno_t safe_memcmove_impl(void* M_RESTRICT       dest,
             else
             {
                 // backward copy to avoid overlap
-                size_t counter = count;
-                void*  found   = memchr(src, c, count);
+                size_t      counter = count;
+                const void* found   = memchr(src, c, count);
                 if (found != M_NULLPTR)
                 {
-                    counter = M_STATIC_CAST(uintptr_t, found) - M_STATIC_CAST(uintptr_t, src) + SIZE_T_C(1);
+                    counter = M_REINTERPRET_CAST(uintptr_t, found) - M_REINTERPRET_CAST(uintptr_t, src) + SIZE_T_C(1);
                 }
                 for (; counter > SIZE_T_C(0); --counter)
                 {

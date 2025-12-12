@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -28,7 +28,7 @@ eReturnValues fill_Random_Pattern_In_Buffer(uint8_t* ptrData, uint32_t dataLengt
     uint32_t* localPtr = M_REINTERPRET_CAST(uint32_t*, safe_calloc(localPtrDataLen, sizeof(uint32_t)));
     if (localPtr == M_NULLPTR)
     {
-        return MEMORY_FAILURE;
+        return M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE);
     }
     seed_32(C_CAST(uint32_t, time(M_NULLPTR)));
     for (uint32_t iter = UINT32_C(0); iter < (dataLength / sizeof(uint32_t)); ++iter)
@@ -39,7 +39,7 @@ eReturnValues fill_Random_Pattern_In_Buffer(uint8_t* ptrData, uint32_t dataLengt
                 dataLength); // copy only the length of the original pointer since we
                              // may have overallocated and rounded up earlier.
     safe_free(&localPtr);
-    return SUCCESS;
+    return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }
 
 eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* ptrData, uint32_t dataLength)
@@ -49,7 +49,7 @@ eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* ptrData, 
     uint32_t* localPtr = M_REINTERPRET_CAST(uint32_t*, safe_calloc(localPtrDataLen, sizeof(uint32_t)));
     if (localPtr == M_NULLPTR)
     {
-        return MEMORY_FAILURE;
+        return M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE);
     }
     for (uint32_t iter = UINT32_C(0); iter < (dataLength / sizeof(uint32_t)); ++iter)
     {
@@ -59,7 +59,7 @@ eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* ptrData, 
                 dataLength); // copy only the length of the original pointer since we
                              // may have overallocated and rounded up earlier.
     safe_free(&localPtr);
-    return SUCCESS;
+    return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }
 
 eReturnValues fill_Incrementing_Pattern_In_Buffer(uint8_t incrementStartValue, uint8_t* ptrData, uint32_t dataLength)
@@ -67,14 +67,14 @@ eReturnValues fill_Incrementing_Pattern_In_Buffer(uint8_t incrementStartValue, u
     DISABLE_NONNULL_COMPARE
     if (ptrData == M_NULLPTR)
     {
-        return BAD_PARAMETER;
+        return M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER);
     }
     RESTORE_NONNULL_COMPARE
     for (uint32_t iter = UINT32_C(0); iter < dataLength; ++iter)
     {
         ptrData[iter] = incrementStartValue++;
     }
-    return SUCCESS;
+    return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }
 
 eReturnValues fill_ASCII_Pattern_In_Buffer(const char* asciiPattern,
@@ -85,14 +85,14 @@ eReturnValues fill_ASCII_Pattern_In_Buffer(const char* asciiPattern,
     DISABLE_NONNULL_COMPARE
     if (ptrData == M_NULLPTR || patternLength == 0 || asciiPattern == M_NULLPTR)
     {
-        return BAD_PARAMETER;
+        return M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER);
     }
     RESTORE_NONNULL_COMPARE
     for (uint32_t iter = UINT32_C(0); iter < dataLength; iter += patternLength)
     {
-        safe_memcpy(&ptrData[iter], dataLength, asciiPattern, M_Min(patternLength, dataLength - iter));
+        safe_memcpy(&ptrData[iter], dataLength - iter, asciiPattern, M_Min(patternLength, dataLength - iter));
     }
-    return SUCCESS;
+    return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }
 
 eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t* inPattern,
@@ -103,12 +103,12 @@ eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t* inPattern,
     DISABLE_NONNULL_COMPARE
     if (ptrData == M_NULLPTR || inpatternLength == 0 || inPattern == M_NULLPTR || dataLength == 0)
     {
-        return BAD_PARAMETER;
+        return M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER);
     }
     RESTORE_NONNULL_COMPARE
     for (uint32_t iter = UINT32_C(0); iter < dataLength; iter += inpatternLength)
     {
-        safe_memcpy(&ptrData[iter], dataLength, inPattern, M_Min(inpatternLength, dataLength - iter));
+        safe_memcpy(&ptrData[iter], dataLength - iter, inPattern, M_Min(inpatternLength, dataLength - iter));
     }
-    return SUCCESS;
+    return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }

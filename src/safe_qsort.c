@@ -25,7 +25,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -93,6 +93,9 @@ static M_INLINE char* med3(char* a, char* b, char* c, ctxcomparefn cmp, void* th
                                 : (cmp(b, c, thunk) > 0 ? b : (cmp(a, c, thunk) < 0 ? a : c));
 }
 
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+// Disabling clang-tidy check since this code comes from another author and I do not need to
+// attempt to refactor this - TJE
 errno_t safe_qsort_context_impl(void*        ptr,
                                 rsize_t      count,
                                 rsize_t      size,
@@ -182,7 +185,7 @@ errno_t safe_qsort_context_impl(void*        ptr,
             pm = M_REINTERPRET_CAST(char*, ptr) + (count / RSIZE_T_C(2)) * size;
             if (count > RSIZE_T_C(7))
             {
-                pl = ptr;
+                pl = M_REINTERPRET_CAST(char*, ptr);
                 pn = M_REINTERPRET_CAST(char*, ptr) + (count - RSIZE_T_C(1)) * size;
                 if (count > RSIZE_T_C(40))
                 {
@@ -194,7 +197,7 @@ errno_t safe_qsort_context_impl(void*        ptr,
                 }
                 pm = med3(pl, pm, pn, compare, context);
             }
-            swapfunc(ptr, pm, size);
+            swapfunc(M_REINTERPRET_CAST(char*, ptr), pm, size);
             pa = pb = M_REINTERPRET_CAST(char*, ptr) + size;
 
             pc = pd = M_REINTERPRET_CAST(char*, ptr) + (count - RSIZE_T_C(1)) * size;
@@ -246,9 +249,9 @@ errno_t safe_qsort_context_impl(void*        ptr,
             }
 
             pn = M_REINTERPRET_CAST(char*, ptr) + count * size;
-            d1 = M_Min(M_STATIC_CAST(uintptr_t, pa) - M_STATIC_CAST(uintptr_t, ptr),
-                       M_STATIC_CAST(uintptr_t, pb) - M_STATIC_CAST(uintptr_t, pa));
-            vecswap(ptr, pb - d1, d1);
+            d1 = M_Min(M_REINTERPRET_CAST(uintptr_t, pa) - M_REINTERPRET_CAST(uintptr_t, ptr),
+                       M_REINTERPRET_CAST(uintptr_t, pb) - M_REINTERPRET_CAST(uintptr_t, pa));
+            vecswap(M_REINTERPRET_CAST(char*, ptr), pb - d1, d1);
             /*
              * Cast size to preserve signedness of right-hand side of MIN()
              * expression, to avoid sign ambiguity in the implied comparison.
@@ -259,13 +262,13 @@ errno_t safe_qsort_context_impl(void*        ptr,
             // result to size_t for assignment to prevent conversion warning.
             //               The comment above is from the original source and
             //               seems reasonable to support adding these casts-TJE
-            d1 = M_STATIC_CAST(size_t, M_Min(M_STATIC_CAST(intptr_t, pd) - M_STATIC_CAST(intptr_t, pc),
-                                             M_STATIC_CAST(intptr_t, pn) - M_STATIC_CAST(intptr_t, pd) -
+            d1 = M_STATIC_CAST(size_t, M_Min(M_REINTERPRET_CAST(intptr_t, pd) - M_REINTERPRET_CAST(intptr_t, pc),
+                                             M_REINTERPRET_CAST(intptr_t, pn) - M_REINTERPRET_CAST(intptr_t, pd) -
                                                  M_STATIC_CAST(ssize_t, size)));
             vecswap(pb, pn - d1, d1);
 
-            d1 = M_STATIC_CAST(uintptr_t, pb) - M_STATIC_CAST(uintptr_t, pa);
-            d2 = M_STATIC_CAST(uintptr_t, pd) - M_STATIC_CAST(uintptr_t, pc);
+            d1 = M_REINTERPRET_CAST(uintptr_t, pb) - M_REINTERPRET_CAST(uintptr_t, pa);
+            d2 = M_REINTERPRET_CAST(uintptr_t, pd) - M_REINTERPRET_CAST(uintptr_t, pc);
             if (d1 <= d2)
             {
                 /* Recurse on left partition, then iterate on right partition */
@@ -312,3 +315,4 @@ errno_t safe_qsort_context_impl(void*        ptr,
     }
     RESTORE_NONNULL_COMPARE
 }
+// NOLINTEND(readability-function-cognitive-complexity)

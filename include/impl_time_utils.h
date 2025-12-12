@@ -8,7 +8,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -18,9 +18,27 @@
 #include "code_attributes.h"
 #include "common_types.h"
 
+#include <time.h>
+
 #if defined(__cplusplus)
 extern "C"
 {
+#endif
+
+#if defined(HAVE_CONSTEXPR)
+    constexpr const time_t* nulltimet = M_NULLPTR;
+#    define M_IS_NULL_TIMET(ptr) ((ptr) == nulltimet)
+    constexpr struct tm* nullstructtm = M_NULLPTR;
+#    define M_IS_NULL_STRUCT_TM(ptr) ((ptr) == nullstructtm)
+    constexpr const struct tm* nullconststructtm = M_NULLPTR;
+#    define M_IS_NULL_CONST_STRUCT_TM(ptr) ((ptr) == nullconststructtm)
+    constexpr char* nulltimestr = M_NULLPTR;
+#    define M_IS_NULL_TIME_STR(ptr) ((ptr) == nulltimestr)
+#else
+#    define M_IS_NULL_TIMET(ptr)           (!(ptr))
+#    define M_IS_NULL_STRUCT_TM(ptr)       (!(ptr))
+#    define M_IS_NULL_CONST_STRUCT_TM(ptr) (!(ptr))
+#    define M_IS_NULL_TIME_STR(ptr)        (!(ptr))
 #endif
 
     //! \fn struct tm* impl_safe_gmtime(const time_t* M_RESTRICT timer,
@@ -54,7 +72,12 @@ extern "C"
                                 const char*              file,
                                 const char*              function,
                                 int                      line,
-                                const char*              expression);
+                                const char*              expression)
+        // clang-format off
+        M_DIAG_ERROR(M_IS_NULL_TIMET(timer), "timer is NULL")
+        M_DIAG_ERROR(M_IS_NULL_STRUCT_TM(buf), "buf is NULL")
+        // clang-format on
+        ;
 
     //! \fn struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
     //!                                   struct tm* M_RESTRICT    buf,
@@ -87,7 +110,12 @@ extern "C"
                                    const char*              file,
                                    const char*              function,
                                    int                      line,
-                                   const char*              expression);
+                                   const char*              expression)
+        // clang-format off
+        M_DIAG_ERROR(M_IS_NULL_TIMET(timer), "timer is NULL")
+        M_DIAG_ERROR(M_IS_NULL_STRUCT_TM(buf), "buf is NULL")
+        // clang-format on
+        ;
 
     //! \fn errno_t impl_safe_asctime(char*            buf,
     //!                               rsize_t          bufsz,
@@ -131,7 +159,34 @@ extern "C"
                               const char*      file,
                               const char*      function,
                               int              line,
-                              const char*      expression);
+                              const char*      expression)
+        // clang-format off
+        M_DIAG_ERROR(M_IS_NULL_TIME_STR(buf), "buf is NULL")
+        M_DIAG_ERROR(M_IS_NULL_CONST_STRUCT_TM(time_ptr), "time_ptr is NULL")
+        M_DIAG_ERROR(bufsz < 26, "bufsz less than 26")
+        M_DIAG_ERROR(bufsz > RSIZE_MAX, "bufsz greater than RSIZE_MAX")
+        M_DIAG_ERROR(time_ptr->tm_sec < 0, "tm_sec is negative")
+#if defined(USING_C99)
+        M_DIAG_ERROR(time_ptr->tm_sec > 60, "tm_sec > 60")
+#else
+        M_DIAG_ERROR(time_ptr->tm_sec > 61, "tm_sec > 61")
+#endif
+        M_DIAG_ERROR(time_ptr->tm_min < 0, "tm_min is negative")
+        M_DIAG_ERROR(time_ptr->tm_min > 59, "tm_min > 59")
+        M_DIAG_ERROR(time_ptr->tm_hour < 0, "tm_hour is negative")
+        M_DIAG_ERROR(time_ptr->tm_hour > 23, "tm_hour > 23")
+        M_DIAG_ERROR(time_ptr->tm_mday < 1, "tm_mday < 1")
+        M_DIAG_ERROR(time_ptr->tm_mday > 31, "tm_mday > 31")
+        M_DIAG_ERROR(time_ptr->tm_mon < 0, "tm_mon is negative")
+        M_DIAG_ERROR(time_ptr->tm_mon > 11, "tm_mon > 11")
+        M_DIAG_ERROR(time_ptr->tm_wday < 0, "tm_wday is negative")
+        M_DIAG_ERROR(time_ptr->tm_wday > 6, "tm_wday > 6")
+        M_DIAG_ERROR(time_ptr->tm_yday < 0, "tm_yday is negative")
+        M_DIAG_ERROR(time_ptr->tm_yday > 365, "tm_yday > 365")
+        M_DIAG_ERROR(time_ptr->tm_year < 0, "tm_year is negative")
+        M_DIAG_ERROR(time_ptr->tm_year > 9999, "tm_year > 9999")
+        // clang-format on
+        ;
 
     //! \fn errno_t impl_safe_ctime(char*            buf,
     //!                               rsize_t          bufsz,
@@ -170,7 +225,14 @@ extern "C"
                             const char*   file,
                             const char*   function,
                             int           line,
-                            const char*   expression);
+                            const char*   expression)
+        // clang-format off
+        M_DIAG_ERROR(M_IS_NULL_TIME_STR(buf), "buf is NULL")
+        M_DIAG_ERROR(M_IS_NULL_TIMET(timer), "timer is NULL")
+        M_DIAG_ERROR(bufsz < 26, "bufsz less than 26")
+        M_DIAG_ERROR(bufsz > RSIZE_MAX, "bufsz greater than RSIZE_MAX")
+        // clang-format on
+        ;
 
 #if defined(__cplusplus)
 }

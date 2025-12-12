@@ -8,7 +8,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -257,15 +257,26 @@
 #    include <sys/param.h> //can be helpful to do compile-time version/capabilities identification
 #endif                     //__unix__ || __APPLE__ || HAVE_SYSPARAM
 
+//! \def MSVC_PRAGMA
+//! \brief selects __pragma or _Pragma depending on C standard support and if it is Clang
+//! in MSVC compilation mode in order to be as compatible as possible.
+#if defined(_MSC_VER)
+#    if defined(USING_C11) || defined(__clang__)
+#        define MSVC_PRAGMA(x) _Pragma(#x)
+#    else
+#        define MSVC_PRAGMA(x) __pragma(x)
+#    endif
+#endif //_MSC_VER
+
 //! \def DISABLE_WARNING_4255
 //! \brief disabled MSVC warning 4255. Needed around including windows.h
 
 //! \def RESTORE_WARNING_4255
 //! \brief restores MSVC warning 4255 back to being enabled.
-#if IS_MSVC_VERSION(MSVC_2010) && !defined(__clang__)
-#    define DISABLE_WARNING_4255 __pragma(warning(push)) __pragma(warning(disable : 4255))
+#if IS_MSVC_VERSION(MSVC_2010)
+#    define DISABLE_WARNING_4255 MSVC_PRAGMA(warning(push)) MSVC_PRAGMA(warning(disable : 4255))
 
-#    define RESTORE_WARNING_4255 __pragma(warning(pop))
+#    define RESTORE_WARNING_4255 MSVC_PRAGMA(warning(pop))
 #else
 #    define DISABLE_WARNING_4255
 #    define RESTORE_WARNING_4255
@@ -849,9 +860,9 @@ extern "C"
 //! \brief restores MSVC warning 4146 back to being enabled.
 //! \details These warning disables are only needed in MSVC for the C11 generic min/max implementations.
 //! Without them you get a warning about applying a unary - on an unsigned type.
-#if IS_MSVC_VERSION(MSVC_2012) && !defined(__clang__)
-#    define DISABLE_WARNING_4146 __pragma(warning(push)) __pragma(warning(disable : 4146))
-#    define RESTORE_WARNING_4146 __pragma(warning(pop))
+#if IS_MSVC_VERSION(MSVC_2012)
+#    define DISABLE_WARNING_4146 MSVC_PRAGMA(warning(push)) MSVC_PRAGMA(warning(disable : 4146))
+#    define RESTORE_WARNING_4146 MSVC_PRAGMA(warning(pop))
 #else
 #    define DISABLE_WARNING_4146
 #    define RESTORE_WARNING_4146
@@ -885,8 +896,8 @@ extern "C"
         _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wzero-length-array\"")
 #    define RESTORE_WARNING_ZERO_LENGTH_ARRAY _Pragma("clang diagnostic pop")
 #elif IS_MSVC_VERSION(MSVC_2005)
-#    define DISABLE_WARNING_ZERO_LENGTH_ARRAY __pragma(warning(push)) __pragma(warning(disable : 4200))
-#    define RESTORE_WARNING_ZERO_LENGTH_ARRAY __pragma(warning(pop))
+#    define DISABLE_WARNING_ZERO_LENGTH_ARRAY MSVC_PRAGMA(warning(push)) MSVC_PRAGMA(warning(disable : 4200))
+#    define RESTORE_WARNING_ZERO_LENGTH_ARRAY MSVC_PRAGMA(warning(pop))
 #else
 #    define DISABLE_WARNING_ZERO_LENGTH_ARRAY
 #    define RESTORE_WARNING_ZERO_LENGTH_ARRAY
@@ -906,8 +917,8 @@ extern "C"
         _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"")
 #    define RESTORE_WARNING_FORMAT_NONLITERAL _Pragma("GCC diagnostic pop")
 #elif IS_MSVC_VERSION(MSVC_2005)
-#    define DISABLE_WARNING_FORMAT_NONLITERAL __pragma(warning(push)) __pragma(warning(disable : 4774))
-#    define RESTORE_WARNING_FORMAT_NONLITERAL __pragma(warning(pop))
+#    define DISABLE_WARNING_FORMAT_NONLITERAL MSVC_PRAGMA(warning(push)) MSVC_PRAGMA(warning(disable : 4774))
+#    define RESTORE_WARNING_FORMAT_NONLITERAL MSVC_PRAGMA(warning(pop))
 #else
 #    define DISABLE_WARNING_FORMAT_NONLITERAL
 #    define RESTORE_WARNING_FORMAT_NONLITERAL
@@ -996,18 +1007,15 @@ extern "C"
 //! Only use this when including external headers that cause this issue. This warning should not occur
 //! within opensea-libs
 #if IS_CLANG_VERSION(2, 8)
-#    define DISABLE_WARNING_UNDEF                                                                                \
-        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wundef\"")
+#    define DISABLE_WARNING_UNDEF _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wundef\"")
 #    define RESTORE_WARNING_UNDEF _Pragma("clang diagnostic pop")
 #elif IS_GCC_VERSION(3, 0)
-#    define DISABLE_WARNING_UNDEF                                                                                \
-        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wundef\"")
+#    define DISABLE_WARNING_UNDEF _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wundef\"")
 #    define RESTORE_WARNING_UNDEF _Pragma("GCC diagnostic pop")
 #else
 #    define DISABLE_WARNING_UNDEF
 #    define RESTORE_WARNING_UNDEF
 #endif
-
 
 #if defined(__INTELLISENSE__) || defined(__clang_analyzer__) || defined(__CDT_PARSER__)
 //! \def DEV_ENVIRONMENT
@@ -1131,6 +1139,9 @@ extern "C"
 #    if __has_builtin(__builtin_stdc_rotate_right)
 #        define HAVE_BUILT_IN_STDC_ROTATE_RIGHT
 #    endif
+#    if __has_builtin(__builtin_unreachable)
+#        define HAVE_BUILT_IN_UNREACHABLE
+#    endif
 #endif //__has_builtin
 
 #if !defined(HAVE_BUILT_IN_OBJ_SIZE) && IS_GCC_VERSION(4, 1)
@@ -1176,4 +1187,27 @@ extern "C"
 
 #if defined(__cplusplus)
 }
+
+//! \def DISABLE_WARNING_OLD_STYLE_CAST
+//! \brief Disables warning about checking a macro in #if that is not defined.
+//! Only use this when including external headers that cause this issue. This warning should not occur
+//! within opensea-libs
+
+//! \def RESTORE_WARNING_OLD_STYLE_CAST
+//! \brief Restores warning about checking a macro in #if that is not defined.
+//! Only use this when including external headers that cause this issue. This warning should not occur
+//! within opensea-libs
+#    if IS_CLANG_VERSION(3, 0)
+#        define DISABLE_WARNING_OLD_STYLE_CAST                                                                         \
+            _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wold-style-cast\"")
+#        define RESTORE_WARNING_OLD_STYLE_CAST _Pragma("clang diagnostic pop")
+#    elif IS_GCC_VERSION(4, 2)
+#        define DISABLE_WARNING_OLD_STYLE_CAST                                                                         \
+            _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wold-style-cast\"")
+#        define RESTORE_WARNING_OLD_STYLE_CAST _Pragma("GCC diagnostic pop")
+#    else
+#        define DISABLE_WARNING_OLD_STYLE_CAST
+#        define RESTORE_WARNING_OLD_STYLE_CAST
+#    endif
+
 #endif

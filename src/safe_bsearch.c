@@ -21,7 +21,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -81,7 +81,7 @@
  */
 
 void* safe_bsearch_context_impl(const void*  key,
-                                void*        ptr,
+                                const void*  ptr,
                                 rsize_t      count,
                                 rsize_t      size,
                                 ctxcomparefn compare,
@@ -136,7 +136,7 @@ void* safe_bsearch_context_impl(const void*  key,
     }
     else
     {
-        const char* base = ptr;
+        const char* base = M_REINTERPRET_CAST(const char*, ptr);
         const void* p    = M_NULLPTR;
         errno            = 0;
 

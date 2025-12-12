@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -39,7 +39,7 @@ eReturnValues replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char* n
     }
     else
     {
-        return FAILURE;
+        return M_ACCESS_ENUM(eReturnValues, FAILURE);
     }
     ptrLen = safe_strlen(ptr);
     // now that we have a valid pointer, set all the remaining characters to
@@ -48,7 +48,7 @@ eReturnValues replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char* n
                 ptrLen); // destsz has + 1 for null terminator not included in strlen.
     fullLength = (OPENSEA_PATH_MAX - safe_strlen(fullPath));
     snprintf_err_handle(ptr, fullLength, "%s", newFileName);
-    return SUCCESS;
+    return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }
 
 //! \fn void set_Secure_File_error_message(char** outputError, const char* format, ...)
@@ -118,7 +118,7 @@ void free_Secure_File_Info(secureFileInfo** fileInfo)
             }
             if ((*fileInfo)->errorString != M_NULLPTR)
             {
-                explicit_zeroes(M_CONST_CAST(void**, (*fileInfo)->errorString), safe_strlen((*fileInfo)->errorString));
+                explicit_zeroes(M_CONST_CAST(void*, (*fileInfo)->errorString), safe_strlen((*fileInfo)->errorString));
                 safe_free_core(M_CONST_CAST(void**, &(*fileInfo)->errorString));
             }
             explicit_zeroes(*fileInfo, sizeof(secureFileInfo));
@@ -199,7 +199,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
             duplicatedModeForInternalUse = true;
             if (0 != safe_strdup(&internalmode, mode))
             {
-                fileInfo->error = SEC_FILE_INVALID_MODE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_MODE);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid File Mode");
                 return fileInfo;
             }
@@ -224,7 +224,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
         else if (strchr(internalmode, 'x'))
         {
             // invalid mode. X is only allowed with W, W+
-            fileInfo->error = SEC_FILE_INVALID_MODE;
+            fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_MODE);
             set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                           "Invalid File Mode. x is only allowed with w or w+");
             return fileInfo;
@@ -249,13 +249,13 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
             {
                 // there is a path or relative path that can be used to setup
                 // for getting the canonical path
-                char* lastsep = strrchr(filename, '/');
+                const char* lastsep = strrchr(filename, '/');
 #if defined(_WIN32)
                 // In Windows, we need to determine if the final seperator is a
                 // / or \. So also check for \ and figure out which was the last
                 // one. A user can pass a path with both and it can be accepted
                 // by Windows, which is why we validate both of these.
-                char* lastwinsep = strrchr(filename, '\\');
+                const char* lastwinsep = strrchr(filename, '\\');
                 if (lastsep == M_NULLPTR || C_CAST(uintptr_t, lastwinsep) > C_CAST(uintptr_t, lastsep))
                 {
                     // backslash was detected last, so change to this pointer
@@ -264,9 +264,21 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                 }
 #endif //_WIN32
        // path only. No file name
-                if (0 != safe_strndup(&intFileName, filename, C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, filename)))
+                uintptr_t duplen = C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, filename);
+                if (duplen == 0)
                 {
-                    fileInfo->error = SEC_FILE_INVALID_PATH;
+                    if (0 != safe_strndup(&intFileName, filename, 1))
+                    {
+                        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PATH);
+                        set_Secure_File_error_message(
+                            M_CONST_CAST(char**, &fileInfo->errorString),
+                            "Failed setting up path for security verification - path + file name provided");
+                        return fileInfo;
+                    }
+                }
+                else if (0 != safe_strndup(&intFileName, filename, duplen))
+                {
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PATH);
                     set_Secure_File_error_message(
                         M_CONST_CAST(char**, &fileInfo->errorString),
                         "Failed setting up path for security verification - path + file name provided");
@@ -287,14 +299,14 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                 // NOTE: Windows can also use
                 // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcurrentdirectory
                 // need to allocate and call again
-                char* workingdir = safe_malloc(OPENSEA_PATH_MAX);
+                char* workingdir = M_REINTERPRET_CAST(char*, safe_malloc(OPENSEA_PATH_MAX));
                 if (workingdir == M_NULLPTR)
                 {
                     // return an error for invalid path
                     set_Secure_File_error_message(
                         M_CONST_CAST(char**, &fileInfo->errorString),
                         "Failed setting up path for security verification - only file name provided");
-                    fileInfo->error = SEC_FILE_INVALID_PATH;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PATH);
 
                     return fileInfo;
                 }
@@ -302,7 +314,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                 if (workingdir == M_NULLPTR)
                 {
                     // return an error for invalid path
-                    fileInfo->error = SEC_FILE_INVALID_PATH;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PATH);
                     set_Secure_File_error_message(
                         M_CONST_CAST(char**, &fileInfo->errorString),
                         "Failed getting the current working directory for secure path validation");
@@ -318,7 +330,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
             // full canonical path
             if (0 != safe_strdup(&intFileName, filename))
             {
-                fileInfo->error = SEC_FILE_INVALID_PATH;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PATH);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "Failed duplicating filename for internal validation");
                 return fileInfo;
@@ -327,16 +339,17 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
         if (intFileName == M_NULLPTR)
         {
             // return an error for invalid path
-            fileInfo->error = SEC_FILE_INVALID_PATH;
+            fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PATH);
             set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                           "Invalid internal copy of filename");
             return fileInfo;
         }
-        if (SUCCESS != get_Full_Path(intFileName, M_CONST_CAST(char*, fileInfo->fullpath)))
+        if (M_ACCESS_ENUM(eReturnValues, SUCCESS) !=
+            get_Full_Path(intFileName, M_CONST_CAST(char*, fileInfo->fullpath)))
         {
             // unable to get the full path to this file.
             // This means something went wrong, and we need to return an error.
-            fileInfo->error = SEC_FILE_INVALID_PATH;
+            fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PATH);
             set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                           "Failure while looking up canonical file path");
             safe_free(&intFileName);
@@ -349,7 +362,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
             fileexists = os_File_Exists(intFileName);
             if (exclusiveFlag && fileexists)
             {
-                fileInfo->error = SEC_FILE_FILE_ALREADY_EXISTS;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FILE_ALREADY_EXISTS);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "Error: File already exists");
                 if (duplicatedModeForInternalUse)
@@ -361,7 +374,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
             }
             else if (!creatingFile && !fileexists)
             {
-                fileInfo->error = SEC_FILE_INVALID_FILE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "Invalid File Specified - file does not exist");
                 if (duplicatedModeForInternalUse)
@@ -390,13 +403,13 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
             {
                 // there is a path or relative path that we do not want to
                 // append to the canonical path
-                char* lastsep = strrchr(filename, '/');
+                const char* lastsep = strrchr(filename, '/');
 #if defined(_WIN32)
                 // In Windows, we need to determine if the final seperator is a
                 // / or \. So also check for \ and figure out which was the last
                 // one. A user can pass a path with both and it can be accepted
                 // by Windows, which is why we validate both of these.
-                char* lastwinsep = strrchr(filename, '\\');
+                const char* lastwinsep = strrchr(filename, '\\');
                 if (C_CAST(uintptr_t, lastwinsep) > C_CAST(uintptr_t, lastsep))
                 {
                     // backslash was detected last, so change to this pointer
@@ -426,7 +439,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                 bool foundValidExtension = false;
                 while (currentExtension && currentExtension->ext != M_NULLPTR)
                 {
-                    char* extension = strrchr(fileInfo->fullpath, '.');
+                    const char* extension = strrchr(fileInfo->fullpath, '.');
                     if (extension != M_NULLPTR &&
                         ((currentExtension->caseInsensitive &&
                           (wildcard_case_match(extension, currentExtension->ext) == true ||
@@ -447,7 +460,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                     {
                         safe_free(&internalmode);
                     }
-                    fileInfo->error = SEC_FILE_INVALID_FILE_EXTENSION;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE_EXTENSION);
                     set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                                   "Invalid File Extension. Does not match provided extension list");
                     return fileInfo;
@@ -468,7 +481,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                     (expectedFileInfo->userID != beforeattrs->userID) ||
                     (expectedFileInfo->groupID != beforeattrs->groupID))
                 {
-                    fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBUTES;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE_ATTRIBUTES);
                     set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                                   "Invalid file attributes detected. Does not match expected data");
                     safe_free(&intFileName);
@@ -488,7 +501,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                 if (!exact_Compare_SIDS_And_DACL_Strings(beforeattrs->winSecurityDescriptor,
                                                          expectedFileInfo->winSecurityDescriptor))
                 {
-                    fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBUTES;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE_ATTRIBUTES);
                     set_Secure_File_error_message(
                         M_CONST_CAST(char**, &fileInfo->errorString),
                         "Invalid Windows File security descriptor. Does not match provided security descriptor.");
@@ -512,15 +525,15 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
 
         // Need to verify only the path. Passing the file in with it will cause
         // it to fail since it is not a directory
-        char* pathOnly               = M_CONST_CAST(char*, fileInfo->fullpath);
-        bool  allocatedLocalPathOnly = false;
-        char* lastsep                = strrchr(fileInfo->fullpath, '/');
+        char*       pathOnly               = M_CONST_CAST(char*, fileInfo->fullpath);
+        bool        allocatedLocalPathOnly = false;
+        const char* lastsep                = strrchr(fileInfo->fullpath, '/');
 #if defined(_WIN32)
         // In Windows, we need to determine if the final seperator is a / or \.
         // So also check for \ and figure out which was the last one.
         // A user can pass a path with both and it can be accepted by Windows,
         // which is why we validate both of these.
-        char* lastwinsep = strrchr(fileInfo->fullpath, '\\');
+        const char* lastwinsep = strrchr(fileInfo->fullpath, '\\');
         if (C_CAST(uintptr_t, lastwinsep) > C_CAST(uintptr_t, lastsep))
         {
             // backslash was detected last, so change to this pointer instead
@@ -576,7 +589,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                         // Close it and return an error.
                         M_STATIC_CAST(void, fclose(fileInfo->file));
                         fileInfo->file  = M_NULLPTR;
-                        fileInfo->error = SEC_FILE_INVALID_FILE_UNIQUE_ID;
+                        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE_UNIQUE_ID);
                         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                                       "Invalid File Unique ID. Does not match expected unique ID");
                         safe_free(&intFileName);
@@ -604,7 +617,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                     {
                         M_STATIC_CAST(void, fclose(fileInfo->file));
                         fileInfo->file  = M_NULLPTR;
-                        fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBUTES;
+                        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE_ATTRIBUTES);
                         set_Secure_File_error_message(
                             M_CONST_CAST(char**, &fileInfo->errorString),
                             "Invalid File Attributes. Does not match provided attributes for identification");
@@ -630,7 +643,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                     {
                         M_STATIC_CAST(void, fclose(fileInfo->file));
                         fileInfo->file  = M_NULLPTR;
-                        fileInfo->error = SEC_FILE_INVALID_FILE_ATTRIBUTES;
+                        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE_ATTRIBUTES);
                         set_Secure_File_error_message(
                             M_CONST_CAST(char**, &fileInfo->errorString),
                             "Invalid Windows security descriptor. Does not match provided value.");
@@ -668,7 +681,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                     // https://pubs.opengroup.org/onlinepubs/9699919799/functions/fopen.html
                 case EINVAL:
                 default:
-                    fileInfo->error = SEC_FILE_FAILURE;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
                     set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                                   "Failed to open file with fopen");
                     break;
@@ -677,7 +690,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
         }
         else
         {
-            fileInfo->error = SEC_FILE_INSECURE_PATH;
+            fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INSECURE_PATH);
             printf("Insecure path detected: %s\n", fileInfo->errorString);
         }
         if (pathOnly && allocatedLocalPathOnly)
@@ -693,7 +706,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
     else if (fileInfo != M_NULLPTR)
     {
         fileInfo->file  = M_NULLPTR;
-        fileInfo->error = SEC_FILE_FAILURE;
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                       "Failed to open file. No file specified or no mode specified");
     }
@@ -707,7 +720,7 @@ M_NODISCARD eSecureFileError secure_Close_File(secureFileInfo* fileInfo)
     DISABLE_NONNULL_COMPARE
     if (fileInfo != M_NULLPTR)
     {
-        fileInfo->error = SEC_FILE_INVALID_FILE;
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
         if (fileInfo->file != M_NULLPTR)
         {
@@ -715,12 +728,12 @@ M_NODISCARD eSecureFileError secure_Close_File(secureFileInfo* fileInfo)
             if (closeres == 0)
             {
                 fileInfo->file  = M_NULLPTR;
-                fileInfo->error = SEC_FILE_SUCCESS;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "File closed successfully");
             }
             else if (closeres == EOF)
             {
-                fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
                 set_Secure_File_error_message(
                     M_CONST_CAST(char**, &fileInfo->errorString),
                     "Failed to close the file. Do not attempt access to this file descriptor again!");
@@ -730,20 +743,20 @@ M_NODISCARD eSecureFileError secure_Close_File(secureFileInfo* fileInfo)
                 // unknown result, so call this an error.
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "Unknown failure encountered while closing the file.");
-                fileInfo->error = SEC_FILE_FAILURE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
             }
         }
-        else if (fileInfo->error != SEC_FILE_FAILURE_CLOSING_FILE)
+        else if (fileInfo->error != M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
         {
             // File was never opened, so return no error
             set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                           "File was never opened. No error");
-            fileInfo->error = SEC_FILE_SUCCESS;
+            fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
         }
         return fileInfo->error;
     }
     RESTORE_NONNULL_COMPARE
-    return SEC_FILE_INVALID_SECURE_FILE;
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
 M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInfo,
@@ -756,16 +769,16 @@ M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInf
     DISABLE_NONNULL_COMPARE
     if (fileInfo != M_NULLPTR)
     {
-        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
         {
-            return SEC_FILE_FAILURE_CLOSING_FILE;
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
         }
-        fileInfo->error = SEC_FILE_INVALID_FILE;
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
         if (fileInfo->file)
         {
             size_t readres = SIZE_T_C(0);
-#if defined(HAVE_MSFT_SECURE_LIB)
+#if defined(HAVE_MSFT_SECURE_LIB) && !defined (__MINGW32__)
             readres = fread_s(buffer, buffersize, elementsize, count, fileInfo->file);
 #else
             if (buffer == M_NULLPTR)
@@ -792,13 +805,13 @@ M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInf
             {
                 if (elementsize == 0 || count == 0)
                 {
-                    fileInfo->error = SEC_FILE_SUCCESS;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
                     set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                                   "File read without error");
                 }
                 else
                 {
-                    fileInfo->error = SEC_FILE_READ_WRITE_ERROR;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_READ_WRITE_ERROR);
                     set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                                   "Read error occurred. No elements read.");
                 }
@@ -808,12 +821,12 @@ M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInf
                 if (feof(fileInfo->file))
                 {
                     // end of stream/file
-                    fileInfo->error = SEC_FILE_END_OF_FILE_REACHED;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_END_OF_FILE_REACHED);
                     set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "End of file reached");
                 }
                 else if (ferror(fileInfo->file))
                 {
-                    fileInfo->error = SEC_FILE_READ_WRITE_ERROR;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_READ_WRITE_ERROR);
                     set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                                   "File read error occurred");
                 }
@@ -822,12 +835,12 @@ M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInf
                     // some other kind of error???
                     set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                                   "Unknown error occurred");
-                    fileInfo->error = SEC_FILE_FAILURE;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
                 }
             }
             else if (readres == count)
             {
-                fileInfo->error = SEC_FILE_SUCCESS;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "All elements read successfully");
             }
@@ -835,13 +848,13 @@ M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInf
             {
                 // unknown result, so call this an error.
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Unknown error occurred");
-                fileInfo->error = SEC_FILE_FAILURE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
             }
         }
         return fileInfo->error;
     }
     RESTORE_NONNULL_COMPARE
-    return SEC_FILE_INVALID_SECURE_FILE;
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
 M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileInfo,
@@ -854,18 +867,18 @@ M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileIn
     DISABLE_NONNULL_COMPARE
     if (fileInfo != M_NULLPTR)
     {
-        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
         {
-            return SEC_FILE_FAILURE_CLOSING_FILE;
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
         }
-        fileInfo->error = SEC_FILE_INVALID_FILE;
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
         if (fileInfo->file)
         {
             size_t writeres = SIZE_T_C(0);
             if (buffer == M_NULLPTR)
             {
-                fileInfo->error = SEC_FILE_INVALID_PARAMETER;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PARAMETER);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid write buffer");
                 return fileInfo->error;
             }
@@ -873,7 +886,7 @@ M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileIn
             {
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "Write buffer too small for number of elements specified.");
-                fileInfo->error = SEC_FILE_BUFFER_TOO_SMALL;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_BUFFER_TOO_SMALL);
                 return fileInfo->error;
             }
             writeres = fwrite(buffer, elementsize, count, fileInfo->file);
@@ -885,13 +898,13 @@ M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileIn
             {
                 if (elementsize == 0 || count == 0)
                 {
-                    fileInfo->error = SEC_FILE_SUCCESS;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
                     set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                                   "File written successfully");
                 }
                 else
                 {
-                    fileInfo->error = SEC_FILE_READ_WRITE_ERROR;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_READ_WRITE_ERROR);
                     set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "File write error.");
                 }
             }
@@ -899,7 +912,7 @@ M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileIn
             {
                 if (ferror(fileInfo->file))
                 {
-                    fileInfo->error = SEC_FILE_WRITE_DISK_FULL;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_WRITE_DISK_FULL);
                     set_Secure_File_error_message(
                         M_CONST_CAST(char**, &fileInfo->errorString),
                         "Error writing file. Check if file system is full and has more room.");
@@ -909,26 +922,26 @@ M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileIn
                     // some other kind of error???
                     set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                                   "Failed to write all elements");
-                    fileInfo->error = SEC_FILE_READ_WRITE_ERROR;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_READ_WRITE_ERROR);
                 }
             }
             else if (writeres == count)
             {
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "File written successfully");
-                fileInfo->error = SEC_FILE_SUCCESS;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
             }
             else
             {
                 // unknown result, so call this an error.
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Unknown file write error");
-                fileInfo->error = SEC_FILE_FAILURE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
             }
         }
         return fileInfo->error;
     }
     RESTORE_NONNULL_COMPARE
-    return SEC_FILE_INVALID_SECURE_FILE;
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
 M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, oscoffset_t offset, int initialPosition)
@@ -936,11 +949,11 @@ M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, oscoffse
     DISABLE_NONNULL_COMPARE
     if (fileInfo != M_NULLPTR)
     {
-        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
         {
-            return SEC_FILE_FAILURE_CLOSING_FILE;
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
         }
-        fileInfo->error = SEC_FILE_INVALID_FILE;
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
         if (fileInfo->file)
         {
@@ -958,19 +971,19 @@ M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, oscoffse
 #endif
             if (seekres == 0)
             {
-                fileInfo->error = SEC_FILE_SUCCESS;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "File seek success");
             }
             else
             {
-                fileInfo->error = SEC_FILE_SEEK_FAILURE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SEEK_FAILURE);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Error seeking file");
             }
         }
         return fileInfo->error;
     }
     RESTORE_NONNULL_COMPARE
-    return SEC_FILE_INVALID_SECURE_FILE;
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
 M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
@@ -978,11 +991,11 @@ M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
     DISABLE_NONNULL_COMPARE
     if (fileInfo != M_NULLPTR)
     {
-        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
         {
-            return SEC_FILE_FAILURE_CLOSING_FILE;
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
         }
-        fileInfo->error = SEC_FILE_INVALID_FILE;
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
         if (fileInfo->file)
         {
@@ -997,7 +1010,7 @@ M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
         return fileInfo->error;
     }
     RESTORE_NONNULL_COMPARE
-    return SEC_FILE_INVALID_SECURE_FILE;
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
 M_NODISCARD oscoffset_t secure_Tell_File(secureFileInfo* fileInfo)
@@ -1005,11 +1018,11 @@ M_NODISCARD oscoffset_t secure_Tell_File(secureFileInfo* fileInfo)
     DISABLE_NONNULL_COMPARE
     if (fileInfo != M_NULLPTR)
     {
-        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
         {
-            return SEC_FILE_FAILURE_CLOSING_FILE;
+            return -1;
         }
-        fileInfo->error = SEC_FILE_INVALID_FILE;
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
         if (fileInfo->file)
         {
@@ -1027,12 +1040,12 @@ M_NODISCARD oscoffset_t secure_Tell_File(secureFileInfo* fileInfo)
 #endif
             if (tellres >= 0)
             {
-                fileInfo->error = SEC_FILE_SUCCESS;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "File tell success");
             }
             else
             {
-                fileInfo->error = SEC_FILE_SEEK_FAILURE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SEEK_FAILURE);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "File tell error");
             }
             return tellres;
@@ -1048,35 +1061,35 @@ eSecureFileError secure_Flush_File(secureFileInfo* fileInfo)
     DISABLE_NONNULL_COMPARE
     if (fileInfo != M_NULLPTR)
     {
-        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
         {
-            return SEC_FILE_FAILURE_CLOSING_FILE;
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
         }
-        fileInfo->error = SEC_FILE_INVALID_FILE;
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
         if (fileInfo->file)
         {
             int fflushres = fflush(fileInfo->file);
             if (fflushres == 0)
             {
-                fileInfo->error = SEC_FILE_SUCCESS;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "File flush successful");
             }
             else if (fflushres == EOF && ferror(fileInfo->file))
             {
-                fileInfo->error = SEC_FILE_FLUSH_FAILURE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FLUSH_FAILURE);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Failed flushing file");
             }
             else /*not sure what to clasify this error as*/
             {
-                fileInfo->error = SEC_FILE_FAILURE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Unknown file flush error");
             }
         }
         return fileInfo->error;
     }
     RESTORE_NONNULL_COMPARE
-    return SEC_FILE_INVALID_SECURE_FILE;
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
 M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
@@ -1084,11 +1097,11 @@ M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
     DISABLE_NONNULL_COMPARE
     if (fileInfo != M_NULLPTR)
     {
-        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
         {
-            return SEC_FILE_FAILURE_CLOSING_FILE;
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
         }
-        fileInfo->error = SEC_FILE_INVALID_PATH;
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PATH);
         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
         if (fileInfo->file && safe_strlen(fileInfo->fullpath) > 0)
         {
@@ -1096,19 +1109,19 @@ M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
 #if defined(_WIN32)
             if (0 != _unlink(fileInfo->fullpath))
             {
-                fileInfo->error = SEC_FILE_FAILURE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "Failed to unlink file from file system");
             }
 #elif defined(POSIX_2001) || defined(BSD4_3) || defined(__svr4__)
             if (0 != unlink(fileInfo->fullpath))
             {
-                fileInfo->error = SEC_FILE_FAILURE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "Failed to unlink file from file system");
             }
 #else
-            fileInfo->error = SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN;
+            fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN);
             set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                           "Unable to remove file. File handle still open.");
 #endif
@@ -1118,14 +1131,14 @@ M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
             // remove the file
             if (0 != remove(fileInfo->fullpath))
             {
-                fileInfo->error = SEC_FILE_FAILURE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Failed to remove file");
             }
         }
         return fileInfo->error;
     }
     RESTORE_NONNULL_COMPARE
-    return SEC_FILE_INVALID_SECURE_FILE;
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
 M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eSecureFileDeleteNameAction deleteAction)
@@ -1135,11 +1148,11 @@ M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eS
     {
         // first get cannonical name
         DECLARE_ZERO_INIT_ARRAY(char, fullpath, 4096);
-        if (SUCCESS != get_Full_Path(filename, C_CAST(char*, fullpath)))
+        if (M_ACCESS_ENUM(eReturnValues, SUCCESS) != get_Full_Path(filename, C_CAST(char*, fullpath)))
         {
             // unable to get the full path to this file.
             // This means something went wrong, and we need to return an error.
-            return SEC_FILE_INVALID_PATH;
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PATH);
         }
         char* lastsep = strrchr(fullpath, '/');
 #if defined(_WIN32)
@@ -1166,7 +1179,7 @@ M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eS
         if (!os_Is_Directory_Secure(pathOnly, M_NULLPTR))
         {
             safe_free(&pathOnly);
-            return SEC_FILE_INSECURE_PATH;
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INSECURE_PATH);
         }
         safe_free(&pathOnly);
         // Check if the file is already open before attempting to remove it
@@ -1179,43 +1192,43 @@ M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eS
             checkExist = M_NULLPTR;
             if (0 == remove(fullpath))
             {
-                return SEC_FILE_SUCCESS;
+                return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
             }
             else
             {
-                return SEC_FILE_FAILURE;
+                return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
             }
         }
         else if (os_File_Exists(fullpath))
         {
             switch (deleteAction)
             {
-            case SEC_DELETE_NAME_FAIL_IF_OPEN:
-                return SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN;
-            case SEC_DELETE_NAME_UNLINK_IF_OPEN:
+            case M_ACCESS_ENUM(eSecureFileDeleteNameAction, SEC_DELETE_NAME_FAIL_IF_OPEN):
+                return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN);
+            case M_ACCESS_ENUM(eSecureFileDeleteNameAction, SEC_DELETE_NAME_UNLINK_IF_OPEN):
                 // File cannot be opened, so we must assume something else has
                 // it open, so unlink instead-TJE
 #if defined(_WIN32)
                 if (0 != _unlink(fullpath))
                 {
-                    return SEC_FILE_FAILURE;
+                    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
                 }
-                return SEC_FILE_SUCCESS;
+                return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
 #elif defined(POSIX_2001) || defined(BSD4_3) || defined(__svr4__)
                 if (0 != unlink(fullpath))
                 {
-                    return SEC_FILE_FAILURE;
+                    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
                 }
-                return SEC_FILE_SUCCESS;
+                return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
 #else
-                return SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN;
+                return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN);
 #endif
             }
         }
-        return SEC_FILE_FAILURE;
+        return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
     }
     RESTORE_NONNULL_COMPARE
-    return SEC_FILE_INVALID_PATH;
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PATH);
 }
 
 eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT fileInfo, fpos_t* M_RESTRICT pos)
@@ -1223,25 +1236,25 @@ eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT fileInfo, fpos_t*
     DISABLE_NONNULL_COMPARE
     if (fileInfo != M_NULLPTR && pos != M_NULLPTR)
     {
-        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
         {
-            return SEC_FILE_FAILURE_CLOSING_FILE;
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
         }
-        fileInfo->error = SEC_FILE_INVALID_FILE;
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
         if (fileInfo->file)
         {
             int getposres = fgetpos(fileInfo->file, pos);
             if (getposres == 0)
             {
-                fileInfo->error = SEC_FILE_SUCCESS;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "File get position successful");
             }
             else
             {
                 // TODO: inspect errno - ISO C security recommendation
-                fileInfo->error = SEC_FILE_FAILURE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "Failed getting file position");
             }
@@ -1251,12 +1264,12 @@ eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT fileInfo, fpos_t*
     else if (fileInfo != M_NULLPTR)
     {
         // pos is invalid
-        fileInfo->error = SEC_FILE_INVALID_PARAMETER;
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PARAMETER);
         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Error: Missing pos argument");
         return fileInfo->error;
     }
     RESTORE_NONNULL_COMPARE
-    return SEC_FILE_INVALID_SECURE_FILE;
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
 eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos)
@@ -1264,25 +1277,25 @@ eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos)
     DISABLE_NONNULL_COMPARE
     if (fileInfo != M_NULLPTR && pos != M_NULLPTR)
     {
-        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
         {
-            return SEC_FILE_FAILURE_CLOSING_FILE;
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
         }
-        fileInfo->error = SEC_FILE_INVALID_FILE;
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
         if (fileInfo->file)
         {
             int setposres = fsetpos(fileInfo->file, pos);
             if (setposres == 0)
             {
-                fileInfo->error = SEC_FILE_SUCCESS;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "File set position successful");
             }
             else
             {
                 // TODO: inspect errno - ISO C security recommendation
-                fileInfo->error = SEC_FILE_FAILURE;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "Failed to set file position");
             }
@@ -1292,12 +1305,12 @@ eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos)
     else if (fileInfo != M_NULLPTR)
     {
         // pos is invalid
-        fileInfo->error = SEC_FILE_INVALID_PARAMETER;
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PARAMETER);
         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Error: Missing pos argument");
         return fileInfo->error;
     }
     RESTORE_NONNULL_COMPARE
-    return SEC_FILE_INVALID_SECURE_FILE;
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
 FUNC_ATTR_PRINTF(2, 0)
@@ -1306,9 +1319,9 @@ eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const
     DISABLE_NONNULL_COMPARE
     if (fileInfo != M_NULLPTR && fileInfo->file != M_NULLPTR)
     {
-        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
         {
-            return SEC_FILE_FAILURE_CLOSING_FILE;
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
         }
         if (format != M_NULLPTR)
         {
@@ -1335,13 +1348,13 @@ eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const
 #endif
             if (vfprintfresult < 0 || ferror(fileInfo->file))
             {
-                fileInfo->error = SEC_FILE_READ_WRITE_ERROR;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_READ_WRITE_ERROR);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "Failed writing formatted text to file");
             }
             else
             {
-                fileInfo->error = SEC_FILE_SUCCESS;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "Successfully wrote formatted text to file");
             }
@@ -1351,12 +1364,12 @@ eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const
             // M_NULLPTR pointer for the format string
             set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                           "Error: Missing format string!");
-            fileInfo->error = SEC_FILE_INVALID_PARAMETER;
+            fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PARAMETER);
         }
         return fileInfo->error;
     }
     RESTORE_NONNULL_COMPARE
-    return SEC_FILE_INVALID_SECURE_FILE;
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
 FUNC_ATTR_PRINTF(2, 3)
@@ -1365,9 +1378,9 @@ eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const 
     DISABLE_NONNULL_COMPARE
     if (fileInfo != M_NULLPTR && fileInfo->file != M_NULLPTR)
     {
-        if (fileInfo->error == SEC_FILE_FAILURE_CLOSING_FILE)
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
         {
-            return SEC_FILE_FAILURE_CLOSING_FILE;
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
         }
         if (format != M_NULLPTR)
         {
@@ -1380,14 +1393,14 @@ eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const 
         else
         {
             // M_NULLPTR pointer for the format string
-            fileInfo->error = SEC_FILE_INVALID_PARAMETER;
+            fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PARAMETER);
             set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                           "Error: Missing format string!");
         }
         return fileInfo->error;
     }
     RESTORE_NONNULL_COMPARE
-    return SEC_FILE_INVALID_SECURE_FILE;
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
 M_FUNC_ATTR_MALLOC char* generate_Log_Name(
@@ -1547,20 +1560,20 @@ eReturnValues create_And_Open_Secure_Log_File(
     // secureFileInfo -TJE
 )
 {
-    eReturnValues result = SUCCESS;
+    eReturnValues result = M_ACCESS_ENUM(eReturnValues, SUCCESS);
     // Step 1: Validate required parameters
     DISABLE_NONNULL_COMPARE
     if (deviceIdentifier == M_NULLPTR || deviceIDLen == 0 || file == M_NULLPTR || logPathLen > OPENSEA_PATH_MAX ||
         logNameLen > RSIZE_MAX || logExtLen > RSIZE_MAX)
     {
-        return BAD_PARAMETER;
+        return M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER);
     }
     // Step 2: Generate the logfile name from the provided parameters
     char* logGeneratedName = generate_Log_Name(logFileNamingConvention, deviceIdentifier, deviceIDLen, logPath,
                                                logPathLen, logName, logNameLen, logExt, logExtLen);
     if (logGeneratedName == M_NULLPTR)
     {
-        return MEMORY_FAILURE;
+        return M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE);
     }
     // Step 3: Create the secure file (which will check directory security, etc
     // for us. NOTE: Always opened with X for exclusive so as not to overwrite
@@ -1570,15 +1583,15 @@ eReturnValues create_And_Open_Secure_Log_File(
     // do all of these steps
     if (file == M_NULLPTR)
     {
-        result = MEMORY_FAILURE;
+        result = M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE);
     }
-    else if ((*file)->error == SEC_FILE_INSECURE_PATH)
+    else if ((*file)->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INSECURE_PATH))
     {
-        result = INSECURE_PATH;
+        result = M_ACCESS_ENUM(eReturnValues, INSECURE_PATH);
     }
-    else if ((*file)->error != SEC_FILE_SUCCESS)
+    else if ((*file)->error != M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS))
     {
-        result = FAILURE;
+        result = M_ACCESS_ENUM(eReturnValues, FAILURE);
         // Should we give more error information here or just call it a
         // failure???-TJE
     }

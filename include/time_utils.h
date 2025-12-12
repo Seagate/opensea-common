@@ -5,7 +5,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -224,7 +224,7 @@ extern "C"
     //! \return pointer to converted string on success. Null pointer on failure.
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RO(1)
-    M_PARAM_WO_SIZE(2, 3)
+    M_PARAM_RW_SIZE(2, 3)
     static M_INLINE char* get_Time_String_From_TM_Structure(const struct tm* timeptr, char* buffer, size_t bufferSize)
     {
         if (0 == safe_asctime(buffer, bufferSize, timeptr))
@@ -246,7 +246,7 @@ extern "C"
     //! \return pointer to converted string on success. Null pointer on failure.
     M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RO(1)
-    M_PARAM_WO_SIZE(2, 3)
+    M_PARAM_RW_SIZE(2, 3)
     static M_INLINE char* get_Current_Time_String(const time_t* timer, char* buffer, size_t bufferSize)
     {
         if (0 == safe_ctime(buffer, bufferSize, timer))

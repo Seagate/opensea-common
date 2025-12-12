@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -471,6 +471,25 @@ extern "C"
         //! like .bin, .BIN, .bIN, .Bin, etc.
         bool caseInsensitive;
     } fileExt;
+
+    // clang-format off
+    
+    //! \def FILE_EXT_LIST_END
+    //! \brief Helper macro to easily insert the end of the file extension list.
+    #define FILE_EXT_LIST_END { M_NULLPTR, false }
+
+    //! \def FILE_EXT_LIST_DECL
+    //! \brief Helper macro to create a list of file extensions for secure file. Automatically appends
+    //! FILE_EXT_LIST_END for the user to make sure the list always terminates correctly
+    //! \code
+    //! list[] = FILE_EXT_LIST_DECL({".bin", false});
+    //! \endcode
+    //! \code
+    //! list[] = FILE_EXT_LIST_DECL({".bin", false}, {".json", true});
+    //! \endcode
+    #define FILE_EXT_LIST_DECL(...) {__VA_ARGS__, FILE_EXT_LIST_END}
+
+    // clang-format on
 
     //! \fn M_NODISCARD secureFileInfo* secure_Open_File(const char* filename,
     //!                                                  const char* mode,

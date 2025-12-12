@@ -5,7 +5,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -445,7 +445,7 @@ void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* decimalValue)
     double mantisa = 1.0;
     for (uint8_t i = UINT8_C(0); i < 23; i++)
     {
-        mantisa += M_STATIC_CAST(double, floatValue & BIT0) * pow(2.0, power);
+        mantisa += M_STATIC_CAST(double, floatValue& BIT0) * pow(2.0, power);
         power++;
         floatValue >>= 1; // right shift to look at next bit next time through the loop
     }

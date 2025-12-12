@@ -8,7 +8,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -289,7 +289,7 @@ extern "C"
 #endif
 
 #if defined(DEV_ENVIRONMENT)
-    //! \fn void* safe_lsearch(const void* key, void* base, size_t* nelp, size_t width, comparefn compar)
+    //! \fn void* safe_lsearch(const void* key, void* base, rsize_t* nelp, rsize_t width, comparefn compar)
     //!
     //! \brief Searches an array linearly with bounds checking.
     //!
@@ -308,16 +308,20 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a key is a null pointer
-    //!
-    //! - \a base is a null pointer
-    //!
     //! - \a nelp is a null pointer
     //!
-    //! - \a width is zero
+    //! - \a *nelp > RSIZE_T_C(0) && \a base == M_NULLPTR
     //!
-    //! - \a compar is a null pointer
-    M_INLINE void* safe_lsearch(const void* key, void* base, size_t* nelp, size_t width, comparefn compar)
+    //! - \a *nelp > RSIZE_T_C(0) && \a compar == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_T_C(0) && \a key == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_MAX
+    //!
+    //! - \a width > RSIZE_MAX
+    //!
+    //! - \a width == 0
+    M_INLINE void* safe_lsearch(const void* key, void* base, rsize_t* nelp, rsize_t width, comparefn compar)
     {
         return safe_lsearch_impl(key, base, nelp, width, compar, __FILE__, __func__, __LINE__,
                                  "safe_lsearch(key, base, nelp, width, compar)");
@@ -342,22 +346,26 @@ extern "C"
 //!
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
-//! - \a key is a null pointer
-//!
-//! - \a base is a null pointer
-//!
 //! - \a nelp is a null pointer
 //!
-//! - \a width is zero
+//! - \a *nelp > RSIZE_T_C(0) && \a base == M_NULLPTR
 //!
-//! - \a compar is a null pointer
+//! - \a *nelp > RSIZE_T_C(0) && \a compar == M_NULLPTR
+//!
+//! - \a *nelp > RSIZE_T_C(0) && \a key == M_NULLPTR
+//!
+//! - \a *nelp > RSIZE_MAX
+//!
+//! - \a width > RSIZE_MAX
+//!
+//! - \a width == 0
 #    define safe_lsearch(key, base, nelp, width, compar)                                                               \
         safe_lsearch_impl(key, base, nelp, width, compar, __FILE__, __func__, __LINE__,                                \
                           "safe_lsearch(" #key ", " #base ", " #nelp ", " #width ", " #compar ")")
 #endif
 
 #if defined(DEV_ENVIRONMENT)
-    //! \fn void* safe_lsearch_context(const void* key, void* base, size_t* nelp, size_t width, ctxcomparefn
+    //! \fn void* safe_lsearch_context(const void* key, void* base, rsize_t* nelp, rsize_t width, ctxcomparefn
     //! compar)
     //!
     //! \brief Searches an array linearly with bounds checking and an optional context parameter.
@@ -379,19 +387,23 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a key is a null pointer
-    //!
-    //! - \a base is a null pointer
-    //!
     //! - \a nelp is a null pointer
     //!
-    //! - \a width is zero
+    //! - \a *nelp > RSIZE_T_C(0) && \a base == M_NULLPTR
     //!
-    //! - \a compar is a null pointer
+    //! - \a *nelp > RSIZE_T_C(0) && \a compar == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_T_C(0) && \a key == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_MAX
+    //!
+    //! - \a width > RSIZE_MAX
+    //!
+    //! - \a width == 0
     M_INLINE void* safe_lsearch_context(const void*  key,
                                         void*        base,
-                                        size_t*      nelp,
-                                        size_t       width,
+                                        rsize_t*     nelp,
+                                        rsize_t      width,
                                         ctxcomparefn compar,
                                         void*        context)
     {
@@ -420,15 +432,19 @@ extern "C"
 //!
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
-//! - \a key is a null pointer
-//!
-//! - \a base is a null pointer
-//!
 //! - \a nelp is a null pointer
 //!
-//! - \a width is zero
+//! - \a *nelp > RSIZE_T_C(0) && \a base == M_NULLPTR
 //!
-//! - \a compar is a null pointer
+//! - \a *nelp > RSIZE_T_C(0) && \a compar == M_NULLPTR
+//!
+//! - \a *nelp > RSIZE_T_C(0) && \a key == M_NULLPTR
+//!
+//! - \a *nelp > RSIZE_MAX
+//!
+//! - \a width > RSIZE_MAX
+//!
+//! - \a width == 0
 #    define safe_lsearch_context(key, base, nelp, width, compar, context)                                              \
         safe_lsearch_context_impl(key, base, nelp, width, compar, context, __FILE__, __func__, __LINE__,               \
                                   "safe_lsearch_context(" #key ", " #base ", " #nelp ", " #width ", " #compar          \
@@ -436,7 +452,7 @@ extern "C"
 #endif
 
 #if defined(DEV_ENVIRONMENT)
-    //! \fn void* safe_lfind(const void* key, const void* base, size_t* nelp, size_t width, comparefn compar)
+    //! \fn void* safe_lfind(const void* key, const void* base, rsize_t* nelp, rsize_t width, comparefn compar)
     //!
     //! \brief Searches an array linearly for an element with bounds checking.
     //!
@@ -452,16 +468,20 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a key is a null pointer
-    //!
-    //! - \a base is a null pointer
-    //!
     //! - \a nelp is a null pointer
     //!
-    //! - \a width is zero
+    //! - \a *nelp > RSIZE_T_C(0) && \a base == M_NULLPTR
     //!
-    //! - \a compar is a null pointer
-    M_INLINE void* safe_lfind(const void* key, void* base, size_t* nelp, size_t width, comparefn compar)
+    //! - \a *nelp > RSIZE_T_C(0) && \a compar == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_T_C(0) && \a key == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_MAX
+    //!
+    //! - \a width > RSIZE_MAX
+    //!
+    //! - \a width == 0
+    M_INLINE void* safe_lfind(const void* key, void* base, rsize_t* nelp, rsize_t width, comparefn compar)
     {
         return safe_lfind_impl(key, base, nelp, width, compar, __FILE__, __func__, __LINE__,
                                "safe_lfind(key, base, nelp, width, compar)");
@@ -483,22 +503,26 @@ extern "C"
 //!
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
-//! - \a key is a null pointer
-//!
-//! - \a base is a null pointer
-//!
 //! - \a nelp is a null pointer
 //!
-//! - \a width is zero
+//! - \a *nelp > RSIZE_T_C(0) && \a base == M_NULLPTR
 //!
-//! - \a compar is a null pointer
+//! - \a *nelp > RSIZE_T_C(0) && \a compar == M_NULLPTR
+//!
+//! - \a *nelp > RSIZE_T_C(0) && \a key == M_NULLPTR
+//!
+//! - \a *nelp > RSIZE_MAX
+//!
+//! - \a width > RSIZE_MAX
+//!
+//! - \a width == 0
 #    define safe_lfind(key, base, nelp, width, compar)                                                                 \
         safe_lfind_impl(key, base, nelp, width, compar, __FILE__, __func__, __LINE__,                                  \
                         "safe_lfind(" #key ", " #base ", " #nelp ", " #width ", " #compar ")")
 #endif
 
 #if defined(DEV_ENVIRONMENT)
-    //! \fn void* safe_lfind_context(const void* key, const void* base, size_t* nelp, size_t width, ctxcomparefn
+    //! \fn void* safe_lfind_context(const void* key, const void* base, rsize_t* nelp, rsize_t width, ctxcomparefn
     //! compar)
     //!
     //! \brief Searches an array linearly for an element with bounds checking and an optional context parameter.
@@ -517,19 +541,23 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a key is a null pointer
-    //!
-    //! - \a base is a null pointer
-    //!
     //! - \a nelp is a null pointer
     //!
-    //! - \a width is zero
+    //! - \a *nelp > RSIZE_T_C(0) && \a base == M_NULLPTR
     //!
-    //! - \a compar is a null pointer
+    //! - \a *nelp > RSIZE_T_C(0) && \a compar == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_T_C(0) && \a key == M_NULLPTR
+    //!
+    //! - \a *nelp > RSIZE_MAX
+    //!
+    //! - \a width > RSIZE_MAX
+    //!
+    //! - \a width == 0
     M_INLINE void* safe_lfind_context(const void*  key,
                                       void*        base,
-                                      size_t*      nelp,
-                                      size_t       width,
+                                      rsize_t*     nelp,
+                                      rsize_t      width,
                                       ctxcomparefn compar,
                                       void*        context)
     {
@@ -555,15 +583,19 @@ extern "C"
 //!
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
-//! - \a key is a null pointer
-//!
-//! - \a base is a null pointer
-//!
 //! - \a nelp is a null pointer
 //!
-//! - \a width is zero
+//! - \a *nelp > RSIZE_T_C(0) && \a base == M_NULLPTR
 //!
-//! - \a compar is a null pointer
+//! - \a *nelp > RSIZE_T_C(0) && \a compar == M_NULLPTR
+//!
+//! - \a *nelp > RSIZE_T_C(0) && \a key == M_NULLPTR
+//!
+//! - \a *nelp > RSIZE_MAX
+//!
+//! - \a width > RSIZE_MAX
+//!
+//! - \a width == 0
 #    define safe_lfind_context(key, base, nelp, width, compar, context)                                                \
         safe_lfind_context_impl(key, base, nelp, width, compar, context, __FILE__, __func__, __LINE__,                 \
                                 "safe_lfind_context(" #key ", " #base ", " #nelp ", " #width ", " #compar              \

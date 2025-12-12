@@ -8,7 +8,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2024 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -17,10 +17,21 @@
 
 #include "code_attributes.h"
 #include "common_types.h"
+#include "type_conversion.h"
 
 #if defined(__cplusplus)
 extern "C"
 {
+#endif
+
+#if defined(HAVE_CONSTEXPR)
+    constexpr void* nullvoid = M_NULLPTR;
+#    define M_IS_NULL_VOID(ptr) ((ptr) == nullvoid)
+    constexpr const void* nullconstvoid = M_NULLPTR;
+#    define M_IS_NULL_CONST_VOID(ptr) ((ptr) == nullconstvoid)
+#else
+#    define M_IS_NULL_VOID(ptr)       (!(ptr))
+#    define M_IS_NULL_CONST_VOID(ptr) (!(ptr))
 #endif
 
     //! \fn errno_t safe_memset_impl(void* dest, rsize_t destsz, int ch, rsize_t count, const char* file, const char*
@@ -59,7 +70,14 @@ extern "C"
                              const char* file,
                              const char* function,
                              int         line,
-                             const char* expression);
+                             const char* expression)
+        // clang-format off
+        M_DIAG_ERROR(M_IS_NULL_VOID(dest), "dest is a null pointer")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX") 
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_memmove_impl(void* dest, rsize_t destsz, const void* src, rsize_t count, const char* file,
     //! const char* function, int line, const char* expression)
@@ -100,7 +118,15 @@ extern "C"
                               const char* file,
                               const char* function,
                               int         line,
-                              const char* expression);
+                              const char* expression)
+        // clang-format off
+        M_DIAG_ERROR(M_IS_NULL_VOID(dest), "dest is a null pointer")
+        M_DIAG_ERROR(M_IS_NULL_CONST_VOID(src), "src is a null pointer") 
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX") 
+        M_DIAG_ERROR(count > destsz, "count > destsz")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_memcpy_impl(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t count,
     //! const char* file, const char* function, int line, const char* expression)
@@ -143,7 +169,14 @@ extern "C"
                              const char*            file,
                              const char*            function,
                              int                    line,
-                             const char*            expression);
+                             const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_IS_NULL_VOID(dest), "dest is a null pointer")
+        M_DIAG_ERROR(M_IS_NULL_CONST_VOID(src), "src is a null pointer") 
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_memccpy_impl(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t
     //! count, const char* file, const char* function, int line, const char* expression)
@@ -188,7 +221,14 @@ extern "C"
                               const char*            file,
                               const char*            function,
                               int                    line,
-                              const char*            expression);
+                              const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_IS_NULL_VOID(dest), "dest is a null pointer")
+        M_DIAG_ERROR(M_IS_NULL_CONST_VOID(src), "src is a null pointer")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_memcmove_impl(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t
     //! count, const char* file, const char* function, int line, const char* expression)
@@ -231,7 +271,14 @@ extern "C"
                                const char*            file,
                                const char*            function,
                                int                    line,
-                               const char*            expression);
+                               const char*            expression)
+        // clang-format off
+        M_DIAG_ERROR(M_IS_NULL_VOID(dest), "dest is a null pointer")
+        M_DIAG_ERROR(M_IS_NULL_CONST_VOID(src), "src is a null pointer") 
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_malloc_impl(size_t size, const char* file, const char* function, int line,
     //! const char* expression)
@@ -250,11 +297,12 @@ extern "C"
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a size is zero
-    M_FUNC_ATTR_MALLOC void* safe_malloc_impl(size_t      size,
-                                              const char* file,
-                                              const char* function,
-                                              int         line,
-                                              const char* expression);
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(
+        1) void* safe_malloc_impl(size_t size, const char* file, const char* function, int line, const char* expression)
+        // clang-format off
+        M_DIAG_ERROR(size == 0, "safe_malloc of size zero is not allowed")
+        // clang-format on
+        ;
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_calloc_impl(size_t count, size_t size, const char* file, const char* function,
     //! int line, const char* expression)
@@ -276,12 +324,18 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a count * \a size results in an overflow
-    M_FUNC_ATTR_MALLOC void* safe_calloc_impl(size_t      count,
-                                              size_t      size,
-                                              const char* file,
-                                              const char* function,
-                                              int         line,
-                                              const char* expression);
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* safe_calloc_impl(size_t      count,
+                                                                              size_t      size,
+                                                                              const char* file,
+                                                                              const char* function,
+                                                                              int         line,
+                                                                              const char* expression)
+        // clang-format off
+        M_DIAG_ERROR(size == 0, "safe_calloc with count of zero is not allowed")
+        M_DIAG_ERROR(size == 0, "safe_calloc with size of zero is not allowed")
+        M_DIAG_ERROR(count > (SIZE_MAX / size), "safe_calloc size * count overflows")
+        // clang-format on
+        ;
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_malloc_aligned_impl(size_t size, size_t alignment, const char* file, const
     //! char* function, int line, const char* expression)
@@ -301,12 +355,17 @@ extern "C"
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a size is zero
-    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) M_ALLOC_ALIGN(2) void* safe_malloc_aligned_impl(size_t      size,
-                                                                                        size_t      alignment,
-                                                                                        const char* file,
-                                                                                        const char* function,
-                                                                                        int         line,
-                                                                                        const char* expression);
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1)
+        M_ALLOC_ALIGN(2) void* safe_malloc_aligned_impl(size_t      size,
+                                                        size_t      alignment,
+                                                        const char* file,
+                                                        const char* function,
+                                                        int         line,
+                                                        const char* expression)
+        // clang-format off
+        M_DIAG_ERROR(size == 0, "safe_malloc_aligned of size zero is not allowed")
+        // clang-format on
+        ;
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_calloc_aligned_impl(size_t count, size_t size, size_t alignment, const char*
     //! file, const char* function, int line, const char* expression)
@@ -329,13 +388,20 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a count * \a size results in an overflow
-    M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) M_ALLOC_ALIGN(3) void* safe_calloc_aligned_impl(size_t      count,
-                                                                                           size_t      size,
-                                                                                           size_t      alignment,
-                                                                                           const char* file,
-                                                                                           const char* function,
-                                                                                           int         line,
-                                                                                           const char* expression);
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2)
+        M_ALLOC_ALIGN(3) void* safe_calloc_aligned_impl(size_t      count,
+                                                        size_t      size,
+                                                        size_t      alignment,
+                                                        const char* file,
+                                                        const char* function,
+                                                        int         line,
+                                                        const char* expression)
+        // clang-format off
+        M_DIAG_ERROR(size == 0, "safe_calloc_aligned with count of zero is not allowed")
+        M_DIAG_ERROR(size == 0, "safe_calloc_aligned with size of zero is not allowed")
+        M_DIAG_ERROR(count > (SIZE_MAX / size), "safe_calloc_aligned size * count overflows")
+        // clang-format on
+        ;
 
 #if defined(__cplusplus)
 }
