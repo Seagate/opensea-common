@@ -14,12 +14,14 @@
 #include "common_types.h"
 #include "constraint_handling.h"
 #include "env_detect.h"
+#include "io_utils.h"
 #include "math_utils.h"
 #include "memory_safety.h"
 #include "type_conversion.h"
 
 #include <ctype.h>
 #include <limits.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -504,7 +506,7 @@ errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
         // many cases as standard which is why it's down here.-TJE
         error = strncpy_s(dest, destsz, src, count);
 #else
-        error        = safe_memccpy(dest, destsz, src, '\0', count);
+        error = safe_memccpy(dest, destsz, src, '\0', count);
         if (srclen < count)
         {
             dest[srclen] = '\0'; // ensuring NULL termination
@@ -1454,4 +1456,85 @@ bool wildcard_case_match(const char* pattern, const char* data)
 bool wildcard_match(const char* pattern, const char* data)
 {
     return wildcard_match_internal(pattern, data, false);
+}
+
+// Note: Tried M_FORCEINLINE but no performance difference observed
+static M_INLINE long string_version_compare_parse_number(const char** p, int* leading_zeros, size_t* digit_count)
+{
+    long val       = 0L;
+    *leading_zeros = 0;
+    *digit_count   = SIZE_T_C(0);
+
+    // Count leading zeros
+    while (**p == '0')
+    {
+        ++(*leading_zeros);
+        ++(*digit_count);
+        ++(*p);
+    }
+
+    // Parse digits
+    while (isdigit(M_STATIC_CAST(unsigned char, **p)))
+    {
+        val = val * 10L + (**p - '0');
+        ++(*digit_count);
+        ++(*p);
+    }
+    return val;
+}
+
+int string_version_compare(const char* string1, const char* string2)
+{
+    while (*string1 && *string2)
+    {
+        if (isdigit(M_STATIC_CAST(unsigned char, *string1)) && isdigit(M_STATIC_CAST(unsigned char, *string2)))
+        {
+            const char* p1 = string1;
+            const char* p2 = string2;
+            size_t      len1;
+            size_t      len2;
+            long        num1;
+            long        num2;
+            int         zeros1;
+            int         zeros2;
+
+            num1 = string_version_compare_parse_number(&p1, &zeros1, &len1);
+            num2 = string_version_compare_parse_number(&p2, &zeros2, &len2);
+
+            // Compare numeric values
+            if (num1 != num2)
+            {
+                return (num1 > num2) - (num1 < num2); // branchless numeric compare
+            }
+
+            // Tie-break: leading zeros
+            if (zeros1 != zeros2)
+            {
+                return (zeros2 > zeros1) - (zeros2 < zeros1); // more zeros first
+            }
+
+            // Tie-break: digit length
+            if (len1 != len2)
+            {
+                return (len2 > len1) - (len2 < len1); // longer segment wins
+            }
+
+            // Advance past numeric segment
+            string1 = p1;
+            string2 = p2;
+        }
+        else
+        {
+            if (*string1 != *string2)
+            {
+                return M_STATIC_CAST(int,
+                                     M_STATIC_CAST(unsigned char, *string1) - M_STATIC_CAST(unsigned char, *string2));
+            }
+            ++string1;
+            ++string2;
+        }
+    }
+
+    // Final fallback: which string ended first
+    return (*string1 != '\0') - (*string2 != '\0'); // branchless end check
 }

@@ -298,6 +298,7 @@ src_files = [
     'src/type_conversion.c',
     'src/unit_conversion.c',
     'src/validate_format.c',
+    'src/version_sort.c',
 ]
 
 if c.has_header_symbol('stdlib.h', '__STDC_LIB_EXT1__')
@@ -362,7 +363,7 @@ if c.has_function('getline', prefix: '#include <stdio.h>')
 endif
 
 # Test support for _Generic keyword. May not be available in some cases.
-gernericSelectionTest = ''' 
+gernericSelectionTest = '''
                       long add_long(long x, long y)
                       {
                         return x + y;
