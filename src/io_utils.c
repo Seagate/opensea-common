@@ -3624,6 +3624,14 @@ int impl_snprintf_err_handle(const char* file,
                              ...)
 {
     int     n = 0;
+    constraintEnvInfo envInfo;
+    if (buf == M_NULLPTR && bufsize != 0)
+    {
+        errno = EINVAL;
+        invoke_Constraint_Handler("snprintf_error_handler_macro: buf is NULL and bufsize != 0",
+                                  set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
+        return -1;
+    }
     va_list args;
     va_start(args, format);
     // Disabling this warning in GCC and Clang for now. It only seems to show in Windows at the moment-TJE
@@ -3636,16 +3644,25 @@ int impl_snprintf_err_handle(const char* file,
     RESTORE_WARNING_FORMAT_NONLITERAL
     va_end(args);
 
-    if (n < 0 || (buf != M_NULLPTR && bufsize != 0 && int_to_sizet(n) >= bufsize))
+    if (n < 0)
     {
         if (buf != M_NULLPTR && bufsize > 0)
         {
             buf[bufsize - 1] = 0;
         }
-        constraintEnvInfo envInfo;
         errno = EINVAL;
-        invoke_Constraint_Handler("snprintf_error_handler_macro: error in snprintf",
+        invoke_Constraint_Handler("snprintf_error_handler_macro: Encoding error occurred",
                                   set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
+    }
+    else if((buf != M_NULLPTR && bufsize != 0 && int_to_sizet(n) >= bufsize))
+    {
+        if (buf != M_NULLPTR && bufsize > 0)
+        {
+            buf[bufsize - 1] = 0;
+        }
+        errno = ERANGE;
+        invoke_Constraint_Handler("snprintf_error_handler_macro: output was truncated",
+                                  set_Env_Info(&envInfo, file, function, expression, line), ERANGE);
     }
     return n;
 }
