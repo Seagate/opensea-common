@@ -1418,9 +1418,9 @@ static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str, eAllow
 
     if (str != M_NULLPTR)
     {
+        const char* temp = str;
         if (unittype == ALLOW_UNIT_NONE)
         {
-            const char* temp = str;
             while (*temp != '\0')
             {
                 if ((!safe_isxdigit(*temp)) && (*temp != 'x') && (*temp != 'h'))
