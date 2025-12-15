@@ -349,7 +349,7 @@ struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, str
         while (remsec >= (is_Year_A_Leap_Year(year) ? secPerLeapYear : secPerYear))
         {
             remsec -= is_Year_A_Leap_Year(year) ? secPerLeapYear : secPerYear;
-            year += UINT16_C(1);
+            year += 1;
         }
 
         for (month = C_STRUCT_TM_MONTH_JAN; month <= C_STRUCT_TM_MONTH_DEC; month += 1)
