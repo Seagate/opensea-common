@@ -1840,8 +1840,8 @@ extern "C"
         DISABLE_NONNULL_COMPARE
         if (signedWordToSwap != M_NULLPTR)
         {
-            *signedWordToSwap = M_STATIC_CAST(int16_t, ((*signedWordToSwap & UINT16_C(0x00FF)) << 8)) |
-                                M_STATIC_CAST(int16_t, ((*signedWordToSwap & UINT16_C(0xFF00)) >> 8));
+            *signedWordToSwap = M_STATIC_CAST(int16_t, ((M_STATIC_CAST(uint16_t, *signedWordToSwap) & UINT16_C(0x00FF)) << 8)) |
+                                M_STATIC_CAST(int16_t, ((M_STATIC_CAST(uint16_t, *signedWordToSwap) & UINT16_C(0xFF00)) >> 8));
         }
         RESTORE_NONNULL_COMPARE
     }
@@ -1873,10 +1873,10 @@ extern "C"
         if (signedDWord != M_NULLPTR)
         {
             *signedDWord =
-                M_STATIC_CAST(int32_t, ((*signedDWord & M_STATIC_CAST(int32_t, INT32_C(0x0000FFFF))) << 16)) |
-                M_STATIC_CAST(int32_t, ((*signedDWord & M_STATIC_CAST(int32_t, INT32_C(0xFFFF0000))) >> 16));
-            *signedDWord = M_STATIC_CAST(int32_t, ((*signedDWord & M_STATIC_CAST(int32_t, INT32_C(0x00FF00FF))) << 8)) |
-                           M_STATIC_CAST(int32_t, ((*signedDWord & M_STATIC_CAST(int32_t, INT32_C(0xFF00FF00))) >> 8));
+                M_STATIC_CAST(int32_t, ((M_STATIC_CAST(uint32_t, *signedDWord) & UINT32_C(0x0000FFFF)) << 16)) |
+                M_STATIC_CAST(int32_t, ((M_STATIC_CAST(uint32_t, *signedDWord) & UINT32_C(0xFFFF0000)) >> 16));
+            *signedDWord = M_STATIC_CAST(int32_t, ((M_STATIC_CAST(uint32_t, *signedDWord) & UINT32_C(0x00FF00FF)) << 8)) |
+                           M_STATIC_CAST(int32_t, ((M_STATIC_CAST(uint32_t, *signedDWord) & UINT32_C(0xFF00FF00)) >> 8));
         }
         RESTORE_NONNULL_COMPARE
     }
