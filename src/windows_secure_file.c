@@ -685,7 +685,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                         break;
                     }
 #if defined(_DEBUG)
-                    printf("This path is on the system drive. Set flags for "
+                    print_str("This path is on the system drive. Set flags for "
                            "only specific folders to validate "
                            "permissions correctly\n");
 #endif //_DEBUG
@@ -709,7 +709,7 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                             // and can be trusted. This should only happen on
                             // the system root directory (C:) in Windows
 #if defined(_DEBUG)
-                            printf("Detected Windows trusted installer as owner "
+                            print_str("Detected Windows trusted installer as owner "
                                    "of this directory and allowed to trust "
                                    "it.\n");
 #endif                                                              //_DEBUG
