@@ -525,7 +525,7 @@ bool is_Windows_PE(void)
         {
 #if defined(_DEBUG)
             print_str("Found HKLM\\SOFTWARE\\Microsoft\\Windows "
-                   "NT\\CurrentVersion\\WinPE\n");
+                      "NT\\CurrentVersion\\WinPE\n");
 #endif
             isWindowsPE = true;
             RegCloseKey(keyHandle);

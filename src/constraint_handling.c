@@ -90,9 +90,9 @@ void safe_ignore_handler(M_ATTR_UNUSED const char* M_RESTRICT msg,
     return; // NOLINT(readability-redundant-control-flow)
 }
 
-constraint_handler_func int_set_constraint_handler(constraint_handler_func handler);
+M_RETURNS_NONNULL constraint_handler_func int_set_constraint_handler(constraint_handler_func M_NULLABLE handler);
 
-constraint_handler_func int_set_constraint_handler(constraint_handler_func handler)
+M_RETURNS_NONNULL constraint_handler_func int_set_constraint_handler(constraint_handler_func M_NULLABLE handler)
 {
     constraint_handler_func old = installedhandler;
     if (old == M_NULLPTR)
@@ -111,16 +111,14 @@ constraint_handler_func int_set_constraint_handler(constraint_handler_func handl
     return old;
 }
 
-void invoke_Constraint_Handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error)
+void invoke_Constraint_Handler(const char* M_RESTRICT M_NONNULL msg, void* M_RESTRICT M_NULLABLE ptr, errno_t error)
 {
     constraint_handler_func handler = installedhandler;
-    DISABLE_NONNULL_COMPARE
     if (handler == M_NULLPTR)
     {
         installedhandler = safe_abort_handler;
         handler          = installedhandler;
     }
-    RESTORE_NONNULL_COMPARE
     handler(msg, ptr, error);
 }
 

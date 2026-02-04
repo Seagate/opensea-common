@@ -19,7 +19,7 @@ eReturnValues metric_Unit_Convert(double* byteValue, char** metricUnit)
     eReturnValues ret         = SUCCESS;
     uint8_t       unitCounter = UINT8_C(0);
 
-    if (!byteValue || !metricUnit || !*metricUnit)
+    if (byteValue == M_NULLPTR || metricUnit == M_NULLPTR || *metricUnit == M_NULLPTR)
     {
         return BAD_PARAMETER;
     }
@@ -69,7 +69,7 @@ eReturnValues capacity_Unit_Convert(double* byteValue, char** capacityUnit)
     eReturnValues ret         = SUCCESS;
     uint8_t       unitCounter = UINT8_C(0);
 
-    if (!byteValue || !capacityUnit || !*capacityUnit)
+    if (byteValue == M_NULLPTR || capacityUnit == M_NULLPTR || *capacityUnit == M_NULLPTR)
     {
         return BAD_PARAMETER;
     }

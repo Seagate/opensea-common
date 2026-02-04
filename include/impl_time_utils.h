@@ -26,13 +26,13 @@ extern "C"
 #endif
 
 #if defined(HAVE_CONSTEXPR)
-    constexpr const time_t* nulltimet = M_NULLPTR;
+    M_ATTR_UNUSED constexpr const time_t* nulltimet = M_NULLPTR;
 #    define M_IS_NULL_TIMET(ptr) ((ptr) == nulltimet)
-    constexpr struct tm* nullstructtm = M_NULLPTR;
+    M_ATTR_UNUSED constexpr struct tm* nullstructtm = M_NULLPTR;
 #    define M_IS_NULL_STRUCT_TM(ptr) ((ptr) == nullstructtm)
-    constexpr const struct tm* nullconststructtm = M_NULLPTR;
+    M_ATTR_UNUSED constexpr const struct tm* nullconststructtm = M_NULLPTR;
 #    define M_IS_NULL_CONST_STRUCT_TM(ptr) ((ptr) == nullconststructtm)
-    constexpr char* nulltimestr = M_NULLPTR;
+    M_ATTR_UNUSED constexpr char* nulltimestr = M_NULLPTR;
 #    define M_IS_NULL_TIME_STR(ptr) ((ptr) == nulltimestr)
 #else
 #    define M_IS_NULL_TIMET(ptr)           (!(ptr))
@@ -64,15 +64,14 @@ extern "C"
     //! - \a timer is a null pointer
     //!
     //! - \a buf is a null pointer
-    M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RO(1)
     M_PARAM_RW(2)
-    struct tm* impl_safe_gmtime(const time_t* M_RESTRICT timer,
-                                struct tm* M_RESTRICT    buf,
-                                const char*              file,
-                                const char*              function,
-                                int                      line,
-                                const char*              expression)
+    struct tm* M_NULLABLE impl_safe_gmtime(const time_t* M_RESTRICT M_NONNULL timer,
+                                           struct tm* M_RESTRICT M_NONNULL    buf,
+                                           const char* M_NULLABLE             file,
+                                           const char* M_NULLABLE             function,
+                                           int                                line,
+                                           const char* M_NULLABLE             expression)
         // clang-format off
         M_DIAG_ERROR(M_IS_NULL_TIMET(timer), "timer is NULL")
         M_DIAG_ERROR(M_IS_NULL_STRUCT_TM(buf), "buf is NULL")
@@ -102,15 +101,14 @@ extern "C"
     //! - \a timer is a null pointer
     //!
     //! - \a buf is a null pointer
-    M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RO(1)
     M_PARAM_RW(2)
-    struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
-                                   struct tm* M_RESTRICT    buf,
-                                   const char*              file,
-                                   const char*              function,
-                                   int                      line,
-                                   const char*              expression)
+    struct tm* M_NULLABLE impl_safe_localtime(const time_t* M_RESTRICT M_NONNULL timer,
+                                              struct tm* M_RESTRICT M_NONNULL    buf,
+                                              const char* M_NULLABLE             file,
+                                              const char* M_NULLABLE             function,
+                                              int                                line,
+                                              const char* M_NULLABLE             expression)
         // clang-format off
         M_DIAG_ERROR(M_IS_NULL_TIMET(timer), "timer is NULL")
         M_DIAG_ERROR(M_IS_NULL_STRUCT_TM(buf), "buf is NULL")
@@ -149,17 +147,16 @@ extern "C"
     //! - \a bufsz > RSIZE_MAX
     //!
     //! - member of \a time_ptr is out of normal range
-    M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RW_SIZE(1, 2)
     M_PARAM_RO(3)
-    errno_t impl_safe_asctime(char*            buf,
-                              rsize_t          bufsz,
-                              const struct tm* time_ptr,
-                              bool             ctime,
-                              const char*      file,
-                              const char*      function,
-                              int              line,
-                              const char*      expression)
+    errno_t impl_safe_asctime(char* M_NONNULL            buf,
+                              rsize_t                    bufsz,
+                              const struct tm* M_NONNULL time_ptr,
+                              bool                       ctime,
+                              const char* M_NULLABLE     file,
+                              const char* M_NULLABLE     function,
+                              int                        line,
+                              const char* M_NULLABLE     expression)
         // clang-format off
         M_DIAG_ERROR(M_IS_NULL_TIME_STR(buf), "buf is NULL")
         M_DIAG_ERROR(M_IS_NULL_CONST_STRUCT_TM(time_ptr), "time_ptr is NULL")
@@ -216,16 +213,15 @@ extern "C"
     //! - \a bufsz < 26
     //!
     //! - \a bufsz > RSIZE_MAX
-    M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RW_SIZE(1, 2)
     M_PARAM_RO(3)
-    errno_t impl_safe_ctime(char*         buf,
-                            rsize_t       bufsz,
-                            const time_t* timer,
-                            const char*   file,
-                            const char*   function,
-                            int           line,
-                            const char*   expression)
+    errno_t impl_safe_ctime(char* M_NONNULL         buf,
+                            rsize_t                 bufsz,
+                            const time_t* M_NONNULL timer,
+                            const char* M_NULLABLE  file,
+                            const char* M_NULLABLE  function,
+                            int                     line,
+                            const char* M_NULLABLE  expression)
         // clang-format off
         M_DIAG_ERROR(M_IS_NULL_TIME_STR(buf), "buf is NULL")
         M_DIAG_ERROR(M_IS_NULL_TIMET(timer), "timer is NULL")

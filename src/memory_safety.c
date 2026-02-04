@@ -12,6 +12,7 @@
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "memory_safety.h"
+#include "bit_manip.h"
 #include "constraint_handling.h"
 #include "env_detect.h"
 #include "math_utils.h"
@@ -270,66 +271,26 @@ M_MALLOC_SIZE(3) void* realloc_page_aligned(void* alignedPtr, size_t originalSiz
     }
 }
 
-M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* ptrData, size_t lengthBytes)
+M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* ptrData, size_t lengthBytes)
 {
-    DISABLE_NONNULL_COMPARE
     if (ptrData != M_NULLPTR && lengthBytes > SIZE_T_C(0))
     {
-        bool byteByByte = true;
-        // Allocate single memory page as zeroes to compare for the range
-        // instead of byte by byte for better performance.-TJE
-        size_t              sysPageSize = get_System_Pagesize();
-        const uint_fast8_t* byteptr     = C_CAST(const uint_fast8_t*, ptrData);
-        if (sysPageSize != SIZE_T_C(0) && get_memalignment(ptrData) >= sysPageSize)
+        const uint8_t* byteptr = C_CAST(const uint8_t*, ptrData);
+        for (size_t iter = SIZE_T_C(0), iterEnd = lengthBytes - SIZE_T_C(1); iter < lengthBytes && iterEnd >= iter;
+             ++iter, --iterEnd)
         {
-            uint8_t* zeroes = C_CAST(uint8_t*, calloc_page_aligned(sysPageSize, sizeof(uint8_t)));
-            if (zeroes != M_NULLPTR)
+            if (byteptr[iter] != UINT8_C(0) || byteptr[iterEnd] != UINT8_C(0))
             {
-                size_t increment = M_Min(sysPageSize, lengthBytes);
-                byteByByte       = false;
-                for (size_t iter = SIZE_T_C(0); iter < lengthBytes; iter += increment)
-                {
-#if defined(HAVE_BUILTIN_MEMCMP)
-                    if (__builtin_memcmp(&byteptr[iter], zeroes, increment) != 0)
-#else
-                    if (memcmp(&byteptr[iter], zeroes, increment) != 0)
-#endif
-                    {
-                        safe_free_page_aligned_core(C_CAST(void**, &zeroes));
-                        return false;
-                    }
-                    // update increment amount to ensure this does not access
-                    // invalid memory
-                }
-                safe_free_page_aligned_core(C_CAST(void**, &zeroes));
-            }
-        }
-        if (byteByByte)
-        {
-            for (size_t iter = SIZE_T_C(0), iterEnd = lengthBytes - SIZE_T_C(1); iter < lengthBytes && iterEnd >= iter;
-                 ++iter, --iterEnd)
-            {
-                if (byteptr[iter] != UINT8_C(0) || byteptr[iterEnd] != UINT8_C(0))
-                {
-                    return false;
-                }
+                return false;
             }
         }
         return true;
     }
-    RESTORE_NONNULL_COMPARE
     return false;
 }
 
-#if defined(__has_builtin)
-#    if __has_builtin(__builtin___clear_cache)
-#        define HAS_BUILT_IN_CLEAR_CACHE
-#    endif
-#endif
-
-M_NONNULL_PARAM_LIST(1) M_PARAM_WO_SIZE(1, 2) void* explicit_zeroes(void* dest, size_t count)
+M_PARAM_WO_SIZE(1, 2) void* explicit_zeroes(void* dest, size_t count)
 {
-    DISABLE_NONNULL_COMPARE
     if (dest != M_NULLPTR && count > SIZE_T_C(0))
     {
 #if defined(HAVE_MEMSET_EXPLICIT)
@@ -385,7 +346,6 @@ M_NONNULL_PARAM_LIST(1) M_PARAM_WO_SIZE(1, 2) void* explicit_zeroes(void* dest, 
     {
         return M_NULLPTR;
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_memset_impl(void*       dest,
@@ -399,7 +359,6 @@ errno_t safe_memset_impl(void*       dest,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -462,14 +421,6 @@ errno_t safe_memset_impl(void*       dest,
         memset(dest, ch, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #        endif
         asm volatile("" ::: "memory");
-#    elif defined(HAS_BUILT_IN_CLEAR_CACHE)
-#        if defined(HAVE_BUILTIN_MEMSET)
-        __builtin_memset(dest, ch, // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-                         count);   // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-#        else
-        memset(dest, ch, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-#        endif
-        __builtin___clear_cache(dest, dest + count);
 #    elif IS_MSVC_VERSION(MSVC_2005)
 #        if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                              \
             (defined(HAVE_MSFT_SECURE_ZERO_MEMORY2) ||                                                                 \
@@ -517,7 +468,6 @@ errno_t safe_memset_impl(void*       dest,
         errno = error;
         return error;
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 // malloc in standards leaves malloc'ing size 0 as a undefined behavior.
@@ -643,7 +593,7 @@ M_NODISCARD M_PARAM_RW(1) M_MALLOC_SIZE(2) void* safe_reallocf(void** block, siz
     }
 }
 
-// This rounds up to the neareset power of 2 to ensure memory is aligned as
+// This rounds up to the nearest power of 2 to ensure memory is aligned as
 // expected and conforms with API requirements
 static size_t alignment_Round_Up(size_t alignment)
 {
@@ -655,6 +605,7 @@ static size_t alignment_Round_Up(size_t alignment)
         alignment = sizeof(void*);
     }
     // round up to next power of 2 if necessary
+    /*
     if ((alignment & (alignment - SIZE_T_C(1))) != SIZE_T_C(0))
     {
         size_t rounded_alignment = sizeof(void*);
@@ -663,6 +614,11 @@ static size_t alignment_Round_Up(size_t alignment)
             rounded_alignment <<= SIZE_T_C(1);
         }
         alignment = rounded_alignment;
+    }
+        */
+    if (has_single_bit(alignment) == false)
+    {
+        alignment = SIZE_T_C(1) << first_leading_one(alignment);
     }
     return alignment;
 }
@@ -888,7 +844,6 @@ errno_t safe_memmove_impl(void*       dest,
     errno_t           error = 0;
     constraintEnvInfo envInfo;
     errno = 0;
-    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -952,7 +907,6 @@ errno_t safe_memmove_impl(void*       dest,
         errno = 0;
         return error;
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 // calls memcpy_s if available, otherwise performs all checks that memcpy_s does
@@ -969,7 +923,6 @@ errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
     errno_t           error = 0;
     constraintEnvInfo envInfo;
     errno = 0;
-    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -1040,7 +993,6 @@ errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
         errno = error;
         return error;
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
@@ -1056,7 +1008,6 @@ errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
     errno_t           error = 0;
     constraintEnvInfo envInfo;
     errno = 0;
-    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -1127,7 +1078,6 @@ errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
         errno = error;
         return error;
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 // allows overlapping ranges
@@ -1144,7 +1094,6 @@ errno_t safe_memcmove_impl(void* M_RESTRICT       dest,
     errno_t           error = 0;
     constraintEnvInfo envInfo;
     errno = 0;
-    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -1237,5 +1186,4 @@ errno_t safe_memcmove_impl(void* M_RESTRICT       dest,
         errno = error;
         return error;
     }
-    RESTORE_NONNULL_COMPARE
 }

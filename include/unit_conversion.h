@@ -33,7 +33,7 @@ extern "C"
     //! \param[in,out] byteValue number of bytes going in, converted value to match unit on out
     //! \param[out] metricUnit string of size UNIT_STRING_LENGTH to hold the converted unit.
     //! \return SUCCESS if converted without error, otherwise error code
-    eReturnValues metric_Unit_Convert(double* byteValue, char** metricUnit);
+    eReturnValues metric_Unit_Convert(double* M_NONNULL byteValue, char* M_NONNULL* M_NONNULL metricUnit);
 
     //! \fn eReturnValues capacity_Unit_Convert(double* byteValue, char** metricUnit)
     //! \brief Takes a double representing a number of bytes and converts it to the
@@ -43,43 +43,43 @@ extern "C"
     //! \param[in,out] byteValue number of bytes going in, converted value to match unit on out
     //! \param[out] capacityUnit string of size UNIT_STRING_LENGTH to hold the converted unit.
     //! \return SUCCESS if converted without error, otherwise error code
-    eReturnValues capacity_Unit_Convert(double* byteValue, char** capacityUnit);
+    eReturnValues capacity_Unit_Convert(double* M_NONNULL byteValue, char* M_NONNULL* M_NONNULL capacityUnit);
 
     //! \fn int16_t celsius_To_Fahrenheit(const int16_t* celsius)
     //! \brief Converts a temperature in celsius to fahrenheit
     //! \param[in] celsius temperature in celsius to convert
     //! \return temperature in fahrenheit
-    int16_t celsius_To_Fahrenheit(const int16_t* celsius);
+    int16_t celsius_To_Fahrenheit(const int16_t* M_NONNULL celsius);
 
     //! \fn int16_t fahrenheit_To_celsius(const int16_t* fahrenheit)
     //! \brief Converts a temperature in fahrenheit to celsius
     //! \param[in] celsius temperature in fahrenheit to convert
     //! \return temperature in celsius
-    int16_t fahrenheit_To_celsius(const int16_t* fahrenheit);
+    int16_t fahrenheit_To_celsius(const int16_t* M_NONNULL fahrenheit);
 
     //! \fn int16_t celsius_To_Kelvin(const int16_t* celsius)
     //! \brief Converts a temperature in celsius to kelvin
     //! \param[in] celsius temperature in celsius to convert
     //! \return temperature in kelvin
-    int16_t celsius_To_Kelvin(const int16_t* celsius);
+    int16_t celsius_To_Kelvin(const int16_t* M_NONNULL celsius);
 
     //! \fn int16_t fahrenheit_To_Kelvin(const int16_t* fahrenheit)
     //! \brief Converts a temperature in fahrenheit to kelvin
     //! \param[in] fahrenheit temperature in fahrenheit to convert
     //! \return temperature in kelvin
-    int16_t fahrenheit_To_Kelvin(const int16_t* fahrenheit);
+    int16_t fahrenheit_To_Kelvin(const int16_t* M_NONNULL fahrenheit);
 
     //! \fn int16_t kelvin_To_Celsius(const int16_t* kelvin)
     //! \brief Converts a temperature in kelvin to celsius
     //! \param[in] kelvin temperature in kelvin to convert
     //! \return temperature in celsius
-    int16_t kelvin_To_Celsius(const int16_t* kelvin);
+    int16_t kelvin_To_Celsius(const int16_t* M_NONNULL kelvin);
 
     //! \fn int16_t kelvin_To_Fahrenheit(const int16_t* kelvin)
     //! \brief Converts a temperature in kelvin to fahrenheit
     //! \param[in] kelvin temperature in kelvin to convert
     //! \return temperature in fahrenheit
-    int16_t kelvin_To_Fahrenheit(const int16_t* kelvin);
+    int16_t kelvin_To_Fahrenheit(const int16_t* M_NONNULL kelvin);
 
 #if defined(__cplusplus)
 }

@@ -28,7 +28,7 @@
 
 // C++ should not include this. It has issues loading this and it's names for some unknown reason.
 // <bit> header for C++ is better to use in C++ mode.
-#if defined(__has_include) && !defined(__cplusplus)
+#if !defined(HAVE_STDC_BIT) && defined(__has_include) && !defined(__cplusplus)
 #    if __has_include(<stdbit.h>)
 #        include <stdbit.h>
 #        define HAVE_STDC_BIT
@@ -40,6 +40,8 @@ extern "C"
 {
 #endif
 
+    // Implementation of load/store functions like stdbit.h provides in C2y
+
     //! \fn static M_INLINE uint32_t get_DWord0(uint64_t value)
     //! \brief Returns the lower 32bits in a 64bit value
     //!
@@ -47,7 +49,7 @@ extern "C"
     //! \return lower 32bits of the input 64bit value
     static M_INLINE uint32_t get_DWord0(uint64_t value)
     {
-        return M_STATIC_CAST(uint32_t, value & UINT64_C(0x00000000FFFFFFFF));
+        return M_STATIC_CAST(uint32_t, value& UINT64_C(0x00000000FFFFFFFF));
     }
 
     //! \def M_DoubleWord0(l)
@@ -1585,7 +1587,7 @@ extern "C"
     //! \return returns \a val with the specified bit cleared to 0
     static M_INLINE uint8_t clear_uint8_bit(uint8_t val, uint8_t bitNum)
     {
-        return M_STATIC_CAST(uint8_t, val & M_STATIC_CAST(uint8_t, ~(UINT8_C(1) << bitNum)));
+        return M_STATIC_CAST(uint8_t, val& M_STATIC_CAST(uint8_t, ~(UINT8_C(1) << bitNum)));
     }
 
     //! \fn static M_INLINE uint16_t clear_uint16_bit(uint16_t val, uint16_t bitNum)
@@ -1596,7 +1598,7 @@ extern "C"
     //! \return returns \a val with the specified cleared set to 0
     static M_INLINE uint16_t clear_uint16_bit(uint16_t val, uint16_t bitNum)
     {
-        return M_STATIC_CAST(uint16_t, val & M_STATIC_CAST(uint16_t, ~(UINT16_C(1) << bitNum)));
+        return M_STATIC_CAST(uint16_t, val& M_STATIC_CAST(uint16_t, ~(UINT16_C(1) << bitNum)));
     }
 
     //! \fn static M_INLINE uint32_t clear_uint32_bit(uint32_t val, uint32_t bitNum)
@@ -1727,14 +1729,12 @@ extern "C"
     //!
     //! \param[in,out] byteToSwap pointer to byte to swap nibbles
     //! \sa n_swap_8
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void nibble_Swap(uint8_t* byteToSwap)
+    M_PARAM_RW(1) static M_INLINE void nibble_Swap(uint8_t* M_NONNULL byteToSwap)
     {
-        DISABLE_NONNULL_COMPARE
         if (byteToSwap != M_NULLPTR)
         {
             *byteToSwap = n_swap_8(*byteToSwap);
         }
-        RESTORE_NONNULL_COMPARE
     }
 
     //! \fn M_NODISCARD static M_INLINE uint16_t b_swap_16(uint16_t value)
@@ -1821,29 +1821,26 @@ extern "C"
     //!
     //! \param[in,out] wordToSwap pointer to word to swap bytes
     //! \sa b_swap_16
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void byte_Swap_16(uint16_t* wordToSwap)
+    M_PARAM_RW(1) static M_INLINE void byte_Swap_16(uint16_t* M_NONNULL wordToSwap)
     {
-        DISABLE_NONNULL_COMPARE
         if (wordToSwap != M_NULLPTR)
         {
             *wordToSwap = b_swap_16(*wordToSwap);
         }
-        RESTORE_NONNULL_COMPARE
     }
 
     //! \fn void byte_Swap_Int16(int16_t* signedWordToSwap)
     //! \brief swaps bytes within a signed word in place
     //!
     //! \param[in,out] signedWordToSwap pointer to word to swap bytes
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void byte_Swap_Int16(int16_t* signedWordToSwap)
+    M_PARAM_RW(1) static M_INLINE void byte_Swap_Int16(int16_t* M_NONNULL signedWordToSwap)
     {
-        DISABLE_NONNULL_COMPARE
         if (signedWordToSwap != M_NULLPTR)
         {
-            *signedWordToSwap = M_STATIC_CAST(int16_t, ((M_STATIC_CAST(uint16_t, *signedWordToSwap) & UINT16_C(0x00FF)) << 8)) |
-                                M_STATIC_CAST(int16_t, ((M_STATIC_CAST(uint16_t, *signedWordToSwap) & UINT16_C(0xFF00)) >> 8));
+            *signedWordToSwap =
+                M_STATIC_CAST(int16_t, ((M_STATIC_CAST(uint16_t, *signedWordToSwap) & UINT16_C(0x00FF)) << 8)) |
+                M_STATIC_CAST(int16_t, ((M_STATIC_CAST(uint16_t, *signedWordToSwap) & UINT16_C(0xFF00)) >> 8));
         }
-        RESTORE_NONNULL_COMPARE
     }
 
     //! \fn void byte_Swap_32(uint32_t* doubleWordToSwap)
@@ -1853,32 +1850,29 @@ extern "C"
     //!
     //! \param[in,out] doubleWordToSwap pointer to dword to swap bytes
     //! \sa b_swap_32
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void byte_Swap_32(uint32_t* doubleWordToSwap)
+    M_PARAM_RW(1) static M_INLINE void byte_Swap_32(uint32_t* M_NONNULL doubleWordToSwap)
     {
-        DISABLE_NONNULL_COMPARE
         if (doubleWordToSwap != M_NULLPTR)
         {
             *doubleWordToSwap = b_swap_32(*doubleWordToSwap);
         }
-        RESTORE_NONNULL_COMPARE
     }
 
     //! \fn void byte_Swap_Int32(int32_t* signedDWord)
     //! \brief swaps bytes within a signed dword in place
     //!
     //! \param[in,out] signedDWord pointer to signed dword to swap bytes
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void byte_Swap_Int32(int32_t* signedDWord)
+    M_PARAM_RW(1) static M_INLINE void byte_Swap_Int32(int32_t* M_NONNULL signedDWord)
     {
-        DISABLE_NONNULL_COMPARE
         if (signedDWord != M_NULLPTR)
         {
             *signedDWord =
                 M_STATIC_CAST(int32_t, ((M_STATIC_CAST(uint32_t, *signedDWord) & UINT32_C(0x0000FFFF)) << 16)) |
                 M_STATIC_CAST(int32_t, ((M_STATIC_CAST(uint32_t, *signedDWord) & UINT32_C(0xFFFF0000)) >> 16));
-            *signedDWord = M_STATIC_CAST(int32_t, ((M_STATIC_CAST(uint32_t, *signedDWord) & UINT32_C(0x00FF00FF)) << 8)) |
-                           M_STATIC_CAST(int32_t, ((M_STATIC_CAST(uint32_t, *signedDWord) & UINT32_C(0xFF00FF00)) >> 8));
+            *signedDWord =
+                M_STATIC_CAST(int32_t, ((M_STATIC_CAST(uint32_t, *signedDWord) & UINT32_C(0x00FF00FF)) << 8)) |
+                M_STATIC_CAST(int32_t, ((M_STATIC_CAST(uint32_t, *signedDWord) & UINT32_C(0xFF00FF00)) >> 8));
         }
-        RESTORE_NONNULL_COMPARE
     }
 
     //! \fn uint32_t w_swap_32(uint32_t dword)
@@ -1894,14 +1888,12 @@ extern "C"
     //! \brief swaps words within a dword in place
     //!
     //! \param[in,out] doubleWordToSwap pointer to dword to swap words
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void word_Swap_32(uint32_t* doubleWordToSwap)
+    M_PARAM_RW(1) static M_INLINE void word_Swap_32(uint32_t* M_NONNULL doubleWordToSwap)
     {
-        DISABLE_NONNULL_COMPARE
         if (doubleWordToSwap != M_NULLPTR)
         {
             *doubleWordToSwap = w_swap_32(*doubleWordToSwap);
         }
-        RESTORE_NONNULL_COMPARE
     }
 
     //! \fn void byte_Swap_64(uint64_t* quadWordToSwap)
@@ -1911,23 +1903,20 @@ extern "C"
     //!
     //! \param[in,out] quadWordToSwap pointer to qword to swap bytes
     //! \sa b_swap_64
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void byte_Swap_64(uint64_t* quadWordToSwap)
+    M_PARAM_RW(1) static M_INLINE void byte_Swap_64(uint64_t* M_NONNULL quadWordToSwap)
     {
-        DISABLE_NONNULL_COMPARE
         if (quadWordToSwap != M_NULLPTR)
         {
             *quadWordToSwap = b_swap_64(*quadWordToSwap);
         }
-        RESTORE_NONNULL_COMPARE
     }
 
     //! \fn void word_Swap_64(uint64_t* quadWordToSwap)
     //! \brief swaps words within a qword in place
     //!
     //! \param[in,out] quadWordToSwap pointer to qword to swap words
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void word_Swap_64(uint64_t* quadWordToSwap)
+    M_PARAM_RW(1) static M_INLINE void word_Swap_64(uint64_t* M_NONNULL quadWordToSwap)
     {
-        DISABLE_NONNULL_COMPARE
         if (quadWordToSwap != M_NULLPTR)
         {
             *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) |
@@ -1935,22 +1924,19 @@ extern "C"
             *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x0000FFFF0000FFFF)) << 16) |
                               ((*quadWordToSwap & UINT64_C(0xFFFF0000FFFF0000)) >> 16);
         }
-        RESTORE_NONNULL_COMPARE
     }
 
     //! \fn void double_Word_Swap_64(uint64_t* quadWordToSwap)
     //! \brief swaps dwords within a qword in place
     //!
     //! \param[in,out] quadWordToSwap pointer to qword to swap dwords
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void double_Word_Swap_64(uint64_t* quadWordToSwap)
+    M_PARAM_RW(1) static M_INLINE void double_Word_Swap_64(uint64_t* M_NONNULL quadWordToSwap)
     {
-        DISABLE_NONNULL_COMPARE
         if (quadWordToSwap != M_NULLPTR)
         {
             *quadWordToSwap = ((*quadWordToSwap & UINT64_C(0x00000000FFFFFFFF)) << 32) |
                               ((*quadWordToSwap & UINT64_C(0xFFFFFFFF00000000)) >> 32);
         }
-        RESTORE_NONNULL_COMPARE
     }
 
     //! \fn bool get_Bytes_To_16(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint16_t*
@@ -1967,7 +1953,11 @@ extern "C"
     //! \param[in] lsb least significant byte offset
     //! \param[out] out uint16_t output based on the input parameters
     //! \return true when this function succeeds, false on error.
-    bool get_Bytes_To_16(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint16_t* out);
+    M_NODISCARD bool get_Bytes_To_16(const uint8_t* M_NULLABLE dataPtrBeginning,
+                                     size_t                    fullDataLen,
+                                     size_t                    msb,
+                                     size_t                    lsb,
+                                     uint16_t* M_NONNULL       out);
 
     //! \fn bool get_Bytes_To_32(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint32_t*
     //! out) \brief takes a data pointer and byte offsets to output a uint32_t
@@ -1983,7 +1973,11 @@ extern "C"
     //! \param[in] lsb least significant byte offset
     //! \param[out] out uint32_t output based on the input parameters
     //! \return true when this function succeeds, false on error.
-    bool get_Bytes_To_32(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint32_t* out);
+    M_NODISCARD bool get_Bytes_To_32(const uint8_t* M_NULLABLE dataPtrBeginning,
+                                     size_t                    fullDataLen,
+                                     size_t                    msb,
+                                     size_t                    lsb,
+                                     uint32_t* M_NONNULL       out);
 
     //! \fn bool get_Bytes_To_32(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t*
     //! out) \brief takes a data pointer and byte offsets to output a uint64_t
@@ -1999,7 +1993,11 @@ extern "C"
     //! \param[in] lsb least significant byte offset
     //! \param[out] out uint64_t output based on the input parameters
     //! \return true when this function succeeds, false on error.
-    bool get_Bytes_To_64(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t* out);
+    M_NODISCARD bool get_Bytes_To_64(const uint8_t* M_NULLABLE dataPtrBeginning,
+                                     size_t                    fullDataLen,
+                                     size_t                    msb,
+                                     size_t                    lsb,
+                                     uint64_t* M_NONNULL       out);
 
     //! \fn uint16_t be16_to_host(uint16_t value)
     //! \brief takes a big endian uint16_t and returns it in host endianness
@@ -2237,14 +2235,12 @@ extern "C"
     //! \param[in] value big endian value to convert to host endianness
     //! \return returns \a value in the host CPU's endianness
     //! \sa be16_to_host
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void big_To_Little_Endian_16(uint16_t* wordToSwap)
+    M_PARAM_RW(1) static M_INLINE void big_To_Little_Endian_16(uint16_t* M_NONNULL wordToSwap)
     {
-        DISABLE_NONNULL_COMPARE
         if (wordToSwap != M_NULLPTR)
         {
             *wordToSwap = be16_to_host(*wordToSwap);
         }
-        RESTORE_NONNULL_COMPARE
     }
 
     //! \fn static M_INLINE void big_To_Little_Endian_32(uint32_t* doubleWordToSwap)
@@ -2255,14 +2251,12 @@ extern "C"
     //! \param[in] value big endian value to convert to host endianness
     //! \return returns \a value in the host CPU's endianness
     //! \sa be32_to_host
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) static M_INLINE void big_To_Little_Endian_32(uint32_t* doubleWordToSwap)
+    M_PARAM_RW(1) static M_INLINE void big_To_Little_Endian_32(uint32_t* M_NONNULL doubleWordToSwap)
     {
-        DISABLE_NONNULL_COMPARE
         if (doubleWordToSwap != M_NULLPTR)
         {
             *doubleWordToSwap = be32_to_host(*doubleWordToSwap);
         }
-        RESTORE_NONNULL_COMPARE
     }
 
     // C23-like bit functions. These have similar names so they do not collide with the standard implementation

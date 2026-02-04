@@ -33,7 +33,6 @@ errno_t safe_qsort_impl(void*       ptr,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (count > RSIZE_T_C(0) && ptr == M_NULLPTR)
     {
         error = EINVAL;
@@ -75,7 +74,6 @@ errno_t safe_qsort_impl(void*       ptr,
         }
         return 0;
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 // regular bsearch without context, but added checks for bsearch_s
@@ -91,7 +89,6 @@ void* safe_bsearch_impl(const void* key,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (count > RSIZE_T_C(0) && ptr == M_NULLPTR)
     {
         error = EINVAL;
@@ -144,5 +141,4 @@ void* safe_bsearch_impl(const void* key,
             return M_NULLPTR;
         }
     }
-    RESTORE_NONNULL_COMPARE
 }

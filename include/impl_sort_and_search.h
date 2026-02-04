@@ -34,7 +34,7 @@ extern "C"
     //! \param[in] b Pointer to the second element to compare.
     //! \return An integer less than, equal to, or greater than zero if \a a is found, respectively, to be less than, to
     //! match, or to be greater than \a b.
-    typedef int (*comparefn)(const void*, const void*);
+    typedef int (*comparefn)(const void* M_NONNULL, const void* M_NONNULL);
 
     //! \typedef ctxcomparefn
     //! \brief Function pointer type for comparison functions with context.
@@ -47,15 +47,15 @@ extern "C"
     //! \param[in] context Pointer to the context for the comparison.
     //! \return An integer less than, equal to, or greater than zero if \a a is found, respectively, to be less than, to
     //! match, or to be greater than \a b.
-    typedef int (*ctxcomparefn)(const void*, const void*, void*);
+    typedef int (*ctxcomparefn)(const void* M_NONNULL, const void* M_NONNULL, void* M_NULLABLE);
 
     //! \def COMPARE_FUNC_TYPES
     //! \brief defined when the typedefs for comparfn and ctxcomparefn are available
 #    define COMPARE_FUNC_TYPES
 
 #    if defined(HAVE_CONSTEXPR)
-    constexpr comparefn    nullcompare    = M_NULLPTR;
-    constexpr ctxcomparefn nullctxcompare = M_NULLPTR;
+    M_ATTR_UNUSED constexpr comparefn    nullcompare    = M_NULLPTR;
+    M_ATTR_UNUSED constexpr ctxcomparefn nullctxcompare = M_NULLPTR;
 #        define M_IS_NULL_COMPARE(ptr)    ((ptr) == nullcompare)
 #        define M_IS_NULL_CTXCOMPARE(ptr) ((ptr) == nullctxcompare)
 #    else
@@ -66,11 +66,11 @@ extern "C"
 #endif // COMPARE_FUNC_TYPES
 
 #if defined(HAVE_CONSTEXPR)
-    constexpr void* nullalgvoid = M_NULLPTR;
+    M_ATTR_UNUSED constexpr void* nullalgvoid = M_NULLPTR;
 #    define M_IS_NULL_ALG_VOID(ptr) ((ptr) == nullalgvoid)
-    constexpr const void* nullalgconstvoid = M_NULLPTR;
+    M_ATTR_UNUSED constexpr const void* nullalgconstvoid = M_NULLPTR;
 #    define M_IS_NULL_ALG_CONST_VOID(ptr) ((ptr) == nullalgconstvoid)
-    constexpr rsize_t* nullalgrsizet = M_NULLPTR;
+    M_ATTR_UNUSED constexpr rsize_t* nullalgrsizet = M_NULLPTR;
 #    define M_IS_NULL_ALG_RSIZE_T(ptr) ((ptr) == nullalgrsizet)
 #else
 #    define M_IS_NULL_ALG_VOID(ptr)       (!(ptr))
@@ -103,16 +103,15 @@ extern "C"
     //! - \a ptr is a null pointer and \a count > 0
     //!
     //! - \a compare is a null pointer and \a count > 0
-    M_NONNULL_PARAM_LIST(1, 4)
     M_PARAM_RW(1)
-    errno_t safe_qsort_impl(void*       ptr,
-                            rsize_t     count,
-                            rsize_t     size,
-                            comparefn   compare,
-                            const char* file,
-                            const char* function,
-                            int         line,
-                            const char* expression)
+    errno_t safe_qsort_impl(void* M_NONNULL        ptr,
+                            rsize_t                count,
+                            rsize_t                size,
+                            comparefn M_NONNULL    compare,
+                            const char* M_NULLABLE file,
+                            const char* M_NULLABLE function,
+                            int                    line,
+                            const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_ALG_VOID(ptr), "ptr is NULL and count > 0")
         M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_COMPARE(compare), "compare function is NULL and count > 0")
@@ -147,17 +146,16 @@ extern "C"
     //! - \a ptr is a null pointer and \a count > 0
     //!
     //! - \a compare is a null pointer and \a count > 0
-    M_NONNULL_PARAM_LIST(1, 4)
     M_PARAM_RW(1)
-    errno_t safe_qsort_context_impl(void*        ptr,
-                                    rsize_t      count,
-                                    rsize_t      size,
-                                    ctxcomparefn compare,
-                                    void*        context,
-                                    const char*  file,
-                                    const char*  function,
-                                    int          line,
-                                    const char*  expression)
+    errno_t safe_qsort_context_impl(void* M_NONNULL        ptr,
+                                    rsize_t                count,
+                                    rsize_t                size,
+                                    ctxcomparefn M_NONNULL compare,
+                                    void* M_NULLABLE       context,
+                                    const char* M_NULLABLE file,
+                                    const char* M_NULLABLE function,
+                                    int                    line,
+                                    const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_ALG_VOID(ptr), "ptr is NULL and count > 0")
         M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_CTXCOMPARE(compare), "compare function is NULL and count > 0")
@@ -194,18 +192,17 @@ extern "C"
     //! - \a count or \a size is > RSIZE_MAX
     //!
     //! - \a compare is a null pointer and \a count > 0
-    M_NONNULL_PARAM_LIST(1, 2, 5)
     M_PARAM_RO(1)
     M_PARAM_RO(2)
-    void* safe_bsearch_impl(const void* key,
-                            const void* ptr,
-                            rsize_t     count,
-                            rsize_t     size,
-                            comparefn   compare,
-                            const char* file,
-                            const char* function,
-                            int         line,
-                            const char* expression)
+    void* M_NULLABLE safe_bsearch_impl(const void* M_NONNULL  key,
+                                       const void* M_NONNULL  ptr,
+                                       rsize_t                count,
+                                       rsize_t                size,
+                                       comparefn M_NONNULL    compare,
+                                       const char* M_NULLABLE file,
+                                       const char* M_NULLABLE function,
+                                       int                    line,
+                                       const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_ALG_CONST_VOID(ptr), "ptr is NULL and count > 0")
         M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_COMPARE(compare), "compare function is NULL and count > 0")
@@ -245,19 +242,18 @@ extern "C"
     //! - \a count or \a size is > RSIZE_MAX
     //!
     //! - \a compare is a null pointer and \a count > 0
-    M_NONNULL_PARAM_LIST(1, 2, 5)
     M_PARAM_RO(1)
     M_PARAM_RO(2)
-    void* safe_bsearch_context_impl(const void*  key,
-                                    const void*  ptr,
-                                    rsize_t      count,
-                                    rsize_t      size,
-                                    ctxcomparefn compare,
-                                    void*        context,
-                                    const char*  file,
-                                    const char*  function,
-                                    int          line,
-                                    const char*  expression)
+    void* M_NULLABLE safe_bsearch_context_impl(const void* M_NONNULL  key,
+                                               const void* M_NONNULL  ptr,
+                                               rsize_t                count,
+                                               rsize_t                size,
+                                               ctxcomparefn M_NONNULL compare,
+                                               void* M_NULLABLE       context,
+                                               const char* M_NULLABLE file,
+                                               const char* M_NULLABLE function,
+                                               int                    line,
+                                               const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_ALG_CONST_VOID(ptr), "ptr is NULL and count > 0")
         M_DIAG_ERROR(count > RSIZE_T_C(0) && M_IS_NULL_CTXCOMPARE(compare), "compare function is NULL and count > 0")
@@ -301,19 +297,18 @@ extern "C"
     //! - \a width > RSIZE_MAX
     //!
     //! - \a width == 0
-    M_NONNULL_PARAM_LIST(1, 2, 3, 5)
     M_PARAM_RO(1)
     M_PARAM_RW(2)
     M_PARAM_RW(3)
-    void* safe_lsearch_impl(const void* key,
-                            void*       base,
-                            rsize_t*    nelp,
-                            rsize_t     width,
-                            comparefn   compar,
-                            const char* file,
-                            const char* function,
-                            int         line,
-                            const char* expression)
+    void* M_NULLABLE safe_lsearch_impl(const void* M_NONNULL  key,
+                                       void* M_NONNULL        base,
+                                       rsize_t* M_NONNULL     nelp,
+                                       rsize_t                width,
+                                       comparefn M_NONNULL    compar,
+                                       const char* M_NULLABLE file,
+                                       const char* M_NULLABLE function,
+                                       int                    line,
+                                       const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(M_IS_NULL_ALG_RSIZE_T(nelp), "nelp is NULL")
         M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_ALG_VOID(base), "nelp > 0 and NULL base")
@@ -361,20 +356,19 @@ extern "C"
     //! - \a width > RSIZE_MAX
     //!
     //! - \a width == 0
-    M_NONNULL_PARAM_LIST(1, 2, 3, 5)
     M_PARAM_RO(1)
     M_PARAM_RW(2)
     M_PARAM_RW(3)
-    void* safe_lsearch_context_impl(const void*  key,
-                                    void*        base,
-                                    rsize_t*     nelp,
-                                    rsize_t      width,
-                                    ctxcomparefn compar,
-                                    void*        context,
-                                    const char*  file,
-                                    const char*  function,
-                                    int          line,
-                                    const char*  expression)
+    void* M_NULLABLE safe_lsearch_context_impl(const void* M_NONNULL  key,
+                                               void* M_NONNULL        base,
+                                               rsize_t* M_NONNULL     nelp,
+                                               rsize_t                width,
+                                               ctxcomparefn M_NONNULL compar,
+                                               void* M_NULLABLE       context,
+                                               const char* M_NULLABLE file,
+                                               const char* M_NULLABLE function,
+                                               int                    line,
+                                               const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(M_IS_NULL_ALG_RSIZE_T(nelp), "nelp is NULL")
         M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_ALG_VOID(base), "nelp > 0 and NULL base")
@@ -420,19 +414,18 @@ extern "C"
     //! - \a width > RSIZE_MAX
     //!
     //! - \a width == 0
-    M_NONNULL_PARAM_LIST(1, 2, 3, 5)
     M_PARAM_RO(1)
     M_PARAM_RO(2)
     M_PARAM_RW(3)
-    void* safe_lfind_impl(const void* key,
-                          const void* base,
-                          rsize_t*    nelp,
-                          rsize_t     width,
-                          comparefn   compar,
-                          const char* file,
-                          const char* function,
-                          int         line,
-                          const char* expression)
+    void* M_NULLABLE safe_lfind_impl(const void* M_NONNULL  key,
+                                     const void* M_NONNULL  base,
+                                     rsize_t* M_NONNULL     nelp,
+                                     rsize_t                width,
+                                     comparefn M_NONNULL    compar,
+                                     const char* M_NULLABLE file,
+                                     const char* M_NULLABLE function,
+                                     int                    line,
+                                     const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(M_IS_NULL_ALG_RSIZE_T(nelp), "nelp is NULL")
         M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_ALG_VOID(base), "nelp > 0 and NULL base")
@@ -480,20 +473,19 @@ extern "C"
     //! - \a width > RSIZE_MAX
     //!
     //! - \a width == 0
-    M_NONNULL_PARAM_LIST(1, 2, 3, 5)
     M_PARAM_RO(1)
     M_PARAM_RO(2)
     M_PARAM_RW(3)
-    void* safe_lfind_context_impl(const void*  key,
-                                  const void*  base,
-                                  rsize_t*     nelp,
-                                  rsize_t      width,
-                                  ctxcomparefn compar,
-                                  void*        context,
-                                  const char*  file,
-                                  const char*  function,
-                                  int          line,
-                                  const char*  expression)
+    void* M_NULLABLE safe_lfind_context_impl(const void* M_NONNULL  key,
+                                             const void* M_NONNULL  base,
+                                             rsize_t* M_NONNULL     nelp,
+                                             rsize_t                width,
+                                             ctxcomparefn M_NONNULL compar,
+                                             void* M_NULLABLE       context,
+                                             const char* M_NULLABLE file,
+                                             const char* M_NULLABLE function,
+                                             int                    line,
+                                             const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(M_IS_NULL_ALG_RSIZE_T(nelp), "nelp is NULL")
         M_DIAG_ERROR(*nelp > RSIZE_T_C(0) && M_IS_NULL_ALG_VOID(base), "nelp > 0 and NULL base")

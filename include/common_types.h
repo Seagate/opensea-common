@@ -47,6 +47,7 @@
 
 #include "code_attributes.h"
 #include "predef_env_detect.h"
+#include "warning_ctl.h"
 
 #if defined(UEFI_C_SOURCE)
 #    include <sys/syslimits.h>
@@ -78,7 +79,9 @@ RESTORE_WARNING_4255
 #include <errno.h> //for errno_t if it is available
 #include <inttypes.h>
 #include <limits.h>
-#include <stdbool.h>
+#if !defined(USING_C23) && !defined(NEED_BOOL)
+#    include <stdbool.h>
+#endif // NEED_BOOL
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h> //memset
@@ -87,6 +90,22 @@ RESTORE_WARNING_4255
 extern "C"
 {
 #endif
+
+#if !defined(__cplusplus) && !defined(USING_C23) && defined(NEED_BOOL) && !defined(__bool_true_false_are_defined)
+// most implementations define bools like this in stdbool.h
+// sometime you will see enums or !false, etc. Can change if needed.-TJE
+#    define false 0
+#    define true  1
+// unlikely to need c99 check since stdbool should be available -TJE
+#    if defined(__GNUC__) || defined(__clang__) || defined(HAS__BOOL) || defined(USING_C99)
+// next use _Bool if it's available as a language extension before C99
+#        define bool _Bool
+#    else
+    typedef char oscbool;
+#        define bool oscbool
+#    endif
+#    define __bool_true_false_are_defined 1
+#endif // !__cplusplus && NEED_BOOL && !__bool_true_false_are_defined
 
 #if defined(_WIN32)
     //! \typedef uid_t
@@ -567,12 +586,14 @@ typedef int32_t intptr_t;
 #else // C
 #    if defined(USING_C23)
 #        define M_NULLPTR nullptr
+#    elif defined(HAS_IS_IDENTIFIER) && !__is_identifier(__nullptr)
+#        define M_NULLPTR __nullptr
 #    elif defined(NULL)
 #        define M_NULLPTR NULL
 #    else
 #        define M_NULLPTR ((void*)0)
 #    endif // C23
-#endif     // C & C++ M_NULLPTR PTR definitions
+#endif     // C & C++ M_NULLPTR definitions
 
 #if !defined(SIZE_MAX)
 //! \def SIZE_MAX
@@ -640,6 +661,8 @@ typedef int32_t intptr_t;
 //! \param name The name of the enum.
 //! \param type The underlying type of the enum.
 //! \param ... The enumerator list.
+//! GCC13 and up support type as extension in earlier C modes
+//! Clang 8 and up support type as extension in earlier C modes
 #if defined(USING_CPP11)
 #    define M_DECLARE_ENUM_TYPE(name, type, ...)                                                                       \
         enum class name : type                                                                                         \
@@ -653,7 +676,7 @@ typedef int32_t intptr_t;
             __VA_ARGS__                                                                                                \
         }
 #else //! CPP11...old CPP or C
-#    if defined(USING_C23)
+#    if defined(USING_C23) || IS_GCC_VERSION(13, 0) || IS_CLANG_VERSION(8, 0)
 #        define M_DECLARE_ENUM_TYPE(name, type, ...) typedef enum e_##name : type{__VA_ARGS__} name
 #    else
 /*cannot specify the type, so just ignore the input for now-TJE*/
@@ -839,10 +862,11 @@ typedef int32_t intptr_t;
 //! \code
 //! M_STATIC_ASSET(condition, this_is_my_example_error)
 //! \endcode
-#if defined(USING_CPP11) && defined(__cpp_static_assert)
+#if (defined(USING_CPP11) && defined(__cpp_static_assert)) ||                                                          \
+    (__has_feature(cxx_static_assert) || __has_extension(cxx_static_assert))
 #    define M_STATIC_ASSERT(condition, message) static_assert(condition, #message)
-#elif defined(USING_C23)
-#    define M_STATIC_ASSERT(condition, message) static_assert(condition, #message)
+#elif defined(USING_C23) || __has_feature(c_static_assert) || __has_extension(c_static_assert)
+#    define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #message)
 #elif defined(USING_C11)
 #    if IS_MSVC_VERSION(MSVC_2019_16_8) /* Need new enough Windows SDK for this to be available - TJE */
 #        if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN10_20348
@@ -910,7 +934,7 @@ typedef int32_t intptr_t;
 
 #if defined(USING_C23)
 #    define M_TYPEOF(var) typeof(var)
-#elif defined(USING_CPP11)
+#elif defined(USING_CPP11) || (__has_feature(cxx_decltype) || __has_extension(cxx_decltype))
 #    define M_TYPEOF(var) decltype(var)
 #elif IS_GCC_VERSION(2, 95) || IS_CLANG_VERSION(1, 0) || IS_MSVC_VERSION(MSVC_2022_17_9)
 #    define M_TYPEOF(var) __typeof__(var)
@@ -1085,7 +1109,7 @@ typedef int32_t intptr_t;
 //! This macro defines M_NULLPTR to handle different standards and environments, ensuring compatibility when checking
 //! for valid pointers. It provides a compatible definition for nullptr in C++98 and other environments where nullptr is
 //! not available.
-#    if defined(USING_CPP11)
+#    if defined(USING_CPP11) || __has_extension(cxx_nullptr)
 #        define M_NULLPTR nullptr
 #    else
 DISABLE_WARNING_CPP11_COMPAT

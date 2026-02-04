@@ -502,12 +502,13 @@ static M_INLINE eValidateFormatResult validate_Wchar_Conversion(wint_t widechar)
     // wcrtomb
     charArrayLen = wcrtomb(M_NULLPTR, character, &state);
 #endif
-    if ((charArrayLen == SIZE_MAX && errno == EILSEQ) || charArrayLen == 0)
+    if ((charArrayLen == SIZE_MAX && errno == EILSEQ) || charArrayLen == 0 || (charArrayLen >= RSIZE_MAX))
     {
         return VALIDATE_FORMAT_INVALID_FORMAT; // Should this be a different
                                                // error for encoding failure???
     }
-    convertedChar = M_REINTERPRET_CAST(char*, safe_calloc(charArrayLen + 1, sizeof(char)));
+    charArrayLen += SIZE_T_C(1);
+    convertedChar = M_REINTERPRET_CAST(char*, safe_calloc(charArrayLen, sizeof(char)));
     if (convertedChar == M_NULLPTR)
     {
         return VALIDATE_FORMAT_INVALID_FORMAT; // Should this be a different
@@ -780,7 +781,6 @@ static M_INLINE eValidateFormatResult validate_Format_Specifier(const char*     
 // would also be good, but not sure the best way to do this right now. -TJE
 int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formatargs)
 {
-    DISABLE_NONNULL_COMPARE
     if (format != M_NULLPTR)
     {
         char* offsetToSpecifier = M_CONST_CAST(char*, strstr(format, "%")); // if there are no formatting specifiers,
@@ -865,6 +865,5 @@ int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formata
                                           // evaluation is limited to C_STR_LITERAL_LIMIT
                                           // which is way below SIZE_MAX
     }
-    RESTORE_NONNULL_COMPARE
     return -1;
 }

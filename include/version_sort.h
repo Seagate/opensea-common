@@ -20,7 +20,7 @@
 
 #if !defined(_WIN32)
 #    include <dirent.h>
-#endif     //_WIN32
+#endif //_WIN32
 
 // This is a list of systems where we need the old prototype for the scandir comparison
 // function. Newer systems use the struct dirent** version
@@ -41,14 +41,15 @@ extern "C"
 typedef int (*scandircmp)(const struct dirent**, const struct dirent**);
 #endif
 
-//! \fn int version_sort(const void *ptr1, const void *ptr2)
-//! \brief Works like GNU's versionsort comparison function.
-//! Uses opensea-common's string_version_compare to compare two version strings.
-//! \param[in] ptr1 Pointer to the first directory entry to compare
-//! \param[in] ptr2 Pointer to the second directory entry to compare
-//! \return An integer less than, equal to, or greater than zero if \a ptr1 is found, respectively, to be less than,
-//! to match, or to be greater than \a ptr2.
-//! \note On Windows, this function just returns 0 always since dirent is not supported.
+    //! \fn int version_sort(const void *ptr1, const void *ptr2)
+    //! \brief Works like GNU's versionsort comparison function.
+    //! Uses opensea-common's string_version_compare to compare two version strings.
+    //! \param[in] ptr1 Pointer to the first directory entry to compare
+    //! \param[in] ptr2 Pointer to the second directory entry to compare
+    //! \return An integer less than, equal to, or greater than zero if \a ptr1 is found, respectively, to be less than,
+    //! to match, or to be greater than \a ptr2.
+    //! \note On Windows, this function just returns 0 always since dirent is not supported.
+
 #if defined(NEED_OLD_SCANDIR_CMP_FUNC_TYPE)
     int version_sort(const void* ptr1, const void* ptr2);
 #else
