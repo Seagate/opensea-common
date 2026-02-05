@@ -8,7 +8,7 @@ extern int total_tests;
 extern int failed_tests;
 
 void test_record(int condition,const char* msg, const char *file, int line);
-void print_test_summary();
+void print_test_summary(void);
 
 #define TEST_ASSERT(cond, msg) \
     do { \
