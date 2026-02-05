@@ -9,7 +9,7 @@ test_sources = [
 e = executable(
     'opensea-common-tests',
     test_sources,
-    dependencies: [opensea_common_deps],
+    dependencies: [opensea_common_dep],
 )
 
 test('opensea-common-unit-tests', e)
