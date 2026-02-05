@@ -512,3 +512,5 @@ opensea_common_dep = declare_dependency(
     compile_args: global_cpp_args,
     include_directories: incdir,
 )
+
+subdir('Test')

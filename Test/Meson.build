@@ -1,0 +1,16 @@
+# Meson build for opensea-common tests
+
+test_sources = [
+    'framework/test_framework.c',
+    'unit/bit_manip_test.c',
+    'main.c',
+]
+
+e = executable(
+    'opensea-common-tests',
+    test_sources,
+    dependencies: [opensea_common_deps],
+)
+
+test('opensea-common-unit-tests', e)
+
