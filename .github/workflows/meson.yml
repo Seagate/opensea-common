@@ -28,14 +28,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install meson ninja
     
-    - name: Configure Meson
-      run: |
-        meson setup --buildtype=release Meson/Executables
-
-    - name: Build with Meson
-      run: |
-        meson compile -C Meson/Executables
-    
     - name: Run test
       run: |
         meson test -C Meson/Executables --verbose
