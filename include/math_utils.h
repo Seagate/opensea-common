@@ -275,6 +275,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded up to the nearest power of two multiple of roundto.
     static M_INLINE uint8_t uint8_round_up_power2(uint8_t value, uint8_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use uint8_round_up_generic")
+    // clang-format on
     {
         return (value + roundto - UINT8_C(1)) & ~(roundto - UINT8_C(1));
     }
@@ -285,6 +288,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded up to the nearest power of two multiple of roundto.
     static M_INLINE int8_t int8_round_up_power2(int8_t value, int8_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use int8_round_up_generic")
+    // clang-format on
     {
         return M_STATIC_CAST(int8_t, (value + roundto - INT8_C(1)) & ~(roundto - INT8_C(1)));
     }
@@ -295,6 +301,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded up to the nearest power of two multiple of roundto.
     static M_INLINE uint16_t uint16_round_up_power2(uint16_t value, uint16_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use uint16_round_up_generic")
+    // clang-format on
     {
         return (value + roundto - UINT16_C(1)) & ~(roundto - UINT16_C(1));
     }
@@ -305,6 +314,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded up to the nearest power of two multiple of roundto.
     static M_INLINE int16_t int16_round_up_power2(int16_t value, int16_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use int16_round_up_generic")
+    // clang-format on
     {
         return M_STATIC_CAST(int16_t, (value + roundto - INT16_C(1)) & ~(roundto - INT16_C(1)));
     }
@@ -315,6 +327,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded up to the nearest power of two multiple of roundto.
     static M_INLINE uint32_t uint32_round_up_power2(uint32_t value, uint32_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use uint32_round_up_generic")
+    // clang-format on
     {
         return (value + roundto - UINT32_C(1)) & ~(roundto - UINT32_C(1));
     }
@@ -325,6 +340,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded up to the nearest power of two multiple of roundto.
     static M_INLINE int32_t int32_round_up_power2(int32_t value, int32_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use int32_round_up_generic")
+    // clang-format on
     {
         return (value + roundto - INT32_C(1)) & ~(roundto - INT32_C(1));
     }
@@ -335,6 +353,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded up to the nearest power of two multiple of roundto.
     static M_INLINE uint64_t uint64_round_up_power2(uint64_t value, uint64_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use uint64_round_up_generic")
+    // clang-format on
     {
         return (value + roundto - UINT64_C(1)) & ~(roundto - UINT64_C(1));
     }
@@ -345,6 +366,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded up to the nearest power of two multiple of roundto.
     static M_INLINE int64_t int64_round_up_power2(int64_t value, int64_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use int64_round_up_generic")
+    // clang-format on
     {
         return (value + roundto - INT64_C(1)) & ~(roundto - INT64_C(1));
     }
@@ -355,6 +379,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded down to the nearest power of two multiple of roundto.
     static M_INLINE uint8_t uint8_round_down_power2(uint8_t value, uint8_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use uint8_round_down_generic")
+    // clang-format on
     {
         return value & ~(roundto - UINT8_C(1));
     }
@@ -365,6 +392,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded down to the nearest power of two multiple of roundto.
     static M_INLINE int8_t int8_round_down_power2(int8_t value, int8_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use int8_round_down_generic")
+    // clang-format on
     {
         return M_STATIC_CAST(int8_t, value & ~(roundto - INT8_C(1)));
     }
@@ -375,6 +405,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded down to the nearest power of two multiple of roundto.
     static M_INLINE uint16_t uint16_round_down_power2(uint16_t value, uint16_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use uint16_round_down_generic")
+    // clang-format on
     {
         return value & ~(roundto - UINT16_C(1));
     }
@@ -385,6 +418,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded down to the nearest power of two multiple of roundto.
     static M_INLINE int16_t int16_round_down_power2(int16_t value, int16_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use int16_round_down_generic")
+    // clang-format on
     {
         return M_STATIC_CAST(int16_t, value & ~(roundto - INT16_C(1)));
     }
@@ -395,6 +431,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded down to the nearest power of two multiple of roundto.
     static M_INLINE uint32_t uint32_round_down_power2(uint32_t value, uint32_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use uint32_round_down_generic")
+    // clang-format on
     {
         return value & ~(roundto - UINT32_C(1));
     }
@@ -405,6 +444,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded down to the nearest power of two multiple of roundto.
     static M_INLINE int32_t int32_round_down_power2(int32_t value, int32_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use int32_round_down_generic")
+    // clang-format on
     {
         return value & ~(roundto - INT32_C(1));
     }
@@ -415,6 +457,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded down to the nearest power of two multiple of roundto.
     static M_INLINE uint64_t uint64_round_down_power2(uint64_t value, uint64_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use uint64_round_down_generic")
+    // clang-format on
     {
         return value & ~(roundto - UINT64_C(1));
     }
@@ -425,6 +470,9 @@ extern "C"
     //! \param[in] roundto The power of two value specifying the nearest multiple to round to.
     //! \return The value rounded down to the nearest power of two multiple of roundto.
     static M_INLINE int64_t int64_round_down_power2(int64_t value, int64_t roundto)
+        // clang-format off
+    M_DIAG_ERROR((roundto & (roundto - 1)) != 0, "roundto must be a power of two. Otherwise use int64_round_down_generic")
+    // clang-format on
     {
         return value & ~(roundto - INT64_C(1));
     }

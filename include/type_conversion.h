@@ -78,7 +78,12 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t int8_to_sizet(int8_t val);
+    size_t int8_to_sizet(int8_t val)
+        // clang-format off
+    M_DIAG_WARN(val < 0, "Converting negative int8_t to size_t will result in zero")
+    M_DIAG_WARN(val > SIZE_MAX, "int8_t value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t uint8_to_sizet(uint8_t val)
     //! \brief Converts a uint8_t value to size_t.
@@ -86,7 +91,11 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t uint8_to_sizet(uint8_t val);
+    size_t uint8_to_sizet(uint8_t val)
+        // clang-format off
+    M_DIAG_WARN(val > SIZE_MAX, "uint8_t value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t int16_to_sizet(int16_t val)
     //! \brief Converts an int16_t value to size_t.
@@ -94,7 +103,12 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t int16_to_sizet(int16_t val);
+    size_t int16_to_sizet(int16_t val)
+        // clang-format off
+    M_DIAG_WARN(val < 0, "Converting negative int16_t to size_t will result in zero")
+    M_DIAG_WARN(val > SIZE_MAX, "int16_t value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t uint16_to_sizet(uint16_t val)
     //! \brief Converts a uint16_t value to size_t.
@@ -102,7 +116,11 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t uint16_to_sizet(uint16_t val);
+    size_t uint16_to_sizet(uint16_t val)
+        // clang-format off
+    M_DIAG_WARN(val > SIZE_MAX, "uint16_t value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t int32_to_sizet(int32_t val)
     //! \brief Converts an int32_t value to size_t.
@@ -110,7 +128,12 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t int32_to_sizet(int32_t val);
+    size_t int32_to_sizet(int32_t val)
+        // clang-format off
+    M_DIAG_WARN(val < 0, "Converting negative int32_t to size_t will result in zero")
+    M_DIAG_WARN(val > SIZE_MAX, "int32_t value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t uint32_to_sizet(uint32_t val)
     //! \brief Converts a uint32_t value to size_t.
@@ -118,7 +141,11 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t uint32_to_sizet(uint32_t val);
+    size_t uint32_to_sizet(uint32_t val)
+        // clang-format off
+    M_DIAG_WARN(val > SIZE_MAX, "uint32_t value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t int64_to_sizet(int64_t val)
     //! \brief Converts an int64_t value to size_t.
@@ -126,7 +153,12 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t int64_to_sizet(int64_t val);
+    size_t int64_to_sizet(int64_t val)
+        // clang-format off
+    M_DIAG_WARN(val < 0, "Converting negative int64_t to size_t will result in zero")
+    M_DIAG_WARN(val > SIZE_MAX, "int64_t value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t uint64_to_sizet(uint64_t val)
     //! \brief Converts a uint64_t value to size_t.
@@ -134,7 +166,11 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t uint64_to_sizet(uint64_t val);
+    size_t uint64_to_sizet(uint64_t val)
+        // clang-format off
+    M_DIAG_WARN(val > SIZE_MAX, "uint64_t value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t char_to_sizet(char val)
     //! \brief Converts a char value to size_t.
@@ -142,7 +178,12 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t char_to_sizet(char val);
+    size_t char_to_sizet(char val)
+        // clang-format off
+    M_DIAG_WARN(val < 0, "Converting negative char to size_t will result in zero")
+    M_DIAG_WARN(val > SIZE_MAX, "char value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t schar_to_sizet(signed char val)
     //! \brief Converts a signed char value to size_t.
@@ -150,7 +191,12 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t schar_to_sizet(signed char val);
+    size_t schar_to_sizet(signed char val)
+        // clang-format off
+    M_DIAG_WARN(val < 0, "Converting negative signed char to size_t will result in zero")
+    M_DIAG_WARN(val > SIZE_MAX, "signed char value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t uchar_to_sizet(unsigned char val)
     //! \brief Converts an unsigned char value to size_t.
@@ -158,7 +204,11 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t uchar_to_sizet(unsigned char val);
+    size_t uchar_to_sizet(unsigned char val)
+        // clang-format off
+    M_DIAG_WARN(val > SIZE_MAX, "unsigned char value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t short_to_sizet(short val)
     //! \brief Converts a short value to size_t.
@@ -166,7 +216,12 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t short_to_sizet(short val);
+    size_t short_to_sizet(short val)
+        // clang-format off
+    M_DIAG_WARN(val < 0, "Converting negative short to size_t will result in zero")
+    M_DIAG_WARN(val > SIZE_MAX, "short value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t ushort_to_sizet(unsigned short val)
     //! \brief Converts an unsigned short value to size_t.
@@ -174,7 +229,11 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t ushort_to_sizet(unsigned short val);
+    size_t ushort_to_sizet(unsigned short val)
+        // clang-format off
+    M_DIAG_WARN(val > SIZE_MAX, "unsigned short value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t int_to_sizet(int val)
     //! \brief Converts an int value to size_t.
@@ -182,7 +241,12 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t int_to_sizet(int val);
+    size_t int_to_sizet(int val)
+        // clang-format off
+    M_DIAG_WARN(val < 0, "Converting negative int to size_t will result in zero")
+    M_DIAG_WARN(val > SIZE_MAX, "int value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t uint_to_sizet(unsigned int val)
     //! \brief Converts an unsigned int value to size_t.
@@ -190,7 +254,11 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t uint_to_sizet(unsigned int val);
+    size_t uint_to_sizet(unsigned int val)
+        // clang-format off
+    M_DIAG_WARN(val > SIZE_MAX, "unsigned int value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t long_to_sizet(long val)
     //! \brief Converts a long value to size_t.
@@ -198,7 +266,12 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t long_to_sizet(long val);
+    size_t long_to_sizet(long val)
+        // clang-format off
+    M_DIAG_WARN(val < 0, "Converting negative long to size_t will result in zero")
+    M_DIAG_WARN(val > SIZE_MAX, "long value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t ulong_to_sizet(unsigned long val)
     //! \brief Converts an unsigned long value to size_t.
@@ -206,7 +279,11 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t ulong_to_sizet(unsigned long val);
+    size_t ulong_to_sizet(unsigned long val)
+        // clang-format off
+    M_DIAG_WARN(val > SIZE_MAX, "unsigned long value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t longlong_to_sizet(long long val)
     //! \brief Converts a long long value to size_t.
@@ -214,7 +291,12 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t longlong_to_sizet(long long val);
+    size_t longlong_to_sizet(long long val)
+        // clang-format off
+    M_DIAG_WARN(val < 0, "Converting negative long long to size_t will result in zero")
+    M_DIAG_WARN(val > SIZE_MAX, "long long value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn size_t ulonglong_to_sizet(unsigned long long val)
     //! \brief Converts an unsigned long long value to size_t.
@@ -222,14 +304,18 @@ extern "C"
     //! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater
     //! than SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it
     //! simply returns the same value as a size_t.
-    size_t ulonglong_to_sizet(unsigned long long val);
+    size_t ulonglong_to_sizet(unsigned long long val)
+        // clang-format off
+    M_DIAG_WARN(val > SIZE_MAX, "unsigned long long value is greater than SIZE_MAX and will truncate to SIZE_MAX")
+        // clang-format on
+        ;
 
 #if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
     // clang-format off
 //! \def to_sizet
 //! \brief C11 generic selection macro to call the appropriate x_to_sizet function based on the typeof \a X
 //! \param[in] X the value to convert. It's type is used to call the correct function for the conversion.
-//! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater than 
+//! \return The converted size_t value. If the value is less than zero, it returns zero. If the value is greater than
 //! SIZE_MAX, it sets SIZE_MAX. If less than zero or above SIZE_MAX, errno is also set to ERANGE. Otherwise, it simply
 //! returns the same value as a size_t.
 #define to_sizet(X)                                                                                                    \
@@ -262,13 +348,13 @@ extern "C"
     //! very large number. IEEE 754 floating point can store a number much larger than a 128 bit integer.
     //! \param[in] pData pointer to the 16 byte array to use for conversion to a double
     //! \return 128bit value as a double
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1) double convert_128bit_to_double(const uint8_t* pData);
+    M_PARAM_RO(1) double convert_128bit_to_double(const uint8_t* M_NONNULL pData);
 
     //! \fn void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* decimalValue)
     //! \brief This function converts 4 Byte Representation of a Floating Point Number to a double
     //! \param[in] floatValue 4 byte format value
     //! \param[out] decimalValue corresponding double format value
-    M_NONNULL_PARAM_LIST(2) M_PARAM_WO(2) void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* decimalValue);
+    M_PARAM_WO(2) void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* M_NONNULL decimalValue);
 
 #if defined(__cplusplus)
 }

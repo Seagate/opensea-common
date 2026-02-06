@@ -10,7 +10,7 @@
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "predef_env_detect.h"
+#include "warning_ctl.h"
 
 DISABLE_WARNING_4255
 #include <AclAPI.h>
@@ -74,7 +74,6 @@ static M_INLINE void safe_free_reparse_data_buf(REPARSE_DATA_BUFFER** reparse)
 
 int64_t os_Get_File_Size(FILE* filePtr)
 {
-    DISABLE_NONNULL_COMPARE
     if (filePtr != M_NULLPTR)
     {
         LARGE_INTEGER fileSize;
@@ -92,7 +91,6 @@ int64_t os_Get_File_Size(FILE* filePtr)
             return INT64_C(-1);
         }
     }
-    RESTORE_NONNULL_COMPARE
     return INT64_C(-1);
 }
 
@@ -270,7 +268,6 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoChe
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64  st;
     safe_memset(&st, sizeof(struct _stat64), 0, sizeof(struct _stat64));
-    DISABLE_NONNULL_COMPARE
     if (filetoCheck != M_NULLPTR && _stat64(filetoCheck, &st) == 0)
     {
         attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
@@ -296,7 +293,6 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoChe
             win_Get_File_Security_Info_By_Name(filetoCheck, attrs);
         }
     }
-    RESTORE_NONNULL_COMPARE
     return attrs;
 }
 
@@ -305,7 +301,6 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64  st;
     safe_memset(&st, sizeof(struct _stat64), 0, sizeof(struct _stat64));
-    DISABLE_NONNULL_COMPARE
     if (file != M_NULLPTR && _fstat64(_fileno(file), &st) == 0)
     {
         attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
@@ -331,13 +326,11 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
             win_Get_File_Security_Info_By_File(file, attrs);
         }
     }
-    RESTORE_NONNULL_COMPARE
     return attrs;
 }
 
 M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
 {
-    DISABLE_NONNULL_COMPARE
     if (file != M_NULLPTR)
     {
         int fd = _fileno(file);   // DO NOT CALL CLOSE ON FD!
@@ -353,7 +346,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
         {
             return M_NULLPTR;
         }
-#if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_VISTA && !defined (NO_FILE_ID_INFO)
+#if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_VISTA && !defined(NO_FILE_ID_INFO)
         if (is_Windows_Vista_Or_Higher()) // This ex function is only available
                                           // on Vista and later OSs according to
                                           // MSFT docs
@@ -392,7 +385,6 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
             return fileId;
         }
     }
-    RESTORE_NONNULL_COMPARE
     return M_NULLPTR;
 }
 
@@ -686,8 +678,8 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                     }
 #if defined(_DEBUG)
                     print_str("This path is on the system drive. Set flags for "
-                           "only specific folders to validate "
-                           "permissions correctly\n");
+                              "only specific folders to validate "
+                              "permissions correctly\n");
 #endif //_DEBUG
        // Set the isWindowsSystemDir to allow specific owners/groups for
        // specific folders to trust them. These are specific cases due to how
@@ -710,8 +702,8 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                             // the system root directory (C:) in Windows
 #if defined(_DEBUG)
                             print_str("Detected Windows trusted installer as owner "
-                                   "of this directory and allowed to trust "
-                                   "it.\n");
+                                      "of this directory and allowed to trust "
+                                      "it.\n");
 #endif                                                              //_DEBUG
                             allowUsersAndAuthenticatedUsers = true; // S-1-5-11 and S-1-5-32-545
                         }
@@ -1330,14 +1322,12 @@ bool os_File_Exists(const char* filetoCheck)
     }
 }
 
-eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_MAX])
+eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[M_NONNULL_ARRAY OPENSEA_PATH_MAX])
 {
-    DISABLE_NONNULL_COMPARE
     if (pathAndFile == M_NULLPTR || fullPath == M_NULLPTR)
     {
         return BAD_PARAMETER;
     }
-    RESTORE_NONNULL_COMPARE
     size_t localPathAndFileLength = (safe_strlen(pathAndFile) + 1) * sizeof(TCHAR);
     TCHAR* localpathAndFileBuf    = M_REINTERPRET_CAST(TCHAR*, safe_calloc(localPathAndFileLength, sizeof(TCHAR)));
     DECLARE_ZERO_INIT_ARRAY(TCHAR, fullPathOutput, OPENSEA_PATH_MAX);
@@ -1430,7 +1420,6 @@ bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char
     bool match = false;
     // This function is not just doing strcmp because that will not work.
     // convert these back to the raw structures, then compare them.
-    DISABLE_NONNULL_COMPARE
     if (sidsAndDACLstr1 != M_NULLPTR && sidsAndDACLstr2 != M_NULLPTR)
     {
         PSECURITY_DESCRIPTOR secDesc1      = M_NULLPTR;
@@ -1523,6 +1512,5 @@ bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char
             secDesc2 = M_NULLPTR;
         }
     }
-    RESTORE_NONNULL_COMPARE
     return match;
 }

@@ -152,8 +152,8 @@ extern "C"
     //! \param[in] b Pointer to the second fileUniqueIDInfo structure.
     //! \return true if the structures represent the same file, false otherwise.
     //! \note This function is used because a memcmp is not appropriate for comparing fileUniqueIDInfo structures.
-    M_NONNULL_PARAM_LIST(1, 2)
-    M_PARAM_RO(1) M_PARAM_RO(2) bool compare_File_Unique_ID(const fileUniqueIDInfo* a, const fileUniqueIDInfo* b);
+    M_PARAM_RO(1)
+    M_PARAM_RO(2) bool compare_File_Unique_ID(const fileUniqueIDInfo* M_NONNULL a, const fileUniqueIDInfo* M_NONNULL b);
 
     //! \fn M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
     //! \brief Retrieves unique identifying information for a given file.
@@ -161,8 +161,8 @@ extern "C"
     //! \return Pointer to a fileUniqueIDInfo structure containing the unique identifying information for the file.
     //! \note The M_NODISCARD attribute indicates that the return value should not be discarded.
     //! \note The returned pointer must be freed by the caller.
-    M_NODISCARD M_NONNULL_PARAM_LIST(1)
-        M_PARAM_RO(1) fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file);
+    M_NODISCARD_REASON("The returned pointer must be freed by the caller using free()/safe_free()")
+    M_PARAM_RO(1) fileUniqueIDInfo* M_NULLABLE os_Get_File_Unique_Identifying_Information(FILE* M_NONNULL file);
 
     //! \fn M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath, char** outputError)
     //! \brief Evaluates if every directory in the given path is secure.
@@ -178,8 +178,8 @@ extern "C"
     //! \note Each directory must be owned by either the current user or root.
     //! \note Each directory must not be writable by groups or others to be secure and free of tampering while working
     //! within it.
-    M_NODISCARD M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1)
-        M_PARAM_WO(2) bool os_Is_Directory_Secure(const char* fullpath, char** outputError);
+    M_NODISCARD M_PARAM_RO(1) M_PARAM_WO(2) bool os_Is_Directory_Secure(const char* M_NONNULL        fullpath,
+                                                                        char* M_NULLABLE* M_NULLABLE outputError);
 
     //! \struct sfileAttributes
     //! \brief Structure to hold file attributes for cross-platform compatibility.
@@ -253,7 +253,7 @@ extern "C"
         //! \var winSecurityDescriptor
         //! \brief Security descriptor string (Windows-specific). Allocated by malloc. Call memset_explicit on this to
         //! zero it out before freeing.
-        char* winSecurityDescriptor;
+        char* M_NULLABLE winSecurityDescriptor;
 #endif // _WIN32
     } fileAttributes;
 
@@ -262,7 +262,7 @@ extern "C"
     //! \param[in,out] attributes Pointer to the fileAttributes structure to be freed. The pointer will be set to NULL
     //! after the memory is freed. \note The Windows SIDs are allocated and require deletion of their own. This will be
     //! cleaned up when calling this function.
-    void free_File_Attributes(fileAttributes** attributes);
+    void free_File_Attributes(fileAttributes * M_NULLABLE * M_NULLABLE attributes);
 
     //! \fn M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoCheck)
     //! \brief Retrieves the attributes of a file or directory by its name.
@@ -270,8 +270,8 @@ extern "C"
     //! \return Pointer to a fileAttributes structure containing the attributes of the file or directory.
     //! \note The M_NODISCARD attribute indicates that the return value should not be discarded.
     //! \note The returned pointer must be freed by the caller using free_File_Attributes().
-    M_NODISCARD M_NONNULL_PARAM_LIST(1)
-        M_PARAM_RO(1) fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoCheck);
+    M_NODISCARD_REASON("The returned pointer must be freed by the caller using free_File_Attributes()")
+    M_PARAM_RO(1) fileAttributes* M_NULLABLE os_Get_File_Attributes_By_Name(const char* M_NONNULL filetoCheck);
 
     //! \fn M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
     //! \brief Retrieves the attributes of a file by its FILE pointer.
@@ -281,7 +281,8 @@ extern "C"
     //! expected once the file has been opened.
     //! \note The M_NODISCARD attribute indicates that the return value should not be discarded.
     //! \note The returned pointer must be freed by the caller using free_File_Attributes().
-    M_NODISCARD M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1) fileAttributes* os_Get_File_Attributes_By_File(FILE* file);
+    M_NODISCARD_REASON("The returned pointer must be freed by the caller using free_File_Attributes()")
+    M_PARAM_RO(1) fileAttributes* M_NULLABLE os_Get_File_Attributes_By_File(FILE* M_NONNULL file);
 
     //! \enum eSecureFileError
     //! \brief Secure file API error codes.
@@ -391,7 +392,7 @@ extern "C"
 
         //! \var file
         //! \brief Pointer to the FILE object.
-        FILE* file;
+        FILE* M_NULLABLE file;
 
         //! \var fullpath
         //! \brief Contains the full canonicalized path and filename.
@@ -399,7 +400,7 @@ extern "C"
 
         //! \var filename
         //! \brief Pointer to just the name section in the fullpath above.
-        const char* filename;
+        const char* M_NULLABLE filename;
 
         //! \var fileno
         //! \brief POSIX fileno. Translated using fileno(FILE *file).
@@ -412,16 +413,15 @@ extern "C"
 
         //! \var attributes
         //! \brief Pointer to the file attributes structure.
-        fileAttributes* attributes;
+        fileAttributes* M_NULLABLE attributes;
 
         //! \var uniqueID
         //! \brief Pointer to the unique file ID structure.
-        fileUniqueIDInfo* uniqueID;
-
+        fileUniqueIDInfo* M_NULLABLE uniqueID;
         //! \var errorString
         //! \brief If non-NULL, contains a human-readable error message for the failure that occurred. Dynamically
         //! allocated.
-        const char* errorString;
+        const char* M_NULLABLE errorString;
     } secureFileInfo;
 
     //! \fn void free_Secure_File_Info(secureFileInfo** fileInfo)
@@ -430,7 +430,7 @@ extern "C"
     //! after the memory is freed.
     //! \note The Windows SIDs are allocated and require deletion of their own. This will be cleaned up when calling
     //! this function.
-    void free_Secure_File_Info(secureFileInfo** fileInfo);
+    void free_Secure_File_Info(secureFileInfo * M_NULLABLE * M_NULLABLE fileInfo);
 
     //! \struct sfileExt
     //! \brief Structure to specify a list of supported file extensions for secure file opening.
@@ -463,7 +463,7 @@ extern "C"
         //! \var ext
         //! \brief The file extension to check.
         //! \note For the terminating value in this list, set ext to M_NULLPTR.
-        const char* ext;
+        const char* M_NULLABLE ext;
 
         //! \var caseInsensitive
         //! \brief Indicates whether the comparison should be case-insensitive.
@@ -473,7 +473,7 @@ extern "C"
     } fileExt;
 
     // clang-format off
-    
+
     //! \def FILE_EXT_LIST_END
     //! \brief Helper macro to easily insert the end of the file extension list.
     #define FILE_EXT_LIST_END { M_NULLPTR, false }
@@ -517,13 +517,19 @@ extern "C"
     //! can be M_NULLPTR for the first time opening a file. If reopening a file used earlier, it is recommended to
     //! provide this info so it can be validated as the same file. It is recommended to not reopen files, but that may
     //! not always be possible. So this exists to help validate that a file has not changed in some unexpected way.
-    M_NODISCARD M_NONNULL_PARAM_LIST(1, 2) M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_NULL_TERM_STRING(2) M_PARAM_RO(2)
-        M_PARAM_RO(3) M_PARAM_RO(4)
-            M_PARAM_RO(5) secureFileInfo* secure_Open_File(const char*       filename,
-                                                           const char*       mode,
-                                                           const fileExt*    extList /*optional*/,
-                                                           fileAttributes*   expectedFileInfo /*optional*/,
-                                                           fileUniqueIDInfo* uniqueIdInfo /*optional*/);
+    M_NODISCARD_REASON("The returned pointer must be freed by the caller using free_Secure_File_Info()")
+    M_NULL_TERM_STRING(1)
+    M_PARAM_RO(1)
+    M_NULL_TERM_STRING(2)
+    M_PARAM_RO(2)
+    M_PARAM_RO(3)
+    M_PARAM_RO(4)
+    M_PARAM_RO(5)
+    secureFileInfo* M_NULLABLE secure_Open_File(const char* M_NONNULL        filename,
+                                                const char* M_NONNULL        mode,
+                                                const fileExt* M_NULLABLE    extList /*optional*/,
+                                                fileAttributes* M_NULLABLE   expectedFileInfo /*optional*/,
+                                                fileUniqueIDInfo* M_NULLABLE uniqueIdInfo /*optional*/);
 
     // M_NODISCARD secureFileInfo* secure_Reopen_File(secureFileInfo* fileInfo);
 
@@ -534,7 +540,7 @@ extern "C"
     //! \note If a file fails to close successfully, then it is no longer to be used at all.
     //! The caller MUST check this result to know if something went wrong to warn the user
     //! and to handle this error properly and prevent the software from using this file again.
-    M_NODISCARD M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) eSecureFileError secure_Close_File(secureFileInfo* fileInfo);
+    M_NODISCARD M_PARAM_RW(1) eSecureFileError secure_Close_File(secureFileInfo* M_NONNULL fileInfo);
 
     // TODO: Need to finish the secure rename functions
     // M_DECLARE_ENUM(eSecureFileRename, SEC_RENAME_DO_NOT_REPLACE_EXISTING, SEC_RENAME_REPLACE_EXISTING);
@@ -557,13 +563,13 @@ extern "C"
     //! \param[out] numberread Optional pointer to a size_t variable where the number of elements read will be stored.
     //! \return eSecureFileError indicating the result of the read operation.
     //! \note This function performs error checking and size validation internally based on input parameters.
-    M_NODISCARD M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_WO_SIZE(2, 3) M_PARAM_WO(6) eSecureFileError
-        secure_Read_File(secureFileInfo* M_RESTRICT fileInfo,
-                         void* M_RESTRICT           buffer,
-                         size_t                     buffersize,
-                         size_t                     elementsize,
-                         size_t                     count,
-                         size_t*                    numberread /*optional*/);
+    M_NODISCARD M_PARAM_RW(1) M_PARAM_WO_SIZE(2, 3) M_PARAM_WO(6) eSecureFileError
+        secure_Read_File(secureFileInfo* M_RESTRICT M_NONNULL fileInfo,
+                         void* M_RESTRICT M_NONNULL           buffer,
+                         size_t                               buffersize,
+                         size_t                               elementsize,
+                         size_t                               count,
+                         size_t* M_NULLABLE                   numberread /*optional*/);
 
     //! \fn M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileInfo, void* M_RESTRICT buffer,
     //! size_t buffersize, size_t elementsize, size_t count, size_t* numberwritten /*optional*/)
@@ -577,13 +583,13 @@ extern "C"
     //! will be stored.
     //! \return eSecureFileError indicating the result of the write operation.
     //! \note This function performs error checking and size validation internally based on input parameters.
-    M_NODISCARD M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RW(1) M_PARAM_RO_SIZE(2, 3) M_PARAM_WO(6) eSecureFileError
-        secure_Write_File(secureFileInfo* M_RESTRICT fileInfo,
-                          void* M_RESTRICT           buffer,
-                          size_t                     buffersize,
-                          size_t                     elementsize,
-                          size_t                     count,
-                          size_t*                    numberwritten /*optional*/);
+    M_NODISCARD M_PARAM_RW(1) M_PARAM_RO_SIZE(2, 3) M_PARAM_WO(6) eSecureFileError
+        secure_Write_File(secureFileInfo* M_RESTRICT M_NONNULL fileInfo,
+                          void* M_RESTRICT M_NONNULL           buffer,
+                          size_t                               buffersize,
+                          size_t                               elementsize,
+                          size_t                               count,
+                          size_t* M_NULLABLE                   numberwritten /*optional*/);
 
     //! \fn M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, oscoffset_t offset, int
     //! initialPosition)
@@ -593,26 +599,26 @@ extern "C"
     //! \param[in] initialPosition The initial position from which the offset is applied (SEEK_SET, SEEK_CUR, or
     //! SEEK_END).
     //! \return eSecureFileError indicating the result of the seek operation.
-    M_NODISCARD M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) eSecureFileError
-        secure_Seek_File(secureFileInfo* fileInfo, oscoffset_t offset, int initialPosition);
+    M_NODISCARD M_PARAM_RW(1) eSecureFileError
+        secure_Seek_File(secureFileInfo* M_NONNULL fileInfo, oscoffset_t offset, int initialPosition);
 
     //! \fn M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
     //! \brief Sets the file position indicator to the beginning of a secure file.
     //! \param[in] fileInfo Pointer to the secureFileInfo structure representing the file.
     //! \return eSecureFileError indicating the result of the rewind operation.
-    M_NODISCARD M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo);
+    M_NODISCARD M_PARAM_RW(1) eSecureFileError secure_Rewind_File(secureFileInfo* M_NONNULL fileInfo);
 
     //! \fn M_NODISCARD oscoffset_t secure_Tell_File(secureFileInfo* fileInfo)
     //! \brief Gets the current file position indicator for a secure file.
     //! \param[in] fileInfo Pointer to the secureFileInfo structure representing the file.
     //! \return The current file position indicator.
-    M_NODISCARD M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) oscoffset_t secure_Tell_File(secureFileInfo* fileInfo);
+    M_NODISCARD M_PARAM_RW(1) oscoffset_t secure_Tell_File(secureFileInfo* M_NONNULL fileInfo);
 
     //! \fn M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
     //! \brief Removes a secure file. If the file is still open, it will be unlinked; otherwise, it will be removed.
     //! \param[in] fileInfo Pointer to the secureFileInfo structure representing the file.
     //! \return eSecureFileError indicating the result of the remove operation.
-    M_NODISCARD M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) eSecureFileError secure_Remove_File(secureFileInfo* fileInfo);
+    M_NODISCARD M_PARAM_RW(1) eSecureFileError secure_Remove_File(secureFileInfo* M_NONNULL fileInfo);
 
     //! \enum eSecureFileDeleteNameAction
     //! \brief Enum for actions to take when deleting a file by name.
@@ -624,31 +630,32 @@ extern "C"
     //! \param[in] filename The name of the file to delete.
     //! \param[in] deleteAction The action to take if the file is open (fail or unlink).
     //! \return eSecureFileError indicating the result of the delete operation.
-    M_NODISCARD M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1) eSecureFileError
-        secure_Delete_File_By_Name(const char* filename, eSecureFileDeleteNameAction deleteAction);
+    M_NODISCARD M_PARAM_RO(1) eSecureFileError
+        secure_Delete_File_By_Name(const char* M_NONNULL filename, eSecureFileDeleteNameAction deleteAction);
 
     //! \fn eSecureFileError secure_Flush_File(secureFileInfo* fileInfo)
     //! \brief Flushes the output buffer of a secure file.
     //! \param[in] fileInfo Pointer to the secureFileInfo structure representing the file.
     //! \return eSecureFileError indicating the result of the flush operation.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RW(1) eSecureFileError secure_Flush_File(secureFileInfo* fileInfo);
+    M_PARAM_RW(1) eSecureFileError secure_Flush_File(secureFileInfo* M_NONNULL fileInfo);
 
     //! \fn eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT fileInfo, fpos_t* M_RESTRICT pos)
     //! \brief Gets the current file position indicator for a secure file.
     //! \param[in] fileInfo Pointer to the secureFileInfo structure representing the file.
     //! \param[out] pos Pointer to an fpos_t variable where the current file position will be stored.
     //! \return eSecureFileError indicating the result of the get position operation.
-    M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_WO(2) eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT fileInfo, fpos_t* M_RESTRICT pos);
+    M_PARAM_WO(2)
+    eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT M_NONNULL fileInfo,
+                                        fpos_t* M_RESTRICT M_NONNULL         pos);
 
     //! \fn eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos)
     //! \brief Sets the file position indicator for a secure file.
     //! \param[in] fileInfo Pointer to the secureFileInfo structure representing the file.
     //! \param[in] pos Pointer to an fpos_t variable containing the new file position.
     //! \return eSecureFileError indicating the result of the set position operation.
-    M_NONNULL_PARAM_LIST(1, 2)
-    M_PARAM_RW(1) M_PARAM_RO(2) eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos);
+    M_PARAM_RW(1)
+    M_PARAM_RO(2) eSecureFileError secure_SetPos_File(secureFileInfo* M_NONNULL fileInfo, const fpos_t* M_NONNULL pos);
 
     //! \fn FUNC_ATTR_PRINTF(2, 0) eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo,
     //!                                                                  const char* M_RESTRICT format,
@@ -660,12 +667,11 @@ extern "C"
     //! \return eSecureFileError indicating the result of the write operation.
     //! \note This function works like vfprintf_s from the C11 standard for the secure file structure.
     FUNC_ATTR_PRINTF(2, 0)
-    M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
     M_PARAM_RO(2)
-    eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo,
-                                          const char* M_RESTRICT     format,
-                                          va_list                    args);
+    eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT M_NONNULL fileInfo,
+                                          const char* M_RESTRICT M_NONNULL     format,
+                                          va_list                              args);
 
     //! \fn FUNC_ATTR_PRINTF(2, 3) eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo,
     //!                                                                 const char* M_RESTRICT format,
@@ -677,31 +683,32 @@ extern "C"
     //! \return eSecureFileError indicating the result of the write operation.
     //! \note This function works like fprintf_s from the C11 standard for the secure file structure.
     FUNC_ATTR_PRINTF(2, 3)
-    M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
     M_PARAM_RO(2)
-    eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, ...);
+    eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT M_NONNULL fileInfo,
+                                         const char* M_RESTRICT M_NONNULL     format,
+                                         ...);
 
     //! \fn bool os_Directory_Exists(const char* pathToCheck)
     //! \brief Platform-independent helper to check if a directory exists.
     //! \param[in] pathToCheck The path that needs to be evaluated.
     //! \return true if the directory exists, false if it does not.
     //! \note WARNING: May not work with UNICODE path.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1) bool os_Directory_Exists(const char* pathToCheck);
+    M_PARAM_RO(1) bool os_Directory_Exists(const char* M_NONNULL pathToCheck);
 
     //! \fn bool os_File_Exists(const char* filetoCheck)
     //! \brief Platform-independent helper to check if a file exists.
     //! \param[in] filetoCheck The file that needs to be evaluated.
     //! \return true if the file exists, false if it does not.
     //! \note WARNING: May not work with UNICODE path.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1) bool os_File_Exists(const char* filetoCheck);
+    M_PARAM_RO(1) bool os_File_Exists(const char* M_NONNULL filetoCheck);
 
     //! \fn eReturnValues os_Create_Directory(const char* filePath)
     //! \brief Creates a new directory.
     //! \param[in] filePath The path of the directory to create.
     //! \return SUCCESS on successful directory creation, FAILURE when directory creation fails.
     //! \note Recommend using os_Create_Secure_Directory instead!
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1) eReturnValues os_Create_Directory(const char* filePath);
+    M_PARAM_RO(1) eReturnValues os_Create_Directory(const char* M_NONNULL filePath);
 
     //! \fn eReturnValues os_Create_Secure_Directory(const char* filePath)
     //! \brief Creates a directory with permissions acceptable for secure path validation.
@@ -709,7 +716,7 @@ extern "C"
     //! other permissions for rx.
     //! \param[in] filePath The path of the directory to create.
     //! \return SUCCESS on successful directory creation, FAILURE when directory creation fails.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1) eReturnValues os_Create_Secure_Directory(const char* filePath);
+    M_PARAM_RO(1) eReturnValues os_Create_Secure_Directory(const char* M_NONNULL filePath);
 
     //! \fn eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_MAX])
     //! \brief Retrieves the full canonicalized path for a given file.
@@ -717,24 +724,26 @@ extern "C"
     //! \param[out] fullPath The buffer to store the full canonicalized path.
     //! \return SUCCESS on successful path retrieval, FAILURE when path retrieval fails.
     //! \note Windows and 'nix require a file to use for finding a path as far as I can tell.
-    M_NONNULL_PARAM_LIST(1, 2)
-    M_PARAM_RO(1) M_PARAM_WO(2) eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_MAX]);
+    M_PARAM_RO(1)
+    M_PARAM_WO(2)
+    eReturnValues get_Full_Path(const char* M_NONNULL pathAndFile, char fullPath[M_NONNULL_ARRAY OPENSEA_PATH_MAX]);
 
     //! \fn eReturnValues replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char* newFileName)
     //! \brief Replaces the current file name in the full path with a new one.
     //! This can be useful for opening a file in the same location with a different name or
     //! to output to a file to the same location with a different name.
     //! \return SUCCESS when this completes without an error, otherwise returns a failure code.
-    M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
-    M_PARAM_WO(2) eReturnValues replace_File_Name_In_Path(char fullPath[OPENSEA_PATH_MAX], char* newFileName);
+    M_PARAM_RO(2)
+    eReturnValues replace_File_Name_In_Path(char                  fullPath[M_NONNULL_ARRAY OPENSEA_PATH_MAX],
+                                            const char* M_NONNULL newFileName);
 
     //! \fn int64_t os_Get_File_Size(FILE* filePtr)
     //! \brief Returns the size of the file pointed to by the incoming file pointer.
     //! \param[in] filePtr Pointer to a file that you wish to get the size of.
     //! \return int64_t file size in bytes. -1 is returned if there is an error.
     //! \note This uses GetFileSizeEx in Windows and fstat64 in Unix-like systems.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1) int64_t os_Get_File_Size(FILE* filePtr);
+    M_PARAM_RO(1) int64_t os_Get_File_Size(FILE* M_NONNULL filePtr);
 
 #if defined(_WIN32)
     //! \fn bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char* sidsAndDACLstr2)
@@ -742,9 +751,10 @@ extern "C"
     //! \param[in] sidsAndDACLstr1 The first SID and DACL string to compare.
     //! \param[in] sidsAndDACLstr2 The second SID and DACL string to compare.
     //! \return true if the strings are exactly equal, false otherwise.
-    M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RO(1)
-    M_PARAM_RO(2) bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char* sidsAndDACLstr2);
+    M_PARAM_RO(2)
+    bool exact_Compare_SIDS_And_DACL_Strings(const char* M_NONNULL sidsAndDACLstr1,
+                                             const char* M_NONNULL sidsAndDACLstr2);
 #endif
 
     //! \enum eLogFileNamingConvention
@@ -777,7 +787,7 @@ extern "C"
     //! \param[in] logExt Optional extension for the log file. If NULL, set to .bin.
     //! \param[in] logExtLen The length of the log extension. May be 0.
     //! \return Pointer to the generated log file name. Must be free'd by the caller with free()
-    M_NONNULL_PARAM_LIST(2)
+    M_NODISCARD_REASON("The returned pointer must be freed by the caller using free()/safe_free()")
     M_PARAM_RO_SIZE(2, 3)
     M_NONNULL_IF_NONZERO_PARAM(4, 5)
     M_PARAM_RO_SIZE(4, 5)
@@ -785,15 +795,15 @@ extern "C"
     M_PARAM_RO_SIZE(6, 7)
     M_NONNULL_IF_NONZERO_PARAM(8, 9)
     M_PARAM_RO_SIZE(8, 9)
-    M_FUNC_ATTR_MALLOC char* generate_Log_Name(eLogFileNamingConvention logFileNamingConvention,
-                                               const char*              deviceIdentifier,
-                                               size_t                   deviceIDLen,
-                                               const char*              logPath,
-                                               size_t                   logPathLen,
-                                               const char*              logName,
-                                               size_t                   logNameLen,
-                                               const char*              logExt,
-                                               size_t                   logExtLen);
+    M_FUNC_ATTR_MALLOC char* M_NULLABLE generate_Log_Name(eLogFileNamingConvention logFileNamingConvention,
+                                                          const char* M_NONNULL    deviceIdentifier,
+                                                          size_t                   deviceIDLen,
+                                                          const char* M_NULLABLE   logPath,
+                                                          size_t                   logPathLen,
+                                                          const char* M_NULLABLE   logName,
+                                                          size_t                   logNameLen,
+                                                          const char* M_NULLABLE   logExt,
+                                                          size_t                   logExtLen);
 
     //! \fn eReturnValues create_And_Open_Secure_Log_File(const char* deviceIdentifier,
     //!                                                   size_t deviceIDLen,
@@ -821,7 +831,6 @@ extern "C"
     //! \param[in] logExtLen The length of the log extension. May be 0.
     //! \return SUCCESS if everything worked, !SUCCESS means something went wrong.
     //! \note This function does not return the name used as that is part of the secureFileInfo.
-    M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RO_SIZE(1, 2)
     M_NONNULL_IF_NONZERO_PARAM(5, 6)
     M_PARAM_RO_SIZE(5, 6)
@@ -829,16 +838,16 @@ extern "C"
     M_PARAM_RO_SIZE(7, 8)
     M_NONNULL_IF_NONZERO_PARAM(9, 10)
     M_PARAM_RO_SIZE(9, 10)
-    eReturnValues create_And_Open_Secure_Log_File(const char*              deviceIdentifier,
-                                                  size_t                   deviceIDLen,
-                                                  secureFileInfo**         file,
-                                                  eLogFileNamingConvention logFileNamingConvention,
-                                                  const char*              logPath,
-                                                  size_t                   logPathLen,
-                                                  const char*              logName,
-                                                  size_t                   logNameLen,
-                                                  const char*              logExt,
-                                                  size_t                   logExtLen);
+    eReturnValues create_And_Open_Secure_Log_File(const char* M_NONNULL                   deviceIdentifier,
+                                                  size_t                                  deviceIDLen,
+                                                  secureFileInfo * M_NONNULL * M_NULLABLE file,
+                                                  eLogFileNamingConvention                logFileNamingConvention,
+                                                  const char* M_NULLABLE                  logPath,
+                                                  size_t                                  logPathLen,
+                                                  const char* M_NULLABLE                  logName,
+                                                  size_t                                  logNameLen,
+                                                  const char* M_NULLABLE                  logExt,
+                                                  size_t                                  logExtLen);
 
 #if defined(__cplusplus)
 }

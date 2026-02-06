@@ -15,6 +15,8 @@
 #include "common_types.h"
 #include "impl_time_utils.h"
 
+#include <float.h>
+#include <math.h>
 #include <time.h>
 
 #if defined(__cplusplus)
@@ -57,7 +59,7 @@ extern "C"
     //! - \a timer is a null pointer
     //!
     //! - \a buf is a null pointer
-    static M_INLINE struct tm* safe_gmtime(const time_t* M_RESTRICT timer, struct tm* M_RESTRICT buf)
+    static M_INLINE struct tm* M_NULLABLE safe_gmtime(const time_t* M_RESTRICT timer, struct tm* M_RESTRICT buf)
     {
         return impl_safe_gmtime(timer, buf, __FILE__, __func__, __LINE__, "safe_gmtime(timer, buf)");
     }
@@ -94,7 +96,7 @@ extern "C"
     //! - \a timer is a null pointer
     //!
     //! - \a buf is a null pointer
-    static M_INLINE struct tm* safe_localtime(const time_t* M_RESTRICT timer, struct tm* M_RESTRICT buf)
+    static M_INLINE struct tm* M_NULLABLE safe_localtime(const time_t* M_RESTRICT timer, struct tm* M_RESTRICT buf)
     {
         return impl_safe_localtime(timer, buf, __FILE__, __func__, __LINE__, "safe_localtime(timer, buf)");
     }
@@ -137,7 +139,7 @@ extern "C"
     //! - \a bufsz > RSIZE_MAX
     //!
     //! - member of \a time_ptr is out of normal range
-    static M_INLINE errno_t safe_asctime(char* buf, rsize_t bufsz, const struct tm* time_ptr)
+    static M_INLINE errno_t safe_asctime(char* M_NONNULL buf, rsize_t bufsz, const struct tm* M_NONNULL time_ptr)
     {
         return impl_safe_asctime(buf, bufsz, time_ptr, false, __FILE__, __func__, __LINE__,
                                  "safe_asctime(buf, bufsz, time_ptr)");
@@ -188,7 +190,7 @@ extern "C"
     //! - \a bufsz < 26
     //!
     //! - \a bufsz > RSIZE_MAX
-    static M_INLINE errno_t safe_ctime(char* buf, rsize_t bufsz, const time_t* timer)
+    static M_INLINE errno_t safe_ctime(char* M_NONNULL buf, rsize_t bufsz, const time_t* M_NONNULL timer)
     {
         return impl_safe_ctime(buf, bufsz, timer, __FILE__, __func__, __LINE__, "safe_ctime(buf, bufsz, timer)");
     }
@@ -222,10 +224,11 @@ extern "C"
     //! \param[in] buffer pointer to char buffer to hold output string. Must be at least 26 characters in size
     //! \param[in] bufferSize size of \a buffer. Must be at least 26 and less than RSIZE_MAX
     //! \return pointer to converted string on success. Null pointer on failure.
-    M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RO(1)
     M_PARAM_RW_SIZE(2, 3)
-    static M_INLINE char* get_Time_String_From_TM_Structure(const struct tm* timeptr, char* buffer, size_t bufferSize)
+    static M_INLINE char* M_NULLABLE get_Time_String_From_TM_Structure(const struct tm* M_NONNULL timeptr,
+                                                                       char* M_NONNULL            buffer,
+                                                                       size_t                     bufferSize)
     {
         if (0 == safe_asctime(buffer, bufferSize, timeptr))
         {
@@ -244,10 +247,11 @@ extern "C"
     //! \param[in] buffer pointer to char buffer to hold output string. Must be at least 26 characters in size
     //! \param[in] bufferSize size of \a buffer. Must be at least 26 and less than RSIZE_MAX
     //! \return pointer to converted string on success. Null pointer on failure.
-    M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RO(1)
     M_PARAM_RW_SIZE(2, 3)
-    static M_INLINE char* get_Current_Time_String(const time_t* timer, char* buffer, size_t bufferSize)
+    static M_INLINE char* M_NULLABLE get_Current_Time_String(const time_t* M_NONNULL timer,
+                                                             char* M_NONNULL         buffer,
+                                                             size_t                  bufferSize)
     {
         if (0 == safe_ctime(buffer, bufferSize, timer))
         {
@@ -272,7 +276,12 @@ extern "C"
     //! input for the future time calculation
     //! \param[in] secondsInTheFuture = the number of seconds in the future.
     //! \return time_t value representing a time in the future
-    time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture);
+    time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
+        // clang-format off
+    M_DIAG_ERROR(inputTime == TIME_T_ERROR, "inputTime is TIME_T_ERROR")
+    M_DIAG_ERROR(inputTime <= 0, "inputTime is invalid")
+        // clang-format on
+        ;
 
     //! \fn void convert_Seconds_To_Displayable_Time(uint64_t  secondsToConvert,
     //!                                              uint8_t*  years,
@@ -293,13 +302,17 @@ extern "C"
     M_PARAM_WO(4)
     M_PARAM_WO(5)
     M_PARAM_WO(6)
-    void convert_Seconds_To_Displayable_Time(uint64_t  secondsToConvert,
-                                             uint8_t*  years,
-                                             uint16_t* days,
-                                             uint8_t*  hours,
-                                             uint8_t*  minutes,
-                                             uint8_t*  seconds);
-
+    void convert_Seconds_To_Displayable_Time(uint64_t             secondsToConvert,
+                                             uint8_t* M_NULLABLE  years,
+                                             uint16_t* M_NULLABLE days,
+                                             uint8_t* M_NULLABLE  hours,
+                                             uint8_t* M_NULLABLE  minutes,
+                                             uint8_t* M_NULLABLE  seconds)
+        // clang-format off
+                                             M_DIAG_WARN(secondsToConvert == 0, "secondsToConvert is zero")
+                                             M_DIAG_WARN(secondsToConvert == UINT64_MAX, "secondsToConvert is UINT64_MAX")
+        // clang-format on
+        ;
     //! \fn void convert_Seconds_To_Displayable_Time_Double(double  secondsToConvert,
     //!                                              uint8_t*  years,
     //!                                              uint16_t* days,
@@ -319,12 +332,22 @@ extern "C"
     M_PARAM_WO(4)
     M_PARAM_WO(5)
     M_PARAM_WO(6)
-    void convert_Seconds_To_Displayable_Time_Double(double    secondsToConvert,
-                                                    uint8_t*  years,
-                                                    uint16_t* days,
-                                                    uint8_t*  hours,
-                                                    uint8_t*  minutes,
-                                                    uint8_t*  seconds);
+    void convert_Seconds_To_Displayable_Time_Double(double               secondsToConvert,
+                                                    uint8_t* M_NULLABLE  years,
+                                                    uint16_t* M_NULLABLE days,
+                                                    uint8_t* M_NULLABLE  hours,
+                                                    uint8_t* M_NULLABLE  minutes,
+                                                    uint8_t* M_NULLABLE  seconds)
+    // clang-format off
+        #if defined(HAVE_DIAGNOSE_IF)
+                                                    M_DIAG_WARN(secondsToConvert < 0.0, "secondsToConvert is negative")
+                                                    DISABLE_WARNING_FLOAT_EQUAL
+                                                    M_DIAG_WARN(secondsToConvert == DBL_MAX, "secondsToConvert is DBL_MAX")
+                                                    M_DIAG_ERROR(secondsToConvert == INFINITY, "secondsToConvert is INFINITY")
+                                                    RESTORE_WARNING_FLOAT_EQUAL
+                                                    #endif
+        // clang-format on
+        ;
 
     //! \fn void print_Time_To_Screen(const uint8_t*  years,
     //!                               const uint16_t* days,
@@ -345,11 +368,11 @@ extern "C"
     M_PARAM_RO(3)
     M_PARAM_RO(4)
     M_PARAM_RO(5)
-    void print_Time_To_Screen(const uint8_t*  years,
-                              const uint16_t* days,
-                              const uint8_t*  hours,
-                              const uint8_t*  minutes,
-                              const uint8_t*  seconds);
+    void print_Time_To_Screen(const uint8_t* M_NULLABLE  years,
+                              const uint16_t* M_NULLABLE days,
+                              const uint8_t* M_NULLABLE  hours,
+                              const uint8_t* M_NULLABLE  minutes,
+                              const uint8_t* M_NULLABLE  seconds);
 
     //! \fn uint64_t get_Milliseconds_Since_Unix_Epoch(void)
     //! \brief returns the number of milliseconds since January 1, 1970 UTC
@@ -362,9 +385,8 @@ extern "C"
     //! \param[in] milliseconds number of milliseconds since Jan 1, 1970 UTC to convert
     //! \param[in] time pointer to user allocated struct tm to fill in.
     //! \return pointer to user provided \a time parameter
-    M_NONNULL_PARAM_LIST(2)
     M_PARAM_WO(2)
-    struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, struct tm* time);
+    struct tm* M_NONNULL milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, struct tm* M_NONNULL time);
 
 #if !defined(TIME_UTC)
 // Checking for TIME_UTC definition in order to figure out if the C11 API for timespec_get is available
@@ -407,7 +429,7 @@ extern "C"
     //! Coordinated Universal Time (UTC).
     //! \return The value of \a base to indicate success (non-zero) or failure (zero).
     //! \see https://en.cppreference.com/w/c/chrono/timespec_get
-    int timespec_get(struct timespec* ts, int base);
+    int timespec_get(struct timespec* M_NONNULL ts, int base);
 #endif // TIME_UTC
 
 #if defined(__cplusplus)

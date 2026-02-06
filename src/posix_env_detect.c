@@ -742,7 +742,7 @@ static eReturnValues get_OpenBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
                                               char*              operatingSystemName,
                                               struct utsname*    unixUname)
 {
-    eReturnValues ret                     = SUCCESS;
+    eReturnValues ret = SUCCESS;
     DECLARE_ZERO_INIT_ARRAY(uint16_t, list, OPENBSD_VERSION_FIELDS);
     versionNumber->osVersioningIdentifier = OS_OPENBSD;
     if (get_Version_From_Uname_Str(unixUname->release, M_NULLPTR, ".", list, OPENBSD_VERSION_FIELDS))

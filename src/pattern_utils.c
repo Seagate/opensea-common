@@ -64,12 +64,10 @@ eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* ptrData, 
 
 eReturnValues fill_Incrementing_Pattern_In_Buffer(uint8_t incrementStartValue, uint8_t* ptrData, uint32_t dataLength)
 {
-    DISABLE_NONNULL_COMPARE
     if (ptrData == M_NULLPTR)
     {
         return M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER);
     }
-    RESTORE_NONNULL_COMPARE
     for (uint32_t iter = UINT32_C(0); iter < dataLength; ++iter)
     {
         ptrData[iter] = incrementStartValue++;
@@ -82,12 +80,10 @@ eReturnValues fill_ASCII_Pattern_In_Buffer(const char* asciiPattern,
                                            uint8_t*    ptrData,
                                            uint32_t    dataLength)
 {
-    DISABLE_NONNULL_COMPARE
     if (ptrData == M_NULLPTR || patternLength == 0 || asciiPattern == M_NULLPTR)
     {
         return M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER);
     }
-    RESTORE_NONNULL_COMPARE
     for (uint32_t iter = UINT32_C(0); iter < dataLength; iter += patternLength)
     {
         safe_memcpy(&ptrData[iter], dataLength - iter, asciiPattern, M_Min(patternLength, dataLength - iter));
@@ -100,12 +96,10 @@ eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t* inPattern,
                                                       uint8_t* ptrData,
                                                       uint32_t dataLength)
 {
-    DISABLE_NONNULL_COMPARE
     if (ptrData == M_NULLPTR || inpatternLength == 0 || inPattern == M_NULLPTR || dataLength == 0)
     {
         return M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER);
     }
-    RESTORE_NONNULL_COMPARE
     for (uint32_t iter = UINT32_C(0); iter < dataLength; iter += inpatternLength)
     {
         safe_memcpy(&ptrData[iter], dataLength - iter, inPattern, M_Min(inpatternLength, dataLength - iter));

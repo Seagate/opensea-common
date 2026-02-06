@@ -27,7 +27,11 @@ extern "C"
     //! otherwise an errno value describing the issue
     //! \note Windows has 100ns resolution in this function
     //! \note Recommended to use the other sleep functions
-    errno_t sleepns(uint64_t nanoseconds);
+    errno_t sleepns(uint64_t nanoseconds)
+        // clang-format off
+    M_DIAG_WARN(nanoseconds == 0, "sleepns of zero is likely an error")
+        // clang-format on
+        ;
 
     //! \fn bool is_nanosleep_supported(void)
     //! \brief Check if support for nanosecond sleep is supported
@@ -51,13 +55,21 @@ extern "C"
     //! \brief sleep for specified number of microseconds
     //! \param microseconds number of microseconds to sleep
     //! \return 0 for no error, otherwise an errno value describing the issue
-    errno_t sleepus(uint32_t microseconds);
+    errno_t sleepus(uint32_t microseconds)
+        // clang-format off
+    M_DIAG_WARN(microseconds == 0, "sleepus of zero is likely an error")
+        // clang-format on
+        ;
 
     //! \fn errno_t sleepms(uint32_t milliseconds)
     //! \brief sleep for specified number of milliseconds
     //! \param milliseconds number of milliseconds to sleep
     //! \return 0 for no error, otherwise an errno value describing the issue
-    errno_t sleepms(uint32_t milliseconds);
+    errno_t sleepms(uint32_t milliseconds)
+        // clang-format off
+    M_DIAG_WARN(milliseconds == 0, "sleepms of zero is likely an error")
+        // clang-format on
+        ;
 
     //! \fn void delay_Milliseconds(uint32_t milliseconds)
     //! \brief delay/sleep for specified number of milliseconds
@@ -66,6 +78,9 @@ extern "C"
     //!
     //! \param milliseconds number of milliseconds to delay/sleep
     static M_INLINE void delay_Milliseconds(uint32_t milliseconds)
+        // clang-format off
+    M_DIAG_WARN(milliseconds == 0, "delay_Milliseconds of zero is likely an error")
+    // clang-format on
     {
         M_STATIC_CAST(void, sleepms(milliseconds));
     }
@@ -74,7 +89,11 @@ extern "C"
     //! \brief sleep for specified number of seconds
     //! \param seconds number of seconds to sleep
     //! \return 0 for no error, otherwise an errno value describing the issue
-    errno_t sleepsec(uint32_t seconds);
+    errno_t sleepsec(uint32_t seconds)
+        // clang-format off
+    M_DIAG_WARN(seconds == 0, "sleepsec of zero is likely an error")
+        // clang-format on
+        ;
 
     //! \fn void delay_Seconds(uint32_t seconds)
     //! \brief delay/sleep for specified number of seconds
@@ -83,6 +102,9 @@ extern "C"
     //!
     //! \param milliseconds number of seconds to delay/sleep
     static M_INLINE void delay_Seconds(uint32_t seconds)
+        // clang-format off
+    M_DIAG_WARN(seconds == 0, "delay_Seconds of zero is likely an error")
+    // clang-format on
     {
         M_STATIC_CAST(void, sleepsec(seconds));
     }

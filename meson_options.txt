@@ -6,3 +6,4 @@ option('username', type : 'feature', value : 'disabled')
 #correctly in your environment, you can disable it, although you will get a warning message by doing so.
 #Directory security is implemented to https://wiki.sei.cmu.edu/confluence/display/c/FIO15-C.+Ensure+that+file+operations+are+performed+in+a+secure+directory
 option('directorysecurity', type : 'feature', value : 'enabled')
+option('cc-suggest-attribute', type : 'boolean', value : false, description : 'Enable warnings where the compiler can suggest various attributes to be applied to functions for optimization and correctness.')

@@ -35,17 +35,6 @@ extern "C"
 {
 #endif //__cplusplus
 
-//! \def __has_attribute
-//! \brief Checks if a GNU style attribute is supported by the compiler.
-//! \details This is defined if not already present to return 0.
-//! By defining this is makes sure all compilers know what this is so that
-//! it is cleaner to check for attributes.
-//! The other reason to define this is some compilers may not correctly short circuit
-//! #if checks that combine checking if this is defined and then using it to check for an attribute.
-#if !defined(__has_attribute)
-#    define __has_attribute(x) 0
-#endif
-
 //! \def DETECT_STD_ATTR_CHECK
 //! \brief A wrapper for __has_c_attribute or __has_cpp_attribute depending on language.
 //! To be compatible with MSVC (C mode, not C++), this check must be used before using DETECT_STD_ATTR for any
@@ -406,6 +395,26 @@ extern "C"
 #    define M_DEPRECATED_REASON(msg) /*DEPRECATED: msg*/
 #endif
 
+//! \def M_ENUM_DEPRECATED
+//! \brief Marks enum values as deprecated to generate a compiler warning when it is used.
+//! \code
+//! M_DECLARE_ENUM_TYPE(MyEnum, int,
+//!     VALUE_ONE = 1,
+//!     VALUE_TWO M_ENUM_DEPRECATED = 2,
+//!     VALUE_THREE M_ENUM_DEPRECATED_REASON("Use VALUE_ONE instead") = 3
+//! );
+#if __has_extension(enumerator_attributes) || defined(__cpp_enumerator_attributes)
+#    define M_ENUM_DEPRECATED             M_DEPRECATED
+#    define M_ENUM_DEPRECATED_REASON(msg) M_DEPRECATED_REASON(msg)
+#endif // __has_extension(enumerator_attributes)
+
+#if !defined(M_ENUM_DEPRECATED)
+#    define M_ENUM_DEPRECATED /*ENUM DEPRECATED*/
+#endif
+#if !defined(M_ENUM_DEPRECATED_REASON)
+#    define M_ENUM_DEPRECATED_REASON(msg) /*ENUM DEPRECATED FOR REASON: msg*/
+#endif
+
 //! \def M_NODISCARD
 //! \brief Marks functions, variables, or parameters as nodiscard to avoid compiler warnings.
 //!
@@ -577,17 +586,19 @@ extern "C"
 //!     }
 //!     do more stuff...
 //! \endcode
-#if defined(USING_CPP23) && defined (__cpp_lib_unreachable) && (__cpp_lib_unreachable >= 202202L)
-#include <utility> // for std::unreachable
+#if defined(USING_CPP23) && defined(__cpp_lib_unreachable) && (__cpp_lib_unreachable >= 202202L)
+#    include <utility> // for std::unreachable
 #    define M_UNREACHABLE() (std::unreachable())
-#elif defined (unreachable) // C23
+#elif defined(unreachable) // C23
 #    define M_UNREACHABLE() (unreachable())
-#elif defined (HAVE_BUILT_IN_UNREACHABLE) || (IS_CLANG_VERSION(3, 2) || IS_GCC_VERSION(4, 5))
+#elif defined(HAVE_BUILT_IN_UNREACHABLE) || (IS_CLANG_VERSION(3, 2) || IS_GCC_VERSION(4, 5))
 #    define M_UNREACHABLE() (__builtin_unreachable())
 #elif IS_MSVC_VERSION(MSVC_2003)
 #    define M_UNREACHABLE() (__assume(0))
 #else
-M_NORETURN M_INLINE void unreachable_func(void) {}
+M_NORETURN M_INLINE void unreachable_func(void)
+{
+}
 #    define M_UNREACHABLE() (unreachable_func())
 #endif
 
@@ -804,8 +815,12 @@ M_NORETURN M_INLINE void unreachable_func(void) {}
 #if defined(USING_CPP11) || defined(USING_C23)
 #    define M_ALIGNOF(x) alignof(x)
 #    define M_ALIGNAS(x) alignas(x)
-#elif defined(USING_C11)
-#    if IS_MSVC_VERSION(MSVC_2019_16_8) /* Need new enough Windows SDK for this to be available - TJE */
+#elif defined(USING_C11) || __has_feature(c_alignas) || __has_extension(c_alignas)
+#    if (__has_feature(c_alignas) || __has_extension(c_alignas)) &&                                                    \
+        (__has_feature(c_alignof) || __has_extension(c_alignof))
+#        define M_ALIGNOF(x) _Alignof(x)
+#        define M_ALIGNAS(x) _Alignas(x)
+#    elif IS_MSVC_VERSION(MSVC_2019_16_8) /* Need new enough Windows SDK for this to be available - TJE */
 #        if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN10_20348
 #            include <stdalign.h>
 #            define M_ALIGNOF(x) _Alignof(x)
@@ -830,8 +845,48 @@ M_NORETURN M_INLINE void unreachable_func(void) {}
 #    endif
 #endif
 
+    // Example for nullability annotations
+    //! \def M_NULLABLE, M_NONNULL, M_NULL_UNSPECIFIED
+    //! \brief Marks pointers with nullability annotations for better static analysis and documentation.
+    //!
+    //! This macro defines nullability annotations to indicate whether pointers can be null or not.
+    //! \code
+    //! M_NULLABLE char *nullableString;          // This pointer can be null
+    //! M_NONNULL char *nonNullableString;        // This pointer cannot be null
+    //! M_NULL_UNSPECIFIED char *unspecifiedString; // Nullability is unspecified
+    //! \endcode
+
+#if __has_feature(nullability) || __has_extension(nullability)
+#    define M_NULLABLE         _Nullable
+#    define M_NONNULL          _Nonnull
+#    define M_NULL_UNSPECIFIED _Null_unspecified
+#    define M_NONNULL_ARRAY    static
+#endif // __has_feature(nullability)
+
+#if !defined(M_NULLABLE)
+#    define M_NULLABLE /* NULLABLE */
+#endif
+
+#if !defined(M_NONNULL)
+#    define M_NONNULL /* NONNULL  */
+#endif
+#if !defined(M_NULL_UNSPECIFIED)
+#    define M_NULL_UNSPECIFIED /* NULL_UNSPECIFIED */
+#endif
+#if !defined(M_NONNULL_ARRAY)
+#    if !defined(REAL_MSVC) && defined(USING_C99)
+// MSVC does not support the syntax [static N] for array parameters for unknown reasons.
+#        define M_NONNULL_ARRAY static
+#    else
+#        define M_NONNULL_ARRAY /* NONNULL ARRAY */
+#    endif
+#endif
+
 //! \def M_ALL_PARAMS_NONNULL
-//! \brief Marks all pointer parameters of a function as non-null.
+//! \brief Marks all pointer parameters of a function as non-null. THIS SHOULD ONLY BE USED IN
+//! internal functions where you can guarantee that all parameters will never be null. The optimizer
+//! will see this and remove all null pointer checks for these functions, which may lead to crashes if null.
+//! For null warnings, use M_NONNULL above for clang or the M_DIAG_WARNING M_DIAG_ERROR checks
 //!
 //! This macro defines the nonnull attribute to indicate that all pointer parameters of a function must be non-null.
 //! It attempts to provide a compatible definition for various compilers and standards.
@@ -843,13 +898,12 @@ M_NORETURN M_INLINE void unreachable_func(void) {}
 //! \endcode
 //!
 //! \sa M_NONNULL_PARAM_LIST, M_PARAM_RO, M_PARAM_WO, M_PARAM_RW
-//! \note This attribute is only used in debug builds (_DEBUG defined). This is due to how this
-//! attribute gets handled during optimizations and may cause crashes by removing checks for NULL that a
-//! function may still be performing (such as safe_memcpy). When developing in debug mode this will help
-//! generate warnings about incorrect usage while preserving runtime checks in optimized released builds
 
 //! \def M_NONNULL_PARAM_LIST(...)
-//! \brief Marks specific pointer parameters of a function as non-null.
+//! \brief Marks specific pointer parameters of a function as non-null.  THIS SHOULD ONLY BE USED IN
+//! internal functions where you can guarantee that all parameters will never be null. The optimizer
+//! will see this and remove all null pointer checks for these functions, which may lead to crashes if null.
+//! For null warnings, use M_NONNULL above for clang or the M_DIAG_WARNING M_DIAG_ERROR checks
 //!
 //! This macro defines the nonnull attribute to indicate that specific pointer parameters of a function must be
 //! non-null. The arguments to this macro are the indices of the parameters (starting from 1).
@@ -863,11 +917,7 @@ M_NORETURN M_INLINE void unreachable_func(void) {}
 //! \endcode
 //!
 //! \sa M_ALL_PARAMS_NONNULL, M_PARAM_RO, M_PARAM_WO, M_PARAM_RW
-//! \note This attribute is only used in debug builds (_DEBUG defined). This is due to how this
-//! attribute gets handled during optimizations and may cause crashes by removing checks for NULL that a
-//! function may still be performing (such as safe_memcpy). When developing in debug mode this will help
-//! generate warnings about incorrect usage while preserving runtime checks in optimized released builds
-#if defined(_DEBUG) && !defined(DISABLE_ATTRIBUTES)
+#if !defined(DISABLE_ATTRIBUTES)
 #    if defined(DETECT_STD_ATTR_CHECK)
 #        if DETECT_STD_ATTR_QUAL(clang::nonnull)
 #            define M_ALL_PARAMS_NONNULL      [[clang::nonnull]]
@@ -886,11 +936,11 @@ M_NORETURN M_INLINE void unreachable_func(void) {}
 #endif
 
 #if !defined(M_ALL_PARAMS_NONNULL)
-#    define M_ALL_PARAMS_NONNULL /*NONNULL*/
+#    define M_ALL_PARAMS_NONNULL /*NONNULL PARAMS*/
 #endif
 
 #if !defined(M_NONNULL_PARAM_LIST)
-#    define M_NONNULL_PARAM_LIST(...) /*NONNULL*/
+#    define M_NONNULL_PARAM_LIST(...) /*NONNULL PARAMS*/
 #endif
 
 //! \def M_NONNULL_IF_NONZERO_SIZE(arg, sizearg)
@@ -1024,13 +1074,16 @@ M_NORETURN M_INLINE void unreachable_func(void) {}
 #    if defined(DETECT_STD_ATTR_CHECK)
 #        if DETECT_STD_ATTR_QUAL(clang::diagnose_if)
 #            define M_DIAGNOSE_IF(condition, message, level) [[clang::diagnose_if((condition), message, level)]]
+#            define HAVE_DIAGNOSE_IF
 #        elif DETECT_STD_ATTR_QUAL(gnu::diagnose_if)
 #            define M_DIAGNOSE_IF(condition, message, level) [[gnu::diagnose_if((condition), message, level)]]
+#            define HAVE_DIAGNOSE_IF
 #        endif
 #    endif
 #    if !defined(M_DIAGNOSE_IF)
 #        if DETECT_GNU_ATTR(diagnose_if)
 #            define M_DIAGNOSE_IF(condition, message, level) __attribute__((diagnose_if((condition), message, level)))
+#            define HAVE_DIAGNOSE_IF
 #        endif
 #    endif
 #endif
@@ -1343,8 +1396,8 @@ M_NORETURN M_INLINE void unreachable_func(void) {}
 #    endif
 #endif
 #if !defined(M_FILE_DESCRIPTOR_R)
-#    define M_FILE_DESCRIPTOR_R(argnum)    /* parameter # argnum is an integer file descriptor number that must be opened \
-                                              with read permissions */
+#    define M_FILE_DESCRIPTOR_R(argnum)    /* parameter # argnum is an integer file descriptor number that must be     \
+                                              opened    with read permissions */
 #endif
 
 //! \def M_FILE_DESCRIPTOR_W
@@ -1365,8 +1418,649 @@ M_NORETURN M_INLINE void unreachable_func(void) {}
 #    endif
 #endif
 #if !defined(M_FILE_DESCRIPTOR_W)
-#    define M_FILE_DESCRIPTOR_W(argnum)    /* parameter # argnum is an integer file descriptor number that must be opened \
-                                              with write permissions */
+#    define M_FILE_DESCRIPTOR_W(argnum)    /* parameter # argnum is an integer file descriptor number that must be     \
+                                              opened    with write permissions */
+#endif
+
+//! \def M_STRICT_FLEX_ARRAY(level)
+//! \brief Used to mark a flexible array parameter at the end of a structure with a specific level
+//! of strictness for the compiler to evaluate.
+//! This overrides the compiler's strict flex array evaluation when used on an individual struct.
+//! For example, when compiling at level 2
+//! \param level The level of strictness (0, 1, or 2) for the flexible array
+//! \see https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html
+//! \note level 0: for all trailing arrays at the end of a structure
+//! \note level 1: for [], [0], and [1] flexible arrays
+//! \note level 2: for [] or [0] flexible arrays only
+//! \note level 3: for []  flexible arrays only as per C99 and later standards
+//! \note [0] is a GNU extension.
+//! \code
+//! struct example_struct {
+//!     int count;
+//!     M_COUNTED_BY(count) M_STRICT_FLEX_ARRAY(1) char data[1];
+//! };
+//! \endcode
+//! \code
+//! struct example_struct {
+//!     int count;
+//!     M_COUNTED_BY(count) M_STRICT_FLEX_ARRAY(2)) char data[0];
+//! };
+//! \endcode
+//! \code
+//! struct example_struct {
+//!     int count;
+//!     M_COUNTED_BY(count) M_STRICT_FLEX_ARRAY(3)) char data[];
+//! };
+//! \endcode
+//! \see M_STRICT_FLEX_ARRAY_AUTO
+
+//! \def FLEX_ARRAY
+//! \brief Defines the appropriate flexible array declaration based on the detected C standard and compiler
+//! \details For C99 and up this expands to [] as per the standard. For older C standards, it expands to [0] or [1]
+//! depending on compiler support. Can be adjuster per-compiler as needed with workarounds.
+
+//! \def FLEX_LEVEL
+//! \brief defines the flexible array level for M_STRICT_FLEX_ARRAY based on detected C standard and compiler
+//! \details This is set to 3 for C11 and up, 1 for older C99 compilers without full support, and 2 for GCC/Clang with
+//! extensions
+#if defined(USING_C11)
+#    define FLEX_ARRAY
+#    define FLEX_LEVEL 3
+#elif defined(USING_C99)
+#    if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0) || IS_MSVC_VERSION(MSVC_2015)
+// Flex arrays at the end of structure in C99 mode works in these compilers
+#        define FLEX_ARRAY
+#        define FLEX_LEVEL 3
+#    else // other compilers. While assuming C99 VLA would be great, this is probably safer.
+#        define FLEX_ARRAY 1
+#        define FLEX_LEVEL 1
+#    endif
+#else
+#    if defined(__GNUC__) || defined(__clang__)
+// GCC supported VLAs as an extension very early on.
+// Rather
+#        define FLEX_ARRAY 0
+#        define FLEX_LEVEL 2
+#    else
+#        define FLEX_ARRAY 1
+#        define FLEX_LEVEL 1
+#    endif
+#endif
+
+//! \def FLEX_ARRAY_ANY
+//! \brief Level 0 for M_STRICT_FLEX_ARRAY: for all trailing arrays at the end of a structure
+#define FLEX_ARRAY_ANY (0)
+
+//! \def FLEX_ARRAY_COMMON
+//! \brief Level 1 for M_STRICT_FLEX_ARRAY: for [], [0], and [1] flexible arrays
+#define FLEX_ARRAY_COMMON (1)
+
+//! \def FLEX_ARRAY_GNU
+//! \brief Level 2 for M_STRICT_FLEX_ARRAY: for [] or [0] flexible arrays only
+#define FLEX_ARRAY_GNU (2)
+
+//! \def FLEX_ARRAY_STDC_ONLY
+//! \brief Level 3 for M_STRICT_FLEX_ARRAY: for []  flexible arrays only as per C99 and later standards
+#define FLEX_ARRAY_STDC_ONLY (3)
+
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(clang::strict_flex_array)
+#            define M_STRICT_FLEX_ARRAY(level) [[clang::strict_flex_array(level)]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::strict_flex_array)
+#            define M_STRICT_FLEX_ARRAY(level) [[gnu::strict_flex_array(level)]]
+#        endif
+#    endif
+#    if !defined(M_STRICT_FLEX_ARRAY)
+#        if DETECT_GNU_ATTR(strict_flex_array)
+#            define M_STRICT_FLEX_ARRAY(level) __attribute__((strict_flex_array(level)))
+#        endif
+#    endif
+#endif // DISABLE_ATTRIBUTES
+
+#if !defined(M_STRICT_FLEX_ARRAY)
+#    define M_STRICT_FLEX_ARRAY(level) /* parameter is a strict flexible array with the specified level */
+#endif
+
+//! \def M_STRICT_FLEX_ARRAY_AUTO
+//! \brief Automatically defines the strict flex array level based on detected compiler and C standard
+//! \details When adding a flex array at the end of a structure, you must use the definition \a FLEX_ARRAY
+//! as this automatically expands to [], [0], [1] depending on what the compiler supports. It is recommended
+//! to also use the M_COUNTED_BY macro when possible as well to help track the size of the array and detect
+//! out of bounds accesses.
+//! \code
+//! struct example_struct {
+//!     int count;
+//!     M_COUNTED_BY(count) M_STRICT_FLEX_ARRAY_AUTO char data[FLEX_ARRAY];
+//! };
+//! \endcode
+#define M_STRICT_FLEX_ARRAY_AUTO M_STRICT_FLEX_ARRAY(FLEX_LEVEL)
+
+//! \def M_COUNTED_BY(member)
+//! \brief Used to mark a flexible array parameter that is counted by another member to track its size.
+//! Using this helps better track out of bounds accesses to these arrays. Only used for C99 flex arrays (i.e. [])
+//! \param member The parameter name that counts the number of elements in the array
+//! \see https://clang.llvm.org/docs/AttributeReference.html#counted-by-counted-by-or-null-sized-by-sized-by-or-null
+//! \note In clang, this attribute only works on C99 style flexible arrays (i.e. []).
+//! Therefore this is conditionally defined based on FLEX_LEVEL being set to 3 above. GCC does not warn, but the manual
+//! specifically says for C99 flexible arrays -TJE
+//! \code
+//! struct example_struct {
+//!     int count;
+//!     M_COUNTED_BY(count) M_STRICT_FLEX_ARRAY_AUTO char data[FLEX_ARRAY];
+//! };
+//! \endcode
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(clang::counted_by)
+#            define M_COUNTED_BY(member) [[clang::counted_by(member)]]
+#        endif
+#        if DETECT_STD_ATTR_QUAL(gnu::counted_by)
+#            define M_COUNTED_BY(member) [[gnu::counted_by(member)]]
+#        endif
+#        if DETECT_STD_ATTR_QUAL(gnu::element_count)
+#            define M_COUNTED_BY(member) [[gnu::element_count(member)]]
+#        endif
+#    endif
+#    if !defined(M_COUNTED_BY) && (FLEX_LEVEL == 3)
+#        if DETECT_GNU_ATTR(counted_by)
+#            define M_COUNTED_BY(member) __attribute__((counted_by(member)))
+#        elif DETECT_GNU_ATTR(element_count)
+#            define M_COUNTED_BY(member) __attribute__((element_count(member)))
+#        endif
+#    endif
+#endif // DISABLE_ATTRIBUTES
+
+//! \def M_COUNTED_BY_OR_NULL(member)
+//! \brief Used to mark a flexible array parameter that is counted by another member to track its size or that it is a
+//! NULL pointer. Using this helps better track out of bounds accesses to these arrays.
+//! \param member The parameter name that counts the number of elements in the array
+//! \see https://clang.llvm.org/docs/AttributeReference.html#counted-by-counted-by-or-null-sized-by-sized-by-or-null
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(clang::counted_by_or_null)
+#            define M_COUNTED_BY_OR_NULL(member) [[clang::counted_by_or_null(member)]]
+#        endif
+#        if DETECT_STD_ATTR_QUAL(gnu::counted_by_or_null)
+#            define M_COUNTED_BY_OR_NULL(member) [[gnu::counted_by_or_null(member)]]
+#        endif
+#    endif
+#    if !defined(M_COUNTED_BY_OR_NULL) && (FLEX_LEVEL == 3)
+#        if DETECT_GNU_ATTR(counted_by_or_null)
+#            define M_COUNTED_BY_OR_NULL(member) __attribute__((counted_by_or_null(member)))
+#        endif
+#    endif
+#endif // DISABLE_ATTRIBUTES
+
+#if !defined(M_COUNTED_BY)
+#    define M_COUNTED_BY(member) /* parameter is counted by member */
+#endif
+
+#if !defined(M_COUNTED_BY_OR_NULL)
+#    define M_COUNTED_BY_OR_NULL(member) /* parameter is counted by member or null */
+#endif
+
+//! \def M_SIZED_BY(member)
+//! \brief Used to mark a flexible array parameter that is counted by another member to track its size. Unlike
+//! M_COUNTED_BY, this is for size specified in bytes rather than number of elements.
+//! \param member The parameter name that counts the number of elements in the array
+//! \see https://clang.llvm.org/docs/AttributeReference.html#counted-by-counted-by-or-null-sized-by-sized-by-or-null
+//! \code
+//! struct example_struct {
+//!     int count;
+//!     M_SIZED_BY(count) M_STRICT_FLEX_ARRAY_AUTO char data[FLEX_ARRAY];
+//! };
+//! \endcode
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(clang::sized_by)
+#            define M_SIZED_BY(member) [[clang::sized_by(member)]]
+#        endif
+#        if DETECT_STD_ATTR_QUAL(gnu::sized_by)
+#            define M_SIZED_BY(member) [[gnu::sized_by(member)]]
+#        endif
+#    endif
+#    if !defined(M_SIZED_BY) && (FLEX_LEVEL == 3)
+#        if DETECT_GNU_ATTR(sized_by)
+#            define M_SIZED_BY(member) __attribute__((sized_by(member)))
+#        endif
+#    endif
+#endif // DISABLE_ATTRIBUTES
+
+//! \def M_SIZED_BY_OR_NULL(member)
+//! \brief Used to mark a flexible array parameter that is counted by another member to track its size or that it is a
+//! NULL pointer. Using this helps better track out of bounds accesses to these arrays. Unlike M_COUNTED_BY_OR_NULL,
+//! this is for size specified in bytes rather than number of elements.
+//! \param member The parameter name that counts the number of elements in the array
+//! \see https://clang.llvm.org/docs/AttributeReference.html#counted-by-counted-by-or-null-sized-by-sized-by-or-null
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(clang::sized_by_or_null)
+#            define M_SIZED_BY_OR_NULL(member) [[clang::sized_by_or_null(member)]]
+#        endif
+#        if DETECT_STD_ATTR_QUAL(gnu::sized_by_or_null)
+#            define M_SIZED_BY_OR_NULL(member) [[gnu::sized_by_or_null(member)]]
+#        endif
+#    endif
+#    if !defined(M_SIZED_BY_OR_NULL) && (FLEX_LEVEL == 3)
+#        if DETECT_GNU_ATTR(sized_by_or_null)
+#            define M_SIZED_BY_OR_NULL(member) __attribute__((sized_by_or_null(member)))
+#        endif
+#    endif
+#endif // DISABLE_ATTRIBUTES
+
+#if !defined(M_SIZED_BY)
+#    define M_SIZED_BY(member) /* parameter is sized by member */
+#endif
+
+#if !defined(M_SIZED_BY_OR_NULL)
+#    define M_SIZED_BY_OR_NULL(member) /* parameter is sized by member or null */
+#endif
+
+//! \def M_NONSTRING
+//! \brief used to mark char[n] that may not contain a NULL terminating character to provide warnings when
+//! they are passed to functions that would expect a NULL terminated string
+//! \code
+//! M_NONSTRING char buffer[16];
+//! \endcode
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(clang::nonstring)
+#            define M_NONSTRING [[clang::nonstring]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::nonstring)
+#            define M_NONSTRING [[gnu::nonstring]]
+#        endif
+#    endif
+#    if !defined(M_NONSTRING)
+#        if DETECT_GNU_ATTR(nonstring)
+#            define M_NONSTRING __attribute__((nonstring))
+#        endif
+#    endif
+#endif // DISABLE_ATTRIBUTES
+
+#if !defined(M_NONSTRING)
+#    define M_NONSTRING /* This char array may not be null terminated */
+#endif
+
+//! \def M_ASSUME(condition)
+//! \brief Tells the compiler to assume a condition is always true for optimization purposes.
+//!
+//! This attribute enables the compiler to optimize code based on the assumption that the given
+//! condition is always true at this point. Unlike assertions, this does NOT check the condition
+//! at runtime. If the assumption is violated, behavior is undefined.
+//!
+//! Available in:
+//! - C++23 with [[assume()]]
+//! - MSVC with __assume()
+//! - Clang/GCC with __builtin_assume()
+//!
+//! \param condition The condition to assume is true (must not have side effects)
+//!
+//! \warning If the condition is false at runtime, behavior is undefined. Use only when you can
+//!          guarantee the condition is always true.
+//!
+//! \code
+//! void process_positive(int x) {
+//!     M_ASSUME(x > 0);
+//!     // Compiler can optimize knowing x is positive
+//!     int result = 100 / x;  // No divide-by-zero check needed
+//! }
+//! \endcode
+//!
+//! \code
+//! void process_aligned_buffer(void* ptr) {
+//!     M_ASSUME((reinterpret_cast<uintptr_t>(ptr) & 15) == 0);
+//!     // Compiler can use aligned memory operations
+//! }
+//! \endcode
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR(assume)
+#            define M_ASSUME(condition) [[assume(condition)]]
+#        elif DETECT_STD_ATTR_QUAL(clang::assume)
+#            define M_ASSUME(condition) [[clang::assume(condition)]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::assume)
+#            define M_ASSUME(condition) [[gnu::assume(condition)]]
+#        endif
+#    endif
+#    if !defined(M_ASSUME)
+#        if DETECT_GNU_ATTR(assume)
+#            define M_ASSUME(condition) __attribute__((assume(condition)))
+#        elif defined(__has_builtin)
+#            if __has_builtin(__builtin_assume)
+#                define M_ASSUME(condition) __builtin_assume(condition)
+#            endif
+#        elif IS_MSVC_VERSION(MSVC_2003)
+#            define M_ASSUME(condition) __assume(condition)
+#        endif
+#    endif
+#endif
+
+#if !defined(M_ASSUME)
+// Fallback: use M_UNREACHABLE pattern for false conditions
+#    define M_ASSUME(condition)                                                                                        \
+        do                                                                                                             \
+        {                                                                                                              \
+            if (!(condition))                                                                                          \
+                M_UNREACHABLE();                                                                                       \
+        } while (0)
+#endif
+
+//! \def M_LIKELY
+//! \brief Hints to the compiler that a branch is likely to be taken.
+//! \see https://clang.llvm.org/docs/AttributeReference.html#likely-and-unlikely
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if defined(USING_CPP11) && DETECT_STD_ATTR_CHECK(likely)
+#            define M_LIKELY [[likely]]
+#        elif DETECT_STD_ATTR_QUAL(clang::likely)
+#            define M_LIKELY [[clang::likely]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::likely)
+#            define M_LIKELY [[gnu::likely]]
+#        endif
+#    endif
+#    if !defined(M_LIKELY)
+#        if DETECT_GNU_ATTR(likely)
+#            define M_LIKELY __attribute__((likely))
+#        endif
+#    endif
+#endif // DISABLE_ATTRIBUTES
+
+//! \def M_UNLIKELY
+//! \brief Hints to the compiler that a branch is unlikely to be taken.
+//! \see https://clang.llvm.org/docs/AttributeReference.html#likely-and-unlikely
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if defined(USING_CPP11) && DETECT_STD_ATTR_CHECK(unlikely)
+#            define M_UNLIKELY [[unlikely]]
+#        elif DETECT_STD_ATTR_QUAL(clang::unlikely)
+#            define M_UNLIKELY [[clang::unlikely]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::unlikely)
+#            define M_UNLIKELY [[gnu::unlikely]]
+#        endif
+#    endif
+#    if !defined(M_UNLIKELY)
+#        if DETECT_GNU_ATTR(unlikely)
+#            define M_UNLIKELY __attribute__((unlikely))
+#        endif
+#    endif
+#endif // DISABLE_ATTRIBUTES
+
+#if !defined(M_LIKELY)
+#    define M_LIKELY /* likely branch */
+#endif
+
+#if !defined(M_UNLIKELY)
+#    define M_UNLIKELY /* unlikely branch */
+#endif
+
+//! \def M_HOT_FUNC
+//! \brief Marks a function as a hot function that is called frequently.
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(clang::hot)
+#            define M_HOT_FUNC [[clang::hot]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::hot)
+#            define M_HOT_FUNC [[gnu::hot]]
+#        endif
+#    endif
+#    if !defined(M_HOT_FUNC)
+#        if DETECT_GNU_ATTR(hot)
+#            define M_HOT_FUNC __attribute__((hot))
+#        endif
+#    endif
+#endif
+
+#if !defined(M_HOT_FUNC)
+#    define M_HOT_FUNC /* This function is a hot function called frequently */
+#endif
+
+//! \def M_COLD_FUNC
+//! \brief Marks a function as a cold function that is called infrequently.
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(clang::cold)
+#            define M_COLD_FUNC [[clang::cold]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::cold)
+#            define M_COLD_FUNC [[gnu::cold]]
+#        endif
+#    endif
+#    if !defined(M_COLD_FUNC)
+#        if DETECT_GNU_ATTR(cold)
+#            define M_COLD_FUNC __attribute__((cold))
+#        endif
+#    endif
+#endif
+
+#if !defined(M_COLD_FUNC)
+#    define M_COLD_FUNC /* This function is a cold function called infrequently */
+#endif
+
+//! \def M_FLAG_ENUM
+//! \brief Marks an enumeration as a flag enumeration for better type safety and warnings.
+//! \see https://clang.llvm.org/docs/AttributeReference.html#flag-enum
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(clang::flag_enum)
+#            define M_FLAG_ENUM [[clang::flag_enum]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::flag_enum)
+#            define M_FLAG_ENUM [[gnu::flag_enum]]
+#        endif
+#    endif
+#    if !defined(M_FLAG_ENUM)
+#        if DETECT_GNU_ATTR(flag_enum)
+#            define M_FLAG_ENUM __attribute__((flag_enum))
+#        endif
+#    endif
+#endif
+
+#if !defined(M_FLAG_ENUM)
+#    define M_FLAG_ENUM /* This enum is a flag enumeration */
+#endif
+
+//! \def M_CLOSED_ENUM
+//! \brief Marks an enumeration as a closed enumeration to prevent implicit conversions.
+//! \see https://clang.llvm.org/docs/AttributeReference.html#closed-enum
+//! \note This can be combined with M_FLAG_ENUM to create a closed flag enumeration.
+
+//! \def M_OPEN_ENUM
+//! \brief Marks an enumeration as an open enumeration to allow implicit conversions.
+//! \see https://clang.llvm.org/docs/AttributeReference.html#open-enum
+//! \note This can be combined with M_FLAG_ENUM to create an open flag enumeration.
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(clang::enum_extensibility)
+#            define M_CLOSED_ENUM [[clang::enum_extensibility(closed)]]
+#            define M_OPEN_ENUM   [[clang::enum_extensibility(open)]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::enum_extensibility)
+#            define M_CLOSED_ENUM [[gnu::enum_extensibility(closed)]]
+#            define M_OPEN_ENUM   [[gnu::enum_extensibility(open)]]
+#        endif
+#    endif
+#    if !defined(M_CLOSED_ENUM)
+#        if DETECT_GNU_ATTR(enum_extensibility)
+#            define M_CLOSED_ENUM __attribute__((enum_extensibility(closed)))
+#            define M_OPEN_ENUM   __attribute__((enum_extensibility(open)))
+#        endif
+#    endif
+#endif
+
+//! \def M_WARN_IF_NOT_ALIGNED(alignment)
+//! \brief Warns if a pointer parameter is not aligned to the specified alignment.
+//! \code
+//! // Will not warn:
+//! struct M_ALIGNAS(16) foo
+//! {
+//!   int i1;
+//!   int i2;
+//!   M_WARN_IF_NOT_ALIGNED(16) unsigned long long x;
+//! };
+//! \endcode
+//! \code
+//! // Will warn:
+//! struct foo
+//! {
+//!   int i1;
+//!   int i2;
+//!   M_WARN_IF_NOT_ALIGNED(16) unsigned long long x;
+//! };
+//! \endcode
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(clang::warn_if_not_aligned)
+#            define M_WARN_IF_NOT_ALIGNED(alignment) [[clang::warn_if_not_aligned(alignment)]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::warn_if_not_aligned)
+#            define M_WARN_IF_NOT_ALIGNED(alignment) [[gnu::warn_if_not_aligned(alignment)]]
+#        endif
+#    endif
+#    if !defined(M_WARN_IF_NOT_ALIGNED)
+#        if DETECT_GNU_ATTR(warn_if_not_aligned)
+#            define M_WARN_IF_NOT_ALIGNED(alignment) __attribute__((warn_if_not_aligned(alignment)))
+#        endif
+#    endif
+#endif
+
+#if !defined(M_WARN_IF_NOT_ALIGNED)
+#    define M_WARN_IF_NOT_ALIGNED(alignment) /* Warn if pointer is not aligned to 'alignment' bytes */
+#endif
+
+//! \def M_UNSEQUENCED
+//! \brief indicates that a function is stateless, effectless, idempotent and independent
+//! \see https://en.cppreference.com/w/c/language/attributes/reproducible.html
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR(unsequenced)
+#            define M_UNSEQUENCED [[unsequenced]]
+#        elif DETECT_STD_ATTR(__unsequenced__)
+#            define M_UNSEQUENCED [[__unsequenced__]]
+#        elif DETECT_STD_ATTR_QUAL(clang::unsequenced)
+#            define M_UNSEQUENCED [[clang::unsequenced]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::unsequenced)
+#            define M_UNSEQUENCED [[gnu::unsequenced]]
+#        endif
+#    endif
+#    if !defined(M_UNSEQUENCED)
+#        if DETECT_GNU_ATTR(unsequenced)
+#            define M_UNSEQUENCED __attribute__((unsequenced))
+#        endif
+#    endif
+#endif
+
+#if !defined(M_UNSEQUENCED)
+#    define M_UNSEQUENCED /* This function is stateless, effectless, idempotent and independent */
+#endif
+
+//! \def M_REPRODUCIBLE
+//! \brief Indicates that a function is effectless and idempotent
+//! \see https://en.cppreference.com/w/c/language/attributes/reproducible.html
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR(reproducible)
+#            define M_REPRODUCIBLE [[reproducible]]
+#        elif DETECT_STD_ATTR(__reproducible__)
+#            define M_REPRODUCIBLE [[__reproducible__]]
+#        elif DETECT_STD_ATTR_QUAL(clang::reproducible)
+#            define M_REPRODUCIBLE [[clang::reproducible]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::reproducible)
+#            define M_REPRODUCIBLE [[gnu::reproducible]]
+#        endif
+#    endif
+#    if !defined(M_REPRODUCIBLE)
+#        if DETECT_GNU_ATTR(reproducible)
+#            define M_REPRODUCIBLE __attribute__((reproducible))
+#        endif
+#    endif
+#endif
+
+#if !defined(M_REPRODUCIBLE)
+#    define M_REPRODUCIBLE /* This function is effectless and idempotent */
+#endif
+
+//! \def M_PURE_FUNC
+//! \brief Marks a function as a pure function (no side effects, return value depends only on parameters).
+//! \note Similar to M_REPRODUCIBLE. Pure also requires finiteness.
+//! \note takes priority over M_REPRODUCIBLE
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(clang::pure)
+#            define M_PURE_FUNC [[clang::pure]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::pure)
+#            define M_PURE_FUNC [[gnu::pure]]
+#        endif
+#    endif
+#    if !defined(M_PURE_FUNC)
+#        if DETECT_GNU_ATTR(pure)
+#            define M_PURE_FUNC __attribute__((pure))
+#        endif
+#    endif
+#endif
+#if !defined(M_PURE_FUNC)
+#    define M_PURE_FUNC /* This function is a pure function with no side effects */
+#endif
+
+//! \def M_CONST_FUNC
+//! \brief Marks a function as a const function (no side effects, return value depends only on parameters and global
+//! variables). \note similar to M_UNSEQUENCED, but requires finiteness. \note takes priority over M_UNSEQUENCED
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK) && !defined(REAL_MSVC)
+#        if DETECT_STD_ATTR_QUAL(clang::const)
+#            define M_CONST_FUNC [[clang::const]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::const)
+#            define M_CONST_FUNC [[gnu::const]]
+#        endif
+#    endif
+#    if !defined(M_CONST_FUNC)
+#        if DETECT_GNU_ATTR(const)
+#            define M_CONST_FUNC __attribute__((const))
+#        endif
+#    endif
+#endif
+
+#if !defined(M_CONST_FUNC)
+#    define M_CONST_FUNC /* This function is a const function with no side effects */
+#endif
+
+//! \def M_MS_STRUCT
+//! \brief Marks a structure to use MSVC layout for better compatibility with MSVC compiled code.
+//! \note This is the default mode when targeting Windows, but may be helpful in other cases.
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(clang::ms_struct)
+#            define M_MS_STRUCT [[clang::ms_struct]]
+#        elif DETECT_STD_ATTR_QUAL(gnu::ms_struct)
+#            define M_MS_STRUCT [[gnu::ms_struct]]
+#        endif
+#    endif
+#    if !defined(M_MS_STRUCT)
+#        if DETECT_GNU_ATTR(ms_struct)
+#            define M_MS_STRUCT __attribute__((ms_struct))
+#        endif
+#    endif
+#endif
+
+#if !defined(M_MS_STRUCT)
+#    define M_MS_STRUCT /* This structure uses MSVC layout */
+#endif
+
+//! \def M_TAINTED_ARGS
+//! \brief Marks a function as having tainted arguments that require sanitization for trust.
+//! \see
+//! https://best.openssf.org/Compiler-Hardening-Guides/Compiler-Annotations-for-C-and-C++.html#mark-functions-with-arguments-that-require-sanitization
+#if !defined(DISABLE_ATTRIBUTES)
+#    if defined(DETECT_STD_ATTR_CHECK)
+#        if DETECT_STD_ATTR_QUAL(gnu::tainted_args)
+#            define M_TAINTED_ARGS [[gnu::tainted_args]]
+#        endif
+#    endif
+#    if !defined(M_TAINTED_ARGS)
+#        if DETECT_GNU_ATTR(tainted_args)
+#            define M_TAINTED_ARGS __attribute__((tainted_args))
+#        endif
+#    endif
+#endif // DISABLE_ATTRIBUTES
+
+#if !defined(M_TAINTED_ARGS)
+#    define M_TAINTED_ARGS /* This function has tainted arguments that require sanitization for trust */
 #endif
 
 #if defined(__cplusplus)

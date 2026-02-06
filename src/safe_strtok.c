@@ -85,7 +85,6 @@ char* safe_strtok_impl(char* M_RESTRICT       str,
     int               sc    = 0;
     errno_t           error = 0;
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (strmax == M_NULLPTR)
     {
         error = EINVAL;
@@ -257,6 +256,5 @@ char* safe_strtok_impl(char* M_RESTRICT       str,
                               "string without encountering null terminator",
                               set_Env_Info(&envInfo, file, function, expression, line), error);
     errno = error;
-    RESTORE_NONNULL_COMPARE
     return M_NULLPTR;
 }

@@ -29,8 +29,10 @@ extern "C"
     //! properly understand the output
     typedef struct sseatimer_t
     {
-        uint64_t timerStart; //!< system specific count value.
-        uint64_t timerStop;  //!< system specific count value.
+        uint64_t timerStart; //!< system specific count value. May be nanoseconds, may be ticks. Use functions below to
+                             //!< convert to timeunits.
+        uint64_t timerStop;  //!< system specific count value. May be nanoseconds, may be ticks. Use functions below to
+                             //!< convert to timeunits.
     } seatimer_t;
 
 //! \def DECLARE_SEATIMER
@@ -44,7 +46,7 @@ extern "C"
 
     //! \fn void safe_free_seatimer(seatimer_t** timer)
     //! \brief Helper function to safely free a seatimer from the heap
-    static M_INLINE void safe_free_seatimer(seatimer_t** timer)
+    static M_INLINE void safe_free_seatimer(seatimer_t * M_NULLABLE * M_NULLABLE timer)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, timer));
     }
@@ -52,36 +54,60 @@ extern "C"
     //! \fn void start_Timer(seatimer_t* timer)
     //! \brief start the timer
     //! \param[in,out] timer pointer to seatimer to start
-    M_NONNULL_PARAM_LIST(1) M_PARAM_WO(1) void start_Timer(seatimer_t* timer);
+    M_PARAM_WO(1) void start_Timer(seatimer_t* M_NONNULL timer);
 
     //! \fn void stop_Timer(seatimer_t* timer)
     //! \brief stop the timer
     //! \param[in,out] timer pointer to seatimer to stop
-    M_NONNULL_PARAM_LIST(1) M_PARAM_WO(1) void stop_Timer(seatimer_t* timer);
+    M_PARAM_WO(1) void stop_Timer(seatimer_t* M_NONNULL timer);
 
     //! \fn uint64_t get_Nano_Seconds(seatimer_t timer)
     //! \brief get the number of nanoseconds elapsed between timer start and stop
     //! \param[in] timer timer with valid start and stop times to get the number of nanoseconds from
     //! \return uint64_t number of elapsed nanoseconds
-    uint64_t get_Nano_Seconds(seatimer_t timer);
+    uint64_t get_Nano_Seconds(seatimer_t timer)
+        // clang-format off
+    M_DIAG_ERROR(timer.timerStop < timer.timerStart, "timer stop time is before start time")
+    M_DIAG_ERROR(timer.timerStart == UINT64_C(0), "timer was never started")
+    M_DIAG_ERROR(timer.timerStop == UINT64_C(0), "timer was never stopped")
+        // clang-format on
+        ;
 
     //! \fn double get_Micro_Seconds(seatimer_t timer)
     //! \brief get the number of microseconds elapsed between timer start and stop
     //! \param[in] timer timer with valid start and stop times to get the number of microseconds from
     //! \return double number of elapsed microseconds
-    double get_Micro_Seconds(seatimer_t timer);
+    double get_Micro_Seconds(seatimer_t timer)
+        // clang-format off
+    M_DIAG_ERROR(timer.timerStop < timer.timerStart, "timer stop time is before start time")
+    M_DIAG_ERROR(timer.timerStart == UINT64_C(0), "timer was never started")
+    M_DIAG_ERROR(timer.timerStop == UINT64_C(0), "timer was never stopped")
+        // clang-format on
+        ;
 
     //! \fn double get_Milli_Seconds(seatimer_t timer)
     //! \brief get the number of milliseconds elapsed between timer start and stop
     //! \param[in] timer timer with valid start and stop times to get the number of milliseconds from
     //! \return double number of elapsed milliseconds
-    double get_Milli_Seconds(seatimer_t timer);
+    double get_Milli_Seconds(seatimer_t timer)
+        // clang-format off
+    M_DIAG_ERROR(timer.timerStop < timer.timerStart, "timer stop time is before start time")
+    M_DIAG_ERROR(timer.timerStart == UINT64_C(0), "timer was never started")
+    M_DIAG_ERROR(timer.timerStop == UINT64_C(0), "timer was never stopped")
+        // clang-format on
+        ;
 
     //! \fn double get_Seconds(seatimer_t timer)
     //! \brief get the number of sseconds elapsed between timer start and stop
     //! \param[in] timer timer with valid start and stop times to get the number of seconds from
     //! \return double number of elapsed seconds
-    double get_Seconds(seatimer_t timer);
+    double get_Seconds(seatimer_t timer)
+        // clang-format off
+    M_DIAG_ERROR(timer.timerStop < timer.timerStart, "timer stop time is before start time")
+    M_DIAG_ERROR(timer.timerStart == UINT64_C(0), "timer was never started")
+    M_DIAG_ERROR(timer.timerStop == UINT64_C(0), "timer was never stopped")
+        // clang-format on
+        ;
 
 #if defined(__cplusplus)
 }

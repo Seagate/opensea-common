@@ -24,16 +24,6 @@ extern "C"
 {
 #endif
 
-#if defined(HAVE_CONSTEXPR)
-    constexpr void* nullvoid = M_NULLPTR;
-#    define M_IS_NULL_VOID(ptr) ((ptr) == nullvoid)
-    constexpr const void* nullconstvoid = M_NULLPTR;
-#    define M_IS_NULL_CONST_VOID(ptr) ((ptr) == nullconstvoid)
-#else
-#    define M_IS_NULL_VOID(ptr)       (!(ptr))
-#    define M_IS_NULL_CONST_VOID(ptr) (!(ptr))
-#endif
-
     //! \fn errno_t safe_memset_impl(void* dest, rsize_t destsz, int ch, rsize_t count, const char* file, const char*
     //! function, int line, const char* expression)
     //! \brief Sets a block of memory to a specified value with bounds checking.
@@ -61,19 +51,18 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    M_NONNULL_PARAM_LIST(1)
     M_PARAM_WO_SIZE(1, 2)
-    errno_t safe_memset_impl(void*       dest,
-                             rsize_t     destsz,
-                             int         ch,
-                             rsize_t     count,
-                             const char* file,
-                             const char* function,
-                             int         line,
-                             const char* expression)
+    errno_t safe_memset_impl(void* M_NONNULL        dest,
+                             rsize_t                destsz,
+                             int                    ch,
+                             rsize_t                count,
+                             const char* M_NULLABLE file,
+                             const char* M_NULLABLE function,
+                             int                    line,
+                             const char* M_NULLABLE expression)
         // clang-format off
-        M_DIAG_ERROR(M_IS_NULL_VOID(dest), "dest is a null pointer")
-        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX") 
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
         M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
         M_DIAG_ERROR(count > destsz, "count > destsz")
         // clang-format on
@@ -108,22 +97,21 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_WO_SIZE(1, 2)
     M_PARAM_RO_SIZE(3, 4)
-    errno_t safe_memmove_impl(void*       dest,
-                              rsize_t     destsz,
-                              const void* src,
-                              rsize_t     count,
-                              const char* file,
-                              const char* function,
-                              int         line,
-                              const char* expression)
+    errno_t safe_memmove_impl(void* M_NONNULL        dest,
+                              rsize_t                destsz,
+                              const void* M_NONNULL  src,
+                              rsize_t                count,
+                              const char* M_NULLABLE file,
+                              const char* M_NULLABLE function,
+                              int                    line,
+                              const char* M_NULLABLE expression)
         // clang-format off
-        M_DIAG_ERROR(M_IS_NULL_VOID(dest), "dest is a null pointer")
-        M_DIAG_ERROR(M_IS_NULL_CONST_VOID(src), "src is a null pointer") 
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
-        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX") 
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
         M_DIAG_ERROR(count > destsz, "count > destsz")
         // clang-format on
         ;
@@ -159,20 +147,19 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_WO_SIZE(1, 2)
     M_PARAM_RO_SIZE(3, 4)
-    errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
-                             rsize_t                destsz,
-                             const void* M_RESTRICT src,
-                             rsize_t                count,
-                             const char*            file,
-                             const char*            function,
-                             int                    line,
-                             const char*            expression)
+    errno_t safe_memcpy_impl(void* M_RESTRICT M_NONNULL       dest,
+                             rsize_t                          destsz,
+                             const void* M_RESTRICT M_NONNULL src,
+                             rsize_t                          count,
+                             const char* M_NULLABLE           file,
+                             const char* M_NULLABLE           function,
+                             int                              line,
+                             const char* M_NULLABLE           expression)
         // clang-format off
-        M_DIAG_ERROR(M_IS_NULL_VOID(dest), "dest is a null pointer")
-        M_DIAG_ERROR(M_IS_NULL_CONST_VOID(src), "src is a null pointer") 
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
         M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
         // clang-format on
@@ -210,21 +197,20 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_WO_SIZE(1, 2)
     M_PARAM_RO_SIZE(3, 5)
-    errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
-                              rsize_t                destsz,
-                              const void* M_RESTRICT src,
-                              int                    c,
-                              rsize_t                count,
-                              const char*            file,
-                              const char*            function,
-                              int                    line,
-                              const char*            expression)
+    errno_t safe_memccpy_impl(void* M_RESTRICT M_NONNULL       dest,
+                              rsize_t                          destsz,
+                              const void* M_RESTRICT M_NONNULL src,
+                              int                              c,
+                              rsize_t                          count,
+                              const char* M_NULLABLE           file,
+                              const char* M_NULLABLE           function,
+                              int                              line,
+                              const char* M_NULLABLE           expression)
         // clang-format off
-        M_DIAG_ERROR(M_IS_NULL_VOID(dest), "dest is a null pointer")
-        M_DIAG_ERROR(M_IS_NULL_CONST_VOID(src), "src is a null pointer")
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
         M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
         // clang-format on
@@ -260,21 +246,20 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_WO_SIZE(1, 2)
     M_PARAM_RO_SIZE(3, 5)
-    errno_t safe_memcmove_impl(void* M_RESTRICT       dest,
-                               rsize_t                destsz,
-                               const void* M_RESTRICT src,
-                               int                    c,
-                               rsize_t                count,
-                               const char*            file,
-                               const char*            function,
-                               int                    line,
-                               const char*            expression)
+    errno_t safe_memcmove_impl(void* M_RESTRICT M_NONNULL       dest,
+                               rsize_t                          destsz,
+                               const void* M_RESTRICT M_NONNULL src,
+                               int                              c,
+                               rsize_t                          count,
+                               const char* M_NULLABLE           file,
+                               const char* M_NULLABLE           function,
+                               int                              line,
+                               const char* M_NULLABLE           expression)
         // clang-format off
-        M_DIAG_ERROR(M_IS_NULL_VOID(dest), "dest is a null pointer")
-        M_DIAG_ERROR(M_IS_NULL_CONST_VOID(src), "src is a null pointer") 
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
         M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
         // clang-format on
@@ -297,10 +282,14 @@ extern "C"
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a size is zero
-    M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(
-        1) void* safe_malloc_impl(size_t size, const char* file, const char* function, int line, const char* expression)
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* M_NULLABLE safe_malloc_impl(size_t                 size,
+                                                                                      const char* M_NULLABLE file,
+                                                                                      const char* M_NULLABLE function,
+                                                                                      int                    line,
+                                                                                      const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(size == 0, "safe_malloc of size zero is not allowed")
+        M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
         // clang-format on
         ;
 
@@ -324,16 +313,18 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a count * \a size results in an overflow
-    M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* safe_calloc_impl(size_t      count,
-                                                                              size_t      size,
-                                                                              const char* file,
-                                                                              const char* function,
-                                                                              int         line,
-                                                                              const char* expression)
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* M_NULLABLE
+        safe_calloc_impl(size_t                 count,
+                         size_t                 size,
+                         const char* M_NULLABLE file,
+                         const char* M_NULLABLE function,
+                         int                    line,
+                         const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(size == 0, "safe_calloc with count of zero is not allowed")
         M_DIAG_ERROR(size == 0, "safe_calloc with size of zero is not allowed")
         M_DIAG_ERROR(count > (SIZE_MAX / size), "safe_calloc size * count overflows")
+        M_DIAG_WARN((count * size) > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
         // clang-format on
         ;
 
@@ -355,15 +346,17 @@ extern "C"
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a size is zero
-    M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1)
-        M_ALLOC_ALIGN(2) void* safe_malloc_aligned_impl(size_t      size,
-                                                        size_t      alignment,
-                                                        const char* file,
-                                                        const char* function,
-                                                        int         line,
-                                                        const char* expression)
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) M_ALLOC_ALIGN(2) void* M_NULLABLE
+        safe_malloc_aligned_impl(size_t                 size,
+                                 size_t                 alignment,
+                                 const char* M_NULLABLE file,
+                                 const char* M_NULLABLE function,
+                                 int                    line,
+                                 const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(size == 0, "safe_malloc_aligned of size zero is not allowed")
+        M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+        M_DIAG_WARN(alignment == 0 || (alignment & (alignment - 1)) != 0, "alignment should be a non-zero power of two")
         // clang-format on
         ;
 
@@ -388,18 +381,20 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a count * \a size results in an overflow
-    M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2)
-        M_ALLOC_ALIGN(3) void* safe_calloc_aligned_impl(size_t      count,
-                                                        size_t      size,
-                                                        size_t      alignment,
-                                                        const char* file,
-                                                        const char* function,
-                                                        int         line,
-                                                        const char* expression)
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) M_ALLOC_ALIGN(3) void* M_NULLABLE
+        safe_calloc_aligned_impl(size_t                 count,
+                                 size_t                 size,
+                                 size_t                 alignment,
+                                 const char* M_NULLABLE file,
+                                 const char* M_NULLABLE function,
+                                 int                    line,
+                                 const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(size == 0, "safe_calloc_aligned with count of zero is not allowed")
         M_DIAG_ERROR(size == 0, "safe_calloc_aligned with size of zero is not allowed")
         M_DIAG_ERROR(count > (SIZE_MAX / size), "safe_calloc_aligned size * count overflows")
+        M_DIAG_WARN((count * size) > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+        M_DIAG_WARN(alignment == 0 || (alignment & (alignment - 1)) != 0, "alignment should be a non-zero power of two")
         // clang-format on
         ;
 
