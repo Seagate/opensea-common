@@ -13,7 +13,7 @@
 #include "warning_ctl.h"
 
 DISABLE_WARNING_4255
-#include <AclAPI.h>
+#include <aclapi.h>
 #include <io.h> //needed for getting the size of a file in windows
 #include <sddl.h>
 #include <string.h>
