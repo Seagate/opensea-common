@@ -27,7 +27,7 @@ static void test_get_Word0_uint32(void) {
 }
 
 static void test_M_Word0(void) {
-    TEST_ASSERT_EQ(M_Word0(SERIAL_NUM), LOWER2BYTE, "get lower 16 bits of uint64_t");
+    TEST_ASSERT_EQ(M_Word0((uint64_t)SERIAL_NUM), LOWER2BYTE, "get lower 16 bits of uint64_t");
 }
 
 // 0x00000000FFFF0000
@@ -40,7 +40,7 @@ static void test_get_Word1_uint32(void) {
 }
 
 static void test_M_Word1(void) {
-    TEST_ASSERT_EQ(M_Word1(SERIAL_NUM), (uint16_t)((LOWER4BYTE >> 16) & 0xFFFF) , "get the second lowest 16 bits of uint64_t");
+    TEST_ASSERT_EQ(M_Word1((uint64_t)SERIAL_NUM), (uint16_t)((LOWER4BYTE >> 16) & 0xFFFF) , "get the second lowest 16 bits of uint64_t");
 }
 
 // 0x0000FFFF00000000
@@ -49,7 +49,7 @@ static void test_get_Word2_uint64(void) {
 }
 
 static void test_M_Word2(void) {
-    TEST_ASSERT_EQ(M_Word2(SERIAL_NUM), (uint16_t)(HIGHER4BYTE & 0xFFFF), "get second highest 16 bits of uint64_t");
+    TEST_ASSERT_EQ(M_Word2((uint64_t)SERIAL_NUM), (uint16_t)(HIGHER4BYTE & 0xFFFF), "get second highest 16 bits of uint64_t");
 }
 
 // 0xFFFF000000000000
@@ -58,7 +58,7 @@ static void test_get_Word3_uint64(void) {
 }
 
 static void test_M_Word3(void) {
-    TEST_ASSERT_EQ(M_Word3(SERIAL_NUM), HIGHER2BYTE, "get highest 16 bits of uint64_t");
+    TEST_ASSERT_EQ(M_Word3((uint64_t)SERIAL_NUM), HIGHER2BYTE, "get highest 16 bits of uint64_t");
 }
 
 void run_bit_manip_tests(void)
