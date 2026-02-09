@@ -114,6 +114,7 @@
 #define SERIAL_NUM      0x1234567890ABCDEFULL
 #define HIGHER8BYTE     0x12345678U
 #define LOWER8BYTE      0x90ABCDEFU
+#define LOWER4BYTE      0xCDEFU
 #define MIN_VALUE       (-1)
 
 #endif // TEST_CONSTANTS_H 
