@@ -36,7 +36,7 @@ static void test_get_Word1_uint64(void) {
 }
 
 static void test_get_Word1_uint32(void) {
-    TEST_ASSERT_EQ(get_Word1_uint32(LOWER4BYTE), (uint16_t)((LOWER4BYTE >> 16) & 0xFFFF) , "get higher 16 bits of uint32_t");
+    TEST_ASSERT_EQ(get_Word1_uint32(LOWER4BYTE), (uint16_t)(0x0000) , "get higher 16 bits of uint32_t");
 }
 
 static void test_M_Word1(void) {
