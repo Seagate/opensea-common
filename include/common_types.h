@@ -69,7 +69,7 @@
 #include <sys/stat.h>
 #include <sys/types.h> //This is available in Windows and linux/unix-like systems
 #if defined(_WIN32)
-#    include <BaseTsd.h> //for MAXSSIZE_T
+#    include <basetsd.h> //for MAXSSIZE_T (lowercase for MinGW compatibility)
 DISABLE_WARNING_4255
 #    include <windows.h> //Includes various Windows headers for types and functions. Used for MAX_PATH below
 RESTORE_WARNING_4255
