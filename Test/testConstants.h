@@ -112,9 +112,10 @@
 
 // custom values 
 #define SERIAL_NUM      0x1234567890ABCDEFULL
-#define HIGHER8BYTE     0x12345678U
-#define LOWER8BYTE      0x90ABCDEFU
-#define LOWER4BYTE      0xCDEFU
+#define HIGHER4BYTE     0x12345678U
+#define LOWER4BYTE      0x90ABCDEFU
+#define LOWER2BYTE      0xCDEFU
+#define HIGHER2BYTE     0x1234U
 #define MIN_VALUE       (-1)
 
 #endif // TEST_CONSTANTS_H 
