@@ -3,6 +3,7 @@
 
 // Forward declarations of test functions
 void run_bit_manip_tests(void);
+void run_math_utils_tests(void);
 
 int main(void)
 {
@@ -10,6 +11,7 @@ int main(void)
 
     // Run individual test suites
     run_bit_manip_tests();
+    run_math_utils_tests();
 
     // Print summary of test results
     print_test_summary();

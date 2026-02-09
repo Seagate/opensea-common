@@ -33,4 +33,6 @@ static void test_M_Max(void) {
 }
 
 void run_math_utils_tests(void) {
+    test_M_Min();
+    test_M_Max();
 }
