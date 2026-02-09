@@ -27,7 +27,6 @@
 
 #if defined(_WIN32)
 #    include "windows_version_detect.h"
-#    include <WinBase.h>
 DISABLE_WARNING_4255
 #    include <windows.h>
 RESTORE_WARNING_4255
