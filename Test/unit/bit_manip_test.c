@@ -394,7 +394,7 @@ static void test_words_To_Uint32(void) {
 }
 
 static void test_M_WordsTo4ByteValue(void) {
-    TEST_ASSERT_EQ(M_WordsTo4ByteValue(HIGHER2BYTE, LOWER2BYTE), 0x1234CDEF, "Combines 2 words to form uint32_t 0x1234CDEF using M_WordsTo4ByteValue");
+    TEST_ASSERT_EQ(M_WordsTo4ByteValue(HIGHER2BYTE, LOWER2BYTE), 0xCDEF1234, "Combines 2 words to form uint32_t 0xCDEF1234 using M_WordsTo4ByteValue");
 }
 
 static void test_words_To_Uint64(void) {
