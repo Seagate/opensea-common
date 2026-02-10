@@ -128,7 +128,7 @@ extern "C"
     //! \return uint16_t for second lowest 16 bits
     static M_INLINE uint16_t get_Word1_uint64(uint64_t value)
     {
-        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0x00000000FFFF0000)));
+        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0x00000000FFFF0000)) >> 16);
     }
 
     //! \fn get_Word1_uint32(uint32_t value)
@@ -137,7 +137,7 @@ extern "C"
     //! \return uint16_t for highest 16 bits
     static M_INLINE uint16_t get_Word1_uint32(uint32_t value)
     {
-        return M_STATIC_CAST(uint16_t, (value & UINT32_C(0xFFFF0000)));
+        return M_STATIC_CAST(uint16_t, (value & UINT32_C(0xFFFF0000)) >> 16);
     }
 
 //! \def M_Word1
@@ -155,7 +155,7 @@ extern "C"
     //! \return uint16_t for second highest 16 bits
     static M_INLINE uint16_t get_Word2_uint64(uint64_t value)
     {
-        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0x0000FFFF00000000)));
+        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0x0000FFFF00000000)) >> 32);
     }
 
 //! \def M_Word2
@@ -173,7 +173,7 @@ extern "C"
     //! \return uint16_t of the highest 16 bits.
     static M_INLINE uint16_t get_Word3_uint64(uint64_t value)
     {
-        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0xFFFF000000000000)));
+        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0xFFFF000000000000)) >> 48);
     }
 
 //! \def M_Word3
