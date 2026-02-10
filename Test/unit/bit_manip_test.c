@@ -96,63 +96,63 @@ static void test_M_Byte0(void) {
 }
 
 static void test_M_Byte1(void) {
-    TEST_ASSERT_EQ(M_ByteN(1), (uint8_t)(UINT8_MAX << (1 * BITSPERBYTE)), "Set 1st byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte1(1), (uint8_t)(UINT8_MAX << (1 * BITSPERBYTE)), "Set 1st byte to all 1s");
 }
 
 static void test_M_Byte2(void) {
-    TEST_ASSERT_EQ(M_ByteN(2), (uint8_t)(UINT8_MAX << (2 * BITSPERBYTE)), "Set 2nd byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte2(2), (uint8_t)(UINT8_MAX << (2 * BITSPERBYTE)), "Set 2nd byte to all 1s");
 }
 
 static void test_M_Byte3(void) {
-    TEST_ASSERT_EQ(M_ByteN(3), (uint8_t)(UINT8_MAX << (3 * BITSPERBYTE)), "Set 3rd byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte3(3), (uint8_t)(UINT8_MAX << (3 * BITSPERBYTE)), "Set 3rd byte to all 1s");
 }
 
 static void test_M_Byte4(void) {
-    TEST_ASSERT_EQ(M_ByteN(4), (uint8_t)(UINT8_MAX << (4 * BITSPERBYTE)), "Set 4th byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte4(4), (uint8_t)(UINT8_MAX << (4 * BITSPERBYTE)), "Set 4th byte to all 1s");
 }
 
 static void test_M_Byte5(void) {
-    TEST_ASSERT_EQ(M_ByteN(5), (uint8_t)(UINT8_MAX << (5 * BITSPERBYTE)), "Set 5th byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte5(5), (uint8_t)(UINT8_MAX << (5 * BITSPERBYTE)), "Set 5th byte to all 1s");
 }
 
 static void test_M_Byte6(void) {
-    TEST_ASSERT_EQ(M_ByteN(6), (uint8_t)(UINT8_MAX << (6 * BITSPERBYTE)), "Set 6th byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte6(6), (uint8_t)(UINT8_MAX << (6 * BITSPERBYTE)), "Set 6th byte to all 1s");
 }
 
 static void test_M_Byte7(void) {
-    TEST_ASSERT_EQ(M_ByteN(7), (uint8_t)(UINT8_MAX << (7 * BITSPERBYTE)), "Set 7th byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte7(7), (uint8_t)(UINT8_MAX << (7 * BITSPERBYTE)), "Set 7th byte to all 1s");
 }
 
 static void test_M_ByteInt0(void) {
-    TEST_ASSERT_EQ(M_ByteN(0), (int8_t)(UINT8_MAX << (0 * BITSPERBYTE)), "Set 0th byte to all 1s as int8_t");
+    TEST_ASSERT_EQ(M_ByteInt0(0), (int8_t)(UINT8_MAX << (0 * BITSPERBYTE)), "Set 0th byte to all 1s as int8_t");
 }
 
 static void test_M_ByteInt1(void) {
-    TEST_ASSERT_EQ(M_ByteN(1), (int8_t)(UINT8_MAX << (1 * BITSPERBYTE)), "Set 1st byte to all 1s as int8_t");
+    TEST_ASSERT_EQ(M_ByteInt1(1), (int8_t)(UINT8_MAX << (1 * BITSPERBYTE)), "Set 1st byte to all 1s as int8_t");
 }
 
 static void test_M_ByteInt2(void) {
-    TEST_ASSERT_EQ(M_ByteN(2), (int8_t)(UINT8_MAX << (2 * BITSPERBYTE)), "Set 2nd byte to all 1s as int8_t");
+    TEST_ASSERT_EQ(M_ByteInt2(2), (int8_t)(UINT8_MAX << (2 * BITSPERBYTE)), "Set 2nd byte to all 1s as int8_t");
 }
 
 static void test_M_ByteInt3(void) {
-    TEST_ASSERT_EQ(M_ByteN(3), (int8_t)(UINT8_MAX << (3 * BITSPERBYTE)), "Set 3rd byte to all 1s as int8_t");
+    TEST_ASSERT_EQ(M_ByteInt3(3), (int8_t)(UINT8_MAX << (3 * BITSPERBYTE)), "Set 3rd byte to all 1s as int8_t");
 }
 
 static void test_M_ByteInt4(void) {
-    TEST_ASSERT_EQ(M_ByteN(4), (int8_t)(UINT8_MAX << (4 * BITSPERBYTE)), "Set 4th byte to all 1s as int8_t");
+    TEST_ASSERT_EQ(M_ByteInt4(4), (int8_t)(UINT8_MAX << (4 * BITSPERBYTE)), "Set 4th byte to all 1s as int8_t");
 }
 
 static void test_M_ByteInt5(void) {
-    TEST_ASSERT_EQ(M_ByteN(5), (int8_t)(UINT8_MAX << (5 * BITSPERBYTE)), "Set 5th byte to all 1s as int8_t");
+    TEST_ASSERT_EQ(M_ByteInt5(5), (int8_t)(UINT8_MAX << (5 * BITSPERBYTE)), "Set 5th byte to all 1s as int8_t");
 }
 
 static void test_M_ByteInt6(void) {
-    TEST_ASSERT_EQ(M_ByteN(6), (int8_t)(UINT8_MAX << (6 * BITSPERBYTE)), "Set 6th byte to all 1s as int8_t");
+    TEST_ASSERT_EQ(M_ByteInt6(6), (int8_t)(UINT8_MAX << (6 * BITSPERBYTE)), "Set 6th byte to all 1s as int8_t");
 }
 
 static void test_M_ByteInt7(void) {
-    TEST_ASSERT_EQ(M_ByteN(7), (int8_t)(UINT8_MAX << (7 * BITSPERBYTE)), "Set 7th byte to all 1s as int8_t");
+    TEST_ASSERT_EQ(M_ByteInt7(7), (int8_t)(UINT8_MAX << (7 * BITSPERBYTE)), "Set 7th byte to all 1s as int8_t");
 }
 
 static void test_M_Nibble0(void) {
