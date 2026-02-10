@@ -156,7 +156,7 @@ static void test_M_ByteInt1(void) {
         {0x0000000000007F00ULL, (int8_t)0x7F, "Second lowest byte 0x7F → 127"},
         {0x000000000000FF00ULL, (int8_t)0xFF, "Second lowest byte 0xFF → -1"},
         {0x000000000000A500ULL, (int8_t)0xA5, "Second lowest byte 0xA5 → -91"},
-        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Second lowest byte 0xCD → -51"}
+        {0x1234567890ABCDEFULL, (int8_t)0xCD, "Second lowest byte 0xCD → -51"}
     };
 
 
@@ -176,7 +176,7 @@ static void test_M_ByteInt2(void) {
         {0x00000000007F0000ULL, (int8_t)0x7F, "Third lowest byte 0x7F → 127"},
         {0x0000000000FF0000ULL, (int8_t)0xFF, "Third lowest byte 0xFF → -1"},
         {0x0000000000A50000ULL, (int8_t)0xA5, "Third lowest byte 0xA5 → -91"},
-        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Third lowest byte 0xCD → -85"}
+        {0x1234567890ABCDEFULL, (int8_t)0xAB, "Third lowest byte 0xAB → -85"}
     };
 
 
@@ -196,7 +196,7 @@ static void test_M_ByteInt3(void) {
         {0x000000007F000000ULL, (int8_t)0x7F, "Fourth lowest byte 0x7F → 127"},
         {0x00000000FF000000ULL, (int8_t)0xFF, "Fourth lowest byte 0xFF → -1"},
         {0x00000000A5000000ULL, (int8_t)0xA5, "Fourth lowest byte 0xA5 → -91"},
-        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Fourth lowest byte 0xCD → -112"}
+        {0x1234567890ABCDEFULL, (int8_t)0x90, "Fourth lowest byte 0x90 → -112"}
     };
 
 
@@ -216,7 +216,7 @@ static void test_M_ByteInt4(void) {
         {0x0000007F00000000ULL, (int8_t)0x7F, "Fifth lowest byte 0x7F → 127"},
         {0x000000FF00000000ULL, (int8_t)0xFF, "Fifth lowest byte 0xFF → -1"},
         {0x000000A500000000ULL, (int8_t)0xA5, "Fifth lowest byte 0xA5 → -91"},
-        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Fifth lowest byte 0xCD → 120"}
+        {0x1234567890ABCDEFULL, (int8_t)0x78, "Fifth lowest byte 0x78 → 120"}
     };
 
 
@@ -236,7 +236,7 @@ static void test_M_ByteInt5(void) {
         {0x00007F0000000000ULL, (int8_t)0x7F, "Sixth lowest byte 0x7F → 127"},
         {0x0000FF0000000000ULL, (int8_t)0xFF, "Sixth lowest byte 0xFF → -1"},
         {0x0000A50000000000ULL, (int8_t)0xA5, "Sixth lowest byte 0xA5 → -91"},
-        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Sixth lowest byte 0xCD → 86"}
+        {0x1234567890ABCDEFULL, (int8_t)0x56, "Sixth lowest byte 0x56 → 86"}
     };
 
 
@@ -256,7 +256,7 @@ static void test_M_ByteInt6(void) {
         {0x007F000000000000ULL, (int8_t)0x7F, "Seventh lowest byte 0x7F → 127"},
         {0x00FF000000000000ULL, (int8_t)0xFF, "Seventh lowest byte 0xFF → -1"},
         {0x00A5000000000000ULL, (int8_t)0xA5, "Seventh lowest byte 0xA5 → -91"},
-        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Seventh lowest byte 0xCD → 52"}
+        {0x1234567890ABCDEFULL, (int8_t)0x34, "Seventh lowest byte 0x34 → 52"}
     };
 
 
@@ -276,7 +276,7 @@ static void test_M_ByteInt7(void) {
         {0x7F00000000000000ULL, (int8_t)0x7F, "Eighth lowest byte 0x7F → 127"},
         {0xFF00000000000000ULL, (int8_t)0xFF, "Eighth lowest byte 0xFF → -1"},
         {0xA500000000000000ULL, (int8_t)0xA5, "Eighth lowest byte 0xA5 → -91"},
-        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Eighth lowest byte 0xCD → 18"}
+        {0x1234567890ABCDEFULL, (int8_t)0x12, "Eighth lowest byte 0x12 → 18"}
     };
 
 
