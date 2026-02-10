@@ -410,7 +410,7 @@ static void test_dwords_To_Uint64(void) {
 }
 
 static void test_M_DWordsTo8ByteValue(void) {
-    TEST_ASSERT_EQ(M_DWordsTo8ByteValue(HIGHER4BYTE, LOWER4BYTE), 0x1234567890ABCDEFULL, "Combines 2 double words to form uint64_t 0x1234567890ABCDEF using M_DoubleWordsTo8ByteValue");
+    TEST_ASSERT_EQ(M_DWordsTo8ByteValue(HIGHER4BYTE, LOWER4BYTE), 0x1234567890ABCDEFULL, "Combines 2 double words to form uint64_t 0x1234567890ABCDEF using M_DWordsTo8ByteValue");
 }
 
 void run_bit_manip_tests(void)
@@ -480,7 +480,7 @@ void run_bit_manip_tests(void)
     test_words_To_Uint64();
     test_M_WordsTo8ByteValue();
     test_dwords_To_Uint64();
-    test_M_DoubleWordsTo8ByteValue();
+    test_M_DWordsTo8ByteValue();
 }
 
 
