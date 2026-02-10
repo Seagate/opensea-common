@@ -123,36 +123,170 @@ static void test_M_Byte7(void) {
     TEST_ASSERT_EQ(M_Byte7(7), (uint8_t)(UINT8_MAX << (7 * BITSPERBYTE)), "Set 7th byte to all 1s");
 }
 
+typedef struct {
+    uint64_t input;
+    int8_t expected;
+    const char *description;
+} M_ByteIntN_TestCase;
+
 static void test_M_ByteInt0(void) {
-    TEST_ASSERT_EQ(M_ByteInt0(0), (int8_t)(UINT8_MAX << (0 * BITSPERBYTE)), "Set 0th byte to all 1s as int8_t");
+    M_ByteIntN_TestCase cases[] = {
+        {0x0000000000000000ULL, (int8_t)0x00, "Lowest byte 0x00 → 0"},
+        {0x0000000000000001ULL, (int8_t)0x01, "Lowest byte 0x01 → 1"},
+        {0x000000000000007FULL, (int8_t)0x7F, "Lowest byte 0x7F → 127"},
+        {0x00000000000000FFULL, (int8_t)0xFF, "Lowest byte 0xFF → -1"},
+        {0x00000000000000A5ULL, (int8_t)0xA5, "Lowest byte 0xA5 → -91"},
+        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Lowest byte 0xEF → -17"}
+    };
+
+    for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); i++) {
+        TEST_ASSERT_EQ(
+            M_ByteInt0(cases[i].input),
+            cases[i].expected,
+            cases[i].description
+        );
+    }
 }
 
+
 static void test_M_ByteInt1(void) {
-    TEST_ASSERT_EQ(M_ByteInt1(1), (int8_t)(UINT8_MAX << (1 * BITSPERBYTE)), "Set 1st byte to all 1s as int8_t");
+    M_ByteIntN_TestCase cases[] = {
+        {0x0000000000000000ULL, (int8_t)0x00, "Second lowest byte 0x00 → 0"},
+        {0x0000000000000100ULL, (int8_t)0x01, "Second lowest byte 0x01 → 1"},
+        {0x0000000000007F00ULL, (int8_t)0x7F, "Second lowest byte 0x7F → 127"},
+        {0x000000000000FF00ULL, (int8_t)0xFF, "Second lowest byte 0xFF → -1"},
+        {0x000000000000A500ULL, (int8_t)0xA5, "Second lowest byte 0xA5 → -91"},
+        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Second lowest byte 0xCD → -51"}
+    };
+
+
+    for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); i++) {
+        TEST_ASSERT_EQ(
+            M_ByteInt1(cases[i].input),
+            cases[i].expected,
+            cases[i].description
+        );
+    }
 }
 
 static void test_M_ByteInt2(void) {
-    TEST_ASSERT_EQ(M_ByteInt2(2), (int8_t)(UINT8_MAX << (2 * BITSPERBYTE)), "Set 2nd byte to all 1s as int8_t");
+    M_ByteIntN_TestCase cases[] = {
+        {0x0000000000000000ULL, (int8_t)0x00, "Second lowest byte 0x00 → 0"},
+        {0x0000000000000100ULL, (int8_t)0x01, "Second lowest byte 0x01 → 1"},
+        {0x0000000000007F00ULL, (int8_t)0x7F, "Second lowest byte 0x7F → 127"},
+        {0x000000000000FF00ULL, (int8_t)0xFF, "Second lowest byte 0xFF → -1"},
+        {0x000000000000A500ULL, (int8_t)0xA5, "Second lowest byte 0xA5 → -91"},
+        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Second lowest byte 0xCD → -85"}
+    };
+
+
+    for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); i++) {
+        TEST_ASSERT_EQ(
+            M_ByteInt2(cases[i].input),
+            cases[i].expected,
+            cases[i].description
+        );
+    }
 }
 
 static void test_M_ByteInt3(void) {
-    TEST_ASSERT_EQ(M_ByteInt3(3), (int8_t)(UINT8_MAX << (3 * BITSPERBYTE)), "Set 3rd byte to all 1s as int8_t");
+    M_ByteIntN_TestCase cases[] = {
+        {0x0000000000000000ULL, (int8_t)0x00, "Second lowest byte 0x00 → 0"},
+        {0x0000000000000100ULL, (int8_t)0x01, "Second lowest byte 0x01 → 1"},
+        {0x0000000000007F00ULL, (int8_t)0x7F, "Second lowest byte 0x7F → 127"},
+        {0x000000000000FF00ULL, (int8_t)0xFF, "Second lowest byte 0xFF → -1"},
+        {0x000000000000A500ULL, (int8_t)0xA5, "Second lowest byte 0xA5 → -91"},
+        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Second lowest byte 0xCD → -112"}
+    };
+
+
+    for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); i++) {
+        TEST_ASSERT_EQ(
+            M_ByteInt3(cases[i].input),
+            cases[i].expected,
+            cases[i].description
+        );
+    }
 }
 
 static void test_M_ByteInt4(void) {
-    TEST_ASSERT_EQ(M_ByteInt4(4), (int8_t)(UINT8_MAX << (4 * BITSPERBYTE)), "Set 4th byte to all 1s as int8_t");
+    M_ByteIntN_TestCase cases[] = {
+        {0x0000000000000000ULL, (int8_t)0x00, "Second lowest byte 0x00 → 0"},
+        {0x0000000000000100ULL, (int8_t)0x01, "Second lowest byte 0x01 → 1"},
+        {0x0000000000007F00ULL, (int8_t)0x7F, "Second lowest byte 0x7F → 127"},
+        {0x000000000000FF00ULL, (int8_t)0xFF, "Second lowest byte 0xFF → -1"},
+        {0x000000000000A500ULL, (int8_t)0xA5, "Second lowest byte 0xA5 → -91"},
+        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Second lowest byte 0xCD → 120"}
+    };
+
+
+    for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); i++) {
+        TEST_ASSERT_EQ(
+            M_ByteInt4(cases[i].input),
+            cases[i].expected,
+            cases[i].description
+        );
+    }
 }
 
 static void test_M_ByteInt5(void) {
-    TEST_ASSERT_EQ(M_ByteInt5(5), (int8_t)(UINT8_MAX << (5 * BITSPERBYTE)), "Set 5th byte to all 1s as int8_t");
+    M_ByteIntN_TestCase cases[] = {
+        {0x0000000000000000ULL, (int8_t)0x00, "Second lowest byte 0x00 → 0"},
+        {0x0000000000000100ULL, (int8_t)0x01, "Second lowest byte 0x01 → 1"},
+        {0x0000000000007F00ULL, (int8_t)0x7F, "Second lowest byte 0x7F → 127"},
+        {0x000000000000FF00ULL, (int8_t)0xFF, "Second lowest byte 0xFF → -1"},
+        {0x000000000000A500ULL, (int8_t)0xA5, "Second lowest byte 0xA5 → -91"},
+        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Second lowest byte 0xCD → 86"}
+    };
+
+
+    for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); i++) {
+        TEST_ASSERT_EQ(
+            M_ByteInt5(cases[i].input),
+            cases[i].expected,
+            cases[i].description
+        );
+    }
 }
 
 static void test_M_ByteInt6(void) {
-    TEST_ASSERT_EQ(M_ByteInt6(6), (int8_t)(UINT8_MAX << (6 * BITSPERBYTE)), "Set 6th byte to all 1s as int8_t");
+    M_ByteIntN_TestCase cases[] = {
+        {0x0000000000000000ULL, (int8_t)0x00, "Second lowest byte 0x00 → 0"},
+        {0x0000000000000100ULL, (int8_t)0x01, "Second lowest byte 0x01 → 1"},
+        {0x0000000000007F00ULL, (int8_t)0x7F, "Second lowest byte 0x7F → 127"},
+        {0x000000000000FF00ULL, (int8_t)0xFF, "Second lowest byte 0xFF → -1"},
+        {0x000000000000A500ULL, (int8_t)0xA5, "Second lowest byte 0xA5 → -91"},
+        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Second lowest byte 0xCD → 52"}
+    };
+
+
+    for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); i++) {
+        TEST_ASSERT_EQ(
+            M_ByteInt6(cases[i].input),
+            cases[i].expected,
+            cases[i].description
+        );
+    }
 }
 
 static void test_M_ByteInt7(void) {
-    TEST_ASSERT_EQ(M_ByteInt7(7), (int8_t)(UINT8_MAX << (7 * BITSPERBYTE)), "Set 7th byte to all 1s as int8_t");
+    M_ByteIntN_TestCase cases[] = {
+        {0x0000000000000000ULL, (int8_t)0x00, "Second lowest byte 0x00 → 0"},
+        {0x0000000000000100ULL, (int8_t)0x01, "Second lowest byte 0x01 → 1"},
+        {0x0000000000007F00ULL, (int8_t)0x7F, "Second lowest byte 0x7F → 127"},
+        {0x000000000000FF00ULL, (int8_t)0xFF, "Second lowest byte 0xFF → -1"},
+        {0x000000000000A500ULL, (int8_t)0xA5, "Second lowest byte 0xA5 → -91"},
+        {0x1234567890ABCDEFULL, (int8_t)0xEF, "Second lowest byte 0xCD → 18"}
+    };
+
+
+    for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); i++) {
+        TEST_ASSERT_EQ(
+            M_ByteInt7(cases[i].input),
+            cases[i].expected,
+            cases[i].description
+        );
+    }
 }
 
 static void test_M_Nibble0(void) {
