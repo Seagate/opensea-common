@@ -70,13 +70,13 @@ void run_bit_manip_tests(void)
     test_get_Word0_uint64();
     test_get_Word0_uint32();
     test_M_Word0();
-    /* test_get_Word1_uint64(); Not running these test currently
+    test_get_Word1_uint64();
     test_get_Word1_uint32();
     test_get_Word2_uint64();
     test_get_Word3_uint64();
     test_M_Word1();
     test_M_Word2();
-    test_M_Word3(); */
+    test_M_Word3(); 
 }
 
 
