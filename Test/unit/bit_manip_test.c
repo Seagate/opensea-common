@@ -353,6 +353,66 @@ static void test_M_Nibble15(void) {
     TEST_ASSERT_EQ(M_Nibble15((uint64_t)SERIAL_NUM), (uint8_t)((SERIAL_NUM >> 60) & 0xF), "Extracts the highest nibble and casts it to uint8_t");
 }
 
+static void test_nibbles_To_Byte(void) {
+    TEST_ASSERT_EQ(nibbles_To_Byte(NIBBLE1, NIBBLE0), 0xEF, "Combines 2 nibbles to form byte 0xEF");
+}
+
+static void test_M_NibblesTo1ByteValue(void) {
+    TEST_ASSERT_EQ(M_NibblesTo1ByteValue(NIBBLE1, NIBBLE0), 0xEF, "Combines 2 nibbles to form byte 0xEF using M_NibblesTo1ByteValue");
+}
+
+static void test_bytes_To_Uint16(void) {
+    TEST_ASSERT_EQ(bytes_To_Uint16(MSB, LSB), 0x12EF, "Combines 2 bytes to form uint16_t 0x12EF");
+}
+
+static void test_M_BytesTo2ByteValue(void) {
+    TEST_ASSERT_EQ(M_BytesTo2ByteValue(MSB, LSB), 0x12EF, "Combines 2 bytes to form uint16_t 0x12EF using M_BytesTo2ByteValue");
+}
+
+static void test_bytes_To_Uint32(void) {
+    TEST_ASSERT_EQ(bytes_To_Uint32(MSB, BYTE2, BYTE1, LSB), 0x12ABCDEF, "Combines 4 bytes to form uint32_t 0x12ABCDEF");
+}
+
+static void test_M_BytesTo4ByteValue(void) {
+    TEST_ASSERT_EQ(M_BytesTo4ByteValue(MSB, BYTE2, BYTE1, LSB), 0x12ABCDEF, "Combines 4 bytes to form uint32_t 0x12ABCDEF using M_BytesTo4ByteValue");
+}
+
+static void test_bytes_To_Uint64(void) {
+    TEST_ASSERT_EQ(bytes_To_Uint64(MSB, BYTE6, BYTE5, BYTE4, BYTE3, BYTE2, BYTE1, LSB),
+                   0x1234567890ABCDEFULL,
+                   "Combines 8 bytes to form uint64_t 0x1234567890ABCDEF");
+}
+
+static void test_M_BytesTo8ByteValue(void) {
+    TEST_ASSERT_EQ(M_BytesTo8ByteValue(MSB, BYTE6, BYTE5, BYTE4, BYTE3, BYTE2, BYTE1, LSB),
+                   0x1234567890ABCDEFULL,
+                   "Combines 8 bytes to form uint64_t 0x1234567890ABCDEF using M_BytesTo8ByteValue");
+}
+
+static void test_words_To_Uint32(void) {
+    TEST_ASSERT_EQ(words_To_Uint32(HIGHER2BYTE, LOWER2BYTE), 0x1234CDEF, "Combines 2 words to form uint32_t 0x1234CDEF");
+}
+
+static void test_M_WordsTo4ByteValue(void) {
+    TEST_ASSERT_EQ(M_WordsTo4ByteValue(HIGHER2BYTE, LOWER2BYTE), 0x1234CDEF, "Combines 2 words to form uint32_t 0x1234CDEF using M_WordsTo4ByteValue");
+}
+
+static void test_words_To_Uint64(void) {
+    TEST_ASSERT_EQ(words_To_Uint64(HIGHER2BYTE, LOWER2BYTE, HIGHER2BYTE, LOWER2BYTE), 0x1234CDEF1234CDEFULL, "Combines 4 words to form uint64_t 0x1234CDEF1234CDEF");
+}
+
+static void test_M_WordsTo8ByteValue(void) {
+    TEST_ASSERT_EQ(M_WordsTo8ByteValue(HIGHER2BYTE, LOWER2BYTE, HIGHER2BYTE, LOWER2BYTE), 0x1234CDEF1234CDEFULL, "Combines 4 words to form uint64_t 0x1234CDEF1234CDEF using M_WordsTo8ByteValue");
+}
+
+static void test_dwords_To_Uint64(void) {
+    TEST_ASSERT_EQ(dwords_To_Uint64(HIGHER4BYTE, LOWER4BYTE), 0x1234567890ABCDEFULL, "Combines 2 double words to form uint64_t 0x1234567890ABCDEF");
+}
+
+static void test_M_DoubleWordsTo8ByteValue(void) {
+    TEST_ASSERT_EQ(M_DoubleWordsTo8ByteValue(HIGHER4BYTE, LOWER4BYTE), 0x1234567890ABCDEFULL, "Combines 2 double words to form uint64_t 0x1234567890ABCDEF using M_DoubleWordsTo8ByteValue");
+}
+
 void run_bit_manip_tests(void)
 {
     test_get_DWord0();
@@ -407,6 +467,20 @@ void run_bit_manip_tests(void)
     test_M_Nibble13();
     test_M_Nibble14();
     test_M_Nibble15();
+    test_nibbles_To_Byte();
+    test_M_NibblesTo1ByteValue();
+    test_bytes_To_Uint16();
+    test_M_BytesTo2ByteValue();
+    test_bytes_To_Uint32();
+    test_M_BytesTo4ByteValue();
+    test_bytes_To_Uint64();
+    test_M_BytesTo8ByteValue();
+    test_words_To_Uint32();
+    test_M_WordsTo4ByteValue();
+    test_words_To_Uint64();
+    test_M_WordsTo8ByteValue();
+    test_dwords_To_Uint64();
+    test_M_DoubleWordsTo8ByteValue();
 }
 
 
