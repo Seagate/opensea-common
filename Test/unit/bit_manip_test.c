@@ -467,7 +467,7 @@ static void test_get_bit_range_uint64(void) {
 }
 
 static void test_get_8bit_range_uint64(void) {
-    TEST_ASSERT_EQ(get_8bit_range_uint64(0xFFF00000FFF00000ULL, 31, 24), (uint8_t)(0xFF), "Extract bits from 31 to 24 from 0xFFF00000FFF00000");
+    TEST_ASSERT_EQ(get_8bit_range_uint64(0xFFF00000FFF00000ULL, 31, 24), (uint8_t)(0xFF), "Extract bits 31 to 24 from 0xFFF00000FFF00000");
 }
 
 static void test_get_16bit_range_uint64(void) {
@@ -516,6 +516,22 @@ static void test_get_16bit_range_int64(void) {
 
 static void test_get_32bit_range_int64(void) {
     TEST_ASSERT_EQ(get_32bit_range_int64((int64_t)0xFFF00000FFF00000ULL, 63, 32), (int32_t)(0xFFF00000), "Extract bits 63 to 32 from int64_t 0xFFF00000FFF00000");
+}
+
+static void test_M_GETBITRANGE(void) {
+    TEST_ASSERT_EQ(M_GETBITRANGE(0b11110000, 7, 4), (uint8_t)(0b1111), "Extract bits 7 to 4 from 0b11110000 using M_GETBITRANGE");
+    TEST_ASSERT_EQ(M_GETBITRANGE(0b1111000011110000, 15, 8), (uint8_t)(0b11110000), "Extract bits 15 to 8 from 0b1111000011110000 using M_GETBITRANGE");
+    TEST_ASSERT_EQ(M_GETBITRANGE(0b1111000011110000, 15, 0), (uint16_t)(0b1111000011110000), "Extract bits 15 to 0 from 0b11110000111100001111000011110000 using M_GETBITRANGE");
+    TEST_ASSERT_EQ(M_GETBITRANGE(0b11110000111100001111000011110000, 31, 0), (uint32_t)(0b11110000111100001111000011110000), "Extract bits 31 to 0 from 0b1111000011110000111100001111000 using M_GETBITRANGE");
+    TEST_ASSERT_EQ(M_GETBITRANGE(0xFFF00000FFF00000ULL, 63, 0), (uint64_t)(0xFFF00000FFF00000ULL), "Extract bits 63 to 0 from 0xFFF00000FFF00000 using M_GETBITRANGE");
+}
+
+static void test_M_IGETBITRANGE(void) {
+    TEST_ASSERT_EQ(M_GETBITRANGE(0b11110000, 7, 4), (int8_t)(0b1111), "Extract bits 7 to 4 from 0b11110000 using M_GETBITRANGE");
+    TEST_ASSERT_EQ(M_GETBITRANGE(0b1111000011110000, 15, 8), (int8_t)(0b11110000), "Extract bits 15 to 8 from 0b1111000011110000 using M_GETBITRANGE");
+    TEST_ASSERT_EQ(M_GETBITRANGE(0b1111000011110000, 15, 0), (int16_t)(0b1111000011110000), "Extract bits 15 to 0 from 0b11110000111100001111000011110000 using M_GETBITRANGE");
+    TEST_ASSERT_EQ(M_GETBITRANGE(0b11110000111100001111000011110000, 31, 0), (int32_t)(0b11110000111100001111000011110000), "Extract bits 31 to 0 from 0b1111000011110000111100001111000 using M_GETBITRANGE");
+    TEST_ASSERT_EQ(M_GETBITRANGE(0xFFF00000FFF00000ULL, 63, 0), (int64_t)(0xFFF00000FFF00000ULL), "Extract bits 63 to 0 from 0xFFF00000FFF00000 using M_GETBITRANGE");
 }
 
 void run_bit_manip_tests(void)
@@ -609,6 +625,8 @@ void run_bit_manip_tests(void)
     test_get_8bit_range_int64();
     test_get_16bit_range_int64();
     test_get_32bit_range_int64();
+    test_M_GETBITRANGE();
+    test_M_IGETBITRANGE();
 }
 
 
