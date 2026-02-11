@@ -23,12 +23,12 @@ void print_test_summary(void);
 #define TEST_ASSERT_EQ(a, b, msg) TEST_ASSERT((a) == (b), (msg))
 
 // epsilon is the acceptable difference between a and b (small error margin)
-// #define TEST_ASSERT_FLOAT_EQ(a, b, epsilon, msg)      \
-// do {                                                  \
-//     float _va = (a);                                  \
-//     float _vb = (b);                                  \
-//     TEST_ASSERT(fabsf(_va - _vb) <= (epsilon), (msg));\
-// } while(0)
+#define TEST_ASSERT_FLOAT_EQ(a, b, epsilon, msg)      \
+do {                                                  \
+    float _va = (a);                                  \
+    float _vb = (b);                                  \
+    TEST_ASSERT(fabsf(_va - _vb) <= (epsilon), (msg));\
+} while(0)
 
 #define TEST_ASSERT_STR_EQ(a, b, msg) TEST_ASSERT(strcmp((a), (b)) == 0, (msg))
 

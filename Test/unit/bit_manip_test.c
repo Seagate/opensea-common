@@ -440,6 +440,7 @@ static void test_is_generic_int_valid(void) {
 
 void run_bit_manip_tests(void)
 {
+    printf("%.20f\n", ROUNDF(2.999f,100));
     test_get_DWord0();
     test_get_DWord1();
     test_M_DoubleWordInt0();
