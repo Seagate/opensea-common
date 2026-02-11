@@ -447,7 +447,7 @@ static void test_get_bit_range_uint16(void) {
 }
 
 static void test_get_8bit_range_uint16(void) {
-    TEST_ASSERT_EQ(get_8bit_range_uint16(0b1111000011110000, 7, 0), (uint16_t)(0b11110000), "Extract bits 7 to 0 from 0b1111000011110000");
+    TEST_ASSERT_EQ(get_8bit_range_uint16(0b1111000011110000, 7, 0), (uint8_t)(0b11110000), "Extract bits 7 to 0 from 0b1111000011110000");
 }
 
 static void test_get_bit_range_uint32(void) {
@@ -455,11 +455,11 @@ static void test_get_bit_range_uint32(void) {
 }
 
 static void test_get_8bit_range_uint32(void) {
-    TEST_ASSERT_EQ(get_8bit_range_uint32(0b11110000111100001111000011110000, 7, 0), (uint32_t)(0b11110000), "Extract bits 7 to 0 from 0b11110000111100001111000011110000");
+    TEST_ASSERT_EQ(get_8bit_range_uint32(0b11110000111100001111000011110000, 7, 0), (uint8_t)(0b11110000), "Extract bits 7 to 0 from 0b11110000111100001111000011110000");
 }
 
 static void test_get_16bit_range_uint32(void) {
-    TEST_ASSERT_EQ(get_16bit_range_uint32(0b11110000111100001111000011110000, 15, 0), (uint32_t)(0b1111000011110000), "Extract bits 15 to 0 from 0b11110000111100001111000011110000");
+    TEST_ASSERT_EQ(get_16bit_range_uint32(0b11110000111100001111000011110000, 15, 0), (uint16_t)(0b1111000011110000), "Extract bits 15 to 0 from 0b11110000111100001111000011110000");
 }
 
 static void test_get_bit_range_uint64(void) {
@@ -467,15 +467,15 @@ static void test_get_bit_range_uint64(void) {
 }
 
 static void test_get_8bit_range_uint64(void) {
-    TEST_ASSERT_EQ(get_8bit_range_uint64(0xFFF00000FFF00000ULL, 31, 24), (uint64_t)(0xFF), "Extract bits from 31 to 24 from 0xFFF00000FFF00000");
+    TEST_ASSERT_EQ(get_8bit_range_uint64(0xFFF00000FFF00000ULL, 31, 24), (uint8_t)(0xFF), "Extract bits from 31 to 24 from 0xFFF00000FFF00000");
 }
 
 static void test_get_16bit_range_uint64(void) {
-    TEST_ASSERT_EQ(get_16bit_range_uint64(0xFFF00000FFF00000ULL, 39, 24), (uint64_t)(0x00FF), "Extract bits 39 to 24 from 0xFFF00000FFF00000");
+    TEST_ASSERT_EQ(get_16bit_range_uint64(0xFFF00000FFF00000ULL, 39, 24), (uint16_t)(0x00FF), "Extract bits 39 to 24 from 0xFFF00000FFF00000");
 }
 
 static void test_get_32bit_range_uint64(void) {
-    TEST_ASSERT_EQ(get_32bit_range_uint64(0xFFF00000FFF00000ULL, 63, 32), (uint64_t)(0xFFF00000), "Extract bits 63 to 32 from 0xFFF00000FFF00000");
+    TEST_ASSERT_EQ(get_32bit_range_uint64(0xFFF00000FFF00000ULL, 63, 32), (uint32_t)(0xFFF00000), "Extract bits 63 to 32 from 0xFFF00000FFF00000");
 }
 
 static void test_get_bit_range_int8(void) {
@@ -487,7 +487,7 @@ static void test_get_bit_range_int16(void) {
 }
 
 static void test_get_8bit_range_int16(void) {
-    TEST_ASSERT_EQ(get_8bit_range_int16((int16_t)0b1111000011110000, 7, 0), (int16_t)(0b11110000), "Extract bits 7 to 0 from int16_t 0b1111000011110000");
+    TEST_ASSERT_EQ(get_8bit_range_int16((int16_t)0b1111000011110000, 7, 0), (int8_t)(0b11110000), "Extract bits 7 to 0 from int16_t 0b1111000011110000");
 }
 
 static void test_get_bit_range_int32(void) {
@@ -495,11 +495,11 @@ static void test_get_bit_range_int32(void) {
 }
 
 static void test_get_8bit_range_int32(void) {
-    TEST_ASSERT_EQ(get_8bit_range_int32((int32_t)0b11110000111100001111000011110000, 15, 8), (int32_t)(0b11110000), "Extract bits 15 to 8 from int32_t 0b11110000111100001111000011110000");
+    TEST_ASSERT_EQ(get_8bit_range_int32((int32_t)0b11110000111100001111000011110000, 15, 8), (int8_t)(0b11110000), "Extract bits 15 to 8 from int32_t 0b11110000111100001111000011110000");
 }
 
 static void test_get_16bit_range_int32(void) {
-    TEST_ASSERT_EQ(get_16bit_range_int32((int32_t)0b11110000111100001111000011110000, 31, 16), (int32_t)(0b1111000011110000), "Extract bits 31 to 16 from int32_t 0b11110000111100001111000011110000");
+    TEST_ASSERT_EQ(get_16bit_range_int32((int32_t)0b11110000111100001111000011110000, 31, 16), (int16_t)(0b1111000011110000), "Extract bits 31 to 16 from int32_t 0b11110000111100001111000011110000");
 }
 
 static void test_get_bit_range_int64(void) {
@@ -507,15 +507,15 @@ static void test_get_bit_range_int64(void) {
 }
 
 static void test_get_8bit_range_int64(void) {
-    TEST_ASSERT_EQ(get_8bit_range_int64((int64_t)0xFFF00000FFF00000ULL, 63, 56), (int64_t)(0xFF), "Extract bits 63 to 56 from int64_t 0xFFF00000FFF00000");
+    TEST_ASSERT_EQ(get_8bit_range_int64((int64_t)0xFFF00000FFF00000ULL, 63, 56), (int8_t)(0xFF), "Extract bits 63 to 56 from int64_t 0xFFF00000FFF00000");
 }
 
 static void test_get_16bit_range_int64(void) {
-    TEST_ASSERT_EQ(get_16bit_range_int64((int64_t)0xFFF00000FFF00000ULL, 63, 48), (int64_t)(0xFFF0), "Extract bits 63 to 48 from int64_t 0xFFF00000FFF00000");
+    TEST_ASSERT_EQ(get_16bit_range_int64((int64_t)0xFFF00000FFF00000ULL, 63, 48), (int16_t)(0xFFF0), "Extract bits 63 to 48 from int64_t 0xFFF00000FFF00000");
 }
 
 static void test_get_32bit_range_int64(void) {
-    TEST_ASSERT_EQ(get_32bit_range_int64((int64_t)0xFFF00000FFF00000ULL, 63, 32), (int64_t)(0xFFF00000), "Extract bits 63 to 32 from int64_t 0xFFF00000FFF00000");
+    TEST_ASSERT_EQ(get_32bit_range_int64((int64_t)0xFFF00000FFF00000ULL, 63, 32), (int32_t)(0xFFF00000), "Extract bits 63 to 32 from int64_t 0xFFF00000FFF00000");
 }
 
 void run_bit_manip_tests(void)
