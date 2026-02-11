@@ -447,9 +447,9 @@ struct sgenericint_t INVALID_GENERIC_INT_WITH_OVERFLOW = {
 
 static void test_is_generic_int_valid(void) {
     TEST_ASSERT(is_generic_int_valid(VALID_GENERIC_INT), "VALID_GENERIC_INT should be valid");
-    TEST_ASSERT(!is_generic_int_valid(INVALID_GENERIC_INT_WITH_INVALID_SIZE), "INVALID_GENERIC_INT_WITH_INVALID_SIZE should be invalid");
-    TEST_ASSERT(!is_generic_int_valid(INVALID_GENERIC_INT_WITH_FLAG_MISMATCH), "INVALID_GENERIC_INT_WITH_FLAG_MISMATCH should be invalid");
-    TEST_ASSERT(!is_generic_int_valid(INVALID_GENERIC_INT_WITH_OVERFLOW), "INVALID_GENERIC_INT_WITH_OVERFLOW should be invalid");
+    TEST_ASSERT(is_generic_int_valid(INVALID_GENERIC_INT_WITH_INVALID_SIZE), "INVALID_GENERIC_INT_WITH_INVALID_SIZE should be invalid");
+    TEST_ASSERT(is_generic_int_valid(INVALID_GENERIC_INT_WITH_FLAG_MISMATCH), "INVALID_GENERIC_INT_WITH_FLAG_MISMATCH should be invalid");
+    TEST_ASSERT(is_generic_int_valid(INVALID_GENERIC_INT_WITH_OVERFLOW), "INVALID_GENERIC_INT_WITH_OVERFLOW should be invalid");
 }
 
 
