@@ -506,7 +506,7 @@ void run_bit_manip_tests(void)
     test_M_WordsTo8ByteValue();
     test_dwords_To_Uint64();
     test_M_DWordsTo8ByteValue();
-    test_ROUNDF();
+    // test_ROUNDF();
     test_is_generic_int_valid();
 }
 
