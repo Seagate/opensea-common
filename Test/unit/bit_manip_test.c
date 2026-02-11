@@ -504,6 +504,7 @@ static void test_get_16bit_range_int32(void) {
 
 static void test_get_bit_range_int64(void) {
     TEST_ASSERT_EQ(get_bit_range_int64((int64_t)0xFFF00000FFF00000ULL, 63, 32), (int64_t)(0xFFF00000), "Extract bits 63 to 32 from int64_t 0xFFF00000FFF00000");
+    TEST_ASSERT_EQ(get_bit_range_int64((int64_t)0xFFF00000FFF00000ULL, 63, 0), (int64_t)(0xFFF00000FFF00000), "Extract bits 63 to 0 from int64_t 0xFFF00000FFF00000"); // Check full range extraction
 }
 
 static void test_get_8bit_range_int64(void) {
