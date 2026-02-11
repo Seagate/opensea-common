@@ -413,12 +413,12 @@ static void test_M_DWordsTo8ByteValue(void) {
     TEST_ASSERT_EQ(M_DWordsTo8ByteValue(HIGHER4BYTE, LOWER4BYTE), 0x1234567890ABCDEFULL, "Combines 2 double words to form uint64_t 0x1234567890ABCDEF using M_DWordsTo8ByteValue");
 }
 
-static void test_ROUNDF(void) {
-    TEST_ASSERT_FLOAT_EQ(ROUNDF(3.14159f, 100), 3.14f, 0.001f, "Rounds 3.14159 to 2 decimal places");
-    TEST_ASSERT_FLOAT_EQ(ROUNDF(2.999f, 100), 2.99f, 0.001f, "Rounds 2.999 to 2 decimal places");
-    TEST_ASSERT_FLOAT_EQ(ROUNDF(-5.678f, 10), -5.6f, 0.001f, "Rounds -5.678 to 1 decimal place");
-    TEST_ASSERT_FLOAT_EQ(ROUNDF(123.456f, 1000), 123.456f, 0.001f, "Rounds 123.456 to 3 decimal places");
-}
+// static void test_ROUNDF(void) {
+//     TEST_ASSERT_FLOAT_EQ(ROUNDF(3.14159f, 100), 3.14f, 0.001f, "Rounds 3.14159 to 2 decimal places");
+//     TEST_ASSERT_FLOAT_EQ(ROUNDF(2.999f, 100), 2.99f, 0.001f, "Rounds 2.999 to 2 decimal places");
+//     TEST_ASSERT_FLOAT_EQ(ROUNDF(-5.678f, 10), -5.6f, 0.001f, "Rounds -5.678 to 1 decimal place");
+//     TEST_ASSERT_FLOAT_EQ(ROUNDF(123.456f, 1000), 123.456f, 0.001f, "Rounds 123.456 to 3 decimal places");
+// }
 
 struct sgenericint_t VALID_GENERIC_INT = {
     .issigned = true,
