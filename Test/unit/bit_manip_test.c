@@ -821,6 +821,16 @@ static void test_BIT63(void) {
     TEST_ASSERT_EQ(BIT63, (uint64_t)1 << 63, "Set 63rd bit of uint64_t");
 }
 
+static void test_M_SET_BIT(void) {
+    uint64_t value = 0x00;
+    TEST_ASSERT_EQ(M_SET_BIT(value, 3), 0x80, "Set 3rd bit of 0b00000000 using M_SET_BIT");
+}
+
+static void test_M_CLEAR_BIT(void) {
+    uint64_t value = 0xFF;
+    TEST_ASSERT_EQ(M_CLEAR_BIT(value, 3), 0x7F, "Clear 3rd bit of 0b11111111 using M_CLEAR_BIT");
+}
+
 void run_bit_manip_tests(void)
 {
     printf("%.20f\n", ROUNDF(2.999f,100));
@@ -983,6 +993,8 @@ void run_bit_manip_tests(void)
     test_BIT61();
     test_BIT62();
     test_BIT63();
+    test_M_SET_BIT();
+    test_M_CLEAR_BIT();
 }
 
 
