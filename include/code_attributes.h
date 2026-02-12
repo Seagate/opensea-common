@@ -789,6 +789,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #        define DLL_IMPORT __declspec(dllimport)
 #    elif DETECT_GNU_ATTR(visibility) || (IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0))
 #        define DLL_EXPORT __attribute__((visibility("default")))
+#        define DLL_IMPORT __attribute__((visibility("default")))
 #    endif
 #endif
 
