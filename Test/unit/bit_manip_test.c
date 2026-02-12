@@ -828,7 +828,7 @@ static void test_M_SET_BIT(void) {
 }
 
 static void test_M_CLEAR_BIT(void) {
-    uint64_t value = 0xFF;
+    uint64_t value = 0xFFFFFFFFFFFFFFFF;
     TEST_ASSERT_EQ(M_CLEAR_BIT(value, 63), 0x7FFFFFFFFFFFFFFFULL, "Clear MSB of 0xFF using M_CLEAR_BIT");
 }
 
