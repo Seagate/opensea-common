@@ -823,13 +823,144 @@ static void test_BIT63(void) {
 
 static void test_M_SET_BIT(void) {
     uint64_t value = HEX_ZERO;
-    TEST_ASSERT_EQ(M_SET_BIT(value, 63), 0x8000000000000000ULL
-, "Set MSB of 0x00 using M_SET_BIT");
+    TEST_ASSERT_EQ(M_SET_BIT(value, 63), 0x8000000000000000ULL, "Set MSB of 0x00 using M_SET_BIT");
 }
 
 static void test_M_CLEAR_BIT(void) {
     uint64_t value = HEX_FULL;
     TEST_ASSERT_EQ(M_CLEAR_BIT(value, 63), 0x7FFFFFFFFFFFFFFFULL, "Clear MSB of 0xFF using M_CLEAR_BIT");
+}
+
+static void test_set_uint8_bit(void) {
+    TEST_ASSERT_EQ(set_uint8_bit(UINT8_MIN_VAL, 0), (uint8_t)(0x01), "Set 0th bit of 0");
+    TEST_ASSERT_EQ(set_uint8_bit(UINT8_MIN_VAL, 1), (uint8_t)(0x02), "Set 1st bit of 0");
+    TEST_ASSERT_EQ(set_uint8_bit(UINT8_MIN_VAL, 2), (uint8_t)(0x04), "Set 2nd bit of 0");
+    TEST_ASSERT_EQ(set_uint8_bit(UINT8_MIN_VAL, 3), (uint8_t)(0x08), "Set 3rd bit of 0");
+    TEST_ASSERT_EQ(set_uint8_bit(UINT8_MIN_VAL, 4), (uint8_t)(0x10), "Set 4th bit of 0");
+    TEST_ASSERT_EQ(set_uint8_bit(UINT8_MIN_VAL, 5), (uint8_t)(0x20), "Set 5th bit of 0");
+    TEST_ASSERT_EQ(set_uint8_bit(UINT8_MIN_VAL, 6), (uint8_t)(0x40), "Set 6th bit of 0");
+    TEST_ASSERT_EQ(set_uint8_bit(UINT8_MIN_VAL, 7), (uint8_t)(0x80), "Set 7th bit of 0");
+}
+
+static void test_set_uint16_bit(void) {
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 0), (uint16_t)(0x01), "Set 0th bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 1), (uint16_t)(0x02), "Set 1st bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 2), (uint16_t)(0x04), "Set 2nd bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 3), (uint16_t)(0x08), "Set 3rd bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 4), (uint16_t)(0x10), "Set 4th bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 5), (uint16_t)(0x20), "Set 5th bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 6), (uint16_t)(0x40), "Set 6th bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 7), (uint16_t)(0x80), "Set 7th bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 8), (uint16_t)(0x0100), "Set 8th bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 9), (uint16_t)(0x0200), "Set 9th bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 10), (uint16_t)(0x0400), "Set 10th bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 11), (uint16_t)(0x0800), "Set 11th bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 12), (uint16_t)(0x1000), "Set 12th bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 13), (uint16_t)(0x2000), "Set 13th bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 14), (uint16_t)(0x4000), "Set 14th bit of 0");
+    TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, 15), (uint16_t)(0x8000), "Set 15th bit of 0");
+}
+
+static void test_set_uint32_bit(void) {
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 0), (uint32_t)(0x01), "Set 0th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 1), (uint32_t)(0x02), "Set 1st bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 2), (uint32_t)(0x04), "Set 2nd bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 3), (uint32_t)(0x08), "Set 3rd bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 4), (uint32_t)(0x10), "Set 4th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 5), (uint32_t)(0x20), "Set 5th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 6), (uint32_t)(0x40), "Set 6th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 7), (uint32_t)(0x80), "Set 7th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 8), (uint32_t)(0x0100), "Set 8th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 9), (uint32_t)(0x0200), "Set 9th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 10), (uint32_t)(0x0400), "Set 10th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 11), (uint32_t)(0x0800), "Set 11th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 12), (uint32_t)(0x1000), "Set 12th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 13), (uint32_t)(0x2000), "Set 13th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 14), (uint32_t)(0x4000), "Set 14th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 15), (uint32_t)(0x8000), "Set 15th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 16), (uint32_t)(0x00010000), "Set 16th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 17), (uint32_t)(0x00020000), "Set 17th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 18), (uint32_t)(0x00040000), "Set 18th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 19), (uint32_t)(0x00080000), "Set 19th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 20), (uint32_t)(0x00100000), "Set 20th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 21), (uint32_t)(0x00200000), "Set 21st bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 22), (uint32_t)(0x00400000), "Set 22nd bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 23), (uint32_t)(0x00800000), "Set 23rd bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 24), (uint32_t)(0x01000000), "Set 24th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 25), (uint32_t)(0x02000000), "Set 25th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 26), (uint32_t)(0x04000000), "Set 26th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 27), (uint32_t)(0x08000000), "Set 27th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 28), (uint32_t)(0x10000000), "Set 28th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 29), (uint32_t)(0x20000000), "Set 29th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 30), (uint32_t)(0x40000000), "Set 30th bit of 0");
+    TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, 31), (uint32_t)(0x80000000), "Set 31st bit of 0");
+}
+
+static void test_set_uint64_bit(void) {
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 0), (uint64_t)(0x01), "Set 0th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 1), (uint64_t)(0x02), "Set 1st bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 2), (uint64_t)(0x04), "Set 2nd bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 3), (uint64_t)(0x08), "Set 3rd bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 4), (uint64_t)(0x10), "Set 4th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 5), (uint64_t)(0x20), "Set 5th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 6), (uint64_t)(0x40), "Set 6th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 7), (uint64_t)(0x80), "Set 7th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 8), (uint64_t)(0x0100), "Set 8th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 9), (uint64_t)(0x0200), "Set 9th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 10), (uint64_t)(0x0400), "Set 10th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 11), (uint64_t)(0x0800), "Set 11th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 12), (uint64_t)(0x1000), "Set 12th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 13), (uint64_t)(0x2000), "Set 13th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 14), (uint64_t)(0x4000), "Set 14th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 15), (uint64_t)(0x8000), "Set 15th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 16), (uint64_t)(0x00010000), "Set 16th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 17), (uint64_t)(0x00020000), "Set 17th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 18), (uint64_t)(0x00040000), "Set 18th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 19), (uint64_t)(0x00080000), "Set 19th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 20), (uint64_t)(0x00100000), "Set 20th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 21), (uint64_t)(0x00200000), "Set 21st bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 22), (uint64_t)(0x00400000), "Set 22nd bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 23), (uint64_t)(0x00800000), "Set 23rd bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 24), (uint64_t)(0x01000000), "Set 24th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 25), (uint64_t)(0x02000000), "Set 25th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 26), (uint64_t)(0x04000000), "Set 26th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 27), (uint64_t)(0x08000000), "Set 27th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 28), (uint64_t)(0x10000000), "Set 28th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 29), (uint64_t)(0x20000000), "Set 29th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 30), (uint64_t)(0x40000000), "Set 30th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 31), (uint64_t)(0x80000000), "Set 31st bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 32), (uint64_t)(0x0000000100000000), "Set 32nd bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 33), (uint64_t)(0x0000000200000000), "Set 33rd bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 34), (uint64_t)(0x0000000400000000), "Set 34th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 35), (uint64_t)(0x0000000800000000), "Set 35th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 36), (uint64_t)(0x0000001000000000), "Set 36th bit of 1");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 37), (uint64_t)(0x0000002000000000), "Set 37th bit of 1");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 38), (uint64_t)(0x0000004000000000), "Set 38th bit of 1");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 39), (uint64_t)(0x0000008000000000), "Set 39th bit of 1");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 40), (uint64_t)(0x0000010000000000), "Set 40th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 41), (uint64_t)(0x0000020000000000), "Set 41st bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 42), (uint64_t)(0x0000040000000000), "Set 42nd bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 43), (uint64_t)(0x0000080000000000), "Set 43rd bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 44), (uint64_t)(0x0000100000000000), "Set 44th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 45), (uint64_t)(0x0000200000000000), "Set 45th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 46), (uint64_t)(0x0000400000000000), "Set 46th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 47), (uint64_t)(0x0000800000000000), "Set 47th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 48), (uint64_t)(0x0001000000000000), "Set 48th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 49), (uint64_t)(0x0002000000000000), "Set 49th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 50), (uint64_t)(0x0004000000000000), "Set 50th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 51), (uint64_t)(0x0008000000000000), "Set 51st bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 52), (uint64_t)(0x0010000000000000), "Set 52nd bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 53), (uint64_t)(0x0020000000000000), "Set 53rd bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 54), (uint64_t)(0x0040000000000000), "Set 54th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 55), (uint64_t)(0x0080000000000000), "Set 55th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 56), (uint64_t)(0x0100000000000000), "Set 56th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 57), (uint64_t)(0x0200000000000000), "Set 57th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 58), (uint64_t)(0x0400000000000000), "Set 58th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 59), (uint64_t)(0x0800000000000000), "Set 59th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 60), (uint64_t)(0x1000000000000000), "Set 60th bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 61), (uint64_t)(0x2000000000000000), "Set 61st bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 62), (uint64_t)(0x4000000000000000), "Set 62nd bit of 0");
+    TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, 63), (uint64_t)(0x8000000000000000), "Set 63rd bit of 0");
 }
 
 void run_bit_manip_tests(void)
@@ -996,6 +1127,10 @@ void run_bit_manip_tests(void)
     test_BIT63();
     test_M_SET_BIT();
     test_M_CLEAR_BIT();
+    test_set_uint8_bit();
+    test_set_uint16_bit();
+    test_set_uint32_bit();
+    test_set_uint64_bit();
 }
 
 
