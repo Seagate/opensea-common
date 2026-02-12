@@ -823,12 +823,13 @@ static void test_BIT63(void) {
 
 static void test_M_SET_BIT(void) {
     uint64_t value = 0x00;
-    TEST_ASSERT_EQ(M_SET_BIT(value, 63), 0x80, "Set 3rd bit of 0x00 using M_SET_BIT");
+    TEST_ASSERT_EQ(M_SET_BIT(value, 63), 0x8000000000000000ULL
+, "Set MSB of 0x00 using M_SET_BIT");
 }
 
 static void test_M_CLEAR_BIT(void) {
     uint64_t value = 0xFF;
-    TEST_ASSERT_EQ(M_CLEAR_BIT(value, 63), 0x7F, "Clear 3rd bit of 0xFF using M_CLEAR_BIT");
+    TEST_ASSERT_EQ(M_CLEAR_BIT(value, 63), 0x7FFFFFFFFFFFFFFFULL, "Clear MSB of 0xFF using M_CLEAR_BIT");
 }
 
 void run_bit_manip_tests(void)
