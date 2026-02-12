@@ -439,7 +439,7 @@ static void test_is_generic_int_valid(void) {
 }
 
 static void test_get_bit_range_uint8(void) {
-    TEST_ASSERT_EQ(get_bit_range_uint8(0b11110000, 7, 4), (uint8_t)(0b1111), "Extract bits 7 to 4 from 0b11110000");
+    TEST_ASSERT_EQ(get_bit_range_uint8(HEX_RANDOM, 7, 4), (uint8_t)(0x0), "Extract bits 7 to 4 from 0b11110000");
 }
 
 static void test_get_bit_range_uint16(void) {
@@ -822,13 +822,13 @@ static void test_BIT63(void) {
 }
 
 static void test_M_SET_BIT(void) {
-    uint64_t value = 0x00;
+    uint64_t value = HEX_ZERO;
     TEST_ASSERT_EQ(M_SET_BIT(value, 63), 0x8000000000000000ULL
 , "Set MSB of 0x00 using M_SET_BIT");
 }
 
 static void test_M_CLEAR_BIT(void) {
-    uint64_t value = 0xFFFFFFFFFFFFFFFF;
+    uint64_t value = HEX_FULL;
     TEST_ASSERT_EQ(M_CLEAR_BIT(value, 63), 0x7FFFFFFFFFFFFFFFULL, "Clear MSB of 0xFF using M_CLEAR_BIT");
 }
 
