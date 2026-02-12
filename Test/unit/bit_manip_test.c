@@ -1060,7 +1060,7 @@ static void test_clear_uint64_bit(void) {
     TEST_ASSERT_EQ(clear_uint64_bit(UINT64_MAX_VAL, 28), (uint64_t)(~0x10000000), "Clear 28th bit of 0xFFFFFFFFFFFFFFFF");
     TEST_ASSERT_EQ(clear_uint64_bit(UINT64_MAX_VAL, 29), (uint64_t)(~0x20000000), "Clear 29th bit of 0xFFFFFFFFFFFFFFFF");
     TEST_ASSERT_EQ(clear_uint64_bit(UINT64_MAX_VAL, 30), (uint64_t)(~0x40000000), "Clear 30th bit of 0xFFFFFFFFFFFFFFFF");
-    TEST_ASSERT_EQ(clear_uint64_bit(UINT64_MAX_VAL, 31), (uint64_t)(~0x80000000), "Clear 31st bit of 0xFFFFFFFFFFFFFFFF");
+    TEST_ASSERT_EQ(clear_uint64_bit(UINT64_MAX_VAL, 31), (uint64_t)(~0x80000000ULL), "Clear 31st bit of 0xFFFFFFFFFFFFFFFF");
     TEST_ASSERT_EQ(clear_uint64_bit(UINT64_MAX_VAL, 32), (uint64_t)(~0x0000000100000000), "Clear 32nd bit of 0xFFFFFFFFFFFFFFFF");
     TEST_ASSERT_EQ(clear_uint64_bit(UINT64_MAX_VAL, 33), (uint64_t)(~0x0000000200000000), "Clear 33rd bit of 0xFFFFFFFFFFFFFFFF");
     TEST_ASSERT_EQ(clear_uint64_bit(UINT64_MAX_VAL, 34), (uint64_t)(~0x0000000400000000), "Clear 34th bit of 0xFFFFFFFFFFFFFFFF");
