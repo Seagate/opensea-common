@@ -1375,10 +1375,10 @@ void run_bit_manip_tests(void)
     test_M_CLEAR_BIT16();
     test_M_CLEAR_BIT32();
     test_M_CLEAR_BIT64();
-    // test_M_SET_BIT8();
-    // test_M_SET_BIT16();
-    // test_M_SET_BIT32();
-    // test_M_SET_BIT64();
+    test_M_SET_BIT8();
+    test_M_SET_BIT16();
+    test_M_SET_BIT32();
+    test_M_SET_BIT64();
 }
 
 
