@@ -536,33 +536,63 @@ static void test_M_IGETBITRANGE(void) {
 }
 
 static void test_M_BitN(void) {
-    TEST_ASSERT_EQ(M_BitN(0), (uint64_t)1 << 0, "Set 0th bit of uint64_t");
-    TEST_ASSERT_EQ(M_BitN(4), (uint64_t)1 << 4, "Set 4th bit of uint64_t");
-    TEST_ASSERT_EQ(M_BitN(63), (uint64_t)1 << 63, "Set 63rd bit of uint64_t");
+    for(uint64_t bit = 0; bit < 64; bit++) {
+        
+        uint64_t expected = (uint64_t)(1ULL << bit);
+
+        char msg[80];
+        snprintf(msg, sizeof(msg), "Set %uth bit of uint64_t", bit);
+
+        TEST_ASSERT_EQ(M_BitN(bit), expected, msg);
+    }
 }
 
 static void test_M_BitN8(void) {
-    TEST_ASSERT_EQ(M_BitN8(0), (uint8_t)1 << 0, "Set 0th bit of uint8_t");
-    TEST_ASSERT_EQ(M_BitN8(4), (uint8_t)1 << 4, "Set 4th bit of uint8_t");
-    TEST_ASSERT_EQ(M_BitN8(63), (uint8_t)1 << 63, "Set 63rd bit of uint8_t");
+    for(uint8_t bit = 0; bit < 8; bit++) {
+        
+        uint8_t expected = (uint8_t)(1U << bit);
+
+        char msg[80];
+        snprintf(msg, sizeof(msg), "Set %uth bit of uint8_t", bit);
+
+        TEST_ASSERT_EQ(M_BitN8(bit), expected, msg);
+    }
 }
 
 static void test_M_BitN16(void) {
-    TEST_ASSERT_EQ(M_BitN16(0), (uint16_t)1 << 0, "Set 0th bit of uint16_t");
-    TEST_ASSERT_EQ(M_BitN16(4), (uint16_t)1 << 4, "Set 4th bit of uint16_t");
-    TEST_ASSERT_EQ(M_BitN16(63), (uint16_t)1 << 63, "Set 63rd bit of uint16_t");
+    for(uint16_t bit = 0; bit < 16; bit++) {
+        
+        uint16_t expected = (uint16_t)(1U << bit);
+
+        char msg[80];
+        snprintf(msg, sizeof(msg), "Set %uth bit of uint16_t", bit);
+
+        TEST_ASSERT_EQ(M_BitN16(bit), expected, msg);
+    }
 }
 
 static void test_M_BitN32(void) {
-    TEST_ASSERT_EQ(M_BitN32(0), (uint32_t)1 << 0, "Set 0th bit of uint32_t");
-    TEST_ASSERT_EQ(M_BitN32(4), (uint32_t)1 << 4, "Set 4th bit of uint32_t");
-    TEST_ASSERT_EQ(M_BitN16(63), (uint32_t)1 << 63, "Set 63rd bit of uint32_t");
+    for(uint32_t bit = 0; bit < 32; bit++) {
+        
+        uint32_t expected = (uint32_t)(1U << bit);
+
+        char msg[80];
+        snprintf(msg, sizeof(msg), "Set %uth bit of uint32_t", bit);
+
+        TEST_ASSERT_EQ(M_BitN32(bit), expected, msg);
+    }
 }
 
 static void test_M_BitN64(void) {
-    TEST_ASSERT_EQ(M_BitN64(0), (uint64_t)1 << 0, "Set 0th bit of uint64_t");
-    TEST_ASSERT_EQ(M_BitN64(4), (uint64_t)1 << 4, "Set 4th bit of uint64_t");
-    TEST_ASSERT_EQ(M_BitN64(63), (uint64_t)1 << 63, "Set 63rd bit of uint64_t");
+    for(uint64_t bit = 0; bit < 64; bit++) {
+        
+        uint64_t expected = (uint64_t)(1ULL << bit);
+
+        char msg[80];
+        snprintf(msg, sizeof(msg), "Set %uth bit of uint64_t", bit);
+
+        TEST_ASSERT_EQ(M_BitN64(bit), expected, msg);
+    }
 }
 
 static void test_BIT0(void) {
@@ -839,7 +869,7 @@ static void test_set_uint8_bit(void) {
         char msg[80];
         snprintf(msg, sizeof(msg), "Set %uth bit of 0x00", bit);
 
-        TEST_ASSERT_EQ((UINT8_MIN_VAL, bit), expected, msg);
+        TEST_ASSERT_EQ(set_uint8_bit(UINT8_MIN_VAL, bit), expected, msg);
     }
 }
 
@@ -851,7 +881,7 @@ static void test_set_uint16_bit(void) {
         char msg[80];
         snprintf(msg, sizeof(msg), "Set %uth bit of 0x00", bit);
 
-        TEST_ASSERT_EQ((UINT16_MIN_VAL, bit), expected, msg);
+        TEST_ASSERT_EQ(set_uint16_bit(UINT16_MIN_VAL, bit), expected, msg);
     }
 }
 
@@ -863,7 +893,7 @@ static void test_set_uint32_bit(void) {
         char msg[80];
         snprintf(msg, sizeof(msg), "Set %uth bit of 0x00", bit);
 
-        TEST_ASSERT_EQ((UINT32_MIN_VAL, bit), expected, msg);
+        TEST_ASSERT_EQ(set_uint32_bit(UINT32_MIN_VAL, bit), expected, msg);
     }
 }
 
@@ -875,7 +905,7 @@ static void test_set_uint64_bit(void) {
         char msg[80];
         snprintf(msg, sizeof(msg), "Set %uth bit of 0x00", bit);
 
-        TEST_ASSERT_EQ((UINT64_MIN_VAL, bit), expected, msg);
+        TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, bit), expected, msg);
     }
 }
 
@@ -887,7 +917,7 @@ static void test_clear_uint8_bit(void) {
         char msg[80];
         snprintf(msg, sizeof(msg), "Clear %uth bit of 0xFF", bit);
 
-        TEST_ASSERT_EQ((UINT8_MAX_VAL, bit), expected, msg);
+        TEST_ASSERT_EQ(clear_uint8_bit(UINT8_MAX_VAL, bit), expected, msg);
     }
 }
 
@@ -899,7 +929,7 @@ static void test_clear_uint16_bit(void) {
         char msg[80];
         snprintf(msg, sizeof(msg), "Clear %uth bit of 0xFF", bit);
 
-        TEST_ASSERT_EQ((UINT16_MAX_VAL, bit), expected, msg);
+        TEST_ASSERT_EQ(clear_uint16_bit(UINT16_MAX_VAL, bit), expected, msg);
     }
 }
 
@@ -911,7 +941,7 @@ static void test_clear_uint32_bit(void) {
         char msg[80];
         snprintf(msg, sizeof(msg), "Clear %uth bit of 0xFF", bit);
 
-        TEST_ASSERT_EQ((UINT32_MAX_VAL, bit), expected, msg);
+        TEST_ASSERT_EQ(clear_uint32_bit(UINT32_MAX_VAL, bit), expected, msg);
     }
 }
 
@@ -923,7 +953,7 @@ static void test_clear_uint64_bit(void) {
         char msg[80];
         snprintf(msg, sizeof(msg), "Clear %uth bit of 0xFF", bit);
 
-        TEST_ASSERT_EQ((UINT64_MAX_VAL, bit), expected, msg);
+        TEST_ASSERT_EQ(clear_uint64_bit(UINT64_MAX_VAL, bit), expected, msg);
     }
 }
 
