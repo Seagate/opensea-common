@@ -1072,16 +1072,15 @@ static void test_nibble_Swap(void)
 
     nibble_Swap(&byte);
 
-    TEST_ASSERT_EQ(byte, expected,
-        "Swap nibbles in a byte using nibble_Swap");
+    TEST_ASSERT_EQ(byte, expected, "Swap nibbles in a byte using nibble_Swap");
 }
 
 static void test_b_swap_16(void) {
-    TEST_ASSERT_EQ(b_swap_16(HIGHER2BYTE), (uint16_t)(0x3412), "Swap bytes in a uint16_t")
+    TEST_ASSERT_EQ(b_swap_16(HIGHER2BYTE), (uint16_t)(0x3412), "Swap bytes in a uint16_t");
 }
 
 static void test_b_swap_32(void) {
-    TEST_ASSERT_EQ(b_swap_32(HIGHER4BYTE), (uint32_t)(0x78563412), "Swap bytes in a uint32_t")
+    TEST_ASSERT_EQ(b_swap_32(HIGHER4BYTE), (uint32_t)(0x78563412), "Swap bytes in a uint32_t");
 }
 
 static void test_b_swap_64(void) {
@@ -1089,7 +1088,7 @@ static void test_b_swap_64(void) {
 }
 
 static void test_by_swap_64(void) {
-    TEST_ASSERT_EQ(by_swap_64(SERIAL_NUM), (uint64_t)(0xEFCDAB9078563412), "Swap bytes in a uint64_t using by_swap_64")
+    TEST_ASSERT_EQ(by_swap_64(SERIAL_NUM), (uint64_t)(0xEFCDAB9078563412), "Swap bytes in a uint64_t using by_swap_64");
 }
 
 void run_bit_manip_tests(void)
