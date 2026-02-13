@@ -1091,6 +1091,64 @@ static void test_by_swap_64(void) {
     TEST_ASSERT_EQ(by_swap_64(SERIAL_NUM), (uint64_t)(0xEFCDAB9078563412), "Swap bytes in a uint64_t using by_swap_64");
 }
 
+static void test_byte_Swap_16(void) {
+    uint16_t byte = HIGHER2BYTE;           
+    uint8_t expected = (uint16_t)(0x3412);
+
+    byte_Swap_16(&byte);
+
+    TEST_ASSERT_EQ(byte, expected, "Swap bytes in a uint16_t");
+}
+
+static void test_byte_Swap_Int16(void) {
+    int16_t byte = (int16_t)HIGHER2BYTE;           
+    int16_t expected = (int16_t)(0x3412);
+
+    byte_Swap_Int16(&byte);
+
+    TEST_ASSERT_EQ(byte, expected, "Swap bytes in a int16_t");
+}
+
+static void test_byte_Swap_32(void) {
+    uint32_t byte = HIGHER4BYTE;           
+    uint32_t expected = (uint32_t)(0x78563412);
+
+    byte_Swap_32(&byte);
+
+    TEST_ASSERT_EQ(byte, expected, "Swap bytes in a uint32_t");
+}
+
+static void test_byte_Swap_Int32(void) {
+    int32_t byte = (int32_t)HIGHER4BYTE;           
+    int32_t expected = (int32_t)(0x78563412);
+
+    byte_Swap_Int32(&byte);
+
+    TEST_ASSERT_EQ(byte, expected, "Swap bytes in a int32_t");
+}
+
+static void test_w_swap_32(void) {
+    TEST_ASSERT_EQ(w_swap_32(HIGHER4BYTE), (uint32_t)(0x56781234), "Swap word within a dword");
+}
+
+static void test_word_Swap_32(void) {
+    uint32_t byte = HIGHER4BYTE;           
+    uint32_t expected = (uint32_t)(0x56781234);
+
+    word_Swap_32(&byte);
+
+    TEST_ASSERT_EQ(byte, expected, "Swap word within a dword using word_Swap_32");
+}
+
+static void test_byte_Swap_64(void) {
+    uint64_t byte = SERIAL_NUM;           
+    uint64_t expected = (uint64_t)(0xEFCDAB9078563412);
+
+    byte_Swap_64(&byte);
+
+    TEST_ASSERT_EQ(byte, expected, "Swap bytes in a uint64_t");
+}
+
 void run_bit_manip_tests(void)
 {
     printf("%.20f\n", ROUNDF(2.999f,100));
@@ -1277,6 +1335,13 @@ void run_bit_manip_tests(void)
     test_b_swap_32();
     test_b_swap_64();
     test_by_swap_64();
+    test_byte_Swap_16();
+    test_byte_Swap_Int16();
+    test_byte_Swap_32();
+    test_byte_Swap_Int32();
+    test_w_swap_32();
+    test_word_Swap_32();
+    test_byte_Swap_64();
 }
 
 
