@@ -1061,6 +1061,37 @@ static void test_M_SET_BIT64(void) {
     }
 }
 
+static void test_n_swap_8(void) {
+    TEST_ASSERT_EQ(n_swap_8(MSB), (uint8_t)(0x21), "Swap nibbles in a byte");
+}
+
+static void test_nibble_Swap(void)
+{
+    uint8_t byte = MSB;           
+    uint8_t expected = (uint8_t)(0x21);
+
+    nibble_Swap(&byte);
+
+    TEST_ASSERT_EQ(byte, expected,
+        "Swap nibbles in a byte using nibble_Swap");
+}
+
+static void test_b_swap_16(void) {
+    TEST_ASSERT_EQ(b_swap_16(HIGHER2BYTE), (uint16_t)(0x3412), "Swap bytes in a uint16_t")
+}
+
+static void test_b_swap_32(void) {
+    TEST_ASSERT_EQ(b_swap_32(HIGHER4BYTE), (uint32_t)(0x78563412), "Swap bytes in a uint32_t")
+}
+
+static void test_b_swap_64(void) {
+    TEST_ASSERT_EQ(b_swap_64(SERIAL_NUM), (uint64_t)(0xEFCDAB9078563412), "Swap bytes in a uint64_t");
+}
+
+static void test_by_swap_64(void) {
+    TEST_ASSERT_EQ(by_swap_64(SERIAL_NUM), (uint64_t)(0xEFCDAB9078563412), "Swap bytes in a uint64_t using by_swap_64")
+}
+
 void run_bit_manip_tests(void)
 {
     printf("%.20f\n", ROUNDF(2.999f,100));
@@ -1241,6 +1272,12 @@ void run_bit_manip_tests(void)
     test_M_SET_BIT16();
     test_M_SET_BIT32();
     test_M_SET_BIT64();
+    test_n_swap_8();
+    test_nibble_Swap();
+    test_b_swap_16();
+    test_b_swap_32();
+    test_b_swap_64();
+    test_by_swap_64();
 }
 
 
