@@ -1117,7 +1117,7 @@ static void test_M_CLEAR_BIT16(void) {
         char msg[80];
         snprintf(msg, sizeof(msg), "Clear %uth bit of 0xFF using M_CLEAR_BIT16", bit);
 
-        TEST_ASSERT_EQ(M_CLEAR_BIT8(value, bit), expected, msg);
+        TEST_ASSERT_EQ(M_CLEAR_BIT16(value, bit), expected, msg);
     }
 }
 
@@ -1130,7 +1130,7 @@ static void test_M_CLEAR_BIT32(void) {
         char msg[80];
         snprintf(msg, sizeof(msg), "Clear %uth bit of 0xFF using M_CLEAR_BIT32", bit);
 
-        TEST_ASSERT_EQ(M_CLEAR_BIT8(value, bit), expected, msg);
+        TEST_ASSERT_EQ(M_CLEAR_BIT32(value, bit), expected, msg);
     }
 }
 
@@ -1143,7 +1143,7 @@ static void test_M_CLEAR_BIT64(void) {
         char msg[80];
         snprintf(msg, sizeof(msg), "Clear %uth bit of 0xFF using M_CLEAR_BIT64", bit);
 
-        TEST_ASSERT_EQ(M_CLEAR_BIT8(value, bit), expected, msg);
+        TEST_ASSERT_EQ(M_CLEAR_BIT64(value, bit), expected, msg);
     }
 }
 
