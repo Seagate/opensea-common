@@ -1209,6 +1209,18 @@ static void test_get_Bytes_To_64(void) {
     TEST_ASSERT_EQ(out, (uint64_t)0xEFCDAB9078563412, "Little endian extraction of 8 bytes from a buffer");
 }
 
+static void test_be16_to_host(void) {
+    TEST_ASSERT_EQ(be16_to_host(HIGHER2BYTE), (uint16_t)(0x3412), "Takes a big endian uint16_t and returns it in host endianness");
+}
+
+static void test_be32_to_host(void) {
+    TEST_ASSERT_EQ(be32_to_host(HIGHER4BYTE), (uint32_t)(0x78563412), "Takes a big endian uint32_t and returns it in host endianness");
+}
+
+static void test_be64_to_host(void) {
+    TEST_ASSERT_EQ(be64_to_host(SERIAL_NUM), (uint64_t)(0xEFCDAB9078563412), "Takes a big endian uint64_t and returns it in host endianness");
+}
+
 void run_bit_manip_tests(void)
 {
     printf("%.20f\n", ROUNDF(2.999f,100));
@@ -1407,6 +1419,9 @@ void run_bit_manip_tests(void)
     test_get_Bytes_To_16();
     test_get_Bytes_To_32();
     test_get_Bytes_To_64();
+    test_be16_to_host();
+    test_be32_to_host();
+    test_be64_to_host();
 }
 
 
