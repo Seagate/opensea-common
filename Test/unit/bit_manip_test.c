@@ -1210,27 +1210,69 @@ static void test_get_Bytes_To_64(void) {
 }
 
 static void test_be16_to_host(void) {
-    TEST_ASSERT_EQ(be16_to_host(HIGHER2BYTE), (uint16_t)(0x3412), "Takes a big endian uint16_t and returns it in host endianness");
+    uint16_t val = HIGHER2BYTE;
+    uint16_t result = be16_to_host(val);
+
+    #if defined(ENV_BIG_ENDIAN)
+        TEST_ASSERT_EQ(result, (uint16_t)0x1234, "Big endian host returns same value");
+    #else
+        TEST_ASSERT_EQ(result, (uint16_t)0x3412, "Little endian host swaps to return little indian");
+    #endif
 }
 
 static void test_be32_to_host(void) {
-    TEST_ASSERT_EQ(be32_to_host(HIGHER4BYTE), (uint32_t)(0x78563412), "Takes a big endian uint32_t and returns it in host endianness");
+    uint32_t val = HIGHER4BYTE;
+    uint32_t result = be32_to_host(val);
+
+    #if defined(ENV_BIG_ENDIAN)
+        TEST_ASSERT_EQ(result, (uint32_t)0x12345678, "Big endian host returns same value");
+    #else
+        TEST_ASSERT_EQ(result, (uint32_t)0x78563412, "Little endian host swaps to return little indian");
+    #endif
 }
 
 static void test_be64_to_host(void) {
-    TEST_ASSERT_EQ(be64_to_host(SERIAL_NUM), (uint64_t)(0xEFCDAB9078563412), "Takes a big endian uint64_t and returns it in host endianness");
+    uint64_t val = SERIAL_NUM;
+    uint64_t result = be64_to_host(val);
+
+    #if defined(ENV_BIG_ENDIAN)
+        TEST_ASSERT_EQ(result, (uint64_t)0x1234567890ABCDEF, "Big endian host returns same value");
+    #else
+        TEST_ASSERT_EQ(result, (uint64_t)0xEFCDAB9078563412, "Little endian host swaps to return little indian");
+    #endif
 }
 
 static void test_host_to_be16(void) {
-    TEST_ASSERT_EQ(host_to_be16(HIGHER2BYTE), (uint16_t)(0x3412), "Takes a host endian uint16_t and returns it in big endian");
+    uint16_t val = HIGHER2BYTE;
+    uint16_t result = host_to_be16(val);
+
+    #if defined(ENV_BIG_ENDIAN)
+        TEST_ASSERT_EQ(result, (uint16_t)0x1234, "Big endian host should return same value");
+    #else
+        TEST_ASSERT_EQ(result, (uint16_t)0x3412, "Little endian host should swap to big endian");
+    #endif
 }
 
 static void test_host_to_be32(void) {
-    TEST_ASSERT_EQ(host_to_be32(HIGHER4BYTE), (uint32_t)(0x78563412), "Takes a host endian uint16_t and returns it in big endian");
+    uint32_t val = HIGHER4BYTE;
+    uint32_t result = host_to_be32(val);
+
+    #if defined(ENV_BIG_ENDIAN)
+        TEST_ASSERT_EQ(result, (uint16_t)0x12345678, "Big endian host should return same value");
+    #else
+        TEST_ASSERT_EQ(result, (uint16_t)0x78563412, "Little endian host should swap to big endian");
+    #endif
 }
 
 static void test_host_to_be64(void) {
-    TEST_ASSERT_EQ(host_to_be64(SERIAL_NUM), (uint64_t)(0xEFCDAB9078563412), "Takes a host endian uint16_t and returns it in big endian");
+    uint64_t val = SERIAL_NUM;
+    uint64_t result = host_to_be64(val);
+
+    #if defined(ENV_BIG_ENDIAN)
+        TEST_ASSERT_EQ(result, (uint16_t)0x1234567890ABCDEF, "Big endian host should return same value");
+    #else
+        TEST_ASSERT_EQ(result, (uint16_t)0xEFCDAB9078563412, "Little endian host should swap to big endian");
+    #endif
 }
 
 void run_bit_manip_tests(void)
