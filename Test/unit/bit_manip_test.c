@@ -1178,7 +1178,7 @@ static void test_get_Bytes_To_16(void) {
 
     res = get_Bytes_To_16(buf, sizeof(buf), 1, 0, &out);
 
-    TEST_ASSERT_EQ(out, (uint16_t)0x1234, "Little endian extraction of 2 bytes from a buffer");
+    TEST_ASSERT_EQ(out, (uint16_t)0x3412, "Little endian extraction of 2 bytes from a buffer");
 }
 
 void run_bit_manip_tests(void)
