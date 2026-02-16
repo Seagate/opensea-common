@@ -1092,39 +1092,39 @@ static void test_by_swap_64(void) {
 }
 
 static void test_byte_Swap_16(void) {
-    uint16_t byte = HIGHER2BYTE;           
-    uint8_t expected = (uint16_t)(0x3412);
+    uint16_t word = HIGHER2BYTE;           
+    uint16_t expected = (uint16_t)(0x3412);
 
-    byte_Swap_16(&byte);
+    byte_Swap_16(&word);
 
-    TEST_ASSERT_EQ(byte, expected, "Swap bytes in a uint16_t");
+    TEST_ASSERT_EQ(word, expected, "Swap bytes in a uint16_t");
 }
 
 static void test_byte_Swap_Int16(void) {
-    int16_t byte = (int16_t)HIGHER2BYTE;           
+    int16_t word = (int16_t)HIGHER2BYTE;           
     int16_t expected = (int16_t)(0x3412);
 
-    byte_Swap_Int16(&byte);
+    byte_Swap_Int16(&word);
 
-    TEST_ASSERT_EQ(byte, expected, "Swap bytes in a int16_t");
+    TEST_ASSERT_EQ(word, expected, "Swap bytes in a int16_t");
 }
 
 static void test_byte_Swap_32(void) {
-    uint32_t byte = HIGHER4BYTE;           
+    uint32_t dWord = HIGHER4BYTE;           
     uint32_t expected = (uint32_t)(0x78563412);
 
-    byte_Swap_32(&byte);
+    byte_Swap_32(&dWord);
 
-    TEST_ASSERT_EQ(byte, expected, "Swap bytes in a uint32_t");
+    TEST_ASSERT_EQ(dWord, expected, "Swap bytes in a uint32_t");
 }
 
 static void test_byte_Swap_Int32(void) {
-    int32_t byte = (int32_t)HIGHER4BYTE;           
+    int32_t dWord = (int32_t)HIGHER4BYTE;           
     int32_t expected = (int32_t)(0x78563412);
 
-    byte_Swap_Int32(&byte);
+    byte_Swap_Int32(&dWord);
 
-    TEST_ASSERT_EQ(byte, expected, "Swap bytes in a int32_t");
+    TEST_ASSERT_EQ(dWord, expected, "Swap bytes in a int32_t");
 }
 
 static void test_w_swap_32(void) {
@@ -1132,21 +1132,21 @@ static void test_w_swap_32(void) {
 }
 
 static void test_word_Swap_32(void) {
-    uint32_t byte = HIGHER4BYTE;           
+    uint32_t dWord = HIGHER4BYTE;           
     uint32_t expected = (uint32_t)(0x56781234);
 
-    word_Swap_32(&byte);
+    word_Swap_32(&dWord);
 
-    TEST_ASSERT_EQ(byte, expected, "Swap word within a dword using word_Swap_32");
+    TEST_ASSERT_EQ(dWord, expected, "Swap word within a dword using word_Swap_32");
 }
 
 static void test_byte_Swap_64(void) {
-    uint64_t byte = SERIAL_NUM;           
+    uint64_t qWord = SERIAL_NUM;           
     uint64_t expected = (uint64_t)(0xEFCDAB9078563412);
 
-    byte_Swap_64(&byte);
+    byte_Swap_64(&qWord);
 
-    TEST_ASSERT_EQ(byte, expected, "Swap bytes in a uint64_t");
+    TEST_ASSERT_EQ(qWord, expected, "Swap bytes in a uint64_t");
 }
 
 void run_bit_manip_tests(void)
