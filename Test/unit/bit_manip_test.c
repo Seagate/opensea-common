@@ -1308,6 +1308,39 @@ static void test_host_to_le64(void) {
     #endif
 }
 
+static void test_le16_to_host(void) {
+    uint16_t val = HIGHER2BYTE;
+    uint16_t result = le16_to_host(val);
+
+    #if defined(ENV_BIG_ENDIAN)
+        TEST_ASSERT_EQ(result, (uint16_t)0x3412, "Big endian host swaps to little endian");
+    #else
+        TEST_ASSERT_EQ(result, (uint16_t)0x1234, "Little endian host returns the same value");
+    #endif
+}
+
+static void test_le32_to_host(void) {
+    uint32_t val = HIGHER4BYTE;
+    uint32_t result = le32_to_host(val);
+
+    #if defined(ENV_BIG_ENDIAN)
+        TEST_ASSERT_EQ(result, (uint32_t)0x78563412, "Big endian host swaps to little endian");
+    #else
+        TEST_ASSERT_EQ(result, (uint32_t)0x12345678, "Little endian host returns the same value");
+    #endif
+}
+
+static void test_le64_to_host(void) {
+    uint64_t val = SERIAL_NUM;
+    uint64_t result = le64_to_host(val);
+
+    #if defined(ENV_BIG_ENDIAN)
+        TEST_ASSERT_EQ(result, (uint64_t)0xEFCDAB9078563412, "Big endian host swaps to little endian");
+    #else
+        TEST_ASSERT_EQ(result, (uint64_t)0x1234567890ABCDEF, "Little endian host returns the same value");
+    #endif
+}
+
 void run_bit_manip_tests(void)
 {
     printf("%.20f\n", ROUNDF(2.999f,100));
@@ -1515,6 +1548,9 @@ void run_bit_manip_tests(void)
     test_host_to_le16();
     test_host_to_le32();
     test_host_to_le64();
+    test_le16_to_host();
+    test_le32_to_host();
+    test_le64_to_host();
 }
 
 
