@@ -1195,6 +1195,20 @@ static void test_get_Bytes_To_32(void) {
     TEST_ASSERT_EQ(out, (uint32_t)0x78563412, "Little endian extraction of 4 bytes from a buffer");
 }
 
+static void test_get_Bytes_To_64(void) {
+    uint8_t buf[] = {0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF};
+    uint64_t out = 0;
+    bool res;
+
+    res = get_Bytes_To_64(buf, sizeof(buf), 0, 7, &out);
+
+    TEST_ASSERT_EQ(out, (uint32_t)0x1234567890ABCDEF, "Big endian extraction of 8 bytes from a buffer");
+
+    res = get_Bytes_To_64(buf, sizeof(buf), 7, 0, &out);
+
+    TEST_ASSERT_EQ(out, (uint32_t)0xEFCDAB9078563412, "Little endian extraction of 8 bytes from a buffer");
+}
+
 void run_bit_manip_tests(void)
 {
     printf("%.20f\n", ROUNDF(2.999f,100));
@@ -1392,6 +1406,7 @@ void run_bit_manip_tests(void)
     test_double_Word_Swap_64();
     test_get_Bytes_To_16();
     test_get_Bytes_To_32();
+    test_get_Bytes_To_64();
 }
 
 
