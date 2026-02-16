@@ -1149,6 +1149,24 @@ static void test_byte_Swap_64(void) {
     TEST_ASSERT_EQ(qWord, expected, "Swap bytes in a uint64_t");
 }
 
+static void test_word_Swap_64(void) {
+    uint64_t qWord = SERIAL_NUM;           
+    uint64_t expected = (uint64_t)(0xCDEF90AB56781234);
+
+    word_Swap_64(&qWord);
+
+    TEST_ASSERT_EQ(qWord, expected, "Swap words in a uint64_t");
+}
+
+static void test_double_Word_Swap_64(void) {
+    uint64_t qWord = SERIAL_NUM;           
+    uint64_t expected = (uint64_t)(0x90ABCDEF12345678);
+
+    double_Word_Swap_64(&qWord);
+
+    TEST_ASSERT_EQ(qWord, expected, "Swap dwords in a uint64_t");
+}
+
 void run_bit_manip_tests(void)
 {
     printf("%.20f\n", ROUNDF(2.999f,100));
@@ -1342,6 +1360,8 @@ void run_bit_manip_tests(void)
     test_w_swap_32();
     test_word_Swap_32();
     test_byte_Swap_64();
+    test_word_Swap_64();
+    test_double_Word_Swap_64();
 }
 
 
