@@ -1347,11 +1347,11 @@ static void test_big_To_Little_Endian_16(void) {
     big_To_Little_Endian_16(&word);
 
     #if defined(ENV_BIG_ENDIAN)
-        uint16_t expected = (uint16_t)(0x1234);
-        TEST_ASSERT_EQ(word, expected, "Big endian host returns the same value");
-    #else
         uint16_t expected = (uint16_t)(0x3412);
-        TEST_ASSERT_EQ(word, expected, "Little endian host swaps to little endian");
+        TEST_ASSERT_EQ(word, expected, "Big endian host swaps to little endian");
+    #else
+        uint16_t expected = (uint16_t)(0x1234);
+        TEST_ASSERT_EQ(word, expected, "Little endian host returns the same value");
     #endif
 }
 
@@ -1361,25 +1361,25 @@ static void test_big_To_Little_Endian_32(void) {
     big_To_Little_Endian_32(&dWord);
 
     #if defined(ENV_BIG_ENDIAN)
-        uint32_t expected = (uint32_t)(0x12345678);
-        TEST_ASSERT_EQ(dWord, expected, "Big endian host returns the same value");
-    #else
         uint32_t expected = (uint32_t)(0x78563412);
-        TEST_ASSERT_EQ(dWord, expected, "Little endian host swaps to little endian");
+        TEST_ASSERT_EQ(dWord, expected, "Big endian host swaps to little endian");
+    #else
+        uint32_t expected = (uint32_t)(0x12345678);
+        TEST_ASSERT_EQ(dWord, expected, "Little endian host returns the same value");
     #endif
 }
 
 static void test_big_To_Little_Endian_64(void) {
-    uint32_t qWord = SERIAL_NUM;           
+    uint64_t qWord = SERIAL_NUM;           
     
     big_To_Little_Endian_64(&qWord);
 
     #if defined(ENV_BIG_ENDIAN)
-        uint64_t expected = (uint64_t)(0x1234567890ABCDEF);
-        TEST_ASSERT_EQ(qWord, expected, "Big endian host returns the same value");
-    #else
         uint64_t expected = (uint64_t)(0xEFCDAB9078563412);
-        TEST_ASSERT_EQ(qWord, expected, "Little endian host swaps to little endian");
+        TEST_ASSERT_EQ(qWord, expected, "Big endian host swaps to little endian");
+    #else
+        uint64_t expected = (uint64_t)(0x1234567890ABCDEF);
+        TEST_ASSERT_EQ(qWord, expected, "Little endian host returns the same value");
     #endif
 }
 
