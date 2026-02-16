@@ -1202,11 +1202,11 @@ static void test_get_Bytes_To_64(void) {
 
     res = get_Bytes_To_64(buf, sizeof(buf), 0, 7, &out);
 
-    TEST_ASSERT_EQ(out, (uint32_t)0x1234567890ABCDEF, "Big endian extraction of 8 bytes from a buffer");
+    TEST_ASSERT_EQ(out, (uint64_t)0x1234567890ABCDEF, "Big endian extraction of 8 bytes from a buffer");
 
     res = get_Bytes_To_64(buf, sizeof(buf), 7, 0, &out);
 
-    TEST_ASSERT_EQ(out, (uint32_t)0xEFCDAB9078563412, "Little endian extraction of 8 bytes from a buffer");
+    TEST_ASSERT_EQ(out, (uint64_t)0xEFCDAB9078563412, "Little endian extraction of 8 bytes from a buffer");
 }
 
 void run_bit_manip_tests(void)
