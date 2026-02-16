@@ -1293,7 +1293,7 @@ static void test_host_to_le32(void) {
     #if defined(ENV_BIG_ENDIAN)
         TEST_ASSERT_EQ(result, (uint32_t)0x78563412, "Big endian host swaps to little endian");
     #else
-        TEST_ASSERT_EQ(result, (uint16_t)0x12345678, "Little endian host returns the same value");
+        TEST_ASSERT_EQ(result, (uint32_t)0x12345678, "Little endian host returns the same value");
     #endif
 }
 
@@ -1304,7 +1304,7 @@ static void test_host_to_le64(void) {
     #if defined(ENV_BIG_ENDIAN)
         TEST_ASSERT_EQ(result, (uint64_t)0xEFCDAB9078563412, "Big endian host swaps to little endian");
     #else
-        TEST_ASSERT_EQ(result, (uint16_t)0x1234567890ABCDEF, "Little endian host returns the same value");
+        TEST_ASSERT_EQ(result, (uint64_t)0x1234567890ABCDEF, "Little endian host returns the same value");
     #endif
 }
 
