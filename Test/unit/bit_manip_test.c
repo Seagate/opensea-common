@@ -1347,10 +1347,12 @@ static void test_big_To_Little_Endian_16(void) {
     big_To_Little_Endian_16(&word);
 
     #if defined(ENV_BIG_ENDIAN)
-        TEST_ASSERT_EQ(word, (uint16_t)(0x3412), "Big endian host swaps to little endian");
+        uint16_t expected = (uint16_t)(0x3412);
     #else
-        TEST_ASSERT_EQ(word, (uint16_t)(0x1234), "Little endian host returns the same value");
+        uint16_t expected = (uint16_t)(0x1234);
     #endif
+
+    TEST_ASSERT_EQ(word, expected, "Big endian host swaps to little endian and little endian host returns the same value");
 }
 
 static void test_big_To_Little_Endian_32(void) {
@@ -1359,10 +1361,12 @@ static void test_big_To_Little_Endian_32(void) {
     big_To_Little_Endian_32(&dWord);
 
     #if defined(ENV_BIG_ENDIAN)
-        TEST_ASSERT_EQ(dWord, (uint32_t)(0x78563412), "Big endian host swaps to little endian");
+        uint32_t expected = (uint32_t)(0x78563412);
     #else
-        TEST_ASSERT_EQ(dWord, (uint32_t)(0x12345678), "Little endian host returns the same value");
+        uint32_t expected = (uint32_t)(0x12345678);
     #endif
+
+    TEST_ASSERT_EQ(dWord, expected, "Big endian host swaps to little endian and little endian host returns the same value");
 }
 
 static void test_big_To_Little_Endian_64(void) {
@@ -1371,10 +1375,12 @@ static void test_big_To_Little_Endian_64(void) {
     big_To_Little_Endian_64(&qWord);
 
     #if defined(ENV_BIG_ENDIAN)
-        TEST_ASSERT_EQ(qWord, (uint64_t)(0xEFCDAB9078563412), "Big endian host swaps to little endian");
+        uint64_t expected = (uint64_t)(0xEFCDAB9078563412);
     #else
-        TEST_ASSERT_EQ(qWord, (uint64_t)(0x1234567890ABCDEF), "Little endian host returns the same value");
+        uint64_t expected = (uint64_t)(0x1234567890ABCDEF);
     #endif
+
+    TEST_ASSERT_EQ(qWord, expected, "Big endian host swaps to little endian and little endian host returns the same value");
 }
 
 void run_bit_manip_tests(void)
