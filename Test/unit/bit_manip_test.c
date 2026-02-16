@@ -1341,6 +1341,48 @@ static void test_le64_to_host(void) {
     #endif
 }
 
+static void test_big_To_Little_Endian_16(void) {
+    uint16_t word = HIGHER2BYTE;           
+    
+    big_To_Little_Endian_16(&word);
+
+    #if defined(ENV_BIG_ENDIAN)
+        uint16_t expected = (uint16_t)(0x1234);
+        TEST_ASSERT_EQ(word, expected, "Big endian host returns the same value");
+    #else
+        uint16_t expected = (uint16_t)(0x3412);
+        TEST_ASSERT_EQ(word, expected, "Little endian host swaps to little endian");
+    #endif
+}
+
+static void test_big_To_Little_Endian_32(void) {
+    uint32_t dWord = HIGHER4BYTE;           
+    
+    big_To_Little_Endian_32(&dWord);
+
+    #if defined(ENV_BIG_ENDIAN)
+        uint32_t expected = (uint32_t)(0x12345678);
+        TEST_ASSERT_EQ(dWord, expected, "Big endian host returns the same value");
+    #else
+        uint32_t expected = (uint32_t)(0x78563412);
+        TEST_ASSERT_EQ(dWord, expected, "Little endian host swaps to little endian");
+    #endif
+}
+
+static void test_big_To_Little_Endian_64(void) {
+    uint32_t qWord = SERIAL_NUM;           
+    
+    big_To_Little_Endian_64(&qWord);
+
+    #if defined(ENV_BIG_ENDIAN)
+        uint64_t expected = (uint64_t)(0x1234567890ABCDEF);
+        TEST_ASSERT_EQ(qWord, expected, "Big endian host returns the same value");
+    #else
+        uint64_t expected = (uint64_t)(0xEFCDAB9078563412);
+        TEST_ASSERT_EQ(qWord, expected, "Little endian host swaps to little endian");
+    #endif
+}
+
 void run_bit_manip_tests(void)
 {
     printf("%.20f\n", ROUNDF(2.999f,100));
@@ -1551,6 +1593,9 @@ void run_bit_manip_tests(void)
     test_le16_to_host();
     test_le32_to_host();
     test_le64_to_host();
+    test_big_To_Little_Endian_16();
+    test_big_To_Little_Endian_32();
+    test_big_To_Little_Endian_64();
 }
 
 
