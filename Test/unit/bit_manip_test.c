@@ -1365,33 +1365,25 @@ static void test_big_To_Little_Endian_32(void) {
 }  
 
 static void test_count_leading_zeros_uc(void) {
-    TEST_ASSERT_EQ(count_leading_zeros_uc(0x8), 0, "0 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_uc(0x08), 0, "1 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_uc(0x008), 0, "2 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_uc(0x0008), 0, "3 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_uc(0x00008), 0, "4 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_uc(0x000008), 0, "5 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_uc(0x0000008), 0, "6 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_uc(0x00000008), 0, "7 leading zeros");
+    uint8_t vals[] = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, 0x00};
+    uint8_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+
+    for(int i = 0; i < 9; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%u leading zeros", expected[i]);
+        TEST_ASSERT_EQ(count_leading_zeros_uc(vals[i]), expected[i], msg);
+    }
 }
 
 static void test_count_leading_zeros_us(void) {
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x8), 0, "0 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x08), 0, "1 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x008), 0, "2 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x0008), 0, "3 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x00008), 0, "4 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x000008), 0, "5 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x0000008), 0, "6 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x00000008), 0, "7 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x000000008), 0, "8 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x0000000008), 0, "9 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x00000000008), 0, "10 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x000000000008), 0, "11 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x0000000000008), 0, "12 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x00000000000008), 0, "13 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x000000000000008), 0, "14 leading zeros");
-    TEST_ASSERT_EQ(count_leading_zeros_us(0x0000000000000008), 0, "15 leading zeros");
+    uint16_t vals[] = {0x8000, 0x4000, 0x2000, 0x1000, 0x0800, 0x0400, 0x0200, 0x0100, 0x0080, 0x0040, 0x0020, 0x0010, 0x0008, 0x0004, 0x0002, 0x0001, 0x0000};
+    uint16_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+
+    for(int i = 0; i < 17; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%u leading zeros", expected[i]);
+        TEST_ASSERT_EQ(count_leading_zeros_uc(vals[i]), expected[i], msg);
+    }
 }
 
 void run_bit_manip_tests(void)
