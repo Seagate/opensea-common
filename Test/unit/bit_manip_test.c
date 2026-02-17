@@ -1362,7 +1362,37 @@ static void test_big_To_Little_Endian_32(void) {
     #else
         TEST_ASSERT_EQ(dWord, (uint32_t)(0x78563412), "Little endian host swaps to little endian");
     #endif
-}    
+}  
+
+static void test_count_leading_zeros_uc(void) {
+    TEST_ASSERT_EQ(count_leading_zeros_uc(0x8), 0, "0 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_uc(0x08), 0, "1 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_uc(0x008), 0, "2 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_uc(0x0008), 0, "3 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_uc(0x00008), 0, "4 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_uc(0x000008), 0, "5 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_uc(0x0000008), 0, "6 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_uc(0x00000008), 0, "7 leading zeros");
+}
+
+static void test_count_leading_zeros_us(void) {
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x8), 0, "0 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x08), 0, "1 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x008), 0, "2 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x0008), 0, "3 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x00008), 0, "4 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x000008), 0, "5 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x0000008), 0, "6 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x00000008), 0, "7 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x000000008), 0, "8 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x0000000008), 0, "9 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x00000000008), 0, "10 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x000000000008), 0, "11 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x0000000000008), 0, "12 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x00000000000008), 0, "13 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x000000000000008), 0, "14 leading zeros");
+    TEST_ASSERT_EQ(count_leading_zeros_us(0x0000000000000008), 0, "15 leading zeros");
+}
 
 void run_bit_manip_tests(void)
 {
@@ -1575,6 +1605,8 @@ void run_bit_manip_tests(void)
     test_le64_to_host();
     test_big_To_Little_Endian_16();
     test_big_To_Little_Endian_32();
+    test_count_leading_zeros_uc();
+    test_count_leading_zeros_us();
 }
 
 
