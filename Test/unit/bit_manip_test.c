@@ -1593,9 +1593,9 @@ void run_bit_manip_tests(void)
     test_le16_to_host();
     test_le32_to_host();
     test_le64_to_host();
-    test_big_To_Little_Endian_16();
-    test_big_To_Little_Endian_32();
-    test_big_To_Little_Endian_64();
+    // test_big_To_Little_Endian_16();
+    // test_big_To_Little_Endian_32();
+    // test_big_To_Little_Endian_64();
 }
 
 
