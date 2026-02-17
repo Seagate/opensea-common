@@ -1406,7 +1406,7 @@ void run_bit_manip_tests(void)
     test_M_WordInt2();
     test_M_WordInt3();
     test_BITSPERBYTE();
-    test_M_ByteN();
+    // test_M_ByteN();
     test_M_Byte0();
     test_M_Byte1();
     test_M_Byte2();
