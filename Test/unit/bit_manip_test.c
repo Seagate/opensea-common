@@ -1604,7 +1604,7 @@ static void test_count_leading_zeros_ull(void) {
 }
 
 static void test_count_leading_ones_uc(void) {
-    uint8_t vals[] = {0xFF, 0x7F, 0x3F, 0x1F, 0x0F, 0x07, 0x03, 0x01, 0x00};
+    uint8_t vals[] = {0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE, 0xFF};
     uint8_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
     for(int i = 0; i < 9; i++) {
