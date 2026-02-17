@@ -1643,6 +1643,51 @@ static void test_count_leading_ones_us(void) {
     }
 }
 
+static void test_count_leading_ones_ui(void) {
+    uint32_t vals[] = {
+    	0x00000000,
+    	0x80000000,
+    	0xC0000000,
+    	0xE0000000,
+    	0xF0000000,
+    	0xF8000000,
+    	0xFC000000,
+    	0xFE000000,
+    	0xFF000000,
+    	0xFF800000,
+    	0xFFC00000,
+    	0xFFE00000,
+    	0xFFF00000,
+    	0xFFF80000,
+    	0xFFFC0000,
+    	0xFFFE0000,
+    	0xFFFF0000,
+    	0xFFFF8000,
+    	0xFFFFC000,
+    	0xFFFFE000,
+    	0xFFFFF000,
+    	0xFFFFF800,
+    	0xFFFFFC00,
+    	0xFFFFFE00,
+    	0xFFFFFF00,
+    	0xFFFFFF80,
+    	0xFFFFFFC0,
+    	0xFFFFFFE0,
+    	0xFFFFFFF0,
+    	0xFFFFFFF8,
+    	0xFFFFFFFC,
+    	0xFFFFFFFE,
+    	0xFFFFFFFF
+    };
+    uint32_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
+
+    for(int i = 0; i < 33; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%u leading ones in unsigned int", expected[i]);
+        TEST_ASSERT_EQ(count_leading_ones_ui(vals[i]), expected[i], msg);
+    }
+}
+
 void run_bit_manip_tests(void)
 {
     test_get_DWord0();
@@ -1861,6 +1906,7 @@ void run_bit_manip_tests(void)
     test_count_leading_zeros_ull();
     test_count_leading_ones_uc();
     test_count_leading_ones_us();
+    test_count_leading_ones_ui();
 }
 
 
