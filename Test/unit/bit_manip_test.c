@@ -87,40 +87,40 @@ static void test_M_ByteN(void) {
     for (int n = 0; n < 8; n++) {
         char msg[50];
         snprintf(msg, sizeof(msg), "Set %dth byte to all 1s", n);
-        TEST_ASSERT_EQ(M_ByteN(n), (UINT64_MAX << (n * BITSPERBYTE)), msg);
+        TEST_ASSERT_EQ(M_ByteN(n), ((uint64_t)UINT8_MAX << (n * BITSPERBYTE)), msg);
     }
 }
 
 static void test_M_Byte0(void) {
-    TEST_ASSERT_EQ(M_ByteN(0), (uint8_t)(UINT64_MAX << (0 * BITSPERBYTE)), "Set 0th byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte0(SERIAL_NUM), (uint8_t)0xEF, "Extracts the lowest byte from a 64-bit integer and casts it to uint8_t");
 }
 
 static void test_M_Byte1(void) {
-    TEST_ASSERT_EQ(M_Byte1(1), (uint8_t)(UINT64_MAX << (1 * BITSPERBYTE)), "Set 1st byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte1(SERIAL_NUM), (uint8_t)0xCD, "Extracts the second lowest byte from a 64-bit integer and casts it to uint8_t");
 }
 
 static void test_M_Byte2(void) {
-    TEST_ASSERT_EQ(M_Byte2(2), (uint8_t)(UINT64_MAX << (2 * BITSPERBYTE)), "Set 2nd byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte2(SERIAL_NUM), (uint8_t)0xAB, "Extracts the third lowest byte from a 64-bit integer and casts it to uint8_t");
 }
 
 static void test_M_Byte3(void) {
-    TEST_ASSERT_EQ(M_Byte3(3), (uint8_t)(UINT64_MAX << (3 * BITSPERBYTE)), "Set 3rd byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte3(SERIAL_NUM), (uint8_t)0x90, "Extracts the fourth lowest byte from a 64-bit integer and casts it to uint8_t");
 }
 
 static void test_M_Byte4(void) {
-    TEST_ASSERT_EQ(M_Byte4(4), (uint8_t)(UINT64_MAX << (4 * BITSPERBYTE)), "Set 4th byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte4(SERIAL_NUM), (uint8_t)0x78, "Extracts the fifth lowest byte from a 64-bit integer and casts it to uint8_t");
 }
 
 static void test_M_Byte5(void) {
-    TEST_ASSERT_EQ(M_Byte5(5), (uint8_t)(UINT64_MAX << (5 * BITSPERBYTE)), "Set 5th byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte5(SERIAL_NUM), (uint8_t)0x56, "Extracts the sixth lowest byte from a 64-bit integer and casts it to uint8_t");
 }
 
 static void test_M_Byte6(void) {
-    TEST_ASSERT_EQ(M_Byte6(6), (uint8_t)(UINT64_MAX << (6 * BITSPERBYTE)), "Set 6th byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte6(SERIAL_NUM), (uint8_t)0x34, "Extracts the seventh lowest byte from a 64-bit integer and casts it to uint8_t");
 }
 
 static void test_M_Byte7(void) {
-    TEST_ASSERT_EQ(M_Byte7(7), (uint8_t)(UINT64_MAX << (7 * BITSPERBYTE)), "Set 7th byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte7(SERIAL_NUM), (uint8_t)0x12, "Extracts the highest byte from a 64-bit integer and casts it to uint8_t");
 }
 
 typedef struct {
