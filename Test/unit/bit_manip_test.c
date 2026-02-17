@@ -87,40 +87,40 @@ static void test_M_ByteN(void) {
     for (int n = 0; n < 8; n++) {
         char msg[50];
         snprintf(msg, sizeof(msg), "Set %dth byte to all 1s", n);
-        TEST_ASSERT_EQ(M_ByteN(n), (UINT8_MAX << (n * BITSPERBYTE)), msg);
+        TEST_ASSERT_EQ(M_ByteN(n), (UINT64_MAX << (n * BITSPERBYTE)), msg);
     }
 }
 
 static void test_M_Byte0(void) {
-    TEST_ASSERT_EQ(M_ByteN(0), (uint8_t)(UINT8_MAX << (0 * BITSPERBYTE)), "Set 0th byte to all 1s");
+    TEST_ASSERT_EQ(M_ByteN(0), (uint8_t)(UINT64_MAX << (0 * BITSPERBYTE)), "Set 0th byte to all 1s");
 }
 
 static void test_M_Byte1(void) {
-    TEST_ASSERT_EQ(M_Byte1(1), (uint8_t)(UINT8_MAX << (1 * BITSPERBYTE)), "Set 1st byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte1(1), (uint8_t)(UINT64_MAX << (1 * BITSPERBYTE)), "Set 1st byte to all 1s");
 }
 
 static void test_M_Byte2(void) {
-    TEST_ASSERT_EQ(M_Byte2(2), (uint8_t)(UINT8_MAX << (2 * BITSPERBYTE)), "Set 2nd byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte2(2), (uint8_t)(UINT64_MAX << (2 * BITSPERBYTE)), "Set 2nd byte to all 1s");
 }
 
 static void test_M_Byte3(void) {
-    TEST_ASSERT_EQ(M_Byte3(3), (uint8_t)(UINT8_MAX << (3 * BITSPERBYTE)), "Set 3rd byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte3(3), (uint8_t)(UINT64_MAX << (3 * BITSPERBYTE)), "Set 3rd byte to all 1s");
 }
 
 static void test_M_Byte4(void) {
-    TEST_ASSERT_EQ(M_Byte4(4), (uint8_t)(UINT8_MAX << (4 * BITSPERBYTE)), "Set 4th byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte4(4), (uint8_t)(UINT64_MAX << (4 * BITSPERBYTE)), "Set 4th byte to all 1s");
 }
 
 static void test_M_Byte5(void) {
-    TEST_ASSERT_EQ(M_Byte5(5), (uint8_t)(UINT8_MAX << (5 * BITSPERBYTE)), "Set 5th byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte5(5), (uint8_t)(UINT64_MAX << (5 * BITSPERBYTE)), "Set 5th byte to all 1s");
 }
 
 static void test_M_Byte6(void) {
-    TEST_ASSERT_EQ(M_Byte6(6), (uint8_t)(UINT8_MAX << (6 * BITSPERBYTE)), "Set 6th byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte6(6), (uint8_t)(UINT64_MAX << (6 * BITSPERBYTE)), "Set 6th byte to all 1s");
 }
 
 static void test_M_Byte7(void) {
-    TEST_ASSERT_EQ(M_Byte7(7), (uint8_t)(UINT8_MAX << (7 * BITSPERBYTE)), "Set 7th byte to all 1s");
+    TEST_ASSERT_EQ(M_Byte7(7), (uint8_t)(UINT64_MAX << (7 * BITSPERBYTE)), "Set 7th byte to all 1s");
 }
 
 typedef struct {
@@ -439,27 +439,27 @@ static void test_is_generic_int_valid(void) {
 }
 
 static void test_get_bit_range_uint8(void) {
-    TEST_ASSERT_EQ(get_bit_range_uint8(HEX_RANDOM, 7, 4), (uint8_t)(0xF), "Extract bits 7 to 4 from 0xF0F0F0F0F0F0F0F0ULL");
+    TEST_ASSERT_EQ(get_bit_range_uint8((uint8_t)HEX_RANDOM, 7, 4), (uint8_t)(0xF), "Extract bits 7 to 4 from 0xF0F0F0F0F0F0F0F0ULL");
 }
 
 static void test_get_bit_range_uint16(void) {
-    TEST_ASSERT_EQ(get_bit_range_uint16(HEX_RANDOM, 15, 8), (uint16_t)(0xF0), "Extract bits 15 to 8 from 0xF0F0F0F0F0F0F0F0ULL");
+    TEST_ASSERT_EQ(get_bit_range_uint16((uint16_t)HEX_RANDOM, 15, 8), (uint16_t)(0xF0), "Extract bits 15 to 8 from 0xF0F0F0F0F0F0F0F0ULL");
 }
 
 static void test_get_8bit_range_uint16(void) {
-    TEST_ASSERT_EQ(get_8bit_range_uint16(HEX_RANDOM, 7, 0), (uint8_t)(0xF0), "Extract bits 7 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
+    TEST_ASSERT_EQ(get_8bit_range_uint16((uint16_t)HEX_RANDOM, 7, 0), (uint8_t)(0xF0), "Extract bits 7 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
 }
 
 static void test_get_bit_range_uint32(void) {
-    TEST_ASSERT_EQ(get_bit_range_uint32(HEX_RANDOM, 7, 0), (uint32_t)(0xF0), "Extract bits 7 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
+    TEST_ASSERT_EQ(get_bit_range_uint32((uint32_t)HEX_RANDOM, 7, 0), (uint32_t)(0xF0), "Extract bits 7 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
 }
 
 static void test_get_8bit_range_uint32(void) {
-    TEST_ASSERT_EQ(get_8bit_range_uint32(HEX_RANDOM, 7, 0), (uint8_t)(0xF0), "Extract bits 7 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
+    TEST_ASSERT_EQ(get_8bit_range_uint32((uint32_t)HEX_RANDOM, 7, 0), (uint8_t)(0xF0), "Extract bits 7 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
 }
 
 static void test_get_16bit_range_uint32(void) {
-    TEST_ASSERT_EQ(get_16bit_range_uint32(HEX_RANDOM, 15, 0), (uint16_t)(0xF0F0), "Extract bits 15 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
+    TEST_ASSERT_EQ(get_16bit_range_uint32((uint32_t)HEX_RANDOM, 15, 0), (uint16_t)(0xF0F0), "Extract bits 15 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
 }
 
 static void test_get_bit_range_uint64(void) {
