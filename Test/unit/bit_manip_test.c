@@ -1614,6 +1614,35 @@ static void test_count_leading_ones_uc(void) {
     }
 }
 
+static void test_count_leading_ones_us(void) {
+    uint16_t vals[] = {
+        0x0000,
+    	0x8000,
+    	0xC000,
+    	0xE000,
+    	0xF000,
+    	0xF800,
+    	0xFC00,
+    	0xFE00,
+    	0xFF00,
+    	0xFF80,
+    	0xFFC0,
+    	0xFFE0,
+    	0xFFF0,
+    	0xFFF8,
+    	0xFFFC,
+    	0xFFFE,
+    	0xFFFF
+    };
+    uint16_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+
+    for(int i = 0; i < 17; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%u leading ones in unsigned short", expected[i]);
+        TEST_ASSERT_EQ(count_leading_ones_us(vals[i]), expected[i], msg);
+    }
+}
+
 void run_bit_manip_tests(void)
 {
     test_get_DWord0();
@@ -1831,6 +1860,7 @@ void run_bit_manip_tests(void)
     test_count_leading_zeros_ul();
     test_count_leading_zeros_ull();
     test_count_leading_ones_uc();
+    test_count_leading_ones_us();
 }
 
 
