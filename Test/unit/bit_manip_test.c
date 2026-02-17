@@ -1382,7 +1382,18 @@ static void test_count_leading_zeros_us(void) {
     for(int i = 0; i < 17; i++) {
         char msg[60];
         snprintf(msg, sizeof(msg), "%u leading zeros", expected[i]);
-        TEST_ASSERT_EQ(count_leading_zeros_uc(vals[i]), expected[i], msg);
+        TEST_ASSERT_EQ(count_leading_zeros_us(vals[i]), expected[i], msg);
+    }
+}
+
+static void test_count_leading_zeros_ui(void) {
+    unsigned int vals[] = {0x80000000, 0x40000000, 0x20000000, 0x10000000, 0x08000000, 0x04000000, 0x02000000, 0x01000000, 0x00800000, 0x00400000, 0x00200000, 0x00100000, 0x00080000, 0x00040000, 0x00020000, 0x00010000, 0x00008000, 0x00004000, 0x00002000, 0x00001000, 0x00000800, 0x00000400, 0x00000200, 0x00000100, 0x00000080, 0x00000040, 0x00000020, 0x00000010, 0x00000008, 0x00000004, 0x00000002, 0x00000001, 0x00000000};
+    uint16_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
+
+    for(int i = 0; i < 33; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%u leading zeros", expected[i]);
+        TEST_ASSERT_EQ(count_leading_zeros_ui(vals[i]), expected[i], msg);
     }
 }
 
@@ -1599,6 +1610,7 @@ void run_bit_manip_tests(void)
     test_big_To_Little_Endian_32();
     test_count_leading_zeros_uc();
     test_count_leading_zeros_us();
+    test_count_leading_zeros_ui();
 }
 
 
