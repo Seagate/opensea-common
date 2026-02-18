@@ -2536,8 +2536,13 @@ static void test_first_leading_one_ull(void) {
 
 void run_bit_manip_tests(void)
 {
-    printf(__builtin_stdc_first_leading_one(0x08));
-    printf(stdc_first_leading_one(0x08));
+    #ifdef HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE
+    printf("%u\n", __builtin_stdc_first_leading_one(0x08));
+    #endif
+
+    #ifdef HAVE_STDC_BIT
+    printf("%u\n", stdc_first_leading_one(0x08));
+    #endif
     test_get_DWord0();
     test_get_DWord1();
     test_M_DoubleWordInt0();
