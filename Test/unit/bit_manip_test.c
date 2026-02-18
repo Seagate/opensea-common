@@ -2302,12 +2302,11 @@ static void test_count_trailing_ones_ull(void) {
 
 static void test_first_leading_one_uc(void) {
     uint8_t vals[] = {0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF, 0x00};
-    uint8_t expected[] = {8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     for(uint8_t i = 0; i < 9; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 1 on bit position %u in unsigned char", expected[i]);
-        TEST_ASSERT_EQ(first_leading_one_uc(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "First leading 1 on bit position %u in unsigned char", 8-i);
+        TEST_ASSERT_EQ(first_leading_one_uc(vals[i]), 8-i, msg);
     }
 }
 
@@ -2331,12 +2330,11 @@ static void test_first_leading_one_us(void) {
         0xFFFF,
         0x0000
     };
-    uint16_t expected[] = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     for(uint16_t i = 1; i < 17; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 1 on bit position %u in unsigned short", expected[i]);
-        TEST_ASSERT_EQ(first_leading_one_us(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "First leading 1 on bit position %u in unsigned short", 16-i);
+        TEST_ASSERT_EQ(first_leading_one_us(vals[i]), 16-i, msg);
     }
 }
 
@@ -2376,12 +2374,11 @@ static void test_first_leading_one_ui(void) {
         0xFFFFFFFF,
         0x00000000
     };
-    uint32_t expected[] = {32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     for(uint32_t i = 1; i < 33; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 1 on bit position %u in unsigned int", expected[i]);
-        TEST_ASSERT_EQ(first_leading_one_ui(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "First leading 1 on bit position %u in unsigned int", 32-i);
+        TEST_ASSERT_EQ(first_leading_one_ui(vals[i]), 32-i, msg);
     }
 }
 
@@ -2453,12 +2450,11 @@ static void test_first_leading_one_ul(void) {
         0xFFFFFFFFFFFFFFFFUL,
         0x0000000000000000UL
     };
-    uint64_t expected[] = {64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     for(uint64_t i = 1; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 1 on bit position %lu in unsigned long", expected[i]);
-        TEST_ASSERT_EQ(first_leading_one_ul(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "First leading 1 on bit position %lu in unsigned long", 64-i);
+        TEST_ASSERT_EQ(first_leading_one_ul(vals[i]), 64-i, msg);
     }
 }
 
@@ -2530,12 +2526,11 @@ static void test_first_leading_one_ull(void) {
         0xFFFFFFFFFFFFFFFFULL,
         0x0000000000000000ULL
     };
-    uint64_t expected[] = {64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     for(uint64_t i = 1; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 1 on bit position %lu in unsigned long long", expected[i]);
-        TEST_ASSERT_EQ(first_leading_one_ull(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "First leading 1 on bit position %lu in unsigned long long", 64-i);
+        TEST_ASSERT_EQ(first_leading_one_ull(vals[i]), 64-i, msg);
     }
 }
 
