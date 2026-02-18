@@ -2378,7 +2378,7 @@ static void test_first_leading_one_ui(void) {
     for(uint32_t i = 0; i < 33; i++) {
         char msg[60];
         snprintf(msg, sizeof(msg), "First leading 1 on bit position %u in unsigned int", i);
-        TEST_ASSERT_EQ(count_first_leading_one_ui(vals[i]), i, msg);
+        TEST_ASSERT_EQ(first_leading_one_ui(vals[i]), i, msg);
     }
 }
 
