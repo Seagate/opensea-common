@@ -1842,6 +1842,17 @@ static void test_count_leading_ones_ull(void) {
     }
 }
 
+static void test_count_trailing_zeros_uc(void) {
+    uint8_t vals[] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x00};
+    uint8_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+
+    for(int i = 0; i < 9; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%u trailing zeros in unsigned char", expected[i]);
+        TEST_ASSERT_EQ(count_trailing_zeros_uc(vals[i]), expected[i], msg);
+    }
+}
+
 void run_bit_manip_tests(void)
 {
     test_get_DWord0();
@@ -2063,6 +2074,7 @@ void run_bit_manip_tests(void)
     test_count_leading_ones_ui();
     test_count_leading_ones_ul();
     test_count_leading_ones_ull();
+    test_count_trailing_zeros_uc();
 }
 
 
