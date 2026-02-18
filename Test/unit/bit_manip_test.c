@@ -3004,7 +3004,32 @@ static void test_count_zeros_ull(void) {
 
 static void test_has_single_bit_uc(void) {
     TEST_ASSERT(!has_single_bit_uc(UINT8_MIN_VAL), "Returns false as no bit is set");
+    TEST_ASSERT(!has_single_bit_uc(UINT8_MAX_VAL), "Returns false as more than 1 bit is set");
     TEST_ASSERT(has_single_bit_uc(0x01), "Returns true as a single bit is set");
+}
+
+static void test_has_single_bit_us(void) {
+    TEST_ASSERT(!has_single_bit_us(UINT16_MIN_VAL), "Returns false as no bit is set");
+    TEST_ASSERT(!has_single_bit_us(UINT16_MAX_VAL), "Returns false as more than 1 bit is set");
+    TEST_ASSERT(has_single_bit_us((uint16_t)0x01), "Returns true as a single bit is set");
+}
+
+static void test_has_single_bit_ui(void) {
+    TEST_ASSERT(!has_single_bit_ui(UINT32_MIN_VAL), "Returns false as no bit is set");
+    TEST_ASSERT(!has_single_bit_ui(UINT32_MAX_VAL), "Returns false as more than 1 bit is set");
+    TEST_ASSERT(has_single_bit_ui((uint32_t)0x01), "Returns true as a single bit is set");
+}
+
+static void test_has_single_bit_ul(void) {
+    TEST_ASSERT(!has_single_bit_ul(UINT64_MIN_VAL), "Returns false as no bit is set");
+    TEST_ASSERT(!has_single_bit_ul(UINT64_MAX_VAL), "Returns false as more than 1 bit is set");
+    TEST_ASSERT(has_single_bit_ul((uint64_t)0x01), "Returns true as a single bit is set");
+}
+
+static void test_has_single_bit_ull(void) {
+    TEST_ASSERT(!has_single_bit_ull(UINT64_MIN_VAL), "Returns false as no bit is set");
+    TEST_ASSERT(!has_single_bit_ull(UINT64_MAX_VAL), "Returns false as more than 1 bit is set");
+    TEST_ASSERT(has_single_bit_ull((uint64_t)0x01), "Returns true as a single bit is set");
 }
 
 void run_bit_manip_tests(void)
@@ -3261,6 +3286,10 @@ void run_bit_manip_tests(void)
     test_count_zeros_ul();
     test_count_zeros_ull();
     test_has_single_bit_uc();
+    test_has_single_bit_us();
+    test_has_single_bit_ui();
+    test_has_single_bit_ul();
+    test_has_single_bit_ull();
 }
 
 
