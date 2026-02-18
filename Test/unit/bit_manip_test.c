@@ -2301,8 +2301,8 @@ static void test_count_trailing_ones_ull(void) {
 }
 
 static void test_first_leading_one_uc(void) {
-    uint8_t vals[] = {0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF};
-    uint8_t expected[] = {0,1,2,3,4,5,6,7,8};
+    uint8_t vals[] = {0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF, 0x00};
+    uint8_t expected[] = {8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     for(uint8_t i = 0; i < 9; i++) {
         char msg[60];
@@ -2328,13 +2328,15 @@ static void test_first_leading_one_us(void) {
         0x1FFF,
         0x3FFF,
         0x7FFF,
-        0xFFFF
+        0xFFFF,
+        0x0000
     };
+    uint16_t expected[] = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     for(uint16_t i = 1; i < 17; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 1 on bit position %u in unsigned short", i);
-        TEST_ASSERT_EQ(first_leading_one_us(vals[i]), i, msg);
+        snprintf(msg, sizeof(msg), "First leading 1 on bit position %u in unsigned short", expected[i]);
+        TEST_ASSERT_EQ(first_leading_one_us(vals[i]), expected[i], msg);
     }
 }
 
@@ -2371,13 +2373,15 @@ static void test_first_leading_one_ui(void) {
         0x1FFFFFFF,
         0x3FFFFFFF,
         0x7FFFFFFF,
-        0xFFFFFFFF
+        0xFFFFFFFF,
+        0x00000000
     };
+    uint32_t expected[] = {32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     for(uint32_t i = 1; i < 33; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 1 on bit position %u in unsigned int", i);
-        TEST_ASSERT_EQ(first_leading_one_ui(vals[i]), i, msg);
+        snprintf(msg, sizeof(msg), "First leading 1 on bit position %u in unsigned int", expected[i]);
+        TEST_ASSERT_EQ(first_leading_one_ui(vals[i]), expected[i], msg);
     }
 }
 
