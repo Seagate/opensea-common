@@ -1366,12 +1366,11 @@ static void test_big_To_Little_Endian_32(void) {
 
 static void test_count_leading_zeros_uc(void) {
     uint8_t vals[] = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, 0x00};
-    uint8_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
-    for(int i = 0; i < 9; i++) {
+    for(uint8_t i = 0; i < 9; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u leading zeros in unsigned char", expected[i]);
-        TEST_ASSERT_EQ(count_leading_zeros_uc(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u leading zeros in unsigned char", i);
+        TEST_ASSERT_EQ(count_leading_zeros_uc(vals[i]), i, msg);
     }
 }
 
@@ -1395,12 +1394,11 @@ static void test_count_leading_zeros_us(void) {
         0x0001, 
         0x0000
     };
-    uint16_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
-    for(int i = 0; i < 17; i++) {
+    for(uint16_t i = 0; i < 17; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u leading zeros in unsigned short", expected[i]);
-        TEST_ASSERT_EQ(count_leading_zeros_us(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u leading zeros in unsigned short", i);
+        TEST_ASSERT_EQ(count_leading_zeros_us(vals[i]), i, msg);
     }
 }
 
@@ -1440,12 +1438,11 @@ static void test_count_leading_zeros_ui(void) {
         0x00000001, 
         0x00000000
     };
-    uint32_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
-
-    for(int i = 0; i < 33; i++) {
+    
+    for(uint32_t i = 0; i < 33; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u leading zeros in unsigned int", expected[i]);
-        TEST_ASSERT_EQ(count_leading_zeros_ui(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u leading zeros in unsigned int", i);
+        TEST_ASSERT_EQ(count_leading_zeros_ui(vals[i]), i, msg);
     }
 }
 
@@ -1517,12 +1514,11 @@ static void test_count_leading_zeros_ul(void) {
         0x0000000000000001UL,
         0x0000000000000000UL
     };
-    uint64_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
-
-    for(int i = 0; i < 33; i++) {
+    
+    for(uint64_t i = 0; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u leading zeros in unsigned long", expected[i]);
-        TEST_ASSERT_EQ(count_leading_zeros_ul(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u leading zeros in unsigned long", i);
+        TEST_ASSERT_EQ(count_leading_zeros_ul(vals[i]), i, msg);
     }
 }
 
@@ -1594,23 +1590,21 @@ static void test_count_leading_zeros_ull(void) {
         0x0000000000000001ULL,
         0x0000000000000000ULL
     };
-    uint64_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
-
-    for(int i = 0; i < 33; i++) {
+    
+    for(uint64_t i = 0; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u leading zeros in unsigned long long", expected[i]);
-        TEST_ASSERT_EQ(count_leading_zeros_ull(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u leading zeros in unsigned long long", i);
+        TEST_ASSERT_EQ(count_leading_zeros_ull(vals[i]), i, msg);
     }
 }
 
 static void test_count_leading_ones_uc(void) {
     uint8_t vals[] = {0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE, 0xFF};
-    uint8_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
-    for(int i = 0; i < 9; i++) {
+    for(uint8_t i = 0; i < 9; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u leading ones in unsigned char", expected[i]);
-        TEST_ASSERT_EQ(count_leading_ones_uc(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u leading ones in unsigned char", i);
+        TEST_ASSERT_EQ(count_leading_ones_uc(vals[i]), i, msg);
     }
 }
 
@@ -1634,12 +1628,11 @@ static void test_count_leading_ones_us(void) {
     	0xFFFE,
     	0xFFFF
     };
-    uint16_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
-    for(int i = 0; i < 17; i++) {
+    for(uint16_t i = 0; i < 17; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u leading ones in unsigned short", expected[i]);
-        TEST_ASSERT_EQ(count_leading_ones_us(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u leading ones in unsigned short", i);
+        TEST_ASSERT_EQ(count_leading_ones_us(vals[i]), i, msg);
     }
 }
 
@@ -1679,12 +1672,11 @@ static void test_count_leading_ones_ui(void) {
     	0xFFFFFFFE,
     	0xFFFFFFFF
     };
-    uint32_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
 
-    for(int i = 0; i < 33; i++) {
+    for(uint32_t i = 0; i < 33; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u leading ones in unsigned int", expected[i]);
-        TEST_ASSERT_EQ(count_leading_ones_ui(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u leading ones in unsigned int", i);
+        TEST_ASSERT_EQ(count_leading_ones_ui(vals[i]), i, msg);
     }
 }
 
@@ -1756,12 +1748,11 @@ static void test_count_leading_ones_ul(void) {
     	0xFFFFFFFFFFFFFFFEUL,
     	0xFFFFFFFFFFFFFFFFUL
     };
-    uint64_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
 
-    for(int i = 0; i < 33; i++) {
+    for(uint64_t i = 0; i < 33; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u leading ones in unsigned long", expected[i]);
-        TEST_ASSERT_EQ(count_leading_ones_ul(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u leading ones in unsigned long", i);
+        TEST_ASSERT_EQ(count_leading_ones_ul(vals[i]), i, msg);
     }
 }
 
@@ -1833,23 +1824,21 @@ static void test_count_leading_ones_ull(void) {
     	0xFFFFFFFFFFFFFFFEULL,
     	0xFFFFFFFFFFFFFFFFULL
     };
-    uint64_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
 
-    for(int i = 0; i < 33; i++) {
+    for(uint64_t i = 0; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u leading ones in unsigned long long", expected[i]);
-        TEST_ASSERT_EQ(count_leading_ones_ull(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u leading ones in unsigned long long", i);
+        TEST_ASSERT_EQ(count_leading_ones_ull(vals[i]), i, msg);
     }
 }
 
 static void test_count_trailing_zeros_uc(void) {
     uint8_t vals[] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x00};
-    uint8_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
-    for(int i = 0; i < 9; i++) {
+    for(uint8_t i = 0; i < 9; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u trailing zeros in unsigned char", expected[i]);
-        TEST_ASSERT_EQ(count_trailing_zeros_uc(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u trailing zeros in unsigned char", i);
+        TEST_ASSERT_EQ(count_trailing_zeros_uc(vals[i]), i, msg);
     }
 }
 
@@ -1873,12 +1862,11 @@ static void test_count_trailing_zeros_us(void) {
         0x8000,
         0x0000
     };
-    uint16_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
-    for(int i = 0; i < 17; i++) {
+    for(uint16_t i = 0; i < 17; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u trailing zeros in unsigned short", expected[i]);
-        TEST_ASSERT_EQ(count_trailing_zeros_us(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u trailing zeros in unsigned short", i);
+        TEST_ASSERT_EQ(count_trailing_zeros_us(vals[i]), i, msg);
     }
 }
 
@@ -1918,12 +1906,11 @@ static void test_count_trailing_zeros_ui(void) {
         0x80000000,
         0x00000000
     };
-    uint32_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
-
-    for(int i = 0; i < 33; i++) {
+    
+    for(uint32_t i = 0; i < 33; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u trailing zeros in unsigned int", expected[i]);
-        TEST_ASSERT_EQ(count_trailing_zeros_ui(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u trailing zeros in unsigned int", i);
+        TEST_ASSERT_EQ(count_trailing_zeros_ui(vals[i]), i, msg);
     }
 }
 
@@ -1995,12 +1982,11 @@ static void test_count_trailing_zeros_ul(void) {
         0x8000000000000000UL,
         0x0000000000000000UL
     };
-    uint64_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
 
-    for(int i = 0; i < 33; i++) {
+    for(uint64_t i = 0; i < 33; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u trailing zeros in unsigned long", expected[i]);
-        TEST_ASSERT_EQ(count_trailing_zeros_ul(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u trailing zeros in unsigned long", i);
+        TEST_ASSERT_EQ(count_trailing_zeros_ul(vals[i]), i, msg);
     }
 }
 
@@ -2072,23 +2058,21 @@ static void test_count_trailing_zeros_ull(void) {
         0x8000000000000000ULL,
         0x0000000000000000ULL
     };
-    uint64_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
 
-    for(int i = 0; i < 33; i++) {
+    for(uint64_t i = 0; i < 33; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u trailing zeros in unsigned long long", expected[i]);
-        TEST_ASSERT_EQ(count_trailing_zeros_ull(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u trailing zeros in unsigned long long", i);
+        TEST_ASSERT_EQ(count_trailing_zeros_ull(vals[i]), i, msg);
     }
 }
 
 static void test_count_trailing_ones_uc(void) {
     uint8_t vals[] = {0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF};
-    uint8_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
-    for(int i = 0; i < 9; i++) {
+    for(uint8_t i = 0; i < 9; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u trailing ones in unsigned char", expected[i]);
-        TEST_ASSERT_EQ(count_trailing_ones_uc(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u trailing ones in unsigned char", i);
+        TEST_ASSERT_EQ(count_trailing_ones_uc(vals[i]), i, msg);
     }
 }
 
@@ -2112,12 +2096,11 @@ static void test_count_trailing_ones_us(void) {
         0x7FFF,
         0xFFFF
     };
-    uint16_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
-    for(int i = 0; i < 17; i++) {
+    for(uint16_t i = 0; i < 17; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u trailing ones in unsigned short", expected[i]);
-        TEST_ASSERT_EQ(count_trailing_ones_us(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u trailing ones in unsigned short", i);
+        TEST_ASSERT_EQ(count_trailing_ones_us(vals[i]), i, msg);
     }
 }
 
@@ -2157,12 +2140,11 @@ static void test_count_trailing_ones_ui(void) {
         0x7FFFFFFF,
         0xFFFFFFFF
     };
-    uint32_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
 
-    for(int i = 0; i < 33; i++) {
+    for(uint32_t i = 0; i < 33; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u trailing ones in unsigned int", expected[i]);
-        TEST_ASSERT_EQ(count_trailing_ones_ui(vals[i]), expected[i], msg);
+        snprintf(msg, sizeof(msg), "%u trailing ones in unsigned int", i);
+        TEST_ASSERT_EQ(count_trailing_ones_ui(vals[i]), i, msg);
     }
 }
 
