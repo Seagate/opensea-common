@@ -2452,11 +2452,12 @@ static void test_first_leading_one_ul(void) {
         0x7FFFFFFFFFFFFFFFUL,
         0xFFFFFFFFFFFFFFFFUL
     };
+    uint64_t expected[] = {64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     for(uint64_t i = 1; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 1 on bit position %lu in unsigned long", i);
-        TEST_ASSERT_EQ(first_leading_one_ul(vals[i]), i, msg);
+        snprintf(msg, sizeof(msg), "First leading 1 on bit position %lu in unsigned long", expected[i]);
+        TEST_ASSERT_EQ(first_leading_one_ul(vals[i]), expected[i], msg);
     }
 }
 
@@ -2527,11 +2528,12 @@ static void test_first_leading_one_ull(void) {
         0x7FFFFFFFFFFFFFFFULL,
         0xFFFFFFFFFFFFFFFFULL
     };
+    uint64_t expected[] = {64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     for(uint64_t i = 1; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 1 on bit position %lu in unsigned long long", i);
-        TEST_ASSERT_EQ(first_leading_one_ull(vals[i]), i, msg);
+        snprintf(msg, sizeof(msg), "First leading 1 on bit position %lu in unsigned long long", expected[i]);
+        TEST_ASSERT_EQ(first_leading_one_ull(vals[i]), expected[i], msg);
     }
 }
 
@@ -2767,10 +2769,10 @@ void run_bit_manip_tests(void)
     test_count_trailing_ones_ul();
     test_count_trailing_ones_ull();
     test_first_leading_one_uc();
-    // test_first_leading_one_us();
-    // test_first_leading_one_ui();
-    // test_first_leading_one_ul();
-    // test_first_leading_one_ull();
+    test_first_leading_one_us();
+    test_first_leading_one_ui();
+    test_first_leading_one_ul();
+    test_first_leading_one_ull();
 }
 
 
