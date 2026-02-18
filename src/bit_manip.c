@@ -128,6 +128,18 @@ enum
     GENERIC_WIDTH_64 = 64
 };
 
+/* Macro to assign output fields concisely.
+ * Usage: GEN_ASSIGN_OUT(uint8_t, u8, gen_extract_u8, input.u8)
+ * Expands to set out.sizeoftype, out.uX = casted extract, and out.issigned.
+ */
+#define GEN_ASSIGN_OUT(TARGET_TYPE, OUT_FIELD, EXTRACT_FN, IN_FIELD) \
+    do                                                                  \
+    {                                                                   \
+        out.sizeoftype = sizeof(TARGET_TYPE);                           \
+        out.OUT_FIELD  = M_STATIC_CAST(TARGET_TYPE, EXTRACT_FN(IN_FIELD, msb, lsb)); \
+        out.issigned   = input.issigned;                                \
+    } while (0)
+
 /* Helper functions to centralize safe mask/shift logic and avoid
  * undefined behavior when shifting by full type width. These reduce
  * duplication and fix cases where constructing masks like
@@ -318,9 +330,7 @@ static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
         }
         else
         {
-            out.sizeoftype = sizeof(uint8_t);
-            out.u8         = gen_extract_u8(input.u8, msb, lsb);
-            out.issigned   = input.issigned;
+            GEN_ASSIGN_OUT(uint8_t, u8, gen_extract_u8, input.u8);
         }
     }
     M_USE_UNUSED(outputsize);
@@ -343,34 +353,31 @@ static M_INLINE genericint_t gen_16bit_range(genericint_t input, size_t outputsi
     {
         errno = ERANGE;
     }
-    else if (outputsize == sizeof(uint8_t))
+    else
     {
         size_t bit_count = gen_bit_width(msb, lsb);
 
-        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
+        if (outputsize == sizeof(uint8_t))
         {
-            errno = ERANGE;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint8_t, u8, gen_extract_u16, input.u16);
+            }
         }
-        else
+        else /* default case where outputsize is not less than uint16 */
         {
-            out.sizeoftype = sizeof(uint8_t);
-            out.u8         = M_STATIC_CAST(uint8_t, gen_extract_u16(input.u16, msb, lsb));
-            out.issigned   = input.issigned;
-        }
-    }
-    else /* default case where outputsize is not less than uint16 */
-    {
-        size_t bit_count = gen_bit_width(msb, lsb);
-
-        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_16)
-        {
-            errno = ERANGE;
-        }
-        else
-        {
-            out.sizeoftype = sizeof(uint16_t);
-            out.u16        = gen_extract_u16(input.u16, msb, lsb);
-            out.issigned   = input.issigned;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_16)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint16_t, u16, gen_extract_u16, input.u16);
+            }
         }
     }
     return out;
@@ -392,49 +399,42 @@ static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsi
     {
         errno = ERANGE;
     }
-    else if (outputsize == sizeof(uint8_t))
+    else
     {
         size_t bit_count = gen_bit_width(msb, lsb);
 
-        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
+        if (outputsize == sizeof(uint8_t))
         {
-            errno = ERANGE;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint8_t, u8, gen_extract_u32, input.u32);
+            }
         }
-        else
+        else if (outputsize == sizeof(uint16_t))
         {
-            out.sizeoftype = sizeof(uint8_t);
-            out.u8         = M_STATIC_CAST(uint8_t, gen_extract_u32(input.u32, msb, lsb));
-            out.issigned   = input.issigned;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_16)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint16_t, u16, gen_extract_u32, input.u32);
+            }
         }
-    }
-    else if (outputsize == sizeof(uint16_t))
-    {
-        size_t bit_count = gen_bit_width(msb, lsb);
-
-        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_16)
+        else /* default case where outputsize is not less than uint32 */
         {
-            errno = ERANGE;
-        }
-        else
-        {
-            out.sizeoftype = sizeof(uint16_t);
-            out.u16        = M_STATIC_CAST(uint16_t, gen_extract_u32(input.u32, msb, lsb));
-            out.issigned   = input.issigned;
-        }
-    }
-    else /* default case where outputsize is not less than uint32 */
-    {
-        size_t bit_count = gen_bit_width(msb, lsb);
-
-        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_32)
-        {
-            errno = ERANGE;
-        }
-        else
-        {
-            out.sizeoftype = sizeof(uint32_t);
-            out.u32        = gen_extract_u32(input.u32, msb, lsb);
-            out.issigned   = input.issigned;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_32)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint32_t, u32, gen_extract_u32, input.u32);
+            }
         }
     }
     return out;
@@ -456,64 +456,53 @@ static M_INLINE genericint_t gen_64bit_range(genericint_t input, size_t outputsi
     {
         errno = ERANGE;
     }
-    else if (outputsize == sizeof(uint8_t))
+    else
     {
         size_t bit_count = gen_bit_width(msb, lsb);
 
-        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
+        if (outputsize == sizeof(uint8_t))
         {
-            errno = ERANGE;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint8_t, u8, gen_extract_u64, input.u64);
+            }
         }
-        else
+        else if (outputsize == sizeof(uint16_t))
         {
-            out.sizeoftype = sizeof(uint8_t);
-            out.u8         = M_STATIC_CAST(uint8_t, gen_extract_u64(input.u64, msb, lsb));
-            out.issigned   = input.issigned;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_16)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint16_t, u16, gen_extract_u64, input.u64);
+            }
         }
-    }
-    else if (outputsize == sizeof(uint16_t))
-    {
-        size_t bit_count = gen_bit_width(msb, lsb);
-
-        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_16)
+        else if (outputsize == sizeof(uint32_t))
         {
-            errno = ERANGE;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_32)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint32_t, u32, gen_extract_u64, input.u64);
+            }
         }
-        else
+        else /* default case where outputsize is not less than uint64 */
         {
-            out.sizeoftype = sizeof(uint16_t);
-            out.u16        = M_STATIC_CAST(uint16_t, gen_extract_u64(input.u64, msb, lsb));
-            out.issigned   = input.issigned;
-        }
-    }
-    else if (outputsize == sizeof(uint32_t))
-    {
-        size_t bit_count = gen_bit_width(msb, lsb);
-
-        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_32)
-        {
-            errno = ERANGE;
-        }
-        else
-        {
-            out.sizeoftype = sizeof(uint32_t);
-            out.u32        = M_STATIC_CAST(uint32_t, gen_extract_u64(input.u64, msb, lsb));
-            out.issigned   = input.issigned;
-        }
-    }
-    else /* default case where outputsize is not less than uint64 */
-    {
-        size_t bit_count = gen_bit_width(msb, lsb);
-
-        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_64)
-        {
-            errno = ERANGE;
-        }
-        else
-        {
-            out.sizeoftype = sizeof(uint64_t);
-            out.u64        = gen_extract_u64(input.u64, msb, lsb);
-            out.issigned   = input.issigned;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_64)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint64_t, u64, gen_extract_u64, input.u64);
+            }
         }
     }
     return out;
