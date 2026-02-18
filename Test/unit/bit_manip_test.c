@@ -1517,7 +1517,7 @@ static void test_count_leading_zeros_ul(void) {
     
     for(uint64_t i = 0; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u leading zeros in unsigned long", i);
+        snprintf(msg, sizeof(msg), "%lu leading zeros in unsigned long", i);
         TEST_ASSERT_EQ(count_leading_zeros_ul(vals[i]), i, msg);
     }
 }
@@ -1593,7 +1593,7 @@ static void test_count_leading_zeros_ull(void) {
     
     for(uint64_t i = 0; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u leading zeros in unsigned long long", i);
+        snprintf(msg, sizeof(msg), "%lu leading zeros in unsigned long long", i);
         TEST_ASSERT_EQ(count_leading_zeros_ull(vals[i]), i, msg);
     }
 }
@@ -1751,7 +1751,7 @@ static void test_count_leading_ones_ul(void) {
 
     for(uint64_t i = 0; i < 33; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u leading ones in unsigned long", i);
+        snprintf(msg, sizeof(msg), "%lu leading ones in unsigned long", i);
         TEST_ASSERT_EQ(count_leading_ones_ul(vals[i]), i, msg);
     }
 }
@@ -1827,7 +1827,7 @@ static void test_count_leading_ones_ull(void) {
 
     for(uint64_t i = 0; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u leading ones in unsigned long long", i);
+        snprintf(msg, sizeof(msg), "%lu leading ones in unsigned long long", i);
         TEST_ASSERT_EQ(count_leading_ones_ull(vals[i]), i, msg);
     }
 }
@@ -1985,7 +1985,7 @@ static void test_count_trailing_zeros_ul(void) {
 
     for(uint64_t i = 0; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u trailing zeros in unsigned long", i);
+        snprintf(msg, sizeof(msg), "%lu trailing zeros in unsigned long", i);
         TEST_ASSERT_EQ(count_trailing_zeros_ul(vals[i]), i, msg);
     }
 }
@@ -2061,7 +2061,7 @@ static void test_count_trailing_zeros_ull(void) {
 
     for(uint64_t i = 0; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u trailing zeros in unsigned long long", i);
+        snprintf(msg, sizeof(msg), "%lu trailing zeros in unsigned long long", i);
         TEST_ASSERT_EQ(count_trailing_zeros_ull(vals[i]), i, msg);
     }
 }
@@ -2219,7 +2219,7 @@ static void test_count_trailing_ones_ul(void) {
 
     for(uint64_t i = 0; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u trailing ones in unsigned long", i);
+        snprintf(msg, sizeof(msg), "%lu trailing ones in unsigned long", i);
         TEST_ASSERT_EQ(count_trailing_ones_ul(vals[i]), i, msg);
     }
 }
@@ -2295,7 +2295,7 @@ static void test_count_trailing_ones_ull(void) {
 
     for(uint64_t i = 0; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "%u trailing ones in unsigned long long", i);
+        snprintf(msg, sizeof(msg), "%lu trailing ones in unsigned long long", i);
         TEST_ASSERT_EQ(count_trailing_ones_ull(vals[i]), i, msg);
     }
 }
@@ -2453,7 +2453,7 @@ static void test_first_leading_one_ul(void) {
 
     for(uint64_t i = 0; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 1 on bit position %u in unsigned long", i);
+        snprintf(msg, sizeof(msg), "First leading 1 on bit position %lu in unsigned long", i);
         TEST_ASSERT_EQ(first_leading_one_ul(vals[i]), i, msg);
     }
 }
@@ -2529,7 +2529,7 @@ static void test_first_leading_one_ull(void) {
 
     for(uint64_t i = 0; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 1 on bit position %u in unsigned long long", i);
+        snprintf(msg, sizeof(msg), "First leading 1 on bit position %lu in unsigned long long", i);
         TEST_ASSERT_EQ(first_leading_one_ull(vals[i]), i, msg);
     }
 }
