@@ -2081,6 +2081,245 @@ static void test_count_trailing_zeros_ull(void) {
     }
 }
 
+static void test_count_trailing_ones_uc(void) {
+    uint8_t vals[] = {0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF};
+    uint8_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+
+    for(int i = 0; i < 9; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%u trailing ones in unsigned char", expected[i]);
+        TEST_ASSERT_EQ(count_trailing_ones_uc(vals[i]), expected[i], msg);
+    }
+}
+
+static void test_count_trailing_ones_us(void) {
+    uint16_t vals[] = {
+        0x0000,
+        0x0001,
+        0x0003,
+        0x0007,
+        0x000F,
+        0x001F,
+        0x003F,
+        0x007F,
+        0x00FF,
+        0x01FF,
+        0x03FF,
+        0x07FF,
+        0x0FFF,
+        0x1FFF,
+        0x3FFF,
+        0x7FFF,
+        0xFFFF
+    };
+    uint16_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+
+    for(int i = 0; i < 17; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%u trailing ones in unsigned short", expected[i]);
+        TEST_ASSERT_EQ(count_trailing_ones_us(vals[i]), expected[i], msg);
+    }
+}
+
+static void test_count_trailing_ones_ui(void) {
+    uint32_t vals[] = {
+        0x00000000,
+        0x00000001,
+        0x00000003,
+        0x00000007,
+        0x0000000F,
+        0x0000001F,
+        0x0000003F,
+        0x0000007F,
+        0x000000FF,
+        0x000001FF,
+        0x000003FF,
+        0x000007FF,
+        0x00000FFF,
+        0x00001FFF,
+        0x00003FFF,
+        0x00007FFF,
+        0x0000FFFF,
+        0x0001FFFF,
+        0x0003FFFF,
+        0x0007FFFF,
+        0x000FFFFF,
+        0x001FFFFF,
+        0x003FFFFF,
+        0x007FFFFF,
+        0x00FFFFFF,
+        0x01FFFFFF,
+        0x03FFFFFF,
+        0x07FFFFFF,
+        0x0FFFFFFF,
+        0x1FFFFFFF,
+        0x3FFFFFFF,
+        0x7FFFFFFF,
+        0xFFFFFFFF
+    };
+    uint32_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
+
+    for(int i = 0; i < 33; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%u trailing ones in unsigned int", expected[i]);
+        TEST_ASSERT_EQ(count_trailing_ones_ui(vals[i]), expected[i], msg);
+    }
+}
+
+static void test_count_trailing_ones_ul(void) {
+    uint64_t vals[] = {
+        0xFFFFFFFFFFFFFFFFUL,
+        0xFFFFFFFFFFFFFFFEUL,
+        0xFFFFFFFFFFFFFFFCUL,
+        0xFFFFFFFFFFFFFFF8UL,
+        0xFFFFFFFFFFFFFFF0UL,
+        0xFFFFFFFFFFFFFFE0UL,
+        0xFFFFFFFFFFFFFFC0UL,
+        0xFFFFFFFFFFFFFF80UL,
+        0xFFFFFFFFFFFFFF00UL,
+        0xFFFFFFFFFFFFFE00UL,
+        0xFFFFFFFFFFFFFC00UL,
+        0xFFFFFFFFFFFFF800UL,
+        0xFFFFFFFFFFFFF000UL,
+        0xFFFFFFFFFFFFE000UL,
+        0xFFFFFFFFFFFFC000UL,
+        0xFFFFFFFFFFFF8000UL,
+        0xFFFFFFFFFFFF0000UL,
+        0xFFFFFFFFFFFE0000UL,
+        0xFFFFFFFFFFFC0000UL,
+        0xFFFFFFFFFFF80000UL,
+        0xFFFFFFFFFFF00000UL,
+        0xFFFFFFFFFFE00000UL,
+        0xFFFFFFFFFFC00000UL,
+        0xFFFFFFFFFF800000UL,
+        0xFFFFFFFFFF000000UL,
+        0xFFFFFFFFFE000000UL,
+        0xFFFFFFFFFC000000UL,
+        0xFFFFFFFFF8000000UL,
+        0xFFFFFFFFF0000000UL,
+        0xFFFFFFFFE0000000UL,
+        0xFFFFFFFFC0000000UL,
+        0xFFFFFFFF80000000UL,
+        0xFFFFFFFF00000000UL,
+        0xFFFFFFFE00000000UL,
+        0xFFFFFFFC00000000UL,
+        0xFFFFFFF800000000UL,
+        0xFFFFFFF000000000UL,
+        0xFFFFFFE000000000UL,
+        0xFFFFFFC000000000UL,
+        0xFFFFFF8000000000UL,
+        0xFFFFFF0000000000UL,
+        0xFFFFFE0000000000UL,
+        0xFFFFFC0000000000UL,
+        0xFFFFF80000000000UL,
+        0xFFFFF00000000000UL,
+        0xFFFFE00000000000UL,
+        0xFFFFC00000000000UL,
+        0xFFFF800000000000UL,
+        0xFFFF000000000000UL,
+        0xFFFE000000000000UL,
+        0xFFFC000000000000UL,
+        0xFFF8000000000000UL,
+        0xFFF0000000000000UL,
+        0xFFE0000000000000UL,
+        0xFFC0000000000000UL,
+        0xFF80000000000000UL,
+        0xFF00000000000000UL,
+        0xFE00000000000000UL,
+        0xFC00000000000000UL,
+        0xF800000000000000UL,
+        0xF000000000000000UL,
+        0xE000000000000000UL,
+        0xC000000000000000UL,
+        0x8000000000000000UL,
+        0x0000000000000000UL
+    };
+    uint64_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
+
+    for(int i = 0; i < 33; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%u trailing ones in unsigned long", expected[i]);
+        TEST_ASSERT_EQ(count_trailing_ones_ul(vals[i]), expected[i], msg);
+    }
+}
+
+static void test_count_trailing_ones_ull(void) {
+    uint64_t vals[] = {
+        0xFFFFFFFFFFFFFFFFULL,
+        0xFFFFFFFFFFFFFFFEULL,
+        0xFFFFFFFFFFFFFFFCULL,
+        0xFFFFFFFFFFFFFFF8ULL,
+        0xFFFFFFFFFFFFFFF0ULL,
+        0xFFFFFFFFFFFFFFE0ULL,
+        0xFFFFFFFFFFFFFFC0ULL,
+        0xFFFFFFFFFFFFFF80ULL,
+        0xFFFFFFFFFFFFFF00ULL,
+        0xFFFFFFFFFFFFFE00ULL,
+        0xFFFFFFFFFFFFFC00ULL,
+        0xFFFFFFFFFFFFF800ULL,
+        0xFFFFFFFFFFFFF000ULL,
+        0xFFFFFFFFFFFFE000ULL,
+        0xFFFFFFFFFFFFC000ULL,
+        0xFFFFFFFFFFFF8000ULL,
+        0xFFFFFFFFFFFF0000ULL,
+        0xFFFFFFFFFFFE0000ULL,
+        0xFFFFFFFFFFFC0000ULL,
+        0xFFFFFFFFFFF80000ULL,
+        0xFFFFFFFFFFF00000ULL,
+        0xFFFFFFFFFFE00000ULL,
+        0xFFFFFFFFFFC00000ULL,
+        0xFFFFFFFFFF800000ULL,
+        0xFFFFFFFFFF000000ULL,
+        0xFFFFFFFFFE000000ULL,
+        0xFFFFFFFFFC000000ULL,
+        0xFFFFFFFFF8000000ULL,
+        0xFFFFFFFFF0000000ULL,
+        0xFFFFFFFFE0000000ULL,
+        0xFFFFFFFFC0000000ULL,
+        0xFFFFFFFF80000000ULL,
+        0xFFFFFFFF00000000ULL,
+        0xFFFFFFFE00000000ULL,
+        0xFFFFFFFC00000000ULL,
+        0xFFFFFFF800000000ULL,
+        0xFFFFFFF000000000ULL,
+        0xFFFFFFE000000000ULL,
+        0xFFFFFFC000000000ULL,
+        0xFFFFFF8000000000ULL,
+        0xFFFFFF0000000000ULL,
+        0xFFFFFE0000000000ULL,
+        0xFFFFFC0000000000ULL,
+        0xFFFFF80000000000ULL,
+        0xFFFFF00000000000ULL,
+        0xFFFFE00000000000ULL,
+        0xFFFFC00000000000ULL,
+        0xFFFF800000000000ULL,
+        0xFFFF000000000000ULL,
+        0xFFFE000000000000ULL,
+        0xFFFC000000000000ULL,
+        0xFFF8000000000000ULL,
+        0xFFF0000000000000ULL,
+        0xFFE0000000000000ULL,
+        0xFFC0000000000000ULL,
+        0xFF80000000000000ULL,
+        0xFF00000000000000ULL,
+        0xFE00000000000000ULL,
+        0xFC00000000000000ULL,
+        0xF800000000000000ULL,
+        0xF000000000000000ULL,
+        0xE000000000000000ULL,
+        0xC000000000000000ULL,
+        0x8000000000000000ULL,
+        0x0000000000000000ULL
+    };
+    uint64_t expected[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
+
+    for(int i = 0; i < 33; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%u trailing ones in unsigned long long", expected[i]);
+        TEST_ASSERT_EQ(count_trailing_ones_ull(vals[i]), expected[i], msg);
+    }
+}
+
 void run_bit_manip_tests(void)
 {
     test_get_DWord0();
@@ -2307,6 +2546,11 @@ void run_bit_manip_tests(void)
     test_count_trailing_zeros_ui();
     test_count_trailing_zeros_ul();
     test_count_trailing_zeros_ull();
+    test_count_trailing_ones_uc();
+    test_count_trailing_ones_us();
+    test_count_trailing_ones_ui();
+    test_count_trailing_ones_ul();
+    test_count_trailing_ones_ull();
 }
 
 
