@@ -2534,6 +2534,16 @@ static void test_first_leading_one_ull(void) {
     }
 }
 
+static void test_count_ones_uc(void) {
+    uint8_t vals[] = {0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE, 0xFF};
+
+    for(uint8_t i = 0; i < 9; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%u ones in unsigned char", i);
+        TEST_ASSERT_EQ(count_ones_uc(vals[i]), i, msg);
+    }
+}
+
 void run_bit_manip_tests(void)
 {
     #ifdef HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE
@@ -2777,6 +2787,7 @@ void run_bit_manip_tests(void)
     // test_first_leading_one_ui();
     // test_first_leading_one_ul();
     // test_first_leading_one_ull();
+    test_count_ones_uc();
 }
 
 
