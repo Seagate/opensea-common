@@ -540,7 +540,7 @@ static void test_M_BitN(void) {
         uint64_t expected = (uint64_t)(1ULL << bit);
 
         char msg[80];
-        snprintf(msg, sizeof(msg), "Set %uth bit of uint64_t", bit);
+        snprintf(msg, sizeof(msg), "Set %luth bit of uint64_t", bit);
 
         TEST_ASSERT_EQ(M_BitN(bit), expected, msg);
     }
@@ -588,7 +588,7 @@ static void test_M_BitN64(void) {
         uint64_t expected = (uint64_t)(1ULL << bit);
 
         char msg[80];
-        snprintf(msg, sizeof(msg), "Set %uth bit of uint64_t", bit);
+        snprintf(msg, sizeof(msg), "Set %luth bit of uint64_t", bit);
 
         TEST_ASSERT_EQ(M_BitN64(bit), expected, msg);
     }
@@ -902,7 +902,7 @@ static void test_set_uint64_bit(void) {
         uint64_t expected = (uint64_t)(UINT64_MIN_VAL | (1ULL << bit));
 
         char msg[80];
-        snprintf(msg, sizeof(msg), "Set %uth bit of 0x00", bit);
+        snprintf(msg, sizeof(msg), "Set %luth bit of 0x00", bit);
 
         TEST_ASSERT_EQ(set_uint64_bit(UINT64_MIN_VAL, bit), expected, msg);
     }
@@ -950,7 +950,7 @@ static void test_clear_uint64_bit(void) {
         uint64_t expected = (uint64_t)(UINT64_MAX_VAL & ~(1ULL << bit));
 
         char msg[80];
-        snprintf(msg, sizeof(msg), "Clear %uth bit of 0xFF", bit);
+        snprintf(msg, sizeof(msg), "Clear %luth bit of 0xFF", bit);
 
         TEST_ASSERT_EQ(clear_uint64_bit(UINT64_MAX_VAL, bit), expected, msg);
     }
@@ -1002,7 +1002,7 @@ static void test_M_CLEAR_BIT64(void) {
         uint64_t expected = (uint64_t)(UINT64_MAX_VAL & ~(1ULL << bit));
 
         char msg[80];
-        snprintf(msg, sizeof(msg), "Clear %uth bit of 0xFF using M_CLEAR_BIT64", bit);
+        snprintf(msg, sizeof(msg), "Clear %luth bit of 0xFF using M_CLEAR_BIT64", bit);
 
         TEST_ASSERT_EQ(M_CLEAR_BIT64(value, bit), expected, msg);
     }
@@ -1054,7 +1054,7 @@ static void test_M_SET_BIT64(void) {
         uint64_t expected = (uint64_t)(UINT64_MIN_VAL | (1ULL << bit));
 
         char msg[80];
-        snprintf(msg, sizeof(msg), "Set %uth bit of 0x00 using M_SET_BIT64", bit);
+        snprintf(msg, sizeof(msg), "Set %luth bit of 0x00 using M_SET_BIT64", bit);
 
         TEST_ASSERT_EQ(M_SET_BIT64(value, bit), expected, msg);
     }
