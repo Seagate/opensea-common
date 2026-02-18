@@ -312,11 +312,7 @@ static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
     {
         size_t bit_count = gen_bit_width(msb, lsb);
 
-        if (bit_count == GENERIC_WIDTH_0)
-        {
-            errno = ERANGE;
-        }
-        else if (bit_count > GENERIC_WIDTH_8)
+        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
         {
             errno = ERANGE;
         }
@@ -351,11 +347,7 @@ static M_INLINE genericint_t gen_16bit_range(genericint_t input, size_t outputsi
     {
         size_t bit_count = gen_bit_width(msb, lsb);
 
-        if (bit_count == GENERIC_WIDTH_0)
-        {
-            errno = ERANGE;
-        }
-        else if (bit_count > GENERIC_WIDTH_8)
+        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
         {
             errno = ERANGE;
         }
@@ -370,11 +362,7 @@ static M_INLINE genericint_t gen_16bit_range(genericint_t input, size_t outputsi
     {
         size_t bit_count = gen_bit_width(msb, lsb);
 
-        if (bit_count == GENERIC_WIDTH_0)
-        {
-            errno = ERANGE;
-        }
-        else if (bit_count > GENERIC_WIDTH_16)
+        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_16)
         {
             errno = ERANGE;
         }
@@ -408,11 +396,7 @@ static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsi
     {
         size_t bit_count = gen_bit_width(msb, lsb);
 
-        if (bit_count == GENERIC_WIDTH_0)
-        {
-            errno = ERANGE;
-        }
-        else if (bit_count > GENERIC_WIDTH_8)
+        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
         {
             errno = ERANGE;
         }
@@ -427,11 +411,7 @@ static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsi
     {
         size_t bit_count = gen_bit_width(msb, lsb);
 
-        if (bit_count == GENERIC_WIDTH_0)
-        {
-            errno = ERANGE;
-        }
-        else if (bit_count > GENERIC_WIDTH_16)
+        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_16)
         {
             errno = ERANGE;
         }
@@ -446,11 +426,7 @@ static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsi
     {
         size_t bit_count = gen_bit_width(msb, lsb);
 
-        if (bit_count == GENERIC_WIDTH_0)
-        {
-            errno = ERANGE;
-        }
-        else if (bit_count > GENERIC_WIDTH_32)
+        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_32)
         {
             errno = ERANGE;
         }
@@ -484,11 +460,7 @@ static M_INLINE genericint_t gen_64bit_range(genericint_t input, size_t outputsi
     {
         size_t bit_count = gen_bit_width(msb, lsb);
 
-        if (bit_count == GENERIC_WIDTH_0)
-        {
-            errno = ERANGE;
-        }
-        else if (bit_count > GENERIC_WIDTH_8)
+        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
         {
             errno = ERANGE;
         }
@@ -503,11 +475,7 @@ static M_INLINE genericint_t gen_64bit_range(genericint_t input, size_t outputsi
     {
         size_t bit_count = gen_bit_width(msb, lsb);
 
-        if (bit_count == GENERIC_WIDTH_0)
-        {
-            errno = ERANGE;
-        }
-        else if (bit_count > GENERIC_WIDTH_16)
+        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_16)
         {
             errno = ERANGE;
         }
@@ -522,11 +490,7 @@ static M_INLINE genericint_t gen_64bit_range(genericint_t input, size_t outputsi
     {
         size_t bit_count = gen_bit_width(msb, lsb);
 
-        if (bit_count == GENERIC_WIDTH_0)
-        {
-            errno = ERANGE;
-        }
-        else if (bit_count > GENERIC_WIDTH_32)
+        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_32)
         {
             errno = ERANGE;
         }
@@ -541,11 +505,7 @@ static M_INLINE genericint_t gen_64bit_range(genericint_t input, size_t outputsi
     {
         size_t bit_count = gen_bit_width(msb, lsb);
 
-        if (bit_count == GENERIC_WIDTH_0)
-        {
-            errno = ERANGE;
-        }
-        else if (bit_count > GENERIC_WIDTH_64)
+        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_64)
         {
             errno = ERANGE;
         }
