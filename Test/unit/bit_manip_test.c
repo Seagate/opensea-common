@@ -3420,7 +3420,7 @@ static void test_bit_floor_ul(void) {
     for(uint64_t i = 0; i < 64; i++) {
         char msg[100];
         snprintf(msg, sizeof(msg), "the largest integral power of two not greater than the given value is %u", 1U << (63-i));
-        TEST_ASSERT_EQ(bit_floor_ul(vals[i]), 1U << (63-i), msg);
+        TEST_ASSERT_EQ(bit_floor_ul(vals[i]), 1UL << (63-i), msg);
     }
 }
 
@@ -3496,7 +3496,7 @@ static void test_bit_floor_ull(void) {
     for(uint64_t i = 0; i < 64; i++) {
         char msg[100];
         snprintf(msg, sizeof(msg), "the largest integral power of two not greater than the given value is %u", 1U << (63-i));
-        TEST_ASSERT_EQ(bit_floor_ull(vals[i]), 1U << (63-i), msg);
+        TEST_ASSERT_EQ(bit_floor_ull(vals[i]), 1ULL << (63-i), msg);
     }
 }
 
