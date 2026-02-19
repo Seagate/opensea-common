@@ -503,7 +503,7 @@ static void test_get_16bit_range_int32(void) {
 
 static void test_get_bit_range_int64(void) {
     TEST_ASSERT_EQ(get_bit_range_int64((int64_t)(HEX_RANDOM), 63, 32), (int64_t)(0xF0F0F0F0), "Extract bits 63 to 32 from int64_t 0xF0F0F0F0F0F0F0F0ULL");
-    // TEST_ASSERT_EQ(get_bit_range_int64((int64_t)0xFFF00000FFF00000ULL, 63, 0), (int64_t)(0xFFF00000FFF00000), "Extract bits 63 to 0 from int64_t 0xF0F0F0F0F0F0F0F0ULL"); // Check full range extraction
+    TEST_ASSERT_EQ(get_bit_range_int64((int64_t)0xFFF00000FFF00000ULL, 63, 0), (int64_t)(0xFFF00000FFF00000), "Extract bits 63 to 0 from int64_t 0xF0F0F0F0F0F0F0F0ULL"); // Check full range extraction
 }
 
 static void test_get_8bit_range_int64(void) {
@@ -523,7 +523,7 @@ static void test_M_GETBITRANGE(void) {
     TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 15, 8), (uint8_t)(0xF0), "Extract bits 15 to 8 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
     TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 15, 0), (uint16_t)(0xF0F0), "Extract bits 15 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
     TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 31, 0), (uint32_t)(0xF0F0F0F0), "Extract bits 31 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
-    // TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 63, 0), (uint64_t)(HEX_RANDOM), "Extract bits 63 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
+    TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 63, 0), (uint64_t)(HEX_RANDOM), "Extract bits 63 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
 }
 
 static void test_M_IGETBITRANGE(void) {
@@ -531,7 +531,7 @@ static void test_M_IGETBITRANGE(void) {
     TEST_ASSERT_EQ(M_IGETBITRANGE(HEX_RANDOM, 15, 8), (int8_t)(0xF0), "Extract bits 15 to 8 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
     TEST_ASSERT_EQ(M_IGETBITRANGE(HEX_RANDOM, 15, 0), (int16_t)(0xF0F0), "Extract bits 15 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
     TEST_ASSERT_EQ(M_IGETBITRANGE(HEX_RANDOM, 31, 0), (int32_t)(0xF0F0F0F0), "Extract bits 31 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
-    // TEST_ASSERT_EQ(M_IGETBITRANGE(HEX_RANDOM, 63, 0), (int64_t)(HEX_RANDOM), "Extract bits 63 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
+    TEST_ASSERT_EQ(M_IGETBITRANGE(HEX_RANDOM, 63, 0), (int64_t)(HEX_RANDOM), "Extract bits 63 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
 }
 
 static void test_M_BitN(void) {
