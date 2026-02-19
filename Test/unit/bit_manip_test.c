@@ -3037,7 +3037,7 @@ static void test_get_req_bit_width_uc(void) {
 
     for(uint8_t i = 0; i < 9; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value - %u", 8-i);
+        snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value is %u", 8-i);
         TEST_ASSERT_EQ(get_req_bit_width_uc(vals[i]), 8-i, msg);
     }
 }
@@ -3065,8 +3065,8 @@ static void test_get_req_bit_width_us(void) {
 
     for(uint16_t i = 0; i < 17; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value - %u", 8-i);
-        TEST_ASSERT_EQ(get_req_bit_width_us(vals[i]), 8-i, msg);
+        snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value is %u", 16-i);
+        TEST_ASSERT_EQ(get_req_bit_width_us(vals[i]), 16-i, msg);
     }
 }
 
@@ -3109,8 +3109,8 @@ static void test_get_req_bit_width_ui(void) {
     
     for(uint32_t i = 0; i < 33; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value - %u", 8-i);
-        TEST_ASSERT_EQ(get_req_bit_width_ui(vals[i]), 8-i, msg);
+        snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value is %u", 32-i);
+        TEST_ASSERT_EQ(get_req_bit_width_ui(vals[i]), 32-i, msg);
     }
 }
 
@@ -3185,8 +3185,8 @@ static void test_get_req_bit_width_ul(void) {
     
     for(uint64_t i = 0; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value - %u", 8-i);
-        TEST_ASSERT_EQ(get_req_bit_width_ul(vals[i]), 8-i, msg);
+        snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value is %u", 64-i);
+        TEST_ASSERT_EQ(get_req_bit_width_ul(vals[i]), 64-i, msg);
     }
 }
 
@@ -3261,8 +3261,8 @@ static void test_get_req_bit_width_ull(void) {
     
     for(uint64_t i = 0; i < 65; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value - %u", 8-i);
-        TEST_ASSERT_EQ(get_req_bit_width_ull(vals[i]), 8-i, msg);
+        snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value is %u", 64-i);
+        TEST_ASSERT_EQ(get_req_bit_width_ull(vals[i]), 64-i, msg);
     }
 }
 
