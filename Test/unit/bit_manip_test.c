@@ -3784,50 +3784,50 @@ static void test_rotate_left_ull(void) {
 
 static void test_rotate_right_uc(void) {
     TEST_ASSERT_EQ(rotate_right_uc((uint8_t)0xB7, 0), (uint8_t)0xB7, "Shift the value right by 0 bits");
-    TEST_ASSERT_EQ(rotate_right_uc((uint8_t)0xB7, 3), (uint8_t)0xBD, "Shift the value right by 3 bits");
+    TEST_ASSERT_EQ(rotate_right_uc((uint8_t)0xB7, 3), (uint8_t)0xF6, "Shift the value right by 3 bits");
     TEST_ASSERT_EQ(rotate_right_uc((uint8_t)0xB7, 8), (uint8_t)0xB7, "Shift the value right by 8 bits");
 }
 
 static void test_rotate_right_us(void) {
     TEST_ASSERT_EQ(rotate_right_us((uint16_t)0x7C9E, 0), (uint16_t)0x7C9E, "Shift the value right by 0 bits");
-    TEST_ASSERT_EQ(rotate_right_us((uint16_t)0x7C9E, 3), (uint16_t)0xE4F3, "Shift the value right by 3 bits");
+    TEST_ASSERT_EQ(rotate_right_us((uint16_t)0x7C9E, 3), (uint16_t)0xCF93, "Shift the value right by 3 bits");
     TEST_ASSERT_EQ(rotate_right_us((uint16_t)0x7C9E, 8), (uint16_t)0x9E7C, "Shift the value right by 8 bits");
-    TEST_ASSERT_EQ(rotate_right_us((uint16_t)0x7C9E, 12), (uint16_t)0xE7C9, "Shift the value right by 12 bits");
+    TEST_ASSERT_EQ(rotate_right_us((uint16_t)0x7C9E, 12), (uint16_t)0xC9E7, "Shift the value right by 12 bits");
     TEST_ASSERT_EQ(rotate_right_us((uint16_t)0x7C9E, 16), (uint16_t)0x7C9E, "Shift the value right by 16 bits");
 }
 
 static void test_rotate_right_ui(void) {
     TEST_ASSERT_EQ(rotate_right_ui((uint32_t)0xC4A9F27D, 0), (uint32_t)0xC4A9F27D, "Shift the value right by 0 bits");
-    TEST_ASSERT_EQ(rotate_right_ui((uint32_t)0xC4A9F27D, 3), (uint32_t)0x254F93EE, "Shift the value right by 3 bits");
-    TEST_ASSERT_EQ(rotate_right_ui((uint32_t)0xC4A9F27D, 8), (uint32_t)0xA9F27DC4, "Shift the value right by 8 bits");
-    TEST_ASSERT_EQ(rotate_right_ui((uint32_t)0xC4A9F27D, 12), (uint32_t)0x9F27DC4A, "Shift the value right by 12 bits");
+    TEST_ASSERT_EQ(rotate_right_ui((uint32_t)0xC4A9F27D, 3), (uint32_t)0xB8953E4F, "Shift the value right by 3 bits");
+    TEST_ASSERT_EQ(rotate_right_ui((uint32_t)0xC4A9F27D, 8), (uint32_t)0x7DC4A9F2, "Shift the value right by 8 bits");
+    TEST_ASSERT_EQ(rotate_right_ui((uint32_t)0xC4A9F27D, 12), (uint32_t)0x27DC4A9F, "Shift the value right by 12 bits");
     TEST_ASSERT_EQ(rotate_right_ui((uint32_t)0xC4A9F27D, 16), (uint32_t)0xF27DC4A9, "Shift the value right by 16 bits");
-    TEST_ASSERT_EQ(rotate_right_ui((uint32_t)0xC4A9F27D, 24), (uint32_t)0x7DC4A9F2, "Shift the value right by 24 bits");
+    TEST_ASSERT_EQ(rotate_right_ui((uint32_t)0xC4A9F27D, 24), (uint32_t)0xA9F27DC4, "Shift the value right by 24 bits");
     TEST_ASSERT_EQ(rotate_right_ui((uint32_t)0xC4A9F27D, 32), (uint32_t)0xC4A9F27D, "Shift the value right by 32 bits");
 }
 
 static void test_rotate_right_ul(void) {
     TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 0), 0x9A7F3C5D82B1E6A4UL, "Shift the value right by 0 bits");
-    TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 3), 0xD3F9E2EC158F3524UL, "Shift the value right by 3 bits");
-    TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 8), 0x7F3C5D82B1E6A49AUL, "Shift the value right by 8 bits");
-    TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 12), 0xF3C5D82B1E6A49A7UL, "Shift the value right by 12 bits");
-    TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 16), 0x3C5D82B1E6A49A7FUL, "Shift the value right by 16 bits");
-    TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 24), 0x5D82B1E6A49A7F3CUL, "Shift the value right by 24 bits");
+    TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 3), 0x934FE78BB0563CD4UL, "Shift the value right by 3 bits");
+    TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 8), 0xA49A7F3C5D82B1E6UL, "Shift the value right by 8 bits");
+    TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 12), 0x6A49A7F3C5D82B1EUL, "Shift the value right by 12 bits");
+    TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 16), 0xE6A49A7F3C5D82B1UL, "Shift the value right by 16 bits");
+    TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 24), 0xB1E6A49A7F3C5D82UL, "Shift the value right by 24 bits");
     TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 32), 0x82B1E6A49A7F3C5DUL, "Shift the value right by 32 bits");
-    TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 46), 0x79A9269FCF1760ACUL, "Shift the value right by 46 bits");
+    TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 46), 0xF1760AC79A9269FCUL, "Shift the value right by 46 bits");
     TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 64), 0x9A7F3C5D82B1E6A4UL, "Shift the value right by 64 bits");
 }
 
 static void test_rotate_right_ull(void) {
-    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4ULL, 0), 0x9A7F3C5D82B1E6A4ULL, "Shift the value right by 0 bits");
-    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4ULL, 3), 0xD3F9E2EC158F3524ULL, "Shift the value right by 3 bits");
-    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4ULL, 8), 0x7F3C5D82B1E6A49AULL, "Shift the value right by 8 bits");
-    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4ULL, 12), 0xF3C5D82B1E6A49A7ULL, "Shift the value right by 12 bits");
-    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4ULL, 16), 0x3C5D82B1E6A49A7FULL, "Shift the value right by 16 bits");
-    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4ULL, 24), 0x5D82B1E6A49A7F3CULL, "Shift the value right by 24 bits");
-    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4ULL, 32), 0x82B1E6A49A7F3C5DULL, "Shift the value right by 32 bits");
-    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4ULL, 46), 0x79A9269FCF1760ACULL, "Shift the value right by 46 bits");
-    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4ULL, 64), 0x9A7F3C5D82B1E6A4ULL, "Shift the value right by 64 bits");
+    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4UL, 0), 0x9A7F3C5D82B1E6A4UL, "Shift the value right by 0 bits");
+    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4UL, 3), 0x934FE78BB0563CD4UL, "Shift the value right by 3 bits");
+    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4UL, 8), 0xA49A7F3C5D82B1E6UL, "Shift the value right by 8 bits");
+    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4UL, 12), 0x6A49A7F3C5D82B1EUL, "Shift the value right by 12 bits");
+    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4UL, 16), 0xE6A49A7F3C5D82B1UL, "Shift the value right by 16 bits");
+    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4UL, 24), 0xB1E6A49A7F3C5D82UL, "Shift the value right by 24 bits");
+    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4UL, 32), 0x82B1E6A49A7F3C5DUL, "Shift the value right by 32 bits");
+    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4UL, 46), 0xF1760AC79A9269FCUL, "Shift the value right by 46 bits");
+    TEST_ASSERT_EQ(rotate_right_ull(0x9A7F3C5D82B1E6A4UL, 64), 0x9A7F3C5D82B1E6A4UL, "Shift the value right by 64 bits");
 }
 
 void run_bit_manip_tests(void)
