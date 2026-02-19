@@ -36,8 +36,8 @@ static void test_INT_ROUND_UP(void) {
     TEST_ASSERT_EQ(INT_ROUND_UP((uint8_t)0xC, 5), (uint8_t)0xA, "Round 0xC to the nearest multiple of 5");
     TEST_ASSERT_EQ(INT_ROUND_UP((uint16_t)0x7B3D, 4), (uint16_t)0x7B3C, "Round 0x7B3D to the nearest multiple of 4");
     TEST_ASSERT_EQ(INT_ROUND_UP((uint32_t)0xA73C91D6, 8), (uint32_t)0xA73C91D8, "Round 0xA73C91D6 to the nearest multiple of 8");
-    TEST_ASSERT_EQ(INT_ROUND_UP((uint64_t)0x9F3A7C5D8E21B4C7UL, 2), (uint64_t)0x9F3A7C5D8E21B4C8UL, "Round 0x9F3A7C5D8E21B4C7UL to the nearest multiple of 2");
-    TEST_ASSERT_EQ(INT_ROUND_UP((uint64_t)0x9F3A7C5D8E21B4C7ULL, 2), (uint64_t)0x9F3A7C5D8E21B4C7ULL, "Round 0x9F3A7C5D8E21B4C7ULL to the nearest multiple of 2");
+    TEST_ASSERT_EQ(INT_ROUND_UP(0x9F3A7C5D8E21B4C7UL, 2), 0x9F3A7C5D8E21B4C8UL, "Round 0x9F3A7C5D8E21B4C7UL to the nearest multiple of 2");
+    TEST_ASSERT_EQ(INT_ROUND_UP(0x9F3A7C5D8E21B4C7ULL, 2), 0x9F3A7C5D8E21B4C7ULL, "Round 0x9F3A7C5D8E21B4C7ULL to the nearest multiple of 2");
 }
 
 void run_math_utils_tests(void) {
