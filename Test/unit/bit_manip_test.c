@@ -3266,6 +3266,240 @@ static void test_get_req_bit_width_ull(void) {
     }
 }
 
+static void test_bit_floor_uc(void) {
+    uint8_t vals[] = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, 0x00};
+
+    for(uint8_t i = 0; i < 9; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "the largest integral power of two not greater than the given value is %u", 1U << (7-i));
+        TEST_ASSERT_EQ(bit_floor_uc(vals[i]), 1U << (7-i), msg);
+    }
+}
+
+static void test_bit_floor_us(void) {
+    uint16_t vals[] = {
+        0x8000, 
+        0x4000, 
+        0x2000, 
+        0x1000, 
+        0x0800, 
+        0x0400, 
+        0x0200, 
+        0x0100, 
+        0x0080, 
+        0x0040, 
+        0x0020, 
+        0x0010, 
+        0x0008, 
+        0x0004, 
+        0x0002, 
+        0x0001, 
+        0x0000
+    };
+
+    for(uint16_t i = 0; i < 17; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "the largest integral power of two not greater than the given value is %u", 1U << (15-i));
+        TEST_ASSERT_EQ(bit_floor_us(vals[i]), 1U << (15-i), msg);
+    }
+}
+
+static void test_bit_floor_ui(void) {
+    uint32_t vals[] = {
+        0x80000000,
+        0x40000000, 
+        0x20000000, 
+        0x10000000, 
+        0x08000000, 
+        0x04000000, 
+        0x02000000, 
+        0x01000000, 
+        0x00800000, 
+        0x00400000, 
+        0x00200000, 
+        0x00100000, 
+        0x00080000, 
+        0x00040000, 
+        0x00020000, 
+        0x00010000, 
+        0x00008000, 
+        0x00004000, 
+        0x00002000, 
+        0x00001000, 
+        0x00000800, 
+        0x00000400, 
+        0x00000200, 
+        0x00000100, 
+        0x00000080, 
+        0x00000040, 
+        0x00000020, 
+        0x00000010, 
+        0x00000008, 
+        0x00000004, 
+        0x00000002, 
+        0x00000001, 
+        0x00000000
+    };
+    
+    for(uint32_t i = 0; i < 33; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "the largest integral power of two not greater than the given value is %u", 1U << (31-i));
+        TEST_ASSERT_EQ(bit_floor_ui(vals[i]), 1U << (31-i), msg);
+    }
+}
+
+static void test_bit_floor_ul(void) {
+    uint64_t vals[] = {
+        0x8000000000000000UL,
+        0x4000000000000000UL,
+        0x2000000000000000UL,
+        0x1000000000000000UL,
+        0x0800000000000000UL,
+        0x0400000000000000UL,
+        0x0200000000000000UL,
+        0x0100000000000000UL,
+        0x0080000000000000UL,
+        0x0040000000000000UL,
+        0x0020000000000000UL,
+        0x0010000000000000UL,
+        0x0008000000000000UL,
+        0x0004000000000000UL,
+        0x0002000000000000UL,
+        0x0001000000000000UL,
+        0x0000800000000000UL,
+        0x0000400000000000UL,
+        0x0000200000000000UL,
+        0x0000100000000000UL,
+        0x0000080000000000UL,
+        0x0000040000000000UL,
+        0x0000020000000000UL,
+        0x0000010000000000UL,
+        0x0000008000000000UL,
+        0x0000004000000000UL,
+        0x0000002000000000UL,
+        0x0000001000000000UL,
+        0x0000000800000000UL,
+        0x0000000400000000UL,
+        0x0000000200000000UL,
+        0x0000000100000000UL,
+        0x0000000080000000UL,
+        0x0000000040000000UL,
+        0x0000000020000000UL,
+        0x0000000010000000UL,
+        0x0000000008000000UL,
+        0x0000000004000000UL,
+        0x0000000002000000UL,
+        0x0000000001000000UL,
+        0x0000000000800000UL,
+        0x0000000000400000UL,
+        0x0000000000200000UL,
+        0x0000000000100000UL,
+        0x0000000000080000UL,
+        0x0000000000040000UL,
+        0x0000000000020000UL,
+        0x0000000000010000UL,
+        0x0000000000008000UL,
+        0x0000000000004000UL,
+        0x0000000000002000UL,
+        0x0000000000001000UL,
+        0x0000000000000800UL,
+        0x0000000000000400UL,
+        0x0000000000000200UL,
+        0x0000000000000100UL,
+        0x0000000000000080UL,
+        0x0000000000000040UL,
+        0x0000000000000020UL,
+        0x0000000000000010UL,
+        0x0000000000000008UL,
+        0x0000000000000004UL,
+        0x0000000000000002UL,
+        0x0000000000000001UL,
+        0x0000000000000000UL
+    };
+    
+    for(uint64_t i = 0; i < 65; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "the largest integral power of two not greater than the given value is %u", 1U << (63-i));
+        TEST_ASSERT_EQ(bit_floor_ul(vals[i]), 1U << (63-i), msg);
+    }
+}
+
+static void test_bit_floor_ull(void) {
+    uint64_t vals[] = {
+        0x8000000000000000ULL,
+        0x4000000000000000ULL,
+        0x2000000000000000ULL,
+        0x1000000000000000ULL,
+        0x0800000000000000ULL,
+        0x0400000000000000ULL,
+        0x0200000000000000ULL,
+        0x0100000000000000ULL,
+        0x0080000000000000ULL,
+        0x0040000000000000ULL,
+        0x0020000000000000ULL,
+        0x0010000000000000ULL,
+        0x0008000000000000ULL,
+        0x0004000000000000ULL,
+        0x0002000000000000ULL,
+        0x0001000000000000ULL,
+        0x0000800000000000ULL,
+        0x0000400000000000ULL,
+        0x0000200000000000ULL,
+        0x0000100000000000ULL,
+        0x0000080000000000ULL,
+        0x0000040000000000ULL,
+        0x0000020000000000ULL,
+        0x0000010000000000ULL,
+        0x0000008000000000ULL,
+        0x0000004000000000ULL,
+        0x0000002000000000ULL,
+        0x0000001000000000ULL,
+        0x0000000800000000ULL,
+        0x0000000400000000ULL,
+        0x0000000200000000ULL,
+        0x0000000100000000ULL,
+        0x0000000080000000ULL,
+        0x0000000040000000ULL,
+        0x0000000020000000ULL,
+        0x0000000010000000ULL,
+        0x0000000008000000ULL,
+        0x0000000004000000ULL,
+        0x0000000002000000ULL,
+        0x0000000001000000ULL,
+        0x0000000000800000ULL,
+        0x0000000000400000ULL,
+        0x0000000000200000ULL,
+        0x0000000000100000ULL,
+        0x0000000000080000ULL,
+        0x0000000000040000ULL,
+        0x0000000000020000ULL,
+        0x0000000000010000ULL,
+        0x0000000000008000ULL,
+        0x0000000000004000ULL,
+        0x0000000000002000ULL,
+        0x0000000000001000ULL,
+        0x0000000000000800ULL,
+        0x0000000000000400ULL,
+        0x0000000000000200ULL,
+        0x0000000000000100ULL,
+        0x0000000000000080ULL,
+        0x0000000000000040ULL,
+        0x0000000000000020ULL,
+        0x0000000000000010ULL,
+        0x0000000000000008ULL,
+        0x0000000000000004ULL,
+        0x0000000000000002ULL,
+        0x0000000000000001ULL,
+        0x0000000000000000ULL
+    };
+    
+    for(uint64_t i = 0; i < 65; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "the largest integral power of two not greater than the given value is %u", 1U << (63-i));
+        TEST_ASSERT_EQ(bit_floor_ull(vals[i]), 1U << (63-i), msg);
+    }
+}
+
 void run_bit_manip_tests(void)
 {
     #ifdef HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE
@@ -3529,6 +3763,11 @@ void run_bit_manip_tests(void)
     test_get_req_bit_width_ui();
     test_get_req_bit_width_ul();
     test_get_req_bit_width_ull();
+    test_bit_floor_uc();
+    test_bit_floor_us();
+    test_bit_floor_ui();
+    test_bit_floor_ul();
+    test_bit_floor_ull();
 }
 
 
