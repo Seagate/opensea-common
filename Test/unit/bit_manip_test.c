@@ -3032,6 +3032,16 @@ static void test_has_single_bit_ull(void) {
     TEST_ASSERT(has_single_bit_ull((uint64_t)0x01), "Returns true as a single bit is set");
 }
 
+static void test_get_req_bit_width_uc(void) {
+    uint8_t vals[] = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, 0x00};
+
+    for(uint8_t i = 0; i < 9; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value - %u", 8-i);
+        TEST_ASSERT_EQ(get_req_bit_width_uc(vals[i]), 8-i, msg);
+    }
+}
+
 void run_bit_manip_tests(void)
 {
     #ifdef HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE
@@ -3290,6 +3300,7 @@ void run_bit_manip_tests(void)
     test_has_single_bit_ui();
     test_has_single_bit_ul();
     test_has_single_bit_ull();
+    test_get_req_bit_width_uc();
 }
 
 
