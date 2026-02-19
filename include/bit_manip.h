@@ -2922,7 +2922,7 @@ extern "C"
     //! \fn static M_INLINE unsigned int first_leading_zero_uc(unsigned char value)
     //! \brief finds the first position of 0 bit, starting from the most significant bit
     //! \param[in] value the value to assess
-    //! \return the position of the highest bit set to one in \a value
+    //! \return the position of the highest bit set to zero in \a value
     static M_INLINE unsigned int first_leading_zero_uc(unsigned char value)
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
@@ -2937,7 +2937,7 @@ extern "C"
     //! \fn static M_INLINE unsigned int first_leading_zero_us(unsigned short value)
     //! \brief finds the first position of 0 bit, starting from the most significant bit
     //! \param[in] value the value to assess
-    //! \return the position of the highest bit set to one in \a value
+    //! \return the position of the highest bit set to zero in \a value
     static M_INLINE unsigned int first_leading_zero_us(unsigned short value)
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
@@ -2952,7 +2952,7 @@ extern "C"
     //! \fn static M_INLINE unsigned int first_leading_zero_ui(unsigned int value)
     //! \brief finds the first position of 0 bit, starting from the most significant bit
     //! \param[in] value the value to assess
-    //! \return the position of the highest bit set to one in \a value
+    //! \return the position of the highest bit set to zero in \a value
     static M_INLINE unsigned int first_leading_zero_ui(unsigned int value)
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
@@ -2967,7 +2967,7 @@ extern "C"
     //! \fn static M_INLINE unsigned int first_leading_zero_ul(unsigned long value)
     //! \brief finds the first position of 0 bit, starting from the most significant bit
     //! \param[in] value the value to assess
-    //! \return the position of the highest bit set to one in \a value
+    //! \return the position of the highest bit set to zero in \a value
     static M_INLINE unsigned int first_leading_zero_ul(unsigned long value)
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
@@ -2982,7 +2982,7 @@ extern "C"
     //! \fn static M_INLINE unsigned int first_leading_zero_ull(unsigned long long value)
     //! \brief finds the first position of 0 bit, starting from the most significant bit
     //! \param[in] value the value to assess
-    //! \return the position of the highest bit set to one in \a value
+    //! \return the position of the highest bit set to zero in \a value
     static M_INLINE unsigned int first_leading_zero_ull(unsigned long long value)
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
