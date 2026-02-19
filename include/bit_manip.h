@@ -673,7 +673,7 @@ extern "C"
     //! \param[in] f float to round
     //! \param[in] c nearest value to round to
     //! \return rounded float value
-#define ROUNDF(f, c) M_STATIC_CAST(float, (M_STATIC_CAST(int, (f) * (c))) / (c))
+#define ROUNDF(f, c) M_STATIC_CAST(float, (M_STATIC_CAST(int, ((f) * (c)) + 0.5) / M_STATIC_CAST(float, (c))))
 
     //! \struct genericint_t
     //! \brief Structure used to help generically retrieve a bit range from
