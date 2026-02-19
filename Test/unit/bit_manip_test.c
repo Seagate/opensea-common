@@ -3734,6 +3734,12 @@ static void test_bit_ceil_ull(void) {
     }
 }
 
+static void test_rotate_left_uc(void) {
+    TEST_ASSERT_EQ(rotate_left_uc((uint8_t)0b00101101, 0), (uint8_t)0b00101101, "Shift the value left by 0 bits");
+    TEST_ASSERT_EQ(rotate_left_uc((uint8_t)0b00101101, 3), (uint8_t)0b01101001, "Shift the value left by 3 bits");
+    TEST_ASSERT_EQ(rotate_left_uc((uint8_t)0b00101101, 8), (uint8_t)0b00101101, "Shift the value left by 8 bits");
+}
+
 void run_bit_manip_tests(void)
 {
     #ifdef HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE
@@ -4002,6 +4008,7 @@ void run_bit_manip_tests(void)
     test_bit_floor_ui();
     test_bit_floor_ul();
     test_bit_floor_ull();
+    test_rotate_left_uc();
 }
 
 
