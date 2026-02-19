@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-project('opensea-common', 'c', license: 'MPL-2.0', version: '6.0.4', default_options: ['warning_level=2'])
+project('opensea-common', 'c', license: 'MPL-2.0', version: '6.0.4', default_options: ['warning_level=2', 'default_library=static'])
 
 c = meson.get_compiler('c')
 
@@ -97,7 +97,6 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
         '-Wsequence-point',
         '-Wreturn-type',
         '-Wpointer-bool-conversion',
-        '-fvisibility=hidden',  #to work similarly to Window's DLL import/export
         '-Wmismatched-dealloc',
         '-Wfree-nonheap-object',
         '-fnullability',
@@ -166,7 +165,7 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
         warning_flags += ['-mbranch-protection=standard']
     endif
 
-    linker_flags += ['-Wl,-z,nodlopen', '-Wl,-z,noexecstack', '-Wl,-z,relro', '-Wl,-z,now']
+    linker_flags += ['-Wl,-z,noexecstack', '-Wl,-z,relro', '-Wl,-z,now']
 
     #test if setting _FORTIFY_SOURCE higher than default generates a warning
     #this issue showed up on Rocky Linux 8 and we don't want to generate extra noise
@@ -540,6 +539,7 @@ opensea_common_lib = static_library(
     c_args: global_cpp_args,
     dependencies: [m_dep, deps],
     include_directories: incdir,
+    gnu_symbol_visibility : 'hidden'
 )
 opensea_common_dep = declare_dependency(
     link_with: opensea_common_lib,
