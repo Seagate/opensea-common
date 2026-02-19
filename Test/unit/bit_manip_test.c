@@ -3036,7 +3036,7 @@ static void test_get_req_bit_width_uc(void) {
     uint8_t vals[] = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, 0x00};
 
     for(uint8_t i = 0; i < 9; i++) {
-        char msg[60];
+        char msg[100];
         snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value is %u", 8-i);
         TEST_ASSERT_EQ(get_req_bit_width_uc(vals[i]), 8-i, msg);
     }
@@ -3064,7 +3064,7 @@ static void test_get_req_bit_width_us(void) {
     };
 
     for(uint16_t i = 0; i < 17; i++) {
-        char msg[60];
+        char msg[100];
         snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value is %u", 16-i);
         TEST_ASSERT_EQ(get_req_bit_width_us(vals[i]), 16-i, msg);
     }
@@ -3108,7 +3108,7 @@ static void test_get_req_bit_width_ui(void) {
     };
     
     for(uint32_t i = 0; i < 33; i++) {
-        char msg[60];
+        char msg[100];
         snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value is %u", 32-i);
         TEST_ASSERT_EQ(get_req_bit_width_ui(vals[i]), 32-i, msg);
     }
@@ -3184,7 +3184,7 @@ static void test_get_req_bit_width_ul(void) {
     };
     
     for(uint64_t i = 0; i < 65; i++) {
-        char msg[60];
+        char msg[100];
         snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value is %u", 64-i);
         TEST_ASSERT_EQ(get_req_bit_width_ul(vals[i]), 64-i, msg);
     }
@@ -3260,7 +3260,7 @@ static void test_get_req_bit_width_ull(void) {
     };
     
     for(uint64_t i = 0; i < 65; i++) {
-        char msg[60];
+        char msg[100];
         snprintf(msg, sizeof(msg), "The smallest number of bits needed to represent the given value is %u", 64-i);
         TEST_ASSERT_EQ(get_req_bit_width_ull(vals[i]), 64-i, msg);
     }
@@ -3269,8 +3269,8 @@ static void test_get_req_bit_width_ull(void) {
 static void test_bit_floor_uc(void) {
     uint8_t vals[] = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, 0x00};
 
-    for(uint8_t i = 0; i < 9; i++) {
-        char msg[60];
+    for(uint8_t i = 0; i < 8; i++) {
+        char msg[100];
         snprintf(msg, sizeof(msg), "the largest integral power of two not greater than the given value is %u", 1U << (7-i));
         TEST_ASSERT_EQ(bit_floor_uc(vals[i]), 1U << (7-i), msg);
     }
@@ -3297,8 +3297,8 @@ static void test_bit_floor_us(void) {
         0x0000
     };
 
-    for(uint16_t i = 0; i < 17; i++) {
-        char msg[60];
+    for(uint16_t i = 0; i < 16; i++) {
+        char msg[100];
         snprintf(msg, sizeof(msg), "the largest integral power of two not greater than the given value is %u", 1U << (15-i));
         TEST_ASSERT_EQ(bit_floor_us(vals[i]), 1U << (15-i), msg);
     }
@@ -3341,8 +3341,8 @@ static void test_bit_floor_ui(void) {
         0x00000000
     };
     
-    for(uint32_t i = 0; i < 33; i++) {
-        char msg[60];
+    for(uint32_t i = 0; i < 32; i++) {
+        char msg[100];
         snprintf(msg, sizeof(msg), "the largest integral power of two not greater than the given value is %u", 1U << (31-i));
         TEST_ASSERT_EQ(bit_floor_ui(vals[i]), 1U << (31-i), msg);
     }
@@ -3417,8 +3417,8 @@ static void test_bit_floor_ul(void) {
         0x0000000000000000UL
     };
     
-    for(uint64_t i = 0; i < 65; i++) {
-        char msg[60];
+    for(uint64_t i = 0; i < 64; i++) {
+        char msg[100];
         snprintf(msg, sizeof(msg), "the largest integral power of two not greater than the given value is %u", 1U << (63-i));
         TEST_ASSERT_EQ(bit_floor_ul(vals[i]), 1U << (63-i), msg);
     }
@@ -3493,8 +3493,8 @@ static void test_bit_floor_ull(void) {
         0x0000000000000000ULL
     };
     
-    for(uint64_t i = 0; i < 65; i++) {
-        char msg[60];
+    for(uint64_t i = 0; i < 64; i++) {
+        char msg[100];
         snprintf(msg, sizeof(msg), "the largest integral power of two not greater than the given value is %u", 1U << (63-i));
         TEST_ASSERT_EQ(bit_floor_ull(vals[i]), 1U << (63-i), msg);
     }
