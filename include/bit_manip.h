@@ -49,7 +49,7 @@ extern "C"
     //! \return lower 32bits of the input 64bit value
     static M_INLINE uint32_t get_DWord0(uint64_t value)
     {
-        return M_STATIC_CAST(uint32_t, value& UINT64_C(0x00000000FFFFFFFF));
+        return M_STATIC_CAST(uint32_t, value & UINT64_C(0x00000000FFFFFFFF));
     }
 
     //! \def M_DoubleWord0(l)
@@ -128,7 +128,7 @@ extern "C"
     //! \return uint16_t for second lowest 16 bits
     static M_INLINE uint16_t get_Word1_uint64(uint64_t value)
     {
-        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0x00000000FFFF0000)));
+        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0x00000000FFFF0000)) >> 16);
     }
 
     //! \fn get_Word1_uint32(uint32_t value)
@@ -137,7 +137,7 @@ extern "C"
     //! \return uint16_t for highest 16 bits
     static M_INLINE uint16_t get_Word1_uint32(uint32_t value)
     {
-        return M_STATIC_CAST(uint16_t, (value & UINT32_C(0xFFFF0000)));
+        return M_STATIC_CAST(uint16_t, (value & UINT32_C(0xFFFF0000)) >> 16);
     }
 
 //! \def M_Word1
@@ -155,7 +155,7 @@ extern "C"
     //! \return uint16_t for second highest 16 bits
     static M_INLINE uint16_t get_Word2_uint64(uint64_t value)
     {
-        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0x0000FFFF00000000)));
+        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0x0000FFFF00000000)) >> 32);
     }
 
 //! \def M_Word2
@@ -173,7 +173,7 @@ extern "C"
     //! \return uint16_t of the highest 16 bits.
     static M_INLINE uint16_t get_Word3_uint64(uint64_t value)
     {
-        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0xFFFF000000000000)));
+        return M_STATIC_CAST(uint16_t, (value & UINT64_C(0xFFFF000000000000)) >> 48);
     }
 
 //! \def M_Word3
@@ -948,7 +948,7 @@ extern "C"
         return genint.u32;
     }
 
-    //! \fn static M_INLINE uint8_t get_bit_range_int8(uint8_t value, uint8_t msb, uint8_t lsb)
+    //! \fn static M_INLINE uint8_t get_bit_range_int8(int8_t value, uint8_t msb, uint8_t lsb)
     //! \brief Extracts a value from a range of bits and returns it
     //!
     //! This is a helper function for generic_Get_Bit_Range for int8_t values.
@@ -1587,7 +1587,7 @@ extern "C"
     //! \return returns \a val with the specified bit cleared to 0
     static M_INLINE uint8_t clear_uint8_bit(uint8_t val, uint8_t bitNum)
     {
-        return M_STATIC_CAST(uint8_t, val& M_STATIC_CAST(uint8_t, ~(UINT8_C(1) << bitNum)));
+        return M_STATIC_CAST(uint8_t, val & M_STATIC_CAST(uint8_t, ~(UINT8_C(1) << bitNum)));
     }
 
     //! \fn static M_INLINE uint16_t clear_uint16_bit(uint16_t val, uint16_t bitNum)
@@ -1598,7 +1598,7 @@ extern "C"
     //! \return returns \a val with the specified cleared set to 0
     static M_INLINE uint16_t clear_uint16_bit(uint16_t val, uint16_t bitNum)
     {
-        return M_STATIC_CAST(uint16_t, val& M_STATIC_CAST(uint16_t, ~(UINT16_C(1) << bitNum)));
+        return M_STATIC_CAST(uint16_t, val & M_STATIC_CAST(uint16_t, ~(UINT16_C(1) << bitNum)));
     }
 
     //! \fn static M_INLINE uint32_t clear_uint32_bit(uint32_t val, uint32_t bitNum)
@@ -2075,7 +2075,7 @@ extern "C"
 #endif
     }
 
-    //! \fn uint32_t host_to_be16(uint32_t value)
+    //! \fn uint32_t host_to_be32(uint32_t value)
     //! \brief takes a host endian uint32_t and returns it in big endian
     //!
     //! Named similarly to functions found in ?/endian.h files in various POSIX systems.
@@ -2780,15 +2780,16 @@ extern "C"
 #elif defined(HAVE_BUILT_IN_CLZ)
     return value == 0U ? 0U : M_STATIC_CAST(unsigned int, __builtin_clz(value) - (UINT_WIDTH - UCHAR_WIDTH) + 1);
 #else
-    unsigned int pos = UCHAR_WIDTH;
-    while (value > 0U)
+    if (value == 0)
     {
-        if (value & UCHAR_MSB)
-        {
-            break;
-        }
-        --pos;
-        value <<= 1;
+        return 0U;
+    }
+    unsigned int  pos  = 1U;
+    unsigned char mask = UCHAR_MSB;
+    while ((value & mask) == 0U)
+    {
+        ++pos;
+        mask >>= 1;
     }
     return pos;
 #endif
@@ -2807,15 +2808,16 @@ extern "C"
 #elif defined(HAVE_BUILT_IN_CLZ)
     return value == 0U ? 0U : M_STATIC_CAST(unsigned int, __builtin_clz(value) - (UINT_WIDTH - USHRT_WIDTH) + 1);
 #else
-    unsigned int pos = USHRT_WIDTH;
-    while (value > 0U)
+    if (value == 0)
     {
-        if (value & USHRT_MSB)
-        {
-            break;
-        }
-        --pos;
-        value <<= 1;
+        return 0U;
+    }
+    unsigned int   pos  = 1U;
+    unsigned short mask = USHRT_MSB;
+    while ((value & mask) == 0U)
+    {
+        ++pos;
+        mask >>= 1;
     }
     return pos;
 #endif
@@ -2834,15 +2836,16 @@ extern "C"
 #elif defined(HAVE_BUILT_IN_CLZ)
     return value == 0U ? 0U : M_STATIC_CAST(unsigned int, __builtin_clz(value) + 1);
 #else
-    unsigned int pos = UINT_WIDTH;
-    while (value > 0U)
+    if (value == 0)
     {
-        if (value & UINT_MSB)
-        {
-            break;
-        }
-        --pos;
-        value <<= 1;
+        return 0U;
+    }
+    unsigned int pos  = 1U;
+    unsigned int mask = UINT_MSB;
+    while ((value & mask) == 0U)
+    {
+        ++pos;
+        mask >>= 1;
     }
     return pos;
 #endif
@@ -2861,15 +2864,16 @@ extern "C"
 #elif defined(HAVE_BUILT_IN_CLZL)
     return value == 0UL ? 0U : M_STATIC_CAST(unsigned int, __builtin_clzl(value) + 1);
 #else
-    unsigned int pos = ULONG_WIDTH;
-    while (value > 0UL)
+    if (value == 0)
     {
-        if (value & ULONG_MSB)
-        {
-            break;
-        }
-        --pos;
-        value <<= 1;
+        return 0U;
+    }
+    unsigned int  pos  = 1U;
+    unsigned long mask = ULONG_MSB;
+    while ((value & mask) == 0UL)
+    {
+        ++pos;
+        mask >>= 1;
     }
     return pos;
 #endif
@@ -2888,15 +2892,16 @@ extern "C"
 #elif defined(HAVE_BUILT_IN_CLZLL)
     return value == 0ULL ? 0U : M_STATIC_CAST(unsigned int, __builtin_clzll(value) + 1);
 #else
-    unsigned int pos = ULLONG_WIDTH;
-    while (value > 0ULL)
+    if (value == 0)
     {
-        if (value & ULLONG_MSB)
-        {
-            break;
-        }
-        --pos;
-        value <<= 1;
+        return 0U;
+    }
+    unsigned int       pos  = 1U;
+    unsigned long long mask = ULLONG_MSB;
+    while ((value & mask) == 0ULL)
+    {
+        ++pos;
+        mask >>= 1;
     }
     return pos;
 #endif
