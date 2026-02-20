@@ -2534,6 +2534,236 @@ static void test_first_leading_one_ull(void) {
     }
 }
 
+static void test_first_leading_zero_uc(void) {
+    uint8_t vals[8] = {0x7F, 0xBF, 0xDF, 0xEF, 0xF7, 0xFB, 0xFD, 0xFE};
+
+    for(uint8_t i = 1; i < 9; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "First leading 0 on bit position %u in unsigned char", i);
+        TEST_ASSERT_EQ(first_leading_zero_uc(vals[i]), i, msg);
+    }
+}
+
+static void test_first_leading_zero_us(void) {
+    uint16_t vals[16] = {
+        0x7FFF,
+        0xBFFF,
+        0xDFFF,
+        0xEFFF,
+        0xF7FF,
+        0xFBFF,
+        0xFDFF,
+        0xFEFF,
+        0xFF7F,
+        0xFFBF,
+        0xFFDF,
+        0xFFEF,
+        0xFFF7,
+        0xFFFB,
+        0xFFFD,
+        0xFFFE
+    };
+
+    for(uint16_t i = 1; i < 17; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "First leading 0 on bit position %u in unsigned short", i);
+        TEST_ASSERT_EQ(first_leading_zero_us(vals[i]), i, msg);
+    }
+}
+
+static void test_first_leading_zero_ui(void) {
+    uint32_t vals[32] = {
+        0x7FFFFFFF,
+        0xBFFFFFFF,
+        0xDFFFFFFF,
+        0xEFFFFFFF,
+        0xF7FFFFFF,
+        0xFBFFFFFF,
+        0xFDFFFFFF,
+        0xFEFFFFFF,
+        0xFF7FFFFF,
+        0xFFBFFFFF,
+        0xFFDFFFFF,
+        0xFFEFFFFF,
+        0xFFF7FFFF,
+        0xFFFBFFFF,
+        0xFFFDFFFF,
+        0xFFFEFFFF,
+        0xFFFF7FFF,
+        0xFFFFBFFF,
+        0xFFFFDFFF,
+        0xFFFFEFFF,
+        0xFFFFF7FF,
+        0xFFFFFBFF,
+        0xFFFFFDFF,
+        0xFFFFFEFF,
+        0xFFFFFF7F,
+        0xFFFFFFBF,
+        0xFFFFFFDF,
+        0xFFFFFFEF,
+        0xFFFFFFF7,
+        0xFFFFFFFB,
+        0xFFFFFFFD,
+        0xFFFFFFFE
+    };
+
+    for(uint32_t i = 1; i < 33; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "First leading 0 on bit position %u in unsigned int", i);
+        TEST_ASSERT_EQ(first_leading_zero_ui(vals[i]), i, msg);
+    }
+}
+
+static void test_first_leading_zero_ul(void) {
+    uint64_t vals[64] = {
+        0x7FFFFFFFFFFFFFFFUL,
+        0xBFFFFFFFFFFFFFFFUL,
+        0xDFFFFFFFFFFFFFFFUL,
+        0xEFFFFFFFFFFFFFFFUL,
+        0xF7FFFFFFFFFFFFFFUL,
+        0xFBFFFFFFFFFFFFFFUL,
+        0xFDFFFFFFFFFFFFFFUL,
+        0xFEFFFFFFFFFFFFFFUL,
+        0xFF7FFFFFFFFFFFFFUL,
+        0xFFBFFFFFFFFFFFFFUL,
+        0xFFDFFFFFFFFFFFFFUL,
+        0xFFEFFFFFFFFFFFFFUL,
+        0xFFF7FFFFFFFFFFFFUL,
+        0xFFFBFFFFFFFFFFFFUL,
+        0xFFFDFFFFFFFFFFFFUL,
+        0xFFFEFFFFFFFFFFFFUL,
+        0xFFFF7FFFFFFFFFFFUL,
+        0xFFFFBFFFFFFFFFFFUL,
+        0xFFFFDFFFFFFFFFFFUL,
+        0xFFFFEFFFFFFFFFFFUL,
+        0xFFFFF7FFFFFFFFFFUL,
+        0xFFFFFBFFFFFFFFFFUL,
+        0xFFFFFDFFFFFFFFFFUL,
+        0xFFFFFEFFFFFFFFFFUL,
+        0xFFFFFF7FFFFFFFFFUL,
+        0xFFFFFFBFFFFFFFFFUL,
+        0xFFFFFFDFFFFFFFFFUL,
+        0xFFFFFFEFFFFFFFFFUL,
+        0xFFFFFFF7FFFFFFFFUL,
+        0xFFFFFFFBFFFFFFFFUL,
+        0xFFFFFFFDFFFFFFFFUL,
+        0xFFFFFFFEFFFFFFFFUL,
+        0xFFFFFFFF7FFFFFFFUL,
+        0xFFFFFFFFBFFFFFFFUL,
+        0xFFFFFFFFDFFFFFFFUL,
+        0xFFFFFFFFEFFFFFFFUL,
+        0xFFFFFFFFF7FFFFFFUL,
+        0xFFFFFFFFFBFFFFFFUL,
+        0xFFFFFFFFFDFFFFFFUL,
+        0xFFFFFFFFFEFFFFFFUL,
+        0xFFFFFFFFFF7FFFFFUL,
+        0xFFFFFFFFFFBFFFFFUL,
+        0xFFFFFFFFFFDFFFFFUL,
+        0xFFFFFFFFFFEFFFFFUL,
+        0xFFFFFFFFFFF7FFFFUL,
+        0xFFFFFFFFFFFBFFFFUL,
+        0xFFFFFFFFFFFDFFFFUL,
+        0xFFFFFFFFFFFEFFFFUL,
+        0xFFFFFFFFFFFF7FFFUL,
+        0xFFFFFFFFFFFFBFFFUL,
+        0xFFFFFFFFFFFFDFFFUL,
+        0xFFFFFFFFFFFFEFFFUL,
+        0xFFFFFFFFFFFFF7FFUL,
+        0xFFFFFFFFFFFFFBFFUL,
+        0xFFFFFFFFFFFFFDFFUL,
+        0xFFFFFFFFFFFFFEFFUL,
+        0xFFFFFFFFFFFFFF7FUL,
+        0xFFFFFFFFFFFFFFBFUL,
+        0xFFFFFFFFFFFFFFDFUL,
+        0xFFFFFFFFFFFFFFEFUL,
+        0xFFFFFFFFFFFFFFF7UL,
+        0xFFFFFFFFFFFFFFFBUL,
+        0xFFFFFFFFFFFFFFFDUL,
+        0xFFFFFFFFFFFFFFFEUL
+    };
+
+    for(uint64_t i = 1; i < 65; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "First leading 0 on bit position %lu in unsigned long", i);
+        TEST_ASSERT_EQ(first_leading_zero_ul(vals[i]), i, msg);
+    }
+}
+
+static void test_first_leading_zero_ull(void) {
+    uint64_t vals[64] = {
+        0x7FFFFFFFFFFFFFFFULL,
+        0xBFFFFFFFFFFFFFFFULL,
+        0xDFFFFFFFFFFFFFFFULL,
+        0xEFFFFFFFFFFFFFFFULL,
+        0xF7FFFFFFFFFFFFFFULL,
+        0xFBFFFFFFFFFFFFFFULL,
+        0xFDFFFFFFFFFFFFFFULL,
+        0xFEFFFFFFFFFFFFFFULL,
+        0xFF7FFFFFFFFFFFFFULL,
+        0xFFBFFFFFFFFFFFFFULL,
+        0xFFDFFFFFFFFFFFFFULL,
+        0xFFEFFFFFFFFFFFFFULL,
+        0xFFF7FFFFFFFFFFFFULL,
+        0xFFFBFFFFFFFFFFFFULL,
+        0xFFFDFFFFFFFFFFFFULL,
+        0xFFFEFFFFFFFFFFFFULL,
+        0xFFFF7FFFFFFFFFFFULL,
+        0xFFFFBFFFFFFFFFFFULL,
+        0xFFFFDFFFFFFFFFFFULL,
+        0xFFFFEFFFFFFFFFFFULL,
+        0xFFFFF7FFFFFFFFFFULL,
+        0xFFFFFBFFFFFFFFFFULL,
+        0xFFFFFDFFFFFFFFFFULL,
+        0xFFFFFEFFFFFFFFFFULL,
+        0xFFFFFF7FFFFFFFFFULL,
+        0xFFFFFFBFFFFFFFFFULL,
+        0xFFFFFFDFFFFFFFFFULL,
+        0xFFFFFFEFFFFFFFFFULL,
+        0xFFFFFFF7FFFFFFFFULL,
+        0xFFFFFFFBFFFFFFFFULL,
+        0xFFFFFFFDFFFFFFFFULL,
+        0xFFFFFFFEFFFFFFFFULL,
+        0xFFFFFFFF7FFFFFFFULL,
+        0xFFFFFFFFBFFFFFFFULL,
+        0xFFFFFFFFDFFFFFFFULL,
+        0xFFFFFFFFEFFFFFFFULL,
+        0xFFFFFFFFF7FFFFFFULL,
+        0xFFFFFFFFFBFFFFFFULL,
+        0xFFFFFFFFFDFFFFFFULL,
+        0xFFFFFFFFFEFFFFFFULL,
+        0xFFFFFFFFFF7FFFFFULL,
+        0xFFFFFFFFFFBFFFFFULL,
+        0xFFFFFFFFFFDFFFFFULL,
+        0xFFFFFFFFFFEFFFFFULL,
+        0xFFFFFFFFFFF7FFFFULL,
+        0xFFFFFFFFFFFBFFFFULL,
+        0xFFFFFFFFFFFDFFFFULL,
+        0xFFFFFFFFFFFEFFFFULL,
+        0xFFFFFFFFFFFF7FFFULL,
+        0xFFFFFFFFFFFFBFFFULL,
+        0xFFFFFFFFFFFFDFFFULL,
+        0xFFFFFFFFFFFFEFFFULL,
+        0xFFFFFFFFFFFFF7FFULL,
+        0xFFFFFFFFFFFFFBFFULL,
+        0xFFFFFFFFFFFFFDFFULL,
+        0xFFFFFFFFFFFFFEFFULL,
+        0xFFFFFFFFFFFFFF7FULL,
+        0xFFFFFFFFFFFFFFBFULL,
+        0xFFFFFFFFFFFFFFDFULL,
+        0xFFFFFFFFFFFFFFEFULL,
+        0xFFFFFFFFFFFFFFF7ULL,
+        0xFFFFFFFFFFFFFFFBULL,
+        0xFFFFFFFFFFFFFFFDULL,
+        0xFFFFFFFFFFFFFFFEULL
+    };
+
+    for(uint64_t i = 1; i < 65; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "First leading 0 on bit position %lu in unsigned long long", 64-i);
+        TEST_ASSERT_EQ(first_leading_zero_ull(vals[i]), 64-i, msg);
+    }
+}
+
 static void test_count_ones_uc(void) {
     uint8_t vals[] = {0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE, 0xFF};
 
@@ -4066,6 +4296,11 @@ void run_bit_manip_tests(void)
     test_first_leading_one_ui();
     test_first_leading_one_ul();
     test_first_leading_one_ull();
+    test_first_leading_zero_uc();
+    test_first_leading_zero_us();
+    test_first_leading_zero_ui();
+    test_first_leading_zero_ul();
+    test_first_leading_zero_ull();
     test_count_ones_uc();
     test_count_ones_us();
     test_count_ones_ui();
