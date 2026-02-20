@@ -4068,11 +4068,11 @@ void run_bit_manip_tests(void)
     test_count_trailing_ones_ui();
     test_count_trailing_ones_ul();
     test_count_trailing_ones_ull();
-    // test_first_leading_one_uc();
-    // test_first_leading_one_us();
-    // test_first_leading_one_ui();
-    // test_first_leading_one_ul();
-    // test_first_leading_one_ull();
+    test_first_leading_one_uc();
+    test_first_leading_one_us();
+    test_first_leading_one_ui();
+    test_first_leading_one_ul();
+    test_first_leading_one_ull();
     test_count_ones_uc();
     test_count_ones_us();
     test_count_ones_ui();
