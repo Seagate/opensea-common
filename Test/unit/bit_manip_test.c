@@ -2537,10 +2537,10 @@ static void test_first_leading_one_ull(void) {
 static void test_first_leading_zero_uc(void) {
     uint8_t vals[8] = {0x7F, 0xBF, 0xDF, 0xEF, 0xF7, 0xFB, 0xFD, 0xFE};
 
-    for(uint8_t i = 1; i < 9; i++) {
+    for(uint8_t i = 0; i < 8; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 0 on bit position %u in unsigned char", i);
-        TEST_ASSERT_EQ(first_leading_zero_uc(vals[i]), i, msg);
+        snprintf(msg, sizeof(msg), "First leading 0 on bit position %u in unsigned char", i+1);
+        TEST_ASSERT_EQ(first_leading_zero_uc(vals[i]), i+1, msg);
     }
 }
 
@@ -2564,10 +2564,10 @@ static void test_first_leading_zero_us(void) {
         0xFFFE
     };
 
-    for(uint16_t i = 1; i < 17; i++) {
+    for(uint16_t i = 0; i < 16; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 0 on bit position %u in unsigned short", i);
-        TEST_ASSERT_EQ(first_leading_zero_us(vals[i]), i, msg);
+        snprintf(msg, sizeof(msg), "First leading 0 on bit position %u in unsigned short", i+1);
+        TEST_ASSERT_EQ(first_leading_zero_us(vals[i]), i+1, msg);
     }
 }
 
@@ -2607,10 +2607,10 @@ static void test_first_leading_zero_ui(void) {
         0xFFFFFFFE
     };
 
-    for(uint32_t i = 1; i < 33; i++) {
+    for(uint32_t i = 0; i < 32; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 0 on bit position %u in unsigned int", i);
-        TEST_ASSERT_EQ(first_leading_zero_ui(vals[i]), i, msg);
+        snprintf(msg, sizeof(msg), "First leading 0 on bit position %u in unsigned int", i+1);
+        TEST_ASSERT_EQ(first_leading_zero_ui(vals[i]), i+1, msg);
     }
 }
 
@@ -2682,10 +2682,10 @@ static void test_first_leading_zero_ul(void) {
         0xFFFFFFFFFFFFFFFEUL
     };
 
-    for(uint64_t i = 1; i < 65; i++) {
+    for(uint64_t i = 0; i < 64; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 0 on bit position %lu in unsigned long", i);
-        TEST_ASSERT_EQ(first_leading_zero_ul(vals[i]), i, msg);
+        snprintf(msg, sizeof(msg), "First leading 0 on bit position %lu in unsigned long", i+1);
+        TEST_ASSERT_EQ(first_leading_zero_ul(vals[i]), i+1, msg);
     }
 }
 
@@ -2757,10 +2757,10 @@ static void test_first_leading_zero_ull(void) {
         0xFFFFFFFFFFFFFFFEULL
     };
 
-    for(uint64_t i = 1; i < 65; i++) {
+    for(uint64_t i = 0; i < 64; i++) {
         char msg[60];
-        snprintf(msg, sizeof(msg), "First leading 0 on bit position %lu in unsigned long long", 64-i);
-        TEST_ASSERT_EQ(first_leading_zero_ull(vals[i]), 64-i, msg);
+        snprintf(msg, sizeof(msg), "First leading 0 on bit position %lu in unsigned long long", i+1);
+        TEST_ASSERT_EQ(first_leading_zero_ull(vals[i]), i+1, msg);
     }
 }
 
