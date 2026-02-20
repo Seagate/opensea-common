@@ -1,5 +1,6 @@
 #include "../framework/test_framework.h"
 #include "../../include/bit_manip.h"
+#include <math.h>
 #include "../testConstants.h"
 
 static void test_get_DWord0(void) {
