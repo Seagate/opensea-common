@@ -78,6 +78,22 @@ static void test_int32_round_up_generic(void) {
     TEST_ASSERT_EQ(int32_round_up_generic(123456789, 5), (int32_t)123456790, "Round 123456789 to nearest multiple of 5");
 }
 
+static void test_uint64_round_up_generic(void) {
+    TEST_ASSERT_EQ(uint64_round_up_generic((uint64_t)8, 2), (uint64_t)8, "Round 8 to nearest multiple of 2");
+    TEST_ASSERT_EQ(uint64_round_up_generic((uint64_t)255, 4), (uint64_t)256, "Round 255 to nearest multiple of 4");
+    TEST_ASSERT_EQ(uint64_round_up_generic((uint64_t)32767, 2), (uint64_t)32768, "Round 32767 to nearest multiple of 2");
+    TEST_ASSERT_EQ(uint64_round_up_generic((uint64_t)123456789, 4), (uint64_t)123456792, "Round 123456789 to nearest multiple of 4");
+    TEST_ASSERT_EQ(uint64_round_up_generic((uint64_t)10000000000, 4), (uint64_t)10000000000, "Round 10000000000 to nearest multiple of 4");
+}
+
+static void test_int64_round_up_generic(void) {
+    TEST_ASSERT_EQ(int64_round_up_generic(8, 3), (int64_t)9, "Round 8 to nearest multiple of 3");
+    TEST_ASSERT_EQ(int64_round_up_generic(255, 7), (int64_t)259, "Round 255 to nearest multiple of 7");
+    TEST_ASSERT_EQ(int64_round_up_generic(32767, 9), (int64_t)32769, "Round 32767 to nearest multiple of 9");
+    TEST_ASSERT_EQ(int64_round_up_generic(123456789, 5), (int64_t)123456790, "Round 123456789 to nearest multiple of 5");
+    TEST_ASSERT_EQ(int64_round_up_generic(10000000000, 7), (int64_t)10000000003, "Round 10000000000 to nearest multiple of 7");
+}
+
 void run_math_utils_tests(void) {
     test_M_Min();
     test_M_Max();
@@ -88,4 +104,6 @@ void run_math_utils_tests(void) {
     test_int16_round_up_generic();
     test_uint32_round_up_generic();
     test_int32_round_up_generic();
+    test_uint64_round_up_generic();
+    test_int64_round_up_generic();
 }
