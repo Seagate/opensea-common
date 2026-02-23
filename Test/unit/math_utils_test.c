@@ -60,8 +60,8 @@ static void test_uint16_round_up_generic(void) {
 
 static void test_int16_round_up_generic(void) {
     TEST_ASSERT_EQ(int16_round_up_generic(8, 3), (int16_t)9, "Round 8 to nearest multiple of 3");
-    TEST_ASSERT_EQ(int16_round_up_generic(255, 7), (int16_t)252, "Round 255 to nearest multiple of 7");
-    TEST_ASSERT_EQ(int16_round_up_generic(65535, 9), (int16_t)65538, "Round 65535 to nearest multiple of 9");
+    TEST_ASSERT_EQ(int16_round_up_generic(255, 7), (int16_t)259, "Round 255 to nearest multiple of 7");
+    TEST_ASSERT_EQ(int16_round_up_generic(32767, 9), (int16_t)32769, "Round 32767 to nearest multiple of 9");
 }
 
 void run_math_utils_tests(void) {
