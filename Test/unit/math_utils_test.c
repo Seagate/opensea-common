@@ -40,8 +40,15 @@ static void test_INT_ROUND_UP(void) {
     TEST_ASSERT_EQ(INT_ROUND_UP(0x9F3A7C5D8E21B4C7ULL, 2), 0x9F3A7C5D8E21B4C7ULL, "Round 0x9F3A7C5D8E21B4C7ULL to the nearest multiple of 2");
 }
 
+static void test_uint8_round_up_generic(void) {
+    TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)8, 7), 14, "Round 8 to nearest multiple of 7");
+    TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)5, 4), 8, "Round 5 to nearest multiple of 4");
+    TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)12, 3), 15, "Round 12 to nearest multiple of 3");
+}
+
 void run_math_utils_tests(void) {
     test_M_Min();
     test_M_Max();
     // test_INT_ROUND_UP();
+    test_uint8_round_up_generic();
 }
