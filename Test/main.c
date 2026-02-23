@@ -12,6 +12,7 @@ int main(void)
     // Run individual test suites
     run_bit_manip_tests();
     run_math_utils_tests();
+    run_string_utils_tests();
 
     // Print summary of test results
     print_test_summary();

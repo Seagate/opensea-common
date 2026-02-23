@@ -4,6 +4,7 @@ test_sources = [
     'framework/test_framework.c',
     'unit/bit_manip_test.c',
     'unit/math_utils_test.c',
+    'unit/string_utils_test.c',
     'main.c',
 ]
 
