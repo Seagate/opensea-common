@@ -22,8 +22,8 @@ static void test_is_ASCII(void) {
 
 static void test_safe_isascii(void) {
     TEST_ASSERT_EQ(safe_isascii('A'), 1, "ASCII characters return non-zero value using safe_isascii");
-    TEST_ASSERT_EQ(safe_isascii(290), 1, "non-ASCII characters return 0 using safe_isascii");
-    TEST_ASSERT_EQ(safe_isascii(-1), 1, "EOF returns 0 using safe_isascii");
+    TEST_ASSERT_EQ(safe_isascii(290), 0, "non-ASCII characters return 0 using safe_isascii");
+    TEST_ASSERT_EQ(safe_isascii(-1), 0, "EOF returns 0 using safe_isascii");
 }
 
 void run_string_utils_tests(void) {
