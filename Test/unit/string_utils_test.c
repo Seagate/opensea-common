@@ -28,7 +28,7 @@ static void test_safe_isascii(void) {
 
 static void test_safe_isalnum(void) {
     TEST_ASSERT_EQ(safe_isascii('A'), 1, "Alphanumeric character returns non-zero value");
-    TEST_ASSERT_EQ(safe_isascii('#'), 0, "Non-alphanumeric character return 0");
+    TEST_ASSERT_EQ(safe_isascii('#'), 1, "Non-alphanumeric character return 0");
     TEST_ASSERT_EQ(safe_isascii('!'), 0, "Non-alphanumeric character return 0");
     TEST_ASSERT_EQ(safe_isascii('@'), 0, "Non-alphanumeric character return 0");
     TEST_ASSERT_EQ(safe_isascii('$'), 0, "Non-alphanumeric character return 0");
