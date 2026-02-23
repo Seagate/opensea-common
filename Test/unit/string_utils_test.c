@@ -3,11 +3,18 @@
 #include"../testConstants.h"
 
 static void test_strcasecmp(void) {
-    TEST_ASSERT_EQ(strcasecmp("Pratiksha", "pratiksha"), 0, "Case insensitive strings are equal");
-    TEST_ASSERT(strcasecmp("abc", "adc") < 0, "abc < adc");
-    TEST_ASSERT(strcasecmp("adc", "abc") > 0, "adc > abc");
+    TEST_ASSERT_EQ(strcasecmp("Test", "test"), 0, "Case insensitive strings are equal");
+    TEST_ASSERT(strcasecmp("abc", "adc") < 0, "String 1 is less than string 2");
+    TEST_ASSERT(strcasecmp("adc", "abc") > 0, "String 1 is greater than string 2");
+}
+
+static void test_strncasecmp(void) {
+    TEST_ASSERT_EQ(strncasecmp("Test", "testing", 4), 0, "Case insensitive strings are equal till given length");
+    TEST_ASSERT(strncasecmp("test", "testing", 5) < 0, "String 1 is less than string 2");
+    TEST_ASSERT(strncasecmp("testing", "test", 5) > 0, "String 1 is greater than string 2");
 }
 
 void run_string_utils_tests(void) {
     test_strcasecmp();
+    test_strncasecmp();
 }
