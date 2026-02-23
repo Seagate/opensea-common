@@ -70,6 +70,6 @@ void run_math_utils_tests(void) {
     // test_INT_ROUND_UP();
     test_uint8_round_up_generic();
     test_int8_round_up_generic();
-    test_uint16_round_up_generic()
+    test_uint16_round_up_generic();
     test_int16_round_up_generic();
 }
