@@ -14,7 +14,14 @@ static void test_strncasecmp(void) {
     TEST_ASSERT(strncasecmp("testing", "test", 5) > 0, "String 1 is greater than string 2");
 }
 
+static void test_is_ASCII(void) {
+    TEST_ASSERT_EQ(is_ASCII('A'), 1, "ASCII characters return 1");
+    TEST_ASSERT_EQ(is_ASCII(290), 0, "non-ASCII characters return 0");
+    TEST_ASSERT_EQ(is_ASCII(-1), 0, "EOF returns 0");
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
+    test_is_ASCII();
 }
