@@ -4,6 +4,7 @@
 // Forward declarations of test functions
 void run_bit_manip_tests(void);
 void run_math_utils_tests(void);
+void run_string_utils_tests(void);
 
 int main(void)
 {
