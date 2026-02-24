@@ -249,6 +249,24 @@ static void test_unsigned_long_long_round_down_generic(void) {
     TEST_ASSERT_EQ(unsigned_long_long_round_down_generic((uint64_t)1844674407370955134, 9), 1844674407370955133, "Round 1844674407370955134 down to nearest multiple of 9");
 }
 
+static void test_int16_round_up_generic(void) {
+    TEST_ASSERT_EQ(int16_round_up_generic(8, 2), 8, "Round 8 up to nearest multiple of 2: Roundto is power of 2");
+    TEST_ASSERT_EQ(int16_round_up_generic(5, 3), 6, "Round 5 up to nearest multiple of 3");
+    TEST_ASSERT_EQ(int16_round_up_generic(12, 1), 12, "Round 12 up to nearest multiple of 1: no-op operation");
+    TEST_ASSERT_EQ(int16_round_up_generic(243, 5), 245, "Round 243 up to nearest multiple of 5");
+    TEST_ASSERT_EQ(int16_round_up_generic(1643, 12), 1644, "Round 1643 up to nearest multiple of 12");
+    TEST_ASSERT_EQ(int16_round_up_generic(32761, 10), -32766, "Round 32761 up to nearest multiple of 10: Overflow case");
+}
+
+static void test_uint16_round_up_generic(void) {
+    TEST_ASSERT_EQ(uint16_round_up_generic((uint16_t)8, 2), 8, "Round 8 up to nearest multiple of 2: Roundto is power of 2");
+    TEST_ASSERT_EQ(uint16_round_up_generic((uint16_t)5, 3), 6, "Round 5 up to nearest multiple of 3");
+    TEST_ASSERT_EQ(uint16_round_up_generic((uint16_t)12, 1), 12, "Round 12 up to nearest multiple of 1: no-op operation");
+    TEST_ASSERT_EQ(uint16_round_up_generic((uint16_t)243, 5), 245, "Round 243 up to nearest multiple of 5");
+    TEST_ASSERT_EQ(uint16_round_up_generic((uint16_t)1643, 12), 1644, "Round 1643 up to nearest multiple of 12");
+    TEST_ASSERT_EQ(uint16_round_up_generic((uint16_t)65531, 10), 4, "Round 65531 up to nearest multiple of 10: Overflow case");
+}
+
 void run_math_utils_tests(void) {
     test_M_Min();
     test_M_Max();
@@ -275,4 +293,6 @@ void run_math_utils_tests(void) {
     test_signed_long_long_round_down_generic();
     test_unsigned_long_long_round_up_generic();
     test_unsigned_long_long_round_down_generic();
+    test_int16_round_up_generic();
+    test_uint16_round_up_generic();
 }
