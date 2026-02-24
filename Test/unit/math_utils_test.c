@@ -48,6 +48,7 @@ static void test_uint8_round_up_generic(void) {
 
 static void test_int8_round_up_generic(void) {
     TEST_ASSERT_EQ(int8_round_up_generic(8, 0), 0, "Round 8 to nearest multiple of 0");
+    printf("Result: %d\n", int8_round_up_generic(8, 0));
     TEST_ASSERT_EQ(int8_round_up_generic(5, 7), 7, "Round 5 to nearest multiple of 7");
     TEST_ASSERT_EQ(int8_round_up_generic(12, 9), 18, "Round 12 to nearest multiple of 9");
 }
