@@ -267,6 +267,25 @@ static void test_uint16_round_up_generic(void) {
     TEST_ASSERT_EQ(uint16_round_up_generic((uint16_t)65531, 10), 4, "Round 65531 up to nearest multiple of 10: Overflow case");
 }
 
+static void test_int32_round_up_generic(void) {
+    TEST_ASSERT_EQ(int32_round_up_generic(8, 2), 8, "Round 8 up to nearest multiple of 2: Roundto is power of 2");
+    TEST_ASSERT_EQ(int32_round_up_generic(5, 3), 6, "Round 5 up to nearest multiple of 3");
+    TEST_ASSERT_EQ(int32_round_up_generic(12, 1), 12, "Round 12 up to nearest multiple of 1: no-op operation");
+    TEST_ASSERT_EQ(int32_round_up_generic(243, 5), 245, "Round 243 up to nearest multiple of 5");
+    TEST_ASSERT_EQ(int32_round_up_generic(1643, 12), 1644, "Round 1643 up to nearest multiple of 12");
+    TEST_ASSERT_EQ(int32_round_up_generic(9496729, 12), 9496740, "Round 9496729 up to nearest multiple of 12");
+}
+
+static void test_uint32_round_up_generic(void) {
+    TEST_ASSERT_EQ(uint32_round_up_generic((uint32_t)8, 2), 8, "Round 8 up to nearest multiple of 2: Roundto is power of 2");
+    TEST_ASSERT_EQ(uint32_round_up_generic((uint32_t)5, 3), 6, "Round 5 up to nearest multiple of 3");
+    TEST_ASSERT_EQ(uint32_round_up_generic((uint32_t)12, 1), 12, "Round 12 up to nearest multiple of 1: no-op operation");
+    TEST_ASSERT_EQ(uint32_round_up_generic((uint32_t)243, 5), 245, "Round 243 up to nearest multiple of 5");
+    TEST_ASSERT_EQ(uint32_round_up_generic((uint32_t)1643, 12), 1644, "Round 1643 up to nearest multiple of 12");
+    TEST_ASSERT_EQ(uint32_round_up_generic((uint32_t)65531, 10), 65540, "Round 65531 up to nearest multiple of 10");
+    TEST_ASSERT_EQ(uint32_round_up_generic((uint32_t)2147483637, 10), 2147483640, "Round 2147483637 up to nearest multiple of 10");
+}
+
 void run_math_utils_tests(void) {
     test_M_Min();
     test_M_Max();
@@ -295,4 +314,6 @@ void run_math_utils_tests(void) {
     test_unsigned_long_long_round_down_generic();
     test_int16_round_up_generic();
     test_uint16_round_up_generic();
+    test_int32_round_up_generic();
+    test_uint32_round_up_generic();
 }
