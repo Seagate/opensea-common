@@ -41,25 +41,31 @@ static void test_INT_ROUND_UP(void) {
 }
 
 static void test_uint8_round_up_generic(void) {
-    TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)8, 2), 8, "Round 8 to nearest multiple of 2");
-    TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)5, 3), 6, "Round 5 to nearest multiple of 3");
-    TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)12, 1), 12, "Round 12 to nearest multiple of 1: no-op operation");
-    TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)12, 10), 20, "Round 12 to nearest multiple of 10: Overflow case");
+    TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)8, 2), 8, "Round 8 up to nearest multiple of 2: Roundto is power of 2");
+    TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)5, 3), 6, "Round 5 up to nearest multiple of 3");
+    TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)12, 1), 12, "Round 12 up to nearest multiple of 1: no-op operation");
+    TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)12, 10), 20, "Round 12 up to nearest multiple of 10: Overflow case");
 
 }
 
 static void test_int8_round_up_generic(void) {
-    TEST_ASSERT_EQ(int8_round_up_generic(8, 3), 9, "Round 8 to nearest multiple of 3");
-    TEST_ASSERT_EQ(int8_round_up_generic(5, 7), 7, "Round 5 to nearest multiple of 7");
-    TEST_ASSERT_EQ(int8_round_up_generic(12, 1), 12, "Round 12 to nearest multiple of 1: no-op operation");
-    TEST_ASSERT_EQ(int8_round_up_generic(12, 10), 20, "Round 12 to nearest multiple of 10: Overflow case");
+    TEST_ASSERT_EQ(int8_round_up_generic(8, 2), 8, "Round 8 up to nearest multiple of 2: Roundto is power of 2");
+    TEST_ASSERT_EQ(int8_round_up_generic(5, 7), 7, "Round 5 up to nearest multiple of 7");
+    TEST_ASSERT_EQ(int8_round_up_generic(12, 1), 12, "Round 12 up to nearest multiple of 1: no-op operation");
+    TEST_ASSERT_EQ(int8_round_up_generic(12, 10), 20, "Round 12 up to nearest multiple of 10: Overflow case");
 }
 
 static void test_signed_char_round_up_generic(void) {
-    TEST_ASSERT_EQ(signed_char_round_up_generic(8, 2), 8, "Round 8 to nearest multiple of 2");
-    TEST_ASSERT_EQ(signed_char_round_up_generic(5, 3), 6, "Round 5 to nearest multiple of 3");
-    TEST_ASSERT_EQ(signed_char_round_up_generic(12, 1), 12, "Round 12 to nearest multiple of 1: no-op operation");
-    TEST_ASSERT_EQ(signed_char_round_up_generic(12, 10), 20, "Round 12 to nearest multiple of 10: Overflow case");
+    TEST_ASSERT_EQ(signed_char_round_up_generic(8, 2), 8, "Round 8 up to nearest multiple of 2: Roundto is power of 2");
+    TEST_ASSERT_EQ(signed_char_round_up_generic(5, 3), 6, "Round 5 up to nearest multiple of 3");
+    TEST_ASSERT_EQ(signed_char_round_up_generic(12, 1), 12, "Round 12 up to nearest multiple of 1: no-op operation");
+    TEST_ASSERT_EQ(signed_char_round_up_generic(12, 10), 20, "Round 12 up to nearest multiple of 10: Overflow case");
+}
+
+static void test_signed_char_round_down_generic(void) {
+    TEST_ASSERT_EQ(signed_char_round_down_generic(19, 4), 16, "Round 19 down to nearest multiple of 4: Roundto is power of 2");
+    TEST_ASSERT_EQ(signed_char_round_down_generic(5, 3), 3, "Round 5 down to nearest multiple of 3");
+    TEST_ASSERT_EQ(signed_char_round_down_generic(12, 1), 12, "Round 12 down to nearest multiple of 1: no-op operation");
 }
 
 void run_math_utils_tests(void) {
@@ -69,4 +75,5 @@ void run_math_utils_tests(void) {
     test_uint8_round_up_generic();
     test_int8_round_up_generic();
     test_signed_char_round_up_generic();
+    test_signed_char_round_down_generic();
 }
