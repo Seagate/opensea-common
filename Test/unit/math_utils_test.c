@@ -793,12 +793,12 @@ static void test_INT_ROUND_DOWN_POWER2(void) {
 }
 
 static void test_power_Of_Two(void) {
-    for(uint64_t i = 0; i < 64; i++) {
+    for(uint16_t i = 0; i < 64; i++) {
 
-        uint64_t expected = 1 << i;
+        uint64_t expected = (uint64_t)1 << i;
 
-        char msg[60];
-        snprintf(msg, sizeof(msg), "%uth power of 2", i);
+        char msg[40];
+        snprintf(msg, sizeof(msg), "%luth power of 2", i);
 
         TEST_ASSERT_EQ(power_Of_Two(i), expected, msg);
     }
