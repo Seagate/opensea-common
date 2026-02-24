@@ -71,7 +71,7 @@ static void test_unsigned_char_round_up_generic(void) {
     TEST_ASSERT_EQ(unsigned_char_round_up_generic((uint8_t)8, 2), 8, "Round 8 up to nearest multiple of 2: Roundto is power of 2");
     TEST_ASSERT_EQ(unsigned_char_round_up_generic((uint8_t)5, 3), 6, "Round 5 up to nearest multiple of 3");
     TEST_ASSERT_EQ(unsigned_char_round_up_generic((uint8_t)12, 1), 12, "Round 12 up to nearest multiple of 1: no-op operation");
-    TEST_ASSERT_EQ(unsigned_char_round_up_generic((uint8_t)250, 10), 20, "Round 250 up to nearest multiple of 10: Overflow case");
+    TEST_ASSERT_EQ(unsigned_char_round_up_generic((uint8_t)250, 10), 250, "Round 250 up to nearest multiple of 10: Overflow case");
 }
 
 static void test_unsigned_char_round_down_generic(void) {
