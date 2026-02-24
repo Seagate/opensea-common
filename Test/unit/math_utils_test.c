@@ -521,6 +521,32 @@ static void test_uint64_round_down_power2(void) {
     TEST_ASSERT_EQ(uint64_round_down_power2((uint64_t)9223372036854775808, 2), 9223372036854775808, "Round 9223372036854775808 down to nearest multiple of 2");
 }
 
+static void test_signed_char_round_up_power2(void) {
+    TEST_ASSERT_EQ(signed_char_round_up_power2(8, 2), 8, "Round 8 up to nearest multiple of 2");
+    TEST_ASSERT_EQ(signed_char_round_up_power2(5, 4), 8, "Round 5 up to nearest multiple of 4");
+    TEST_ASSERT_EQ(signed_char_round_up_power2(12, 8), 16, "Round 12 up to nearest multiple of 8");
+    TEST_ASSERT_EQ(signed_char_round_up_power2(121, 2), 122, "Round 121 up to nearest multiple of 2");
+}
+
+static void test_signed_char_round_down_power2(void) {
+    TEST_ASSERT_EQ(signed_char_round_down_power2(19, 2), 18, "Round 19 down to nearest multiple of 2");
+    TEST_ASSERT_EQ(signed_char_round_down_power2(5, 4), 4, "Round 5 down to nearest multiple of 4");
+    TEST_ASSERT_EQ(signed_char_round_down_power2(12, 4), 12, "Round 12 down to nearest multiple of 4");
+}
+
+static void test_unsigned_char_round_up_power2(void) {
+    TEST_ASSERT_EQ(unsigned_char_round_up_power2((uint8_t)8, 2), 8, "Round 8 up to nearest multiple of 2");
+    TEST_ASSERT_EQ(unsigned_char_round_up_power2((uint8_t)5, 4), 8, "Round 5 up to nearest multiple of 4");
+    TEST_ASSERT_EQ(unsigned_char_round_up_power2((uint8_t)12, 8), 16, "Round 12 up to nearest multiple of 8");
+    TEST_ASSERT_EQ(unsigned_char_round_up_power2((uint8_t)251, 2), 252, "Round 251 up to nearest multiple of 2");
+}
+
+static void test_unsigned_char_round_down_power2(void) {
+    TEST_ASSERT_EQ(unsigned_char_round_down_power2((uint8_t)19, 2), 18, "Round 19 down to nearest multiple of 2");
+    TEST_ASSERT_EQ(unsigned_char_round_down_power2((uint8_t)5, 4), 4, "Round 5 down to nearest multiple of 4");
+    TEST_ASSERT_EQ(unsigned_char_round_down_power2((uint8_t)12, 4), 12, "Round 12 down to nearest multiple of 4");
+}
+
 static void test_INT_ROUND_UP(void) {
     TEST_ASSERT_EQ(INT_ROUND_UP(8, 2), 8, "Round 8 up to nearest multiple of 2: Roundto is power of 2");
     TEST_ASSERT_EQ(INT_ROUND_UP(5, 3), 6, "Round 5 up to nearest multiple of 3");
@@ -620,4 +646,8 @@ void run_math_utils_tests(void) {
     test_uint64_round_down_power2();
     test_INT_ROUND_UP();
     test_INT_ROUND_DOWN();
+    test_signed_char_round_up_power2();
+    test_signed_char_round_down_power2();
+    test_unsigned_char_round_up_power2();
+    test_unsigned_char_round_down_power2();
 }
