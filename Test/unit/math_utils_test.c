@@ -792,6 +792,18 @@ static void test_INT_ROUND_DOWN_POWER2(void) {
     TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2((uint64_t)9223372036854775808, 2), 9223372036854775808, "Round 9223372036854775808 down to nearest multiple of 2");
 }
 
+static void test_power_Of_Two(void) {
+    for(uint64_t i = 0; i < 64; i++) {
+
+        uint64_t expected = 1 << i;
+
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%uth power of 2", i);
+
+        TEST_ASSERT_EQ(power_Of_Two(i), expected, msg);
+    }
+}
+
 void run_math_utils_tests(void) {
     test_M_Min();
     test_M_Max();
@@ -871,4 +883,5 @@ void run_math_utils_tests(void) {
     test_INT_ROUND_DOWN();
     test_INT_ROUND_UP_POWER2();
     test_INT_ROUND_DOWN_POWER2();
+    test_power_Of_Two();
 }
