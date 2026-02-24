@@ -35,6 +35,11 @@
 #    endif //__has_include(<stdbit.h>)
 #endif     //__has_include
 
+#if defined(HAVE_STDC_BIT) && defined (__cplusplus)
+// Manually removing this because C++ does not understand the generic implementations of these functions in C. -TJE
+#undef HAVE_STDC_BIT
+#endif
+
 #if defined(__cplusplus)
 extern "C"
 {
