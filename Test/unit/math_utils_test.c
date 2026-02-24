@@ -32,14 +32,6 @@ static void test_M_Max(void) {
     TEST_ASSERT_EQ(M_Max(FLOAT64_MIN_VAL, FLOAT64_MAX_VAL), FLOAT64_MAX_VAL, "M_Max of FLOAT64_MIN_VAL and FLOAT64_MAX_VAL");
 }
 
-static void test_INT_ROUND_UP(void) {
-    TEST_ASSERT_EQ(INT_ROUND_UP((uint8_t)0xC, 5), (uint8_t)0xA, "Round 0xC to the nearest multiple of 5");
-    TEST_ASSERT_EQ(INT_ROUND_UP((uint16_t)0x7B3D, 4), (uint16_t)0x7B3C, "Round 0x7B3D to the nearest multiple of 4");
-    TEST_ASSERT_EQ(INT_ROUND_UP((uint32_t)0xA73C91D6, 8), (uint32_t)0xA73C91D8, "Round 0xA73C91D6 to the nearest multiple of 8");
-    TEST_ASSERT_EQ(INT_ROUND_UP(0x9F3A7C5D8E21B4C7UL, 2), 0x9F3A7C5D8E21B4C8UL, "Round 0x9F3A7C5D8E21B4C7UL to the nearest multiple of 2");
-    TEST_ASSERT_EQ(INT_ROUND_UP(0x9F3A7C5D8E21B4C7ULL, 2), 0x9F3A7C5D8E21B4C7ULL, "Round 0x9F3A7C5D8E21B4C7ULL to the nearest multiple of 2");
-}
-
 static void test_uint8_round_up_generic(void) {
     TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)8, 2), 8, "Round 8 up to nearest multiple of 2: Roundto is power of 2");
     TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)5, 3), 6, "Round 5 up to nearest multiple of 3");
@@ -382,10 +374,18 @@ static void test_uint64_round_down_generic(void) {
     TEST_ASSERT_EQ(uint64_round_down_generic((uint64_t)9223372036854775808, 10), 9223372036854775800, "Round 9223372036854775808 down to nearest multiple of 10");
 }
 
+
+static void test_INT_ROUND_UP(void) {
+    TEST_ASSERT_EQ(INT_ROUND_UP((uint8_t)0xC, 5), (uint8_t)0xA, "Round 0xC to the nearest multiple of 5");
+    TEST_ASSERT_EQ(INT_ROUND_UP((uint16_t)0x7B3D, 4), (uint16_t)0x7B3C, "Round 0x7B3D to the nearest multiple of 4");
+    TEST_ASSERT_EQ(INT_ROUND_UP((uint32_t)0xA73C91D6, 8), (uint32_t)0xA73C91D8, "Round 0xA73C91D6 to the nearest multiple of 8");
+    TEST_ASSERT_EQ(INT_ROUND_UP(0x9F3A7C5D8E21B4C7UL, 2), 0x9F3A7C5D8E21B4C8UL, "Round 0x9F3A7C5D8E21B4C7UL to the nearest multiple of 2");
+    TEST_ASSERT_EQ(INT_ROUND_UP(0x9F3A7C5D8E21B4C7ULL, 2), 0x9F3A7C5D8E21B4C7ULL, "Round 0x9F3A7C5D8E21B4C7ULL to the nearest multiple of 2");
+}
+
 void run_math_utils_tests(void) {
     test_M_Min();
     test_M_Max();
-    // test_INT_ROUND_UP();
     test_uint8_round_up_generic();
     test_int8_round_up_generic();
     test_signed_char_round_up_generic();
@@ -422,4 +422,6 @@ void run_math_utils_tests(void) {
     test_uint32_round_down_generic();
     test_int64_round_down_generic();
     test_uint64_round_down_generic();
+
+    test_INT_ROUND_UP();
 }
