@@ -86,7 +86,7 @@ static void test_signed_short_round_up_generic(void) {
     TEST_ASSERT_EQ(signed_short_round_up_generic(12, 1), 12, "Round 12 up to nearest multiple of 1: no-op operation");
     TEST_ASSERT_EQ(signed_short_round_up_generic(243, 5), 245, "Round 243 up to nearest multiple of 5");
     TEST_ASSERT_EQ(signed_short_round_up_generic(1643, 12), 1644, "Round 1643 up to nearest multiple of 12");
-    TEST_ASSERT_EQ(signed_short_round_up_generic(32760, 10), -32766, "Round 121 up to nearest multiple of 10: Overflow case");
+    TEST_ASSERT_EQ(signed_short_round_up_generic(32761, 10), -32766, "Round 32761 up to nearest multiple of 10: Overflow case");
 }
 
 void run_math_utils_tests(void) {
