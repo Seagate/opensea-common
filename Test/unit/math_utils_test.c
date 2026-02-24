@@ -754,6 +754,24 @@ static void test_INT_ROUND_DOWN(void) {
     TEST_ASSERT_EQ(INT_ROUND_DOWN((uint64_t)1844674407370955134, 9), 1844674407370955133, "Round 1844674407370955134 down to nearest multiple of 9");
 }
 
+static void test_INT_ROUND_UP_POWER2(void) {
+    TEST_ASSERT_EQ(signed_long_long_round_up_power2(8, 2), 8, "Round 8 up to nearest multiple of 2");
+    TEST_ASSERT_EQ(signed_long_long_round_up_power2(5, 4), 8, "Round 5 up to nearest multiple of 4");
+    TEST_ASSERT_EQ(signed_long_long_round_up_power2(12, 8), 16, "Round 12 up to nearest multiple of 8");
+    TEST_ASSERT_EQ(signed_long_long_round_up_power2(243, 8), 248, "Round 243 up to nearest multiple of 8");
+    TEST_ASSERT_EQ(signed_long_long_round_up_power2(1643, 4), 1644, "Round 1643 up to nearest multiple of 4");
+    TEST_ASSERT_EQ(signed_long_long_round_up_power2(9496729, 2), 9496730, "Round 9496729 up to nearest multiple of 2");
+    TEST_ASSERT_EQ(signed_long_long_round_up_power2(23372036854775808, 2), 23372036854775808, "Round 23372036854775808 up to nearest multiple of 2");
+    TEST_ASSERT_EQ(unsigned_long_long_round_up_power2((uint64_t)8, 2), 8, "Round 8 up to nearest multiple of 2");
+    TEST_ASSERT_EQ(unsigned_long_long_round_up_power2((uint64_t)5, 4), 8, "Round 5 up to nearest multiple of 4");
+    TEST_ASSERT_EQ(unsigned_long_long_round_up_power2((uint64_t)12, 8), 16, "Round 12 up to nearest multiple of 8");
+    TEST_ASSERT_EQ(unsigned_long_long_round_up_power2((uint64_t)243, 8), 248, "Round 243 up to nearest multiple of 8");
+    TEST_ASSERT_EQ(unsigned_long_long_round_up_power2((uint64_t)1643, 4), 1644, "Round 1643 up to nearest multiple of 4");
+    TEST_ASSERT_EQ(unsigned_long_long_round_up_power2((uint64_t)65531, 2), 65532, "Round 65531 up to nearest multiple of 2");
+    TEST_ASSERT_EQ(unsigned_long_long_round_up_power2((uint64_t)2147483637, 4), 2147483640, "Round 2147483637 up to nearest multiple of 4");
+    TEST_ASSERT_EQ(unsigned_long_long_round_up_power2((uint64_t)23372036854775808, 2), 23372036854775808, "Round 23372036854775808 up to nearest multiple of 2");
+}
+
 void run_math_utils_tests(void) {
     test_M_Min();
     test_M_Max();
