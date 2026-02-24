@@ -1809,8 +1809,19 @@ extern "C"
     //! Using this on values that are NOT a power of two will return an incorrect result
     //! \param[in] p2val power of 2 value to perform log2 on.
     //! \return result of log2(p2val)
+    //! \note if passed zero, this returns UINT64_MAX as a way to indicate an error since log2(0) is undefined.
     static M_INLINE uint64_t log2_power2(uint64_t p2val)
+    // clang-format off
+    M_DIAG_ERROR((p2val) == 0, "Input must be non-zero")
+    M_DIAG_ERROR(((p2val) & ((p2val) - 1)) != 0, "Input must be a power of two")
+    // clang-format on
     {
+        if (p2val == 0)
+        {
+            assert(false && "Input must be non-zero"); // just to help with debugging, but this is unlikely to happen
+            return UINT64_MAX; // Sentinel value for invalid input
+        }
+        assert((p2val & (p2val - 1)) == 0 && "Input must be a power of two");
         return count_trailing_zeros(p2val);
     }
 
