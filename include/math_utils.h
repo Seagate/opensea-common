@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "bit_manip.h"
 #include "code_attributes.h"
 #include "common_types.h"
 #include "predef_env_detect.h"
