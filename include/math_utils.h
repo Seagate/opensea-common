@@ -1810,15 +1810,7 @@ extern "C"
     //! \return result of log2(p2val)
     static M_INLINE uint64_t log2_power2(uint64_t p2val)
     {
-        // NOTE: Using a built in to count trailing zeroes would be even more efficient as a single instruction on some
-        // CPUs
-        uint64_t ret = UINT64_C(0);
-        while (p2val > UINT64_C(1))
-        {
-            p2val >>= 1;
-            ++ret;
-        }
-        return ret;
+        return count_trailing_zeros(p2val);
     }
 
     //! \fn double raise_to_power(double number, double power)
