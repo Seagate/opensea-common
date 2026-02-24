@@ -147,14 +147,14 @@ enum
  */
 static M_INLINE size_t gen_bit_width(uint8_t msb, uint8_t lsb)
 {
-    return M_STATIC_CAST(size_t, msb) - M_STATIC_CAST(size_t, lsb) + SIZE_T_C(1);
+    return uint8_to_sizet(msb) - uint8_to_sizet(lsb) + SIZE_T_C(1);
 }
 
 static M_INLINE uint64_t gen_safe_mask_u64(size_t width)
 {
     if (width >= GENERIC_WIDTH_64)
     {
-        return ~(UINT64_C(0));
+        return UINT64_MAX;
     }
 
     if (width == GENERIC_WIDTH_0)
@@ -169,7 +169,7 @@ static M_INLINE uint32_t gen_safe_mask_u32(size_t width)
 {
     if (width >= GENERIC_WIDTH_32)
     {
-        return ~(UINT32_C(0));
+        return UINT32_MAX;
     }
 
     if (width == GENERIC_WIDTH_0)
@@ -184,12 +184,12 @@ static M_INLINE uint16_t gen_safe_mask_u16(size_t width)
 {
     if (width >= GENERIC_WIDTH_16)
     {
-        return M_STATIC_CAST(uint16_t, ~(UINT32_C(0)));
+        return UINT16_MAX;
     }
 
     if (width == GENERIC_WIDTH_0)
     {
-        return M_STATIC_CAST(uint16_t, UINT32_C(0));
+        return UINT16_C(0);
     }
 
     return M_STATIC_CAST(uint16_t, (UINT32_C(1) << width) - UINT32_C(1));
@@ -199,12 +199,12 @@ static M_INLINE uint8_t gen_safe_mask_u8(size_t width)
 {
     if (width >= GENERIC_WIDTH_8)
     {
-        return M_STATIC_CAST(uint8_t, ~(UINT32_C(0)));
+        return UINT8_MAX;
     }
 
     if (width == GENERIC_WIDTH_0)
     {
-        return M_STATIC_CAST(uint8_t, UINT32_C(0));
+        return UINT8_C(0);
     }
 
     return M_STATIC_CAST(uint8_t, (UINT32_C(1) << width) - UINT32_C(1));
