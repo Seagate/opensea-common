@@ -164,7 +164,7 @@ static void test_signed_long_round_up_generic(void) {
     TEST_ASSERT_EQ(signed_long_round_up_generic(243, 5), 245, "Round 243 up to nearest multiple of 5");
     TEST_ASSERT_EQ(signed_long_round_up_generic(1643, 12), 1644, "Round 1643 up to nearest multiple of 12");
     TEST_ASSERT_EQ(signed_long_round_up_generic(9496729, 12), 9496740, "Round 9496729 up to nearest multiple of 12");
-    TEST_ASSERT_EQ(signed_long_round_up_generic(23372036854775808, 7), 23372036854775810, "Round 23372036854775808 up to nearest multiple of 7");
+    TEST_ASSERT_EQ(signed_long_round_up_generic(23372036854775808, 7), 23372036854775812, "Round 23372036854775808 up to nearest multiple of 7");
 }
 
 static void test_signed_long_round_down_generic(void) {
@@ -186,7 +186,7 @@ static void test_unsigned_long_round_up_generic(void) {
     TEST_ASSERT_EQ(unsigned_long_round_up_generic((uint64_t)1643, 12), 1644, "Round 1643 up to nearest multiple of 12");
     TEST_ASSERT_EQ(unsigned_long_round_up_generic((uint64_t)65531, 10), 65540, "Round 65531 up to nearest multiple of 10");
     TEST_ASSERT_EQ(unsigned_long_round_up_generic((uint64_t)2147483637, 10), 2147483640, "Round 2147483637 up to nearest multiple of 10");
-    TEST_ASSERT_EQ(unsigned_long_round_up_generic((uint64_t)23372036854775808, 7), 23372036854775810, "Round 23372036854775808 up to nearest multiple of 7");
+    TEST_ASSERT_EQ(unsigned_long_round_up_generic((uint64_t)23372036854775808, 7), 23372036854775812, "Round 23372036854775808 up to nearest multiple of 7");
 }
 
 static void test_unsigned_long_round_down_generic(void) {
