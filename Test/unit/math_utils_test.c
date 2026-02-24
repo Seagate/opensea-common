@@ -772,6 +772,26 @@ static void test_INT_ROUND_UP_POWER2(void) {
     TEST_ASSERT_EQ(INT_ROUND_UP_POWER2((uint64_t)23372036854775808, 2), 23372036854775808, "Round 23372036854775808 up to nearest multiple of 2");
 }
 
+static void test_INT_ROUND_DOWN_POWER2(void) {
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2(19, 4), 16, "Round 19 down to nearest multiple of 4");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2(5, 2), 4, "Round 5 down to nearest multiple of 2");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2(12, 4), 12, "Round 12 down to nearest multiple of 4");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2(243, 8), 240, "Round 243 down to nearest multiple of 8");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2(1643, 8), 1640, "Round 1643 down to nearest multiple of 8");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2(32761, 4), 32760, "Round 32761 down to nearest multiple of 4");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2(9496729, 2), 9496728, "Round 9496729 down to nearest multiple of 2");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2(23372036854775808, 4), 23372036854775808, "Round 23372036854775808 down to nearest multiple of 4");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2((uint64_t)19, 4), 16, "Round 19 down to nearest multiple of 4");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2((uint64_t)5, 2), 4, "Round 5 down to nearest multiple of 2");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2((uint64_t)12, 4), 12, "Round 12 down to nearest multiple of 4");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2((uint64_t)243, 8), 240, "Round 243 down to nearest multiple of 8");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2((uint64_t)1643, 8), 1640, "Round 1643 down to nearest multiple of 8");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2((uint64_t)32761, 4), 32760, "Round 32761 down to nearest multiple of 4");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2((uint64_t)65535, 2), 65534, "Round 65535 down to nearest multiple of 2");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2((uint64_t)4294967295, 4), 4294967292, "Round 4294967295 down to nearest multiple of 4");
+    TEST_ASSERT_EQ(INT_ROUND_DOWN_POWER2((uint64_t)9223372036854775808, 2), 9223372036854775808, "Round 9223372036854775808 down to nearest multiple of 2");
+}
+
 void run_math_utils_tests(void) {
     test_M_Min();
     test_M_Max();
@@ -849,4 +869,6 @@ void run_math_utils_tests(void) {
     test_unsigned_long_long_round_down_power2();
     test_INT_ROUND_UP();
     test_INT_ROUND_DOWN();
+    test_INT_ROUND_UP_POWER2();
+    test_INT_ROUND_DOWN_POWER2();
 }
