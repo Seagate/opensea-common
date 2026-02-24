@@ -133,7 +133,7 @@ static void test_signed_int_round_down_generic(void) {
     TEST_ASSERT_EQ(signed_int_round_down_generic(243, 5), 240, "Round 243 down to nearest multiple of 5");
     TEST_ASSERT_EQ(signed_int_round_down_generic(1643, 12), 1632, "Round 1643 down to nearest multiple of 12");
     TEST_ASSERT_EQ(signed_int_round_down_generic(32761, 10), 32760, "Round 32761 down to nearest multiple of 10");
-    TEST_ASSERT_EQ(signed_int_round_down_generic(9496729, 10), 9496710, "Round 9496729 down to nearest multiple of 10");
+    TEST_ASSERT_EQ(signed_int_round_down_generic(9496729, 10), 9496720, "Round 9496729 down to nearest multiple of 10");
 }
 
 static void test_unsigned_int_round_up_generic(void) {
@@ -142,7 +142,7 @@ static void test_unsigned_int_round_up_generic(void) {
     TEST_ASSERT_EQ(unsigned_int_round_up_generic((uint32_t)12, 1), 12, "Round 12 up to nearest multiple of 1: no-op operation");
     TEST_ASSERT_EQ(unsigned_int_round_up_generic((uint32_t)243, 5), 245, "Round 243 up to nearest multiple of 5");
     TEST_ASSERT_EQ(unsigned_int_round_up_generic((uint32_t)1643, 12), 1644, "Round 1643 up to nearest multiple of 12");
-    TEST_ASSERT_EQ(unsigned_int_round_up_generic((uint32_t)65531, 10), 4, "Round 65531 up to nearest multiple of 10");
+    TEST_ASSERT_EQ(unsigned_int_round_up_generic((uint32_t)65531, 10), 65540, "Round 65531 up to nearest multiple of 10");
     TEST_ASSERT_EQ(unsigned_int_round_up_generic((uint32_t)2147483637, 10), 2147483640, "Round 2147483637 up to nearest multiple of 10");
 }
 
