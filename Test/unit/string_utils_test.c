@@ -438,11 +438,15 @@ static void test_safe_strcpy(void) {
 }
 
 static void test_safe_strmove(void) {
-    char str[] = "Hello, World!";
+    char dest[20];
+    const char* src = "Hello, World!";
+    safe_strmove(dest, sizeof(dest), src);
+    TEST_ASSERT_EQ(strcmp(dest, src), 0, "String is correctly moved to destination buffer");
 
-    safe_strmove(str + 5, sizeof(str), str);
-
-    TEST_ASSERT_EQ(strcmp(str + 5, "Hello, World!"), 0, "String moved correctly with overlap");
+    // Test for overlapping
+    char buf[32] = "Hello, World!";
+    TEST_ASSERT_EQ(safe_strmove(buf + 5, sizeof(buf) - 5, buf), 0, "safe_strmove succeeds with overlap");
+    TEST_ASSERT_EQ(strcmp(buf + 5, "Hello, World!"), 0, "String moved correctly with overlap");
 }
 
 void run_string_utils_tests(void) {
