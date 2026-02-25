@@ -877,6 +877,7 @@ static void test_log2_power2(void) {
 
         TEST_ASSERT_EQ(log2_power2(powers_of_2[i]), i, msg);
     }
+    TEST_ASSERT_EQ(log2_power2(12), 2, "Test must fail: not a power of 2");
 }
 
 void run_math_utils_tests(void) {
