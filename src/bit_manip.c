@@ -115,6 +115,189 @@ enum eGenericIntMaxBits
     GENERIC_INT_MAX_BIT   = 63
 };
 
+/* Width constants for masks and extraction operations. Use explicit
+ * named constants instead of magic numbers to make intent clear and
+ * to satisfy static analyzers.
+ */
+enum
+{
+    GENERIC_WIDTH_0  = 0,
+    GENERIC_WIDTH_8  = 8,
+    GENERIC_WIDTH_16 = 16,
+    GENERIC_WIDTH_32 = 32,
+    GENERIC_WIDTH_64 = 64
+};
+
+/* Macro to assign output fields concisely.
+ * Usage: GEN_ASSIGN_OUT(uint8_t, u8, gen_extract_u8, input.u8)
+ * Expands to set out.sizeoftype, out.uX = casted extract, and out.issigned.
+ */
+#define GEN_ASSIGN_OUT(TARGET_TYPE, OUT_FIELD, EXTRACT_FN, IN_FIELD) \
+    do                                                                  \
+    {                                                                   \
+        out.sizeoftype = sizeof(TARGET_TYPE);                           \
+        out.OUT_FIELD  = M_STATIC_CAST(TARGET_TYPE, EXTRACT_FN(IN_FIELD, msb, lsb)); \
+        out.issigned   = input.issigned;                                \
+    } while (0)
+
+/* Helper functions to centralize safe mask/shift logic and avoid
+ * undefined behavior when shifting by full type width. These reduce
+ * duplication and fix cases where constructing masks like
+ * ~(~UINT64_C(0) << width) would shift by 64 (UB).
+ */
+static M_INLINE size_t gen_bit_width(uint8_t msb, uint8_t lsb)
+{
+    return uint8_to_sizet(msb) - uint8_to_sizet(lsb) + SIZE_T_C(1);
+}
+
+static M_INLINE uint64_t gen_safe_mask_u64(size_t width)
+{
+    if (width >= GENERIC_WIDTH_64)
+    {
+        return UINT64_MAX;
+    }
+
+    if (width == GENERIC_WIDTH_0)
+    {
+        return UINT64_C(0);
+    }
+
+    return (UINT64_C(1) << width) - UINT64_C(1);
+}
+
+static M_INLINE uint32_t gen_safe_mask_u32(size_t width)
+{
+    if (width >= GENERIC_WIDTH_32)
+    {
+        return UINT32_MAX;
+    }
+
+    if (width == GENERIC_WIDTH_0)
+    {
+        return UINT32_C(0);
+    }
+
+    return (UINT32_C(1) << width) - UINT32_C(1);
+}
+
+static M_INLINE uint16_t gen_safe_mask_u16(size_t width)
+{
+    if (width >= GENERIC_WIDTH_16)
+    {
+        return UINT16_MAX;
+    }
+
+    if (width == GENERIC_WIDTH_0)
+    {
+        return UINT16_C(0);
+    }
+
+    return M_STATIC_CAST(uint16_t, (UINT32_C(1) << width) - UINT32_C(1));
+}
+
+static M_INLINE uint8_t gen_safe_mask_u8(size_t width)
+{
+    if (width >= GENERIC_WIDTH_8)
+    {
+        return UINT8_MAX;
+    }
+
+    if (width == GENERIC_WIDTH_0)
+    {
+        return UINT8_C(0);
+    }
+
+    return M_STATIC_CAST(uint8_t, (UINT32_C(1) << width) - UINT32_C(1));
+}
+
+static M_INLINE uint64_t gen_extract_u64(uint64_t val, uint8_t msb, uint8_t lsb)
+{
+    size_t width = gen_bit_width(msb, lsb);
+
+    if (width == GENERIC_WIDTH_0)
+    {
+        return UINT64_C(0);
+    }
+
+    if (width >= GENERIC_WIDTH_64 && lsb == 0)
+    {
+        return val;
+    }
+
+    if (lsb >= GENERIC_WIDTH_64)
+    {
+        return UINT64_C(0);
+    }
+
+    return M_STATIC_CAST(uint64_t, (val >> lsb) & gen_safe_mask_u64(width));
+}
+
+static M_INLINE uint32_t gen_extract_u32(uint32_t val, uint8_t msb, uint8_t lsb)
+{
+    size_t width = gen_bit_width(msb, lsb);
+
+    if (width == GENERIC_WIDTH_0)
+    {
+        return UINT32_C(0);
+    }
+
+    if (width >= GENERIC_WIDTH_32 && lsb == 0)
+    {
+        return val;
+    }
+
+    if (lsb >= GENERIC_WIDTH_32)
+    {
+        return UINT32_C(0);
+    }
+
+    return M_STATIC_CAST(uint32_t, (val >> lsb) & gen_safe_mask_u32(width));
+}
+
+static M_INLINE uint16_t gen_extract_u16(uint16_t val, uint8_t msb, uint8_t lsb)
+{
+    size_t width = gen_bit_width(msb, lsb);
+
+    if (width == GENERIC_WIDTH_0)
+    {
+        return M_STATIC_CAST(uint16_t, UINT32_C(0));
+    }
+
+    if (width >= GENERIC_WIDTH_16 && lsb == 0)
+    {
+        return val;
+    }
+
+    if (lsb >= GENERIC_WIDTH_16)
+    {
+        return M_STATIC_CAST(uint16_t, UINT32_C(0));
+    }
+
+    return M_STATIC_CAST(uint16_t, (val >> lsb) & gen_safe_mask_u16(width));
+}
+
+static M_INLINE uint8_t gen_extract_u8(uint8_t val, uint8_t msb, uint8_t lsb)
+{
+    size_t width = gen_bit_width(msb, lsb);
+
+    if (width == GENERIC_WIDTH_0)
+    {
+        return M_STATIC_CAST(uint8_t, UINT32_C(0));
+    }
+
+    if (width >= GENERIC_WIDTH_8 && lsb == 0)
+    {
+        return val;
+    }
+
+    if (lsb >= GENERIC_WIDTH_8)
+    {
+        return M_STATIC_CAST(uint8_t, UINT32_C(0));
+    }
+
+    return M_STATIC_CAST(uint8_t, (val >> lsb) & gen_safe_mask_u8(width));
+}
+
 //! \fn static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
 //!                                            M_ATTR_UNUSED size_t outputsize,
 //!                                            uint8_t              msb,
@@ -139,14 +322,16 @@ static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
     }
     else
     {
-        // output size is not used in this case since a uint8_t can only
-        // ever output a uint8_t
-        out.sizeoftype = sizeof(uint8_t);
-        out.u8 =
-            ((input.u8) >> (lsb)) & ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to
-                                                                                     // resolve warning about signed int
-                                                                                     // since UINT8_C() does not apply U
-        out.issigned = input.issigned;
+        size_t bit_count = gen_bit_width(msb, lsb);
+
+        if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
+        {
+            errno = ERANGE;
+        }
+        else
+        {
+            GEN_ASSIGN_OUT(uint8_t, u8, gen_extract_u8, input.u8);
+        }
     }
     M_USE_UNUSED(outputsize);
     return out;
@@ -168,32 +353,32 @@ static M_INLINE genericint_t gen_16bit_range(genericint_t input, size_t outputsi
     {
         errno = ERANGE;
     }
-    else if (outputsize == sizeof(uint8_t))
+    else
     {
-        if ((msb - lsb + 1) > 8)
+        size_t bit_count = gen_bit_width(msb, lsb);
+
+        if (outputsize == sizeof(uint8_t))
         {
-            errno = ERANGE;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint8_t, u8, gen_extract_u16, input.u16);
+            }
         }
-        else
+        else /* default case where outputsize is not less than uint16 */
         {
-            out.sizeoftype = sizeof(uint8_t);
-            out.u8         = C_CAST(uint8_t,
-                                    ((input.u16) >> (lsb)) &
-                                        ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1)))); // starting with UINT32_C to
-                                                                                          // resolve warning about
-                                                                                          // signed int since UINT16_C()
-                                                                                          // does not apply U
-            out.issigned = input.issigned;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_16)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint16_t, u16, gen_extract_u16, input.u16);
+            }
         }
-    }
-    else // default case where outputsize is not less than uint16
-    {
-        out.sizeoftype = sizeof(uint16_t);
-        out.u16        = ((input.u16) >> (lsb)) &
-                  ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to resolve
-                                                                   // warning about signed int since
-                                                                   // UINT16_C() does not apply U
-        out.issigned = input.issigned;
     }
     return out;
 }
@@ -214,47 +399,43 @@ static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsi
     {
         errno = ERANGE;
     }
-    else if (outputsize == sizeof(uint8_t))
+    else
     {
-        if ((msb - lsb + 1) > 8)
+        size_t bit_count = gen_bit_width(msb, lsb);
+
+        if (outputsize == sizeof(uint8_t))
         {
-            errno = ERANGE;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint8_t, u8, gen_extract_u32, input.u32);
+            }
         }
-        else
+        else if (outputsize == sizeof(uint16_t))
         {
-            out.sizeoftype = sizeof(uint8_t);
-            out.u8         = C_CAST(uint8_t,
-                                    ((input.u32) >> (lsb)) &
-                                        ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1)))); // starting with UINT32_C to
-                                                                                          // resolve warning about
-                                                                                          // signed int since UINT16_C()
-                                                                                          // does not apply U
-            out.issigned = input.issigned;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_16)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint16_t, u16, gen_extract_u32, input.u32);
+            }
         }
-    }
-    else if (outputsize == sizeof(uint16_t))
-    {
-        if ((msb - lsb + 1) > 16)
+        else /* default case where outputsize is not less than uint32 */
         {
-            errno = ERANGE;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_32)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint32_t, u32, gen_extract_u32, input.u32);
+            }
         }
-        else
-        {
-            out.sizeoftype = sizeof(uint16_t);
-            out.u16        = C_CAST(uint16_t,
-                                    ((input.u32) >> (lsb)) &
-                                        ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1)))); // starting with UINT32_C to
-                                                                                   // resolve warning about signed
-                                                                                   // int since UINT16_C() does
-                                                                                   // not apply U
-            out.issigned = input.issigned;
-        }
-    }
-    else // default case where outputsize is not less than uint32
-    {
-        out.sizeoftype = sizeof(uint16_t);
-        out.u32        = ((input.u32) >> (lsb)) & ~(~UINT32_C(0) << ((msb) - (lsb) + UINT8_C(1)));
-        out.issigned   = input.issigned;
     }
     return out;
 }
@@ -275,59 +456,54 @@ static M_INLINE genericint_t gen_64bit_range(genericint_t input, size_t outputsi
     {
         errno = ERANGE;
     }
-    else if (outputsize == sizeof(uint8_t))
+    else
     {
-        if ((msb - lsb + 1) > 8)
+        size_t bit_count = gen_bit_width(msb, lsb);
+
+        if (outputsize == sizeof(uint8_t))
         {
-            errno = ERANGE;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint8_t, u8, gen_extract_u64, input.u64);
+            }
         }
-        else
+        else if (outputsize == sizeof(uint16_t))
         {
-            out.sizeoftype = sizeof(uint8_t);
-            out.u8         = ((input.u64) >> (lsb)) &
-                     ~(~UINT64_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to resolve
-                                                                      // warning about signed int since
-                                                                      // UINT16_C() does not apply U
-            out.issigned = input.issigned;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_16)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint16_t, u16, gen_extract_u64, input.u64);
+            }
         }
-    }
-    else if (outputsize == sizeof(uint16_t))
-    {
-        if ((msb - lsb + 1) > 16)
+        else if (outputsize == sizeof(uint32_t))
         {
-            errno = ERANGE;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_32)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint32_t, u32, gen_extract_u64, input.u64);
+            }
         }
-        else
+        else /* default case where outputsize is not less than uint64 */
         {
-            out.sizeoftype = sizeof(uint16_t);
-            out.u16        = ((input.u64) >> (lsb)) &
-                      ~(~UINT64_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to resolve
-                                                                       // warning about signed int since
-                                                                       // UINT16_C() does not apply U
-            out.issigned = input.issigned;
+            if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_64)
+            {
+                errno = ERANGE;
+            }
+            else
+            {
+                GEN_ASSIGN_OUT(uint64_t, u64, gen_extract_u64, input.u64);
+            }
         }
-    }
-    else if (outputsize == sizeof(uint32_t))
-    {
-        if ((msb - lsb + 1) > 32)
-        {
-            errno = ERANGE;
-        }
-        else
-        {
-            out.sizeoftype = sizeof(uint16_t);
-            out.u32        = ((input.u64) >> (lsb)) &
-                      ~(~UINT64_C(0) << ((msb) - (lsb) + UINT8_C(1))); // starting with UINT32_C to resolve
-                                                                       // warning about signed int since
-                                                                       // UINT16_C() does not apply U
-            out.issigned = input.issigned;
-        }
-    }
-    else // default case where outputsize is not less than uint64
-    {
-        out.sizeoftype = sizeof(uint64_t);
-        out.u64        = ((input.u64) >> (lsb)) & ~(~UINT64_C(0) << ((msb) - (lsb) + UINT8_C(1)));
-        out.issigned   = input.issigned;
     }
     return out;
 }
