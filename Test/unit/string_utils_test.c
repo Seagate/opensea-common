@@ -32,7 +32,6 @@ char numberChars[] = "0123456789";
 char specialChars[] = "!@#$%^&*()_+-=~`";
 
 static void test_safe_isalnum(void) {
-
     char msg[60];
 
     for(int i = 0; i < sizeof(lowerCaseAlphabet)-1; i++) {
@@ -57,7 +56,6 @@ static void test_safe_isalnum(void) {
 }
 
 static void test_safe_isalpha(void) {
-
     char msg[60];
 
     for(int i = 0; i < sizeof(lowerCaseAlphabet)-1 ; i++) {
@@ -81,6 +79,78 @@ static void test_safe_isalpha(void) {
     }
 }
 
+static void test_safe_islower(void) {
+    char msg[60];
+
+    for(int i = 0; i < sizeof(lowerCaseAlphabet)-1 ; i++) {
+        snprintf(msg, sizeof(msg), "Lowercase character %c returns non-zero value", lowerCaseAlphabet[i]);
+        TEST_ASSERT_NEQ(safe_islower(lowerCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(upperCaseAlphabet)-1; i++) {
+        snprintf(msg, sizeof(msg), "Uppercase character %c returns 0", upperCaseAlphabet[i]);
+        TEST_ASSERT_EQ(safe_islower(upperCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(numberChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-lowercase character %c return 0", numberChars[i]);
+        TEST_ASSERT_EQ(safe_islower(numberChars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(specialChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-lowercase character %c return 0", specialChars[i]);
+        TEST_ASSERT_EQ(safe_islower(specialChars[i]), 0, msg);
+    }
+}
+
+static void test_safe_isupper(void) {
+    char msg[60];
+
+    for(int i = 0; i < sizeof(upperCaseAlphabet)-1; i++) {
+        snprintf(msg, sizeof(msg), "Uppercase character %c returns non-zero value", upperCaseAlphabet[i]);
+        TEST_ASSERT_NEQ(safe_isupper(upperCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(lowerCaseAlphabet)-1 ; i++) {
+        snprintf(msg, sizeof(msg), "Lowercase character %c returns 0", lowerCaseAlphabet[i]);
+        TEST_ASSERT_EQ(safe_isupper(lowerCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(numberChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-uppercase character %c return 0", numberChars[i]);
+        TEST_ASSERT_EQ(safe_isupper(numberChars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(specialChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-uppercase character %c return 0", specialChars[i]);
+        TEST_ASSERT_EQ(safe_isupper(specialChars[i]), 0, msg);
+    }
+}
+
+static void test_safe_isdigit(void) {
+    char msg[60];
+
+    for(int i = 0; i < sizeof(numberChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Digit character %c returns non-zero value", numberChars[i]);
+        TEST_ASSERT_NEQ(safe_isdigit(numberChars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(lowerCaseAlphabet)-1 ; i++) {
+        snprintf(msg, sizeof(msg), "Non-digit character %c returns 0", lowerCaseAlphabet[i]);
+        TEST_ASSERT_EQ(safe_isdigit(lowerCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(upperCaseAlphabet)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-digit character %c returns 0", upperCaseAlphabet[i]);
+        TEST_ASSERT_EQ(safe_isdigit(upperCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(specialChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-digit character %c return 0", specialChars[i]);
+        TEST_ASSERT_EQ(safe_isdigit(specialChars[i]), 0, msg);
+    }
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -88,4 +158,7 @@ void run_string_utils_tests(void) {
     test_safe_isascii();
     test_safe_isalnum();
     test_safe_isalpha();
+    test_safe_islower();
+    test_safe_isupper();
+    test_safe_isdigit();
 }
