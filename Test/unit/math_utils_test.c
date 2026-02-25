@@ -1,6 +1,8 @@
 #include"../framework/test_framework.h"
 #include"../../include/math_utils.h"
+#include <math.h>
 #include"../testConstants.h"
+#define EPSILON 1e-5
 
 static void test_M_Min(void) {
     TEST_ASSERT_EQ(M_Min(INT_MIN, INT_MAX), INT_MIN, "M_Min of INT_MIN and INT_MAX");
@@ -884,8 +886,8 @@ static void test_raise_to_power(void) {
     // TEST_ASSERT_EQ(raise_to_power((double)12, (double)5), (double)248832, "12 to power 5");
     // TEST_ASSERT_EQ(raise_to_power((double)-2, (double)3), (double)-8, "-2 to power 3");
     // TEST_ASSERT_EQ(raise_to_power((double)-2, (double)4), (double)16, "-2 to power 4");
-    TEST_ASSERT_EQ(raise_to_power((double)2, (double)-4), (double)0.0625, "2 to power -4");
-    TEST_ASSERT_EQ(raise_to_power((double)3, (double)-2), (double)0.11111, "3 to power -2");
+    TEST_ASSERT_TRUE(fabs(raise_to_power(2, -4) - 0.0625) < 1e-5, "2 raised to power -4");
+    TEST_ASSERT_TRUE(fabs(raise_to_power(3, -2) - 0.11111) < 1e-5, "3 raised to power -2");
 }
 
 void run_math_utils_tests(void) {
