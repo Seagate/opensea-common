@@ -793,7 +793,7 @@ static void test_INT_ROUND_DOWN_POWER2(void) {
 }
 
 static void test_power_Of_Two(void) {
-    for(uint16_t i = 0; i < 64; i++) {
+    for(uint16_t i = 0; i < 65; i++) {
 
         uint64_t expected = (uint64_t)1 << i;
 
