@@ -437,6 +437,14 @@ static void test_safe_strcpy(void) {
     // TEST_ASSERT_EQ(errno, ERANGE, "safe_strcpy sets errno to ERANGE when destsz is greater than RSIZE_MAX");
 }
 
+static void test_safe_strmove(void) {
+    char str[] = "Hello, World!";
+
+    safe_strmove(str + 5, sizeof(str) - 5, str);
+
+    TEST_ASSERT_EQ(strcmp(str + 5, "Hello, World!"), 0, "String moved correctly with overlap");
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -459,4 +467,5 @@ void run_string_utils_tests(void) {
     test_safe_strnlen();
     test_safe_strlen();
     test_safe_strcpy();
+    test_safe_strmove();
 }
