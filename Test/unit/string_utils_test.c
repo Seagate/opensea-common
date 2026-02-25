@@ -285,6 +285,107 @@ static void test_safe_isspace(void) {
     }
 }
 
+static void test_safe_isblank(void) {
+    char msg[60];
+
+    for(int i = 0; i < sizeof(space_chars)-1; i++) {
+        if(space_chars[i] == ' ' || space_chars[i] == '\t') {
+            snprintf(msg, sizeof(msg), "Blank character %c returns non-zero value", space_chars[i]);
+            TEST_ASSERT_NEQ(safe_isblank(space_chars[i]), 0, msg);
+        } else {
+            snprintf(msg, sizeof(msg), "Non-blank character %c returns 0", space_chars[i]);
+            TEST_ASSERT_EQ(safe_isblank(space_chars[i]), 0, msg);
+        }
+    }
+
+    for(int i = 0; i < sizeof(lowerCaseAlphabet)-1 ; i++) {
+        snprintf(msg, sizeof(msg), "Non-blank character %c returns 0", lowerCaseAlphabet[i]);
+        TEST_ASSERT_EQ(safe_isblank(lowerCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(upperCaseAlphabet)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-blank character %c returns 0", upperCaseAlphabet[i]);
+        TEST_ASSERT_EQ(safe_isblank(upperCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(numberChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-blank character %c returns 0", numberChars[i]);
+        TEST_ASSERT_EQ(safe_isblank(numberChars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(specialChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-blank character %c returns 0", specialChars[i]);
+        TEST_ASSERT_EQ(safe_isblank(specialChars[i]), 0, msg);
+    }
+}
+
+static void test_safe_isprint(void) {
+    char msg[60];
+
+    for(int i = 0; i < sizeof(lowerCaseAlphabet)-1 ; i++) {
+        snprintf(msg, sizeof(msg), "Printable character %c returns non-zero value", lowerCaseAlphabet[i]);
+        TEST_ASSERT_NEQ(safe_isprint(lowerCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(upperCaseAlphabet)-1; i++) {
+        snprintf(msg, sizeof(msg), "Printable character %c returns non-zero value", upperCaseAlphabet[i]);
+        TEST_ASSERT_NEQ(safe_isprint(upperCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(numberChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Printable character %c return non-zero value", numberChars[i]);
+        TEST_ASSERT_NEQ(safe_isprint(numberChars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(specialChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Printable character %c return non-zero value", specialChars[i]);
+        TEST_ASSERT_NEQ(safe_isprint(specialChars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(cntrl_chars); i++) {
+        snprintf(msg, sizeof(msg), "Control character 0x%02X returns 0", cntrl_chars[i]);
+        TEST_ASSERT_EQ(safe_isprint(cntrl_chars[i]), 0, msg);
+    }
+}
+
+static void test_safe_ispunct(void) {
+    char msg[60];
+
+    for(int i = 0; i < sizeof(specialChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Punctuation character %c returns non-zero value", specialChars[i]);
+        TEST_ASSERT_NEQ(safe_ispunct(specialChars[i]), 0, msg);
+    }   
+
+    for(int i = 0; i < sizeof(lowerCaseAlphabet)-1 ; i++) {
+        snprintf(msg, sizeof(msg), "Non-punctuation character %c returns 0", lowerCaseAlphabet[i]);
+        TEST_ASSERT_EQ(safe_ispunct(lowerCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(upperCaseAlphabet)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-punctuation character %c returns 0", upperCaseAlphabet[i]);
+        TEST_ASSERT_EQ(safe_ispunct(upperCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(numberChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-punctuation character %c returns 0", numberChars[i]);
+        TEST_ASSERT_EQ(safe_ispunct(numberChars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(cntrl_chars); i++) {
+        snprintf(msg, sizeof(msg), "Non-punctuation character 0x%02X returns 0", cntrl_chars[i]);
+        TEST_ASSERT_EQ(safe_ispunct(cntrl_chars[i]), 0, msg);
+    }
+}
+
+static void test_safe_tolower(void) {
+    char msg[60];
+
+    for(int i = 0; i < sizeof(upperCaseAlphabet)-1; i++) {
+        snprintf(msg, sizeof(msg), "tolower converts %c to %c", upperCaseAlphabet[i], lowerCaseAlphabet[i]);
+        TEST_ASSERT_EQ(safe_tolower(upperCaseAlphabet[i]), lowerCaseAlphabet[i], msg);
+    }
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -299,4 +400,8 @@ void run_string_utils_tests(void) {
     test_safe_iscntrl();
     test_safe_isgraph();
     test_safe_isspace();
+    test_safe_isblank();
+    test_safe_isprint();
+    test_safe_ispunct();
+    test_safe_tolower();
 }
