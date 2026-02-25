@@ -12,10 +12,12 @@
 
 #pragma once
 
+#include "bit_manip.h"
 #include "code_attributes.h"
 #include "common_types.h"
 #include "predef_env_detect.h"
 #include "type_conversion.h"
+
 #include <assert.h>
 
 #if defined(__cplusplus)
@@ -1770,28 +1772,57 @@ extern "C"
 #        define INT_ROUND_DOWN_POWER2(value, roundto) ((value) & ~((roundto) - 1))
 #endif
 
+    //! \enum UINT*_MAX_POWER2
+    //! \brief Maximum exponent for power-of-two rounding functions to avoid overflow for each unsigned integer type.
+    //! For example, `UINT8_MAX_POWER2` is 8 because 2^8 = 256, which is the first power of two that exceeds the maximum
+    //! value of an unsigned char (255). These constants can be used to validate inputs to the power-of-two rounding
+    //! functions to prevent overflow.
+    //! \code
+    //! if (exponent >= UINT8_MAX_POWER2) {
+    //!     // handle error: exponent too large for uint8_t power-of-two functions
+    //! }
+    //! \endcode
+
+    enum
+    {
+        UINT8_MAX_POWER2 = 8,
+        UINT16_MAX_POWER2 = 16,
+        UINT32_MAX_POWER2 = 32,
+        UINT64_MAX_POWER2 = 64
+    };
+
     //! \fn uint64_t power_Of_Two(uint16_t exponent)
-    //! \brief returns 2^exponent value as uint64_t
+    //! \brief returns 2^exponent value as uint64_t. Maximum exponent value is 63 to avoid overflow (2^64 would overflow uint64_t).
     //! \param[in] exponent exponent value to raise 2 by
     //! \return result of 2^exponent calculation
-    uint64_t power_Of_Two(uint16_t exponent);
+    static M_INLINE uint64_t power_Of_Two(uint16_t exponent)
+    // clang-format off
+    M_DIAG_ERROR((exponent) >= UINT64_MAX_POWER2, "exponent must be less than 64 to avoid overflow")
+    // clang-format on
+    {
+        assert(exponent < UINT64_MAX_POWER2 && "Exponent must be less than 64 to avoid overflow");
+        return (UINT64_C(1) << exponent);
+    }
 
     //! \fn uint64_t log2_power2(uint64_t p2val)
     //! \brief Calculates log2 for a value that is a power of 2
     //! Using this on values that are NOT a power of two will return an incorrect result
     //! \param[in] p2val power of 2 value to perform log2 on.
     //! \return result of log2(p2val)
+    //! \note if passed zero, this returns UINT64_MAX as a way to indicate an error since log2(0) is undefined.
     static M_INLINE uint64_t log2_power2(uint64_t p2val)
+    // clang-format off
+    M_DIAG_ERROR((p2val) == 0, "Input must be non-zero")
+    M_DIAG_ERROR(((p2val) & ((p2val) - 1)) != 0, "Input must be a power of two")
+    // clang-format on
     {
-        // NOTE: Using a built in to count trailing zeroes would be even more efficient as a single instruction on some
-        // CPUs
-        uint64_t ret = UINT64_C(0);
-        while (p2val > UINT64_C(1))
+        if (p2val == 0)
         {
-            p2val >>= 1;
-            ++ret;
+            assert(false && "Input must be non-zero"); // just to help with debugging, but this is unlikely to happen
+            return UINT64_MAX; // Sentinel value for invalid input
         }
-        return ret;
+        assert((p2val & (p2val - 1)) == 0 && "Input must be a power of two");
+        return count_trailing_zeros(p2val);
     }
 
     //! \fn double raise_to_power(double number, double power)
