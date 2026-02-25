@@ -32,38 +32,52 @@ char numberChars[] = "0123456789";
 char specialChars[] = "!@#$%^&*()_+-=~`";
 
 static void test_safe_isalnum(void) {
+
+    char msg[60];
+
     for(int i = 0; i < sizeof(lowerCaseAlphabet); i++) {
-        TEST_ASSERT_NEQ(safe_isalnum(lowerCaseAlphabet[i]), 0, ("Alphanumeric character %c returns non-zero value", lowerCaseAlphabet[i]));
+        snprintf(msg, sizeof(msg), "Alphanumeric character %c returns non-zero value", lowerCaseAlphabet[i]);
+        TEST_ASSERT_NEQ(safe_isalnum(lowerCaseAlphabet[i]), 0, msg);
     }
 
     for(int i = 0; i < sizeof(upperCaseAlphabet); i++) {
-        TEST_ASSERT_NEQ(safe_isalnum(upperCaseAlphabet[i]), 0, ("Alphanumeric character %c returns non-zero value", upperCaseAlphabet[i]));
+        snprintf(msg, sizeof(msg), "Alphanumeric character %c returns non-zero value", upperCaseAlphabet[i]);
+        TEST_ASSERT_NEQ(safe_isalnum(upperCaseAlphabet[i]), 0, msg);
     }
 
     for(int i = 0; i < sizeof(numberChars); i++) {
-        TEST_ASSERT_NEQ(safe_isalnum(numberChars[i]), 0, ("Alphanumeric character %c returns non-zero value", numberChars[i]));
+        snprintf(msg, sizeof(msg), "Alphanumeric character %c returns non-zero value", numberChars[i]);
+        TEST_ASSERT_NEQ(safe_isalnum(numberChars[i]), 0, msg);
     }
 
     for(int i = 0; i < sizeof(specialChars); i++) {
-        TEST_ASSERT_EQ(safe_isalnum(specialChars[i]), 0, ("Non-alphanumeric character %c return 0", specialChars[i]));
+        snprintf(msg, sizeof(msg), "Non-alphanumeric character %c return 0", specialChars[i]);
+        TEST_ASSERT_EQ(safe_isalnum(specialChars[i]), 0, msg);
     }
 }
 
 static void test_safe_isalpha(void) {
+
+    char msg[60];
+
     for(int i = 0; i < sizeof(lowerCaseAlphabet); i++) {
-        TEST_ASSERT_NEQ(safe_isalpha(lowerCaseAlphabet[i]), 0, ("Alphabetic character %c returns non-zero value", lowerCaseAlphabet[i]));
+        snprintf(msg, sizeof(msg), "Alphabetic character %c returns non-zero value", lowerCaseAlphabet[i]);
+        TEST_ASSERT_NEQ(safe_isalpha(lowerCaseAlphabet[i]), 0, msg);
     }
 
     for(int i = 0; i < sizeof(upperCaseAlphabet); i++) {
-        TEST_ASSERT_NEQ(safe_isalpha(upperCaseAlphabet[i]), 0, ("Alphabetic character %c returns non-zero value", upperCaseAlphabet[i]));
+        snprintf(msg, sizeof(msg), "Alphabetic character %c returns non-zero value", upperCaseAlphabet[i]);
+        TEST_ASSERT_NEQ(safe_isalpha(upperCaseAlphabet[i]), 0, msg);
     }
 
     for(int i = 0; i < sizeof(numberChars); i++) {
-        TEST_ASSERT_EQ(safe_isalpha(numberChars[i]), 0, ("Non-alphabetic character %c return 0", numberChars[i]));
+        snprintf(msg, sizeof(msg), "Non-alphabetic character %c return 0", numberChars[i]);
+        TEST_ASSERT_EQ(safe_isalpha(numberChars[i]), 0, msg);
     }
 
     for(int i = 0; i < sizeof(specialChars); i++) {
-        TEST_ASSERT_EQ(safe_isalpha(specialChars[i]), 0, ("Non-alphabetic character %c return 0", specialChars[i]));
+        snprintf(msg, sizeof(msg), "Non-alphabetic character %c return 0", specialChars[i]);
+        TEST_ASSERT_EQ(safe_isalpha(specialChars[i]), 0, msg);
     }
 }
 
