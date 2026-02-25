@@ -220,6 +220,68 @@ static void test_safe_iscntrl(void) {
     }
 }
 
+static void test_safe_isgraph(void) {
+    char msg[60];
+
+    for(int i = 0; i < sizeof(lowerCaseAlphabet)-1 ; i++) {
+        snprintf(msg, sizeof(msg), "Graphical character %c returns non-zero value", lowerCaseAlphabet[i]);
+        TEST_ASSERT_NEQ(safe_isgraph(lowerCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(upperCaseAlphabet)-1; i++) {
+        snprintf(msg, sizeof(msg), "Graphical character %c returns non-zero value", upperCaseAlphabet[i]);
+        TEST_ASSERT_NEQ(safe_isgraph(upperCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(numberChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Graphical character %c return non-zero value", numberChars[i]);
+        TEST_ASSERT_NEQ(safe_isgraph(numberChars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(specialChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Graphical character %c return non-zero value", specialChars[i]);
+        TEST_ASSERT_NEQ(safe_isgraph(specialChars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(cntrl_chars); i++) {
+        snprintf(msg, sizeof(msg), "Control character 0x%02X returns 0", cntrl_chars[i]);
+        if(i == 0) {
+            TEST_ASSERT_EQ(safe_isgraph(' '), 0, "Control character ' ' returns 0");
+        }
+        TEST_ASSERT_EQ(safe_isgraph(cntrl_chars[i]), 0, msg);
+    }
+}
+
+static void test_safe_isspace(void) {
+    char msg[60];
+    char space_chars[] = " \t\n\r\f\v";
+
+    for(int i = 0; i < sizeof(space_chars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Whitespace character %c returns non-zero value", space_chars[i]);
+        TEST_ASSERT_NEQ(safe_isspace(space_chars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(lowerCaseAlphabet)-1 ; i++) {
+        snprintf(msg, sizeof(msg), "Non-whitespace character %c returns 0", lowerCaseAlphabet[i]);
+        TEST_ASSERT_EQ(safe_isspace(lowerCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(upperCaseAlphabet)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-whitespace character %c returns 0", upperCaseAlphabet[i]);
+        TEST_ASSERT_EQ(safe_isspace(upperCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(numberChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-whitespace character %c return 0", numberChars[i]);
+        TEST_ASSERT_EQ(safe_isspace(numberChars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(specialChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-whitespace character %c return 0", specialChars[i]);
+        TEST_ASSERT_EQ(safe_isspace(specialChars[i]), 0, msg);
+    }
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -232,4 +294,6 @@ void run_string_utils_tests(void) {
     test_safe_isdigit();
     test_safe_isxdigit();
     test_safe_iscntrl();
+    test_safe_isgraph();
+    test_safe_isspace();
 }
