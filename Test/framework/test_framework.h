@@ -22,6 +22,8 @@ void print_test_summary(void);
 
 #define TEST_ASSERT_EQ(a, b, msg) TEST_ASSERT((a) == (b), (msg))
 
+#define TEST_ASSERT_NEQ(a, b, msg) TEST_ASSERT((a) != (b), (msg))
+
 // epsilon is the acceptable difference between a and b (small error margin)
 #define TEST_ASSERT_FLOAT_EQ(a, b, epsilon, msg)      \
 do {                                                  \
