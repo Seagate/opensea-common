@@ -407,6 +407,32 @@ static void test_safe_strlen(void) {
     TEST_ASSERT_EQ(safe_strlen(NULL), 0, "Returns 0 for null pointer input");
 }
 
+static void test_safe_strcpy(void) {
+    char dest[20];
+    const char* src = "Hello, World!";
+    safe_strcpy(dest, sizeof(dest), src);
+    TEST_ASSERT_EQ(strcmp(dest, src), 0, "String is correctly copied to destination buffer");
+    // Test for buffer overflow protection
+    char smallDest[5];
+    errno = 0;
+    safe_strcpy(smallDest, sizeof(smallDest), src);
+    TEST_ASSERT_EQ(errno, ERANGE, "safe_strcpy sets errno to ERANGE when destination buffer is too small");
+    // Test for null pointer protection
+    errno = 0;
+    safe_strcpy(NULL, sizeof(dest), src);
+    TEST_ASSERT_EQ(errno, ERANGE, "safe_strcpy sets errno to ERANGE when destination pointer is null");
+    errno = 0;
+    safe_strcpy(dest, sizeof(dest), NULL);
+    TEST_ASSERT_EQ(errno, ERANGE, "safe_strcpy sets errno to ERANGE when source pointer is null");
+    // Test for zero and too large destsz
+    errno = 0;
+    safe_strcpy(dest, 0, src);
+    TEST_ASSERT_EQ(errno, ERANGE, "safe_strcpy sets errno to ERANGE when destsz is zero");
+    errno = 0;
+    safe_strcpy(dest, RSIZE_MAX + 1, src);
+    TEST_ASSERT_EQ(errno, ERANGE, "safe_strcpy sets errno to ERANGE when destsz is greater than RSIZE_MAX");
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -428,4 +454,5 @@ void run_string_utils_tests(void) {
     test_safe_toupper();
     test_safe_strnlen();
     test_safe_strlen();
+    test_safe_strcpy();
 }
