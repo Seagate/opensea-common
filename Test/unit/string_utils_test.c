@@ -220,6 +220,8 @@ static void test_safe_iscntrl(void) {
     }
 }
 
+char space_chars[] = " \t\n\r\f\v";
+
 static void test_safe_isgraph(void) {
     char msg[60];
 
@@ -245,16 +247,17 @@ static void test_safe_isgraph(void) {
 
     for(int i = 0; i < sizeof(cntrl_chars); i++) {
         snprintf(msg, sizeof(msg), "Control character 0x%02X returns 0", cntrl_chars[i]);
-        if(i == 0) {
-            TEST_ASSERT_EQ(safe_isgraph(' '), 0, "Control character ' ' returns 0");
-        }
         TEST_ASSERT_EQ(safe_isgraph(cntrl_chars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(space_chars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Whitespace character %c returns 0", space_chars[i]);
+        TEST_ASSERT_EQ(safe_isgraph(space_chars[i]), 0, msg);
     }
 }
 
 static void test_safe_isspace(void) {
     char msg[60];
-    char space_chars[] = " \t\n\r\f\v";
 
     for(int i = 0; i < sizeof(space_chars)-1; i++) {
         snprintf(msg, sizeof(msg), "Whitespace character %c returns non-zero value", space_chars[i]);
