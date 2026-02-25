@@ -386,6 +386,27 @@ static void test_safe_tolower(void) {
     }
 }
 
+static void test_safe_toupper(void) {
+    char msg[60];
+
+    for(int i = 0; i < sizeof(lowerCaseAlphabet)-1 ; i++) {
+        snprintf(msg, sizeof(msg), "toupper converts %c to %c", lowerCaseAlphabet[i], upperCaseAlphabet[i]);
+        TEST_ASSERT_EQ(safe_toupper(lowerCaseAlphabet[i]), upperCaseAlphabet[i], msg);
+    }
+}
+
+static void test_safe_strnlen(void) {
+    TEST_ASSERT_EQ(safe_strnlen("Hello, World!", 20), 13, "String length is correctly calculated when null terminator is within the string length");
+    TEST_ASSERT_EQ(safe_strnlen("Hello, World!", 10), 10, "Returns n when null terminator is not found within the first n characters");
+    TEST_ASSERT_EQ(safe_strnlen("", 10), 0, "Returns 0 for empty string");
+}
+
+static void test_safe_strlen(void) {
+    TEST_ASSERT_EQ(safe_strlen("Hello, World!"), 13, "String length is correctly calculated");
+    TEST_ASSERT_EQ(safe_strlen(""), 0, "Returns 0 for empty string");
+    TEST_ASSERT_EQ(safe_strlen(NULL), 0, "Returns 0 for null pointer input");
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -404,4 +425,7 @@ void run_string_utils_tests(void) {
     test_safe_isprint();
     test_safe_ispunct();
     test_safe_tolower();
+    test_safe_toupper();
+    test_safe_strnlen();
+    test_safe_strlen();
 }
