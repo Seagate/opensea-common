@@ -26,54 +26,45 @@ static void test_safe_isascii(void) {
     TEST_ASSERT_EQ(safe_isascii(-1), 0, "EOF returns 0 using safe_isascii");
 }
 
+char lowerCaseAlphabet[] = "abcdefghijklmnopqrstuvwxyz";
+char upperCaseAlphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+char numberChars[] = "0123456789";
+char specialChars[] = "!@#$%^&*()_+-=~`";
+
 static void test_safe_isalnum(void) {
-    TEST_ASSERT_NEQ(safe_isalnum('A'), 0, "Alphanumeric character returns non-zero value");
-    TEST_ASSERT_EQ(safe_isalnum('#'), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum('!'), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum('@'), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum('$'), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum('%'), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum('^'), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum('&'), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum('*'), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum('('), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum(')'), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum('_'), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum('+'), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum('-'), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum('='), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum('`'), 0, "Non-alphanumeric character return 0");
-    TEST_ASSERT_EQ(safe_isalnum('~'), 0, "Non-alphanumeric character return 0");
+    for(int i = 0; i < sizeof(lowerCaseAlphabet); i++) {
+        TEST_ASSERT_NEQ(safe_isalnum(lowerCaseAlphabet[i]), 0, ("Alphanumeric character %c returns non-zero value", lowerCaseAlphabet[i]));
+    }
+
+    for(int i = 0; i < sizeof(upperCaseAlphabet); i++) {
+        TEST_ASSERT_NEQ(safe_isalnum(upperCaseAlphabet[i]), 0, ("Alphanumeric character %c returns non-zero value", upperCaseAlphabet[i]));
+    }
+
+    for(int i = 0; i < sizeof(numberChars); i++) {
+        TEST_ASSERT_NEQ(safe_isalnum(numberChars[i]), 0, ("Alphanumeric character %c returns non-zero value", numberChars[i]));
+    }
+
+    for(int i = 0; i < sizeof(specialChars); i++) {
+        TEST_ASSERT_EQ(safe_isalnum(specialChars[i]), 0, ("Non-alphanumeric character %c return 0", specialChars[i]));
+    }
 }
 
 static void test_safe_isalpha(void) {
-    TEST_ASSERT_NEQ(safe_isalpha('z'), 0, "Alphabetic character returns non-zero value");
-    TEST_ASSERT_EQ(safe_isalpha('#'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('!'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('@'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('$'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('%'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('^'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('&'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('*'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('('), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha(')'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('_'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('+'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('-'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('='), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('`'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('~'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('0'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('1'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('2'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('3'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('4'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('5'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('6'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('7'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('8'), 0, "Non-alphabetic character return 0");
-    TEST_ASSERT_EQ(safe_isalpha('9'), 0, "Non-alphabetic character return 0");
+    for(int i = 0; i < sizeof(lowerCaseAlphabet); i++) {
+        TEST_ASSERT_NEQ(safe_isalpha(lowerCaseAlphabet[i]), 0, ("Alphabetic character %c returns non-zero value", lowerCaseAlphabet[i]));
+    }
+
+    for(int i = 0; i < sizeof(upperCaseAlphabet); i++) {
+        TEST_ASSERT_NEQ(safe_isalpha(upperCaseAlphabet[i]), 0, ("Alphabetic character %c returns non-zero value", upperCaseAlphabet[i]));
+    }
+
+    for(int i = 0; i < sizeof(numberChars); i++) {
+        TEST_ASSERT_EQ(safe_isalpha(numberChars[i]), 0, ("Non-alphabetic character %c return 0", numberChars[i]));
+    }
+
+    for(int i = 0; i < sizeof(specialChars); i++) {
+        TEST_ASSERT_EQ(safe_isalpha(specialChars[i]), 0, ("Non-alphabetic character %c return 0", specialChars[i]));
+    }
 }
 
 void run_string_utils_tests(void) {
