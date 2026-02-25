@@ -417,6 +417,8 @@ static void test_ROUNDF(void) {
     TEST_ASSERT_FLOAT_EQ(ROUNDF(3.14159f, 100), 3.14f, 0.001f, "Rounds 3.14159 to 2 decimal places");
     TEST_ASSERT_FLOAT_EQ(ROUNDF(2.999f, 100), 3.00f, 0.001f, "Rounds 2.999 to 2 decimal places");
     TEST_ASSERT_FLOAT_EQ(ROUNDF(123.4561123f, 1000), 123.456f, 0.001f, "Rounds 123.456 to 3 decimal places");
+    TEST_ASSERT_FLOAT_EQ(ROUNDF(-34.56f, 10), -34.6f, 0.001f, "Rounds 123.456 to 3 decimal places");
+    TEST_ASSERT_FLOAT_EQ(ROUNDF(-126.113446f, 1000), -126.113f, 0.001f, "Rounds 123.456 to 3 decimal places");
 }
 
 struct sgenericint_t VALID_GENERIC_INT = {
