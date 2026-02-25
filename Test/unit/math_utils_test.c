@@ -887,7 +887,7 @@ static void test_raise_to_power(void) {
     // TEST_ASSERT_EQ(raise_to_power((double)-2, (double)3), (double)-8, "-2 to power 3");
     // TEST_ASSERT_EQ(raise_to_power((double)-2, (double)4), (double)16, "-2 to power 4");
     TEST_ASSERT(fabs(raise_to_power(2, -4) - 0.0625) < EPSILON, "2 raised to power -4");
-    TEST_ASSERT(fabs(raise_to_power(3, -2) - 0.11111) < EPSILON-5, "3 raised to power -2");
+    TEST_ASSERT(fabs(raise_to_power(3, -2) - 0.11111) < EPSILON, "3 raised to power -2");
 }
 
 void run_math_utils_tests(void) {
