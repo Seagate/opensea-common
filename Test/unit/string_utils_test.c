@@ -151,6 +151,75 @@ static void test_safe_isdigit(void) {
     }
 }
 
+static void test_safe_isxdigit(void) {
+    char msg[60];
+
+    for(int i = 0; i < sizeof(numberChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Hexadecimal digit character %c returns non-zero value", numberChars[i]);
+        TEST_ASSERT_NEQ(safe_isxdigit(numberChars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(lowerCaseAlphabet)-1 ; i++) {
+        snprintf(msg, sizeof(msg), "Hexadecimal digit character %c returns non-zero value if it is a-f", lowerCaseAlphabet[i]);
+        if(lowerCaseAlphabet[i] >= 'a' && lowerCaseAlphabet[i] <= 'f') {
+            TEST_ASSERT_NEQ(safe_isxdigit(lowerCaseAlphabet[i]), 0, msg);
+        } else {
+            TEST_ASSERT_EQ(safe_isxdigit(lowerCaseAlphabet[i]), 0, msg);
+        }
+    }
+
+    for(int i = 0; i < sizeof(upperCaseAlphabet)-1; i++) {
+        snprintf(msg, sizeof(msg), "Hexadecimal digit character %c returns non-zero value if it is A-F", upperCaseAlphabet[i]);
+        if(upperCaseAlphabet[i] >= 'A' && upperCaseAlphabet[i] <= 'F') {
+            TEST_ASSERT_NEQ(safe_isxdigit(upperCaseAlphabet[i]), 0, msg);
+        } else {
+            TEST_ASSERT_EQ(safe_isxdigit(upperCaseAlphabet[i]), 0, msg);
+        }
+    }
+
+    for(int i = 0; i < sizeof(specialChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-hexadecimal digit character %c return 0", specialChars[i]);
+        TEST_ASSERT_EQ(safe_isxdigit(specialChars[i]), 0, msg);
+    }
+}
+
+uint8_t cntrl_chars[] = {
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+    0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
+    0x7F
+};
+
+static void test_safe_iscntrl(void) {
+    char msg[60];
+
+    for(int i = 0; i < sizeof(cntrl_chars); i++) {
+        snprintf(msg, sizeof(msg), "Control character 0x%02X returns non-zero value", cntrl_chars[i]);
+        TEST_ASSERT_NEQ(safe_iscntrl(cntrl_chars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(lowerCaseAlphabet)-1 ; i++) {
+        snprintf(msg, sizeof(msg), "Non-control character %c returns 0", lowerCaseAlphabet[i]);
+        TEST_ASSERT_EQ(safe_iscntrl(lowerCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(upperCaseAlphabet)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-control character %c returns 0", upperCaseAlphabet[i]);
+        TEST_ASSERT_EQ(safe_iscntrl(upperCaseAlphabet[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(numberChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-control character %c return 0", numberChars[i]);
+        TEST_ASSERT_EQ(safe_iscntrl(numberChars[i]), 0, msg);
+    }
+
+    for(int i = 0; i < sizeof(specialChars)-1; i++) {
+        snprintf(msg, sizeof(msg), "Non-control character %c return 0", specialChars[i]);
+        TEST_ASSERT_EQ(safe_iscntrl(specialChars[i]), 0, msg);
+    }
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -161,4 +230,6 @@ void run_string_utils_tests(void) {
     test_safe_islower();
     test_safe_isupper();
     test_safe_isdigit();
+    test_safe_isxdigit();
+    test_safe_iscntrl();
 }
