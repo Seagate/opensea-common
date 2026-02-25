@@ -440,7 +440,7 @@ static void test_safe_strcpy(void) {
 static void test_safe_strmove(void) {
     char str[] = "Hello, World!";
 
-    safe_strmove(str + 5, sizeof(str) - 5, str);
+    safe_strmove(str + 5, sizeof(str), str);
 
     TEST_ASSERT_EQ(strcmp(str + 5, "Hello, World!"), 0, "String moved correctly with overlap");
 }
