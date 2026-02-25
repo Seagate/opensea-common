@@ -879,6 +879,13 @@ static void test_log2_power2(void) {
     }
 }
 
+static void test_raise_to_power(void) {
+    TEST_ASSERT_EQ(raise_to_power(4, 3), 64, "4 to power 3");
+    TEST_ASSERT_EQ(raise_to_power(12, 5), 248832, "12 to power 5");
+    TEST_ASSERT_EQ(raise_to_power(-2, 3), -8, "-2 to power 3");
+    TEST_ASSERT_EQ(raise_to_power(-2, 4), 16, "-2 to power 4");
+}
+
 void run_math_utils_tests(void) {
     test_M_Min();
     test_M_Max();
@@ -960,4 +967,5 @@ void run_math_utils_tests(void) {
     test_INT_ROUND_DOWN_POWER2();
     test_power_Of_Two();
     test_log2_power2();
+    test_raise_to_power();
 }
