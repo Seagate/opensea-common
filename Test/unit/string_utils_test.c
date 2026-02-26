@@ -484,7 +484,7 @@ static void test_safe_strncpy(void) {
     // Test for buffer overflow protection
     char smallDest[5];
     errno = 0;
-    safe_strncpy(smallDest, sizeof(smallDest), src, 5);
+    safe_strncpy(smallDest, sizeof(smallDest), src, 4);
     TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destination buffer is too small");
 
     // Test for null pointer protection
