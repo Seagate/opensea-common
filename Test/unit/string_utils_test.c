@@ -600,9 +600,9 @@ static void test_safe_strncat(void) {
         TEST_ASSERT_EQ(dest[9], '\0', "Destination buffer is null-terminated after concatenating n characters");
     
         // Test for null pointer protection
-        // errno = 0;
-        // safe_strncat(NULL, sizeof(dest), src, 3);
-        // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when destination pointer is null");
+        errno = 0;
+        safe_strncat(NULL, sizeof(dest), src, 3);
+        TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when destination pointer is null");
         // errno = 0;   
         // safe_strncat(dest, sizeof(dest), NULL, 3);
         // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when source pointer is null");
