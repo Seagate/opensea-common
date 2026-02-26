@@ -449,6 +449,12 @@ static void test_safe_strmove(void) {
     errno_t err = safe_strmove(str + 4, sizeof(str) - 4, str + 5);
     TEST_ASSERT_EQ(err, 0, "Move should succeed");
     TEST_ASSERT_EQ(strcmp(str, "ThisString"), 0, "String should be shifted left correctly");
+
+    // Test for buffer overflow protection
+    char smallDest[5];
+    errno = 0;
+    safe_strcpy(smallDest, sizeof(smallDest), src);
+    TEST_ASSERT_EQ(errno, ERANGE, "safe_strcpy sets errno to ERANGE when destination buffer is too small");
 }
 
 void run_string_utils_tests(void) {
