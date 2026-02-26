@@ -553,14 +553,14 @@ static void test_safe_strnmove(void) {
     // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destsz is greater than RSIZE_MAX");
 
     // Count greater than RSIZE_MAX
-    errno = 0;
-    safe_strncpy(dest, sizeof(dest), src, RSIZE_MAX + 1);
-    TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when count is greater than RSIZE_MAX");
+    // errno = 0;
+    // safe_strncpy(dest, sizeof(dest), src, RSIZE_MAX + 1);
+    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when count is greater than RSIZE_MAX");
 
     // Count greater than or equal to destsz, but destsz is less than or equal to strnlen_s(src, count); truncation would occur
-    // errno = 0;
-    // safe_strncpy(dest, 5, src, 10);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when count is greater than or equal to destsz and destsz is less than or equal to strnlen_s(src, count)");
+    errno = 0;
+    safe_strncpy(dest, 5, src, 10);
+    TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when count is greater than or equal to destsz and destsz is less than or equal to strnlen_s(src, count)");
 }
 
 void run_string_utils_tests(void) {
