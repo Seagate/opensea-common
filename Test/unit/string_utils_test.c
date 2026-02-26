@@ -251,7 +251,7 @@ static void test_safe_isgraph(void) {
     }
 
     for(int i = 0; i < sizeof(space_chars)-1; i++) {
-        snprintf(msg, sizeof(msg), "Whitespace character %c returns 0", space_chars[i]);
+        snprintf(msg, sizeof(msg), "Whitespace character returns 0", space_chars[i]);
         TEST_ASSERT_EQ(safe_isgraph(space_chars[i]), 0, msg);
     }
 }
@@ -260,7 +260,7 @@ static void test_safe_isspace(void) {
     char msg[60];
 
     for(int i = 0; i < sizeof(space_chars)-1; i++) {
-        snprintf(msg, sizeof(msg), "Whitespace character %c returns non-zero value", space_chars[i]);
+        snprintf(msg, sizeof(msg), "Whitespace character returns non-zero value", space_chars[i]);
         TEST_ASSERT_NEQ(safe_isspace(space_chars[i]), 0, msg);
     }
 
@@ -290,10 +290,10 @@ static void test_safe_isblank(void) {
 
     for(int i = 0; i < sizeof(space_chars)-1; i++) {
         if(space_chars[i] == ' ' || space_chars[i] == '\t') {
-            snprintf(msg, sizeof(msg), "Blank character %c returns non-zero value", space_chars[i]);
+            snprintf(msg, sizeof(msg), "Blank character ' ' and '\t' return non-zero value");
             TEST_ASSERT_NEQ(safe_isblank(space_chars[i]), 0, msg);
         } else {
-            snprintf(msg, sizeof(msg), "Non-blank character %c returns 0", space_chars[i]);
+            snprintf(msg, sizeof(msg), "Non-blank character returns 0", space_chars[i]);
             TEST_ASSERT_EQ(safe_isblank(space_chars[i]), 0, msg);
         }
     }
