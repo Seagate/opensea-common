@@ -530,15 +530,15 @@ static void test_safe_strnmove(void) {
     TEST_ASSERT_EQ(strcmp(str, "ThisStrin"), 0, "String should be shifted left correctly");
 
     // Test for buffer overflow protection
-    char smallDest[5];
-    errno = 0;
-    safe_strncpy(smallDest, sizeof(smallDest), src, 5);
-    TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destination buffer is too small");
+    // char smallDest[5];
+    // errno = 0;
+    // safe_strncpy(smallDest, sizeof(smallDest), src, 5);
+    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destination buffer is too small");
 
     // Test for null pointer protection
-    // errno = 0;
-    // safe_strncpy(NULL, sizeof(dest), src, 5);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destination pointer is null");
+    errno = 0;
+    safe_strncpy(NULL, sizeof(dest), src, 5);
+    TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destination pointer is null");
     // errno = 0;
     // src = NULL;
     // safe_strncpy(dest, sizeof(dest), NULL, 5);
