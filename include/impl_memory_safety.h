@@ -162,6 +162,7 @@ extern "C"
         M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
         M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
         // clang-format on
         ;
 
@@ -213,6 +214,7 @@ extern "C"
         M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
         M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
         // clang-format on
         ;
 
@@ -262,6 +264,7 @@ extern "C"
         M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
         M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
         // clang-format on
         ;
 
