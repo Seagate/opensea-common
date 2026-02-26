@@ -568,6 +568,14 @@ static void test_safe_strcat(void) {
     const char* src = "World";
     safe_strcat(dest, sizeof(dest), src);
     TEST_ASSERT_EQ(strcmp(dest, "Hello World"), 0, "String is correctly concatenated to destination buffer");
+
+    // Test for null pointer protection
+    errno = 0;
+    safe_strcat(NULL, sizeof(dest), src);
+    TEST_ASSERT_EQ(errno, ERANGE, "safe_strcat sets errno to ERANGE when destination pointer is null");
+    // errno = 0;   
+    // safe_strcat(dest, sizeof(dest), NULL);
+    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strcat sets errno to ERANGE when source pointer is null");
 }
 
 void run_string_utils_tests(void) {
