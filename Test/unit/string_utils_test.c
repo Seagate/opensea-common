@@ -648,7 +648,8 @@ static void test_common_String_Concat(void) {
 static void test_common_String_Concat_Len(void) {
     char dest[20] = "Hello ";
     const char* src = "World";
-    TEST_ASSERT_EQ(common_String_Concat_Len(dest, sizeof(dest), src, 3), dest, "First n characters are correctly concatenated to destination buffer");
+    char* result = common_String_Concat_Len(dest, sizeof(dest), src, 3);
+    TEST_ASSERT_EQ(result, dest, "First n characters are correctly concatenated to destination buffer");
     // TEST_ASSERT_EQ(dest[9], '\0', "Destination buffer is null-terminated after concatenating n characters");
     printf("Resulting string: %s\n", dest);
     // Test for null pointer protection
