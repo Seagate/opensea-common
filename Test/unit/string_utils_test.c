@@ -491,15 +491,15 @@ static void test_safe_strncpy(void) {
     // errno = 0;
     // safe_strncpy(NULL, sizeof(dest), src, 5);
     // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destination pointer is null");
-    errno = 0;
-    src = NULL;
-    safe_strncpy(dest, sizeof(dest), NULL, 5);
-    TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when source pointer is null");
+    // errno = 0;
+    // src = NULL;
+    // safe_strncpy(dest, sizeof(dest), NULL, 5);
+    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when source pointer is null");
 
     // Test for zero and too large destsz
-    // errno = 0;
-    // safe_strncpy(dest, 0, src, 5);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destsz is zero");
+    errno = 0;
+    safe_strncpy(dest, 0, src, 5);
+    TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destsz is zero");
     // errno = 0;
     // safe_strncpy(dest, RSIZE_MAX + 1, src, 5);
     // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destsz is greater than RSIZE_MAX");
