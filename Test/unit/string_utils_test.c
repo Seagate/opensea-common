@@ -697,4 +697,5 @@ void run_string_utils_tests(void) {
     test_safe_strcat();
     test_safe_strncat();
     test_common_String_Concat();
+    test_common_String_Concat_Len();
 }
