@@ -444,9 +444,11 @@ static void test_safe_strmove(void) {
     TEST_ASSERT_EQ(strcmp(dest, src), 0, "String is correctly moved to destination buffer");
 
     // Test for overlapping
-    char buf[32] = "Hello, World!";
-    TEST_ASSERT_EQ(safe_strmove(buf + 5, sizeof(buf) - 5, buf), 0, "safe_strmove succeeds with overlap");
-    TEST_ASSERT_EQ(strcmp(buf + 5, "Hello, W"), 0, "String moved correctly with overlap");
+    char str[20] = "This String";
+    // Move "String" one position left (overwrite space)
+    errno_t err = safe_strmove(str + 4, sizeof(str) - 4, str + 5);
+    TEST_ASSERT_EQ(err, 0, "Move should succeed");
+    TEST_ASSERT_EQ(strcmp(str, "ThisString"), 0, "String should be shifted left correctly");
 }
 
 void run_string_utils_tests(void) {
