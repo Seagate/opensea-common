@@ -3684,7 +3684,7 @@ extern "C"
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_LEFT)
         return __builtin_stdc_rotate_left(value, count);
 #else
-    return ((value << (count % ULONG_WIDTH)) | (value >> (((~count) + 1UL) % ULONG_WIDTH)));
+    return ((value << (count % ULONG_WIDTH)) | (value >> (((~count) + 1U) % ULONG_WIDTH)));
 #endif
     }
 
@@ -3698,7 +3698,7 @@ extern "C"
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_LEFT)
         return __builtin_stdc_rotate_left(value, count);
 #else
-    return ((value << (count % ULLONG_WIDTH)) | (value >> (((~count) + 1ULL) % ULLONG_WIDTH)));
+    return ((value << (count % ULLONG_WIDTH)) | (value >> (((~count) + 1U) % ULLONG_WIDTH)));
 #endif
     }
 
@@ -3773,7 +3773,7 @@ extern "C"
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_RIGHT)
         return __builtin_stdc_rotate_right(value, count);
 #else
-    return ((value >> (count % ULONG_WIDTH)) | (value << (((~count) + 1UL) % ULONG_WIDTH)));
+    return ((value >> (count % ULONG_WIDTH)) | (value << (((~count) + 1U) % ULONG_WIDTH)));
 #endif
     }
 
@@ -3787,7 +3787,7 @@ extern "C"
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_RIGHT)
         return __builtin_stdc_rotate_right(value, count);
 #else
-    return ((value >> (count % ULLONG_WIDTH)) | (value << (((~count) + 1ULL) % ULLONG_WIDTH)));
+    return ((value >> (count % ULLONG_WIDTH)) | (value << (((~count) + 1U) % ULLONG_WIDTH)));
 #endif
     }
 
