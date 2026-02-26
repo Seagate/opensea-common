@@ -257,7 +257,9 @@ extern "C"
 //!
 //! This macro sets the nth byte to all 1s by shifting the maximum value of a byte (UINT8_MAX) left by n * 8 bits.
 //! \param n The byte position to set to all 1s.
-#define M_ByteN(n) ((UINT8_MAX << ((n) * BITSPERBYTE)))
+//! \note Casts to uint64_t to ensure no data loss above 32bits since it is otherwise treated as int by default.
+//! This may require casting the result to the correct intended type.
+#define M_ByteN(n) ((M_STATIC_CAST(uint64_t, UINT8_MAX) << ((n) * BITSPERBYTE)))
 
 //! \def M_Byte0
 //! \brief Extracts the lowest byte from a 64-bit integer and casts it to uint8_t.
@@ -3682,7 +3684,7 @@ extern "C"
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_LEFT)
         return __builtin_stdc_rotate_left(value, count);
 #else
-    return ((value << (count % ULONG_WIDTH)) | (value >> (((~count) + 1U) % ULONG_WIDTH)));
+    return ((value << (count % ULONG_WIDTH)) | (value >> (((~count) + 1UL) % ULONG_WIDTH)));
 #endif
     }
 
@@ -3696,7 +3698,7 @@ extern "C"
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_LEFT)
         return __builtin_stdc_rotate_left(value, count);
 #else
-    return ((value << (count % ULLONG_WIDTH)) | (value >> (((~count) + 1U) % ULLONG_WIDTH)));
+    return ((value << (count % ULLONG_WIDTH)) | (value >> (((~count) + 1ULL) % ULLONG_WIDTH)));
 #endif
     }
 
@@ -3771,7 +3773,7 @@ extern "C"
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_RIGHT)
         return __builtin_stdc_rotate_right(value, count);
 #else
-    return ((value >> (count % ULONG_WIDTH)) | (value << (((~count) + 1U) % ULONG_WIDTH)));
+    return ((value >> (count % ULONG_WIDTH)) | (value << (((~count) + 1UL) % ULONG_WIDTH)));
 #endif
     }
 
@@ -3785,7 +3787,7 @@ extern "C"
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_RIGHT)
         return __builtin_stdc_rotate_right(value, count);
 #else
-    return ((value >> (count % ULLONG_WIDTH)) | (value << (((~count) + 1U) % ULLONG_WIDTH)));
+    return ((value >> (count % ULLONG_WIDTH)) | (value << (((~count) + 1ULL) % ULLONG_WIDTH)));
 #endif
     }
 
