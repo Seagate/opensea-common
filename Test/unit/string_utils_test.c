@@ -650,24 +650,28 @@ static void test_common_String_Concat_Len(void) {
     const char* src = "World";
     char* result = common_String_Concat_Len(dest, sizeof(dest), src, 3);
     TEST_ASSERT_EQ(result, dest, "First n characters are correctly concatenated to destination buffer");
-    // TEST_ASSERT_EQ(dest[9], '\0', "Destination buffer is null-terminated after concatenating n characters");
-    printf("Resulting string: %s\n", dest);
+    TEST_ASSERT_EQ(dest[9], '\0', "Destination buffer is null-terminated after concatenating n characters");
     // Test for null pointer protection
     // errno = 0;
-    // TEST_ASSERT_EQ(common_String_Concat_Len(NULL, sizeof(dest), src, 3), NULL, "common_String_Concat_Len returns NULL when destination pointer is null");
+    //result = common_String_Concat_Len(NULL, sizeof(dest), src, 3);
+    // TEST_ASSERT_EQ(result, NULL, "common_String_Concat_Len returns NULL when destination pointer is null");
     // errno = 0;   
-    // TEST_ASSERT_EQ(common_String_Concat_Len(dest, sizeof(dest), NULL, 3), NULL, "common_String_Concat_Len returns NULL when source pointer is null");
+    //result = common_String_Concat_Len(dest, sizeof(dest), NULL, 3);
+    // TEST_ASSERT_EQ(result, NULL, "common_String_Concat_Len returns NULL when source pointer is null");
     
     // Test for zero and too large destsz
     // errno = 0;
-    // TEST_ASSERT_EQ(common_String_Concat_Len(dest, 0, src, 3), NULL, "common_String_Concat_Len returns NULL when destsz is zero");
+    //result = common_String_Concat_Len(dest, 0, src, 3);
+    // TEST_ASSERT_EQ(result, NULL, "common_String_Concat_Len returns NULL when destsz is zero");
     // errno = 0;
-    // TEST_ASSERT_EQ(common_String_Concat_Len(dest, RSIZE_MAX + 1, src, 3), NULL, "common_String_Concat_Len returns NULL when destsz is greater than RSIZE_MAX");
+    //result = common_String_Concat_Len(dest, RSIZE_MAX + 1, src, 3);
+    // TEST_ASSERT_EQ(result, NULL, "common_String_Concat_Len returns NULL when destsz is greater than RSIZE_MAX");
     
     // Test for no null terminator in the first destsz bytes of dest
     // char str[20] = "This string is too long for the buffer";
     // errno = 0;   
-    // TEST_ASSERT_EQ(common_String_Concat_Len(str, sizeof(str), src, 3), NULL, "common_String_Concat_Len returns NULL when there is no null terminator in the first destsz bytes of dest");
+    //result = common_String_Concat_Len(str, sizeof(str), src, 3);
+    // TEST_ASSERT_EQ(result, NULL, "common_String_Concat_Len returns NULL when there is no null terminator in the first destsz bytes of dest");
 }
 
 void run_string_utils_tests(void) {
