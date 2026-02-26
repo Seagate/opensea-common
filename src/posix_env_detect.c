@@ -43,7 +43,7 @@ static int lin_file_filter(const struct dirent* entry, const char* stringMatch)
                                     // revisit this.
             {
                 // non-zero means valid match. zero means not a match
-                char* inString = strstr(entry->d_name, stringMatch);
+                const char* inString = strstr(entry->d_name, stringMatch);
                 if (inString != M_NULLPTR)
                 {
                     // found a file!
