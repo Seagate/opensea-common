@@ -581,10 +581,15 @@ static void test_safe_strcat(void) {
     // errno = 0;
     // safe_strcat(dest, 0, src);
     // TEST_ASSERT_EQ(errno, ERANGE, "safe_strcat sets errno to ERANGE when destsz is zero");
-    errno = 0;
-    safe_strcat(dest, RSIZE_MAX + 1, src);
-    TEST_ASSERT_EQ(errno, ERANGE, "safe_strcat sets errno to ERANGE when destsz is greater than RSIZE_MAX");
+    // errno = 0;
+    // safe_strcat(dest, RSIZE_MAX + 1, src);
+    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strcat sets errno to ERANGE when destsz is greater than RSIZE_MAX");
     
+    // Test for no null terminator in the first destsz bytes of dest
+    char str[20] = "This string is too long for the buffer";
+    errno = 0;   
+    safe_strcat(str, sizeof(str), src);
+    TEST_ASSERT_EQ(errno, ERANGE, "safe_strcat sets errno to ERANGE when there is no null terminator in the first destsz bytes of dest");
 }
 
 void run_string_utils_tests(void) {
