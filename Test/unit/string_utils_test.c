@@ -603,14 +603,14 @@ static void test_safe_strncat(void) {
         // errno = 0;
         // safe_strncat(NULL, sizeof(dest), src, 3);
         // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when destination pointer is null");
-        errno = 0;   
-        safe_strncat(dest, sizeof(dest), NULL, 3);
-        TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when source pointer is null");
+        // errno = 0;   
+        // safe_strncat(dest, sizeof(dest), NULL, 3);
+        // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when source pointer is null");
     
         // Test for zero and too large destsz
-        // errno = 0;
-        // safe_strncat(dest, 0, src, 3);
-        // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when destsz is zero");
+        errno = 0;
+        safe_strncat(dest, 0, src, 3);
+        TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when destsz is zero");
         // errno = 0;
         // safe_strncat(dest, RSIZE_MAX + 1, src, 3);
         // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when destsz is greater than RSIZE_MAX");
