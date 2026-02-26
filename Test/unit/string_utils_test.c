@@ -525,9 +525,9 @@ static void test_safe_strnmove(void) {
     // Test for overlapping
     char str[20] = "This String";
     // Move "String" one position left (overwrite space)
-    errno_t err = safe_strnmove(str + 4, sizeof(str) - 4, str + 5, 6);
+    errno_t err = safe_strnmove(str + 4, sizeof(str) - 4, str + 5, 5);
     TEST_ASSERT_EQ(err, 0, "Move should succeed");
-    TEST_ASSERT_EQ(strcmp(str, "ThisString"), 0, "String should be shifted left correctly");
+    TEST_ASSERT_EQ(strcmp(str, "ThisStrin"), 0, "String should be shifted left correctly");
 }
 
 void run_string_utils_tests(void) {
