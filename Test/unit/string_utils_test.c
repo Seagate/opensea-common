@@ -697,6 +697,29 @@ static void test_safe_strtok(void) {
     TEST_ASSERT_EQ(token, NULL, "No more tokens expected");
 }
 
+static void test_common_String_Token(void) {
+    char str[] = "one,two,three";
+    rsize_t max = sizeof(str);
+    char* saveptr;
+
+    char* token;
+
+    token = common_String_Token(str, &max, ",", &saveptr);
+    TEST_ASSERT_NEQ(token, NULL, "First token should not be NULL");
+    TEST_ASSERT_EQ(strcmp(token, "one"), 0, "First token should be 'one'");
+
+    token = common_String_Token(NULL, &max, ",", &saveptr);
+    TEST_ASSERT_NEQ(token, NULL, "Second token should not be NULL");
+    TEST_ASSERT_EQ(strcmp(token, "two"), 0, "Second token should be 'two'");
+
+    token = common_String_Token(NULL, &max, ",", &saveptr);
+    TEST_ASSERT_NEQ(token, NULL, "Third token should not be NULL");
+    TEST_ASSERT_EQ(strcmp(token, "three"), 0, "Third token should be 'three'");
+
+    token = common_String_Token(NULL, &max, ",", &saveptr);
+    TEST_ASSERT_EQ(token, NULL, "No more tokens expected");
+}
+
 static void test_safe_String_Token(void) {
     char str[] = "one,two,three";
     rsize_t max = sizeof(str);
@@ -751,4 +774,5 @@ void run_string_utils_tests(void) {
     test_common_String_Concat_Len();
     test_safe_strtok();
     test_safe_String_Token();
+    test_common_String_Token();
 }
