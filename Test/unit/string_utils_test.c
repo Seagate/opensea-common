@@ -782,10 +782,15 @@ static void test_byte_Swap_String(void) {
 }
 
 static void test_byte_Swap_String_Len(void) {
-    // Test when n is 0
     char str[] = "Hello World";
-    byte_Swap_String_Len(str, 0);
-    TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Swap bytes in the string up to the specified length");
+    byte_Swap_String_Len(str, 3);
+    TEST_ASSERT_EQ(strcmp(str, "eHllo World"), 0, "Swap bytes in the string up to the specified length");
+}
+
+static void test_remove_Whitespace_Left(void) {
+    char str[] = "   Hello World";
+    remove_Whitespace_Left(str);
+    TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Leading whitespace should be removed");
 }
 
 void run_string_utils_tests(void) {
@@ -825,4 +830,5 @@ void run_string_utils_tests(void) {
     test_safe_strndup();
     test_byte_Swap_String();
     test_byte_Swap_String_Len();
+    test_remove_Whitespace_Left();
 }
