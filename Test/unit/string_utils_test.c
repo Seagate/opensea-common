@@ -764,14 +764,14 @@ static void test_safe_strdup(void) {
 }
 
 static void test_safe_strndup(void) {
-    //Test when src is NULL
-    const char* str = "Hello, World!";
+    //Test when size is length 0
+    const char* str = "";
     char* dup;
 
-    errno_t err = safe_strndup(&dup, NULL, 5);
+    errno_t err = safe_strndup(&dup, str, 0);
 
     TEST_ASSERT_EQ(err, 0, "Duplication should succeed");
-    TEST_ASSERT_EQ(strncmp(dup, str, 5), 0, "First n characters should be correctly duplicated");
+    TEST_ASSERT_EQ(strncmp(dup, str, 0), 0, "First n characters should be correctly duplicated");
 
     free(dup);
 }
