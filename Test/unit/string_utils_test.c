@@ -752,11 +752,10 @@ static void test_strndup(void) {
 }
 
 static void test_safe_strdup(void) {
-    // Test when src is length 0
-    const char* str = "";
+    const char* str = "Hello, World!";
     char* dup;
 
-    errno_t err = safe_strdup(NULL, str);
+    errno_t err = safe_strdup(&dup, str);
 
     TEST_ASSERT_EQ(err, 0, "Duplication should succeed");
     TEST_ASSERT_EQ(strcmp(dup, str), 0, "String should be correctly duplicated");
