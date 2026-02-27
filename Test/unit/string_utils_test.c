@@ -775,6 +775,12 @@ static void test_safe_strndup(void) {
     free(dup);
 }
 
+static void test_byte_Swap_String(void) {
+    char str[] = "Hello World";
+    byte_Swap_String(str, sizeof(str));
+    TEST_ASSERT_EQ(strcmp(str, "eHll oWlrod"), 0, "Swap bytes in the string");
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -810,4 +816,5 @@ void run_string_utils_tests(void) {
     test_strndup();
     test_safe_strdup();
     test_safe_strndup();
+    test_byte_Swap_String();
 }
