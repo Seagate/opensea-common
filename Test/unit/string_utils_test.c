@@ -674,6 +674,19 @@ static void test_common_String_Concat_Len(void) {
     // TEST_ASSERT_EQ(result, NULL, "common_String_Concat_Len returns NULL when there is no null terminator in the first destsz bytes of dest");
 }
 
+static void test_safe_strtok(void) {
+    char str[] = "one,two,three";
+    rsize_t max = sizeof(str);
+    char* saveptr;
+
+    char* token = safe_strtok(str, &max, ",", &saveptr);
+
+    while (token != NULL) {
+        printf("%s\n", token);
+        token = safe_strtok(NULL, &max, ",", &saveptr);
+    }
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -703,4 +716,5 @@ void run_string_utils_tests(void) {
     test_safe_strncat();
     test_common_String_Concat();
     test_common_String_Concat_Len();
+    test_safe_strtok();
 }

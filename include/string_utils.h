@@ -756,7 +756,7 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! with the values stored by the previous call.
     //! This version performs the bounds checking described in C11 annex K.
     //! \param[in] str pointer to the null-terminated byte string to tokenize
-    //! \param[in] strmax ointer to an object which initially holds the size of \a str: safe_strtok stores
+    //! \param[in] strmax pointer to an object which initially holds the size of \a str: safe_strtok stores
     //! the number of characters that remain to be examined
     //! \param[in] delim pointer to the null-terminated byte string identifying delimiters
     //! \param[in] saveptr 	pointer to an object of type char*, which is used by safe_strtok to store its
