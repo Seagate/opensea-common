@@ -675,14 +675,14 @@ static void test_common_String_Concat_Len(void) {
 }
 
 static void test_safe_strtok(void) {
-    // Test for when delim is NULL pointer
+    // Test for when saveptr is NULL pointer
     char str[] = "one,two,three";
     rsize_t max = sizeof(str);
     char* saveptr;
 
     char* token;
 
-    token = safe_strtok(str, &max, NULL, &saveptr);
+    token = safe_strtok(str, &max, ",", NULL);
     TEST_ASSERT_NEQ(token, NULL, "First token should not be NULL");
     TEST_ASSERT_EQ(strcmp(token, "one"), 0, "First token should be 'one'");
 
