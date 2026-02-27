@@ -743,6 +743,14 @@ static void test_safe_String_Token(void) {
     TEST_ASSERT_EQ(token, NULL, "No more tokens expected");
 }
 
+static void test_strndup(void) {
+    const char* str = "Hello, World!";
+    char* dup = strndup(str, 5);
+    TEST_ASSERT_NEQ(dup, NULL, "strndup should return a non-NULL pointer");
+    TEST_ASSERT_EQ(strncmp(dup, str, 5), 0, "First n characters should be correctly duplicated");
+    free(dup);
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -775,4 +783,5 @@ void run_string_utils_tests(void) {
     test_safe_strtok();
     test_safe_String_Token();
     test_common_String_Token();
+    test_strndup();
 }
