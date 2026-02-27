@@ -675,8 +675,9 @@ static void test_common_String_Concat_Len(void) {
 }
 
 static void test_safe_strtok(void) {
+    // Test for when max is NULL pointer
     char str[] = "one,two,three";
-    rsize_t max = sizeof(str);
+    rsize_t max = NULL;
     char* saveptr;
 
     char* token;
