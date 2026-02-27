@@ -1,9 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
-#opensea-common can get the current username, however this reads the /etc/passwd file in linux/unix systems
-#because of this and it possibly being a security concern, this is now off by default.
-option('username', type : 'feature', value : 'disabled')
-#It is strongly recommended that directory security is left enabled, however if this is unable to work
-#correctly in your environment, you can disable it, although you will get a warning message by doing so.
+
+option('username', type : 'feature', value : 'disabled', description : 'Allow opensea-common to get the current username. This is disabled by default due to security concerns, as it may involve reading sensitive files such as /etc/passwd on Linux/Unix systems. Enabling this option may expose user information, so it should only be enabled if necessary and in a secure environment.')
 #Directory security is implemented to https://wiki.sei.cmu.edu/confluence/display/c/FIO15-C.+Ensure+that+file+operations+are+performed+in+a+secure+directory
-option('directorysecurity', type : 'feature', value : 'enabled')
+option('directorysecurity', type : 'feature', value : 'enabled', description : 'Directory security follows SEI CERT FIO15-C. This is enabled by default to ensure that file operations are performed in a secure directory. Disabling this option may expose the application to security risks, such as unauthorized access to files. It is strongly recommended to keep this option enabled unless there is a specific reason to disable it and the environment is secure.')
 option('cc-suggest-attribute', type : 'boolean', value : false, description : 'Enable warnings where the compiler can suggest various attributes to be applied to functions for optimization and correctness.')
+option('allow-32bit-time-t', type : 'feature', value : 'disabled', description : 'Allow 32-bit time_t size with opensea-common. This is not recommended as it can cause the Year 2038 problem, but may be necessary for compatibility with certain libraries or applications that do not support 64-bit time_t.')

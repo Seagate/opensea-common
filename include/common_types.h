@@ -791,7 +791,7 @@ typedef int32_t intptr_t;
 #    if IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0)
 #        define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                   \
             type_name array_name[size] = {[0 ...((size) - 1)] = 0}
-#    elif USING_C23
+#    elif defined(USING_C23)
 #        define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) type_name array_name[size] = {}
 #    else
 #        if defined(USING_C99)
@@ -835,7 +835,7 @@ typedef int32_t intptr_t;
 #    if IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0)
 #        define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                    \
             M_ALIGNAS(align) type_name array_name[size] = {[0 ...((size) - 1)] = 0}
-#    elif USING_C23
+#    elif defined (USING_C23)
 #        define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                    \
             M_ALIGNAS(align) type_name array_name[size] = {}
 #    else

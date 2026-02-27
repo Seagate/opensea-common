@@ -46,8 +46,10 @@ char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH] = {0, 0, 0, 0, 0, 0, 0, 0, 
 
 M_STATIC_ASSERT(SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING) >= 26, current_time_string_length_too_short);
 
-// cannot support 32bit time_t properly!
-M_STATIC_ASSERT(sizeof(time_t) >= 8, time_t_is_not_64_bits);
+#if ! defined (ALLOW_32BIT_TIME_T)
+    // cannot support 32bit time_t properly!
+    M_STATIC_ASSERT(sizeof(time_t) >= 8, time_t_is_not_64_bits);
+#endif // ALLOW_32BIT_TIME_T
 
 // Leap years occur every 4 years.
 // Every 100 years you skip a leap year, unless it has been 400 years in which case you do not skip the leap year
