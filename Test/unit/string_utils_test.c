@@ -752,8 +752,8 @@ static void test_strndup(void) {
 }
 
 static void test_safe_strdup(void) {
-    // Test when dup is NULL
-    const char* str = "Hello, World!";
+    // Test when src is length 0
+    const char* str = "";
     char* dup;
 
     errno_t err = safe_strdup(NULL, str);
