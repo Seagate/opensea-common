@@ -800,10 +800,10 @@ static void test_remove_Trailing_Whitespace(void) {
 }
 
 static void test_remove_Trailing_Whitespace_Len(void) {
-    char str[] = "Hello World   ";
-    remove_Trailing_Whitespace_Len(str, 12);
-    printf("Result after removing trailing whitespace up to length 12: '%s'\n", str);
-    TEST_ASSERT_EQ(strcmp(str, "Hello World  "), 0, "Trailing whitespace should be removed up to the specified length");
+    char str[] = "Hello World      ";
+    remove_Trailing_Whitespace_Len(str, 3);
+    printf("Result after removing trailing whitespace up to length 3: '%s'\n", str);
+    TEST_ASSERT_EQ(strcmp(str, "Hello World   "), 0, "Trailing whitespace should be removed up to the specified length");
 }
 
 void run_string_utils_tests(void) {
