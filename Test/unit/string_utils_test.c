@@ -778,6 +778,7 @@ static void test_safe_strndup(void) {
 static void test_byte_Swap_String(void) {
     char str[] = "Hello World";
     byte_Swap_String(str);
+    printf("Swapped string: %s\n", str);
     TEST_ASSERT_EQ(strcmp(str, "eHll oWlrod"), 0, "Swap bytes in the string");
 }
 
