@@ -675,7 +675,6 @@ static void test_common_String_Concat_Len(void) {
 }
 
 static void test_safe_strtok(void) {
-    // Test for when saveptr is NULL on a non-initial call
     char str[] = "one,two,three";
     rsize_t max = sizeof(str);
     char* saveptr;
@@ -690,7 +689,7 @@ static void test_safe_strtok(void) {
     TEST_ASSERT_NEQ(token, NULL, "Second token should not be NULL");
     TEST_ASSERT_EQ(strcmp(token, "two"), 0, "Second token should be 'two'");
 
-    token = safe_strtok(NULL, &max, ",", NULL);
+    token = safe_strtok(NULL, &max, ",", &saveptr);
     TEST_ASSERT_NEQ(token, NULL, "Third token should not be NULL");
     TEST_ASSERT_EQ(strcmp(token, "three"), 0, "Third token should be 'three'");
 
