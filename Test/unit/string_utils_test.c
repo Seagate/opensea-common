@@ -781,6 +781,12 @@ static void test_byte_Swap_String(void) {
     TEST_ASSERT_EQ(strcmp(str, "eHll ooWlrd"), 0, "Swap bytes in the string");
 }
 
+static void test_byte_Swap_String_Len(void) {
+    char str[] = "Hello World";
+    byte_Swap_String_Len(str, 4);
+    TEST_ASSERT_EQ(strcmp(str, "eHllo World"), 0, "Swap bytes in the string up to the specified length");
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -817,4 +823,5 @@ void run_string_utils_tests(void) {
     test_safe_strdup();
     test_safe_strndup();
     test_byte_Swap_String();
+    test_byte_Swap_String_Len();
 }
