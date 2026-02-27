@@ -768,7 +768,7 @@ static void test_safe_strndup(void) {
     const char* str = "Hello, World!";
     char* dup;
 
-    errno_t err = safe_strndup(&dup, str, 5);
+    errno_t err = safe_strndup(&dup, NULL, 5);
 
     TEST_ASSERT_EQ(err, 0, "Duplication should succeed");
     TEST_ASSERT_EQ(strncmp(dup, str, 5), 0, "First n characters should be correctly duplicated");
