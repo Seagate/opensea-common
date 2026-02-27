@@ -782,8 +782,9 @@ static void test_byte_Swap_String(void) {
 }
 
 static void test_byte_Swap_String_Len(void) {
+    // Test when n is not even
     char str[] = "Hello World";
-    byte_Swap_String_Len(str, 4);
+    byte_Swap_String_Len(str, 3);
     TEST_ASSERT_EQ(strcmp(str, "eHllo World"), 0, "Swap bytes in the string up to the specified length");
 }
 
