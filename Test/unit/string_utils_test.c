@@ -763,6 +763,18 @@ static void test_safe_strdup(void) {
     free(dup);
 }
 
+static void test_safe_strndup(void) {
+    const char* str = "Hello, World!";
+    char* dup;
+
+    errno_t err = safe_strndup(&dup, str, 5);
+
+    TEST_ASSERT_EQ(err, 0, "Duplication should succeed");
+    TEST_ASSERT_EQ(strncmp(dup, str, 5), 0, "First n characters should be correctly duplicated");
+
+    free(dup);
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -797,4 +809,5 @@ void run_string_utils_tests(void) {
     test_common_String_Token();
     test_strndup();
     test_safe_strdup();
+    test_safe_strndup();
 }
