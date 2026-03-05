@@ -123,13 +123,7 @@ char* safe_strtok_impl(char* M_RESTRICT       str,
             errno = error;
             return M_NULLPTR;
         }
-        else if (*strmax >= RSIZE_MAX &&
-                 str[*strmax + RSIZE_T_C(1)] != '\0') // This is to determine if the string is really
-                                                      // RSIZE_MAX or not. safe_strnlen will return
-                                                      // RSIZE_MAX if NULL is found at that size OR if it
-                                                      // is not found in the string. So adding 1 to check
-                                                      // if it found NULL terminator or not to make this
-                                                      // check match annex k
+        else if (*strmax >= RSIZE_MAX)
         {
             *saveptr = M_NULLPTR;
             error    = ERANGE;

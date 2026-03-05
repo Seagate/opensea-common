@@ -18,7 +18,10 @@
 
 #include "code_attributes.h"
 #include "common_types.h"
+#include "math_utils.h"
 #include "memory_safety.h"
+
+#include <string.h>
 
 #if defined(__cplusplus)
 extern "C"
@@ -31,9 +34,58 @@ extern "C"
     //! \param[in] n maximum number of characters to scan for null terminator
     //! \return 0 if string is null. length of string if null terminator found. \a n if null terminator not found
     //! after scanning \a n characters
-    // M_PARAM_RO_SIZE(1, 2) //Do not use this right now. Need to revisit how we want to do this since
-    // doing this causes some weird behavior with builtin obj size and RSIZE_MAX as a backup maximum length-TJE
-    size_t safe_strnlen_impl(const char* M_NULLABLE string, size_t n);
+    M_FORCEINLINE size_t safe_strnlen_impl(const char* M_NULLABLE string, size_t n)
+    {
+    #if defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
+        // Does not invoke constraint handler of it's own so we can use this here - TJE
+        return strnlen_s(string, n);
+    #else
+        // own implementation with a simple loop modern compilers will optimize anyways. Does not use posix strnlen or memchr.
+        // The reason for this is due to generating excess warnings (which is usually a good thing).
+        // Newer glibc uses VLA notation for both strnlen and memchr to enforce better warnings/bounds checks.
+        // This is USUALLY a good thing to have, but in this case it causes excess warnings for places
+        // where we are certain the compiler should be able to detect built-in size and correctly pass
+        // that in from the safe_strlen wrapper which is using bos0 to get the built-in size.
+        // This causes problems in less portable locations, such as getting d_name for dirent.
+        // POSIX does not require any specific size for this array or even a separate variable for length.
+        // Many systems do implement one, but for portable code that does not make sense to access like that.
+        // The results are always null terminated and bos0 may get the real size, keeping us always within bounds.
+        // So all these warnings do it generate extra noise right now.
+        // Sure, if you know the size you should just pass the exact size of the object, that is better, but that
+        // is not always possible or defined well enough.
+        // Sure, you can just call strlen since these should always be null terminated, but at least in this
+        // codebase, we wanted consistent use of safe_strlen incase someone ever tries to pass null or something else
+        // into it.
+        if (string != M_NULLPTR)
+        {
+            size_t maxLen = n;
+            #if defined (bos0)
+            // If the built-in object size is detectable, then use it instead as maximum to prevent a possible
+            // out of bounds access.
+            maxLen = bos0(string) == SIZE_MAX ? n : M_Min(n, bos0(string));
+            #endif
+            size_t len = 0;
+            for (len = 0; len < maxLen; ++len)
+            {
+                if (string[len] == '\0')
+                {
+                    return len;
+                }
+            }
+            return n;
+            // const char* found = memchr(string, '\0', n);
+            // if (found != M_NULLPTR)
+            // {
+            //     return M_STATIC_CAST(size_t, M_REINTERPRET_CAST(uintptr_t, found) - M_REINTERPRET_CAST(uintptr_t, string));
+            // }
+            // else
+            // {
+            //     return n;
+            // }
+        }
+        return SIZE_T_C(0);
+    #endif
+    }
 
 // Methods to detect errors at compile time for clang with diagnose_if attributes.
 // This is not perfect, but having constexpr is far more helpful and truthful for these comparisons

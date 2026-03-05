@@ -285,9 +285,12 @@ extern "C"
 M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char* M_NULLABLE string)
 #endif
     {
-#if defined(HAVE_BUILT_IN_OBJ_SIZE)
-        return safe_strnlen(string, __builtin_object_size(string, 0) != SIZE_MAX ? __builtin_object_size(string, 0)
-                                                                                 : RSIZE_MAX);
+        // Disabling stringop overread here because SOMETIMES the compiler's builtin size returns SIZE_MAX when it cannot determine
+        // the size of the object, which is actually what we want in that case since we will then use RSIZE_MAX as the limit in safe_strnlen.
+        // When the built-in does return a real size, we want to use that as the limit in safe_strnlen to prevent overreads and allow for
+        // better optimization by the compiler. -TJE
+#if defined (bos0)
+        return safe_strnlen(string, bos0(string) == SIZE_MAX ? RSIZE_MAX : bos0(string));
 #else
     // NOTE: MSVC has _msize, but it only works on malloc'd memory, not constant
     // strings which may be sent to this function as well! no built-in way to

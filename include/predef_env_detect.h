@@ -961,9 +961,13 @@ extern "C"
 #endif
 
 // Built-in / intrinsic functions detection
+// \see https://gcc.gnu.org/onlinedocs/gcc/Built-in-Functions.html
 #if defined(__has_builtin)
 #    if __has_builtin(__builtin_object_size)
 #        define HAVE_BUILT_IN_OBJ_SIZE
+#    endif
+#    if __has_builtin(__builtin_dynamic_object_size)
+#        define HAVE_BUILT_IN_DYN_OBJ_SIZE
 #    endif
 #    if __has_builtin(__builtin_bswap64)
 #        define HAVE_BUILTIN_BSWAP
@@ -1079,10 +1083,35 @@ extern "C"
 #    if __has_builtin(__builtin___clear_cache)
 #        define HAS_BUILT_IN_CLEAR_CACHE
 #    endif
+#    if __has_builtin(__builtin_strnlen)
+#        define HAVE_BUILTIN_STRNLEN
+#    endif
+#    if __has_builtin(__builtin_strlen)
+#        define HAVE_BUILTIN_STRLEN
+#    endif
+#    if __has_builtin(__builtin_strcasecmp)
+#        define HAVE_BUILTIN_STRCASECMP
+#    endif
+#    if __has_builtin(__builtin_strncasecmp)
+#        define HAVE_BUILTIN_STRNCASECMP
+#    endif
+#    if __has_builtin(__builtin_strcat)
+#        define HAVE_BUILTIN_STRCAT
+#    endif
+#    if __has_builtin(__builtin_strncat)
+#        define HAVE_BUILTIN_STRNCAT
+#    endif
+#
 #endif //__has_builtin
 
 #if !defined(HAVE_BUILT_IN_OBJ_SIZE) && IS_GCC_VERSION(4, 1)
 #    define HAVE_BUILT_IN_OBJ_SIZE
+#endif
+
+#if defined (HAVE_BUILT_IN_DYN_OBJ_SIZE)
+#define bos0(ptr) __builtin_dynamic_object_size(ptr, 0)
+#elif defined (HAVE_BUILT_IN_OBJ_SIZE)
+#define bos0(ptr) __builtin_object_size(ptr, 0)
 #endif
 
 #if IS_GCC_VERSION(3, 4)

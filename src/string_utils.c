@@ -55,7 +55,7 @@ static int handle_eof(int result)
 
 static int is_valid_unsigned_char_range(int c)
 {
-    return (c >= 0 && c <= UCHAR_MAX);
+    return (c >= 0 && c <= UCHAR_MAX) && (c != EOF);
 }
 
 int safe_isascii(int c)
@@ -803,39 +803,6 @@ errno_t safe_strncat_impl(char* M_RESTRICT       dest,
         errno = error;
         return error;
     }
-}
-
-size_t safe_strnlen_impl(const char* string, size_t n)
-{
-#if defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
-    // Does not invoke constraint handler of it's own so we can use this here - TJE
-    return strnlen_s(string, n);
-#elif defined(POSIX_2008) || defined(USING_SUS4) || defined(HAVE_STRNLEN) /*also glibc 2.0, openbsd 4.8*/
-    if (string != M_NULLPTR)
-    {
-        return strnlen(string, n);
-    }
-    else
-    {
-        return SIZE_T_C(0);
-    }
-#else
-    // implement this ourselves with memchr after making sure string is not a
-    // null pointer
-    if (string != M_NULLPTR)
-    {
-        const char* found = memchr(string, '\0', n);
-        if (found != M_NULLPTR)
-        {
-            return C_CAST(size_t, C_CAST(uintptr_t, found) - C_CAST(uintptr_t, string));
-        }
-        else
-        {
-            return n;
-        }
-    }
-    return SIZE_T_C(0);
-#endif
 }
 
 #if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
