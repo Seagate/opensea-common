@@ -11,15 +11,15 @@
 # ******************************************************************************************
 
 # Hand Written Makefile (Edit with caution) -Muhammad
-# 
+#
 
 NAME=opensea-common
 #Change the Major version when major interface changes are made. E.g. tDevice changes
 MAJOR=6
-#Change the Minor version when new features are added. 
-MINOR=0
+#Change the Minor version when new features are added.
+MINOR=1
 #Change the patch version when only bug fixes are made.
-PATCH=4
+PATCH=0
 VERSION=$(MAJOR).$(MINOR).$(PATCH)
 SRC_DIR=../../src/
 INC_DIR=-I../../include
@@ -62,7 +62,7 @@ ifneq (,$(findstring clang,$(COMPILER_VERSION)))
 	CFLAGS += -Wno-unknown-warning-option -Wcast-align=strict -Wvla -Wfloat-equal -Wnull-dereference -Wunused-const-variable \
 	-Wduplicated-cond -Wjump-misses-init -Wstringop-overflow -Wlogical-op -Wshift-overflow=2 -Wdouble-promotion -Wformat -Wformat-security \
 	-Wold-style-definition -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes
-else 
+else
 	ifneq (,$(findstring GCC,$(COMPILER_VERSION)))
 		#setup gcc specific warnings/flags
 		GCC_VERSION_STRING = $(shell $(CC) -dumpversion)
@@ -72,7 +72,7 @@ else
 		GCC_SUBMINOR = $(word 3,$(GCC_VER))
 		ifeq ($(GCC_MINOR),)
 			GCC_MINOR = 0
-		endif 
+		endif
 		ifeq ($(GCC_SUBMINOR),)
 			GCC_SUBMINOR = 0
 		endif
@@ -80,7 +80,7 @@ else
 		ifeq ($(shell test $(GCC_MAJOR) -gt 7; echo $$?),0)
 			ifeq ($(shell test $(GCC_MINOR) -gt 4; echo $$?),0)
 				CFLAGS += -Wcast-align=strict
-			else 
+			else
 				CFLAGS += -Wcast-align
 			endif
 		else
@@ -90,7 +90,7 @@ else
 		ifeq ($(shell test $(GCC_MAJOR) -gt 6; echo $$?),0)
 			ifeq ($(shell test $(GCC_MINOR) -gt 4; echo $$?),0)
 				CFLAGS += -Wshadow=compatible-local -Wstringop-overflow
-			else 
+			else
 				CFLAGS +=
 			endif
 		else
@@ -100,7 +100,7 @@ else
 		ifeq ($(shell test $(GCC_MAJOR) -gt 5; echo $$?),0)
 			ifeq ($(shell test $(GCC_MINOR) -gt 4; echo $$?),0)
 				CFLAGS += -Wnull-dereference -Wunused-const-variable -Wduplicated-cond -Wshift-overflow=2
-			else 
+			else
 				CFLAGS +=
 			endif
 		else
@@ -116,7 +116,7 @@ else
 			#as of 5.x.x, gnu11 is default
 			CFLAGS += -std=gnu99
 		endif
-		
+
 		CFLAGS += -Wvla -Wfloat-equal -Wjump-misses-init -Wlogical-op -Wdouble-promotion -Wformat -Wformat-security\
 			-Wold-style-definition -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes
 	else
@@ -125,7 +125,7 @@ else
 				-Wold-style-definition -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes
 	endif
 endif
-    
+
 PROJECT_DEFINES += #-DDISABLE_NVME_PASSTHROUGH  #-D_DEBUG
 
 #All of the source files have associated object files
@@ -134,7 +134,7 @@ LIBS = lib$(NAME).a
 
 FILE_OUTPUT_DIR=lib
 
-.PHONY: all 
+.PHONY: all
 
 all: clean mkoutputdir $(LIBS)
 

@@ -5,7 +5,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -46,9 +46,9 @@ char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH] = {0, 0, 0, 0, 0, 0, 0, 0, 
 
 M_STATIC_ASSERT(SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING) >= 26, current_time_string_length_too_short);
 
-#if ! defined (ALLOW_32BIT_TIME_T)
-    // cannot support 32bit time_t properly!
-    M_STATIC_ASSERT(sizeof(time_t) >= 8, time_t_is_not_64_bits);
+#if !defined(ALLOW_32BIT_TIME_T)
+// cannot support 32bit time_t properly!
+M_STATIC_ASSERT(sizeof(time_t) >= 8, time_t_is_not_64_bits);
 #endif // ALLOW_32BIT_TIME_T
 
 // Leap years occur every 4 years.
