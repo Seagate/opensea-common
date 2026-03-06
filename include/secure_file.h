@@ -262,7 +262,7 @@ extern "C"
     //! \param[in,out] attributes Pointer to the fileAttributes structure to be freed. The pointer will be set to NULL
     //! after the memory is freed. \note The Windows SIDs are allocated and require deletion of their own. This will be
     //! cleaned up when calling this function.
-    void free_File_Attributes(fileAttributes * M_NULLABLE * M_NULLABLE attributes);
+    void free_File_Attributes(fileAttributes* M_NULLABLE* M_NULLABLE attributes);
 
     //! \fn M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoCheck)
     //! \brief Retrieves the attributes of a file or directory by its name.
@@ -430,7 +430,7 @@ extern "C"
     //! after the memory is freed.
     //! \note The Windows SIDs are allocated and require deletion of their own. This will be cleaned up when calling
     //! this function.
-    void free_Secure_File_Info(secureFileInfo * M_NULLABLE * M_NULLABLE fileInfo);
+    void free_Secure_File_Info(secureFileInfo* M_NULLABLE* M_NULLABLE fileInfo);
 
     //! \struct sfileExt
     //! \brief Structure to specify a list of supported file extensions for secure file opening.
@@ -838,16 +838,16 @@ extern "C"
     M_PARAM_RO_SIZE(7, 8)
     M_NONNULL_IF_NONZERO_PARAM(9, 10)
     M_PARAM_RO_SIZE(9, 10)
-    eReturnValues create_And_Open_Secure_Log_File(const char* M_NONNULL                   deviceIdentifier,
-                                                  size_t                                  deviceIDLen,
-                                                  secureFileInfo * M_NONNULL * M_NULLABLE file,
-                                                  eLogFileNamingConvention                logFileNamingConvention,
-                                                  const char* M_NULLABLE                  logPath,
-                                                  size_t                                  logPathLen,
-                                                  const char* M_NULLABLE                  logName,
-                                                  size_t                                  logNameLen,
-                                                  const char* M_NULLABLE                  logExt,
-                                                  size_t                                  logExtLen);
+    eReturnValues create_And_Open_Secure_Log_File(const char* M_NONNULL                 deviceIdentifier,
+                                                  size_t                                deviceIDLen,
+                                                  secureFileInfo* M_NONNULL* M_NULLABLE file,
+                                                  eLogFileNamingConvention              logFileNamingConvention,
+                                                  const char* M_NULLABLE                logPath,
+                                                  size_t                                logPathLen,
+                                                  const char* M_NULLABLE                logName,
+                                                  size_t                                logNameLen,
+                                                  const char* M_NULLABLE                logExt,
+                                                  size_t                                logExtLen);
 
 #if defined(__cplusplus)
 }

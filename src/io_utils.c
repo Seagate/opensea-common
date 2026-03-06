@@ -2640,13 +2640,13 @@ void print_Pipe_Data(const uint8_t* dataBuffer, uint32_t bufferLen)
     internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false);
 }
 
-errno_t safe_fopen_impl(FILE * M_RESTRICT * M_RESTRICT streamptr,
-                        const char* M_RESTRICT         filename,
-                        const char* M_RESTRICT         mode,
-                        const char*                    file,
-                        const char*                    function,
-                        int                            line,
-                        const char*                    expression)
+errno_t safe_fopen_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
+                        const char* M_RESTRICT       filename,
+                        const char* M_RESTRICT       mode,
+                        const char*                  file,
+                        const char*                  function,
+                        int                          line,
+                        const char*                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -2697,14 +2697,14 @@ errno_t safe_fopen_impl(FILE * M_RESTRICT * M_RESTRICT streamptr,
     return error;
 }
 
-errno_t safe_freopen_impl(FILE * M_RESTRICT * M_RESTRICT newstreamptr,
-                          const char* M_RESTRICT         filename,
-                          const char* M_RESTRICT         mode,
-                          FILE* M_RESTRICT               stream,
-                          const char*                    file,
-                          const char*                    function,
-                          int                            line,
-                          const char*                    expression)
+errno_t safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
+                          const char* M_RESTRICT       filename,
+                          const char* M_RESTRICT       mode,
+                          FILE* M_RESTRICT             stream,
+                          const char*                  file,
+                          const char*                  function,
+                          int                          line,
+                          const char*                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -2834,11 +2834,11 @@ errno_t safe_tmpnam_impl(char*       filename_s,
 }
 #endif // WANT_SAFE_TMPNAM
 
-errno_t safe_tmpfile_impl(FILE * M_RESTRICT * M_RESTRICT streamptr,
-                          const char*                    file,
-                          const char*                    function,
-                          int                            line,
-                          const char*                    expression)
+errno_t safe_tmpfile_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
+                          const char*                  file,
+                          const char*                  function,
+                          int                          line,
+                          const char*                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;

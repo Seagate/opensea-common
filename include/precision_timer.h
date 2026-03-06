@@ -46,7 +46,7 @@ extern "C"
 
     //! \fn void safe_free_seatimer(seatimer_t** timer)
     //! \brief Helper function to safely free a seatimer from the heap
-    static M_INLINE void safe_free_seatimer(seatimer_t * M_NULLABLE * M_NULLABLE timer)
+    static M_INLINE void safe_free_seatimer(seatimer_t* M_NULLABLE* M_NULLABLE timer)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, timer));
     }
