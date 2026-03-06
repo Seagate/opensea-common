@@ -47,7 +47,7 @@ extern "C"
     //!       from memory_safety.h
     //!
     //! \example
-    //! M_DIAG_ERROR(M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), \
+    //! M_DIAG_ERROR(M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count),
     //!              "source and destination regions overlap")
 #define M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(ptr1, size1, ptr2, size2) \
     (((ptr1) < (ptr2) + (size2)) && ((ptr2) < (ptr1) + (size1)))

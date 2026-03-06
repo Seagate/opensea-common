@@ -85,7 +85,7 @@ extern "C"
     //!       from memory_safety.h
     //!
     //! \example
-    //! M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, srclen), \
+    //! M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, srclen),
     //!              "source and destination regions overlap")
 #define M_STRING_REGIONS_OVERLAP_COMPILE_TIME(ptr1, size1, ptr2, size2) \
     (((ptr1) < (ptr2) + (size2)) && ((ptr2) < (ptr1) + (size1)))
