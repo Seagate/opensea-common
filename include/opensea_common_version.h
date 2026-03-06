@@ -39,11 +39,11 @@ extern "C"
 
 //! \def OPENSEA_COMMON_MINOR_VERSION
 //! \brief Defines the minor version number for the opensea-common library.
-#define OPENSEA_COMMON_MINOR_VERSION 0
+#define OPENSEA_COMMON_MINOR_VERSION 1
 
 //! \def OPENSEA_COMMON_PATCH_VERSION
 //! \brief Defines the patch version number for the opensea-common library.
-#define OPENSEA_COMMON_PATCH_VERSION 6
+#define OPENSEA_COMMON_PATCH_VERSION 0
 
 //! \def OPENSEA_COMMON_VERSION
 //! \brief Combines the major, minor, and patch version numbers into a single version string for the opensea-common
