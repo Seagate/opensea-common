@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -53,12 +53,13 @@ extern "C"
     //! \sa invoke_Constraint_Handler
     typedef struct s_ConstraintEnvInfo
     {
-        size_t      version;    //!< set to CONSTRAINT_HANDLER_ENV_INFO_VERSION
-        size_t      size;       //!< set to sizeof(constraintEnvInfo)
-        const char* file;       //!< set to __FILE__
-        const char* function;   //!< set to __func__
-        const char* expression; //!< set to expression that caused the violation. Example: safe_memset(params)
-        int         line;       //!< set to __LINE__
+        size_t                 version;  //!< set to CONSTRAINT_HANDLER_ENV_INFO_VERSION
+        size_t                 size;     //!< set to sizeof(constraintEnvInfo)
+        const char* M_NULLABLE file;     //!< set to __FILE__
+        const char* M_NULLABLE function; //!< set to __func__
+        const char* M_NULLABLE
+            expression; //!< set to expression that caused the violation. Example: safe_memset(params)
+        int line;       //!< set to __LINE__
     } constraintEnvInfo;
 
     //! \fn constraintEnvInfo* set_Env_Info(constraintEnvInfo* envInfo, const char* file, const char* function, const
@@ -77,15 +78,13 @@ extern "C"
     //! from
     //! \return returns same pointer as \a envInfo to allow it to be quickly passed to a constraint handler's ptr
     //! parameter
-    M_NONNULL_PARAM_LIST(1)
     M_PARAM_WO(1)
-    static M_INLINE constraintEnvInfo* set_Env_Info(constraintEnvInfo* envInfo,
-                                                    const char*        file,
-                                                    const char*        function,
-                                                    const char*        expression,
-                                                    const int          line)
+    static M_INLINE constraintEnvInfo* M_NULLABLE set_Env_Info(constraintEnvInfo* M_NULLABLE envInfo,
+                                                               const char* M_NULLABLE        file,
+                                                               const char* M_NULLABLE        function,
+                                                               const char* M_NULLABLE        expression,
+                                                               const int                     line)
     {
-        DISABLE_NONNULL_COMPARE
         if (envInfo != M_NULLPTR)
         {
             envInfo->version    = CONSTRAINT_HANDLER_ENV_INFO_VERSION;
@@ -95,7 +94,6 @@ extern "C"
             envInfo->expression = expression;
             envInfo->line       = line;
         }
-        RESTORE_NONNULL_COMPARE
         return envInfo;
     }
 
@@ -118,10 +116,11 @@ extern "C"
     //! \param[in] msg the message to print by the constraint handler when an error is encountered.
     //! \param[in] ptr additional error information to output in the constraint handler. Expects constraintEnvInfo*
     //! \param[in] error errno value describing the error that occurred during execution.
-    M_NONNULL_PARAM_LIST(1)
     M_PARAM_RO(1)
     M_NULL_TERM_STRING(1)
-    void invoke_Constraint_Handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error);
+    void invoke_Constraint_Handler(const char* M_RESTRICT M_NONNULL msg,
+                                   void* M_RESTRICT M_NULLABLE      ptr,
+                                   errno_t                          error);
 
 #if defined(__cplusplus)
 }

@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -84,12 +84,15 @@ void safe_ignore_handler(M_ATTR_UNUSED const char* M_RESTRICT msg,
                          M_ATTR_UNUSED void* M_RESTRICT       ptr,
                          M_ATTR_UNUSED errno_t                error)
 {
+    M_USE_UNUSED(msg);
+    M_USE_UNUSED(ptr);
+    M_USE_UNUSED(error);
     return; // NOLINT(readability-redundant-control-flow)
 }
 
-constraint_handler_func int_set_constraint_handler(constraint_handler_func handler);
+M_RETURNS_NONNULL constraint_handler_func int_set_constraint_handler(constraint_handler_func M_NULLABLE handler);
 
-constraint_handler_func int_set_constraint_handler(constraint_handler_func handler)
+M_RETURNS_NONNULL constraint_handler_func int_set_constraint_handler(constraint_handler_func M_NULLABLE handler)
 {
     constraint_handler_func old = installedhandler;
     if (old == M_NULLPTR)
@@ -108,16 +111,14 @@ constraint_handler_func int_set_constraint_handler(constraint_handler_func handl
     return old;
 }
 
-void invoke_Constraint_Handler(const char* M_RESTRICT msg, void* M_RESTRICT ptr, errno_t error)
+void invoke_Constraint_Handler(const char* M_RESTRICT M_NONNULL msg, void* M_RESTRICT M_NULLABLE ptr, errno_t error)
 {
     constraint_handler_func handler = installedhandler;
-    DISABLE_NONNULL_COMPARE
     if (handler == M_NULLPTR)
     {
         installedhandler = safe_abort_handler;
         handler          = installedhandler;
     }
-    RESTORE_NONNULL_COMPARE
     handler(msg, ptr, error);
 }
 

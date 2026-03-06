@@ -5,7 +5,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,7 +19,7 @@ eReturnValues metric_Unit_Convert(double* byteValue, char** metricUnit)
     eReturnValues ret         = SUCCESS;
     uint8_t       unitCounter = UINT8_C(0);
 
-    if (!byteValue || !metricUnit || !*metricUnit)
+    if (byteValue == M_NULLPTR || metricUnit == M_NULLPTR || *metricUnit == M_NULLPTR)
     {
         return BAD_PARAMETER;
     }
@@ -69,7 +69,7 @@ eReturnValues capacity_Unit_Convert(double* byteValue, char** capacityUnit)
     eReturnValues ret         = SUCCESS;
     uint8_t       unitCounter = UINT8_C(0);
 
-    if (!byteValue || !capacityUnit || !*capacityUnit)
+    if (byteValue == M_NULLPTR || capacityUnit == M_NULLPTR || *capacityUnit == M_NULLPTR)
     {
         return BAD_PARAMETER;
     }

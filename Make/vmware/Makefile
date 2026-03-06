@@ -11,15 +11,15 @@
 # ******************************************************************************************
 
 # Hand Written Makefile (Edit with caution) -Debabrata
-# 
+#
 
 NAME=opensea-common
 #Change the Major version when major interface changes are made. E.g. tDevice changes
 MAJOR=6
-#Change the Minor version when new features are added. 
-MINOR=0
+#Change the Minor version when new features are added.
+MINOR=1
 #Change the patch version when only bug fixes are made.
-PATCH=3
+PATCH=0
 
 DESC_ACCEPTANCE_LEVEL=certified
 
@@ -111,7 +111,7 @@ DEV_OBJDIR = beta
 # the following assignment.  The value needs to be empty or non-
 # empty.  If the latter, any content may be used.
 #DEV_APP = 1
-DEV_APP = 
+DEV_APP =
 
 ################
 # Extra compiler and preprocessor flags based on kind of build
@@ -461,7 +461,7 @@ LIBS = lib$(NAME).a
 
 FILE_OUTPUT_DIR=lib
 
-.PHONY: all 
+.PHONY: all
 
 all: clean mkoutputdir $(LIBS)
 

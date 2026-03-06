@@ -5,19 +5,26 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #pragma once
 
+#include "code_attributes.h"
 #include "common_types.h"
 
 #if defined(__cplusplus)
 extern "C"
 {
 #endif
+
+    //! \brief returns an allocated buffer with translation of the errno value
+    //!
+    //! \param[in] error The error number to translate
+    //! \return M_NULLPTR if memory cannot be allocated or error cannot be translated. Pointer to string successful.
+    M_FUNC_ATTR_MALLOC char* get_strerror(errno_t error);
 
     //! \brief Prints the error number and its meaning to the screen.
     //!

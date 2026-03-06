@@ -5,7 +5,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -39,7 +39,6 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoChe
     fileAttributes* attrs = M_NULLPTR;
     struct stat     st;
     safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
-    DISABLE_NONNULL_COMPARE
     if (filetoCheck != M_NULLPTR && stat(filetoCheck, &st) == 0)
     {
         attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
@@ -68,7 +67,6 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoChe
             attrs->fileModificationTime = st.st_mtime;
         }
     }
-    RESTORE_NONNULL_COMPARE
     return attrs;
 }
 
@@ -77,7 +75,6 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
     fileAttributes* attrs = M_NULLPTR;
     struct stat     st;
     safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
-    DISABLE_NONNULL_COMPARE
     if (file != M_NULLPTR && fstat(fileno(file), &st) == 0)
     {
         attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
@@ -106,7 +103,6 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
             attrs->fileModificationTime = st.st_mtime;
         }
     }
-    RESTORE_NONNULL_COMPARE
     return attrs;
 }
 
@@ -118,7 +114,6 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
 #else
     struct stat st;
     safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
-    DISABLE_NONNULL_COMPARE
     if (file != M_NULLPTR && fstat(fileno(file), &st))
     {
         // device ID and inode
@@ -129,7 +124,6 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
             uniqueID->inode    = st.st_ino;
         }
     }
-    RESTORE_NONNULL_COMPARE
 #endif
     return uniqueID;
 }
@@ -399,7 +393,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             if (!recurseSecure)
             {
 #    if defined(_DEBUG)
-                printf("recursive link check failed\n");
+                print_str("recursive link check failed\n");
 #    endif
                 secure = false;
                 safe_free(&link);
@@ -421,7 +415,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
 #if !defined(UEFI_C_SOURCE)
 #    if defined(_DEBUG)
-        printf("Checking UIDs\n");
+        print_str("Checking UIDs\n");
 #    endif
         if ((buf.st_uid != my_uid) && (buf.st_uid != ROOT_UID_VAL))
         {
@@ -432,7 +426,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             if (my_uid == ROOT_UID_VAL)
             {
 #    if defined(_DEBUG)
-                printf("root UID detected, getting user's ID\n");
+                print_str("root UID detected, getting user's ID\n");
 #    endif
                 uid_t sudouid = get_sudo_uid();
 #    if defined(_DEBUG)
@@ -599,7 +593,7 @@ eReturnValues os_Create_Secure_Directory(const char* filePath)
 }
 
 // https://linux.die.net/man/3/realpath
-eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[OPENSEA_PATH_MAX])
+eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[M_NONNULL_ARRAY OPENSEA_PATH_MAX])
 {
     char* resolvedPath = realpath(pathAndFile, fullPath);
     if (resolvedPath != M_NULLPTR)

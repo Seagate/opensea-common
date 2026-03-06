@@ -5,7 +5,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -32,6 +32,10 @@
 #include <string.h>
 #include <time.h>
 
+// TODO: Include xlocale for functions like newlocale, freelocale, etc. Added in freebsd 9.1, moved to locale.h with
+// posix 2008 compat in 11.0
+//       Darwin also supported xlocale prior to posix
+
 time_t CURRENT_TIME = M_STATIC_CAST(time_t, 0);
 // NOTE: Do not use the DECLARE_ZERO_INIT_ARRAY here as it will not compile
 // correctly for a global variable like this.
@@ -42,8 +46,10 @@ char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH] = {0, 0, 0, 0, 0, 0, 0, 0, 
 
 M_STATIC_ASSERT(SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING) >= 26, current_time_string_length_too_short);
 
+#if !defined(ALLOW_32BIT_TIME_T)
 // cannot support 32bit time_t properly!
 M_STATIC_ASSERT(sizeof(time_t) >= 8, time_t_is_not_64_bits);
+#endif // ALLOW_32BIT_TIME_T
 
 // Leap years occur every 4 years.
 // Every 100 years you skip a leap year, unless it has been 400 years in which case you do not skip the leap year
@@ -323,7 +329,6 @@ int timespec_get(struct timespec* ts, int base)
 
 struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, struct tm* time)
 {
-    DISABLE_NONNULL_COMPARE
     if (time != M_NULLPTR)
     {
         const int days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -345,7 +350,7 @@ struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, str
         while (remsec >= (is_Year_A_Leap_Year(year) ? secPerLeapYear : secPerYear))
         {
             remsec -= is_Year_A_Leap_Year(year) ? secPerLeapYear : secPerYear;
-            year += UINT16_C(1);
+            year += 1;
         }
 
         for (month = C_STRUCT_TM_MONTH_JAN; month <= C_STRUCT_TM_MONTH_DEC; month += 1)
@@ -355,14 +360,14 @@ struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, str
             {
                 daysInMonth += 1;
             }
-            if (remsec < (secPerDay * daysInMonth))
+            if (remsec < (M_STATIC_CAST(int64_t, secPerDay) * M_STATIC_CAST(int64_t, daysInMonth)))
             {
                 day = M_STATIC_CAST(int, (remsec / M_STATIC_CAST(int64_t, secPerDay)) + INT64_C(1)); // 1 based index
                 yday += day - 1;                                                                     // 0 based index
                 remsec %= secPerDay;
                 break;
             }
-            remsec -= secPerDay * daysInMonth;
+            remsec -= (M_STATIC_CAST(int64_t, secPerDay) * M_STATIC_CAST(int64_t, daysInMonth));
             yday += daysInMonth;
         }
 
@@ -380,9 +385,10 @@ struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, str
         time->tm_min   = minute;
         time->tm_sec   = second;
         time->tm_isdst = -1;
-        time->tm_wday  = ((seconds / secPerDay) + JAN_1_1970_DAY_OF_WEEK) % DAYS_IN_WEEK;
+        time->tm_wday  = M_STATIC_CAST(
+            int, ((seconds / M_STATIC_CAST(int64_t, secPerDay)) + M_STATIC_CAST(int64_t, JAN_1_1970_DAY_OF_WEEK)) %
+                     M_STATIC_CAST(int64_t, DAYS_IN_WEEK));
     }
-    RESTORE_NONNULL_COMPARE
     return time;
 }
 
@@ -494,7 +500,7 @@ void print_Time_To_Screen(const uint8_t*  years,
         printf(" %" PRIu8 " year", *years);
         if (*years > 1)
         {
-            printf("s");
+            print_str("s");
         }
     }
     if (days && *days > 0)
@@ -502,7 +508,7 @@ void print_Time_To_Screen(const uint8_t*  years,
         printf(" %" PRIu16 " day", *days);
         if (*days > 1)
         {
-            printf("s");
+            print_str("s");
         }
     }
     if (hours && *hours > 0)
@@ -510,7 +516,7 @@ void print_Time_To_Screen(const uint8_t*  years,
         printf(" %" PRIu8 " hour", *hours);
         if (*hours > 1)
         {
-            printf("s");
+            print_str("s");
         }
     }
     if (minutes && *minutes > 0)
@@ -518,7 +524,7 @@ void print_Time_To_Screen(const uint8_t*  years,
         printf(" %" PRIu8 " minute", *minutes);
         if (*minutes > 1)
         {
-            printf("s");
+            print_str("s");
         }
     }
     if (seconds && *seconds > 0)
@@ -526,12 +532,12 @@ void print_Time_To_Screen(const uint8_t*  years,
         printf(" %" PRIu8 " second", *seconds);
         if (*seconds > 1)
         {
-            printf("s");
+            print_str("s");
         }
     }
     if (years || days || hours || minutes || seconds)
     {
-        printf(" ");
+        print_str(" ");
     }
 }
 
@@ -549,7 +555,6 @@ struct tm* impl_safe_gmtime(const time_t* M_RESTRICT timer,
                             const char*              expression)
 {
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (timer == M_NULLPTR)
     {
         errno = EINVAL;
@@ -566,7 +571,7 @@ struct tm* impl_safe_gmtime(const time_t* M_RESTRICT timer,
     }
     else
     {
-#if (defined(POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined(USING_C23)
+#if (defined(POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined(HAVE_GMTIME_R)
         // POSIX or C2x (C23 right now) have gmtime_r to use
         return gmtime_r(timer, buf);
 #elif defined(HAVE_C11_ANNEX_K) || (defined(HAVE_MSFT_SECURE_LIB) && defined(_CRT_USE_CONFORMING_ANNEX_K_TIME) &&      \
@@ -588,7 +593,6 @@ struct tm* impl_safe_gmtime(const time_t* M_RESTRICT timer,
         safe_memcpy(buf, sizeof(struct tm), gmtime(timer), sizeof(struct tm));
 #endif
     }
-    RESTORE_NONNULL_COMPARE
     return buf;
 }
 
@@ -600,7 +604,6 @@ struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
                                const char*              expression)
 {
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (timer == M_NULLPTR)
     {
         errno = EINVAL;
@@ -617,7 +620,7 @@ struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
     }
     else
     {
-#if (defined(POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined(USING_C23)
+#if (defined(POSIX_2001) && defined _POSIX_THREAD_SAFE_FUNCTIONS) || defined(HAVE_LOCALTIME_R)
         // POSIX or C2x (C23 right now) have localtime_r to use
         return localtime_r(timer, buf);
 #elif defined(HAVE_C11_ANNEX_K) || (defined(HAVE_MSFT_SECURE_LIB) && defined(_CRT_USE_CONFORMING_ANNEX_K_TIME) &&      \
@@ -639,9 +642,153 @@ struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
         safe_memcpy(buf, sizeof(struct tm), localtime(timer), sizeof(struct tm));
 #endif
     }
-    RESTORE_NONNULL_COMPARE
     return buf;
 }
+
+// MINGW in msys2 is warning it does not know %e, so
+// this is catching that. This will likely need a
+// version check whenever it gets fixed-TJE
+// MSVC added support for %e:
+// https://learn.microsoft.com/en-us/cpp/porting/visual-cpp-change-history-2003-2015?view=msvc-170
+#if (defined(USING_C99) && !defined(__MINGW32__))
+#    define PERCENT_E_SUPPORTED
+#endif
+#if defined(PERCENT_E_SUPPORTED) && defined(_MSC_VER) && !IS_MSVC_VERSION(MSVC_2015)
+#    undef PERCENT_E_SUPPORTED
+#endif
+
+#if defined(PERCENT_E_SUPPORTED)
+#    define ASCTIME_FMT_STRING "%a %b %e %H:%M:%S %Y"
+#else
+#    define ASCTIME_FMT_STRING "%a %b %d %H:%M:%S %Y"
+#endif
+
+#if defined(_WIN32)
+// Windows 10 1803 added utf8 support for locales.
+// https://learn.microsoft.com/en-us/cpp/c-runtime-library/locale-names-languages-and-country-region-strings?view=msvc-170
+// https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/setlocale-wsetlocale?view=msvc-170#utf-8-support
+// Currently only using en-us in Windows since we otherwise need a runtime version check or compiletime check for static
+// linked builds.
+#    define LOCALE_ID "en-us"
+#else
+#    define LOCALE_ID "en-us.utf8"
+#endif
+
+#if !defined(HAVE_MSFT_SECURE_LIB) && !defined(HAVE_C11_ANNEX_K)
+// Uses standard C method to change locale and call strftime
+static M_INLINE errno_t standardized_strftime_for_asctime(char* buf, rsize_t bufsz, const struct tm* time_ptr)
+{
+    bool  restoreLocale = false;
+    char* currentLocale = M_NULLPTR;
+#    if defined(_ENABLE_PER_THREAD_LOCALE)
+    int msvcthrdlocal = _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
+#    endif
+    // Turn off constraint handling since it is possible we will receive NULL and want to continue execution -TJE
+    eConstraintHandler currentHandler = set_Constraint_Handler(ERR_IGNORE);
+    errno_t            error          = safe_strdup(&currentLocale, setlocale(LC_TIME, M_NULLPTR));
+    // Restore previous constraint handler
+    set_Constraint_Handler(currentHandler);
+    if (error == 0 && currentLocale != M_NULLPTR)
+    {
+        if (setlocale(LC_TIME, LOCALE_ID) != M_NULLPTR)
+        {
+            restoreLocale = true;
+        }
+        else if (setlocale(LC_TIME, "C") != M_NULLPTR)
+        {
+            restoreLocale = true;
+        }
+    }
+    if (0 == strftime(buf, bufsz, ASCTIME_FMT_STRING, time_ptr))
+    {
+        // This means the array was too small...which shouldn't happen...but
+        // in case it does, zero out the memory
+        safe_memset(buf, bufsz, 0, bufsz);
+        error = EINVAL;
+        errno = error;
+    }
+    if (restoreLocale)
+    {
+        // Casting to void because we are simply restoring the original
+        // locale which should work without an issue at this point
+        M_STATIC_CAST(void, setlocale(LC_TIME, currentLocale));
+    }
+    safe_free(&currentLocale);
+#    if defined(_ENABLE_PER_THREAD_LOCALE)
+    if (msvcthrdlocal != -1)
+    {
+        C_CAST(void, _configthreadlocale(msvcthrdlocal));
+    }
+#    endif
+    return error;
+}
+
+#    if IS_MSVC_VERSION(MSVC_2005)
+// https://learn.microsoft.com/en-us/cpp/c-runtime-library/locale-names-languages-and-country-region-strings?view=msvc-170
+static M_INLINE errno_t msft_strftime_l_for_asctime(char* buf, rsize_t bufsz, const struct tm* time_ptr)
+{
+    errno_t   error     = 0;
+    _locale_t enus_utf8 = _create_locale(LC_TIME, LOCALE_ID);
+
+    if (enus_utf8 == M_NULLPTR)
+    {
+        enus_utf8 = _create_locale(LC_TIME, "C");
+    }
+
+    if (enus_utf8 == M_NULLPTR)
+    {
+        error = standardized_strftime_for_asctime(buf, bufsz, time_ptr);
+    }
+    else
+    {
+        if (0 == _strftime_l(buf, bufsz, ASCTIME_FMT_STRING, time_ptr, enus_utf8))
+        {
+            // This means the array was too small...which shouldn't happen...but
+            // in case it does, zero out the memory
+            safe_memset(buf, bufsz, 0, bufsz);
+            error = EINVAL;
+            errno = error;
+        }
+        _free_locale(enus_utf8);
+    }
+    return error;
+}
+#    endif
+
+#endif // !defined(HAVE_MSFT_SECURE_LIB) && !defined(HAVE_C11_ANNEX_K)
+
+#if defined(POSIX_2008) || defined(USING_SUS4) || defined(HAVE_XLOCALE_SUPPORT)
+static M_INLINE errno_t posix_strftime_l_for_asctime(char* buf, rsize_t bufsz, const struct tm* time_ptr)
+{
+    errno_t error = 0;
+    // use the strftime_l function instead to avoid changing global locale state
+    locale_t nulllocale = C_CAST(locale_t, 0);
+    locale_t enus_utf8  = newlocale(LC_TIME_MASK, LOCALE_ID, nulllocale);
+    if (enus_utf8 == nulllocale)
+    {
+        enus_utf8 = newlocale(LC_TIME_MASK, "C", nulllocale);
+    }
+    if (enus_utf8 == nulllocale)
+    {
+        // could not create locale to specify for strftime_l
+        // Fallback to global locale change and try again with strftime (no _l)
+        error = standardized_strftime_for_asctime(buf, bufsz, time_ptr);
+    }
+    else
+    {
+        if (0 == strftime_l(buf, bufsz, ASCTIME_FMT_STRING, time_ptr, enus_utf8))
+        {
+            // This means the array was too small...which shouldn't happen...but
+            // in case it does, zero out the memory
+            safe_memset(buf, bufsz, 0, bufsz);
+            error = EINVAL;
+            errno = error;
+        }
+        freelocale(enus_utf8);
+    }
+    return error;
+}
+#endif // defined(POSIX_2008) || defined(USING_SUS4) || defined(HAVE_XLOCALE_SUPPORT)
 
 errno_t impl_safe_asctime(char*            buf,
                           rsize_t          bufsz,
@@ -654,7 +801,6 @@ errno_t impl_safe_asctime(char*            buf,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (buf == M_NULLPTR)
     {
         error = EINVAL;
@@ -779,52 +925,24 @@ errno_t impl_safe_asctime(char*            buf,
             errno = error;
             return error;
         }
-        else
-        {
-            return error;
-        }
 #else
+
+#    if defined(POSIX_2008) || defined(USING_SUS4) || defined(HAVE_XLOCALE_SUPPORT)
+        error = posix_strftime_l_for_asctime(buf, bufsz, time_ptr);
+#    elif IS_MSVC_VERSION(MSVC_2005)
+        error = msft_strftime_l_for_asctime(buf, bufsz, time_ptr);
+#    else // Modify global locale since that is the only other option we have - TJE
+
         //  strftime is recommended to be used. Using format %c will return the
         //  matching output for this function asctime (which this replaces uses
         //  the format: Www Mmm dd hh:mm:ss yyyy\n) NOTE: %e is C99. C89's closest
         //  is %d which has a leading zero. To be technically correct in replacing
         //  this, need to set locale to english instead of localized locale first.
         //  After that is done, it can be reverted back.
-        bool  restoreLocale = false;
-        char* currentLocale = M_NULLPTR;
-        // Turn off constraint handling since it is possible we will receive NULL and want to continue execution -TJE
-        eConstraintHandler currentHandler = set_Constraint_Handler(ERR_IGNORE);
-        error                             = safe_strdup(&currentLocale, setlocale(LC_TIME, M_NULLPTR));
-        // Restore previous constraint handler
-        set_Constraint_Handler(currentHandler);
-        if (error == 0 && currentLocale != M_NULLPTR && setlocale(LC_TIME, "en-us.utf8"))
-        {
-            restoreLocale = true;
-        }
-#    if (defined(USING_C99) && !defined(__MINGW32__)) // MINGW in msys2 is warning it does not know %e, so
-                                                      // this is catching that. This will likely need a
-                                                      // version check whenever it gets fixed-TJE
-        if (0 == strftime(buf, bufsz, "%a %b %e %H:%M:%S %Y", time_ptr))
-#    else
-        if (0 == strftime(buf, bufsz, "%a %b %d %H:%M:%S %Y", time_ptr))
+        error = standardized_strftime_for_asctime(buf, bufsz, time_ptr);
 #    endif
-        {
-            // This means the array was too small...which shouldn't happen...but
-            // in case it does, zero out the memory
-            safe_memset(buf, bufsz, 0, bufsz);
-            error = EINVAL;
-            errno = error;
-        }
-        if (restoreLocale)
-        {
-            // Casting to void because we are simply restoring the original
-            // locale which should work without an issue at this point
-            M_STATIC_CAST(void, setlocale(LC_TIME, currentLocale));
-        }
-        safe_free(&currentLocale);
 #endif // HAVE_MSFT_SECURE_LIB || HAVE_C11_ANNEX_K
     }
-    RESTORE_NONNULL_COMPARE
     return error;
 }
 
@@ -837,7 +955,6 @@ errno_t impl_safe_ctime(char*         buf,
                         const char*   expression)
 {
     errno_t error;
-    DISABLE_NONNULL_COMPARE
     if (timer == M_NULLPTR)
     {
         constraintEnvInfo envInfo;
@@ -853,7 +970,6 @@ errno_t impl_safe_ctime(char*         buf,
         safe_memset(&cTimeBuf, sizeof(struct tm), 0, sizeof(struct tm));
         error = impl_safe_asctime(buf, bufsz, get_Localtime(timer, &cTimeBuf), true, file, function, line, expression);
     }
-    RESTORE_NONNULL_COMPARE
     return error;
 }
 

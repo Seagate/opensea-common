@@ -8,7 +8,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -161,8 +161,15 @@
 //! \brief Macro to check MSVC version
 //! \param[in] msvcver msvc version that _MSC_VER can be set to in various versions.
 //! Use one of the definitions above for easy use
+
+//! \def REAL_MSVC
+//! \brief Some other compilers emulate MSVC and define _MSC_VER. This macro will help detect when it is the
+//! real MSVC compiler versus an emulating compiler.
 #if defined(_MSC_VER)
 #    define IS_MSVC_VERSION(msvcver) (_MSC_VER >= (msvcver))
+#    if !defined(__clang__)
+#        define REAL_MSVC
+#    endif
 #else
 #    define IS_MSVC_VERSION(msvcver) (0)
 #endif
@@ -182,12 +189,14 @@
 #if defined(__has_include)
 #    if __has_include(<features.h>)
 #        include <features.h>
-#    else
-#        include <limits.h>
 #    endif // has features.h
-#else
-#    include <limits.h>
-#endif // does not support __has_include
+#endif     // does not support __has_include
+
+#include <limits.h> // for CHAR_BIT
+
+#if (CHAR_BIT != 8)
+#    error "This library requires a compilation environment with 8 bit bytes"
+#endif // (CHAR_BIT != 8)
 
 //! \def IS_GLIBC_VERSION(major, minor)
 //! \brief Macro to check Glibc version (major.minor)
@@ -232,7 +241,7 @@
 //! \param[in] major major version of klibc to check for
 //! \param[in] minor minor version of klibc to check for
 
-//! \def IS_KLIBC_VERSION(major, minor, patch)
+//! \def IS_KLIBC_FULL_VERSION(major, minor, patch)
 //! \brief Macro to check full klibc version (major.minor.patch)
 //! \param[in] major major version of klibc to check for
 //! \param[in] minor minor version of klibc to check for
@@ -249,6 +258,30 @@
 #    define IS_KLIBC_FULL_VERSION(major, minor, patch) (0)
 #endif
 
+//! \def IS_NEWLIB_VERSION(major, minor)
+//! \brief Macro to check newlib c version (major.minor)
+//! \param[in] major major version of newlib c to check for
+//! \param[in] minor minor version of newlib c to check for
+//! \link https://sourceware.org/newlib/
+
+//! \def IS_NEWLIB_FULL_VERSION(major, minor, patch)
+//! \brief Macro to check full newlib c version (major.minor.patch)
+//! \param[in] major major version of newlib c to check for
+//! \param[in] minor minor version of newlib c to check for
+//! \param[in] patch patch version of newlib c to check for
+//! \link https://sourceware.org/newlib/
+#if defined(__NEWLIB__) && defined(__NEWLIB_MINOR__) && defined(__NEWLIB_PATCHLEVEL__)
+#    define IS_NEWLIB_VERSION(major, minor)                                                                            \
+        ((__NEWLIB__ > (major) || (__NEWLIB__ == (major) && __NEWLIB_MINOR__ >= (minor))))
+#    define IS_NEWLIB_FULL_VERSION(major, minor, patch)                                                                \
+        (__NEWLIB__ > (major) ||                                                                                       \
+         (__NEWLIB__ == (major) &&                                                                                     \
+          (__NEWLIB_MINOR__ > (minor) || (__NEWLIB_MINOR__ == (minor) && __NEWLIB_PATCHLEVEL__ >= (patch)))))
+#else
+#    define IS_NEWLIB_VERSION(major, minor)             (0)
+#    define IS_NEWLIB_FULL_VERSION(major, minor, patch) (0)
+#endif
+
 #if defined(__unix__) || defined(__APPLE__) || defined(HAVE_UNISTD)
 #    include <unistd.h> //to ensure we can check for POSIX versions
 #endif                  //__unix__ || __APPLE__ || HAVE_UNISTD
@@ -257,15 +290,26 @@
 #    include <sys/param.h> //can be helpful to do compile-time version/capabilities identification
 #endif                     //__unix__ || __APPLE__ || HAVE_SYSPARAM
 
+//! \def MSVC_PRAGMA
+//! \brief selects __pragma or _Pragma depending on C standard support and if it is Clang
+//! in MSVC compilation mode in order to be as compatible as possible.
+#if defined(_MSC_VER)
+#    if defined(USING_C11) || defined(__clang__)
+#        define MSVC_PRAGMA(x) _Pragma(#x)
+#    else
+#        define MSVC_PRAGMA(x) __pragma(x)
+#    endif
+#endif //_MSC_VER
+
 //! \def DISABLE_WARNING_4255
 //! \brief disabled MSVC warning 4255. Needed around including windows.h
 
 //! \def RESTORE_WARNING_4255
 //! \brief restores MSVC warning 4255 back to being enabled.
-#if IS_MSVC_VERSION(MSVC_2010) && !defined(__clang__)
-#    define DISABLE_WARNING_4255 __pragma(warning(push)) __pragma(warning(disable : 4255))
+#if IS_MSVC_VERSION(MSVC_2010)
+#    define DISABLE_WARNING_4255 MSVC_PRAGMA(warning(push)) MSVC_PRAGMA(warning(disable : 4255))
 
-#    define RESTORE_WARNING_4255 __pragma(warning(pop))
+#    define RESTORE_WARNING_4255 MSVC_PRAGMA(warning(pop))
 #else
 #    define DISABLE_WARNING_4255
 #    define RESTORE_WARNING_4255
@@ -762,8 +806,62 @@ extern "C"
 #    define IS_NETBSD_VERSION(major, minor, patch) (0)
 #endif
 
+//! \def __has_attribute
+//! \brief Checks if a GNU style attribute is supported by the compiler.
+//! \details This is defined if not already present to return 0.
+//! By defining this is makes sure all compilers know what this is so that
+//! it is cleaner to check for attributes.
+//! The other reason to define this is some compilers may not correctly short circuit
+//! #if checks that combine checking if this is defined and then using it to check for an attribute.
+#if !defined(__has_attribute)
+#    define __has_attribute(x) 0
+#endif
+
+//! \def __has_feature
+//! \brief Checks if a feature is available in the compiler.
+//! \details This is defined if not already present to return 0.
+//! By defining this is makes sure all compilers know what this is so that
+//! it is cleaner to check for attributes.
+//! The other reason to define this is some compilers may not correctly short circuit
+//! #if checks that combine checking if this is defined and then using it to check for an attribute.
+//! \see https://clang.llvm.org/docs/LanguageExtensions.html#language-extensions-back-ported-to-previous-standards
+#if !defined(__has_feature)
+#    define __has_feature(x) 0
+#endif
+
+//! \def __has_extension
+//! \brief Checks if an extension is available in the compiler.
+//! \details This is defined if not already present to return 0.
+//! By defining this is makes sure all compilers know what this is so that
+//! it is cleaner to check for attributes.
+//! The other reason to define this is some compilers may not correctly short circuit
+//! #if checks that combine checking if this is defined and then using it to check for an attribute.
+//! \see https://clang.llvm.org/docs/LanguageExtensions.html#language-extensions-back-ported-to-previous-standards
+#if !defined(__has_extension)
+#    define __has_extension(x) __has_feature(x)
+#endif
+
+#if !defined(__is_identifier)
+// for compatibility only. Must have HAS_IS_IDENTIFIER to make sure it returns valid output
+#    define __is_identifier(x) 0
+#else
+#    define HAS_IS_IDENTIFIER
+#endif
+
 // Clang supports these other methods to check for generic selection support
 //__has_feature(c_generic_selections) or  __has_extension(c_generic_selections)
+#if !defined(HAVE_C11_GENERIC_SELECTION)
+#    if defined(__has_feature)
+#        if __has_feature(c_generic_selections)
+#            define HAVE_C11_GENERIC_SELECTION
+#        endif
+#    endif
+#    if defined(__has_extension)
+#        if __has_extension(c_generic_selections)
+#            define HAVE_C11_GENERIC_SELECTION
+#        endif
+#    endif
+#endif // !HAVE_C11_GENERIC_SELECTION
 
 //! \def HAVE_C11_GENERIC_SELECTION
 //! \brief Macro to check for C11 Generic selection macro support
@@ -802,6 +900,10 @@ extern "C"
 //! \def ENV_LITTLE_ENDIAN
 //! \brief This is set when compiling in a little endian environment
 #if defined(__has_include)
+#    if __has_include(<stdbit.h>)
+#        include <stdbit.h>
+#        define HAVE_STDC_BIT
+#    endif
 #    if __has_include(<endian.h>)
 #        include <endian.h>
 #    elif __has_include(<sys/endian.h>)
@@ -810,13 +912,22 @@ extern "C"
 #elif defined(POSIX_2024)
 #    include <endian.h>
 #endif
-#if defined(__BYTE_ORDER__)
-#    if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#        define ENV_BIG_ENDIAN
-#    elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#if defined(__STDC_ENDIAN_NATIVE__)
+#    if defined(__STDC_ENDIAN_LITTLE__) && __STDC_ENDIAN_NATIVE__ == __STDC_ENDIAN_LITTLE__
 #        define ENV_LITTLE_ENDIAN
+#    elif defined(__STDC_ENDIAN_BIG__) && __STDC_ENDIAN_NATIVE__ == __STDC_ENDIAN_BIG__
+#        define ENV_BIG_ENDIAN
 #    endif
-#endif
+#endif // __STDC_ENDIAN_NATIVE__
+#if !defined(ENV_BIG_ENDIAN) && !defined(ENV_LITTLE_ENDIAN)
+#    if defined(__BYTE_ORDER__)
+#        if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#            define ENV_BIG_ENDIAN
+#        elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#            define ENV_LITTLE_ENDIAN
+#        endif
+#    endif
+#endif // !defined(ENV_BIG_ENDIAN) && !defined(ENV_LITTLE_ENDIAN)
 #if !defined(ENV_BIG_ENDIAN) && !defined(ENV_LITTLE_ENDIAN)
 #    if defined(__BIG_ENDIAN__)
 #        define ENV_BIG_ENDIAN
@@ -838,173 +949,7 @@ extern "C"
 #            error "Unknown endianness. Please update the definitions to properly detect endianness"
 #        endif
 #    endif
-#endif
-
-//! \def DISABLE_WARNING_4146
-//! \brief disables MSVC warning 4146.
-//! \details These warning disables are only needed in MSVC for the C11 generic min/max implementations.
-//! Without them you get a warning about applying a unary - on an unsigned type.
-
-//! \def RESTORE_WARNING_4146
-//! \brief restores MSVC warning 4146 back to being enabled.
-//! \details These warning disables are only needed in MSVC for the C11 generic min/max implementations.
-//! Without them you get a warning about applying a unary - on an unsigned type.
-#if IS_MSVC_VERSION(MSVC_2012) && !defined(__clang__)
-#    define DISABLE_WARNING_4146 __pragma(warning(push)) __pragma(warning(disable : 4146))
-#    define RESTORE_WARNING_4146 __pragma(warning(pop))
-#else
-#    define DISABLE_WARNING_4146
-#    define RESTORE_WARNING_4146
-#endif //_MSVC && !clang workaround for min/max macros
-
-//! \def DISABLE_WARNING_SIGN_CONVERSION
-//! \brief Disables warning about sign conversion
-
-//! \def RESTORE_WARNING_SIGN_CONVERSION
-//! \brief Restored warning about sign conversion
-#if IS_CLANG_VERSION(3, 0)
-#    define DISABLE_WARNING_SIGN_CONVERSION                                                                            \
-        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wsign-conversion\"")
-#    define RESTORE_WARNING_SIGN_CONVERSION _Pragma("clang diagnostic pop")
-#elif IS_GCC_VERSION(4, 3)
-#    define DISABLE_WARNING_SIGN_CONVERSION                                                                            \
-        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
-#    define RESTORE_WARNING_SIGN_CONVERSION _Pragma("GCC diagnostic pop")
-#else
-#    define DISABLE_WARNING_SIGN_CONVERSION
-#    define RESTORE_WARNING_SIGN_CONVERSION
-#endif
-
-//! \def DISABLE_WARNING_ZERO_LENGTH_ARRAY
-//! \brief Disables warning about a zero length array at the end of a structure
-
-//! \def RESTORE_WARNING_ZERO_LENGTH_ARRAY
-//! \brief Restores warning about a zero length array at the end of a structure
-#if IS_CLANG_VERSION(3, 0)
-#    define DISABLE_WARNING_ZERO_LENGTH_ARRAY                                                                          \
-        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wzero-length-array\"")
-#    define RESTORE_WARNING_ZERO_LENGTH_ARRAY _Pragma("clang diagnostic pop")
-#elif IS_MSVC_VERSION(MSVC_2005)
-#    define DISABLE_WARNING_ZERO_LENGTH_ARRAY __pragma(warning(push)) __pragma(warning(disable : 4200))
-#    define RESTORE_WARNING_ZERO_LENGTH_ARRAY __pragma(warning(pop))
-#else
-#    define DISABLE_WARNING_ZERO_LENGTH_ARRAY
-#    define RESTORE_WARNING_ZERO_LENGTH_ARRAY
-#endif
-
-//! \def DISABLE_WARNING_FORMAT_NONLITERAL
-//! \brief Disables warning about a using something other than a string literal as a format string.
-
-//! \def RESTORE_WARNING_FORMAT_NONLITERAL
-//! \brief Restores warning about a using something other than a string literal as a format string.
-#if IS_CLANG_VERSION(2, 6)
-#    define DISABLE_WARNING_FORMAT_NONLITERAL                                                                          \
-        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wformat-nonliteral\"")
-#    define RESTORE_WARNING_FORMAT_NONLITERAL _Pragma("clang diagnostic pop")
-#elif IS_GCC_VERSION(3, 4)
-#    define DISABLE_WARNING_FORMAT_NONLITERAL                                                                          \
-        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"")
-#    define RESTORE_WARNING_FORMAT_NONLITERAL _Pragma("GCC diagnostic pop")
-#elif IS_MSVC_VERSION(MSVC_2005)
-#    define DISABLE_WARNING_FORMAT_NONLITERAL __pragma(warning(push)) __pragma(warning(disable : 4774))
-#    define RESTORE_WARNING_FORMAT_NONLITERAL __pragma(warning(pop))
-#else
-#    define DISABLE_WARNING_FORMAT_NONLITERAL
-#    define RESTORE_WARNING_FORMAT_NONLITERAL
-#endif
-
-//! \def DISABLE_WARNING_CPP11_COMPAT
-//! \brief Disables warning about using something that may collide with a part of the C++11 standard.
-//! This is used around a null pointer type/class for C++98
-
-//! \def RESTORE_WARNING_CPP11_COMPAT
-//! \brief Restores warning about using something that may collide with a part of the C++11 standard.
-//! This is used around a null pointer type/class for C++98
-#if IS_CLANG_VERSION(1, 0)
-#    define DISABLE_WARNING_CPP11_COMPAT                                                                               \
-        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wc++0x-compat\"")
-#    define RESTORE_WARNING_CPP11_COMPAT _Pragma("clang diagnostic pop")
-#elif IS_GCC_VERSION(4, 7)
-#    define DISABLE_WARNING_CPP11_COMPAT                                                                               \
-        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wc++11-compat\"")
-#    define RESTORE_WARNING_CPP11_COMPAT _Pragma("GCC diagnostic pop")
-#elif IS_GCC_FULL_VERSION(4, 3, 6)
-#    define DISABLE_WARNING_CPP11_COMPAT                                                                               \
-        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wc++0x-compat\"")
-#    define RESTORE_WARNING_CPP11_COMPAT _Pragma("GCC diagnostic pop")
-#else
-#    define DISABLE_WARNING_CPP11_COMPAT
-#    define RESTORE_WARNING_CPP11_COMPAT
-#endif
-
-//! \def DISABLE_WARNING_FLOAT_EQUAL
-//! \brief Disables warning about using == for comparing double/float values.
-//! Generally you should never do this. There are rare uses which is why this needs to be able to be
-//! disabled and restored in those rare cases.
-
-//! \def RESTORE_WARNING_FLOAT_EQUAL
-//! \brief Restores warning about using == for comparing double/float values.
-//! Generally you should never do this. There are rare uses which is why this needs to be able to be
-//! disabled and restored in those rare cases.
-#if IS_CLANG_VERSION(3, 0)
-#    define DISABLE_WARNING_FLOAT_EQUAL                                                                                \
-        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wfloat-equal\"")
-#    define RESTORE_WARNING_FLOAT_EQUAL _Pragma("clang diagnostic pop")
-#elif IS_GCC_VERSION(4, 5)
-#    define DISABLE_WARNING_FLOAT_EQUAL                                                                                \
-        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wfloat-equal\"")
-#    define RESTORE_WARNING_FLOAT_EQUAL _Pragma("GCC diagnostic pop")
-#elif IS_GCC_FULL_VERSION(4, 3, 6)
-#    define DISABLE_WARNING_FLOAT_EQUAL                                                                                \
-        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wfloat-equal\"")
-#    define RESTORE_WARNING_FLOAT_EQUAL _Pragma("GCC diagnostic pop")
-#else
-#    define DISABLE_WARNING_FLOAT_EQUAL
-#    define RESTORE_WARNING_FLOAT_EQUAL
-#endif
-
-//! \def DISABLE_NONNULL_COMPARE
-//! \brief Disables warning comparing a pointer to NULL when it is marked with an attribute as must be non-null.
-//! This is used internally within safe_ functions to maintain null pointer checks for bounds checking
-
-//! \def RESTORE_NONNULL_COMPARE
-//! \brief Restores Disables warning comparing a pointer to NULL when it is marked with an attribute as must be
-//! non-null. This is used internally within safe_ functions to maintain null pointer checks for bounds checking
-#if IS_CLANG_VERSION(3, 2)
-#    define DISABLE_NONNULL_COMPARE                                                                                    \
-        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wtautological-pointer-compare\"")
-#    define RESTORE_NONNULL_COMPARE _Pragma("clang diagnostic pop")
-#elif IS_GCC_VERSION(7, 1)
-#    define DISABLE_NONNULL_COMPARE                                                                                    \
-        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wnonnull-compare\"")
-#    define RESTORE_NONNULL_COMPARE _Pragma("GCC diagnostic pop")
-#elif IS_GCC_VERSION(4, 3)
-#    define DISABLE_NONNULL_COMPARE _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wnonnull\"")
-#    define RESTORE_NONNULL_COMPARE _Pragma("GCC diagnostic pop")
-#else
-#    define DISABLE_NONNULL_COMPARE
-#    define RESTORE_NONNULL_COMPARE
-#endif
-
-//! \def DISABLE_WARNING_UNDEF
-//! \brief Disables warning about checking a macro in #if that is not defined.
-//! Only use this when including external headers that cause this issue. This warning should not occur
-//! within opensea-libs
-
-//! \def RESTORE_WARNING_UNDEF
-//! \brief Restores warning about checking a macro in #if that is not defined.
-//! Only use this when including external headers that cause this issue. This warning should not occur
-//! within opensea-libs
-#if IS_CLANG_VERSION(2, 8)
-#    define DISABLE_WARNING_UNDEF _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wundef\"")
-#    define RESTORE_WARNING_UNDEF _Pragma("clang diagnostic pop")
-#elif IS_GCC_VERSION(3, 0)
-#    define DISABLE_WARNING_UNDEF _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wundef\"")
-#    define RESTORE_WARNING_UNDEF _Pragma("GCC diagnostic pop")
-#else
-#    define DISABLE_WARNING_UNDEF
-#    define RESTORE_WARNING_UNDEF
-#endif
+#endif // !defined(ENV_BIG_ENDIAN) && !defined(ENV_LITTLE_ENDIAN)
 
 #if defined(__INTELLISENSE__) || defined(__clang_analyzer__) || defined(__CDT_PARSER__)
 //! \def DEV_ENVIRONMENT
@@ -1128,6 +1073,12 @@ extern "C"
 #    if __has_builtin(__builtin_stdc_rotate_right)
 #        define HAVE_BUILT_IN_STDC_ROTATE_RIGHT
 #    endif
+#    if __has_builtin(__builtin_unreachable)
+#        define HAVE_BUILT_IN_UNREACHABLE
+#    endif
+#    if __has_builtin(__builtin___clear_cache)
+#        define HAS_BUILT_IN_CLEAR_CACHE
+#    endif
 #endif //__has_builtin
 
 #if !defined(HAVE_BUILT_IN_OBJ_SIZE) && IS_GCC_VERSION(4, 1)
@@ -1171,29 +1122,42 @@ extern "C"
 #    define HAVE_BUILTIN_BSWAP
 #endif
 
+//! \def HAS_STRICT_ALIGNMENT
+//! \brief Defined as 1 if the platform requires strict alignment for CPU access, 0 if unaligned access is allowed.
+//! \details This is used to help determine if unaligned memory access is allowed on the platform to optimize
+//! some routines to access data such as the load8_leuuN/store8_leuN type functions which have aligned and
+//! unaligned versions which may work differently depending on what the CPU supports.
+//! \note Default to strict alignment and switch on platforms that allow unaligned access
+#if !defined(HAS_STRICT_ALIGNMENT)
+#    define HAS_STRICT_ALIGNMENT 1
+#endif
+
+/* Start with big list of all known to support this then work into others with more conditions */
+#if defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || defined(__x86_64__) ||         \
+    defined(__amd64__) || defined(__x86_64h__) || defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) ||          \
+    defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM) /* Windows ARM platforms support unaligned*/          \
+    || defined(__alpha__)
+#    undef HAS_STRICT_ALIGNMENT
+#    define HAS_STRICT_ALIGNMENT 0
+#endif
+
+/* GCC/Clang ARM will only support unaligned when specified with a command option, but this macro also exists to tell
+ * us.- TJE */
+#if defined(__arm__) && defined(__ARM_FEATURE_UNALIGNED)
+#    undef HAS_STRICT_ALIGNMENT
+#    define HAS_STRICT_ALIGNMENT 0
+#endif
+
+#if defined(__riscv) && defined(__riscv_unaligned_access)
+#    undef HAS_STRICT_ALIGNMENT
+#    define HAS_STRICT_ALIGNMENT 0
+#endif
+
+#if defined(__mips__) && defined(__mips_allow_unaligned)
+#    undef HAS_STRICT_ALIGNMENT
+#    define HAS_STRICT_ALIGNMENT 0
+#endif
+
 #if defined(__cplusplus)
 }
-
-//! \def DISABLE_WARNING_OLD_STYLE_CAST
-//! \brief Disables warning about checking a macro in #if that is not defined.
-//! Only use this when including external headers that cause this issue. This warning should not occur
-//! within opensea-libs
-
-//! \def RESTORE_WARNING_OLD_STYLE_CAST
-//! \brief Restores warning about checking a macro in #if that is not defined.
-//! Only use this when including external headers that cause this issue. This warning should not occur
-//! within opensea-libs
-#    if IS_CLANG_VERSION(3, 0)
-#        define DISABLE_WARNING_OLD_STYLE_CAST                                                                         \
-            _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wold-style-cast\"")
-#        define RESTORE_WARNING_OLD_STYLE_CAST _Pragma("clang diagnostic pop")
-#    elif IS_GCC_VERSION(4, 2)
-#        define DISABLE_WARNING_OLD_STYLE_CAST                                                                         \
-            _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wold-style-cast\"")
-#        define RESTORE_WARNING_OLD_STYLE_CAST _Pragma("GCC diagnostic pop")
-#    else
-#        define DISABLE_WARNING_OLD_STYLE_CAST
-#        define RESTORE_WARNING_OLD_STYLE_CAST
-#    endif
-
 #endif

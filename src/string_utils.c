@@ -5,7 +5,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,14 +14,23 @@
 #include "common_types.h"
 #include "constraint_handling.h"
 #include "env_detect.h"
+#include "io_utils.h"
 #include "math_utils.h"
 #include "memory_safety.h"
 #include "type_conversion.h"
 
 #include <ctype.h>
 #include <limits.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+
+#if defined(COMPILE_LIB) && !defined(_MSC_VER)
+M_PARAM_RO(1) M_NULL_TERM_STRING(1) size_t safe_strlen(const char* M_NULLABLE string)
+{
+    return safe_strnlen(string, RSIZE_MAX);
+}
+#endif
 
 // making it look similar to a std lib function like isPrint.
 int is_ASCII(int c)
@@ -283,7 +292,6 @@ errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
     errno_t           error  = 0;
     size_t            srclen = safe_strnlen(src, destsz);
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -351,7 +359,6 @@ errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
         errno = error;
         return error;
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_strmove_impl(char*       dest,
@@ -365,7 +372,6 @@ errno_t safe_strmove_impl(char*       dest,
     errno_t           error  = 0;
     size_t            srclen = safe_strnlen(src, destsz);
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -418,7 +424,6 @@ errno_t safe_strmove_impl(char*       dest,
         errno        = error;
         return error;
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
@@ -433,7 +438,6 @@ errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
     errno_t           error  = 0;
     size_t            srclen = safe_strnlen(src, count);
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -517,7 +521,6 @@ errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
         errno = error;
         return error;
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_strnmove_impl(char*       dest,
@@ -532,7 +535,6 @@ errno_t safe_strnmove_impl(char*       dest,
     errno_t           error  = 0;
     size_t            srclen = safe_strnlen(src, count);
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -601,7 +603,6 @@ errno_t safe_strnmove_impl(char*       dest,
         errno = error;
         return error;
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_strcat_impl(char* M_RESTRICT       dest,
@@ -613,10 +614,9 @@ errno_t safe_strcat_impl(char* M_RESTRICT       dest,
                          const char*            expression)
 {
     errno_t           error    = 0;
-    size_t            srclen   = safe_strnlen(src, destsz);
+    size_t            srclen   = safe_strnlen(src, RSIZE_MAX);
     char*             destnull = M_NULLPTR;
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -661,7 +661,8 @@ errno_t safe_strcat_impl(char* M_RESTRICT       dest,
         errno = error;
         return error;
     }
-    else if ((destsz + M_STATIC_CAST(uintptr_t, destnull)) <= srclen) // truncation
+    else if ((destsz - (M_REINTERPRET_CAST(uintptr_t, destnull) - M_REINTERPRET_CAST(uintptr_t, dest))) <=
+             srclen) // truncation
     {
         dest[0] = 0;
         error   = ERANGE;
@@ -693,7 +694,6 @@ errno_t safe_strcat_impl(char* M_RESTRICT       dest,
         errno = error;
         return error;
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 errno_t safe_strncat_impl(char* M_RESTRICT       dest,
@@ -709,7 +709,6 @@ errno_t safe_strncat_impl(char* M_RESTRICT       dest,
     size_t            srclen   = safe_strnlen(src, destsz);
     char*             destnull = M_NULLPTR;
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -746,6 +745,22 @@ errno_t safe_strncat_impl(char* M_RESTRICT       dest,
         errno = error;
         return error;
     }
+    else if (count == RSIZE_T_C(0))
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strncat: count is zero",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (count > RSIZE_MAX)
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strncat: count > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
     else if (M_NULLPTR == (destnull = M_REINTERPRET_CAST(char*, memchr(dest, '\0', destsz))))
     {
         error = EINVAL;
@@ -754,8 +769,9 @@ errno_t safe_strncat_impl(char* M_RESTRICT       dest,
         errno = error;
         return error;
     }
-    else if (((destsz + M_STATIC_CAST(uintptr_t, destnull)) <= srclen) ||
-             ((destsz + M_STATIC_CAST(uintptr_t, destnull)) <= count)) // truncation
+    else if (((destsz - (M_REINTERPRET_CAST(uintptr_t, destnull) - M_REINTERPRET_CAST(uintptr_t, dest))) <= srclen) ||
+             ((destsz - (M_REINTERPRET_CAST(uintptr_t, destnull) - M_REINTERPRET_CAST(uintptr_t, dest))) <=
+              count)) // truncation
     {
         dest[0] = 0;
         error   = ERANGE;
@@ -787,12 +803,10 @@ errno_t safe_strncat_impl(char* M_RESTRICT       dest,
         errno = error;
         return error;
     }
-    RESTORE_NONNULL_COMPARE
 }
 
-size_t safe_strnlen(const char* string, size_t n)
+size_t safe_strnlen_impl(const char* string, size_t n)
 {
-    DISABLE_NONNULL_COMPARE
 #if defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
     // Does not invoke constraint handler of it's own so we can use this here - TJE
     return strnlen_s(string, n);
@@ -822,7 +836,6 @@ size_t safe_strnlen(const char* string, size_t n)
     }
     return SIZE_T_C(0);
 #endif
-    RESTORE_NONNULL_COMPARE
 }
 
 #if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
@@ -852,7 +865,6 @@ errno_t safe_strdup_impl(char**      dup,
     errno_t           error = 0;
     constraintEnvInfo envInfo;
     errno = 0;
-    DISABLE_NONNULL_COMPARE
     if (dup == M_NULLPTR)
     {
         error = EINVAL;
@@ -888,7 +900,7 @@ errno_t safe_strdup_impl(char**      dup,
             errno = error;
             return error;
         }
-        *dup = malloc(srclen + RSIZE_T_C(1));
+        *dup = M_REINTERPRET_CAST(char*, malloc(srclen + RSIZE_T_C(1)));
         if (*dup != M_NULLPTR)
         {
             safe_memcpy(*dup, srclen + RSIZE_T_C(1), src, srclen);
@@ -901,7 +913,6 @@ errno_t safe_strdup_impl(char**      dup,
                                       set_Env_Info(&envInfo, file, function, expression, line), error);
         }
     }
-    RESTORE_NONNULL_COMPARE
     return error;
 }
 
@@ -916,7 +927,6 @@ errno_t safe_strndup_impl(char**      dup,
     errno_t           error = 0;
     constraintEnvInfo envInfo;
     errno = 0;
-    DISABLE_NONNULL_COMPARE
     if (dup == M_NULLPTR)
     {
         error = EINVAL;
@@ -951,7 +961,7 @@ errno_t safe_strndup_impl(char**      dup,
     }
     else
     {
-        *dup = safe_malloc(size + RSIZE_T_C(1));
+        *dup = M_REINTERPRET_CAST(char*, safe_malloc(size + RSIZE_T_C(1)));
         if (*dup != M_NULLPTR)
         {
             safe_memcpy(*dup, size + 1, src, size);
@@ -964,7 +974,6 @@ errno_t safe_strndup_impl(char**      dup,
                                       set_Env_Info(&envInfo, file, function, expression, line), error);
         }
     }
-    RESTORE_NONNULL_COMPARE
     errno = error;
     return error;
 }
@@ -1003,12 +1012,10 @@ void remove_Whitespace_Left(char* stringToChange)
 {
     size_t iter = SIZE_T_C(0);
     size_t len  = SIZE_T_C(0);
-    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    RESTORE_NONNULL_COMPARE
     len = strspn(stringToChange,
                  " \t\n\v\f"); // only touch spaces at the beginning of the
                                // string, not the whole string
@@ -1029,12 +1036,10 @@ void remove_Whitespace_Left(char* stringToChange)
 void remove_Trailing_Whitespace(char* stringToChange)
 {
     size_t iter = SIZE_T_C(0);
-    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    RESTORE_NONNULL_COMPARE
     iter = (safe_strlen(stringToChange));
     if (iter == SIZE_T_C(0))
     {
@@ -1050,12 +1055,10 @@ void remove_Trailing_Whitespace(char* stringToChange)
 
 void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
 {
-    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
         return;
     }
-    RESTORE_NONNULL_COMPARE
 
     size_t iter = stringlen;
     while (iter > SIZE_T_C(0) && safe_isascii(stringToChange[iter - SIZE_T_C(1)]) &&
@@ -1070,12 +1073,10 @@ void remove_Leading_Whitespace(char* stringToChange)
 {
     size_t iter              = SIZE_T_C(0);
     size_t stringToChangeLen = SIZE_T_C(0);
-    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    RESTORE_NONNULL_COMPARE
     stringToChangeLen = safe_strlen(stringToChange);
     while (safe_isascii(stringToChange[iter]) && safe_isspace(stringToChange[iter]) && iter < stringToChangeLen)
     {
@@ -1092,12 +1093,10 @@ void remove_Leading_Whitespace(char* stringToChange)
 
 void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
 {
-    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
         return;
     }
-    RESTORE_NONNULL_COMPARE
     size_t iter = SIZE_T_C(0);
     while (iter < stringlen && safe_isascii(stringToChange[iter]) && safe_isspace(stringToChange[iter]))
     {
@@ -1114,12 +1113,10 @@ void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
 
 void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
 {
-    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    RESTORE_NONNULL_COMPARE
     size_t stringlen = safe_strlen(stringToChange);
     if (stringlen == SIZE_T_C(0))
     {
@@ -1156,12 +1153,10 @@ void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
 
 void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
 {
-    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
         return;
     }
-    RESTORE_NONNULL_COMPARE
     // Remove leading whitespace (calculate for memmove later)
     size_t start = SIZE_T_C(0);
     while (start < stringlen && safe_isascii(stringToChange[start]) && safe_isspace(stringToChange[start]))
@@ -1190,14 +1185,86 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
     stringToChange[newlen] = '\0';
 }
 
-void convert_String_To_Upper_Case(char* stringToChange)
+void remove_Leading_And_Trailing_Control_Char(char* stringToChange)
 {
-    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    RESTORE_NONNULL_COMPARE
+    size_t stringlen = safe_strlen(stringToChange);
+    if (stringlen == SIZE_T_C(0))
+    {
+        return;
+    }
+
+    // Remove leading whitespace (calculate for memmove later)
+    size_t start = SIZE_T_C(0);
+    while (start < stringlen && safe_isascii(stringToChange[start]) && safe_iscntrl(stringToChange[start]))
+    {
+        start++;
+    }
+
+    // Remove trailing whitespace
+    size_t end = stringlen;
+    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
+           safe_iscntrl(stringToChange[end - SIZE_T_C(1)]))
+    {
+        end--;
+    }
+
+    // Calculate new length after removing whitespace
+    size_t newlen = end - start;
+
+    // If there's leading whitespace, shift the string to the start
+    if (start > SIZE_T_C(0))
+    {
+        safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
+    }
+
+    // Null-terminate the string after the last non-whitespace character
+    stringToChange[newlen] = '\0';
+}
+
+void remove_Leading_And_Trailing_Control_Char_Len(char* stringToChange, size_t stringlen)
+{
+    if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
+    {
+        return;
+    }
+    // Remove leading whitespace (calculate for memmove later)
+    size_t start = SIZE_T_C(0);
+    while (start < stringlen && safe_isascii(stringToChange[start]) && safe_iscntrl(stringToChange[start]))
+    {
+        start++;
+    }
+
+    // Remove trailing whitespace
+    size_t end = stringlen;
+    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
+           safe_iscntrl(stringToChange[end - SIZE_T_C(1)]))
+    {
+        end--;
+    }
+
+    // Calculate new length after removing whitespace
+    size_t newlen = end - start;
+
+    // If there's leading whitespace, shift the string to the start
+    if (start > SIZE_T_C(0))
+    {
+        safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
+    }
+
+    // Null-terminate the string after the last non-whitespace character
+    stringToChange[newlen] = '\0';
+}
+
+void convert_String_To_Upper_Case(char* stringToChange)
+{
+    if (stringToChange == M_NULLPTR)
+    {
+        return;
+    }
     for (size_t iter = SIZE_T_C(0); stringToChange[iter] != '\0'; iter++)
     {
         stringToChange[iter] = C_CAST(char, safe_toupper(stringToChange[iter]));
@@ -1206,12 +1273,10 @@ void convert_String_To_Upper_Case(char* stringToChange)
 
 void convert_String_To_Upper_Case_Len(char* stringToChange, size_t stringlen)
 {
-    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    RESTORE_NONNULL_COMPARE
     for (size_t iter = SIZE_T_C(0); iter < stringlen; iter++)
     {
         stringToChange[iter] = C_CAST(char, safe_toupper(stringToChange[iter]));
@@ -1220,12 +1285,10 @@ void convert_String_To_Upper_Case_Len(char* stringToChange, size_t stringlen)
 
 void convert_String_To_Lower_Case(char* stringToChange)
 {
-    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    RESTORE_NONNULL_COMPARE
     for (size_t iter = SIZE_T_C(0); stringToChange[iter] != '\0'; iter++)
     {
         stringToChange[iter] = C_CAST(char, safe_tolower(stringToChange[iter]));
@@ -1234,12 +1297,10 @@ void convert_String_To_Lower_Case(char* stringToChange)
 
 void convert_String_To_Lower_Case_Len(char* stringToChange, size_t stringlen)
 {
-    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    RESTORE_NONNULL_COMPARE
     for (size_t iter = SIZE_T_C(0); iter < stringlen; iter++)
     {
         stringToChange[iter] = C_CAST(char, safe_tolower(stringToChange[iter]));
@@ -1248,12 +1309,10 @@ void convert_String_To_Lower_Case_Len(char* stringToChange, size_t stringlen)
 
 void convert_String_To_Inverse_Case(char* stringToChange)
 {
-    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    RESTORE_NONNULL_COMPARE
     for (size_t iter = SIZE_T_C(0); stringToChange[iter] != '\0'; iter++)
     {
         if (safe_islower(stringToChange[iter]))
@@ -1269,12 +1328,10 @@ void convert_String_To_Inverse_Case(char* stringToChange)
 
 void convert_String_To_Inverse_Case_Len(char* stringToChange, size_t stringlen)
 {
-    DISABLE_NONNULL_COMPARE
     if (stringToChange == M_NULLPTR)
     {
         return;
     }
-    RESTORE_NONNULL_COMPARE
     for (size_t iter = SIZE_T_C(0); iter < stringlen; iter++)
     {
         if (safe_islower(stringToChange[iter]))
@@ -1290,12 +1347,10 @@ void convert_String_To_Inverse_Case_Len(char* stringToChange, size_t stringlen)
 
 size_t find_last_occurrence_in_string(const char* originalString, const char* stringToFind)
 {
-    DISABLE_NONNULL_COMPARE
     if (originalString == M_NULLPTR || stringToFind == M_NULLPTR)
     {
         return SIZE_MAX;
     }
-    RESTORE_NONNULL_COMPARE
     size_t last_occurrence = SIZE_MAX;
     size_t stringToFindLen = safe_strlen(stringToFind);
     if (stringToFindLen == SIZE_T_C(0))
@@ -1315,12 +1370,10 @@ size_t find_last_occurrence_in_string(const char* originalString, const char* st
 
 size_t find_first_occurrence_in_string(const char* originalString, const char* stringToFind)
 {
-    DISABLE_NONNULL_COMPARE
     if (originalString == M_NULLPTR || stringToFind == M_NULLPTR)
     {
         return SIZE_MAX;
     }
-    RESTORE_NONNULL_COMPARE
     const char* partialString = strstr(originalString, stringToFind);
     return (partialString != M_NULLPTR) ? (C_CAST(uintptr_t, partialString) - C_CAST(uintptr_t, originalString))
                                         : SIZE_MAX;
@@ -1328,12 +1381,10 @@ size_t find_first_occurrence_in_string(const char* originalString, const char* s
 
 static M_INLINE bool wildcard_match_internal(const char* pattern, const char* data, bool caseInsensitive)
 {
-    DISABLE_NONNULL_COMPARE
     if (pattern == M_NULLPTR || data == M_NULLPTR)
     {
         return false;
     }
-    RESTORE_NONNULL_COMPARE
     if (*pattern == '\0' && *data == '\0')
     {
         return true;
@@ -1358,4 +1409,86 @@ bool wildcard_case_match(const char* pattern, const char* data)
 bool wildcard_match(const char* pattern, const char* data)
 {
     return wildcard_match_internal(pattern, data, false);
+}
+
+// Note: Tried M_FORCEINLINE but no performance difference observed
+M_NONNULL_PARAM_LIST(1, 2, 3)
+static M_INLINE long string_version_compare_parse_number(const char** p, int* leading_zeros, size_t* digit_count)
+{
+    long val       = 0L;
+    *leading_zeros = 0;
+    *digit_count   = SIZE_T_C(0);
+
+    // Count leading zeros
+    while (**p == '0')
+    {
+        ++(*leading_zeros);
+        ++(*digit_count);
+        ++(*p);
+    }
+
+    // Parse digits
+    while (isdigit(M_STATIC_CAST(unsigned char, **p)))
+    {
+        val = val * 10L + (**p - '0');
+        ++(*digit_count);
+        ++(*p);
+    }
+    return val;
+}
+
+int string_version_compare(const char* string1, const char* string2)
+{
+    while (*string1 && *string2)
+    {
+        if (isdigit(M_STATIC_CAST(unsigned char, *string1)) && isdigit(M_STATIC_CAST(unsigned char, *string2)))
+        {
+            const char* p1 = string1;
+            const char* p2 = string2;
+            size_t      len1;
+            size_t      len2;
+            long        num1;
+            long        num2;
+            int         zeros1;
+            int         zeros2;
+
+            num1 = string_version_compare_parse_number(&p1, &zeros1, &len1);
+            num2 = string_version_compare_parse_number(&p2, &zeros2, &len2);
+
+            // Compare numeric values
+            if (num1 != num2)
+            {
+                return (num1 > num2) - (num1 < num2); // branchless numeric compare
+            }
+
+            // Tie-break: leading zeros
+            if (zeros1 != zeros2)
+            {
+                return (zeros2 > zeros1) - (zeros2 < zeros1); // more zeros first
+            }
+
+            // Tie-break: digit length
+            if (len1 != len2)
+            {
+                return (len2 > len1) - (len2 < len1); // longer segment wins
+            }
+
+            // Advance past numeric segment
+            string1 = p1;
+            string2 = p2;
+        }
+        else
+        {
+            if (*string1 != *string2)
+            {
+                return M_STATIC_CAST(int,
+                                     M_STATIC_CAST(unsigned char, *string1) - M_STATIC_CAST(unsigned char, *string2));
+            }
+            ++string1;
+            ++string2;
+        }
+    }
+
+    // Final fallback: which string ended first
+    return (*string1 != '\0') - (*string2 != '\0'); // branchless end check
 }

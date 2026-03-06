@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -158,12 +158,10 @@ static bool is_Environment_Variable_List_Tampered(void)
 // M_NULLPTR if not found
 M_NODISCARD eEnvVarResult get_Environment_Variable(const char* environmentVariableName, char** envVar)
 {
-    DISABLE_NONNULL_COMPARE
     if (envVar == M_NULLPTR || environmentVariableName == M_NULLPTR)
     {
         return ENV_VAR_FAILURE;
     }
-    RESTORE_NONNULL_COMPARE
     *envVar = M_NULLPTR;
     if (is_Environment_Variable_List_Tampered() == false)
     {

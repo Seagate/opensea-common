@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -49,14 +49,22 @@ extern "C"
     //! \param[in] rangeMin minimum output value
     //! \param[in] rangeMax maximum output value
     //! \return random 32bit unsigned integer within specified range
-    uint32_t random_Range_32(uint32_t rangeMin, uint32_t rangeMax);
+    uint32_t random_Range_32(uint32_t rangeMin, uint32_t rangeMax)
+        // clang-format off
+    M_DIAG_ERROR(rangeMax <= rangeMin, "rangeMax must be greater than rangeMin")
+        // clang-format on
+        ;
 
     //! \fn uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax)
     //! \brief Generate a random 64bit number within a range
     //! \param[in] rangeMin minimum output value
     //! \param[in] rangeMax maximum output value
     //! \return random 64bit unsigned integer within specified range
-    uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax);
+    uint64_t random_Range_64(uint64_t rangeMin, uint64_t rangeMax)
+        // clang-format off
+    M_DIAG_ERROR(rangeMax <= rangeMin, "rangeMax must be greater than rangeMin")
+        // clang-format on
+        ;
 
 #if defined(__cplusplus)
 }

@@ -9,7 +9,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -47,6 +47,7 @@
 
 #include "code_attributes.h"
 #include "predef_env_detect.h"
+#include "warning_ctl.h"
 
 #if defined(UEFI_C_SOURCE)
 #    include <sys/syslimits.h>
@@ -55,8 +56,9 @@
 //! \def _FILE_OFFSET_BITS
 //! \brief Enables large file support on 32-bit systems.
 //!
-//! This macro is defined to allow reading larger files on 32-bit operating systems without limitations. It sets the
-//! file offset bits to 64. \note If _FILE_OFFSET_BITS is already defined and is less than 64, it is redefined to 64.
+//! This macro is defined to allow reading larger files on 32-bit operating systems without limitations.
+//! It sets the file offset bits to 64.
+//! \note If _FILE_OFFSET_BITS is already defined and is less than 64, it is redefined to 64.
 #if !defined(_FILE_OFFSET_BITS)
 #    define _FILE_OFFSET_BITS 64
 #elif _FILE_OFFSET_BITS < 64
@@ -77,7 +79,9 @@ RESTORE_WARNING_4255
 #include <errno.h> //for errno_t if it is available
 #include <inttypes.h>
 #include <limits.h>
-#include <stdbool.h>
+#if !defined(USING_C23) && !defined(NEED_BOOL)
+#    include <stdbool.h>
+#endif // NEED_BOOL
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h> //memset
@@ -86,6 +90,22 @@ RESTORE_WARNING_4255
 extern "C"
 {
 #endif
+
+#if !defined(__cplusplus) && !defined(USING_C23) && defined(NEED_BOOL) && !defined(__bool_true_false_are_defined)
+// most implementations define bools like this in stdbool.h
+// sometime you will see enums or !false, etc. Can change if needed.-TJE
+#    define false 0
+#    define true  1
+// unlikely to need c99 check since stdbool should be available -TJE
+#    if defined(__GNUC__) || defined(__clang__) || defined(HAS__BOOL) || defined(USING_C99)
+// next use _Bool if it's available as a language extension before C99
+#        define bool _Bool
+#    else
+    typedef char oscbool;
+#        define bool oscbool
+#    endif
+#    define __bool_true_false_are_defined 1
+#endif // !__cplusplus && NEED_BOOL && !__bool_true_false_are_defined
 
 #if defined(_WIN32)
     //! \typedef uid_t
@@ -546,6 +566,12 @@ typedef int32_t intptr_t;
 //! This macro can be used within UINTwidth_C type macros as needed.
 #define OBSOLETE 0
 
+//! \def UNUSED
+//! \brief Defines a macro for an unused field set to zero
+//!
+//! This macro can be used within UINTwidth_C type macros as needed.
+#define UNUSED 0
+
 //! \def M_NULLPTR
 //! \brief Defines a macro for nullptr to handle different standards and environments.
 //!
@@ -560,12 +586,14 @@ typedef int32_t intptr_t;
 #else // C
 #    if defined(USING_C23)
 #        define M_NULLPTR nullptr
+#    elif defined(HAS_IS_IDENTIFIER) && !__is_identifier(__nullptr)
+#        define M_NULLPTR __nullptr
 #    elif defined(NULL)
 #        define M_NULLPTR NULL
 #    else
 #        define M_NULLPTR ((void*)0)
 #    endif // C23
-#endif     // C & C++ M_NULLPTR PTR definitions
+#endif     // C & C++ M_NULLPTR definitions
 
 #if !defined(SIZE_MAX)
 //! \def SIZE_MAX
@@ -633,6 +661,8 @@ typedef int32_t intptr_t;
 //! \param name The name of the enum.
 //! \param type The underlying type of the enum.
 //! \param ... The enumerator list.
+//! GCC13 and up support type as extension in earlier C modes
+//! Clang 8 and up support type as extension in earlier C modes
 #if defined(USING_CPP11)
 #    define M_DECLARE_ENUM_TYPE(name, type, ...)                                                                       \
         enum class name : type                                                                                         \
@@ -646,7 +676,7 @@ typedef int32_t intptr_t;
             __VA_ARGS__                                                                                                \
         }
 #else //! CPP11...old CPP or C
-#    if defined(USING_C23)
+#    if defined(USING_C23) || IS_GCC_VERSION(13, 0) || IS_CLANG_VERSION(8, 0)
 #        define M_DECLARE_ENUM_TYPE(name, type, ...) typedef enum e_##name : type{__VA_ARGS__} name
 #    else
 /*cannot specify the type, so just ignore the input for now-TJE*/
@@ -681,14 +711,14 @@ typedef int32_t intptr_t;
         {                                                                                                              \
             __VA_ARGS__                                                                                                \
         } __attribute__((packed, aligned(alignmentval))) name
-#elif IS_MSVC_VERSION(MSVC_2005) && !defined(__clang__)
+#elif IS_MSVC_VERSION(MSVC_2005)
 #    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
-        __pragma(pack(push, alignmentval));                                                                            \
+        MSVC_PRAGMA(pack(push, alignmentval));                                                                         \
         typedef struct s_##name                                                                                        \
         {                                                                                                              \
             __VA_ARGS__                                                                                                \
         } name;                                                                                                        \
-        __pragma(pack(pop))
+        MSVC_PRAGMA(pack(pop))
 #else
 #    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
         typedef struct s_##name                                                                                        \
@@ -710,17 +740,40 @@ typedef int32_t intptr_t;
         {                                                                                                              \
             __VA_ARGS__                                                                                                \
         } __attribute__((packed)) name
-#elif IS_MSVC_VERSION(MSVC_2005) && !defined(__clang__)
-#    define M_PACKED_STRUCT(name, ...)                                                                                 \
-        __pragma(pack(push, 1));                                                                                       \
-        typedef struct s_##name                                                                                        \
-        {                                                                                                              \
-            __VA_ARGS__                                                                                                \
-        } name;                                                                                                        \
-        __pragma(pack(pop))
+#elif IS_MSVC_VERSION(MSVC_2005)
+#    define M_PACKED_STRUCT(name, ...) M_PACK_ALIGN_STRUCT(name, 1, __VA_ARGS__)
 #else
 #    define M_PACKED_STRUCT(name, ...)                                                                                 \
         typedef struct s_##name                                                                                        \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } name
+#endif
+
+//! \def M_PACKED_UNION
+//! \brief Defines a packed union
+//!
+//! This macro defines a packed union to ensure the union is packed as small as possible.
+//! It attempts to provide a compatible definition for various compilers.
+//! \param name The name of the union
+//! \param ... The union members.
+#if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
+#    define M_PACKED_UNION(name, ...)                                                                                  \
+        union name                                                                                                     \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } __attribute__((packed)) name
+#elif IS_MSVC_VERSION(MSVC_2005)
+#    define M_PACKED_UNION(name, ...)                                                                                  \
+        MSVC_PRAGMA(pack(push, 1));                                                                                    \
+        union name                                                                                                     \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+        } name;                                                                                                        \
+        MSVC_PRAGMA(pack(pop))
+#else
+#    define M_PACKED_UNION(name, ...)                                                                                  \
+        union name                                                                                                     \
         {                                                                                                              \
             __VA_ARGS__                                                                                                \
         } name
@@ -738,7 +791,7 @@ typedef int32_t intptr_t;
 #    if IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0)
 #        define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                   \
             type_name array_name[size] = {[0 ...((size) - 1)] = 0}
-#    elif USING_C23
+#    elif defined(USING_C23)
 #        define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) type_name array_name[size] = {}
 #    else
 #        if defined(USING_C99)
@@ -769,6 +822,33 @@ typedef int32_t intptr_t;
 #            define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) type_name array_name[size] = {0}
 #        endif
 #    endif
+
+//! \def DECLARE_ALIGNED_ZERO_INIT_ARRAY
+//! \brief Declares and zero-initializes an array to a specified alignment
+//!
+//! This macro declares and zero-initializes an array to ensure all elements are set to zero.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! \param type_name The type of the array elements.
+//! \param array_name The name of the array.
+//! \param size The size of the array.
+//! \param align The requested alignment to use with alignas()
+#    if IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0)
+#        define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                    \
+            M_ALIGNAS(align) type_name array_name[size] = {[0 ...((size) - 1)] = 0}
+#    elif defined(USING_C23)
+#        define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                    \
+            M_ALIGNAS(align) type_name array_name[size] = {}
+#    else
+#        if defined(USING_C99)
+#            define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                \
+                M_ALIGNAS(align) type_name array_name[size];                                                           \
+                zero_init_array(array_name, sizeof(type_name), size)
+#        else
+#            define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                \
+                M_ALIGNAS(align) type_name array_name[size] = {0}
+#        endif
+#    endif
+
 #endif
 
 //! \def M_STATIC_ASSERT
@@ -782,10 +862,11 @@ typedef int32_t intptr_t;
 //! \code
 //! M_STATIC_ASSET(condition, this_is_my_example_error)
 //! \endcode
-#if defined(USING_CPP11) && defined(__cpp_static_assert)
+#if (defined(USING_CPP11) && defined(__cpp_static_assert)) ||                                                          \
+    (__has_feature(cxx_static_assert) || __has_extension(cxx_static_assert))
 #    define M_STATIC_ASSERT(condition, message) static_assert(condition, #message)
-#elif defined(USING_C23)
-#    define M_STATIC_ASSERT(condition, message) static_assert(condition, #message)
+#elif defined(USING_C23) || __has_feature(c_static_assert) || __has_extension(c_static_assert)
+#    define M_STATIC_ASSERT(condition, message) _Static_assert(condition, #message)
 #elif defined(USING_C11)
 #    if IS_MSVC_VERSION(MSVC_2019_16_8) /* Need new enough Windows SDK for this to be available - TJE */
 #        if defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN10_20348
@@ -853,7 +934,7 @@ typedef int32_t intptr_t;
 
 #if defined(USING_C23)
 #    define M_TYPEOF(var) typeof(var)
-#elif defined(USING_CPP11)
+#elif defined(USING_CPP11) || (__has_feature(cxx_decltype) || __has_extension(cxx_decltype))
 #    define M_TYPEOF(var) decltype(var)
 #elif IS_GCC_VERSION(2, 95) || IS_CLANG_VERSION(1, 0) || IS_MSVC_VERSION(MSVC_2022_17_9)
 #    define M_TYPEOF(var) __typeof__(var)
@@ -1028,7 +1109,7 @@ typedef int32_t intptr_t;
 //! This macro defines M_NULLPTR to handle different standards and environments, ensuring compatibility when checking
 //! for valid pointers. It provides a compatible definition for nullptr in C++98 and other environments where nullptr is
 //! not available.
-#    if defined(USING_CPP11)
+#    if defined(USING_CPP11) || __has_extension(cxx_nullptr)
 #        define M_NULLPTR nullptr
 #    else
 DISABLE_WARNING_CPP11_COMPAT
@@ -1101,4 +1182,22 @@ template <typename T, size_t N> void zero_init_array(T (&array)[N])
 #    define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                                       \
         type_name array_name[size];                                                                                    \
         zero_init_array(array_name)
+
+//! \def DECLARE_ALIGNED_ZERO_INIT_ARRAY
+//! \brief Declares and zero-initializes an array as a specified alignment
+//!
+//! This macro declares and zero-initializes an array to ensure all elements are set to zero.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//!
+//! \param type_name The type of the array elements.
+//! \param array_name The name of the array.
+//! \param size The size of the array.
+//! \param align The requested alignment to use with alignas()
+//! \note This does not use memset to handle non-trivial types.
+//!       A compiler may optimize this to memset though if it detects that this
+//!       is a zero initialization of the data.
+#    define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                        \
+        M_ALIGNAS(align) type_name array_name[size];                                                                   \
+        zero_init_array(array_name)
+
 #endif // C++98 and no DECLARE_ZERO_INIT_ARRAY

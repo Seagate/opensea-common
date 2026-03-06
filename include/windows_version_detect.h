@@ -5,7 +5,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -24,7 +24,7 @@ extern "C"
     //! \param[in,out] versionNumber pointer to OS version number structure that will hold the result
     //! of reading the version number from the OS.
     //! \return SUCCESS means successfully read the version number. Other values indicate a failure.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_WO(1) eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber);
+    M_PARAM_WO(1) eReturnValues read_Win_Version(ptrOSVersionNumber M_NONNULL versionNumber);
 
     //! \fn bool is_Windows_Vista_Or_Higher(void)
     //! \brief checks if the current execution environment is Windows vista or higher

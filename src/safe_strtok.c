@@ -20,7 +20,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2025-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2025-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -85,7 +85,6 @@ char* safe_strtok_impl(char* M_RESTRICT       str,
     int               sc    = 0;
     errno_t           error = 0;
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (strmax == M_NULLPTR)
     {
         error = EINVAL;
@@ -124,13 +123,7 @@ char* safe_strtok_impl(char* M_RESTRICT       str,
             errno = error;
             return M_NULLPTR;
         }
-        else if (*strmax >= RSIZE_MAX &&
-                 str[*strmax + RSIZE_T_C(1)] != '\0') // This is to determine if the string is really
-                                                      // RSIZE_MAX or not. safe_strnlen will return
-                                                      // RSIZE_MAX if NULL is found at that size OR if it
-                                                      // is not found in the string. So adding 1 to check
-                                                      // if it found NULL terminator or not to make this
-                                                      // check match annex k
+        else if (*strmax >= RSIZE_MAX)
         {
             *saveptr = M_NULLPTR;
             error    = ERANGE;
@@ -176,9 +169,9 @@ char* safe_strtok_impl(char* M_RESTRICT       str,
     while (*strmax > RSIZE_T_C(0))
     {
         bool breakdelimloop = false;
-        c                   = *str++;
+        c                   = C_CAST(unsigned char, *str++);
         *strmax -= RSIZE_T_C(1); // Seagate modification
-        for (spanp = M_CONST_CAST(char*, delim); (sc = *spanp++) != 0 && !breakdelimloop;)
+        for (spanp = M_CONST_CAST(char*, delim); (sc = C_CAST(unsigned char, *spanp++)) != 0 && !breakdelimloop;)
         {
             if (c == sc)
             {
@@ -227,12 +220,12 @@ char* safe_strtok_impl(char* M_RESTRICT       str,
     // Seagate modification: Added staying within bounds of memory with strmax > 0
     for (; *strmax > RSIZE_T_C(0);)
     {
-        c = *str++;
+        c = C_CAST(unsigned char, *str++);
         *strmax -= RSIZE_T_C(1); // Seagate modification
         spanp = M_CONST_CAST(char*, delim);
         do
         {
-            if ((sc = *spanp++) == c)
+            if ((sc = C_CAST(unsigned char, *spanp++)) == c)
             {
                 if (c == 0)
                 {
@@ -257,6 +250,5 @@ char* safe_strtok_impl(char* M_RESTRICT       str,
                               "string without encountering null terminator",
                               set_Env_Info(&envInfo, file, function, expression, line), error);
     errno = error;
-    RESTORE_NONNULL_COMPARE
     return M_NULLPTR;
 }

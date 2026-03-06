@@ -5,7 +5,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -316,8 +316,8 @@ extern "C"
     //! \param[out] operatingSystemName (Optional, set to M_NULLPTR if not used) This will
     //! be a string with the friendly, human-readable name of the OS. For example, Windows 6.2 = Windows 8.
     //! \return SUCCESS if version information was successfully retrieved, otherwise a failure code.
-    M_NONNULL_PARAM_LIST(1)
-    eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char* operatingSystemName);
+    eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                                        char* M_NULLABLE             operatingSystemName);
 
     //! \brief Prints the OS Type enum in a human-readable form.
     //!
@@ -332,7 +332,7 @@ extern "C"
     //! OS (typically #.#.#).
     //!
     //! \param[in] versionNumber Pointer to the OSVersionNumber structure with version information to print.
-    void print_OS_Version(ptrOSVersionNumber versionNumber);
+    void print_OS_Version(ptrOSVersionNumber M_NONNULL versionNumber);
 
     //! \enum eCompiler
     //! \brief Enum representing different compilers.
@@ -383,9 +383,10 @@ extern "C"
     //! \param[out] compilerVersionInfo Pointer to the compilerVersion struct.
     //! This will be filled with version information upon successful completion.
     //! \return SUCCESS on successful completion, otherwise a failure code.
-    M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_WO(1)
-    M_PARAM_WO(1) eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion compilerVersionInfo);
+    M_PARAM_WO(1)
+    eReturnValues get_Compiler_Info(eCompiler* M_NONNULL         compilerUsed,
+                                    ptrCompilerVersion M_NONNULL compilerVersionInfo);
 
     //! \brief Prints the name of the compiler.
     //!
@@ -401,7 +402,7 @@ extern "C"
     //!
     //! \param[in] compilerVersionInfo Pointer to the compilerVersion struct that holds the compiler version
     //! information.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RO(1) void print_Compiler_Version_Info(ptrCompilerVersion compilerVersionInfo);
+    M_PARAM_RO(1) void print_Compiler_Version_Info(const ptrCompilerVersion M_NONNULL compilerVersionInfo);
 
     //! \brief Checks if the process is currently running with elevated permissions.
     //!
@@ -438,7 +439,7 @@ extern "C"
     //! completion.
     //! \return SUCCESS if no errors occurred and userName is allocated and ready to be used, BAD_PARAMETER
     //! if a bad pointer was provided, FAILURE if the user name could not be determined.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_WO(1) eReturnValues get_Current_User_Name(char** userName);
+    M_PARAM_WO(1) eReturnValues get_Current_User_Name(char* M_NONNULL* M_NULLABLE userName);
 #endif // ENABLE_READ_USERNAME
 
 #if defined(__cplusplus)

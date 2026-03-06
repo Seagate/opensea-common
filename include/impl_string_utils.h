@@ -9,7 +9,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -18,11 +18,77 @@
 
 #include "code_attributes.h"
 #include "common_types.h"
+#include "memory_safety.h"
 
 #if defined(__cplusplus)
 extern "C"
 {
 #endif
+
+    //! \fn size_t safe_strnlen(const char* string, size_t n)
+    //! \brief Returns length of string or \a n if null terminator not found
+    //! \param[in] string pointer to string to find the length of.
+    //! \param[in] n maximum number of characters to scan for null terminator
+    //! \return 0 if string is null. length of string if null terminator found. \a n if null terminator not found
+    //! after scanning \a n characters
+    // M_PARAM_RO_SIZE(1, 2) //Do not use this right now. Need to revisit how we want to do this since
+    // doing this causes some weird behavior with builtin obj size and RSIZE_MAX as a backup maximum length-TJE
+    size_t safe_strnlen_impl(const char* M_NULLABLE string, size_t n);
+
+// Methods to detect errors at compile time for clang with diagnose_if attributes.
+// This is not perfect, but having constexpr is far more helpful and truthful for these comparisons
+// than the workaround. diagnose_if does not allow casts of any kinds so trying to compare directly
+// to a NULL or M_NULLPTR is not allowed. !ptr is allowed, but may not work in some systems/libraries
+// so using the constexpr is preferred since it is a more direct match for the error condition in all
+// scenarios. - TJE
+#if defined(HAVE_CONSTEXPR)
+    M_ATTR_UNUSED constexpr char* nullstr = M_NULLPTR;
+#    define M_NULL_STR_CHECK(ptr) ((ptr) == nullstr)
+    M_ATTR_UNUSED constexpr char** nulldblstr = M_NULLPTR;
+#    define M_NULL_DBL_STR_CHECK(ptr) ((ptr) == nulldblstr)
+
+    M_ATTR_UNUSED constexpr const char* nullconststr = M_NULLPTR;
+#    define M_NULL_CONST_STR_CHECK(ptr) ((ptr) == nullconststr)
+    M_ATTR_UNUSED constexpr const char** nullconstdblstr = M_NULLPTR;
+#    define M_NULL_CONST_DBL_STR_CHECK(ptr) ((ptr) == nullconstdblstr)
+
+    M_ATTR_UNUSED constexpr rsize_t* nullrsizet = M_NULLPTR;
+#    define M_NULL_RSIZET_CHECK(ptr) ((ptr) == nullrsizet)
+#else
+#    define M_NULL_STR_CHECK(ptr)           (!(ptr))
+#    define M_NULL_DBL_STR_CHECK(ptr)       M_NULL_STR_CHECK(ptr)
+#    define M_NULL_CONST_STR_CHECK(ptr)     M_NULL_STR_CHECK(ptr)
+#    define M_NULL_CONST_DBL_STR_CHECK(ptr) M_NULL_STR_CHECK(ptr)
+#    define M_NULL_RSIZET_CHECK(ptr)        (!(ptr))
+#endif
+
+    //! \def M_STRING_REGIONS_OVERLAP_COMPILE_TIME(ptr1, size1, ptr2, size2)
+    //! \brief Compile-time constant check for potentially overlapping string regions.
+    //!
+    //! This macro can be used with M_DIAG_ERROR to detect overlapping string memory regions using
+    //! pointer arithmetic. The check determines if region 1 [ptr1, ptr1+size1) overlaps with
+    //! region 2 [ptr2, ptr2+size2) by verifying that:
+    //!   - ptr1 starts before region 2 ends (ptr1 < ptr2 + size2), AND
+    //!   - ptr2 starts before region 1 ends (ptr2 < ptr1 + size1)
+    //!
+    //! This uses natural pointer subtraction (no explicit casts), which results in ptrdiff_t
+    //! and is suitable for use in constant expressions with diagnose_if.
+    //!
+    //! \param[in] ptr1 First string/memory region pointer
+    //! \param[in] size1 Size of first region
+    //! \param[in] ptr2 Second string/memory region pointer
+    //! \param[in] size2 Size of second region
+    //! \return True (non-zero) if regions overlap, false (zero) otherwise
+    //!
+    //! \note This macro uses pointer arithmetic and will work for compile-time constant pointers.
+    //!       For runtime cases with dynamic pointers, use the memory_regions_overlap() function
+    //!       from memory_safety.h
+    //!
+    //! \example
+    //! M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, srclen),
+    //!              "source and destination regions overlap")
+#define M_STRING_REGIONS_OVERLAP_COMPILE_TIME(ptr1, size1, ptr2, size2) \
+    (((ptr1) < (ptr2) + (size2)) && ((ptr2) < (ptr1) + (size1)))
 
     //! \fn errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
     //!                              rsize_t                destsz,
@@ -56,17 +122,24 @@ extern "C"
     //! - \a destsz is less than or equal to safe_strnlen(src, destsz); truncation would occur
     //!
     //! - overlap would occur between the source and destination strings.
-    M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RW_SIZE(1, 2)
     M_PARAM_RO(3)
     M_NULL_TERM_STRING(3)
-    errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
-                             rsize_t                destsz,
-                             const char* M_RESTRICT src,
-                             const char*            file,
-                             const char*            function,
-                             int                    line,
-                             const char*            expression);
+    errno_t safe_strcpy_impl(char* M_RESTRICT M_NONNULL       dest,
+                             rsize_t                          destsz,
+                             const char* M_RESTRICT M_NONNULL src,
+                             const char* M_NULLABLE           file,
+                             const char* M_NULLABLE           function,
+                             int                              line,
+                             const char* M_NULLABLE           expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_STR_CHECK(dest), "dest is NULL")
+        M_DIAG_ERROR(destsz == 0, "destsz is zero")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz is > RSIZE_MAX")
+        M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
+        M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, destsz), "source and destination regions overlap. Use safe_strmove instead.")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strmove_impl(char* M_RESTRICT      dest,
     //!                              rsize_t                destsz,
@@ -100,17 +173,23 @@ extern "C"
     //! - \a destsz is zero or greater than \a RSIZE_MAX
     //!
     //! - \a destsz is less than or equal to safe_strnlen(src, destsz); truncation would occur
-    M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RW_SIZE(1, 2)
     M_PARAM_RO(3)
     M_NULL_TERM_STRING(3)
-    errno_t safe_strmove_impl(char*       dest,
-                              rsize_t     destsz,
-                              const char* src,
-                              const char* file,
-                              const char* function,
-                              int         line,
-                              const char* expression);
+    errno_t safe_strmove_impl(char* M_NONNULL        dest,
+                              rsize_t                destsz,
+                              const char* M_NONNULL  src,
+                              const char* M_NULLABLE file,
+                              const char* M_NULLABLE function,
+                              int                    line,
+                              const char* M_NULLABLE expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_STR_CHECK(dest), "dest is NULL")
+        M_DIAG_ERROR(destsz == 0, "destsz is zero")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz is > RSIZE_MAX")
+        M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
     //!                               rsize_t                destsz,
@@ -148,20 +227,28 @@ extern "C"
     //! - \a count is greater than \a RSIZE_MAX
     //!
     //! - \a count is greater than or equal to \a destsz, but \a destsz is less than or equal to
-    //!   strnlen_s(src, count); truncation would occur.
+    //!   safe_strnlen(src, count); truncation would occur.
     //!
     //! - overlap would occur between the source and destination strings.
-    M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RW_SIZE(1, 2)
     M_PARAM_RO_SIZE(3, 4)
-    errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
-                              rsize_t                destsz,
-                              const char* M_RESTRICT src,
-                              rsize_t                count,
-                              const char*            file,
-                              const char*            function,
-                              int                    line,
-                              const char*            expression);
+    errno_t safe_strncpy_impl(char* M_RESTRICT M_NONNULL       dest,
+                              rsize_t                          destsz,
+                              const char* M_RESTRICT M_NONNULL src,
+                              rsize_t                          count,
+                              const char* M_NULLABLE           file,
+                              const char* M_NULLABLE           function,
+                              int                              line,
+                              const char* M_NULLABLE           expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_STR_CHECK(dest), "dest is NULL")
+        M_DIAG_ERROR(destsz == 0, "destsz is zero")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz is > RSIZE_MAX")
+        M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count is > RSIZE_MAX")
+        M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), "source and destination regions overlap. Use safe_strnmove instead.")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strnmove_impl(char* M_RESTRICT       dest,
     //!                                rsize_t                destsz,
@@ -200,18 +287,25 @@ extern "C"
     //! - \a count is greater than \a RSIZE_MAX
     //!
     //! - \a count is greater than or equal to \a destsz, but \a destsz is less than or equal to
-    //!   strnlen_s(src, count); truncation would occur.
-    M_NONNULL_PARAM_LIST(1, 3)
+    //!   safe_strnlen(src, count); truncation would occur.
     M_PARAM_RW_SIZE(1, 2)
     M_PARAM_RO_SIZE(3, 4)
-    errno_t safe_strnmove_impl(char*       dest,
-                               rsize_t     destsz,
-                               const char* src,
-                               rsize_t     count,
-                               const char* file,
-                               const char* function,
-                               int         line,
-                               const char* expression);
+    errno_t safe_strnmove_impl(char* M_NONNULL        dest,
+                               rsize_t                destsz,
+                               const char* M_NONNULL  src,
+                               rsize_t                count,
+                               const char* M_NULLABLE file,
+                               const char* M_NULLABLE function,
+                               int                    line,
+                               const char* M_NULLABLE expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_STR_CHECK(dest), "dest is NULL")
+        M_DIAG_ERROR(destsz == 0, "destsz is zero")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz is > RSIZE_MAX")
+        M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count is > RSIZE_MAX")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strcat_impl(char* M_RESTRICT       dest,
     //!                              rsize_t                destsz,
@@ -248,18 +342,26 @@ extern "C"
     //! - truncation would occur due to not enough space in \a dest to concatenate \a src
     //!
     //! - overlap would occur between \a src and \a dest strings
-    M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RW_SIZE(1, 2)
     M_PARAM_RO(3)
     M_NULL_TERM_STRING(1)
     M_NULL_TERM_STRING(3)
-    errno_t safe_strcat_impl(char* M_RESTRICT       dest,
-                             rsize_t                destsz,
-                             const char* M_RESTRICT src,
-                             const char*            file,
-                             const char*            function,
-                             int                    line,
-                             const char*            expression);
+    errno_t safe_strcat_impl(char* M_RESTRICT M_NONNULL       dest,
+                             rsize_t                          destsz,
+                             const char* M_RESTRICT M_NONNULL src,
+                             const char* M_NULLABLE           file,
+                             const char* M_NULLABLE           function,
+                             int                              line,
+                             const char* M_NULLABLE           expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_STR_CHECK(dest), "dest is NULL")
+        M_DIAG_ERROR(destsz == 0, "destsz is zero")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz is > RSIZE_MAX")
+        M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
+        M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, destsz), "source and destination regions overlap")
+        // TODO Add diagnostic for not enough space in dest to concatenate source
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strncat_impl(char* M_RESTRICT       dest,
     //!                               rsize_t                destsz,
@@ -294,23 +396,34 @@ extern "C"
     //!
     //! - \a destsz is zero or greater than \a RSIZE_MAX
     //!
+    //! - \a count is zero or greater than \a RSIZE_MAX
+    //!
     //! - there is no null terminator in the first \a destsz bytes of \a dest
     //!
     //! - truncation would occur due to not enough space in \a dest to concatenate \a src or \a count bytes of \a src
     //!
     //! - overlap would occur between \a src and \a dest strings
-    M_NONNULL_PARAM_LIST(1, 3)
     M_PARAM_RW_SIZE(1, 2)
     M_PARAM_RO_SIZE(3, 4)
     M_NULL_TERM_STRING(1)
-    errno_t safe_strncat_impl(char* M_RESTRICT       dest,
-                              rsize_t                destsz,
-                              const char* M_RESTRICT src,
-                              rsize_t                count,
-                              const char*            file,
-                              const char*            function,
-                              int                    line,
-                              const char*            expression);
+    errno_t safe_strncat_impl(char* M_RESTRICT M_NONNULL       dest,
+                              rsize_t                          destsz,
+                              const char* M_RESTRICT M_NONNULL src,
+                              rsize_t                          count,
+                              const char* M_NULLABLE           file,
+                              const char* M_NULLABLE           function,
+                              int                              line,
+                              const char* M_NULLABLE           expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_STR_CHECK(dest), "dest is NULL")
+        M_DIAG_ERROR(destsz == 0, "destsz is zero")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz is > RSIZE_MAX")
+        M_DIAG_ERROR(count == 0, "destsz is zero")
+        M_DIAG_ERROR(count > RSIZE_MAX, "destsz is > RSIZE_MAX")
+        M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
+        M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), "source and destination regions overlap")
+        // clang-format on
+        ;
 
     //! \fn char* safe_strtok_impl(char* M_RESTRICT       str,
     //!                            rsize_t* M_RESTRICT    strmax,
@@ -354,24 +467,28 @@ extern "C"
     //! - search for the end of a token reaches the end of the source string (as measured by the initial value of
     //! *strmax) without encountering the null terminator
     //!
-    //! - truncation would occur due to not enough space in \a dest to concatenate \a src or \a count bytes of \a src
-    //!
-    //! - overlap would occur between \a src and \a dest strings
-    M_NONNULL_PARAM_LIST(2, 3, 4)
+    //! - \a strmax > RSIZE_MAX
     M_PARAM_RW(1)
     M_PARAM_RW(2)
     M_PARAM_RO(3)
     M_PARAM_RW(4)
     M_NULL_TERM_STRING(1)
     M_NULL_TERM_STRING(3)
-    char* safe_strtok_impl(char* M_RESTRICT       str,
-                           rsize_t* M_RESTRICT    strmax,
-                           const char* M_RESTRICT delim,
-                           char** M_RESTRICT      saveptr,
-                           const char*            file,
-                           const char*            function,
-                           int                    line,
-                           const char*            expression);
+    char* M_NULLABLE safe_strtok_impl(char* M_RESTRICT M_NULLABLE            str,
+                                      rsize_t* M_RESTRICT M_NONNULL          strmax,
+                                      const char* M_RESTRICT M_NONNULL       delim,
+                                      char* M_NONNULL* M_RESTRICT M_NULLABLE saveptr,
+                                      const char* M_NULLABLE                 file,
+                                      const char* M_NULLABLE                 function,
+                                      int                                    line,
+                                      const char* M_NULLABLE                 expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_RSIZET_CHECK(strmax), "strmax is NULL")
+        M_DIAG_ERROR(*strmax > RSIZE_MAX, "strmax > RSIZE_MAX")
+        M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(delim), "delim is NULL")
+        M_DIAG_ERROR(M_NULL_DBL_STR_CHECK(saveptr), "saveptr is NULL")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strdup_impl(char**      dup,
     //!                              const char* src,
@@ -399,16 +516,20 @@ extern "C"
     //! - \a src is a null pointer
     //!
     //! - \a src is length 0 or greater than RSIZE_MAX
-    M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(2)
-    errno_t safe_strdup_impl(char**      dup,
-                             const char* src,
-                             const char* file,
-                             const char* function,
-                             int         line,
-                             const char* expression);
+    errno_t safe_strdup_impl(char* M_NONNULL* M_NULLABLE dup,
+                             const char* M_NONNULL       src,
+                             const char* M_NULLABLE      file,
+                             const char* M_NULLABLE      function,
+                             int                         line,
+                             const char* M_NULLABLE      expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_DBL_STR_CHECK(dup), "output parameter dup cannot be NULL")
+        M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
+        // clang-format on
+        ;
 
     //! \fn errno_t safe_strndup_impl(char**      dup,
     //!                               const char* src,
@@ -440,16 +561,21 @@ extern "C"
     //! - \a src is length 0 or greater than RSIZE_MAX
     //!
     //! - \a size is length 0 or greater than RSIZE_MAX
-    M_NONNULL_PARAM_LIST(1, 2)
     M_PARAM_RW(1)
     M_PARAM_RO_SIZE(2, 3)
-    errno_t safe_strndup_impl(char**      dup,
-                              const char* src,
-                              rsize_t     size,
-                              const char* file,
-                              const char* function,
-                              int         line,
-                              const char* expression);
+    errno_t safe_strndup_impl(char* M_NONNULL* M_NULLABLE dup,
+                              const char* M_NONNULL       src,
+                              rsize_t                     size,
+                              const char* M_NULLABLE      file,
+                              const char* M_NULLABLE      function,
+                              int                         line,
+                              const char* M_NULLABLE      expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_DBL_STR_CHECK(dup), "output parameter dup cannot be NULL")
+        M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
+        M_DIAG_ERROR(size > RSIZE_MAX, "size > RSIZE_MAX")
+        // clang-format on
+        ;
 
 #if defined(__cplusplus)
 }

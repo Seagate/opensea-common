@@ -18,7 +18,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -38,15 +38,18 @@
  * unchanged, you can do what ever you want with this file.
  */
 
-#define LWORK_MODE_SEARCH 1
-#define LWORK_MODE_FIND   0
+typedef enum eLworkModeEnum
+{
+    LWORK_MODE_SEARCH = 1,
+    LWORK_MODE_FIND   = 0
+} eLworkMode;
 
 static void* safe_lwork(const void* key,
                         const void* base,
-                        size_t*     nelp,
-                        size_t      width,
+                        rsize_t*    nelp,
+                        rsize_t     width,
                         comparefn   compar,
-                        int         addelem,
+                        eLworkMode  addelem,
                         const char* file,
                         const char* function,
                         int         line,
@@ -54,8 +57,8 @@ static void* safe_lwork(const void* key,
 
 void* safe_lsearch_impl(const void* key,
                         void*       base,
-                        size_t*     nelp,
-                        size_t      width,
+                        rsize_t*    nelp,
+                        rsize_t     width,
                         comparefn   compar,
                         const char* file,
                         const char* function,
@@ -67,8 +70,8 @@ void* safe_lsearch_impl(const void* key,
 
 void* safe_lfind_impl(const void* key,
                       const void* base,
-                      size_t*     nelp,
-                      size_t      width,
+                      rsize_t*    nelp,
+                      rsize_t     width,
                       comparefn   compar,
                       const char* file,
                       const char* function,
@@ -80,10 +83,10 @@ void* safe_lfind_impl(const void* key,
 
 static void* safe_lwork(const void* key,
                         const void* base,
-                        size_t*     nelp,
-                        size_t      width,
+                        rsize_t*    nelp,
+                        rsize_t     width,
                         comparefn   compar,
-                        int         addelem,
+                        eLworkMode  addelem,
                         const char* file,
                         const char* function,
                         int         line,
@@ -91,7 +94,6 @@ static void* safe_lwork(const void* key,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (nelp == M_NULLPTR)
     {
         error = EINVAL;
@@ -188,9 +190,25 @@ static void* safe_lwork(const void* key,
         errno = error;
         return M_NULLPTR;
     }
+    else if (width == RSIZE_T_C(0))
+    {
+        error = ERANGE;
+        if (addelem == LWORK_MODE_FIND)
+        {
+            invoke_Constraint_Handler("safe_lfind: width == 0",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch: width == 0",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
+        }
+        errno = error;
+        return M_NULLPTR;
+    }
     else
     {
-        uint8_t* ep   = M_CONST_CAST(uint8_t*, base);
+        uint8_t* ep   = M_CONST_CAST(uint8_t*, M_REINTERPRET_CAST(const uint8_t*, base));
         uint8_t* endp = M_NULLPTR;
         for (endp = M_REINTERPRET_CAST(uint8_t*, ep + width * (*nelp)); ep < endp; ep += width)
         {
@@ -216,7 +234,6 @@ static void* safe_lwork(const void* key,
 
         return (endp);
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 // following versions are written by Seagate technology to allow compare
@@ -225,11 +242,11 @@ static void* safe_lwork(const void* key,
 
 static void* safe_lwork_context(const void*  key,
                                 const void*  base,
-                                size_t*      nelp,
-                                size_t       width,
+                                rsize_t*     nelp,
+                                rsize_t      width,
                                 ctxcomparefn compar,
                                 void*        context,
-                                int          addelem,
+                                eLworkMode   addelem,
                                 const char*  file,
                                 const char*  function,
                                 int          line,
@@ -237,8 +254,8 @@ static void* safe_lwork_context(const void*  key,
 
 void* safe_lsearch_context_impl(const void*  key,
                                 void*        base,
-                                size_t*      nelp,
-                                size_t       width,
+                                rsize_t*     nelp,
+                                rsize_t      width,
                                 ctxcomparefn compar,
                                 void*        context,
                                 const char*  file,
@@ -252,8 +269,8 @@ void* safe_lsearch_context_impl(const void*  key,
 
 void* safe_lfind_context_impl(const void*  key,
                               const void*  base,
-                              size_t*      nelp,
-                              size_t       width,
+                              rsize_t*     nelp,
+                              rsize_t      width,
                               ctxcomparefn compar,
                               void*        context,
                               const char*  file,
@@ -267,11 +284,11 @@ void* safe_lfind_context_impl(const void*  key,
 
 static void* safe_lwork_context(const void*  key,
                                 const void*  base,
-                                size_t*      nelp,
-                                size_t       width,
+                                rsize_t*     nelp,
+                                rsize_t      width,
                                 ctxcomparefn compar,
                                 void*        context,
-                                int          addelem,
+                                eLworkMode   addelem,
                                 const char*  file,
                                 const char*  function,
                                 int          line,
@@ -279,7 +296,6 @@ static void* safe_lwork_context(const void*  key,
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
-    DISABLE_NONNULL_COMPARE
     if (nelp == M_NULLPTR)
     {
         error = EINVAL;
@@ -376,9 +392,25 @@ static void* safe_lwork_context(const void*  key,
         errno = error;
         return M_NULLPTR;
     }
+    else if (width == RSIZE_T_C(0))
+    {
+        error = ERANGE;
+        if (addelem == LWORK_MODE_FIND)
+        {
+            invoke_Constraint_Handler("safe_lfind_context: width == 0",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
+        }
+        else
+        {
+            invoke_Constraint_Handler("safe_lsearch_context: width == 0",
+                                      set_Env_Info(&envInfo, file, function, expression, line), error);
+        }
+        errno = error;
+        return M_NULLPTR;
+    }
     else
     {
-        uint8_t* ep   = M_CONST_CAST(uint8_t*, base);
+        uint8_t* ep   = M_CONST_CAST(uint8_t*, M_REINTERPRET_CAST(const uint8_t*, base));
         uint8_t* endp = M_NULLPTR;
         for (endp = M_REINTERPRET_CAST(uint8_t*, ep + width * (*nelp)); ep < endp; ep += width)
         {
@@ -404,5 +436,4 @@ static void* safe_lwork_context(const void*  key,
 
         return (endp);
     }
-    RESTORE_NONNULL_COMPARE
 }

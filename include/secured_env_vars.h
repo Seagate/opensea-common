@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -46,8 +46,8 @@ extern "C"
     //! - ENV_VAR_TAMPERED_ENV_DETECTED tampered environment detected; variable not read.
     //!
     //! - ENV_VAR_FAILURE a failure occurred when trying to read the environment variable such as no more memory.
-    M_NODISCARD M_NONNULL_PARAM_LIST(1, 2) M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_PARAM_WO(2) eEnvVarResult
-        get_Environment_Variable(const char* environmentVariableName, char** envVar);
+    M_NODISCARD M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_PARAM_WO(2) eEnvVarResult
+        get_Environment_Variable(const char* M_NONNULL environmentVariableName, char* M_NONNULL* M_NULLABLE envVar);
 
 #if defined(__cplusplus)
 }

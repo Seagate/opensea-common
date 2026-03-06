@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -42,6 +42,18 @@
 #    include <dirent.h>
 #endif
 
+#if defined(__has_include)
+#    if __has_include(<stdcountof.h>)
+#        include <stdcountof.h>
+#        define HAS_STDCOUNTOF
+#    endif
+#endif //__has_include
+#if !defined(HAS_STDCOUNTOF)
+#    if __has_feature(c_countof) || __has_extension(c_countof)
+#        define HAS_STDCOUNTOF
+#    endif
+#endif
+
 #if defined(__cplusplus)
 extern "C"
 {
@@ -64,7 +76,7 @@ extern "C"
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a size is zero
-    M_INLINE M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* safe_malloc(size_t size)
+    M_INLINE M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) M_NODISCARD void* M_NULLABLE safe_malloc(size_t size)
     {
         return safe_malloc_impl(size, __FILE__, __func__, __LINE__, "safe_malloc(size)");
     }
@@ -104,7 +116,7 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a count * \a size results in an overflow
-    M_INLINE M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* safe_calloc(size_t count, size_t size)
+    M_INLINE M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) M_NODISCARD void* M_NULLABLE safe_calloc(size_t count, size_t size)
     {
         return safe_calloc_impl(count, size, __FILE__, __func__, __LINE__, "safe_calloc(count, size)");
     }
@@ -125,18 +137,18 @@ extern "C"
 //!
 //! - \a count * \a size results in an overflow
 #    define safe_calloc(count, size)                                                                                   \
-        safe_calloc_impl(count, size, __FILE__, __func__, __LINE__, "safe_calloc(" #count ", " #size ")")
+        safe_calloc_impl((count), (size), __FILE__, __func__, __LINE__, "safe_calloc(" #count ", " #size ")")
 #endif
 
-    //! \fn M_FUNC_ATTR_MALLOC void* safe_realloc(void* block, size_t size)
+    //! \fn void* safe_realloc(void* block, size_t size)
     //! \brief allocates or reallocates memory pointed to by \a block
     //! \param[in] block pointer to existing memory block. If null this is the same as safe_malloc()
     //! \param[in] size number of bytes to allocate/reallocate to. If zero, free's memory pointed to by \a block
     //! \return pointer to allocated memory to be free'd by the caller with free()
     //! returns a null pointer on failure.
-    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(2) void* safe_realloc(void* block, size_t size);
+    M_NODISCARD M_PARAM_RW(1) M_MALLOC_SIZE(2) void* M_NULLABLE safe_realloc(void* M_NULLABLE block, size_t size);
 
-    //! \fn M_FUNC_ATTR_MALLOC void* safe_reallocf(void** block, size_t size)
+    //! \fn void* safe_reallocf(void** block, size_t size)
     //! \brief allocates or reallocates memory pointed to by \a block
     //! If reallocation fails, frees the original memory block.
     //! \details
@@ -149,7 +161,12 @@ extern "C"
     //! \param[in] size number of bytes to allocate/reallocate to. If zero, free's memory pointed to by \a block
     //! \return pointer to allocated memory to be free'd by the caller with free()
     //! returns a null pointer on failure.
-    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(2) void* safe_reallocf(void** block, size_t size);
+    M_NODISCARD M_PARAM_RW(1) M_MALLOC_SIZE(2) void* M_NULLABLE
+        safe_reallocf(void* M_NULLABLE* M_NULLABLE block, size_t size)
+        // clang-format off
+        M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+        // clang-format on
+        ;
 
     //! \fn void safe_free_core(void** mem)
     //! \brief Safely free dynamically allocated memory. This checks
@@ -158,7 +175,8 @@ extern "C"
     //! of a double-free error.
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
-    static M_INLINE void safe_free_core(void** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_core(void* M_NONNULL* M_NULLABLE mem)
     {
         if (mem && *mem)
         {
@@ -178,7 +196,8 @@ extern "C"
     //!
     //! safe_free_char(&memory);
     //! \endcode
-    static M_INLINE void safe_free_char(char** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_char(char* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -194,7 +213,8 @@ extern "C"
     //!
     //! safe_free_schar(&memory);
     //! \endcode
-    static M_INLINE void safe_free_schar(signed char** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_schar(signed char* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -210,7 +230,8 @@ extern "C"
     //!
     //! safe_free_uchar(&memory);
     //! \endcode
-    static M_INLINE void safe_free_uchar(unsigned char** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_uchar(unsigned char* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -226,7 +247,8 @@ extern "C"
     //!
     //! safe_free_wchar(&memory);
     //! \endcode
-    static M_INLINE void safe_free_wchar(wchar_t** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_wchar(wchar_t* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -242,7 +264,8 @@ extern "C"
     //!
     //! safe_free_short(&memory);
     //! \endcode
-    static M_INLINE void safe_free_short(signed short** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_short(signed short* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -258,7 +281,8 @@ extern "C"
     //!
     //! safe_free_ushort(&memory);
     //! \endcode
-    static M_INLINE void safe_free_ushort(unsigned short** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_ushort(unsigned short* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -274,7 +298,8 @@ extern "C"
     //!
     //! safe_free_int(&memory);
     //! \endcode
-    static M_INLINE void safe_free_int(signed int** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_int(signed int* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -290,7 +315,8 @@ extern "C"
     //!
     //! safe_free_uint(&memory);
     //! \endcode
-    static M_INLINE void safe_free_uint(unsigned int** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_uint(unsigned int* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -306,7 +332,8 @@ extern "C"
     //!
     //! safe_free_long(&memory);
     //! \endcode
-    static M_INLINE void safe_free_long(signed long** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_long(signed long* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -322,7 +349,8 @@ extern "C"
     //!
     //! safe_free_ulong(&memory);
     //! \endcode
-    static M_INLINE void safe_free_ulong(unsigned long** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_ulong(unsigned long* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -338,7 +366,8 @@ extern "C"
     //!
     //! safe_free_longlong(&memory);
     //! \endcode
-    static M_INLINE void safe_free_longlong(signed long long** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_longlong(signed long long* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -354,7 +383,8 @@ extern "C"
     //!
     //! safe_free_ulonglong(&memory);
     //! \endcode
-    static M_INLINE void safe_free_ulonglong(unsigned long long** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_ulonglong(unsigned long long* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -370,7 +400,8 @@ extern "C"
     //!
     //! safe_free_float(&memory);
     //! \endcode
-    static M_INLINE void safe_free_float(float** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_float(float* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -386,7 +417,8 @@ extern "C"
     //!
     //! safe_free_double(&memory);
     //! \endcode
-    static M_INLINE void safe_free_double(double** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_double(double* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -402,7 +434,8 @@ extern "C"
     //!
     //! safe_free_longdouble(&memory);
     //! \endcode
-    static M_INLINE void safe_free_longdouble(long double** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_longdouble(long double* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -473,7 +506,8 @@ extern "C"
     //!
     //! safe_free_tchar(&memory);
     //! \endcode
-    static M_INLINE void safe_free_tchar(TCHAR** str)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_tchar(TCHAR* M_NONNULL* M_NULLABLE str)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, str));
     }
@@ -485,12 +519,14 @@ extern "C"
     //! NOTE: This is good for individual structures.
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
-    static M_INLINE void safe_free_dirent(struct dirent** ent)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_dirent(struct dirent* M_NONNULL* M_NULLABLE ent)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, ent));
     }
 
-    static M_INLINE void safe_free_dirent_list(struct dirent*** list)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_dirent_list(struct dirent* M_NONNULL* M_NONNULL* M_NULLABLE list)
     {
         if (list != M_NULLPTR)
         {
@@ -506,7 +542,7 @@ extern "C"
     //! \param[in] lengthBytes size in bytes of \a ptrData to check if equal to zero
     //! \return true = memory is filled with zeros. false = memory has nonzero
     //! values in it.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* ptrData, size_t lengthBytes);
+    M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* M_NONNULL ptrData, size_t lengthBytes);
 
 #if defined(DEV_ENVIRONMENT)
     //! \fn errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
@@ -533,7 +569,7 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    M_INLINE errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
+    M_INLINE errno_t safe_memset(void* M_NONNULL, rsize_t destsz, int ch, rsize_t count)
     {
         return safe_memset_impl(dest, destsz, ch, count, __FILE__, __func__, __LINE__,
                                 "safe_memset(dest, destsz, ch, count)");
@@ -577,7 +613,13 @@ extern "C"
     //! \param[in] dest Pointer to the block of memory to zero fill. Must be non-NULL
     //! \param[in] count Number of bytes to write to zero at \a dest
     //! \return pointer to \a dest on Success and a NULL pointer on failure
-    M_NONNULL_PARAM_LIST(1) M_PARAM_WO_SIZE(1, 2) void* explicit_zeroes(void* dest, size_t count);
+    M_PARAM_WO_SIZE(1, 2)
+    void* M_NULLABLE explicit_zeroes(void* M_NONNULL dest, size_t count)
+        // clang-format off
+    M_DIAG_WARN(count > RSIZE_MAX, "zeroing more than RSIZE_MAX bytes may fail")
+    M_DIAG_WARN(count == 0, "zeroing zero bytes has no effect")
+        // clang-format on
+        ;
 
     // This ugly ifdef is to handle newer SecureZeroMemory2 support and visual studio can automatically detect this
     // dependency this way - TJE
@@ -593,7 +635,7 @@ extern "C"
     //!
     //! Different OS's/environments handle freeing aligned memory differently.
     //! This is a wrapper function around all those differences for a single, simple API call.
-    void free_aligned(void* ptr);
+    M_PARAM_WO(1) void free_aligned(void* M_NULLABLE ptr);
 
     //! \fn  M_FUNC_ATTR_MALLOC void* malloc_aligned(size_t size, size_t alignment)
     //! \brief Allocates aligned memory based on the specified power of 2 alignment value
@@ -604,8 +646,13 @@ extern "C"
     //! \param[in] alignment alignment value required. This MUST be a power of 2.
     //! \return pointer to aligned memory on success. null pointer on failure.
     //! the caller must free this memory using free_aligned().
-    M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(2) M_MALLOC_SIZE(1)
-        M_ALLOC_DEALLOC(free_aligned, 1) void* malloc_aligned(size_t size, size_t alignment);
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_DEALLOC(free_aligned, 1) M_ALLOC_ALIGN(2) M_MALLOC_SIZE(1) void* M_NULLABLE
+        malloc_aligned(size_t size, size_t alignment)
+        // clang-format off
+        M_DIAG_ERROR(alignment == 0 || (alignment & (alignment - 1)) != 0, "alignment must be a non-zero power of 2")
+        M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+        // clang-format on
+        ;
 
     //! \fn void safe_free_aligned_core(void** mem)
     //! \brief Safely free dynamically allocated memory that was aligned at allocation. This checks
@@ -614,7 +661,8 @@ extern "C"
     //! of a double-free error.
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
-    static M_INLINE void safe_free_aligned_core(void** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_aligned_core(void* M_NONNULL* M_NULLABLE mem)
     {
         if (mem && *mem)
         {
@@ -634,7 +682,8 @@ extern "C"
     //!
     //! safe_free_aligned_char(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_char(char** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_aligned_char(char* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -650,7 +699,8 @@ extern "C"
     //!
     //! safe_free_aligned_wchar(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_wchar(wchar_t** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_aligned_wchar(wchar_t* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -666,7 +716,8 @@ extern "C"
     //!
     //! safe_free_aligned_schar(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_schar(signed char** mem)
+    M_PARAM_RW(1)
+    static M_INLINE void safe_free_aligned_schar(signed char* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -682,7 +733,7 @@ extern "C"
     //!
     //! safe_free_aligned_uchar(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_uchar(unsigned char** mem)
+    M_PARAM_RW(1) static M_INLINE void safe_free_aligned_uchar(unsigned char* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -698,7 +749,7 @@ extern "C"
     //!
     //! safe_free_aligned_short(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_short(signed short** mem)
+    M_PARAM_RW(1) static M_INLINE void safe_free_aligned_short(signed short* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -714,7 +765,7 @@ extern "C"
     //!
     //! safe_free_aligned_ushort(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_ushort(unsigned short** mem)
+    M_PARAM_RW(1) static M_INLINE void safe_free_aligned_ushort(unsigned short* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -730,7 +781,7 @@ extern "C"
     //!
     //! safe_free_aligned_int(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_int(signed int** mem)
+    M_PARAM_RW(1) static M_INLINE void safe_free_aligned_int(signed int* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -746,7 +797,7 @@ extern "C"
     //!
     //! safe_free_aligned_uint(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_uint(unsigned int** mem)
+    M_PARAM_RW(1) static M_INLINE void safe_free_aligned_uint(unsigned int* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -762,7 +813,7 @@ extern "C"
     //!
     //! safe_free_aligned_long(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_long(signed long** mem)
+    M_PARAM_RW(1) static M_INLINE void safe_free_aligned_long(signed long* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -778,7 +829,7 @@ extern "C"
     //!
     //! safe_free_aligned_ulong(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_ulong(unsigned long** mem)
+    M_PARAM_RW(1) static M_INLINE void safe_free_aligned_ulong(unsigned long* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -794,7 +845,7 @@ extern "C"
     //!
     //! safe_free_aligned_longlong(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_longlong(signed long long** mem)
+    M_PARAM_RW(1) static M_INLINE void safe_free_aligned_longlong(signed long long* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -810,7 +861,7 @@ extern "C"
     //!
     //! safe_free_aligned_ulonglong(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_ulonglong(unsigned long long** mem)
+    M_PARAM_RW(1) static M_INLINE void safe_free_aligned_ulonglong(unsigned long long* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -826,7 +877,7 @@ extern "C"
     //!
     //! safe_free_aligned_float(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_float(float** mem)
+    M_PARAM_RW(1) static M_INLINE void safe_free_aligned_float(float* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -842,7 +893,7 @@ extern "C"
     //!
     //! safe_free_aligned_double(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_double(double** mem)
+    M_PARAM_RW(1) static M_INLINE void safe_free_aligned_double(double* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -858,7 +909,7 @@ extern "C"
     //!
     //! safe_free_aligned_longdouble(&memory);
     //! \endcode
-    static M_INLINE void safe_free_aligned_longdouble(long double** mem)
+    M_PARAM_RW(1) static M_INLINE void safe_free_aligned_longdouble(long double* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -921,8 +972,14 @@ extern "C"
     //! \param[in] size size of each element
     //! \param[in] alignment alignment value required. This MUST be a power of 2.
     //! \return pointer to aligned memory on success, nullpointer on failure.
-    M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(3) M_CALLOC_SIZE(1, 2)
-        M_ALLOC_DEALLOC(free_aligned, 1) void* calloc_aligned(size_t num, size_t size, size_t alignment);
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(3) M_CALLOC_SIZE(1, 2)
+        M_ALLOC_DEALLOC(free_aligned, 1) void* M_NULLABLE calloc_aligned(size_t num, size_t size, size_t alignment)
+        // clang-format off
+        M_DIAG_ERROR(alignment == 0 || (alignment & (alignment - 1)) != 0, "alignment must be a non-zero power of 2")
+        M_DIAG_WARN((num != 0 && size > RSIZE_MAX / num), "allocating more than RSIZE_MAX bytes may fail")
+        M_DIAG_ERROR(num == 0 || size == 0, "num and size must be non-zero")
+        // clang-format on
+        ;
 
     //! \brief Allocates/Reallocates aligned memory based on the specified
     //! power of 2 alignment value provided. Original aligned pointer is free'd upon success.
@@ -934,9 +991,16 @@ extern "C"
     //! \param[in] size size of memory block in bytes to allocate
     //! \param[in] alignment alignment value required. This MUST be a power of 2.
     //! \return Pointer to aligned memory on success, null pointer on failure.
-    M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(4) M_MALLOC_SIZE(3)
-        M_ALLOC_DEALLOC(free_aligned,
-                        1) void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t alignment);
+    M_NODISCARD
+    M_PARAM_RW_SIZE(1, 2)
+    M_ALLOC_ALIGN(4)
+    M_MALLOC_SIZE(3)
+    void* M_NULLABLE realloc_aligned(void* M_NULLABLE alignedPtr, size_t originalSize, size_t size, size_t alignment)
+        // clang-format off
+    M_DIAG_ERROR(alignment == 0 || (alignment & (alignment - 1)) != 0, "alignment must be a non-zero power of 2")
+    M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+        // clang-format on
+        ;
 
 #if defined(DEV_ENVIRONMENT)
     //! \fn M_FUNC_ATTR_MALLOC void* safe_malloc_aligned(size_t size, size_t alignment))
@@ -952,8 +1016,8 @@ extern "C"
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a size is zero
-    M_INLINE M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(2)
-        M_MALLOC_SIZE(1) void* safe_malloc_aligned(size_t size, size_t alignment)
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(2) M_MALLOC_SIZE(1) M_INLINE void* M_NULLABLE
+        safe_malloc_aligned(size_t size, size_t alignment)
     {
         return safe_malloc_aligned_impl(size, alignment, __FILE__, __func__, __LINE__,
                                         "safe_malloc_aligned(size, alignment)");
@@ -994,8 +1058,8 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a count * \a size results in an overflow
-    M_INLINE M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(3)
-        M_CALLOC_SIZE(1, 2) void* safe_calloc_aligned(size_t count, size_t size, size_t alignment)
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(3) M_CALLOC_SIZE(1, 2) M_INLINE void* M_NULLABLE
+        safe_calloc_aligned(size_t count, size_t size, size_t alignment)
     {
         return safe_calloc_aligned_impl(count, size, alignment, __FILE__, __func__, __LINE__,
                                         "safe_calloc_aligned(count, size, alignment)");
@@ -1022,7 +1086,7 @@ extern "C"
                                  "safe_calloc_aligned(" #count ", " #size ", " #alignment ")")
 #endif
 
-    //! \fn M_FUNC_ATTR_MALLOC void* safe_realloc_aligned(void* block,
+    //! \fn  void* safe_realloc_aligned(void* block,
     //!                                                   size_t originalSize,
     //!                                                   size_t size,
     //!                                                   size_t alignment)
@@ -1035,10 +1099,18 @@ extern "C"
     //! two.
     //! \return pointer to allocated memory to be free'd by the caller with free_aligned() returns a null pointer on
     //! failure.
-    M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(4)
-        M_MALLOC_SIZE(3) void* safe_realloc_aligned(void* block, size_t originalSize, size_t size, size_t alignment);
+    M_NODISCARD
+    M_PARAM_RW_SIZE(1, 2)
+    M_ALLOC_ALIGN(4)
+    M_MALLOC_SIZE(3)
+    void* M_NULLABLE safe_realloc_aligned(void* M_NULLABLE block, size_t originalSize, size_t size, size_t alignment)
+        // clang-format off
+    M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+    M_DIAG_ERROR(alignment == 0 || (alignment & (alignment - 1)) != 0, "alignment must be a non-zero power of 2")
+        // clang-format on
+        ;
 
-    //! \fn M_FUNC_ATTR_MALLOC void* safe_reallocf(void** block, size_t size)
+    //! \fn  void* safe_reallocf(void** block, size_t size)
     //! \brief allocates or reallocates memory pointed to by \a block
     //! If reallocation fails, frees the original memory block.
     //! \details
@@ -1055,13 +1127,29 @@ extern "C"
     //! two.
     //! \return pointer to allocated memory to be free'd by the caller with free_aligned() returns a null pointer on
     //! failure.
-    M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(4)
-        M_MALLOC_SIZE(3) void* safe_reallocf_aligned(void** block, size_t originalSize, size_t size, size_t alignment);
+    M_NODISCARD
+    M_PARAM_RW(1)
+    M_ALLOC_ALIGN(4)
+    M_MALLOC_SIZE(3)
+    void* M_NULLABLE
+    safe_reallocf_aligned(void* M_NULLABLE* M_NULLABLE block, size_t originalSize, size_t size, size_t alignment)
+        // clang-format off
+    M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+    M_DIAG_ERROR(alignment == 0 || (alignment & (alignment - 1)) != 0, "alignment must be a non-zero power of 2")
+        // clang-format on
+        ;
 
     //! \fn size_t get_System_Pagesize(void)
     //! \brief Gets the memory page size from a system for the current CPU (often 4096B)
     //! \return Pagesize of system. Returns 4096 as default safe value if cannot be determined.
     size_t get_System_Pagesize(void);
+
+    //! \fn M_INLINE void free_page_aligned(void* ptr)
+    //! \brief convenience function around free_aligned.
+    M_PARAM_WO(1) static M_INLINE void free_page_aligned(void* M_NULLABLE ptr)
+    {
+        free_aligned(ptr);
+    }
 
     //! \fn M_FUNC_ATTR_MALLOC void* malloc_page_aligned(size_t size)
     //! \brief allocates page aligned memory.
@@ -1070,18 +1158,16 @@ extern "C"
     //! \param[in] size number of bytes to allocate
     //! \return pointer to allocated memory to be free'd by the caller with free_page_aligned(). returns a null pointer
     //! on failure.
-    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* malloc_page_aligned(size_t size);
-
-    //! \fn M_INLINE void free_page_aligned(void* ptr)
-    //! \brief convenience function around free_aligned.
-    static M_INLINE void free_page_aligned(void* ptr)
-    {
-        free_aligned(ptr);
-    }
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* M_NULLABLE malloc_page_aligned(size_t size)
+        // clang-format off
+    M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+    M_DIAG_ERROR(size == 0, "size must be non-zero")
+        // clang-format on
+        ;
 
     //! \fn M_INLINE void safe_free_page_aligned_core(void** mem)
     //! \brief convenience function around free_aligned.
-    static M_INLINE void safe_free_page_aligned_core(void** mem)
+    M_PARAM_RW(1) static M_INLINE void safe_free_page_aligned_core(void* M_NULLABLE* M_NULLABLE mem)
     {
         if (mem && *mem)
         {
@@ -1147,9 +1233,14 @@ extern "C"
     //! \param[in] count The number of elements to allocate.
     //! \param[in] size The size of each element.
     //! \return A pointer to the allocated memory block, or NULL on failure.
-    M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* calloc_page_aligned(size_t num, size_t size);
+    M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* M_NULLABLE calloc_page_aligned(size_t num, size_t size)
+        // clang-format off
+    M_DIAG_WARN((num != 0 && size > RSIZE_MAX / num), "allocating more than RSIZE_MAX bytes may fail")
+    M_DIAG_ERROR(num == 0 || size == 0, "num and size must be non-zero")
+        // clang-format on
+        ;
 
-    //! \fn M_FUNC_ATTR_MALLOC void* realloc_page_aligned(void* alignedPtr, size_t originalSize, size_t size)
+    //! \fn void* realloc_page_aligned(void* alignedPtr, size_t originalSize, size_t size)
     //! \brief Allocates or reallocated a memory page aligned block of memory.
     //!
     //! \param[in] alignedPtr pointer to block or memory to reallocate. If null, allocates new memory
@@ -1158,7 +1249,15 @@ extern "C"
     //! not be preserved.
     //! \param[in] size The size of each element.
     //! \return A pointer to the allocated memory block, or NULL on failure.
-    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(3) void* realloc_page_aligned(void* alignedPtr, size_t originalSize, size_t size);
+    M_NODISCARD
+    M_PARAM_RW_SIZE(1, 2)
+    M_MALLOC_SIZE(3)
+    void* M_NULLABLE realloc_page_aligned(void* M_NULLABLE alignedPtr, size_t originalSize, size_t size)
+        // clang-format off
+    M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+    M_DIAG_ERROR(size == 0, "size must be non-zero")
+        // clang-format on
+        ;
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_malloc_page_aligned(size_t size)
     //! \brief Allocates aligned memory with bounds checking.
@@ -1172,7 +1271,13 @@ extern "C"
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a size is zero
-    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* safe_malloc_page_aligned(size_t size);
+    M_NODISCARD
+    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* M_NULLABLE safe_malloc_page_aligned(size_t size)
+        // clang-format off
+    M_DIAG_ERROR(size == 0, "size must be non-zero")
+    M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+        // clang-format on
+        ;
 
     //! \fn M_FUNC_ATTR_MALLOC void* safe_calloc_page_aligned(size_t count, size_t size)
     //! \brief Allocates page aligned memory for an array with bounds checking.
@@ -1189,9 +1294,15 @@ extern "C"
     //! - \a count or \a size is zero
     //!
     //! - \a count * \a size results in an overflow
-    M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* safe_calloc_page_aligned(size_t count, size_t size);
+    M_NODISCARD
+    M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* M_NULLABLE safe_calloc_page_aligned(size_t count, size_t size)
+        // clang-format off
+    M_DIAG_ERROR(count == 0 || size == 0, "count and size must be non-zero")
+    M_DIAG_WARN((count != 0 && size > RSIZE_MAX / count), "allocating more than RSIZE_MAX bytes may fail")
+        // clang-format on
+        ;
 
-    //! \fn M_FUNC_ATTR_MALLOC void* safe_realloc_page_aligned(void* block, size_t originalSize, size_t size)
+    //! \fn void* safe_realloc_page_aligned(void* block, size_t originalSize, size_t size)
     //! \brief Allocates or reallocated a memory page aligned block of memory. Performs extra bounds checking
     //! such as what is found in safe_malloc.
     //!
@@ -1201,9 +1312,17 @@ extern "C"
     //! not be preserved.
     //! \param[in] size The size of each element.
     //! \return A pointer to the allocated memory block, or NULL on failure.
-    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(3) void* safe_realloc_page_aligned(void* block, size_t originalSize, size_t size);
+    M_NODISCARD
+    M_PARAM_RW_SIZE(1, 2)
+    M_MALLOC_SIZE(3)
+    void* M_NULLABLE safe_realloc_page_aligned(void* M_NULLABLE block, size_t originalSize, size_t size)
+        // clang-format off
+    M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+    M_DIAG_ERROR(size == 0, "size must be non-zero")
+        // clang-format on
+        ;
 
-    //! \fn M_FUNC_ATTR_MALLOC void* safe_reallocf_page_aligned(void** block, size_t originalSize, size_t size)
+    //! \fn void* safe_reallocf_page_aligned(void** block, size_t originalSize, size_t size)
     //! \brief Allocates or reallocated a memory page aligned block of memory. Performs extra bounds checking
     //! such as what is found in safe_malloc. If memory allocation fails, original block is freed.
     //!
@@ -1213,9 +1332,14 @@ extern "C"
     //! not be preserved.
     //! \param[in] size The size of each element.
     //! \return A pointer to the allocated memory block, or NULL on failure.
-    M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(3) void* safe_reallocf_page_aligned(void** block,
-                                                                         size_t originalSize,
-                                                                         size_t size);
+    M_NODISCARD
+    M_PARAM_RW(1)
+    M_MALLOC_SIZE(3)
+    void* M_NULLABLE safe_reallocf_page_aligned(void* M_NULLABLE* M_NULLABLE block, size_t originalSize, size_t size)
+        // clang-format off
+    M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+        // clang-format on
+        ;
 
     //! \fn static M_INLINE int memory_regions_overlap(const void* M_RESTRICT ptr1,
     //!                                                rsize_t                size1,
@@ -1227,12 +1351,18 @@ extern "C"
     //! \param[in] ptr2 pointer to the second memory region to check
     //! \param[in] size2 size of the second memory region
     //! \return 0 regions do not overlap. Nonzero means the regions overlap
-    M_PARAM_RO(1)
-    M_PARAM_RO(3)
-    static M_INLINE int memory_regions_overlap(const void* M_RESTRICT ptr1,
-                                               rsize_t                size1,
-                                               const void* M_RESTRICT ptr2,
-                                               rsize_t                size2)
+    M_PARAM_RO_SIZE(1, 2)
+    M_PARAM_RO_SIZE(3, 4)
+    static M_INLINE int memory_regions_overlap(const void* M_RESTRICT M_NULLABLE ptr1,
+                                               rsize_t                           size1,
+                                               const void* M_RESTRICT M_NULLABLE ptr2,
+                                               rsize_t                           size2)
+        M_DIAG_WARN(ptr1 == M_NULLPTR, "ptr1 is NULL. Possible usage error")
+            M_DIAG_WARN(size1 == 0, "size1 is zero. Possible usage error")
+                M_DIAG_WARN(size1 > RSIZE_MAX, "size1 > RSIZE_MAX. Possible usage error")
+                    M_DIAG_WARN(ptr2 == M_NULLPTR, "ptr2 is NULL. Possible usage error")
+                        M_DIAG_WARN(size2 == 0, "size1 is zero. Possible usage error")
+                            M_DIAG_WARN(size2 > RSIZE_MAX, "size > RSIZE_MAX. Possible usage error")
     {
         // casting a null pointer to uintptr_t results in a zero. This should be
         // safe.
@@ -1267,7 +1397,8 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    M_INLINE errno_t safe_memmove(void* dest, rsize_t destsz, const void* src, rsize_t count)
+    M_INLINE M_PARAM_WO_SIZE(1, 2) M_PARAM_RO_SIZE(3, 4) errno_t
+        safe_memmove(void* M_NONNULL dest, rsize_t destsz, const void* M_NONNULL src, rsize_t count)
     {
         return safe_memmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
                                  "safe_memmove(dest, destsz, src, count)");
@@ -1329,7 +1460,10 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    M_INLINE errno_t safe_memcpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t count)
+    M_INLINE M_PARAM_WO_SIZE(1, 2) M_PARAM_RO_SIZE(3, 4) errno_t safe_memcpy(void* M_RESTRICT M_NONNULL       dest,
+                                                                             rsize_t                          destsz,
+                                                                             const void* M_RESTRICT M_NONNULL src,
+                                                                             rsize_t                          count)
     {
         return safe_memcpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
                                 "safe_memcpy(dest, destsz, src, count)");
@@ -1395,8 +1529,11 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    M_INLINE errno_t
-    safe_memccpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t count)
+    M_INLINE M_PARAM_WO_SIZE(1, 2) M_PARAM_RO_SIZE(3, 5) errno_t safe_memccpy(void* M_RESTRICT M_NONNULL       dest,
+                                                                              rsize_t                          destsz,
+                                                                              const void* M_RESTRICT M_NONNULL src,
+                                                                              int                              c,
+                                                                              rsize_t                          count)
     {
         return safe_memccpy_impl(dest, destsz, src, c, count, __FILE__, __func__, __LINE__,
                                  "safe_memccpy(dest, destsz, src, c, count)");
@@ -1461,8 +1598,11 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    M_INLINE errno_t
-    safe_memcmove(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, int c, rsize_t count)
+    M_INLINE M_PARAM_WO_SIZE(1, 2) M_PARAM_RO_SIZE(3, 5) errno_t safe_memcmove(void* M_RESTRICT M_NONNULL       dest,
+                                                                               rsize_t                          destsz,
+                                                                               const void* M_RESTRICT M_NONNULL src,
+                                                                               int                              c,
+                                                                               rsize_t                          count)
     {
         return safe_memcmove_impl(dest, destsz, src, c, count, __FILE__, __func__, __LINE__,
                                   "safe_memcmove(dest, destsz, src, c, count)");
@@ -1506,7 +1646,8 @@ extern "C"
     //! may mean that the pointer is 8 byte aligned but also 16 byte aligned.
     //! if using this to determine if memory alignment is correct, do get_memalignment(ptr) >= alignment
     M_PARAM_RO(1)
-    static M_INLINE size_t get_memalignment(const void* ptr)
+    static M_INLINE size_t get_memalignment(const void* M_NULLABLE ptr)
+        M_DIAG_WARN(ptr == M_NULLPTR, "ptr is NULL. Possible usage error")
     {
         return M_REINTERPRET_CAST(uintptr_t, ptr) & (~M_REINTERPRET_CAST(uintptr_t, ptr) + 1);
     }
@@ -1517,27 +1658,34 @@ extern "C"
 //! \warning Do not use on heap allocated memory!
 //! \param[in] array stack array to determine the size of.
 //! \return number of bytes allocated on the stack for the array
-#define SIZE_OF_STACK_ARRAY(array) (sizeof(array) / sizeof((*array)))
+#if defined(HAS_STDCOUNTOF) && !defined(__cplusplus)
+#    define SIZE_OF_STACK_ARRAY(array) (_Countof(array))
+#elif defined(_countof)
+// https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/countof-macro?view=msvc-170
+#    define SIZE_OF_STACK_ARRAY(array) (_countof(array))
+#else
+#    define SIZE_OF_STACK_ARRAY(array) (sizeof(array) / sizeof((*(array))))
+#endif // HAS_STDCOUNTOF
 
 #if defined(__cplusplus)
 }
 
 #    if !defined(safe_free)
-template <typename T> M_INLINE void safe_free(T** mem)
+template <typename T> M_INLINE void safe_free(T* M_NULLABLE* M_NULLABLE mem)
 {
     safe_free_core(reinterpret_cast<void**>(mem));
 }
 #    endif // safe_free
 
 #    if !defined(safe_free_aligned)
-template <typename T> M_INLINE void safe_free_aligned(T** mem)
+template <typename T> M_INLINE void safe_free_aligned(T* M_NULLABLE* M_NULLABLE mem)
 {
     safe_free_aligned_core(reinterpret_cast<void**>(mem));
 }
 #    endif // safe_free_aligned
 
 #    if !defined(safe_free_page_aligned)
-template <typename T> M_INLINE void safe_free_page_aligned(T** mem)
+template <typename T> M_INLINE void safe_free_page_aligned(T* M_NULLABLE* M_NULLABLE mem)
 {
     safe_free_aligned_core(reinterpret_cast<void**>(mem));
 }

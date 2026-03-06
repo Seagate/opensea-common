@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -25,7 +25,6 @@ DISABLE_WARNING_4255
 RESTORE_WARNING_4255
 void start_Timer(seatimer_t* timer)
 {
-    DISABLE_NONNULL_COMPARE
     if (timer != M_NULLPTR)
     {
         LARGE_INTEGER tempLargeInt;
@@ -39,12 +38,10 @@ void start_Timer(seatimer_t* timer)
             }
         }
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 void stop_Timer(seatimer_t* timer)
 {
-    DISABLE_NONNULL_COMPARE
     if (timer != M_NULLPTR)
     {
         LARGE_INTEGER tempLargeInt;
@@ -58,7 +55,6 @@ void stop_Timer(seatimer_t* timer)
             }
         }
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 uint64_t get_Nano_Seconds(seatimer_t timer)
@@ -102,7 +98,6 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
 // (linux) https://www.man7.org/linux/man-pages/man3/clock_gettime.3.html
 void start_Timer(seatimer_t* timer)
 {
-    DISABLE_NONNULL_COMPARE
     if (timer != M_NULLPTR)
     {
         struct timespec startTimespec;
@@ -125,12 +120,10 @@ void start_Timer(seatimer_t* timer)
         //       printf("Bad start_timer Ret:  %d\n",ret);
         //    }
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 void stop_Timer(seatimer_t* timer)
 {
-    DISABLE_NONNULL_COMPARE
     if (timer != M_NULLPTR)
     {
         struct timespec stopTimespec;
@@ -153,7 +146,6 @@ void stop_Timer(seatimer_t* timer)
         //       printf("Bad stop_timer Ret:  %d\n",ret);
         //    }
     }
-    RESTORE_NONNULL_COMPARE
 }
 
 uint64_t get_Nano_Seconds(seatimer_t timer)
