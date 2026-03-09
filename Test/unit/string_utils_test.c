@@ -917,6 +917,10 @@ static void test_find_first_occurrence_in_string(void) {
 static void test_wildcard_match(void) {
     TEST_ASSERT(wildcard_match("he*o", "hello"), "Pattern with wildcard should match string");
     TEST_ASSERT(wildcard_match("h?llo", "hello"), "Pattern with single character wildcard should match string");
+    TEST_ASSERT(wildcard_match("*", "anything"), "Wildcard pattern should match any string");
+    TEST_ASSERT(wildcard_match("h*o", "ho"), "Pattern with wildcard should match string with zero characters in place of wildcard");
+    TEST_ASSERT(!wildcard_match("he*o", "hi"), "Pattern with wildcard should not match non-matching string");
+    TEST_ASSERT(!wildcard_match("h*o", "hold"), "Pattern with wildcard should not match string that does not fit the pattern");
 }
 
 void run_string_utils_tests(void) {
