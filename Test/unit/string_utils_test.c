@@ -890,9 +890,11 @@ static void test_convert_String_To_Inverse_Case_Len(void) {
 static void test_find_last_occurrence_in_string(void) {
     const char* str = "This test string contains the word test multiple times to test the function.";
     const char* substr = "test";
+    const char* substr2 = "the";
     size_t offset = find_last_occurrence_in_string(str, substr);
-    printf("offset: %zu\n", offset);
-    TEST_ASSERT_EQ(offset, 17, "Last occurrence of substring should be at offset 17 from end of string");
+    size_t offset2 = find_last_occurrence_in_string(str, substr2);
+    TEST_ASSERT_EQ(offset, 18, "Last occurrence of substring should be at offset 18 from end of string");
+    TEST_ASSERT_EQ(offset2, 13, "Last occurrence of substring 'the' should be at offset 13 from end of string");
 }
 
 void run_string_utils_tests(void) {
