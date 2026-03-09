@@ -83,13 +83,13 @@ static void test_BITSPERBYTE(void) {
 }
 
 // UINT8_MAX = 0xFF
-// static void test_M_ByteN(void) {
-//     for (int n = 0; n < 8; n++) {
-//         char msg[50];
-//         snprintf(msg, sizeof(msg), "Set %dth byte to all 1s", n);
-//         TEST_ASSERT_EQ(M_ByteN(n), ((uint64_t)UINT8_MAX << (n * BITSPERBYTE)), msg);
-//     }
-// }
+static void test_M_ByteN(void) {
+    for (int n = 0; n < 8; n++) {
+        char msg[50];
+        snprintf(msg, sizeof(msg), "Set %dth byte to all 1s", n);
+        TEST_ASSERT_EQ(M_ByteN(n), ((uint64_t)UINT8_MAX << (n * BITSPERBYTE)), msg);
+    }
+}
 
 static void test_M_Byte0(void) {
     TEST_ASSERT_EQ(M_Byte0(SERIAL_NUM), (uint8_t)0xEF, "Extracts the lowest byte from a 64-bit integer and casts it to uint8_t");
@@ -4083,7 +4083,7 @@ void run_bit_manip_tests(void)
     test_M_WordInt2();
     test_M_WordInt3();
     test_BITSPERBYTE();
-    // test_M_ByteN();
+    test_M_ByteN();
     test_M_Byte0();
     test_M_Byte1();
     test_M_Byte2();
