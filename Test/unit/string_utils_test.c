@@ -902,6 +902,19 @@ static void test_find_last_occurrence_in_string(void) {
     TEST_ASSERT_EQ(offset3, strlen(str), "Should return size of string when substring is not found");
 }
 
+static void test_find_first_occurrence_in_string(void) {
+    const char* str = "This test string contains the word test multiple times to test the function.";
+    const char* substr = "test";
+    size_t offset = find_first_occurrence_in_string(str, substr);
+    printf("Offset of first occurrence: %zu\n", offset);
+    TEST_ASSERT_EQ(offset, 6, "First occurrence of substring should be at offset 6 from start of string");
+
+    // Test for substring not found
+    const char* substr2 = "notfound";
+    size_t offset2 = find_first_occurrence_in_string(str, substr2);
+    TEST_ASSERT_EQ(offset2, strlen(str), "Should return size of string when substring is not found");
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -955,4 +968,5 @@ void run_string_utils_tests(void) {
     test_convert_String_To_Inverse_Case();
     test_convert_String_To_Inverse_Case_Len();
     test_find_last_occurrence_in_string();
+    test_find_first_occurrence_in_string();
 }
