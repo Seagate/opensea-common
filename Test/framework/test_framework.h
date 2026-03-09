@@ -20,6 +20,8 @@ void print_test_summary(void);
         test_record((cond), (msg), __FILE__, __LINE__); \
     } while(0)
 
+#define TEST_ASSERT_FALSE(msg) TEST_ASSERT(0, (msg));
+
 #define TEST_ASSERT_EQ(a, b, msg) TEST_ASSERT((a) == (b), (msg))
 
 #define TEST_ASSERT_NEQ(a, b, msg) TEST_ASSERT((a) != (b), (msg))
