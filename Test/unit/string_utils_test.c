@@ -867,6 +867,26 @@ static void test_convert_String_To_Lower_Case_Len(void) {
     TEST_ASSERT_EQ(strcmp(str, "hello world!"), 0, "String should be converted to lower case using convert_String_To_Lower_Case_Len");
 }
 
+static void test_convert_String_To_Inverse_Case(void) {
+    char str[] = "hello world!";
+    convert_String_To_Inverse_Case(str);
+    TEST_ASSERT_EQ(strcmp(str, "HELLO WORLD!"), 0, "Lower case string should be converted to upper case");
+
+    char str2[] = "HELLO WORLD!";
+    convert_String_To_Inverse_Case(str2);
+    TEST_ASSERT_EQ(strcmp(str2, "hello world!"), 0, "Upper case string should be converted to lower case");
+}
+
+static void test_convert_String_To_Inverse_Case_Len(void) {
+    char str[] = "hello world!";
+    convert_String_To_Inverse_Case_Len(str, sizeof(str));
+    TEST_ASSERT_EQ(strcmp(str, "HELLO WORLD!"), 0, "Lower case string should be converted to upper case using convert_String_To_Inverse_Case_Len");
+
+    char str2[] = "HELLO WORLD!";
+    convert_String_To_Inverse_Case_Len(str2, sizeof(str2));
+    TEST_ASSERT_EQ(strcmp(str2, "hello world!"), 0, "Upper case string should be converted to lower case using convert_String_To_Inverse_Case_Len");
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -917,4 +937,6 @@ void run_string_utils_tests(void) {
     test_convert_String_To_Upper_Case_Len();
     test_convert_String_To_Lower_Case();
     test_convert_String_To_Lower_Case_Len();
+    test_convert_String_To_Inverse_Case();
+    test_convert_String_To_Inverse_Case_Len();
 }
