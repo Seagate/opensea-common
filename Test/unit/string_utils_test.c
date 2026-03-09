@@ -814,7 +814,7 @@ static void test_remove_Leading_Whitespace(void) {
 
 static void test_remove_Leading_Whitespace_Len(void) {
     char str[] = "         Hello World";
-    remove_Leading_Whitespace_Len(str, sizeof(str));
+    remove_Leading_Whitespace_Len(str, strlen(str));
     TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Leading whitespace should be removed using remove_Leading_Whitespace_Len");
 }
 
@@ -826,7 +826,7 @@ static void test_remove_Leading_And_Trailing_Whitespace(void) {
 
 static void test_remove_Leading_And_Trailing_Whitespace_Len(void) {
     char str[] = "   Hello World        ";
-    remove_Leading_And_Trailing_Whitespace_Len(str, sizeof(str));
+    remove_Leading_And_Trailing_Whitespace_Len(str, strlen(str));
     printf("Result after removing leading and trailing whitespace: '%s'\n", str);
     TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Leading and trailing whitespace should be removed using remove_Leading_And_Trailing_Whitespace_Len");
 }
@@ -839,7 +839,7 @@ static void test_remove_Leading_And_Trailing_Control_Char(void) {
 
 static void test_remove_Leading_And_Trailing_Control_Char_Len(void) {
     char str[] = "\n\tHello\n\t";
-    remove_Leading_And_Trailing_Control_Char_Len(str, sizeof(str));
+    remove_Leading_And_Trailing_Control_Char_Len(str, strlen(str));
     TEST_ASSERT_EQ(strcmp(str, "Hello"), 0, "Leading and trailing control characters removed using remove_Leading_And_Trailing_Control_Char_Len");
 }
 
@@ -851,7 +851,7 @@ static void test_convert_String_To_Upper_Case(void) {
 
 static void test_convert_String_To_Upper_Case_Len(void) {
     char str[] = "HEllO World!";
-    convert_String_To_Upper_Case_Len(str, sizeof(str));
+    convert_String_To_Upper_Case_Len(str, strlen(str));
     TEST_ASSERT_EQ(strcmp(str, "HELLO WORLD!"), 0, "String should be converted to upper case using convert_String_To_Upper_Case_Len");
 }
 
@@ -863,7 +863,7 @@ static void test_convert_String_To_Lower_Case(void) {
 
 static void test_convert_String_To_Lower_Case_Len(void) {
     char str[] = "HEllO World!";
-    convert_String_To_Lower_Case_Len(str, sizeof(str));
+    convert_String_To_Lower_Case_Len(str, strlen(str));
     TEST_ASSERT_EQ(strcmp(str, "hello world!"), 0, "String should be converted to lower case using convert_String_To_Lower_Case_Len");
 }
 
@@ -879,11 +879,11 @@ static void test_convert_String_To_Inverse_Case(void) {
 
 static void test_convert_String_To_Inverse_Case_Len(void) {
     char str[] = "hello world!";
-    convert_String_To_Inverse_Case_Len(str, sizeof(str));
+    convert_String_To_Inverse_Case_Len(str, strlen(str));
     TEST_ASSERT_EQ(strcmp(str, "HELLO WORLD!"), 0, "Lower case string should be converted to upper case using convert_String_To_Inverse_Case_Len");
 
     char str2[] = "HELLO WORLD!";
-    convert_String_To_Inverse_Case_Len(str2, sizeof(str2));
+    convert_String_To_Inverse_Case_Len(str2, strlen(str2));
     TEST_ASSERT_EQ(strcmp(str2, "hello world!"), 0, "Upper case string should be converted to lower case using convert_String_To_Inverse_Case_Len");
 }
 
@@ -945,7 +945,7 @@ void run_string_utils_tests(void) {
     test_remove_Leading_Whitespace();
     test_remove_Leading_Whitespace_Len();
     test_remove_Leading_And_Trailing_Whitespace();
-    // test_remove_Leading_And_Trailing_Whitespace_Len();
+    test_remove_Leading_And_Trailing_Whitespace_Len();
     test_remove_Leading_And_Trailing_Control_Char();
     test_remove_Leading_And_Trailing_Control_Char_Len();
     test_convert_String_To_Upper_Case();
