@@ -898,8 +898,11 @@ static void test_find_last_occurrence_in_string(void) {
 
     // Test for substring not found
     const char* substr3 = "notfound";
+    const char* substr4 = "plan";
     size_t offset3 = find_last_occurrence_in_string(str, substr3);
+    size_t offset4 = find_last_occurrence_in_string(substr3, substr4);
     printf("Offset for substr3 not found: %zu\n", offset3);
+    printf("Offset for substr4 not found: %zu\n", offset4);
 }
 
 void run_string_utils_tests(void) {
