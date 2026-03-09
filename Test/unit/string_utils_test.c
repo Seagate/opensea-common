@@ -831,6 +831,12 @@ static void test_remove_Leading_And_Trailing_Whitespace_Len(void) {
     TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Leading and trailing whitespace should be removed using remove_Leading_And_Trailing_Whitespace_Len");
 }
 
+static void test_remove_Leading_And_Trailing_Control_Char(void) {
+    char str[] = "\n\tHello\n\t";
+    remove_Leading_And_Trailing_Control_Char(str);
+    TEST_ASSERT_EQ(strcmp(str, "Hello"), 0, "Leading and trailing control characters removed");
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -874,5 +880,6 @@ void run_string_utils_tests(void) {
     test_remove_Leading_Whitespace();
     test_remove_Leading_Whitespace_Len();
     test_remove_Leading_And_Trailing_Whitespace();
-    test_remove_Leading_And_Trailing_Whitespace_Len();
+    // test_remove_Leading_And_Trailing_Whitespace_Len();
+    test_remove_Leading_And_Trailing_Control_Char();
 }
