@@ -801,7 +801,7 @@ static void test_remove_Trailing_Whitespace(void) {
 
 static void test_remove_Trailing_Whitespace_Len(void) {
     char str[] = "Hello World        ";
-    remove_Trailing_Whitespace_Len(str, sizeof(str));
+    remove_Trailing_Whitespace_Len(str, strlen(str));
     printf("Result after removing trailing whitespace up to length 1: '%s'\n", str);
     TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Trailing whitespace should be removed using remove_Trailing_Whitespace_Len");
 }
@@ -899,7 +899,6 @@ static void test_find_last_occurrence_in_string(void) {
     // Test for substring not found
     const char* substr3 = "notfound";
     size_t offset3 = find_last_occurrence_in_string(str, substr3);
-    printf("Offset when substring is not found: %zu and size of string: %zu\n", offset3, strlen(str));
     TEST_ASSERT_EQ(offset3, strlen(str), "Should return size of string when substring is not found");
 }
 
@@ -942,7 +941,7 @@ void run_string_utils_tests(void) {
     test_byte_Swap_String_Len();
     test_remove_Whitespace_Left();
     test_remove_Trailing_Whitespace();
-    // test_remove_Trailing_Whitespace_Len();
+    test_remove_Trailing_Whitespace_Len();
     test_remove_Leading_Whitespace();
     test_remove_Leading_Whitespace_Len();
     test_remove_Leading_And_Trailing_Whitespace();
