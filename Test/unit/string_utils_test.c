@@ -899,7 +899,7 @@ static void test_find_last_occurrence_in_string(void) {
     // Test for substring not found
     const char* substr3 = "notfound";
     size_t offset3 = find_last_occurrence_in_string(str, substr3);
-    printf("Offset for substring not found: %zu\n", offset3);
+    printf("Offset for substr3 not found: %zu\n", offset3);
 }
 
 void run_string_utils_tests(void) {
