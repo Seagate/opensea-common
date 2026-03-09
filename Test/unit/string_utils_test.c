@@ -944,6 +944,14 @@ static void test_wildcard_case_match(void) {
     TEST_ASSERT(!wildcard_case_match("h*o", "hold"), "Pattern with wildcard should not match string that does not fit the pattern");
 }
 
+static void test_string_version_compare(void) {
+    TEST_ASSERT(string_version_compare("1.0.0", "1.0.0") == 0, "Identical versions should compare equal");
+    TEST_ASSERT(string_version_compare("1.0.1", "1.0.0") > 0, "Version 1.0.1 should be greater than 1.0.0");
+    TEST_ASSERT(string_version_compare("1.0.0", "1.0.1") < 0, "Version 1.0.0 should be less than 1.0.1");
+    TEST_ASSERT(string_version_compare("2.0", "10.0") < 0, "Version 2.0 should be less than 10.0");
+    TEST_ASSERT(string_version_compare("file9.txt", "file10.txt") < 0, "Version file9.txt should be less than file10.txt");
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -1001,4 +1009,5 @@ void run_string_utils_tests(void) {
     test_wildcard_match();
     test_wildcard_Match();
     test_wildcard_case_match();
+    test_string_version_compare();
 }
