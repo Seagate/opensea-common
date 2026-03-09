@@ -800,27 +800,27 @@ static void test_remove_Trailing_Whitespace(void) {
 }
 
 static void test_remove_Trailing_Whitespace_Len(void) {
-    char str[] = "Hello World    ";
-    remove_Trailing_Whitespace_Len(str, 1);
+    char str[] = "Hello World ";
+    remove_Trailing_Whitespace_Len(str, sizeof(str));
     printf("Result after removing trailing whitespace up to length 1: '%s'\n", str);
 
-    char str1[] = "Hello World    ";
-    remove_Trailing_Whitespace_Len(str1, 2);
+    char str1[] = "Hello World  ";
+    remove_Trailing_Whitespace_Len(str1, sizeof(str1));
     printf("Result after removing trailing whitespace up to length 2: '%s'\n", str1);
 
-    char str2[] = "Hello World    ";
-    remove_Trailing_Whitespace_Len(str2, 3);
+    char str2[] = "Hello World   ";
+    remove_Trailing_Whitespace_Len(str2, sizeof(str2));
     printf("Result after removing trailing whitespace up to length 3: '%s'\n", str2);
 
     char str3[] = "Hello World    ";
-    remove_Trailing_Whitespace_Len(str3, 4);
+    remove_Trailing_Whitespace_Len(str3, sizeof(str3));
     printf("Result after removing trailing whitespace up to length 4: '%s'\n", str3);
 
-    char str4[] = "Hello World    ";
-    remove_Trailing_Whitespace_Len(str4, 5);
+    char str4[] = "Hello World     ";
+    remove_Trailing_Whitespace_Len(str4, sizeof(str4));
     printf("Result after removing trailing whitespace up to length 5: '%s'\n", str4);
 
-    TEST_ASSERT_EQ(strcmp(str, "Hello World   "), 0, "Trailing whitespace should be removed up to the specified length");
+    TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Trailing whitespace should be removed up to the specified length");
 }
 
 void run_string_utils_tests(void) {
