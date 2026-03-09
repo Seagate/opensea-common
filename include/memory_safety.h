@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -248,7 +248,7 @@ extern "C"
     //! safe_free_wchar(&memory);
     //! \endcode
     M_PARAM_RW(1)
-    static M_INLINE void safe_free_wchar(wchar_t * M_NONNULL * M_NULLABLE mem)
+    static M_INLINE void safe_free_wchar(wchar_t* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -507,7 +507,7 @@ extern "C"
     //! safe_free_tchar(&memory);
     //! \endcode
     M_PARAM_RW(1)
-    static M_INLINE void safe_free_tchar(TCHAR * M_NONNULL * M_NULLABLE str)
+    static M_INLINE void safe_free_tchar(TCHAR* M_NONNULL* M_NULLABLE str)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, str));
     }
@@ -520,13 +520,13 @@ extern "C"
     //! \param[in,out] mem pointer to heap memory you want to free. Uses double
     //! pointer so that upon completion it will be set to M_NULLPTR
     M_PARAM_RW(1)
-    static M_INLINE void safe_free_dirent(struct dirent * M_NONNULL * M_NULLABLE ent)
+    static M_INLINE void safe_free_dirent(struct dirent* M_NONNULL* M_NULLABLE ent)
     {
         safe_free_core(M_REINTERPRET_CAST(void**, ent));
     }
 
     M_PARAM_RW(1)
-    static M_INLINE void safe_free_dirent_list(struct dirent * M_NONNULL * M_NONNULL * M_NULLABLE list)
+    static M_INLINE void safe_free_dirent_list(struct dirent* M_NONNULL* M_NONNULL* M_NULLABLE list)
     {
         if (list != M_NULLPTR)
         {
@@ -700,7 +700,7 @@ extern "C"
     //! safe_free_aligned_wchar(&memory);
     //! \endcode
     M_PARAM_RW(1)
-    static M_INLINE void safe_free_aligned_wchar(wchar_t * M_NONNULL * M_NULLABLE mem)
+    static M_INLINE void safe_free_aligned_wchar(wchar_t* M_NONNULL* M_NULLABLE mem)
     {
         safe_free_aligned_core(M_REINTERPRET_CAST(void**, mem));
     }
@@ -1671,21 +1671,21 @@ extern "C"
 }
 
 #    if !defined(safe_free)
-template <typename T> M_INLINE void safe_free(T * M_NULLABLE * M_NULLABLE mem)
+template <typename T> M_INLINE void safe_free(T* M_NULLABLE* M_NULLABLE mem)
 {
     safe_free_core(reinterpret_cast<void**>(mem));
 }
 #    endif // safe_free
 
 #    if !defined(safe_free_aligned)
-template <typename T> M_INLINE void safe_free_aligned(T * M_NULLABLE * M_NULLABLE mem)
+template <typename T> M_INLINE void safe_free_aligned(T* M_NULLABLE* M_NULLABLE mem)
 {
     safe_free_aligned_core(reinterpret_cast<void**>(mem));
 }
 #    endif // safe_free_aligned
 
 #    if !defined(safe_free_page_aligned)
-template <typename T> M_INLINE void safe_free_page_aligned(T * M_NULLABLE * M_NULLABLE mem)
+template <typename T> M_INLINE void safe_free_page_aligned(T* M_NULLABLE* M_NULLABLE mem)
 {
     safe_free_aligned_core(reinterpret_cast<void**>(mem));
 }

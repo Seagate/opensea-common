@@ -9,7 +9,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -62,6 +62,34 @@ extern "C"
 #    define M_NULL_RSIZET_CHECK(ptr)        (!(ptr))
 #endif
 
+    //! \def M_STRING_REGIONS_OVERLAP_COMPILE_TIME(ptr1, size1, ptr2, size2)
+    //! \brief Compile-time constant check for potentially overlapping string regions.
+    //!
+    //! This macro can be used with M_DIAG_ERROR to detect overlapping string memory regions using
+    //! pointer arithmetic. The check determines if region 1 [ptr1, ptr1+size1) overlaps with
+    //! region 2 [ptr2, ptr2+size2) by verifying that:
+    //!   - ptr1 starts before region 2 ends (ptr1 < ptr2 + size2), AND
+    //!   - ptr2 starts before region 1 ends (ptr2 < ptr1 + size1)
+    //!
+    //! This uses natural pointer subtraction (no explicit casts), which results in ptrdiff_t
+    //! and is suitable for use in constant expressions with diagnose_if.
+    //!
+    //! \param[in] ptr1 First string/memory region pointer
+    //! \param[in] size1 Size of first region
+    //! \param[in] ptr2 Second string/memory region pointer
+    //! \param[in] size2 Size of second region
+    //! \return True (non-zero) if regions overlap, false (zero) otherwise
+    //!
+    //! \note This macro uses pointer arithmetic and will work for compile-time constant pointers.
+    //!       For runtime cases with dynamic pointers, use the memory_regions_overlap() function
+    //!       from memory_safety.h
+    //!
+    //! \example
+    //! M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, srclen),
+    //!              "source and destination regions overlap")
+#define M_STRING_REGIONS_OVERLAP_COMPILE_TIME(ptr1, size1, ptr2, size2) \
+    (((ptr1) < (ptr2) + (size2)) && ((ptr2) < (ptr1) + (size1)))
+
     //! \fn errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
     //!                              rsize_t                destsz,
     //!                              const char* M_RESTRICT src,
@@ -109,6 +137,7 @@ extern "C"
         M_DIAG_ERROR(destsz == 0, "destsz is zero")
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz is > RSIZE_MAX")
         M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
+        M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, destsz), "source and destination regions overlap. Use safe_strmove instead.")
         // clang-format on
         ;
 
@@ -217,6 +246,7 @@ extern "C"
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz is > RSIZE_MAX")
         M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
         M_DIAG_ERROR(count > RSIZE_MAX, "count is > RSIZE_MAX")
+        M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), "source and destination regions overlap. Use safe_strnmove instead.")
         // clang-format on
         ;
 
@@ -327,8 +357,9 @@ extern "C"
         M_DIAG_ERROR(M_NULL_STR_CHECK(dest), "dest is NULL")
         M_DIAG_ERROR(destsz == 0, "destsz is zero")
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz is > RSIZE_MAX")
-        // TODO Add diagnostic for not enough space in dest to concatenate source
         M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
+        M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, destsz), "source and destination regions overlap")
+        // TODO Add diagnostic for not enough space in dest to concatenate source
         // clang-format on
         ;
 
@@ -390,6 +421,7 @@ extern "C"
         M_DIAG_ERROR(count == 0, "destsz is zero")
         M_DIAG_ERROR(count > RSIZE_MAX, "destsz is > RSIZE_MAX")
         M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
+        M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), "source and destination regions overlap")
         // clang-format on
         ;
 

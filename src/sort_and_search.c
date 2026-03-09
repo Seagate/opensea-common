@@ -8,7 +8,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -134,7 +134,8 @@ void* safe_bsearch_impl(const void* key,
         errno = 0;
         if (count > RSIZE_T_C(0))
         {
-            return bsearch(key, ptr, count, size, compare);
+            // Const cast to deal with changes to bseach for const and non-const searches in C23
+            return M_CONST_CAST(void*, bsearch(key, ptr, count, size, compare));
         }
         else
         {

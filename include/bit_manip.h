@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -35,9 +35,9 @@
 #    endif //__has_include(<stdbit.h>)
 #endif     //__has_include
 
-#if defined(HAVE_STDC_BIT) && defined (__cplusplus)
+#if defined(HAVE_STDC_BIT) && defined(__cplusplus)
 // Manually removing this because C++ does not understand the generic implementations of these functions in C. -TJE
-#undef HAVE_STDC_BIT
+#    undef HAVE_STDC_BIT
 #endif
 
 #if defined(__cplusplus)
@@ -54,7 +54,7 @@ extern "C"
     //! \return lower 32bits of the input 64bit value
     static M_INLINE uint32_t get_DWord0(uint64_t value)
     {
-        return M_STATIC_CAST(uint32_t, value & UINT64_C(0x00000000FFFFFFFF));
+        return M_STATIC_CAST(uint32_t, value& UINT64_C(0x00000000FFFFFFFF));
     }
 
     //! \def M_DoubleWord0(l)
@@ -257,7 +257,9 @@ extern "C"
 //!
 //! This macro sets the nth byte to all 1s by shifting the maximum value of a byte (UINT8_MAX) left by n * 8 bits.
 //! \param n The byte position to set to all 1s.
-#define M_ByteN(n) ((UINT8_MAX << ((n) * BITSPERBYTE)))
+//! \note Casts to uint64_t to ensure no data loss above 32bits since it is otherwise treated as int by default.
+//! This may require casting the result to the correct intended type.
+#define M_ByteN(n) ((M_STATIC_CAST(uint64_t, UINT8_MAX) << ((n) * BITSPERBYTE)))
 
 //! \def M_Byte0
 //! \brief Extracts the lowest byte from a 64-bit integer and casts it to uint8_t.
@@ -678,7 +680,8 @@ extern "C"
     //! \param[in] f float to round
     //! \param[in] c nearest value to round to
     //! \return rounded float value
-#define ROUNDF(f, c) M_STATIC_CAST(float, (M_STATIC_CAST(int, ((f) * (c)) + ((f) >= 0 ? 0.5 : -0.5)) / M_STATIC_CAST(float, (c))))
+#define ROUNDF(f, c)                                                                                                   \
+    M_STATIC_CAST(float, (M_STATIC_CAST(int, ((f) * (c)) + ((f) >= 0 ? 0.5F : -0.5F))) / M_STATIC_CAST(float, (c)))
 
     //! \struct genericint_t
     //! \brief Structure used to help generically retrieve a bit range from
@@ -1592,7 +1595,7 @@ extern "C"
     //! \return returns \a val with the specified bit cleared to 0
     static M_INLINE uint8_t clear_uint8_bit(uint8_t val, uint8_t bitNum)
     {
-        return M_STATIC_CAST(uint8_t, val & M_STATIC_CAST(uint8_t, ~(UINT8_C(1) << bitNum)));
+        return M_STATIC_CAST(uint8_t, val& M_STATIC_CAST(uint8_t, ~(UINT8_C(1) << bitNum)));
     }
 
     //! \fn static M_INLINE uint16_t clear_uint16_bit(uint16_t val, uint16_t bitNum)
@@ -1603,7 +1606,7 @@ extern "C"
     //! \return returns \a val with the specified cleared set to 0
     static M_INLINE uint16_t clear_uint16_bit(uint16_t val, uint16_t bitNum)
     {
-        return M_STATIC_CAST(uint16_t, val & M_STATIC_CAST(uint16_t, ~(UINT16_C(1) << bitNum)));
+        return M_STATIC_CAST(uint16_t, val& M_STATIC_CAST(uint16_t, ~(UINT16_C(1) << bitNum)));
     }
 
     //! \fn static M_INLINE uint32_t clear_uint32_bit(uint32_t val, uint32_t bitNum)
@@ -2404,23 +2407,23 @@ extern "C"
 #endif
     }
 
-    #if !defined (__cplusplus)
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#    define count_leading_zeros(value)                                                                                 \
-        _Generic((value),                                                                                              \
-            unsigned char: count_leading_zeros_uc,                                                                     \
-            unsigned short: count_leading_zeros_us,                                                                    \
-            unsigned int: count_leading_zeros_ui,                                                                      \
-            unsigned long: count_leading_zeros_ul,                                                                     \
-            unsigned long long: count_leading_zeros_ull)(value)
-#else
-#    define count_leading_zeros(value)                                                                                 \
-        (sizeof(value) == sizeof(unsigned char)    ? count_leading_zeros_uc(value)                                     \
-         : sizeof(value) == sizeof(unsigned short) ? count_leading_zeros_us(value)                                     \
-         : sizeof(value) == sizeof(unsigned int)   ? count_leading_zeros_ui(value)                                     \
-         : sizeof(value) == sizeof(unsigned long)  ? count_leading_zeros_ul(value)                                     \
-                                                   : count_leading_zeros_ull(value))
-#endif
+#if !defined(__cplusplus)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#        define count_leading_zeros(value)                                                                             \
+            _Generic((value),                                                                                          \
+                unsigned char: count_leading_zeros_uc,                                                                 \
+                unsigned short: count_leading_zeros_us,                                                                \
+                unsigned int: count_leading_zeros_ui,                                                                  \
+                unsigned long: count_leading_zeros_ul,                                                                 \
+                unsigned long long: count_leading_zeros_ull)(value)
+#    else
+#        define count_leading_zeros(value)                                                                             \
+            (sizeof(value) == sizeof(unsigned char)    ? count_leading_zeros_uc(value)                                 \
+             : sizeof(value) == sizeof(unsigned short) ? count_leading_zeros_us(value)                                 \
+             : sizeof(value) == sizeof(unsigned int)   ? count_leading_zeros_ui(value)                                 \
+             : sizeof(value) == sizeof(unsigned long)  ? count_leading_zeros_ul(value)                                 \
+                                                       : count_leading_zeros_ull(value))
+#    endif
 #endif // __cplusplus
 
     //! \fn static M_INLINE unsigned int count_leading_ones_uc(unsigned char value)
@@ -2498,23 +2501,23 @@ extern "C"
 #endif
     }
 
-    #if !defined (__cplusplus)
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#    define count_leading_ones(value)                                                                                  \
-        _Generic((value),                                                                                              \
-            unsigned char: count_leading_ones_uc,                                                                      \
-            unsigned short: count_leading_ones_us,                                                                     \
-            unsigned int: count_leading_ones_ui,                                                                       \
-            unsigned long: count_leading_ones_ul,                                                                      \
-            unsigned long long: count_leading_ones_ull)(value)
-#else
-#    define count_leading_ones(value)                                                                                  \
-        (sizeof(value) == sizeof(unsigned char)    ? count_leading_ones_uc(value)                                      \
-         : sizeof(value) == sizeof(unsigned short) ? count_leading_ones_us(value)                                      \
-         : sizeof(value) == sizeof(unsigned int)   ? count_leading_ones_ui(value)                                      \
-         : sizeof(value) == sizeof(unsigned long)  ? count_leading_ones_ul(value)                                      \
-                                                   : count_leading_ones_ull(value))
-#endif
+#if !defined(__cplusplus)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#        define count_leading_ones(value)                                                                              \
+            _Generic((value),                                                                                          \
+                unsigned char: count_leading_ones_uc,                                                                  \
+                unsigned short: count_leading_ones_us,                                                                 \
+                unsigned int: count_leading_ones_ui,                                                                   \
+                unsigned long: count_leading_ones_ul,                                                                  \
+                unsigned long long: count_leading_ones_ull)(value)
+#    else
+#        define count_leading_ones(value)                                                                              \
+            (sizeof(value) == sizeof(unsigned char)    ? count_leading_ones_uc(value)                                  \
+             : sizeof(value) == sizeof(unsigned short) ? count_leading_ones_us(value)                                  \
+             : sizeof(value) == sizeof(unsigned int)   ? count_leading_ones_ui(value)                                  \
+             : sizeof(value) == sizeof(unsigned long)  ? count_leading_ones_ul(value)                                  \
+                                                       : count_leading_ones_ull(value))
+#    endif
 #endif // __cplusplus
 
     //! \fn static M_INLINE unsigned int count_trailing_zeros_uc(unsigned char value)
@@ -2667,23 +2670,23 @@ extern "C"
 #endif
     }
 
-    #if !defined (__cplusplus)
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#    define count_trailing_zeros(value)                                                                                \
-        _Generic((value),                                                                                              \
-            unsigned char: count_trailing_zeros_uc,                                                                    \
-            unsigned short: count_trailing_zeros_us,                                                                   \
-            unsigned int: count_trailing_zeros_ui,                                                                     \
-            unsigned long: count_trailing_zeros_ul,                                                                    \
-            unsigned long long: count_trailing_zeros_ull)(value)
-#else
-#    define count_trailing_zeros(value)                                                                                \
-        (sizeof(value) == sizeof(unsigned long long) ? count_trailing_zeros_ull(value)                                 \
-         : sizeof(value) == sizeof(unsigned long)    ? count_trailing_zeros_ul(value)                                  \
-         : sizeof(value) == sizeof(unsigned int)     ? count_trailing_zeros_ui(value)                                  \
-         : sizeof(value) == sizeof(unsigned short)   ? count_trailing_zeros_us(value)                                  \
-                                 : count_trailing_zeros_uc(value))
-#endif
+#if !defined(__cplusplus)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#        define count_trailing_zeros(value)                                                                            \
+            _Generic((value),                                                                                          \
+                unsigned char: count_trailing_zeros_uc,                                                                \
+                unsigned short: count_trailing_zeros_us,                                                               \
+                unsigned int: count_trailing_zeros_ui,                                                                 \
+                unsigned long: count_trailing_zeros_ul,                                                                \
+                unsigned long long: count_trailing_zeros_ull)(value)
+#    else
+#        define count_trailing_zeros(value)                                                                            \
+            (sizeof(value) == sizeof(unsigned long long) ? count_trailing_zeros_ull(value)                             \
+             : sizeof(value) == sizeof(unsigned long)    ? count_trailing_zeros_ul(value)                              \
+             : sizeof(value) == sizeof(unsigned int)     ? count_trailing_zeros_ui(value)                              \
+             : sizeof(value) == sizeof(unsigned short)   ? count_trailing_zeros_us(value)                              \
+                                                         : count_trailing_zeros_uc(value))
+#    endif
 #endif // __cplusplus
 
     //! \fn static M_INLINE unsigned int count_trailing_ones_uc(unsigned char value)
@@ -2761,23 +2764,23 @@ extern "C"
 #endif
     }
 
-    #if !defined (__cplusplus)
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#    define count_trailing_ones(value)                                                                                 \
-        _Generic((value),                                                                                              \
-            unsigned char: count_trailing_ones_uc,                                                                     \
-            unsigned short: count_trailing_ones_us,                                                                    \
-            unsigned int: count_trailing_ones_ui,                                                                      \
-            unsigned long: count_trailing_ones_ul,                                                                     \
-            unsigned long long: count_trailing_ones_ull)(value)
-#else
-#    define count_trailing_ones(value)                                                                                 \
-        (sizeof(value) == sizeof(unsigned char)    ? count_trailing_ones_uc(value)                                     \
-         : sizeof(value) == sizeof(unsigned short) ? count_trailing_ones_us(value)                                     \
-         : sizeof(value) == sizeof(unsigned int)   ? count_trailing_ones_ui(value)                                     \
-         : sizeof(value) == sizeof(unsigned long)  ? count_trailing_ones_ul(value)                                     \
-                                                   : count_trailing_ones_ull(value))
-#endif
+#if !defined(__cplusplus)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#        define count_trailing_ones(value)                                                                             \
+            _Generic((value),                                                                                          \
+                unsigned char: count_trailing_ones_uc,                                                                 \
+                unsigned short: count_trailing_ones_us,                                                                \
+                unsigned int: count_trailing_ones_ui,                                                                  \
+                unsigned long: count_trailing_ones_ul,                                                                 \
+                unsigned long long: count_trailing_ones_ull)(value)
+#    else
+#        define count_trailing_ones(value)                                                                             \
+            (sizeof(value) == sizeof(unsigned char)    ? count_trailing_ones_uc(value)                                 \
+             : sizeof(value) == sizeof(unsigned short) ? count_trailing_ones_us(value)                                 \
+             : sizeof(value) == sizeof(unsigned int)   ? count_trailing_ones_ui(value)                                 \
+             : sizeof(value) == sizeof(unsigned long)  ? count_trailing_ones_ul(value)                                 \
+                                                       : count_trailing_ones_ull(value))
+#    endif
 #endif
 
     //! \fn static M_INLINE unsigned int first_leading_one_uc(unsigned char value)
@@ -2920,23 +2923,23 @@ extern "C"
 #endif
     }
 
-    #if !defined (__cplusplus)
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#    define first_leading_one(value)                                                                                   \
-        _Generic((value),                                                                                              \
-            unsigned char: first_leading_one_uc,                                                                       \
-            unsigned short: first_leading_one_us,                                                                      \
-            unsigned int: first_leading_one_ui,                                                                        \
-            unsigned long: first_leading_one_ul,                                                                       \
-            unsigned long long: first_leading_one_ull)(value)
-#else
-#    define first_leading_one(value)                                                                                   \
-        (sizeof(value) == sizeof(unsigned char)    ? first_leading_one_uc(value)                                       \
-         : sizeof(value) == sizeof(unsigned short) ? first_leading_one_us(value)                                       \
-         : sizeof(value) == sizeof(unsigned int)   ? first_leading_one_ui(value)                                       \
-         : sizeof(value) == sizeof(unsigned long)  ? first_leading_one_ul(value)                                       \
-                                                   : first_leading_one_ull(value))
-#endif
+#if !defined(__cplusplus)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#        define first_leading_one(value)                                                                               \
+            _Generic((value),                                                                                          \
+                unsigned char: first_leading_one_uc,                                                                   \
+                unsigned short: first_leading_one_us,                                                                  \
+                unsigned int: first_leading_one_ui,                                                                    \
+                unsigned long: first_leading_one_ul,                                                                   \
+                unsigned long long: first_leading_one_ull)(value)
+#    else
+#        define first_leading_one(value)                                                                               \
+            (sizeof(value) == sizeof(unsigned char)    ? first_leading_one_uc(value)                                   \
+             : sizeof(value) == sizeof(unsigned short) ? first_leading_one_us(value)                                   \
+             : sizeof(value) == sizeof(unsigned int)   ? first_leading_one_ui(value)                                   \
+             : sizeof(value) == sizeof(unsigned long)  ? first_leading_one_ul(value)                                   \
+                                                       : first_leading_one_ull(value))
+#    endif
 #endif // __cplusplus
 
     //! \fn static M_INLINE unsigned int first_leading_zero_uc(unsigned char value)
@@ -3014,23 +3017,23 @@ extern "C"
 #endif
     }
 
-    #if !defined (__cplusplus)
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#    define first_leading_zero(value)                                                                                  \
-        _Generic((value),                                                                                              \
-            unsigned char: first_leading_zero_uc,                                                                      \
-            unsigned short: first_leading_zero_us,                                                                     \
-            unsigned int: first_leading_zero_ui,                                                                       \
-            unsigned long: first_leading_zero_ul,                                                                      \
-            unsigned long long: first_leading_zero_ull)(value)
-#else
-#    define first_leading_zero(value)                                                                                  \
-        (sizeof(value) == sizeof(unsigned char)    ? first_leading_zero_uc(value)                                      \
-         : sizeof(value) == sizeof(unsigned short) ? first_leading_zero_us(value)                                      \
-         : sizeof(value) == sizeof(unsigned int)   ? first_leading_zero_ui(value)                                      \
-         : sizeof(value) == sizeof(unsigned long)  ? first_leading_zero_ul(value)                                      \
-                                                   : first_leading_zero_ull(value))
-#endif
+#if !defined(__cplusplus)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#        define first_leading_zero(value)                                                                              \
+            _Generic((value),                                                                                          \
+                unsigned char: first_leading_zero_uc,                                                                  \
+                unsigned short: first_leading_zero_us,                                                                 \
+                unsigned int: first_leading_zero_ui,                                                                   \
+                unsigned long: first_leading_zero_ul,                                                                  \
+                unsigned long long: first_leading_zero_ull)(value)
+#    else
+#        define first_leading_zero(value)                                                                              \
+            (sizeof(value) == sizeof(unsigned char)    ? first_leading_zero_uc(value)                                  \
+             : sizeof(value) == sizeof(unsigned short) ? first_leading_zero_us(value)                                  \
+             : sizeof(value) == sizeof(unsigned int)   ? first_leading_zero_ui(value)                                  \
+             : sizeof(value) == sizeof(unsigned long)  ? first_leading_zero_ul(value)                                  \
+                                                       : first_leading_zero_ull(value))
+#    endif
 #endif // __cplusplus
 
     //! \fn static M_INLINE unsigned int count_ones_uc(unsigned char value)
@@ -3151,23 +3154,23 @@ extern "C"
 #endif
     }
 
-    #if !defined (__cplusplus)
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#    define count_ones(value)                                                                                          \
-        _Generic((value),                                                                                              \
-            unsigned char: count_ones_uc,                                                                              \
-            unsigned short: count_ones_us,                                                                             \
-            unsigned int: count_ones_ui,                                                                               \
-            unsigned long: count_ones_ul,                                                                              \
-            unsigned long long: count_ones_ull)(value)
-#else
-#    define count_ones(value)                                                                                          \
-        (sizeof(value) == sizeof(unsigned char)    ? count_ones_uc(value)                                              \
-         : sizeof(value) == sizeof(unsigned short) ? count_ones_us(value)                                              \
-         : sizeof(value) == sizeof(unsigned int)   ? count_ones_ui(value)                                              \
-         : sizeof(value) == sizeof(unsigned long)  ? count_ones_ul(value)                                              \
-                                                   : count_ones_ull(value))
-#endif
+#if !defined(__cplusplus)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#        define count_ones(value)                                                                                      \
+            _Generic((value),                                                                                          \
+                unsigned char: count_ones_uc,                                                                          \
+                unsigned short: count_ones_us,                                                                         \
+                unsigned int: count_ones_ui,                                                                           \
+                unsigned long: count_ones_ul,                                                                          \
+                unsigned long long: count_ones_ull)(value)
+#    else
+#        define count_ones(value)                                                                                      \
+            (sizeof(value) == sizeof(unsigned char)    ? count_ones_uc(value)                                          \
+             : sizeof(value) == sizeof(unsigned short) ? count_ones_us(value)                                          \
+             : sizeof(value) == sizeof(unsigned int)   ? count_ones_ui(value)                                          \
+             : sizeof(value) == sizeof(unsigned long)  ? count_ones_ul(value)                                          \
+                                                       : count_ones_ull(value))
+#    endif
 #endif // __cplusplus
 
     //! \fn static M_INLINE unsigned int count_zeros_uc(unsigned char value)
@@ -3245,23 +3248,23 @@ extern "C"
 #endif
     }
 
-    #if !defined (__cplusplus)
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#    define count_zeros(value)                                                                                         \
-        _Generic((value),                                                                                              \
-            unsigned char: count_zeros_uc,                                                                             \
-            unsigned short: count_zeros_us,                                                                            \
-            unsigned int: count_zeros_ui,                                                                              \
-            unsigned long: count_zeros_ul,                                                                             \
-            unsigned long long: count_zeros_ull)(value)
-#else
-#    define count_zeros(value)                                                                                         \
-        (sizeof(value) == sizeof(unsigned char)    ? count_zeros_uc(value)                                             \
-         : sizeof(value) == sizeof(unsigned short) ? count_zeros_us(value)                                             \
-         : sizeof(value) == sizeof(unsigned int)   ? count_zeros_ui(value)                                             \
-         : sizeof(value) == sizeof(unsigned long)  ? count_zeros_ul(value)                                             \
-                                                   : count_zeros_ull(value))
-#endif
+#if !defined(__cplusplus)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#        define count_zeros(value)                                                                                     \
+            _Generic((value),                                                                                          \
+                unsigned char: count_zeros_uc,                                                                         \
+                unsigned short: count_zeros_us,                                                                        \
+                unsigned int: count_zeros_ui,                                                                          \
+                unsigned long: count_zeros_ul,                                                                         \
+                unsigned long long: count_zeros_ull)(value)
+#    else
+#        define count_zeros(value)                                                                                     \
+            (sizeof(value) == sizeof(unsigned char)    ? count_zeros_uc(value)                                         \
+             : sizeof(value) == sizeof(unsigned short) ? count_zeros_us(value)                                         \
+             : sizeof(value) == sizeof(unsigned int)   ? count_zeros_ui(value)                                         \
+             : sizeof(value) == sizeof(unsigned long)  ? count_zeros_ul(value)                                         \
+                                                       : count_zeros_ull(value))
+#    endif
 #endif
 
     //! \fn static M_INLINE bool has_single_bit_uc(unsigned char value)
@@ -3329,23 +3332,23 @@ extern "C"
 #endif
     }
 
-    #if !defined (__cplusplus)
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#    define has_single_bit(value)                                                                                      \
-        _Generic((value),                                                                                              \
-            unsigned char: has_single_bit_uc,                                                                          \
-            unsigned short: has_single_bit_us,                                                                         \
-            unsigned int: has_single_bit_ui,                                                                           \
-            unsigned long: has_single_bit_ul,                                                                          \
-            unsigned long long: has_single_bit_ull)(value)
-#else
-#    define has_single_bit(value)                                                                                      \
-        (sizeof(value) == sizeof(unsigned char)    ? has_single_bit_uc(value)                                          \
-         : sizeof(value) == sizeof(unsigned short) ? has_single_bit_us(value)                                          \
-         : sizeof(value) == sizeof(unsigned int)   ? has_single_bit_ui(value)                                          \
-         : sizeof(value) == sizeof(unsigned long)  ? has_single_bit_ul(value)                                          \
-                                                   : has_single_bit_ull(value))
-#endif
+#if !defined(__cplusplus)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#        define has_single_bit(value)                                                                                  \
+            _Generic((value),                                                                                          \
+                unsigned char: has_single_bit_uc,                                                                      \
+                unsigned short: has_single_bit_us,                                                                     \
+                unsigned int: has_single_bit_ui,                                                                       \
+                unsigned long: has_single_bit_ul,                                                                      \
+                unsigned long long: has_single_bit_ull)(value)
+#    else
+#        define has_single_bit(value)                                                                                  \
+            (sizeof(value) == sizeof(unsigned char)    ? has_single_bit_uc(value)                                      \
+             : sizeof(value) == sizeof(unsigned short) ? has_single_bit_us(value)                                      \
+             : sizeof(value) == sizeof(unsigned int)   ? has_single_bit_ui(value)                                      \
+             : sizeof(value) == sizeof(unsigned long)  ? has_single_bit_ul(value)                                      \
+                                                       : has_single_bit_ull(value))
+#    endif
 #endif // __cplusplus
 
     //! \fn static M_INLINE unsigned int get_req_bit_width_uc(unsigned char value)
@@ -3423,23 +3426,23 @@ extern "C"
 #endif
     }
 
-    #if !defined (__cplusplus)
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#    define get_req_bit_width(value)                                                                                   \
-        _Generic((value),                                                                                              \
-            unsigned char: get_req_bit_width_uc,                                                                       \
-            unsigned short: get_req_bit_width_us,                                                                      \
-            unsigned int: get_req_bit_width_ui,                                                                        \
-            unsigned long: get_req_bit_width_ul,                                                                       \
-            unsigned long long: get_req_bit_width_ull)(value)
-#else
-#    define get_req_bit_width(value)                                                                                   \
-        (sizeof(value) == sizeof(unsigned char)    ? get_req_bit_width_uc(value)                                       \
-         : sizeof(value) == sizeof(unsigned short) ? get_req_bit_width_us(value)                                       \
-         : sizeof(value) == sizeof(unsigned int)   ? get_req_bit_width_ui(value)                                       \
-         : sizeof(value) == sizeof(unsigned long)  ? get_req_bit_width_ul(value)                                       \
-                                                   : get_req_bit_width_ull(value))
-#endif
+#if !defined(__cplusplus)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#        define get_req_bit_width(value)                                                                               \
+            _Generic((value),                                                                                          \
+                unsigned char: get_req_bit_width_uc,                                                                   \
+                unsigned short: get_req_bit_width_us,                                                                  \
+                unsigned int: get_req_bit_width_ui,                                                                    \
+                unsigned long: get_req_bit_width_ul,                                                                   \
+                unsigned long long: get_req_bit_width_ull)(value)
+#    else
+#        define get_req_bit_width(value)                                                                               \
+            (sizeof(value) == sizeof(unsigned char)    ? get_req_bit_width_uc(value)                                   \
+             : sizeof(value) == sizeof(unsigned short) ? get_req_bit_width_us(value)                                   \
+             : sizeof(value) == sizeof(unsigned int)   ? get_req_bit_width_ui(value)                                   \
+             : sizeof(value) == sizeof(unsigned long)  ? get_req_bit_width_ul(value)                                   \
+                                                       : get_req_bit_width_ull(value))
+#    endif
 #endif // __cplusplus
 
     //! \fn static M_INLINE unsigned char bit_floor_uc(unsigned char value)
@@ -3517,23 +3520,23 @@ extern "C"
 #endif
     }
 
-    #if !defined (__cplusplus)
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#    define bit_floor(value)                                                                                           \
-        _Generic((value),                                                                                              \
-            unsigned char: bit_floor_uc,                                                                               \
-            unsigned short: bit_floor_us,                                                                              \
-            unsigned int: bit_floor_ui,                                                                                \
-            unsigned long: bit_floor_ul,                                                                               \
-            unsigned long long: bit_floor_ull)(value)
-#else
-#    define bit_floor(value)                                                                                           \
-        (sizeof(value) == sizeof(unsigned char)    ? bit_floor_uc(value)                                               \
-         : sizeof(value) == sizeof(unsigned short) ? bit_floor_us(value)                                               \
-         : sizeof(value) == sizeof(unsigned int)   ? bit_floor_ui(value)                                               \
-         : sizeof(value) == sizeof(unsigned long)  ? bit_floor_ul(value)                                               \
-                                                   : bit_floor_ull(value))
-#endif
+#if !defined(__cplusplus)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#        define bit_floor(value)                                                                                       \
+            _Generic((value),                                                                                          \
+                unsigned char: bit_floor_uc,                                                                           \
+                unsigned short: bit_floor_us,                                                                          \
+                unsigned int: bit_floor_ui,                                                                            \
+                unsigned long: bit_floor_ul,                                                                           \
+                unsigned long long: bit_floor_ull)(value)
+#    else
+#        define bit_floor(value)                                                                                       \
+            (sizeof(value) == sizeof(unsigned char)    ? bit_floor_uc(value)                                           \
+             : sizeof(value) == sizeof(unsigned short) ? bit_floor_us(value)                                           \
+             : sizeof(value) == sizeof(unsigned int)   ? bit_floor_ui(value)                                           \
+             : sizeof(value) == sizeof(unsigned long)  ? bit_floor_ul(value)                                           \
+                                                       : bit_floor_ull(value))
+#    endif
 #endif // __cplusplus
 
     //! \fn static M_INLINE unsigned char bit_ceil_uc(unsigned char value)
@@ -3611,23 +3614,23 @@ extern "C"
 #endif
     }
 
-    #if !defined (__cplusplus)
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#    define bit_ceil(value)                                                                                            \
-        _Generic((value),                                                                                              \
-            unsigned char: bit_ceil_uc,                                                                                \
-            unsigned short: bit_ceil_us,                                                                               \
-            unsigned int: bit_ceil_ui,                                                                                 \
-            unsigned long: bit_ceil_ul,                                                                                \
-            unsigned long long: bit_ceil_ull)(value)
-#else
-#    define bit_ceil(value)                                                                                            \
-        (sizeof(value) == sizeof(unsigned char)    ? bit_ceil_uc(value)                                                \
-         : sizeof(value) == sizeof(unsigned short) ? bit_ceil_us(value)                                                \
-         : sizeof(value) == sizeof(unsigned int)   ? bit_ceil_ui(value)                                                \
-         : sizeof(value) == sizeof(unsigned long)  ? bit_ceil_ul(value)                                                \
-                                                   : bit_ceil_ull(value))
-#endif
+#if !defined(__cplusplus)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#        define bit_ceil(value)                                                                                        \
+            _Generic((value),                                                                                          \
+                unsigned char: bit_ceil_uc,                                                                            \
+                unsigned short: bit_ceil_us,                                                                           \
+                unsigned int: bit_ceil_ui,                                                                             \
+                unsigned long: bit_ceil_ul,                                                                            \
+                unsigned long long: bit_ceil_ull)(value)
+#    else
+#        define bit_ceil(value)                                                                                        \
+            (sizeof(value) == sizeof(unsigned char)    ? bit_ceil_uc(value)                                            \
+             : sizeof(value) == sizeof(unsigned short) ? bit_ceil_us(value)                                            \
+             : sizeof(value) == sizeof(unsigned int)   ? bit_ceil_ui(value)                                            \
+             : sizeof(value) == sizeof(unsigned long)  ? bit_ceil_ul(value)                                            \
+                                                       : bit_ceil_ull(value))
+#    endif
 #endif // __cplusplus
 
     //! \fn static M_INLINE unsigned char rotate_left_uc(unsigned char value, unsigned int count)
@@ -3700,23 +3703,23 @@ extern "C"
 #endif
     }
 
-    #if !defined (__cplusplus)
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#    define rotate_left(value, count)                                                                                  \
-        _Generic((value),                                                                                              \
-            unsigned char: rotate_left_uc,                                                                             \
-            unsigned short: rotate_left_us,                                                                            \
-            unsigned int: rotate_left_ui,                                                                              \
-            unsigned long: rotate_left_ul,                                                                             \
-            unsigned long long: rotate_left_ull)(value, count)
-#else
-#    define rotate_left(value, count)                                                                                  \
-        (sizeof(value) == sizeof(unsigned char)    ? rotate_left_uc((unsigned char)(value), count)                     \
-         : sizeof(value) == sizeof(unsigned short) ? rotate_left_us((unsigned short)(value), count)                    \
-         : sizeof(value) == sizeof(unsigned int)   ? rotate_left_ui((unsigned int)(value), count)                      \
-         : sizeof(value) == sizeof(unsigned long)  ? rotate_left_ul((unsigned long)(value), count)                     \
-                                                   : rotate_left_ull((unsigned long long)(value), count))
-#endif
+#if !defined(__cplusplus)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#        define rotate_left(value, count)                                                                              \
+            _Generic((value),                                                                                          \
+                unsigned char: rotate_left_uc,                                                                         \
+                unsigned short: rotate_left_us,                                                                        \
+                unsigned int: rotate_left_ui,                                                                          \
+                unsigned long: rotate_left_ul,                                                                         \
+                unsigned long long: rotate_left_ull)(value, count)
+#    else
+#        define rotate_left(value, count)                                                                              \
+            (sizeof(value) == sizeof(unsigned char)    ? rotate_left_uc((unsigned char)(value), count)                 \
+             : sizeof(value) == sizeof(unsigned short) ? rotate_left_us((unsigned short)(value), count)                \
+             : sizeof(value) == sizeof(unsigned int)   ? rotate_left_ui((unsigned int)(value), count)                  \
+             : sizeof(value) == sizeof(unsigned long)  ? rotate_left_ul((unsigned long)(value), count)                 \
+                                                       : rotate_left_ull((unsigned long long)(value), count))
+#    endif
 #endif // __cplusplus
 
     //! \fn static M_INLINE unsigned char rotate_right_uc(unsigned char value, unsigned int count)
@@ -3789,23 +3792,23 @@ extern "C"
 #endif
     }
 
-    #if !defined (__cplusplus)
-#if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#    define rotate_right(value, count)                                                                                 \
-        _Generic((value),                                                                                              \
-            unsigned char: rotate_right_uc,                                                                            \
-            unsigned short: rotate_right_us,                                                                           \
-            unsigned int: rotate_right_ui,                                                                             \
-            unsigned long: rotate_right_ul,                                                                            \
-            unsigned long long: rotate_right_ull)(value, count)
-#else
-#    define rotate_right(value, count)                                                                                 \
-        (sizeof(value) == sizeof(unsigned char)    ? rotate_right_uc((unsigned char)(value), count)                    \
-         : sizeof(value) == sizeof(unsigned short) ? rotate_right_us((unsigned short)(value), count)                   \
-         : sizeof(value) == sizeof(unsigned int)   ? rotate_right_ui((unsigned int)(value), count)                     \
-         : sizeof(value) == sizeof(unsigned long)  ? rotate_right_ul((unsigned long)(value), count)                    \
-                                                   : rotate_right_ull((unsigned long long)(value), count))
-#endif
+#if !defined(__cplusplus)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
+#        define rotate_right(value, count)                                                                             \
+            _Generic((value),                                                                                          \
+                unsigned char: rotate_right_uc,                                                                        \
+                unsigned short: rotate_right_us,                                                                       \
+                unsigned int: rotate_right_ui,                                                                         \
+                unsigned long: rotate_right_ul,                                                                        \
+                unsigned long long: rotate_right_ull)(value, count)
+#    else
+#        define rotate_right(value, count)                                                                             \
+            (sizeof(value) == sizeof(unsigned char)    ? rotate_right_uc((unsigned char)(value), count)                \
+             : sizeof(value) == sizeof(unsigned short) ? rotate_right_us((unsigned short)(value), count)               \
+             : sizeof(value) == sizeof(unsigned int)   ? rotate_right_ui((unsigned int)(value), count)                 \
+             : sizeof(value) == sizeof(unsigned long)  ? rotate_right_ul((unsigned long)(value), count)                \
+                                                       : rotate_right_ull((unsigned long long)(value), count))
+#    endif
 #endif // __cplusplus
 
 #if defined(__cplusplus)
@@ -3814,13 +3817,13 @@ extern "C"
 // Provide a small macro to conditionally use the C++11 `= delete` syntax.
 // When `USING_CPP11` is defined we want the stronger diagnostics; otherwise
 // leave the primary template as a plain declaration for C++98 compatibility.
-#if !defined(M_DELETE)
-# if defined(USING_CPP11)
-#  define M_DELETE = delete
-# else
-#  define M_DELETE
-# endif
-#endif
+#    if !defined(M_DELETE)
+#        if defined(USING_CPP11)
+#            define M_DELETE = delete
+#        else
+#            define M_DELETE
+#        endif
+#    endif
 
 // C++ wrapper templates matching the behaviour of <bit> (stdbit.h) for unsigned
 // integer types. Primary templates are declared and deleted to force explicit
@@ -3829,114 +3832,324 @@ extern "C"
 
 // count_leading_zeros
 template <class T> inline unsigned int count_leading_zeros(T) M_DELETE;
-template <> inline unsigned int count_leading_zeros<unsigned char>(unsigned char v) { return count_leading_zeros_uc(v); }
-template <> inline unsigned int count_leading_zeros<unsigned short>(unsigned short v) { return count_leading_zeros_us(v); }
-template <> inline unsigned int count_leading_zeros<unsigned int>(unsigned int v) { return count_leading_zeros_ui(v); }
-template <> inline unsigned int count_leading_zeros<unsigned long>(unsigned long v) { return count_leading_zeros_ul(v); }
-template <> inline unsigned int count_leading_zeros<unsigned long long>(unsigned long long v) { return count_leading_zeros_ull(v); }
+template <> inline unsigned int        count_leading_zeros<unsigned char>(unsigned char v)
+{
+    return count_leading_zeros_uc(v);
+}
+template <> inline unsigned int count_leading_zeros<unsigned short>(unsigned short v)
+{
+    return count_leading_zeros_us(v);
+}
+template <> inline unsigned int count_leading_zeros<unsigned int>(unsigned int v)
+{
+    return count_leading_zeros_ui(v);
+}
+template <> inline unsigned int count_leading_zeros<unsigned long>(unsigned long v)
+{
+    return count_leading_zeros_ul(v);
+}
+template <> inline unsigned int count_leading_zeros<unsigned long long>(unsigned long long v)
+{
+    return count_leading_zeros_ull(v);
+}
 
 // count_leading_ones
 template <class T> inline unsigned int count_leading_ones(T) M_DELETE;
-template <> inline unsigned int count_leading_ones<unsigned char>(unsigned char v) { return count_leading_ones_uc(v); }
-template <> inline unsigned int count_leading_ones<unsigned short>(unsigned short v) { return count_leading_ones_us(v); }
-template <> inline unsigned int count_leading_ones<unsigned int>(unsigned int v) { return count_leading_ones_ui(v); }
-template <> inline unsigned int count_leading_ones<unsigned long>(unsigned long v) { return count_leading_ones_ul(v); }
-template <> inline unsigned int count_leading_ones<unsigned long long>(unsigned long long v) { return count_leading_ones_ull(v); }
+template <> inline unsigned int        count_leading_ones<unsigned char>(unsigned char v)
+{
+    return count_leading_ones_uc(v);
+}
+template <> inline unsigned int count_leading_ones<unsigned short>(unsigned short v)
+{
+    return count_leading_ones_us(v);
+}
+template <> inline unsigned int count_leading_ones<unsigned int>(unsigned int v)
+{
+    return count_leading_ones_ui(v);
+}
+template <> inline unsigned int count_leading_ones<unsigned long>(unsigned long v)
+{
+    return count_leading_ones_ul(v);
+}
+template <> inline unsigned int count_leading_ones<unsigned long long>(unsigned long long v)
+{
+    return count_leading_ones_ull(v);
+}
 
 // count_trailing_zeros
 template <class T> inline unsigned int count_trailing_zeros(T) M_DELETE;
-template <> inline unsigned int count_trailing_zeros<unsigned char>(unsigned char v) { return count_trailing_zeros_uc(v); }
-template <> inline unsigned int count_trailing_zeros<unsigned short>(unsigned short v) { return count_trailing_zeros_us(v); }
-template <> inline unsigned int count_trailing_zeros<unsigned int>(unsigned int v) { return count_trailing_zeros_ui(v); }
-template <> inline unsigned int count_trailing_zeros<unsigned long>(unsigned long v) { return count_trailing_zeros_ul(v); }
-template <> inline unsigned int count_trailing_zeros<unsigned long long>(unsigned long long v) { return count_trailing_zeros_ull(v); }
+template <> inline unsigned int        count_trailing_zeros<unsigned char>(unsigned char v)
+{
+    return count_trailing_zeros_uc(v);
+}
+template <> inline unsigned int count_trailing_zeros<unsigned short>(unsigned short v)
+{
+    return count_trailing_zeros_us(v);
+}
+template <> inline unsigned int count_trailing_zeros<unsigned int>(unsigned int v)
+{
+    return count_trailing_zeros_ui(v);
+}
+template <> inline unsigned int count_trailing_zeros<unsigned long>(unsigned long v)
+{
+    return count_trailing_zeros_ul(v);
+}
+template <> inline unsigned int count_trailing_zeros<unsigned long long>(unsigned long long v)
+{
+    return count_trailing_zeros_ull(v);
+}
 
 // count_trailing_ones
 template <class T> inline unsigned int count_trailing_ones(T) M_DELETE;
-template <> inline unsigned int count_trailing_ones<unsigned char>(unsigned char v) { return count_trailing_ones_uc(v); }
-template <> inline unsigned int count_trailing_ones<unsigned short>(unsigned short v) { return count_trailing_ones_us(v); }
-template <> inline unsigned int count_trailing_ones<unsigned int>(unsigned int v) { return count_trailing_ones_ui(v); }
-template <> inline unsigned int count_trailing_ones<unsigned long>(unsigned long v) { return count_trailing_ones_ul(v); }
-template <> inline unsigned int count_trailing_ones<unsigned long long>(unsigned long long v) { return count_trailing_ones_ull(v); }
+template <> inline unsigned int        count_trailing_ones<unsigned char>(unsigned char v)
+{
+    return count_trailing_ones_uc(v);
+}
+template <> inline unsigned int count_trailing_ones<unsigned short>(unsigned short v)
+{
+    return count_trailing_ones_us(v);
+}
+template <> inline unsigned int count_trailing_ones<unsigned int>(unsigned int v)
+{
+    return count_trailing_ones_ui(v);
+}
+template <> inline unsigned int count_trailing_ones<unsigned long>(unsigned long v)
+{
+    return count_trailing_ones_ul(v);
+}
+template <> inline unsigned int count_trailing_ones<unsigned long long>(unsigned long long v)
+{
+    return count_trailing_ones_ull(v);
+}
 
 // first_leading_one
 template <class T> inline unsigned int first_leading_one(T) M_DELETE;
-template <> inline unsigned int first_leading_one<unsigned char>(unsigned char v) { return first_leading_one_uc(v); }
-template <> inline unsigned int first_leading_one<unsigned short>(unsigned short v) { return first_leading_one_us(v); }
-template <> inline unsigned int first_leading_one<unsigned int>(unsigned int v) { return first_leading_one_ui(v); }
-template <> inline unsigned int first_leading_one<unsigned long>(unsigned long v) { return first_leading_one_ul(v); }
-template <> inline unsigned int first_leading_one<unsigned long long>(unsigned long long v) { return first_leading_one_ull(v); }
+template <> inline unsigned int        first_leading_one<unsigned char>(unsigned char v)
+{
+    return first_leading_one_uc(v);
+}
+template <> inline unsigned int first_leading_one<unsigned short>(unsigned short v)
+{
+    return first_leading_one_us(v);
+}
+template <> inline unsigned int first_leading_one<unsigned int>(unsigned int v)
+{
+    return first_leading_one_ui(v);
+}
+template <> inline unsigned int first_leading_one<unsigned long>(unsigned long v)
+{
+    return first_leading_one_ul(v);
+}
+template <> inline unsigned int first_leading_one<unsigned long long>(unsigned long long v)
+{
+    return first_leading_one_ull(v);
+}
 
 // first_leading_zero
 template <class T> inline unsigned int first_leading_zero(T) M_DELETE;
-template <> inline unsigned int first_leading_zero<unsigned char>(unsigned char v) { return first_leading_zero_uc(v); }
-template <> inline unsigned int first_leading_zero<unsigned short>(unsigned short v) { return first_leading_zero_us(v); }
-template <> inline unsigned int first_leading_zero<unsigned int>(unsigned int v) { return first_leading_zero_ui(v); }
-template <> inline unsigned int first_leading_zero<unsigned long>(unsigned long v) { return first_leading_zero_ul(v); }
-template <> inline unsigned int first_leading_zero<unsigned long long>(unsigned long long v) { return first_leading_zero_ull(v); }
+template <> inline unsigned int        first_leading_zero<unsigned char>(unsigned char v)
+{
+    return first_leading_zero_uc(v);
+}
+template <> inline unsigned int first_leading_zero<unsigned short>(unsigned short v)
+{
+    return first_leading_zero_us(v);
+}
+template <> inline unsigned int first_leading_zero<unsigned int>(unsigned int v)
+{
+    return first_leading_zero_ui(v);
+}
+template <> inline unsigned int first_leading_zero<unsigned long>(unsigned long v)
+{
+    return first_leading_zero_ul(v);
+}
+template <> inline unsigned int first_leading_zero<unsigned long long>(unsigned long long v)
+{
+    return first_leading_zero_ull(v);
+}
 
 // count_ones
 template <class T> inline unsigned int count_ones(T) M_DELETE;
-template <> inline unsigned int count_ones<unsigned char>(unsigned char v) { return count_ones_uc(v); }
-template <> inline unsigned int count_ones<unsigned short>(unsigned short v) { return count_ones_us(v); }
-template <> inline unsigned int count_ones<unsigned int>(unsigned int v) { return count_ones_ui(v); }
-template <> inline unsigned int count_ones<unsigned long>(unsigned long v) { return count_ones_ul(v); }
-template <> inline unsigned int count_ones<unsigned long long>(unsigned long long v) { return count_ones_ull(v); }
+template <> inline unsigned int        count_ones<unsigned char>(unsigned char v)
+{
+    return count_ones_uc(v);
+}
+template <> inline unsigned int count_ones<unsigned short>(unsigned short v)
+{
+    return count_ones_us(v);
+}
+template <> inline unsigned int count_ones<unsigned int>(unsigned int v)
+{
+    return count_ones_ui(v);
+}
+template <> inline unsigned int count_ones<unsigned long>(unsigned long v)
+{
+    return count_ones_ul(v);
+}
+template <> inline unsigned int count_ones<unsigned long long>(unsigned long long v)
+{
+    return count_ones_ull(v);
+}
 
 // count_zeros
 template <class T> inline unsigned int count_zeros(T) M_DELETE;
-template <> inline unsigned int count_zeros<unsigned char>(unsigned char v) { return count_zeros_uc(v); }
-template <> inline unsigned int count_zeros<unsigned short>(unsigned short v) { return count_zeros_us(v); }
-template <> inline unsigned int count_zeros<unsigned int>(unsigned int v) { return count_zeros_ui(v); }
-template <> inline unsigned int count_zeros<unsigned long>(unsigned long v) { return count_zeros_ul(v); }
-template <> inline unsigned int count_zeros<unsigned long long>(unsigned long long v) { return count_zeros_ull(v); }
+template <> inline unsigned int        count_zeros<unsigned char>(unsigned char v)
+{
+    return count_zeros_uc(v);
+}
+template <> inline unsigned int count_zeros<unsigned short>(unsigned short v)
+{
+    return count_zeros_us(v);
+}
+template <> inline unsigned int count_zeros<unsigned int>(unsigned int v)
+{
+    return count_zeros_ui(v);
+}
+template <> inline unsigned int count_zeros<unsigned long>(unsigned long v)
+{
+    return count_zeros_ul(v);
+}
+template <> inline unsigned int count_zeros<unsigned long long>(unsigned long long v)
+{
+    return count_zeros_ull(v);
+}
 
 // has_single_bit
 template <class T> inline bool has_single_bit(T) M_DELETE;
-template <> inline bool has_single_bit<unsigned char>(unsigned char v) { return has_single_bit_uc(v); }
-template <> inline bool has_single_bit<unsigned short>(unsigned short v) { return has_single_bit_us(v); }
-template <> inline bool has_single_bit<unsigned int>(unsigned int v) { return has_single_bit_ui(v); }
-template <> inline bool has_single_bit<unsigned long>(unsigned long v) { return has_single_bit_ul(v); }
-template <> inline bool has_single_bit<unsigned long long>(unsigned long long v) { return has_single_bit_ull(v); }
+template <> inline bool        has_single_bit<unsigned char>(unsigned char v)
+{
+    return has_single_bit_uc(v);
+}
+template <> inline bool has_single_bit<unsigned short>(unsigned short v)
+{
+    return has_single_bit_us(v);
+}
+template <> inline bool has_single_bit<unsigned int>(unsigned int v)
+{
+    return has_single_bit_ui(v);
+}
+template <> inline bool has_single_bit<unsigned long>(unsigned long v)
+{
+    return has_single_bit_ul(v);
+}
+template <> inline bool has_single_bit<unsigned long long>(unsigned long long v)
+{
+    return has_single_bit_ull(v);
+}
 
 // get_req_bit_width
 template <class T> inline unsigned int get_req_bit_width(T) M_DELETE;
-template <> inline unsigned int get_req_bit_width<unsigned char>(unsigned char v) { return get_req_bit_width_uc(v); }
-template <> inline unsigned int get_req_bit_width<unsigned short>(unsigned short v) { return get_req_bit_width_us(v); }
-template <> inline unsigned int get_req_bit_width<unsigned int>(unsigned int v) { return get_req_bit_width_ui(v); }
-template <> inline unsigned int get_req_bit_width<unsigned long>(unsigned long v) { return get_req_bit_width_ul(v); }
-template <> inline unsigned int get_req_bit_width<unsigned long long>(unsigned long long v) { return get_req_bit_width_ull(v); }
+template <> inline unsigned int        get_req_bit_width<unsigned char>(unsigned char v)
+{
+    return get_req_bit_width_uc(v);
+}
+template <> inline unsigned int get_req_bit_width<unsigned short>(unsigned short v)
+{
+    return get_req_bit_width_us(v);
+}
+template <> inline unsigned int get_req_bit_width<unsigned int>(unsigned int v)
+{
+    return get_req_bit_width_ui(v);
+}
+template <> inline unsigned int get_req_bit_width<unsigned long>(unsigned long v)
+{
+    return get_req_bit_width_ul(v);
+}
+template <> inline unsigned int get_req_bit_width<unsigned long long>(unsigned long long v)
+{
+    return get_req_bit_width_ull(v);
+}
 
 // bit_floor
-template <class T> inline T bit_floor(T) M_DELETE;
-template <> inline unsigned char bit_floor<unsigned char>(unsigned char v) { return bit_floor_uc(v); }
-template <> inline unsigned short bit_floor<unsigned short>(unsigned short v) { return bit_floor_us(v); }
-template <> inline unsigned int bit_floor<unsigned int>(unsigned int v) { return bit_floor_ui(v); }
-template <> inline unsigned long bit_floor<unsigned long>(unsigned long v) { return bit_floor_ul(v); }
-template <> inline unsigned long long bit_floor<unsigned long long>(unsigned long long v) { return bit_floor_ull(v); }
+template <class T> inline T      bit_floor(T) M_DELETE;
+template <> inline unsigned char bit_floor<unsigned char>(unsigned char v)
+{
+    return bit_floor_uc(v);
+}
+template <> inline unsigned short bit_floor<unsigned short>(unsigned short v)
+{
+    return bit_floor_us(v);
+}
+template <> inline unsigned int bit_floor<unsigned int>(unsigned int v)
+{
+    return bit_floor_ui(v);
+}
+template <> inline unsigned long bit_floor<unsigned long>(unsigned long v)
+{
+    return bit_floor_ul(v);
+}
+template <> inline unsigned long long bit_floor<unsigned long long>(unsigned long long v)
+{
+    return bit_floor_ull(v);
+}
 
 // bit_ceil
-template <class T> inline T bit_ceil(T) M_DELETE;
-template <> inline unsigned char bit_ceil<unsigned char>(unsigned char v) { return bit_ceil_uc(v); }
-template <> inline unsigned short bit_ceil<unsigned short>(unsigned short v) { return bit_ceil_us(v); }
-template <> inline unsigned int bit_ceil<unsigned int>(unsigned int v) { return bit_ceil_ui(v); }
-template <> inline unsigned long bit_ceil<unsigned long>(unsigned long v) { return bit_ceil_ul(v); }
-template <> inline unsigned long long bit_ceil<unsigned long long>(unsigned long long v) { return bit_ceil_ull(v); }
+template <class T> inline T      bit_ceil(T) M_DELETE;
+template <> inline unsigned char bit_ceil<unsigned char>(unsigned char v)
+{
+    return bit_ceil_uc(v);
+}
+template <> inline unsigned short bit_ceil<unsigned short>(unsigned short v)
+{
+    return bit_ceil_us(v);
+}
+template <> inline unsigned int bit_ceil<unsigned int>(unsigned int v)
+{
+    return bit_ceil_ui(v);
+}
+template <> inline unsigned long bit_ceil<unsigned long>(unsigned long v)
+{
+    return bit_ceil_ul(v);
+}
+template <> inline unsigned long long bit_ceil<unsigned long long>(unsigned long long v)
+{
+    return bit_ceil_ull(v);
+}
 
 // rotate_left
-template <class T> inline T rotate_left(T, unsigned int) M_DELETE;
-template <> inline unsigned char rotate_left<unsigned char>(unsigned char v, unsigned int c) { return rotate_left_uc(v, c); }
-template <> inline unsigned short rotate_left<unsigned short>(unsigned short v, unsigned int c) { return rotate_left_us(v, c); }
-template <> inline unsigned int rotate_left<unsigned int>(unsigned int v, unsigned int c) { return rotate_left_ui(v, c); }
-template <> inline unsigned long rotate_left<unsigned long>(unsigned long v, unsigned int c) { return rotate_left_ul(v, c); }
-template <> inline unsigned long long rotate_left<unsigned long long>(unsigned long long v, unsigned int c) { return rotate_left_ull(v, c); }
+template <class T> inline T      rotate_left(T, unsigned int) M_DELETE;
+template <> inline unsigned char rotate_left<unsigned char>(unsigned char v, unsigned int c)
+{
+    return rotate_left_uc(v, c);
+}
+template <> inline unsigned short rotate_left<unsigned short>(unsigned short v, unsigned int c)
+{
+    return rotate_left_us(v, c);
+}
+template <> inline unsigned int rotate_left<unsigned int>(unsigned int v, unsigned int c)
+{
+    return rotate_left_ui(v, c);
+}
+template <> inline unsigned long rotate_left<unsigned long>(unsigned long v, unsigned int c)
+{
+    return rotate_left_ul(v, c);
+}
+template <> inline unsigned long long rotate_left<unsigned long long>(unsigned long long v, unsigned int c)
+{
+    return rotate_left_ull(v, c);
+}
 
 // rotate_right
-template <class T> inline T rotate_right(T, unsigned int) M_DELETE;
-template <> inline unsigned char rotate_right<unsigned char>(unsigned char v, unsigned int c) { return rotate_right_uc(v, c); }
-template <> inline unsigned short rotate_right<unsigned short>(unsigned short v, unsigned int c) { return rotate_right_us(v, c); }
-template <> inline unsigned int rotate_right<unsigned int>(unsigned int v, unsigned int c) { return rotate_right_ui(v, c); }
-template <> inline unsigned long rotate_right<unsigned long>(unsigned long v, unsigned int c) { return rotate_right_ul(v, c); }
-template <> inline unsigned long long rotate_right<unsigned long long>(unsigned long long v, unsigned int c) { return rotate_right_ull(v, c); }
+template <class T> inline T      rotate_right(T, unsigned int) M_DELETE;
+template <> inline unsigned char rotate_right<unsigned char>(unsigned char v, unsigned int c)
+{
+    return rotate_right_uc(v, c);
+}
+template <> inline unsigned short rotate_right<unsigned short>(unsigned short v, unsigned int c)
+{
+    return rotate_right_us(v, c);
+}
+template <> inline unsigned int rotate_right<unsigned int>(unsigned int v, unsigned int c)
+{
+    return rotate_right_ui(v, c);
+}
+template <> inline unsigned long rotate_right<unsigned long>(unsigned long v, unsigned int c)
+{
+    return rotate_right_ul(v, c);
+}
+template <> inline unsigned long long rotate_right<unsigned long long>(unsigned long long v, unsigned int c)
+{
+    return rotate_right_ull(v, c);
+}
 
 #endif

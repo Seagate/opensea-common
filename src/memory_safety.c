@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -604,23 +604,7 @@ static size_t alignment_Round_Up(size_t alignment)
     {
         alignment = sizeof(void*);
     }
-    // round up to next power of 2 if necessary
-    /*
-    if ((alignment & (alignment - SIZE_T_C(1))) != SIZE_T_C(0))
-    {
-        size_t rounded_alignment = sizeof(void*);
-        while (rounded_alignment < alignment)
-        {
-            rounded_alignment <<= SIZE_T_C(1);
-        }
-        alignment = rounded_alignment;
-    }
-        */
-    if (has_single_bit(alignment) == false)
-    {
-        alignment = SIZE_T_C(1) << first_leading_one(alignment);
-    }
-    return alignment;
+    return bit_ceil(alignment);
 }
 
 // to be used after rounding up the alignment so that all allocations are

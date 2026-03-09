@@ -8,7 +8,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -23,6 +23,34 @@
 extern "C"
 {
 #endif
+
+    //! \def M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(ptr1, size1, ptr2, size2)
+    //! \brief Compile-time constant check for potentially overlapping memory regions.
+    //!
+    //! This macro can be used with M_DIAG_ERROR to detect overlapping memory regions using
+    //! pointer arithmetic. The check determines if region 1 [ptr1, ptr1+size1) overlaps with
+    //! region 2 [ptr2, ptr2+size2) by verifying that:
+    //!   - ptr1 starts before region 2 ends (ptr1 < ptr2 + size2), AND
+    //!   - ptr2 starts before region 1 ends (ptr2 < ptr1 + size1)
+    //!
+    //! This uses natural pointer subtraction (no explicit casts), which results in ptrdiff_t
+    //! and is suitable for use in constant expressions with diagnose_if.
+    //!
+    //! \param[in] ptr1 First memory region pointer
+    //! \param[in] size1 Size of first region
+    //! \param[in] ptr2 Second memory region pointer
+    //! \param[in] size2 Size of second region
+    //! \return True (non-zero) if regions overlap, false (zero) otherwise
+    //!
+    //! \note This macro uses pointer arithmetic and will work for compile-time constant pointers.
+    //!       For runtime cases with dynamic pointers, use the memory_regions_overlap() function
+    //!       from memory_safety.h
+    //!
+    //! \example
+    //! M_DIAG_ERROR(M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count),
+    //!              "source and destination regions overlap")
+#define M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(ptr1, size1, ptr2, size2) \
+    (((ptr1) < (ptr2) + (size2)) && ((ptr2) < (ptr1) + (size1)))
 
     //! \fn errno_t safe_memset_impl(void* dest, rsize_t destsz, int ch, rsize_t count, const char* file, const char*
     //! function, int line, const char* expression)
@@ -162,6 +190,8 @@ extern "C"
         M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
         M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
+        M_DIAG_ERROR(M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), "source and destination regions overlap. Use safe_memmove instead.")
         // clang-format on
         ;
 
@@ -213,6 +243,8 @@ extern "C"
         M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
         M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
+        M_DIAG_ERROR(M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), "source and destination regions overlap. Use safe_memcmove instead.")
         // clang-format on
         ;
 
@@ -262,6 +294,7 @@ extern "C"
         M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
         M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
         // clang-format on
         ;
 

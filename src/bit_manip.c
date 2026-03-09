@@ -6,7 +6,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -132,12 +132,12 @@ enum
  * Usage: GEN_ASSIGN_OUT(uint8_t, u8, gen_extract_u8, input.u8)
  * Expands to set out.sizeoftype, out.uX = casted extract, and out.issigned.
  */
-#define GEN_ASSIGN_OUT(TARGET_TYPE, OUT_FIELD, EXTRACT_FN, IN_FIELD) \
-    do                                                                  \
-    {                                                                   \
-        out.sizeoftype = sizeof(TARGET_TYPE);                           \
-        out.OUT_FIELD  = M_STATIC_CAST(TARGET_TYPE, EXTRACT_FN(IN_FIELD, msb, lsb)); \
-        out.issigned   = input.issigned;                                \
+#define GEN_ASSIGN_OUT(TARGET_TYPE, OUT_FIELD, EXTRACT_FN, IN_FIELD)                                                   \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        out.sizeoftype = sizeof(TARGET_TYPE);                                                                          \
+        out.OUT_FIELD  = M_STATIC_CAST(TARGET_TYPE, EXTRACT_FN(IN_FIELD, msb, lsb));                                   \
+        out.issigned   = input.issigned;                                                                               \
     } while (0)
 
 /* Helper functions to centralize safe mask/shift logic and avoid

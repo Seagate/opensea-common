@@ -5,7 +5,7 @@
 //! \copyright
 //! Do NOT modify or remove this copyright and license
 //!
-//! Copyright (c) 2024-2025 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
+//! Copyright (c) 2024-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0.
 //! If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -43,7 +43,7 @@ static int lin_file_filter(const struct dirent* entry, const char* stringMatch)
                                     // revisit this.
             {
                 // non-zero means valid match. zero means not a match
-                char* inString = strstr(entry->d_name, stringMatch);
+                const char* inString = strstr(entry->d_name, stringMatch);
                 if (inString != M_NULLPTR)
                 {
                     // found a file!
