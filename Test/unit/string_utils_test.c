@@ -827,6 +827,7 @@ static void test_remove_Leading_And_Trailing_Whitespace(void) {
 static void test_remove_Leading_And_Trailing_Whitespace_Len(void) {
     char str[] = "   Hello World        ";
     remove_Leading_And_Trailing_Whitespace_Len(str, sizeof(str));
+    printf("Result after removing leading and trailing whitespace: '%s'\n", str);
     TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Leading and trailing whitespace should be removed using remove_Leading_And_Trailing_Whitespace_Len");
 }
 
