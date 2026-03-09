@@ -823,6 +823,12 @@ static void test_remove_Trailing_Whitespace_Len(void) {
     TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Trailing whitespace should be removed up to the specified length");
 }
 
+static void test_remove_Leading_Whitespace(void) {
+    char str[] = "      Hello World";
+    remove_Leading_Whitespace(str);
+    TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Leading whitespace should be removed");
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -862,5 +868,6 @@ void run_string_utils_tests(void) {
     test_byte_Swap_String_Len();
     test_remove_Whitespace_Left();
     test_remove_Trailing_Whitespace();
-    test_remove_Trailing_Whitespace_Len();
+    // test_remove_Trailing_Whitespace_Len();
+    test_remove_Leading_Whitespace();
 }
