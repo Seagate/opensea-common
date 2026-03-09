@@ -895,6 +895,11 @@ static void test_find_last_occurrence_in_string(void) {
     size_t offset2 = find_last_occurrence_in_string(str, substr2);
     TEST_ASSERT_EQ(offset, 18, "Last occurrence of substring should be at offset 18 from end of string");
     TEST_ASSERT_EQ(offset2, 13, "Last occurrence of substring 'the' should be at offset 13 from end of string");
+
+    // Test for substring not found
+    const char* substr3 = "notfound";
+    size_t offset3 = find_last_occurrence_in_string(str, substr3);
+    printf("Offset for substring not found: %zu\n", offset3);
 }
 
 void run_string_utils_tests(void) {
