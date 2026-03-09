@@ -855,6 +855,18 @@ static void test_convert_String_To_Upper_Case_Len(void) {
     TEST_ASSERT_EQ(strcmp(str, "HELLO WORLD!"), 0, "String should be converted to upper case using convert_String_To_Upper_Case_Len");
 }
 
+static void test_convert_String_To_Lower_Case(void) {
+    char str[] = "HEllO World!";
+    convert_String_To_Lower_Case(str);
+    TEST_ASSERT_EQ(strcmp(str, "hello world!"), 0, "String should be converted to lower case");
+}
+
+static void test_convert_String_To_Lower_Case_Len(void) {
+    char str[] = "HEllO World!";
+    convert_String_To_Lower_Case_Len(str, sizeof(str));
+    TEST_ASSERT_EQ(strcmp(str, "hello world!"), 0, "String should be converted to lower case using convert_String_To_Lower_Case_Len");
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -903,4 +915,6 @@ void run_string_utils_tests(void) {
     test_remove_Leading_And_Trailing_Control_Char_Len();
     test_convert_String_To_Upper_Case();
     test_convert_String_To_Upper_Case_Len();
+    test_convert_String_To_Lower_Case();
+    test_convert_String_To_Lower_Case_Len();
 }
