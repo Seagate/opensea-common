@@ -906,14 +906,12 @@ static void test_find_first_occurrence_in_string(void) {
     const char* str = "This test string contains the word test multiple times to test the function.";
     const char* substr = "test";
     size_t offset = find_first_occurrence_in_string(str, substr);
-    printf("Offset of first occurrence: %zu\n", offset);
     TEST_ASSERT_EQ(offset, 5, "First occurrence of substring should be at offset 5 from start of string");
 
     // Test for substring not found
     const char* substr2 = "notfound";
     size_t offset2 = find_first_occurrence_in_string(str, substr2);
-    printf("Offset when substring not found: %zu\n", offset2);
-    // TEST_ASSERT_EQ(offset2, strlen(str), "Should return size of string when substring is not found");
+    TEST_ASSERT_EQ(offset2, SIZE_MAX , "Should return size of string when substring is not found");
 }
 
 void run_string_utils_tests(void) {
