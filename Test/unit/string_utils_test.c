@@ -887,6 +887,14 @@ static void test_convert_String_To_Inverse_Case_Len(void) {
     TEST_ASSERT_EQ(strcmp(str2, "hello world!"), 0, "Upper case string should be converted to lower case using convert_String_To_Inverse_Case_Len");
 }
 
+static void test_find_last_occurrence_in_string(void) {
+    const char* str = "This test string contains the word test multiple times to test the function.";
+    char* substr = "test";
+    int offset = find_Last_Occurrence_In_String(str, substr);
+    printf("offset: %d\n", offset);
+    TEST_ASSERT_EQ(offset, 17, "Last occurrence of substring should be at offset 8 from end of string");
+}
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -939,4 +947,5 @@ void run_string_utils_tests(void) {
     test_convert_String_To_Lower_Case_Len();
     test_convert_String_To_Inverse_Case();
     test_convert_String_To_Inverse_Case_Len();
+    test_find_last_occurrence_in_string();
 }
