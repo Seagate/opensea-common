@@ -5,6 +5,7 @@
 void run_bit_manip_tests(void);
 void run_math_utils_tests(void);
 void run_string_utils_tests(void);
+void run_io_utils_tests(void);
 
 int main(void)
 {
@@ -14,6 +15,7 @@ int main(void)
     run_bit_manip_tests();
     run_math_utils_tests();
     run_string_utils_tests();
+    run_io_utils_tests();
 
     // Print summary of test results
     print_test_summary();
