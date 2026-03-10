@@ -12,8 +12,9 @@ static void test_get_And_Validate_Integer_Input(void) {
 
 static void test_get_And_Validate_Integer_Input_Uint64(void) {
     uint64_t outputInteger;
+    char* unit = NULL;
     TEST_ASSERT(get_And_Validate_Integer_Input_Uint64("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Uint64("12ms", NULL, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Uint64("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_Uint64("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_Uint64("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_Uint64("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
