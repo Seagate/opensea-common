@@ -46,7 +46,7 @@ static void test_get_And_Validate_Integer_Input_Uint8(void) {
     uint8_t outputInteger;
     char* unit = NULL;
     TEST_ASSERT(get_And_Validate_Integer_Input_Uint8("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Uint8("20f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Uint8("20 f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
     TEST_ASSERT(get_And_Validate_Integer_Input_Uint8("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
@@ -106,7 +106,7 @@ void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input_Uint64();
     test_get_And_Validate_Integer_Input_Uint32();
     test_get_And_Validate_Integer_Input_Uint16();
-    // test_get_And_Validate_Integer_Input_Uint8();
+    test_get_And_Validate_Integer_Input_Uint8();
     test_get_And_Validate_Integer_Input_Int64();
     test_get_And_Validate_Integer_Input_Int32();
     test_get_And_Validate_Integer_Input_Int16();
