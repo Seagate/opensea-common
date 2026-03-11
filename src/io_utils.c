@@ -492,17 +492,19 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     // disable echoing typed characters so that
     if (set_Input_Console_Mode(conMode))
     {
-        if (getline(userInput, inputDataLen, stdin) <= 0)
+        ssize_t inputRes = getline(userInput, inputDataLen, stdin);
+        if (inputRes <= 0)
         {
             ret = M_ACCESS_ENUM(eReturnValues, FAILURE);
         }
         else
         {
+            *inputDataLen = C_CAST(size_t, inputRes);
             // remove newline from the end...convert to a null.
             size_t endofinput = safe_strlen(*userInput);
-            if ((*userInput)[endofinput - 1] == '\n')
+            if ((*userInput)[*inputDataLen] == '\n')
             {
-                (*userInput)[endofinput - 1] = '\0';
+                (*userInput)[*inputDataLen] = '\0';
             }
         }
     }
@@ -1143,30 +1145,26 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         print_str("\n");
         return FAILURE;
     }
+    ssize_t getlineres = getline(userInput, inputDataLen, term);
     // now read the input with getline
-    if (getline(userInput, inputDataLen, term) <= 0)
+    if (getlineres <= 0)
     {
         ret = FAILURE;
     }
     else
     {
+        *inputDataLen = C_CAST(size_t, getlineres);
         // check if newline was read (it likely will be there) and remove it
         // remove newline from the end...convert to a null.
-        size_t endofinput = safe_strlen(*userInput);
-        if ((*userInput)[endofinput - 1] == '\n')
+        if ((*userInput)[*inputDataLen ] == '\n')
         {
-            (*userInput)[endofinput - 1] = '\0';
+            (*userInput)[*inputDataLen ] = '\0';
         }
     }
     // restore echo/default flags
     if (tcsetattr(fileno(term), TCSAFLUSH, &defaultterm) != 0)
     {
-        if (devtty)
-        {
-            fclose_term(term);
-        }
-        print_str("\n");
-        return FAILURE;
+        ret = FAILURE;
     }
     if (devtty)
     {
