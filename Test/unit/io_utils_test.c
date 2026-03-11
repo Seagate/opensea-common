@@ -328,7 +328,7 @@ static void test_vasprintf(void) {
 }
 
 static void test_snprintf(void) {
-    char buffer[50];
+    char buffer[50] = {0};
     int result = snprintf(buffer, sizeof(buffer), "Hello, %s!", "world");
     TEST_ASSERT(result >= 0 && result < sizeof(buffer), "snprintf succeeded and did not truncate");
     TEST_ASSERT(strcmp(buffer, "Hello, world!") == 0, "snprintf produced expected string");
@@ -347,7 +347,7 @@ static int test_snprintf_wrapper(char *buffer, size_t size, const char *fmt, ...
 }
 
 static void test_vsnprintf(void) {
-    char buffer[50];
+    char buffer[50] = {0};
     int result = test_snprintf_wrapper(buffer, sizeof(buffer), "Hello, %s! It's a %s", "world", "beautiful day");
     TEST_ASSERT(result >= 0 && result < sizeof(buffer), "vsnprintf succeeded and did not truncate");
     TEST_ASSERT(strcmp(buffer, "Hello, world! It's a beautiful day") == 0, "vsnprintf produced expected string");
@@ -355,7 +355,7 @@ static void test_vsnprintf(void) {
 
 // Handles error correctly - calls abort_handler
 static void test_snprintf_err_handle(void) {
-    char buffer[10];
+    char buffer[10] = {0};
     int result = snprintf_err_handle(buffer, sizeof(buffer), "Hello, %s!", "world");
     TEST_ASSERT(result >= 0, "snprintf_err_handle succeeded");
     TEST_ASSERT(result >= sizeof(buffer), "snprintf_err_handle correctly identified truncation");
@@ -391,13 +391,14 @@ static void test_get_Secure_User_Input(void)
     char *input = NULL;
     size_t len = 0;
 
-    /* create fake stdin input */
     FILE *testFile = fopen("test_input.txt", "w");
+    TEST_ASSERT(testFile == NULL, "Failed to create test input file");
+
     fprintf(testFile, "mypassword\n");
     fclose(testFile);
 
-    /* redirect stdin */
-    freopen("test_input.txt", "r", stdin);
+    TEST_ASSERT(freopen("test_input.txt", "r", stdin) != NULL,
+                "Failed to redirect stdin");
 
     eReturnValues ret = get_Secure_User_Input("Enter password: ", &input, &len);
 
