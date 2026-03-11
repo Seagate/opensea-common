@@ -385,6 +385,29 @@ static void test_verify_Format_String_And_Args(void)
     TEST_ASSERT(result2 == -1, "Returns -1 for invalid argument");
 }
 
+
+static void test_get_Secure_User_Input(void)
+{
+    char *input = NULL;
+    size_t len = 0;
+
+    /* create fake stdin input */
+    FILE *testFile = fopen("test_input.txt", "w");
+    fprintf(testFile, "mypassword\n");
+    fclose(testFile);
+
+    /* redirect stdin */
+    freopen("test_input.txt", "r", stdin);
+
+    eReturnValues ret = get_Secure_User_Input("Enter password: ", &input, &len);
+
+    TEST_ASSERT(ret == SUCCESS, "Input read successfully");
+    TEST_ASSERT(input != NULL, "Input buffer allocated");
+    TEST_ASSERT(strcmp(input, "mypassword") == 0, "Password read correctly");
+
+    free(input);
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -417,4 +440,5 @@ void run_io_utils_tests(void) {
     test_vsnprintf();
     // test_snprintf_err_handle();
     test_verify_Format_String_And_Args();
+    test_get_Secure_User_Input();
 }
