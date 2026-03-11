@@ -277,6 +277,27 @@ static void test_getline(void) {
     free(buffer);
 }
 
+static void test_getdelim(void) {
+    char *buffer = NULL;
+    size_t size = 0;
+
+    FILE* testFile = fopen("test_input.txt", "w");
+    fprintf(testFile, "This is a test line. This is another test line.\n");
+    fclose(testFile);
+
+    testFile = fopen("test_input.txt", "r");
+    TEST_ASSERT(testFile != NULL, "Failed to open test file");
+
+    ssize_t len = getdelim(&buffer, &size, '.', testFile);
+
+    TEST_ASSERT(len != -1, "Read line from file successfully");
+    TEST_ASSERT(strcmp(buffer, "This is a test line.") == 0,
+                "Line read matches expected content");
+
+    fclose(testFile);
+    free(buffer);
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -302,4 +323,5 @@ void run_io_utils_tests(void) {
     test_get_And_Validate_LDouble_Input();
     test_get_Valid_Integer_Input();
     test_getline();
+    test_getdelim();
 }
