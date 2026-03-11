@@ -300,9 +300,30 @@ static void test_getdelim(void) {
 
 static void test_asprintf(void) {
     char* str;
-    int result = asprintf(&str, "Hello, %u!", "world");
+    int result = asprintf(&str, "Hello, %s!", "world");
     TEST_ASSERT(result != -1, "asprintf succeeded");
     TEST_ASSERT(strcmp(str, "Hello, world!") == 0, "asprintf produced expected string");
+    free(str);
+}
+
+static int test_vasprintf_wrapper(char **out, const char *fmt, ...)
+{
+    va_list args;
+    int ret;
+
+    va_start(args, fmt);
+    ret = vasprintf(out, fmt, args);
+    va_end(args);
+
+    return ret;
+}
+
+static void test_vasprintf(void) {
+    char* str = NULL;
+    
+    int result = test_vasprintf_wrapper(&str, "Hello, %s! It's a %s", "world", "beautiful day");
+    TEST_ASSERT(result != -1, "vasprintf succeeded");
+    TEST_ASSERT(strcmp(str, "Hello, world! It's a beautiful day") == 0, "vasprintf produced expected string");
     free(str);
 }
 
@@ -333,4 +354,5 @@ void run_io_utils_tests(void) {
     test_getline();
     test_getdelim();
     test_asprintf();
+    test_vasprintf();
 }
