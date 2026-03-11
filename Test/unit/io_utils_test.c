@@ -259,12 +259,12 @@ static void test_get_Valid_Integer_Input(void) {
 static void test_getline(void) {
     char buffer[100];
 
-    FILE* testFile = fopen("test_input.txt", "w");
-    fprintf(testFile, "This is a test line.\n");
-    fclose(testFile);
-
-    testFile = fopen("test_input.txt", "r");
-
+    FILE* testFile = fopen("test_input.txt", "r");
+    if (testFile == NULL) {
+        TEST_ASSERT(0, "Failed to open test file for reading");
+        return;
+    }
+    
     TEST_ASSERT(getline(buffer, sizeof(buffer), testFile), "Read line from file successfully");
     TEST_ASSERT(strcmp(buffer, "This is a test line.\n") == 0, "Line read matches expected content");
 
