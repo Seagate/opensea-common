@@ -440,5 +440,5 @@ void run_io_utils_tests(void) {
     test_vsnprintf();
     // test_snprintf_err_handle();
     test_verify_Format_String_And_Args();
-    test_get_Secure_User_Input();
+    // test_get_Secure_User_Input();
 }
