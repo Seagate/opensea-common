@@ -300,7 +300,7 @@ static void test_getdelim(void) {
 
 static void test_asprintf(void) {
     char* str;
-    int result = asprintf(&str, "Hello, %s!", "world");
+    int result = asprintf(&str, "Hello, %u!", "world");
     TEST_ASSERT(result != -1, "asprintf succeeded");
     TEST_ASSERT(strcmp(str, "Hello, world!") == 0, "asprintf produced expected string");
     free(str);
