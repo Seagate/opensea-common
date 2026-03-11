@@ -391,14 +391,13 @@ static void test_get_Secure_User_Input(void)
     char *input = NULL;
     size_t len = 0;
 
-    FILE *testFile = fopen("test_input.txt", "w");
-    TEST_ASSERT(testFile == NULL, "Failed to create test input file");
-
+    /* create fake stdin input */
+    FILE *testFile = fopen("test_input1.txt", "w");
     fprintf(testFile, "mypassword\n");
     fclose(testFile);
 
-    TEST_ASSERT(freopen("test_input.txt", "r", stdin) != NULL,
-                "Failed to redirect stdin");
+    /* redirect stdin */
+    freopen("test_input1.txt", "r", stdin);
 
     eReturnValues ret = get_Secure_User_Input("Enter password: ", &input, &len);
 
