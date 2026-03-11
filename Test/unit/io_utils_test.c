@@ -225,6 +225,15 @@ static void test_get_And_Validate_Float_Input(void) {
     TEST_ASSERT(!get_And_Validate_Float_Input("123KB", &unit, ALLOW_UNIT_NONE, &outputFloat), "Could not convert string to float successfully");
 }
 
+static void test_get_And_Validate_Double_Input(void) {
+    double outputFloat;
+    char* unit = NULL;
+    TEST_ASSERT(get_And_Validate_Double_Input("12.34", NULL, ALLOW_UNIT_NONE, &outputFloat), "Converted string to double successfully");
+    TEST_ASSERT(get_And_Validate_Double_Input("56.78ms", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to double successfully");
+    TEST_ASSERT(!get_And_Validate_Double_Input("xyz", NULL, ALLOW_UNIT_NONE, &outputFloat), "Could not convert string to double successfully");
+    TEST_ASSERT(!get_And_Validate_Double_Input("123KB", &unit, ALLOW_UNIT_NONE, &outputFloat), "Could not convert string to double successfully");
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -246,4 +255,5 @@ void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input_S();    
     test_get_And_Validate_Integer_Input_C();
     test_get_And_Validate_Float_Input();
+    test_get_And_Validate_Double_Input();
 }
