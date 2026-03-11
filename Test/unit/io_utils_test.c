@@ -298,6 +298,14 @@ static void test_getdelim(void) {
     free(buffer);
 }
 
+static void test_asprintf(void) {
+    char* str;
+    int result = asprintf(&str, "Hello, %s!", "world");
+    TEST_ASSERT(result != -1, "asprintf succeeded");
+    TEST_ASSERT(strcmp(str, "Hello, world!") == 0, "asprintf produced expected string");
+    free(str);
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -324,4 +332,5 @@ void run_io_utils_tests(void) {
     test_get_Valid_Integer_Input();
     test_getline();
     test_getdelim();
+    test_asprintf();
 }
