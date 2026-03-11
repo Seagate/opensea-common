@@ -257,18 +257,24 @@ static void test_get_Valid_Integer_Input(void) {
 }
 
 static void test_getline(void) {
-    char buffer[100];
+    char *buffer = NULL;
+    size_t size = 0;
 
-    FILE* testFile = fopen("test_input.txt", "r");
-    if (testFile == NULL) {
-        TEST_ASSERT(0, "Failed to open test file for reading");
-        return;
-    }
-    
-    TEST_ASSERT(getline(buffer, sizeof(buffer), testFile), "Read line from file successfully");
-    TEST_ASSERT(strcmp(buffer, "This is a test line.\n") == 0, "Line read matches expected content");
+    FILE* testFile = fopen("test_input.txt", "w");
+    fprintf(testFile, "This is a test line.\n");
+    fclose(testFile);
+
+    testFile = fopen("test_input.txt", "r");
+    TEST_ASSERT(testFile != NULL, "Failed to open test file");
+
+    ssize_t len = getline(&buffer, &size, testFile);
+
+    TEST_ASSERT(len != -1, "Read line from file successfully");
+    TEST_ASSERT(strcmp(buffer, "This is a test line.\n") == 0,
+                "Line read matches expected content");
 
     fclose(testFile);
+    free(buffer);
 }
 
 void run_io_utils_tests(void) {
