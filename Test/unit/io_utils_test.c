@@ -378,6 +378,7 @@ static void test_verify_Format_String_And_Args(void)
 {
     const char* formatString = "Hello, %s!";
     int result = test_verify_Format_String_And_Args_wrapper(formatString, "world");
+    printf("Result of verify_Format_String_And_Args: %d\n", result);
     TEST_ASSERT(result == 0, "Format string and arguments are valid");
 }
 
