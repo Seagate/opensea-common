@@ -256,6 +256,21 @@ static void test_get_Valid_Integer_Input(void) {
     TEST_ASSERT(!get_Valid_Integer_Input("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
 }
 
+static void test_getline(void) {
+    char buffer[100];
+
+    FILE* testFile = fopen("test_input.txt", "w");
+    fprintf(testFile, "This is a test line.\n");
+    fclose(testFile);
+
+    testFile = fopen("test_input.txt", "r");
+
+    TEST_ASSERT(getline(buffer, sizeof(buffer), testFile), "Read line from file successfully");
+    TEST_ASSERT(strcmp(buffer, "This is a test line.\n") == 0, "Line read matches expected content");
+
+    fclose(testFile);
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -280,4 +295,5 @@ void run_io_utils_tests(void) {
     test_get_And_Validate_Double_Input();
     test_get_And_Validate_LDouble_Input();
     test_get_Valid_Integer_Input();
+    test_getline();
 }
