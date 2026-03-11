@@ -388,8 +388,8 @@ static void test_verify_Format_String_And_Args(void)
 
 static void test_get_Secure_User_Input(void)
 {
-    char *input;
-    size_t len;
+    char *input = NULL;
+    size_t len = 0;
 
     /* create fake stdin input */
     FILE *testFile = fopen("test_input1.txt", "w");
@@ -397,7 +397,8 @@ static void test_get_Secure_User_Input(void)
     fclose(testFile);
 
     /* redirect stdin */
-    freopen("test_input1.txt", "r", stdin);
+    FILE *f = freopen("test_input1.txt", "r", stdin);
+    TEST_ASSERT(f != NULL, "Passed redirecting stdin");
 
     eReturnValues ret = get_Secure_User_Input("Enter password: ", &input, &len);
 
