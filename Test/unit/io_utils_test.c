@@ -377,11 +377,12 @@ static int test_verify_Format_String_And_Args_wrapper(const char* fmt, ...)
 static void test_verify_Format_String_And_Args(void)
 {
     const char* formatString = "Hello, %s!";
-    int result = test_verify_Format_String_And_Args_wrapper("Hello %s", NULL);
-
-    // int result = test_verify_Format_String_And_Args_wrapper(formatString, "world");
-    printf("Result of verify_Format_String_And_Args: %d\n", result);
+    
+    int result = test_verify_Format_String_And_Args_wrapper(formatString, "world");
     TEST_ASSERT(result != -1, "Format string and arguments are valid");
+
+    int result2 = test_verify_Format_String_And_Args_wrapper("Hello %s", NULL);
+    TEST_ASSERT(result2 == -1, "Returns -1 for invalid argument");
 }
 
 void run_io_utils_tests(void) {
