@@ -327,6 +327,13 @@ static void test_vasprintf(void) {
     free(str);
 }
 
+static void test_snprintf(void) {
+    char buffer[50];
+    int result = snprintf(buffer, sizeof(buffer), "Hello, %s!", "world");
+    TEST_ASSERT(result >= 0 && result < sizeof(buffer), "snprintf succeeded and did not truncate");
+    TEST_ASSERT(strcmp(buffer, "Hello, world!") == 0, "snprintf produced expected string");
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -355,4 +362,5 @@ void run_io_utils_tests(void) {
     test_getdelim();
     test_asprintf();
     test_vasprintf();
+    test_snprintf();
 }
