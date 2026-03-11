@@ -334,6 +334,25 @@ static void test_snprintf(void) {
     TEST_ASSERT(strcmp(buffer, "Hello, world!") == 0, "snprintf produced expected string");
 }
 
+static int test_snprintf_wrapper(char *buffer, size_t size, const char *fmt, ...)
+{
+    va_list args;
+    int ret;
+
+    va_start(args, fmt);
+    ret = vsnprintf(buffer, size, fmt, args);
+    va_end(args);
+
+    return ret;
+}
+
+static void test_vsnprintf(void) {
+    char buffer[50];
+    int result = test_snprintf_wrapper(buffer, sizeof(buffer), "Hello, %s! It's a %s", "world", "beautiful day");
+    TEST_ASSERT(result >= 0 && result < sizeof(buffer), "vsnprintf succeeded and did not truncate");
+    TEST_ASSERT(strcmp(buffer, "Hello, world! It's a beautiful day") == 0, "vsnprintf produced expected string");
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -363,4 +382,5 @@ void run_io_utils_tests(void) {
     test_asprintf();
     test_vasprintf();
     test_snprintf();
+    test_vsnprintf();
 }
