@@ -353,6 +353,14 @@ static void test_vsnprintf(void) {
     TEST_ASSERT(strcmp(buffer, "Hello, world! It's a beautiful day") == 0, "vsnprintf produced expected string");
 }
 
+static void test_snprintf_err_handle(void) {
+    char buffer[10];
+    int result = snprintf_err_handle(buffer, sizeof(buffer), "Hello, %s!", "world");
+    TEST_ASSERT(result >= 0, "snprintf_err_handle succeeded");
+    TEST_ASSERT(result >= sizeof(buffer), "snprintf_err_handle correctly identified truncation");
+    TEST_ASSERT(strcmp(buffer, "Hello, wo") == 0, "snprintf_err_handle produced truncated string as expected");
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -383,4 +391,5 @@ void run_io_utils_tests(void) {
     test_vasprintf();
     test_snprintf();
     test_vsnprintf();
+    test_snprintf_err_handle();
 }
