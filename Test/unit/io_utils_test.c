@@ -388,8 +388,8 @@ static void test_verify_Format_String_And_Args(void)
 
 static void test_get_Secure_User_Input(void)
 {
-    char *input = NULL;
-    size_t len = 0;
+    char *input;
+    size_t len;
 
     /* create fake stdin input */
     FILE *testFile = fopen("test_input1.txt", "w");
@@ -440,5 +440,5 @@ void run_io_utils_tests(void) {
     test_vsnprintf();
     // test_snprintf_err_handle();
     test_verify_Format_String_And_Args();
-    // test_get_Secure_User_Input();
+    test_get_Secure_User_Input();
 }
