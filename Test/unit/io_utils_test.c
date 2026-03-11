@@ -368,16 +368,17 @@ static int test_verify_Format_String_And_Args_wrapper(const char* fmt, ...)
     int ret;
 
     va_start(args, fmt);
-    ret = vasprintf(NULL, fmt, args); // We only want to verify the format string and arguments, so we pass NULL for the output string
+    ret = verify_Format_String_And_Args(fmt, args);
     va_end(args);
 
     return ret;
 }
 
-static void test_verify_Format_String_And_Args(void) {
-    char* formatString = "Hello, %s!";
+static void test_verify_Format_String_And_Args(void)
+{
+    const char* formatString = "Hello, %s!";
     int result = test_verify_Format_String_And_Args_wrapper(formatString, "world");
-    TEST_ASSERT(result != -1, "Format string and arguments are valid");
+    TEST_ASSERT(result == 0, "Format string and arguments are valid");
 }
 
 void run_io_utils_tests(void) {
