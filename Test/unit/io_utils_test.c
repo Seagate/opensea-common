@@ -394,16 +394,17 @@ static void test_get_Secure_User_Input(void)
 
     printf("ret=%d\n", ret);
 
-    if (input)
+    if (!input)
     {
-        printf("%s\n", input);
-        TEST_ASSERT(strcmp(input, "mypassword") == 0, "Input matches expected value");
-        free(input);
+        TEST_ASSERT(1, "get_Secure_User_Input failed when input is NULL");
     }
 
     TEST_ASSERT(ret == SUCCESS, "get_Secure_User_Input succeeded");
     TEST_ASSERT(input != NULL, "Input is not NULL");
     TEST_ASSERT(len > 0, "Input length is greater than 0");
+    TEST_ASSERT(strcmp(input, "testpassword") == 0, "Input matches expected value");
+    printf("Input: %s\n", input);
+    free(input);
 }
 
 void run_io_utils_tests(void) {
