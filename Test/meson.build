@@ -24,5 +24,5 @@ expect_prog = find_program('expect')
 test(
   'secure-user-input-test',
   expect_prog,
-  args: ['unit/test_secure_input.exp', e]
+  args: [join_paths(meson.current_source_dir(), 'unit', 'test_secure_input.exp'), e]
 )
