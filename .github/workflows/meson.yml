@@ -33,7 +33,7 @@ jobs:
 
     - name: Configure Meson
       run: |
-        meson setup --buildtype=release Meson/Executables
+        meson setup Meson/Executables --buildtype=release --reconfigure
 
     - name: Build with Meson
       run: |
