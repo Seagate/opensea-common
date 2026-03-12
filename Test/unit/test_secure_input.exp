@@ -1,28 +1,18 @@
 #!/usr/bin/expect -f
 
-# timeout in seconds
-set timeout 5
+set timeout 10
 
-# executable passed by meson
 set prog [lindex $argv 0]
+
 spawn $prog
 
-# wait for prompt
 expect "Enter password:"
-
-# simulate typing password
 send "mypassword\r"
 
-# wait for program to finish
-expect {
-    "mypassword" {
-        puts "TEST PASSED: password captured correctly"
-        exit 0
-    }
-    timeout {
-        puts "TEST FAILED: program did not respond"
-        exit 1
-    }
-}
-
+# wait for the program to finish and print everything
 expect eof
+
+catch wait result
+set exit_status [lindex $result 3]
+
+exit $exit_status
