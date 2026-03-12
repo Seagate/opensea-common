@@ -7,7 +7,7 @@ set prog [lindex $argv 0]
 spawn $prog
 
 expect "Enter password:"
-send "mypassword"
+send "mypassword\r"
 
 # wait for the program to finish and print everything
 expect eof
