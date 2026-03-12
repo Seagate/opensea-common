@@ -385,7 +385,7 @@ static void test_verify_Format_String_And_Args(void)
     TEST_ASSERT(result2 == -1, "Returns -1 for invalid argument");
 }
 
-
+// Requires a terminal input to test
 static void test_get_Secure_User_Input(void)
 {
     char *input = NULL;
@@ -444,5 +444,5 @@ void run_io_utils_tests(void) {
     test_vsnprintf();
     // test_snprintf_err_handle(); needs to be commented
     test_verify_Format_String_And_Args();
-    test_get_Secure_User_Input();
+    // test_get_Secure_User_Input();
 }
