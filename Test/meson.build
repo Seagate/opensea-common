@@ -17,3 +17,12 @@ e = executable(
 
 test('opensea-common-unit-tests', e)
 
+# ---- Interactive secure input test ----
+
+expect_prog = find_program('expect')
+
+test(
+  'secure-user-input-test',
+  expect_prog,
+  args: [files('test_secure_input.exp'), e]
+)

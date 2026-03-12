@@ -385,31 +385,25 @@ static void test_verify_Format_String_And_Args(void)
     TEST_ASSERT(result2 == -1, "Returns -1 for invalid argument");
 }
 
-// Requires a terminal input to test
 static void test_get_Secure_User_Input(void)
 {
     char *input = NULL;
     size_t len = 0;
 
-    /* create fake stdin input */
-    FILE *testFile = fopen("test_input1.txt", "w");
-    fprintf(testFile, "mypassword\n");
-    fclose(testFile);
+    eReturnValues ret = get_Secure_User_Input("Enter password:", &input, &len);
 
-    /* redirect stdin */
-    FILE *f = freopen("test_input1.txt", "r", stdin);
-    TEST_ASSERT(f != NULL, "Passed redirecting stdin");
+    printf("ret=%d\n", ret);
 
-    eReturnValues ret = get_Secure_User_Input("Enter password: ", &input, &len);
-    printf("ret = %d\n", ret);
-    printf("input = %p\n", (void*)input);
-    printf("len = %zu\n", len);
+    if (input)
+    {
+        printf("%s\n", input);
+        free(input);
+    }
 
-    // TEST_ASSERT(ret == 0, "Input read successfully");
-    // TEST_ASSERT(input != NULL, "Input buffer allocated");
-    // TEST_ASSERT(strcmp(input, "mypassword") == 0, "Password read correctly");
-
-    free(input);
+    TEST_ASSERT(ret == SUCCESS, "get_Secure_User_Input succeeded");
+    TEST_ASSERT(input != NULL, "Input is not NULL");
+    TEST_ASSERT(len > 0, "Input length is greater than 0");
+    TEST_ASSERT(strcmp(input, "testpassword") == 0, "Input matches expected value");
 }
 
 void run_io_utils_tests(void) {
@@ -444,5 +438,5 @@ void run_io_utils_tests(void) {
     test_vsnprintf();
     // test_snprintf_err_handle(); needs to be commented
     test_verify_Format_String_And_Args();
-    // test_get_Secure_User_Input();
+    test_get_Secure_User_Input();
 }
