@@ -3,8 +3,9 @@
 # timeout in seconds
 set timeout 5
 
-# start the program
-spawn ./test_secure_input
+# executable passed by meson
+set prog [lindex $argv 0]
+spawn $prog
 
 # wait for prompt
 expect "Enter password:"
