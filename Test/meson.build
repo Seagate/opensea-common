@@ -24,5 +24,5 @@ expect_prog = find_program('expect')
 test(
   'secure-user-input-test',
   expect_prog,
-  args: [files('unit/test_secure_input.exp'), e]
+  args: ['unit/test_secure_input.exp', e]
 )

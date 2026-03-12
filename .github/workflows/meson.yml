@@ -31,9 +31,6 @@ jobs:
     - name: Install expect
       run: sudo apt-get update && sudo apt-get install -y expect
 
-    - name: Clean build directory
-      run: rm -rf Meson/Executables
-
     - name: Configure Meson
       run: |
         meson setup Meson/Executables --buildtype=release
