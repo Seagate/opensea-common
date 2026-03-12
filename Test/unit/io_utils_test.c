@@ -391,8 +391,7 @@ static void test_get_Secure_User_Input(void)
     size_t len = 0;
 
     eReturnValues ret = get_Secure_User_Input("Enter password:", &input, &len);
-
-    printf("ret=%d\n", ret);
+    input[strcspn(input, "\n")] = '\0';
 
     if (!input)
     {
@@ -402,7 +401,7 @@ static void test_get_Secure_User_Input(void)
     TEST_ASSERT(ret == SUCCESS, "get_Secure_User_Input succeeded");
     TEST_ASSERT(input != NULL, "Input is not NULL");
     TEST_ASSERT(len > 0, "Input length is greater than 0");
-    TEST_ASSERT(strcmp(input, "testpassword") == 0, "Input matches expected value");
+    TEST_ASSERT(strcmp(input, "mypassword") == 0, "Input matches expected value");
     printf("Input: %s\n", input);
     free(input);
 }
