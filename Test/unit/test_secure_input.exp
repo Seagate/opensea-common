@@ -1,0 +1,27 @@
+#!/usr/bin/expect -f
+
+# timeout in seconds
+set timeout 5
+
+# start the program
+spawn ./test_secure_input
+
+# wait for prompt
+expect "Enter password:"
+
+# simulate typing password
+send "mypassword\r"
+
+# wait for program to finish
+expect {
+    "mypassword" {
+        puts "TEST PASSED: password captured correctly"
+        exit 0
+    }
+    timeout {
+        puts "TEST FAILED: program did not respond"
+        exit 1
+    }
+}
+
+expect eof
