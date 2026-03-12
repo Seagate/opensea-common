@@ -388,17 +388,17 @@ static void test_verify_Format_String_And_Args(void)
 
 static void test_get_Secure_User_Input(void)
 {
-    char *input = "mypassword";
-    size_t len = 10;
+    char *input = NULL;
+    size_t len = 0;
 
-    // /* create fake stdin input */
-    // FILE *testFile = fopen("test_input1.txt", "w");
-    // fprintf(testFile, "mypassword\n");
-    // fclose(testFile);
+    /* create fake stdin input */
+    FILE *testFile = fopen("test_input1.txt", "w");
+    fprintf(testFile, "mypassword\n");
+    fclose(testFile);
 
-    // /* redirect stdin */
-    // FILE *f = freopen("test_input1.txt", "r", stdin);
-    // TEST_ASSERT(f != NULL, "Passed redirecting stdin");
+    /* redirect stdin */
+    FILE *f = freopen("test_input1.txt", "r", stdin);
+    TEST_ASSERT(f != NULL, "Passed redirecting stdin");
 
     eReturnValues ret = get_Secure_User_Input("Enter password: ", &input, &len);
 
@@ -439,7 +439,7 @@ void run_io_utils_tests(void) {
     test_vasprintf();
     test_snprintf();
     test_vsnprintf();
-    // test_snprintf_err_handle();
+    // test_snprintf_err_handle(); needs to be commented
     test_verify_Format_String_And_Args();
     test_get_Secure_User_Input();
 }
