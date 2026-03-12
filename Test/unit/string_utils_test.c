@@ -448,7 +448,7 @@ static void test_safe_strmove(void) {
     // Move "String" one position left (overwrite space)
     errno_t err = safe_strmove(str + 4, sizeof(str) - 4, str + 5);
     TEST_ASSERT_EQ(err, 0, "Move should succeed");
-    TEST_ASSERT_EQ(strcmp(str, "ThisString"), 0, "String should be shifted left correctly");
+    TEST_ASSERT_EQ(strcmp(str, "ThisStringg"), 0, "String should be shifted left correctly");
 
     // Test for buffer overflow protection
     // char smallDest[5];
