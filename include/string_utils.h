@@ -1097,7 +1097,7 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! \param[in] originalString pointer to the data containing a string that will be searched
     //! \param[in] stringToFind a pointer to the data containing a string that is to be found within \a originalString
     //! \return offset to last occurrence of \a stringToFind in \a originalString. The offset will be from the end of
-    //! the string
+    //! the string with 1-based indexing. If \a stringToFind is not found in \a originalString, returns size of string.
 
     M_PARAM_RO(1)
     M_PARAM_RO(2)
@@ -1107,7 +1107,8 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! \brief Find the first occurrence of one string within another string
     //! \param[in] originalString pointer to the data containing a string that will be searched
     //! \param[in] stringToFind a pointer to the data containing a string that is to be found within \a originalString
-    //! \return offset to first occurrence of \a stringToFind in \a originalString
+    //! \return offset to first occurrence of \a stringToFind in \a originalString. The offset will be from the beginning
+    //! of the string with 0-based indexing. If \a stringToFind is not found in \a originalString, returns SIZE_MAX.
 
     M_PARAM_RO(1)
     M_PARAM_RO(2)
