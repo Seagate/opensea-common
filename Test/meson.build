@@ -15,14 +15,11 @@ e = executable(
     dependencies: [opensea_common_dep],
 )
 
-test('opensea-common-unit-tests', e)
-
 # ---- Interactive secure input test ----
-
 expect_prog = find_program('expect')
 
 test(
-  'secure-user-input-test',
+  'opensea-common-unit-tests-with-secure-user-input',
   expect_prog,
   args: [join_paths(meson.current_source_dir(), 'unit', 'test_secure_input.exp'), e]
 )
