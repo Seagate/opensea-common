@@ -1090,8 +1090,8 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
     size_t end = stringlen;
     while (end > start)
     {
-        unsigned char currentEndChar = stringToChange[end - SIZE_T_C(1)];
-        if (currentEndChar <= 0x7F) 
+        unsigned char currentEndChar = M_STATIC_CAST(unsigned char, stringToChange[end - SIZE_T_C(1)]);
+        if (currentEndChar <= 0x7F)
         {
             if (!(safe_isspace(currentEndChar) || safe_iscntrl(currentEndChar)))
             {
@@ -1112,7 +1112,7 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
 
     if (newlen == stringlen && start == 0)
     {
-        return; // No changes needed, avoid unnecessary operations  
+        return; // No changes needed, avoid unnecessary operations
     }
 
     if (newlen < stringlen) // If these are equivalent, then it is possible to go out of bounds doing this.
@@ -1122,7 +1122,7 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
         // left after the memmove. This is not strictly necessary, but it is safer and does not have a significant
         // performance impact in most cases.
         size_t memsetlen = stringlen - newlen;
-        safe_memset(&stringToChange[newlen], memsetlen, 0, memsetlen); 
+        safe_memset(&stringToChange[newlen], memsetlen, 0, memsetlen);
     }
 }
 
