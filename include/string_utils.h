@@ -1012,7 +1012,8 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! \brief remove the whitespace at the beginning and end of a string of a specified length
     //! \param[out] stringToChange a pointer to the data containing a string
     //! that needs to have the beginning whitespace removed
-    //! \param[in] stringlen total length of the string pointed to by \a stringToChange
+    //! \param[in] stringlen total length of the string pointed to by \a stringToChange. This will be accessed as
+    //! stringToChange[stringlen-1], so stringlen must be greater than 0.
     M_PARAM_RW_SIZE(1, 2)
     void remove_Leading_And_Trailing_Whitespace_Len(char* M_NONNULL stringToChange, size_t stringlen)
         // clang-format off
