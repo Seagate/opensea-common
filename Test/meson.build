@@ -15,7 +15,7 @@ e = executable(
     dependencies: [opensea_common_dep],
 )
 
-test('opensea-common-unit-tests', e);
+test('opensea-common-unit-tests', e)
 
 #---------------------for secure input----------------------------
 
