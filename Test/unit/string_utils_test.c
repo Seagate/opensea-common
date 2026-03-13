@@ -798,12 +798,17 @@ static void test_remove_Trailing_Whitespace(void) {
     char str[] = "Hello World   ";
     remove_Trailing_Whitespace(str);
     TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Trailing whitespace should be removed");
+    char str2[] = "Hello World";
+    remove_Trailing_Whitespace(str2);
+    TEST_ASSERT_EQ(strcmp(str2, "Hello World"), 0, "String without trailing whitespace should remain unchanged");
+    char str3[] = "    Hello World";
+    remove_Trailing_Whitespace(str3);
+    TEST_ASSERT_EQ(strcmp(str3, "    Hello World"), 0, "String without leading whitespace should remain unchanged");
 }
 
 static void test_remove_Trailing_Whitespace_Len(void) {
     char str[] = "Hello World        ";
     remove_Trailing_Whitespace_Len(str, strlen(str));
-    printf("Result after removing trailing whitespace up to length 1: '%s'\n", str);
     TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Trailing whitespace should be removed using remove_Trailing_Whitespace_Len");
 }
 
@@ -811,6 +816,12 @@ static void test_remove_Leading_Whitespace(void) {
     char str[] = "      Hello World";
     remove_Leading_Whitespace(str);
     TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Leading whitespace should be removed");
+    char str2[] = "Hello World   ";
+    remove_Leading_Whitespace(str2);
+    TEST_ASSERT_EQ(strcmp(str2, "Hello World   "), 0, "String with leading whitespaces should remain unchanged");
+    char str3[] = "Hello World";
+    remove_Leading_Whitespace(str3);
+    TEST_ASSERT_EQ(strcmp(str3, "Hello World"), 0, "String without leading whitespace should remain unchanged");
 }
 
 static void test_remove_Leading_Whitespace_Len(void) {
