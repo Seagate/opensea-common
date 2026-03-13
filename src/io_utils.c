@@ -496,15 +496,17 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         if (inputRes <= 0)
         {
             ret = M_ACCESS_ENUM(eReturnValues, FAILURE);
+            *inputDataLen = 0;
+            safe_free(userInput);
         }
         else
         {
             *inputDataLen = C_CAST(size_t, inputRes);
             // remove newline from the end...convert to a null.
-            size_t endofinput = safe_strlen(*userInput);
-            if ((*userInput)[*inputDataLen] == '\n')
+            if ((*userInput)[*inputDataLen - 1] == '\n')
             {
-                (*userInput)[*inputDataLen] = '\0';
+                (*userInput)[*inputDataLen - 1] = '\0';
+                *inputDataLen -= 1;
             }
         }
     }
@@ -1145,20 +1147,22 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         print_str("\n");
         return FAILURE;
     }
-    ssize_t getlineres = getline(userInput, inputDataLen, term);
+    ssize_t inputRes = getline(userInput, inputDataLen, term);
     // now read the input with getline
-    if (getlineres <= 0)
+    if (inputRes <= 0)
     {
         ret = FAILURE;
+        *inputDataLen = 0;
+        safe_free(userInput);
     }
     else
     {
-        *inputDataLen = C_CAST(size_t, getlineres);
-        // check if newline was read (it likely will be there) and remove it
+        *inputDataLen = C_CAST(size_t, inputRes);
         // remove newline from the end...convert to a null.
-        if ((*userInput)[*inputDataLen ] == '\n')
+        if ((*userInput)[*inputDataLen - 1] == '\n')
         {
-            (*userInput)[*inputDataLen ] = '\0';
+            (*userInput)[*inputDataLen - 1] = '\0';
+            *inputDataLen -= 1;
         }
     }
     // restore echo/default flags
@@ -1412,7 +1416,9 @@ typedef enum integerInputStrTypeEnum
     INT_INPUT_INVALID,
     INT_INPUT_DECIMAL = 10,
     INT_INPUT_HEX     = 16
-} eintergetInputStrType;
+} eintegerInputStrType;
+
+typedef eintegerInputStrType eintergetInputStrType; // Misspelled
 
 static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str, eAllowedUnitInput unittype)
 {
