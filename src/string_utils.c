@@ -900,7 +900,7 @@ errno_t safe_strdup_impl(char**      dup,
             errno = error;
             return error;
         }
-        *dup = M_REINTERPRET_CAST(char*, malloc(srclen + RSIZE_T_C(1)));
+        *dup = M_REINTERPRET_CAST(char*, safe_calloc(srclen + RSIZE_T_C(1), sizeof(char)));
         if (*dup != M_NULLPTR)
         {
             safe_memcpy(*dup, srclen + RSIZE_T_C(1), src, srclen);
@@ -961,7 +961,7 @@ errno_t safe_strndup_impl(char**      dup,
     }
     else
     {
-        *dup = M_REINTERPRET_CAST(char*, safe_malloc(size + RSIZE_T_C(1)));
+        *dup = M_REINTERPRET_CAST(char*, safe_calloc(size + RSIZE_T_C(1), sizeof(char)));
         if (*dup != M_NULLPTR)
         {
             safe_memcpy(*dup, size + 1, src, size);
@@ -995,17 +995,7 @@ void byte_Swap_String_Len(char* stringToChange, size_t stringlen)
 // use this to swap the bytes in a string...useful for ATA strings
 void byte_Swap_String(char* stringToChange)
 {
-    size_t stringlen = safe_strlen(stringToChange);
-    if (stringlen > SIZE_T_C(1)) // Check if the string has more than one character
-    {
-        for (size_t stringIter = SIZE_T_C(0); stringIter < stringlen - SIZE_T_C(1); stringIter += SIZE_T_C(2))
-        {
-            // Swap the characters
-            char temp                                = stringToChange[stringIter];
-            stringToChange[stringIter]               = stringToChange[stringIter + SIZE_T_C(1)];
-            stringToChange[stringIter + SIZE_T_C(1)] = temp;
-        }
-    }
+    byte_Swap_String_Len(stringToChange, safe_strlen(stringToChange));
 }
 
 void remove_Whitespace_Left(char* stringToChange)
@@ -1035,22 +1025,7 @@ void remove_Whitespace_Left(char* stringToChange)
 
 void remove_Trailing_Whitespace(char* stringToChange)
 {
-    size_t iter = SIZE_T_C(0);
-    if (stringToChange == M_NULLPTR)
-    {
-        return;
-    }
-    iter = (safe_strlen(stringToChange));
-    if (iter == SIZE_T_C(0))
-    {
-        return;
-    }
-    while (iter > SIZE_T_C(0) && safe_isascii(stringToChange[iter - SIZE_T_C(1)]) &&
-           safe_isspace(stringToChange[iter - SIZE_T_C(1)]))
-    {
-        stringToChange[iter - SIZE_T_C(1)] = '\0'; // replace spaces with null terminators
-        iter--;
-    }
+    remove_Trailing_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
 void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
@@ -1071,24 +1046,7 @@ void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
 
 void remove_Leading_Whitespace(char* stringToChange)
 {
-    size_t iter              = SIZE_T_C(0);
-    size_t stringToChangeLen = SIZE_T_C(0);
-    if (stringToChange == M_NULLPTR)
-    {
-        return;
-    }
-    stringToChangeLen = safe_strlen(stringToChange);
-    while (safe_isascii(stringToChange[iter]) && safe_isspace(stringToChange[iter]) && iter < stringToChangeLen)
-    {
-        iter++;
-    }
-    if (iter > SIZE_T_C(0))
-    {
-        safe_memmove(&stringToChange[0], stringToChangeLen, &stringToChange[iter], stringToChangeLen - iter);
-        safe_memset(&stringToChange[stringToChangeLen - iter], stringToChangeLen - iter, 0,
-                    iter); // should this be a null? Or a space? Leaving as null
-                           // for now since it seems to work...
-    }
+    remove_Leading_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
 void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
@@ -1113,42 +1071,7 @@ void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
 
 void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
 {
-    if (stringToChange == M_NULLPTR)
-    {
-        return;
-    }
-    size_t stringlen = safe_strlen(stringToChange);
-    if (stringlen == SIZE_T_C(0))
-    {
-        return;
-    }
-
-    // Remove leading whitespace (calculate for memmove later)
-    size_t start = SIZE_T_C(0);
-    while (start < stringlen && safe_isascii(stringToChange[start]) && safe_isspace(stringToChange[start]))
-    {
-        start++;
-    }
-
-    // Remove trailing whitespace
-    size_t end = stringlen;
-    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
-           safe_isspace(stringToChange[end - SIZE_T_C(1)]))
-    {
-        end--;
-    }
-
-    // Calculate new length after removing whitespace
-    size_t newlen = end - start;
-
-    // If there's leading whitespace, shift the string to the start
-    if (start > SIZE_T_C(0))
-    {
-        safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
-    }
-
-    // Null-terminate the string after the last non-whitespace character
-    stringToChange[newlen] = '\0';
+    remove_Leading_And_Trailing_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
 void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
@@ -1164,11 +1087,18 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
         start++;
     }
 
-    // Remove trailing whitespace
+    // Remove trailing whitespace (and control characters). These should not be present in the strings in here anyways!
     size_t end = stringlen;
-    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
-           safe_isspace(stringToChange[end - SIZE_T_C(1)]))
+    while (end > start)
     {
+        unsigned char currentEndChar = M_STATIC_CAST(unsigned char, stringToChange[end - SIZE_T_C(1)]);
+        if (currentEndChar <= 0x7F)
+        {
+            if (!(safe_isspace(currentEndChar) || safe_iscntrl(currentEndChar)))
+            {
+                break;
+            }
+        }
         end--;
     }
 
@@ -1176,87 +1106,35 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
     size_t newlen = end - start;
 
     // If there's leading whitespace, shift the string to the start
-    if (start > SIZE_T_C(0))
+    if (start > SIZE_T_C(0) && newlen > 0)
     {
         safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
     }
 
-    // Null-terminate the string after the last non-whitespace character
-    stringToChange[newlen] = '\0';
+    if (newlen == stringlen && start == 0)
+    {
+        return; // No changes needed, avoid unnecessary operations
+    }
+
+    if (newlen < stringlen) // If these are equivalent, then it is possible to go out of bounds doing this.
+    {
+        // Zero out everything. This not only null terminates, but also help correct other potentially bad
+        // behavior if someone made an access past the new end of this string to read the old partial string
+        // left after the memmove. This is not strictly necessary, but it is safer and does not have a significant
+        // performance impact in most cases.
+        size_t memsetlen = stringlen - newlen;
+        safe_memset(&stringToChange[newlen], memsetlen, 0, memsetlen);
+    }
 }
 
 void remove_Leading_And_Trailing_Control_Char(char* stringToChange)
 {
-    if (stringToChange == M_NULLPTR)
-    {
-        return;
-    }
-    size_t stringlen = safe_strlen(stringToChange);
-    if (stringlen == SIZE_T_C(0))
-    {
-        return;
-    }
-
-    // Remove leading whitespace (calculate for memmove later)
-    size_t start = SIZE_T_C(0);
-    while (start < stringlen && safe_isascii(stringToChange[start]) && safe_iscntrl(stringToChange[start]))
-    {
-        start++;
-    }
-
-    // Remove trailing whitespace
-    size_t end = stringlen;
-    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
-           safe_iscntrl(stringToChange[end - SIZE_T_C(1)]))
-    {
-        end--;
-    }
-
-    // Calculate new length after removing whitespace
-    size_t newlen = end - start;
-
-    // If there's leading whitespace, shift the string to the start
-    if (start > SIZE_T_C(0))
-    {
-        safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
-    }
-
-    // Null-terminate the string after the last non-whitespace character
-    stringToChange[newlen] = '\0';
+    remove_Leading_And_Trailing_Control_Char_Len(stringToChange, safe_strlen(stringToChange));
 }
 
 void remove_Leading_And_Trailing_Control_Char_Len(char* stringToChange, size_t stringlen)
 {
-    if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
-    {
-        return;
-    }
-    // Remove leading whitespace (calculate for memmove later)
-    size_t start = SIZE_T_C(0);
-    while (start < stringlen && safe_isascii(stringToChange[start]) && safe_iscntrl(stringToChange[start]))
-    {
-        start++;
-    }
-
-    // Remove trailing whitespace
-    size_t end = stringlen;
-    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
-           safe_iscntrl(stringToChange[end - SIZE_T_C(1)]))
-    {
-        end--;
-    }
-
-    // Calculate new length after removing whitespace
-    size_t newlen = end - start;
-
-    // If there's leading whitespace, shift the string to the start
-    if (start > SIZE_T_C(0))
-    {
-        safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
-    }
-
-    // Null-terminate the string after the last non-whitespace character
-    stringToChange[newlen] = '\0';
+    remove_Leading_And_Trailing_Whitespace_Len(stringToChange, stringlen);
 }
 
 void convert_String_To_Upper_Case(char* stringToChange)
