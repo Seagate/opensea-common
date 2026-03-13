@@ -780,6 +780,40 @@ typedef int32_t intptr_t;
 #endif
 
 #if !defined(USING_CPP98)
+//! \def DECLARE_CHAR_INIT_ARRAY
+//! \brief Declares and char-initializes an array.
+//!
+//! This macro declares and char-initializes an array to ensure all elements are set to char.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//! \param type_name The type of the array elements.
+//! \param array_name The name of the array.
+//! \param size The size of the array.
+//! \param charVal The char value to initialize the array elements with.
+//! \note This macro is only available for C99 and later. C89 cannot do this when creating an array around other variables (unless it is always the last one).
+#    if IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0)
+#        define DECLARE_CHAR_INIT_ARRAY(type_name, array_name, size, charVal)                                                   \
+            type_name array_name[size] = {[0 ...((size) - 1)] = (unsigned char)charVal}
+#    else
+#        if defined(USING_C99)
+    static M_INLINE void char_init_array(void* array, size_t element_size, size_t element_count, int charVal)
+    {
+#            if defined(HAVE_MEMSET_EXPLICIT)
+        memset_explicit(array, charVal, element_size * element_count);
+#            elif defined(HAVE_C11_ANNEX_K) || defined(HAVE_MEMSET_S)
+        memset_s(array, element_size * element_count, charVal, element_size * element_count);
+             #else
+        memset(array, charVal, element_size * element_count);
+#            endif
+    }
+
+#            define DECLARE_CHAR_INIT_ARRAY(type_name, array_name, size, charVal)                                               \
+                type_name array_name[size];                                                                            \
+                char_init_array(array_name, sizeof(type_name), size, charVal)
+#        endif
+#    endif
+#endif
+
+#if !defined(USING_CPP98)
 //! \def DECLARE_ZERO_INIT_ARRAY
 //! \brief Declares and zero-initializes an array.
 //!
@@ -1201,3 +1235,40 @@ template <typename T, size_t N> void zero_init_array(T (&array)[N])
         zero_init_array(array_name)
 
 #endif // C++98 and no DECLARE_ZERO_INIT_ARRAY
+
+#if defined(USING_CPP98) && !defined(DECLARE_CHAR_INIT_ARRAY)
+
+//! \brief Char-initializes an array.
+//!
+//! This template function char-initializes an array of any type and size.
+//! It sets all elements of the array to the specified char value.
+//!
+//! \tparam T The type of the array elements.
+//! \tparam N The size of the array.
+//! \param array The array to be char-initialized.
+//! \param value The char value to initialize the array elements with.
+template <typename T, size_t N> void char_init_array(T (&array)[N], int value)
+{
+    for (size_t i = SIZE_T_C(0); i < N; ++i)
+    {
+        array[i] = static_cast<T>(value);
+    }
+}
+
+//! \def DECLARE_CHAR_INIT_ARRAY
+//! \brief Declares and char-initializes an array.
+//!
+//! This macro declares and char-initializes an array to ensure all elements are set to the specified char value.
+//! It attempts to provide a compatible definition for various compilers and standards.
+//!
+//! \param type_name The type of the array elements.
+//! \param array_name The name of the array.
+//! \param size The size of the array.
+//! \note This does not use memset to handle non-trivial types.
+//!       A compiler may optimize this to memset though if it detects that this
+//!       is a char initialization of the data.
+#    define DECLARE_CHAR_INIT_ARRAY(type_name, array_name, size, value)                                               \
+        type_name array_name[size];                                                                                    \
+        char_init_array(array_name, value)
+
+#endif // C++98 and no DECLARE_CHAR_INIT_ARRAY
