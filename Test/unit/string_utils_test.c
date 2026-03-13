@@ -812,6 +812,14 @@ static void test_remove_Trailing_Whitespace_Len(void) {
     remove_Trailing_Whitespace_Len(str, SIZE_OF_STACK_ARRAY(str));
     printf("Result after removing trailing whitespace: '%s'\n", str);
     TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Trailing whitespace should be removed using remove_Trailing_Whitespace_Len");
+    char str2[] = "Hello World";
+    remove_Trailing_Whitespace_Len(str2, SIZE_OF_STACK_ARRAY(str2));
+    printf("Result after removing trailing whitespace from string without trailing whitespace: '%s'\n", str2);
+    TEST_ASSERT_EQ(strcmp(str2, "Hello World"), 0, "String without trailing whitespace should remain unchanged using remove_Trailing_Whitespace_Len");
+    char str3[] = "    Hello World";
+    remove_Trailing_Whitespace_Len(str3, SIZE_OF_STACK_ARRAY(str3));
+    printf("Result after removing trailing whitespace from string with leading whitespace: '%s'\n", str3);
+    TEST_ASSERT_EQ(strcmp(str3, "    Hello World"), 0, "String without leading whitespace should remain unchanged using remove_Trailing_Whitespace_Len");
 }
 
 static void test_remove_Leading_Whitespace(void) {
