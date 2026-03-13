@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "test_framework.h"
+#include "framework/test_framework.h"
 
 void run_test_secure_inputs(void);
 
