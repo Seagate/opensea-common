@@ -21,7 +21,7 @@ test('opensea-common-unit-tests', e)
 
 secure_tests = executable(
     'secure-input-tests',
-    ['framework/test_framework.c', 'unit/test_secure_inputs.c', 'main.c'],
+    ['framework/test_framework.c', 'unit/test_secure_inputs.c', 'secure_input_main.c'],
     dependencies: [opensea_common_dep],
 )
 
