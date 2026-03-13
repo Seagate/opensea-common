@@ -3,7 +3,7 @@
 #include <string.h>
 #include "../../include/io_utils.h"
 
-int main(void)
+static void test_get_Secure_User_Input(void)
 {
     char *input = NULL;
     size_t len = 0;
@@ -16,7 +16,7 @@ int main(void)
     TEST_ASSERT(input != NULL ? 0 : 1, "Input is not NULL");
 
     if (input == NULL)
-        return 1;
+        return;
 
     input[strcspn(input, "\n")] = '\0';
 
@@ -27,6 +27,8 @@ int main(void)
     printf("Input: %s\n", input);
 
     free(input);
+}
 
-    return 0;
+void run_test_secure_inputs(void) {
+    test_get_Secure_User_Input();
 }
