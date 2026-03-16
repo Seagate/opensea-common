@@ -120,7 +120,7 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
                     if (releaseSize > 0)
                     {
                         char* releaseMemory =
-                            M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, releaseSize), sizeof(char)));
+                            M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, releaseSize) + SIZE_T_C(1), sizeof(char)));
                         if (fread(releaseMemory, sizeof(char), C_CAST(size_t, releaseSize), release) ==
                                 C_CAST(size_t, releaseSize) &&
                             !ferror(release))
@@ -181,7 +181,7 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
                     off_t releaseSize = direntfilestat.st_size;
                     if (releaseSize > 0)
                     {
-                        etcFileMem = M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, releaseSize), sizeof(char)));
+                        etcFileMem = M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, releaseSize) + SIZE_T_C(1), sizeof(char)));
                         if (etcFileMem != M_NULLPTR)
                         {
                             if (fread(etcFileMem, sizeof(char), C_CAST(size_t, releaseSize), release) !=
@@ -338,7 +338,7 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
                 off_t issueSize = issuestat.st_size;
                 if (issueSize > 0)
                 {
-                    char* issueMemory = M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, issueSize), sizeof(char)));
+                    char* issueMemory = M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, issueSize) + SIZE_T_C(1), sizeof(char)));
                     if (issueMemory != M_NULLPTR)
                     {
                         if (fread(issueMemory, sizeof(char), C_CAST(size_t, issueSize), issue) ==
