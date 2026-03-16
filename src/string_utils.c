@@ -1000,27 +1000,9 @@ void byte_Swap_String(char* stringToChange)
 
 void remove_Whitespace_Left(char* stringToChange)
 {
-    size_t iter = SIZE_T_C(0);
-    size_t len  = SIZE_T_C(0);
-    if (stringToChange == M_NULLPTR)
-    {
-        return;
-    }
-    len = strspn(stringToChange,
-                 " \t\n\v\f"); // only touch spaces at the beginning of the
-                               // string, not the whole string
-    if (len == SIZE_T_C(0))
-    {
-        return;
-    }
-
-    while ((iter < (safe_strlen(stringToChange) - SIZE_T_C(1)) &&
-            stringToChange[iter])) // having issues with the isspace command
-                                   // leaving extra chars in the string
-    {
-        stringToChange[iter] = stringToChange[iter + len];
-        iter++;
-    }
+    // Previous code basically did the exact same thing but handled control characters.
+    // Updated remove_Leading_Whitespace_Len to also remove control characters and work the same way.
+    remove_Leading_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
 void remove_Trailing_Whitespace(char* stringToChange)
@@ -1035,13 +1017,28 @@ void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
         return;
     }
 
-    size_t iter = stringlen;
-    while (iter > SIZE_T_C(0) && safe_isascii(stringToChange[iter - SIZE_T_C(1)]) &&
-           safe_isspace(stringToChange[iter - SIZE_T_C(1)]))
+    size_t end = stringlen;
+
+    while (end > SIZE_T_C(0))
     {
-        stringToChange[iter - SIZE_T_C(1)] = '\0'; // Replace spaces with null terminators
-        iter--;
+        unsigned char currentEndChar = M_STATIC_CAST(unsigned char, stringToChange[end - SIZE_T_C(1)]);
+        if (currentEndChar <= 0x7F)
+        {
+            if (!(safe_isspace(currentEndChar) || safe_iscntrl(currentEndChar)))
+            {
+                break;
+            }
+        }
+        end--;
     }
+
+    if (end == stringlen)
+    {
+        return; // No trailing whitespace, avoid unnecessary operations
+    }
+
+    size_t memsetlen = stringlen - end;
+    safe_memset(&stringToChange[end], memsetlen, 0, memsetlen);
 }
 
 void remove_Leading_Whitespace(char* stringToChange)
@@ -1056,7 +1053,8 @@ void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
         return;
     }
     size_t iter = SIZE_T_C(0);
-    while (iter < stringlen && safe_isascii(stringToChange[iter]) && safe_isspace(stringToChange[iter]))
+    while (iter < stringlen && safe_isascii(stringToChange[iter]) &&
+           (safe_isspace(stringToChange[iter]) || safe_iscntrl(stringToChange[iter])))
     {
         iter++;
     }
@@ -1082,7 +1080,8 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
     }
     // Remove leading whitespace (calculate for memmove later)
     size_t start = SIZE_T_C(0);
-    while (start < stringlen && safe_isascii(stringToChange[start]) && safe_isspace(stringToChange[start]))
+    while (start < stringlen && safe_isascii(stringToChange[start]) &&
+           (safe_isspace(stringToChange[start]) || safe_iscntrl(stringToChange[start])))
     {
         start++;
     }
