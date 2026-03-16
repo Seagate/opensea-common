@@ -16,7 +16,7 @@ static void test_get_Secure_User_Input(void)
     printf("ret=%d\n", ret);
     printf("input=%s\n", input);
 
-    TEST_ASSERT(ret, "get_Secure_User_Input succeeded");
+    TEST_ASSERT(ret == 0, "get_Secure_User_Input succeeded");
     TEST_ASSERT(input != NULL, "Input is not NULL");
 
     if (input == NULL)
