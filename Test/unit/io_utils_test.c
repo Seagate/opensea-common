@@ -1,6 +1,90 @@
 #include"../framework/test_framework.h"
 #include"../../include/io_utils.h"
 #include"../testConstants.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdio.h>
+
+#define SUCCESS 0
+#define FAILURE 1
+
+typedef unsigned long long UINTN;
+typedef int EFI_STATUS;
+
+#define EFI_SUCCESS 0
+
+//console color constants
+#define EFI_BLACK        0
+#define EFI_BLUE         1
+#define EFI_GREEN        2
+#define EFI_CYAN         3
+#define EFI_RED          4
+#define EFI_MAGENTA      5
+#define EFI_BROWN        6
+#define EFI_LIGHTGRAY    7
+#define EFI_DARKGRAY     8
+#define EFI_LIGHTBLUE    9
+#define EFI_LIGHTGREEN   10
+#define EFI_LIGHTCYAN    11
+#define EFI_LIGHTRED     12
+#define EFI_LIGHTMAGENTA 13
+#define EFI_YELLOW       14
+#define EFI_WHITE        15
+
+#define EFI_TEXT_ATTR(fg, bg) ((fg) | ((bg) << 4))
+
+#define M_Nibble0(x) ((x) & 0xF)
+#define M_Nibble1(x) (((x) >> 4) & 0xF)
+
+#define C_CAST(type, val) ((type)(val))
+
+typedef struct {
+    UINTN Attribute;
+} SIMPLE_TEXT_OUTPUT_MODE;
+
+typedef struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL {
+    EFI_STATUS (*SetAttribute)(
+        struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+        UINTN Attribute);
+    SIMPLE_TEXT_OUTPUT_MODE *Mode;
+} EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL;
+
+static UINTN last_attribute = 0;
+static int set_attribute_called = 0;
+
+EFI_STATUS MockSetAttribute(
+    EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+    UINTN Attribute)
+{
+    last_attribute = Attribute;
+    set_attribute_called++;
+    return EFI_SUCCESS;
+}
+
+static SIMPLE_TEXT_OUTPUT_MODE mockMode = {
+    .Attribute = EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLACK)
+};
+
+static EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL mockProtocol = {
+    .SetAttribute = MockSetAttribute,
+    .Mode = &mockMode
+};
+
+int get_Simple_Text_Output_Protocol_Ptr(void **ptr)
+{
+    *ptr = &mockProtocol;
+    return SUCCESS;
+}
+
+void close_Simple_Text_Output_Protocol_Ptr(void **ptr)
+{
+    *ptr = NULL;
+}
+
+UINTN get_Default_Console_Colors(void)
+{
+    return EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLACK);
+}
 
 static void test_get_And_Validate_Integer_Input(void) {
     uint64_t outputInteger;
@@ -385,25 +469,48 @@ static void test_verify_Format_String_And_Args(void)
     TEST_ASSERT(result2 == -1, "Returns -1 for invalid argument");
 }
 
-static void test_get_Secure_User_Input(void)
+// function test_get_Secure_User_Input added to file test_secure_inputs.c as 
+// it is an interactive test function and requires user input from terminal
+
+typedef struct
 {
-    char *input = NULL;
-    size_t len = 0;
+    eConsoleColors color;
+    uint8_t expectedEFIColor;
+} ColorTestCase;
 
-    eReturnValues ret = get_Secure_User_Input("Enter password:", &input, &len);
-    input[strcspn(input, "\n")] = '\0';
-
-    if (!input)
+static void test_set_Console_Colors(void) {
+    ColorTestCase tests[] =
     {
-        TEST_ASSERT(1, "get_Secure_User_Input failed when input is NULL");
-    }
+        { CONSOLE_COLOR_BLUE,  EFI_LIGHTBLUE },
+        { CONSOLE_COLOR_GREEN, EFI_LIGHTGREEN },
+        { CONSOLE_COLOR_RED,   EFI_LIGHTRED },
+        { CONSOLE_COLOR_GRAY,  EFI_LIGHTGRAY }
+    };
 
-    TEST_ASSERT(ret == SUCCESS, "get_Secure_User_Input succeeded");
-    TEST_ASSERT(input != NULL, "Input is not NULL");
-    TEST_ASSERT(len > 0, "Input length is greater than 0");
-    TEST_ASSERT(strcmp(input, "mypassword") == 0, "Input matches expected value");
-    printf("Input: %s\n", input);
-    free(input);
+    for (size_t i = 0; i < sizeof(tests)/sizeof(tests[0]); i++)
+    {
+        /* ---- Test Foreground ---- */
+        set_attribute_called = 0;
+
+        set_Console_Colors(true, tests[i].color);
+
+        uint8_t fg = M_Nibble0(last_attribute);
+
+        TEST_ASSERT_EQ(fg,
+                       tests[i].expectedEFIColor,
+                       "Foreground color mismatch");
+
+        /* ---- Test Background ---- */
+        set_attribute_called = 0;
+
+        set_Console_Colors(false, tests[i].color);
+
+        uint8_t bg = M_Nibble1(last_attribute);
+
+        TEST_ASSERT_EQ(bg,
+                       tests[i].expectedEFIColor,
+                       "Background color mismatch");
+    }
 }
 
 void run_io_utils_tests(void) {
@@ -438,5 +545,5 @@ void run_io_utils_tests(void) {
     test_vsnprintf();
     // test_snprintf_err_handle(); needs to be commented
     test_verify_Format_String_And_Args();
-    // test_get_Secure_User_Input();
+    test_set_Console_Colors();
 }
