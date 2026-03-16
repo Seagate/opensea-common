@@ -7,11 +7,10 @@
 
 #define SUCCESS 0
 #define FAILURE 1
+#define EFI_SUCCESS 0
 
 typedef unsigned long long UINTN;
 typedef int EFI_STATUS;
-
-#define EFI_SUCCESS 0
 
 //console color constants
 #define EFI_BLACK        0
@@ -37,54 +36,6 @@ typedef int EFI_STATUS;
 #define M_Nibble1(x) (((x) >> 4) & 0xF)
 
 #define C_CAST(type, val) ((type)(val))
-
-typedef struct {
-    UINTN Attribute;
-} SIMPLE_TEXT_OUTPUT_MODE;
-
-typedef struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL {
-    EFI_STATUS (*SetAttribute)(
-        struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
-        UINTN Attribute);
-    SIMPLE_TEXT_OUTPUT_MODE *Mode;
-} EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL;
-
-static UINTN last_attribute = 0;
-static int set_attribute_called = 0;
-
-EFI_STATUS MockSetAttribute(
-    EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
-    UINTN Attribute)
-{
-    last_attribute = Attribute;
-    set_attribute_called++;
-    return EFI_SUCCESS;
-}
-
-static SIMPLE_TEXT_OUTPUT_MODE mockMode = {
-    .Attribute = EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLACK)
-};
-
-static EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL mockProtocol = {
-    .SetAttribute = MockSetAttribute,
-    .Mode = &mockMode
-};
-
-int get_Simple_Text_Output_Protocol_Ptr(void **ptr)
-{
-    *ptr = &mockProtocol;
-    return SUCCESS;
-}
-
-void close_Simple_Text_Output_Protocol_Ptr(void **ptr)
-{
-    *ptr = NULL;
-}
-
-UINTN get_Default_Console_Colors(void)
-{
-    return EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLACK);
-}
 
 static void test_get_And_Validate_Integer_Input(void) {
     uint64_t outputInteger;
@@ -471,6 +422,57 @@ static void test_verify_Format_String_And_Args(void)
 
 // function test_get_Secure_User_Input added to file test_secure_inputs.c as 
 // it is an interactive test function and requires user input from terminal
+
+typedef struct {
+    UINTN Attribute;
+} SIMPLE_TEXT_OUTPUT_MODE;
+
+typedef struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL {
+    EFI_STATUS (*SetAttribute)(
+        struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+        UINTN Attribute);
+    SIMPLE_TEXT_OUTPUT_MODE *Mode;
+} EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL;
+
+static UINTN last_attribute = 0;
+static int set_attribute_called = 0;
+
+EFI_STATUS MockSetAttribute(
+    EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+    UINTN Attribute)
+{
+    last_attribute = Attribute;
+    set_attribute_called++;
+    // Update protocol state
+    This->Mode->Attribute = Attribute;
+
+    return EFI_SUCCESS;
+}
+
+static SIMPLE_TEXT_OUTPUT_MODE mockMode = {
+    .Attribute = EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLACK)
+};
+
+static EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL mockProtocol = {
+    .SetAttribute = MockSetAttribute,
+    .Mode = &mockMode
+};
+
+int get_Simple_Text_Output_Protocol_Ptr(void **ptr)
+{
+    *ptr = &mockProtocol;
+    return SUCCESS;
+}
+
+void close_Simple_Text_Output_Protocol_Ptr(void **ptr)
+{
+    *ptr = NULL;
+}
+
+UINTN get_Default_Console_Colors(void)
+{
+    return EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLACK);
+}
 
 typedef struct
 {
