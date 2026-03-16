@@ -496,6 +496,7 @@ static void test_set_Console_Colors(void) {
 
         uint8_t fg = M_Nibble0(last_attribute);
 
+        printf("fg: %u, expected: %u\n", fg, tests[i].expectedEFIColor);
         TEST_ASSERT_EQ(fg,
                        tests[i].expectedEFIColor,
                        "Foreground color mismatch");
@@ -507,6 +508,7 @@ static void test_set_Console_Colors(void) {
 
         uint8_t bg = M_Nibble1(last_attribute);
 
+        printf("bg: %u, expected: %u\n", bg, tests[i].expectedEFIColor);
         TEST_ASSERT_EQ(bg,
                        tests[i].expectedEFIColor,
                        "Background color mismatch");
