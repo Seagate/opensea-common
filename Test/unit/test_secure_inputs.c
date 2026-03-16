@@ -13,6 +13,8 @@ static void test_get_Secure_User_Input(void)
     printf("Testing function get_Secure_User_Input\n");
 
     eReturnValues ret = get_Secure_User_Input("Enter password:", &input, &len);
+    printf("ret=%d\n", ret);
+    printf("input=%s\n", input);
 
     TEST_ASSERT(ret == SUCCESS ? 0 : 1, "get_Secure_User_Input succeeded");
     TEST_ASSERT(input != NULL ? 0 : 1, "Input is not NULL");
