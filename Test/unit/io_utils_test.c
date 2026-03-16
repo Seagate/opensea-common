@@ -495,6 +495,7 @@ static void test_set_Console_Colors(void) {
         set_attribute_called = 0;
 
         set_Console_Colors(true, tests[i].color);
+        printf("set_attribute_called for fg: %d\n", set_attribute_called);
 
         uint8_t fg = M_Nibble0(last_attribute);
 
@@ -507,6 +508,7 @@ static void test_set_Console_Colors(void) {
         set_attribute_called = 0;
 
         set_Console_Colors(false, tests[i].color);
+        printf("set_attribute_called for bg: %d\n", set_attribute_called);
 
         uint8_t bg = M_Nibble1(last_attribute);
 
