@@ -301,6 +301,10 @@ if get_option('directorysecurity').disabled()
     global_cpp_args += ['-DDISABLE_SECURE_FILE_PATH_CHECK']
 endif
 
+if get_option('memcpy-is-memcpy-not-memmove').enabled()
+    global_cpp_args += ['-DMEMCPY_IS_MEMCPY_NOT_MEMMOVE']
+endif
+
 src_files = [
     'src/bit_manip.c',
     'src/constraint_handling.c',

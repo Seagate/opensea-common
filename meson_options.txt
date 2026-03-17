@@ -1,7 +1,64 @@
 # SPDX-License-Identifier: MPL-2.0
 
-option('username', type : 'feature', value : 'disabled', description : 'Allow opensea-common to get the current username. This is disabled by default due to security concerns, as it may involve reading sensitive files such as /etc/passwd on Linux/Unix systems. Enabling this option may expose user information, so it should only be enabled if necessary and in a secure environment.')
-#Directory security is implemented to https://wiki.sei.cmu.edu/confluence/display/c/FIO15-C.+Ensure+that+file+operations+are+performed+in+a+secure+directory
-option('directorysecurity', type : 'feature', value : 'enabled', description : 'Directory security follows SEI CERT FIO15-C. This is enabled by default to ensure that file operations are performed in a secure directory. Disabling this option may expose the application to security risks, such as unauthorized access to files. It is strongly recommended to keep this option enabled unless there is a specific reason to disable it and the environment is secure.')
-option('cc-suggest-attribute', type : 'boolean', value : false, description : 'Enable warnings where the compiler can suggest various attributes to be applied to functions for optimization and correctness.')
-option('allow-32bit-time-t', type : 'feature', value : 'disabled', description : 'Allow 32-bit time_t size with opensea-common. This is not recommended as it can cause the Year 2038 problem, but may be necessary for compatibility with certain libraries or applications that do not support 64-bit time_t.')
+option(
+  'username',
+  type : 'feature',
+  value : 'disabled',
+  description : 'Allow opensea-common to get the current username. This is ' +
+                'disabled by default due to security concerns, as it may ' +
+                'involve reading sensitive files such as /etc/passwd on ' +
+                'Linux/Unix systems. Enabling this option may expose user ' +
+                'information, so it should only be enabled if necessary and ' +
+                'in a secure environment.'
+)
+
+# Directory security is implemented to
+# https://wiki.sei.cmu.edu/confluence/display/c/FIO15-C.+Ensure+that+file+operations+are+performed+in+a+secure+directory
+option(
+  'directorysecurity',
+  type : 'feature',
+  value : 'enabled',
+  description : 'Directory security follows SEI CERT FIO15-C. This is ' +
+                'enabled by default to ensure that file operations are ' +
+                'performed in a secure directory. Disabling this option may ' +
+                'expose the application to security risks, such as ' +
+                'unauthorized access to files. It is strongly recommended to ' +
+                'keep this option enabled unless there is a specific reason ' +
+                'to disable it and the environment is secure.'
+)
+
+option(
+  'cc-suggest-attribute',
+  type : 'boolean',
+  value : false,
+  description : 'Enable warnings where the compiler can suggest various ' +
+                'attributes to be applied to functions for optimization and ' +
+                'correctness.'
+)
+
+option(
+  'allow-32bit-time-t',
+  type : 'feature',
+  value : 'disabled',
+  description : 'Allow 32-bit time_t size with opensea-common. This is not ' +
+                'recommended as it can cause the Year 2038 problem, but may ' +
+                'be necessary for compatibility with certain libraries or ' +
+                'applications that do not support 64-bit time_t.'
+)
+
+option(
+  'memcpy-is-memcpy-not-memmove',
+  type : 'feature',
+  value : 'disabled',
+  description : 'By default the safe_memcpy function behaves as memmove ' +
+                'and allows overlapping buffers. Enabling this option makes ' +
+                'it behave as memcpy instead and does not allow overlapping ' +
+                'buffers. This may be desirable for performance reasons, but ' +
+                'can lead to undefined behavior if the source and destination ' +
+                'buffers overlap. It is recommended to keep this option ' +
+                'disabled unless there is a specific reason to enable it and ' +
+                'the code is carefully reviewed to ensure that no overlapping ' +
+                'buffer copies occur. If calling safe_memcpy_no_overlap, this ' +
+                'always behaves as memcpy and has undefined behavior for ' +
+                'overlapping ranges.'
+)
