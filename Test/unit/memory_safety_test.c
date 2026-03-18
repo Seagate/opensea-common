@@ -153,6 +153,24 @@ static void test_safe_free_ulonglong(void) {
     TEST_ASSERT(ptr == NULL, "safe_free_ulonglong should set the pointer to NULL after freeing");
 }
 
+static void test_safe_free_float(void) {
+    float* ptr = safe_malloc(100);
+    safe_free_float(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_float should set the pointer to NULL after freeing");
+}
+
+static void test_safe_free_double(void) {
+    double* ptr = safe_malloc(100);
+    safe_free_double(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_double should set the pointer to NULL after freeing");
+}
+
+static void test_safe_free_longdouble(void) {
+    long double* ptr = safe_malloc(100);
+    safe_free_longdouble(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_longdouble should set the pointer to NULL after freeing");
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -171,4 +189,7 @@ void run_memory_safety_tests(void) {
     test_safe_free_ulong();
     test_safe_free_longlong();
     test_safe_free_ulonglong();
+    test_safe_free_float();
+    test_safe_free_double();
+    test_safe_free_longdouble();
 }
