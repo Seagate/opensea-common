@@ -6,6 +6,7 @@ test_sources = [
     'unit/math_utils_test.c',
     'unit/string_utils_test.c',
     'unit/io_utils_test.c',
+    'unit/memory_safety_test.c',
     'main.c',
 ]
 
