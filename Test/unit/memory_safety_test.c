@@ -117,6 +117,12 @@ static void test_safe_free_ushort(void) {
     TEST_ASSERT(ptr == NULL, "safe_free_ushort should set the pointer to NULL after freeing");
 }
 
+static void test_safe_free_int(void) {
+    signed int* ptr = safe_malloc(100);
+    safe_free_int(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_int should set the pointer to NULL after freeing");
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -129,4 +135,5 @@ void run_memory_safety_tests(void) {
     test_safe_free_wchar();
     test_safe_free_short();
     test_safe_free_ushort();
+    test_safe_free_int();
 }
