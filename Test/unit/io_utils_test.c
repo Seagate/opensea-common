@@ -520,7 +520,7 @@ static void test_set_Console_Colors(void) {
 }
 
 static void test_print_Data_Buffer(void) {
-    uint8_t data[] = {0xDE, 0xAD, 0xBE, 0xEF, "\n"};
+    uint8_t data[] = {0xDE, 0xAD, 0xBE, 0xEF, 0x09};
     print_Data_Buffer(data, sizeof(data), true);
 }
 
