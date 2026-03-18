@@ -171,6 +171,60 @@ static void test_safe_free_longdouble(void) {
     TEST_ASSERT(ptr == NULL, "safe_free_longdouble should set the pointer to NULL after freeing");
 }
 
+static void test_safe_free(void) {
+    char* char_ptr = safe_malloc(100);
+    safe_free(&char_ptr);
+    TEST_ASSERT(char_ptr == NULL, "safe_free should set the signed char pointer to NULL after freeing");
+
+    unsigned char* uchar_ptr = safe_malloc(100);
+    safe_free(&uchar_ptr);
+    TEST_ASSERT(uchar_ptr == NULL, "safe_free should set the unsigned char pointer to NULL after freeing");
+
+    signed short* short_ptr = safe_malloc(100);
+    safe_free(&short_ptr);
+    TEST_ASSERT(short_ptr == NULL, "safe_free should set the signed short pointer to NULL after freeing");
+
+    unsigned short* ushort_ptr = safe_malloc(100);
+    safe_free(&ushort_ptr);
+    TEST_ASSERT(ushort_ptr == NULL, "safe_free should set the unsigned short pointer to NULL after freeing");
+
+    signed int* int_ptr = safe_malloc(100);
+    safe_free(&int_ptr);
+    TEST_ASSERT(int_ptr == NULL, "safe_free should set the signed int pointer to NULL after freeing");
+
+    unsigned int* uint_ptr = safe_malloc(100);
+    safe_free(&uint_ptr);
+    TEST_ASSERT(uint_ptr == NULL, "safe_free should set the unsigned int pointer to NULL after freeing");
+
+    signed long* long_ptr = safe_malloc(100);
+    safe_free(&long_ptr);
+    TEST_ASSERT(long_ptr == NULL, "safe_free should set the signed long pointer to NULL after freeing");
+
+    unsigned long* ulong_ptr = safe_malloc(100);
+    safe_free(&ulong_ptr);
+    TEST_ASSERT(ulong_ptr == NULL, "safe_free should set the unsigned long pointer to NULL after freeing");
+
+    signed long long* longlong_ptr = safe_malloc(100);
+    safe_free(&longlong_ptr);
+    TEST_ASSERT(longlong_ptr == NULL, "safe_free should set the signed long long pointer to NULL after freeing");
+
+    unsigned long long* ulonglong_ptr = safe_malloc(100);
+    safe_free(&ulonglong_ptr);
+    TEST_ASSERT(ulonglong_ptr == NULL, "safe_free should set the unsigned long long pointer to NULL after freeing");
+
+    float* float_ptr = safe_malloc(100);
+    safe_free(&float_ptr);
+    TEST_ASSERT(float_ptr == NULL, "safe_free should set the float pointer to NULL after freeing");
+
+    double* double_ptr = safe_malloc(100);
+    safe_free(&double_ptr);
+    TEST_ASSERT(double_ptr == NULL, "safe_free should set the double pointer to NULL after freeing");
+
+    long double* longdouble_ptr = safe_malloc(100);
+    safe_free(&longdouble_ptr);
+    TEST_ASSERT(longdouble_ptr == NULL, "safe_free should set the long double pointer to NULL after freeing");
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -192,4 +246,5 @@ void run_memory_safety_tests(void) {
     test_safe_free_float();
     test_safe_free_double();
     test_safe_free_longdouble();
+    test_safe_free();
 }
