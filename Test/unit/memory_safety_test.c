@@ -105,6 +105,12 @@ static void test_safe_free_wchar(void) {
     TEST_ASSERT(ptr == NULL, "safe_free_wchar should set the pointer to NULL after freeing");
 }
 
+static void test_safe_free_short(void) {
+    signed short* ptr = safe_malloc(100);
+    safe_free_short(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_short should set the pointer to NULL after freeing");
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -115,4 +121,5 @@ void run_memory_safety_tests(void) {
     test_safe_free_schar();
     test_safe_free_uchar();
     test_safe_free_wchar();
+    test_safe_free_short();
 }
