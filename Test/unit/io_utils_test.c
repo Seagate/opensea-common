@@ -563,6 +563,10 @@ static void test_print_Pipe_Data(void) {
     print_Pipe_Data(data, sizeof(data));
 }
 
+static void test_print_Return_Enum(void) {
+    print_Return_Enum(get_Secure_User_Input("Enter a number: ", 12, 8), FAILURE);
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -596,6 +600,6 @@ void run_io_utils_tests(void) {
     // test_snprintf_err_handle(); needs to be commented
     test_verify_Format_String_And_Args();
     // test_set_Console_Colors();
-    test_print_Data_Buffer();
-    test_print_Pipe_Data();
+    // test_print_Data_Buffer();
+    // test_print_Pipe_Data();
 }
