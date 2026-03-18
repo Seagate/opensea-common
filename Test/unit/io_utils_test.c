@@ -543,12 +543,12 @@ static void test_print_Data_Buffer(void) {
     TEST_ASSERT(strstr(buffer, "DE AD BE EF 09") != NULL, "Hex bytes printed correctly");
     TEST_ASSERT(strstr(buffer, ".....") != NULL, "ASCII representation printed");
 
+    fclose(fp);
+
     dup2(saved_stdout, fileno(stdout));
     close(saved_stdout);
 
     printf("Captured output:\n%s\n", buffer);
-
-    fclose(fp);
 }
 
 static void test_print_Pipe_Data(void) {
