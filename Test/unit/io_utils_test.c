@@ -602,4 +602,5 @@ void run_io_utils_tests(void) {
     // test_set_Console_Colors();
     // test_print_Data_Buffer();
     // test_print_Pipe_Data();
+    test_print_Return_Enum();
 }
