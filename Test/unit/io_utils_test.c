@@ -524,6 +524,11 @@ static void test_print_Data_Buffer(void) {
     print_Data_Buffer(data, sizeof(data), true);
 }
 
+static void test_print_Pipe_Data(void) {
+    uint8_t data[] = {0xDE, 0xAD, 0xBE, 0xEF, 0x09};
+    print_Pipe_Data(data, sizeof(data));
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -558,4 +563,5 @@ void run_io_utils_tests(void) {
     test_verify_Format_String_And_Args();
     // test_set_Console_Colors();
     test_print_Data_Buffer();
+    test_print_Pipe_Data();
 }
