@@ -522,33 +522,40 @@ static void test_set_Console_Colors(void) {
 static void test_print_Data_Buffer(void) {
     uint8_t data[] = {0xDE, 0xAD, 0xBE, 0xEF, 0x09};
 
-    int saved_stdout = dup(fileno(stdout));
-
-    FILE *fp = freopen("output.txt", "w+", stdout);
+    FILE *fp = fopen("output.txt", "w+");
     if (!fp)
     {
-        perror("freopen failed");
+        perror("fopen failed");
         return;
     }
 
+    /* Save original stdout */
+    int saved_stdout = dup(fileno(stdout));
+
+    /* Redirect stdout to file */
+    dup2(fileno(fp), fileno(stdout));
+
     print_Data_Buffer(data, sizeof(data), true);
-  
+
     fflush(stdout);
-    fseek(fp, 0, SEEK_SET);
-    
-    char buffer[512] = {0};
-    size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
-    buffer[n] = '\0';
-    
-    TEST_ASSERT(strstr(buffer, "DE AD BE EF 09") != NULL, "Hex bytes printed correctly");
-    TEST_ASSERT(strstr(buffer, ".....") != NULL, "ASCII representation printed");
 
-    fclose(fp);
-
+    /* Restore stdout BEFORE reading */
     dup2(saved_stdout, fileno(stdout));
     close(saved_stdout);
 
+    fseek(fp, 0, SEEK_SET);
+
+    char buffer[512] = {0};
+    size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
+    buffer[n] = '\0';
+
+    TEST_ASSERT(strstr(buffer, "DE AD BE EF 09") != NULL, "Hex bytes printed correctly");
+
+    TEST_ASSERT(strstr(buffer, ".....") != NULL, "Non-printable character representation printed");
+
     printf("Captured output:\n%s\n", buffer);
+
+    fclose(fp);
 }
 
 static void test_print_Pipe_Data(void) {
