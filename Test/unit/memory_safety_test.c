@@ -94,9 +94,15 @@ static void test_safe_free_schar(void) {
 }
 
 static void test_safe_free_uchar(void) {
-    char* ptr = safe_malloc(100);
+    unsigned char* ptr = safe_malloc(100);
     safe_free_uchar(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_uchar should set the pointer to NULL after freeing");
+}
+
+static void test_safe_free_wchar(void) {
+    wchar_t* ptr = safe_malloc(100);
+    safe_free_wchar(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_wchar should set the pointer to NULL after freeing");
 }
 
 void run_memory_safety_tests(void) {
@@ -108,4 +114,5 @@ void run_memory_safety_tests(void) {
     test_safe_free_char();
     test_safe_free_schar();
     test_safe_free_uchar();
+    test_safe_free_wchar();
 }
