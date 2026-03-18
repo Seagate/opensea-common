@@ -521,7 +521,9 @@ static void test_set_Console_Colors(void) {
 
 static void test_print_Data_Buffer(void) {
     uint8_t data[] = {0xDE, 0xAD, 0xBE, 0xEF, 0x09};
-    print_Data_Buffer(data, sizeof(data), false);
+    print_Data_Buffer(data, sizeof(data), true);
+    TEST_ASSERT(strstr(data, "DE AD BE EF 09") != NULL, "Data buffer printed in hex format correctly");
+    TEST_ASSERT(strstr(data, ".....") != NULL, "Non-printable characters printed correctly as dots");
 }
 
 void run_io_utils_tests(void) {
