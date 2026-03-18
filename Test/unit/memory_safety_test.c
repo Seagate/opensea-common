@@ -234,8 +234,8 @@ static void test_safe_free_tchar(void) {
 static void test_is_Empty(void) {
     char* empty_str = "";
     char* non_empty_str = "not empty";
-    TEST_ASSERT(is_Empty(empty_str, 3), "is_empty should return true for an empty string");
-    TEST_ASSERT(!is_Empty(non_empty_str, 9), "is_empty should return false for a non-empty string");
+    TEST_ASSERT(is_Empty(&empty_str, 3), "is_empty should return true for an empty string");
+    TEST_ASSERT(!is_Empty(&non_empty_str, 9), "is_empty should return false for a non-empty string");
 }
 
 void run_memory_safety_tests(void) {
