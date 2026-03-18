@@ -67,6 +67,12 @@ static void test_safe_reallocf(void) {
     new_ptr = safe_reallocf(&ptr, 0);
     TEST_ASSERT(new_ptr == NULL, "safe_reallocf should return a null pointer when reallocating to zero");
     TEST_ASSERT(ptr == NULL, "safe_reallocf should set the original pointer to NULL when reallocating to zero");
+
+    // Reallocating to a larger size but realloc fails, should free the original block and return NULL
+    ptr = safe_malloc(100);
+    new_ptr = safe_reallocf(&ptr, RSIZE_MAX);
+    TEST_ASSERT(new_ptr == NULL, "safe_reallocf should return a null pointer when reallocating to an excessively large size");
+    TEST_ASSERT(ptr == NULL, "safe_reallocf should set the original pointer to NULL when reallocating to an excessively large size");
 }
 
 void run_memory_safety_tests(void) {
