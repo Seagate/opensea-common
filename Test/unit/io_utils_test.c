@@ -521,9 +521,21 @@ static void test_set_Console_Colors(void) {
 
 static void test_print_Data_Buffer(void) {
     uint8_t data[] = {0xDE, 0xAD, 0xBE, 0xEF, 0x09};
+
+    FILE *fp = freopen("test_output.txt", "w+", stdout);
+
     print_Data_Buffer(data, sizeof(data), true);
-    TEST_ASSERT(strstr(data, "DE AD BE EF 09") != NULL, "Data buffer printed in hex format correctly");
-    TEST_ASSERT(strstr(data, ".....") != NULL, "Non-printable characters printed correctly as dots");
+
+    fflush(stdout);
+    fseek(fp, 0, SEEK_SET);
+
+    char buffer[512] = {0};
+    fread(buffer, 1, sizeof(buffer) - 1, fp);
+
+    TEST_ASSERT(strstr(buffer, "DE AD BE EF 09") != NULL, "Data buffer printed in hex format correctly");
+    TEST_ASSERT(strstr(buffer, ".....") != NULL, "Non-printable characters printed correctly as dots");
+    
+    fclose(fp);
 }
 
 void run_io_utils_tests(void) {
