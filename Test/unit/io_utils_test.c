@@ -564,7 +564,12 @@ static void test_print_Pipe_Data(void) {
 }
 
 static void test_print_Return_Enum(void) {
-    print_Return_Enum(get_Secure_User_Input("Enter a number: ", 12, 8), FAILURE);
+    char *input = NULL;
+    size_t len = 0;
+
+    eReturnValues ret = get_Secure_User_Input("Enter a number: ", &input, &len);
+
+    print_Return_Enum("get_Secure_User_Input", ret);
 }
 
 void run_io_utils_tests(void) {
@@ -602,5 +607,5 @@ void run_io_utils_tests(void) {
     // test_set_Console_Colors();
     // test_print_Data_Buffer();
     // test_print_Pipe_Data();
-    // test_print_Return_Enum();
+    test_print_Return_Enum();
 }
