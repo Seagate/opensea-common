@@ -192,6 +192,9 @@ extern "C"
         M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
         M_DIAG_ERROR(count > destsz, "count > destsz")
         M_DIAG_ERROR(M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), "source and destination regions overlap. Use safe_memmove instead.")
+#if defined(ALLOW_NO_OVERLAP_SUGGESTIONS)
+        M_DIAG_WARN(!M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count) && dest != src, "No overlap detected; consider safe_memcpy_no_overlap for better performance.")
+#endif
         // clang-format on
         ;
 
@@ -245,6 +248,9 @@ extern "C"
         M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
         M_DIAG_ERROR(count > destsz, "count > destsz")
         M_DIAG_ERROR(M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), "source and destination regions overlap. Use safe_memcmove instead.")
+#if defined(ALLOW_NO_OVERLAP_SUGGESTIONS)
+        M_DIAG_WARN(!M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count) && dest != src, "No overlap detected; consider safe_memccpy_no_overlap for better performance.")
+#endif
         // clang-format on
         ;
 

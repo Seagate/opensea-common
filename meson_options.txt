@@ -62,3 +62,35 @@ option(
                 'always behaves as memcpy and has undefined behavior for ' +
                 'overlapping ranges.'
 )
+
+option(
+  'strcpy-is-strcpy-not-strmove',
+  type : 'feature',
+  value : 'disabled',
+  description : 'Similar to memcpy-is-memcpy-not-memmove, but for string copy functions. ' +
+                'By default the safe_strcpy function behaves as strmove and ' +
+                'allows overlapping buffers. Enabling this option makes it ' +
+                'behave as strcpy instead and does not allow overlapping ' +
+                'buffers. This may be desirable for performance reasons, but ' +
+                'can lead to undefined behavior if the source and destination ' +
+                'buffers overlap. It is recommended to keep this option ' +
+                'disabled unless there is a specific reason to enable it and ' +
+                'the code is carefully reviewed to ensure that no overlapping ' +
+                'buffer copies occur. If calling safe_strcpy_no_overlap, this ' +
+                'always behaves as strcpy and has undefined behavior for ' +
+                'overlapping ranges.'
+)
+
+
+option(
+  'allow-no-overlap-suggestions',
+  type : 'feature',
+  value : 'disabled',
+  description : 'Allow compiler diagnostics to suggest using no-overlap versions of functions ' +
+                'when no overlap is detected. This can help improve performance by encouraging ' +
+                'the use of more efficient functions when it is safe to do so. However, it may ' +
+                'also lead to more warnings in codebases that have many non-overlapping calls, ' +
+                'so it is disabled by default.' +
+                'Clang\'s diagnose_if attribute must be supported for this to work.' +
+                'This may not be able to detect all cases of non-overlap, so it should be used as a hint rather than a guarantee.'
+)
