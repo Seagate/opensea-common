@@ -62,10 +62,11 @@ static void test_safe_reallocf(void) {
     new_ptr = safe_reallocf(NULL, 100);
     TEST_ASSERT(new_ptr == NULL, "safe_reallocf should return a null pointer when the input pointer is NULL");
 
-    // Pointer to block is passed as a null pointer, should behave as safe_malloc
-    new_ptr = safe_reallocf((void* M_NULLABLE)NULL, 100);
-    TEST_ASSERT(new_ptr != NULL, "safe_reallocf should return a non-null pointer when reallocating with a null pointer");
-    free(new_ptr);
+    // Size is zero, should free the original block and return NULL
+    ptr = safe_malloc(100);
+    new_ptr = safe_reallocf(&ptr, 0);
+    TEST_ASSERT(new_ptr == NULL, "safe_reallocf should return a null pointer when reallocating to zero");
+    TEST_ASSERT(ptr == NULL, "safe_reallocf should set the original pointer to NULL when reallocating to zero");
 }
 
 void run_memory_safety_tests(void) {
