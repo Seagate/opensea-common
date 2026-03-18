@@ -2,6 +2,6 @@
 #include"../../include/io_utils.h"
 #include"../testConstants.h"
 
-void run_io_utils_tests(void) {
-    printf("Running io_utils tests...\n");
+void run_memory_safety_tests(void) {
+    printf("Running memory_safety tests...\n");
 }
