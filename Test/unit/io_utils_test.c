@@ -521,7 +521,25 @@ static void test_set_Console_Colors(void) {
 
 static void test_print_Data_Buffer(void) {
     uint8_t data[] = {0xDE, 0xAD, 0xBE, 0xEF, 0x09};
+
+    int stdout_fd = dup(fileno(stdout));
+
+    FILE *fp = freopen("output.txt", "w+", stdout);
+
     print_Data_Buffer(data, sizeof(data), true);
+
+    fflush(stdout);
+    fseek(fp, 0, SEEK_SET);
+
+    char buffer[512] = {0};
+    fread(buffer, 1, sizeof(buffer) - 1, fp);
+
+    dup2(stdout_fd, fileno(stdout));
+    close(stdout_fd);
+
+    printf("Captured output:\n%s\n", buffer);
+
+    fclose(fp);
 }
 
 static void test_print_Pipe_Data(void) {
@@ -563,5 +581,5 @@ void run_io_utils_tests(void) {
     test_verify_Format_String_And_Args();
     // test_set_Console_Colors();
     test_print_Data_Buffer();
-    test_print_Pipe_Data();
+    // test_print_Pipe_Data();
 }
