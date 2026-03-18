@@ -540,6 +540,8 @@ static void test_print_Data_Buffer(void) {
     dup2(stdout_fd, fileno(stdout));
     close(stdout_fd);
 
+    printf("Captured output:\n%s\n", buffer);
+
     TEST_ASSERT(strstr(buffer, "DE AD BE EF 09") != NULL, "Data buffer printed in hex format correctly");
 
     TEST_ASSERT(strstr(buffer, ".....") != NULL, "Non-printable characters printed correctly as dots");
