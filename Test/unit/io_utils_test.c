@@ -519,6 +519,11 @@ static void test_set_Console_Colors(void) {
     }
 }
 
+static void test_print_Data_Buffer(void) {
+    uint8_t data[] = {0xDE, 0xAD, 0xBE, 0xEF};
+    print_Data_Buffer(data, sizeof(data), true);
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -552,4 +557,5 @@ void run_io_utils_tests(void) {
     // test_snprintf_err_handle(); needs to be commented
     test_verify_Format_String_And_Args();
     // test_set_Console_Colors();
+    test_print_Data_Buffer();
 }
