@@ -94,7 +94,7 @@ static void test_safe_free_schar(void) {
 }
 
 static void test_safe_free_uchar(void) {
-    unsigned char* ptr = safe_malloc(100);
+    char* ptr = safe_malloc(100);
     safe_free_uchar(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_uchar should set the pointer to NULL after freeing");
 }
