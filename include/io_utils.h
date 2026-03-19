@@ -734,6 +734,19 @@ extern "C"
     M_NONNULL_IF_NONZERO_PARAM(1, 2)
     M_PARAM_RO_SIZE(1, 2) void print_Pipe_Data(const uint8_t* M_NULLABLE dataBuffer, uint32_t bufferLen);
 
+    //! \def RETURN_VALUE_MAX_STR_LEN
+    //! \brief The maximum string length for human-readable eReturnValues.
+    #define RETURN_VALUE_MAX_STR_LEN (64)
+
+    //! \fn bool get_eReturnValues_To_String(eReturnValues ret, char string[M_NONNULL_ARRAY RETURN_VALUE_MAX_STR_LEN])
+    //! \brief Converts an eReturnValue to a human-readable string.
+    //!
+    //! \param[in] ret Value to humanize.
+    //! \param[out] string Buffer to store the human-readable string. Must be at least RETURN_VALUE_MAX_STR_LEN in size.
+    //! \return true if the conversion was successful, false if the return value is unknown.
+    M_PARAM_WO(2)
+    M_NODISCARD bool get_eReturnValues_To_String(eReturnValues ret, char string[M_NONNULL_ARRAY RETURN_VALUE_MAX_STR_LEN]);
+
     //! \fn void print_Return_Enum(const char* funcName, eReturnValues ret)
     //! \brief Prints humanized eReturnValue for a given return value.
     //!
