@@ -2324,8 +2324,147 @@ int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
 }
 #endif // defined (_MSC_VER) && _MSC_VER <= MSVC_2013 && defined _WIN32
 
+M_NODISCARD bool get_eReturnValues_To_String(eReturnValues ret, char string[M_NONNULL_ARRAY RETURN_VALUE_MAX_STR_LEN])
+{
+    errno_t error = EINVAL; // start with this as safe_strcpy *should* return success
+    switch (ret)
+    {
+    case M_ACCESS_ENUM(eReturnValues, SUCCESS):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "SUCCESS\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, FAILURE):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, NOT_SUPPORTED):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "NOT SUPPORTED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, COMMAND_FAILURE):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "COMMAND FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, IN_PROGRESS):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "IN PROGRESS\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, ABORTED):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "ABORTED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "BAD PARAMETER\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "MEMORY FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_PASSTHROUGH_FAILURE):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "OS PASSTHROUGH FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, LIBRARY_MISMATCH):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "LIBRARY MISMATCH\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, FROZEN):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "FROZEN\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, PERMISSION_DENIED):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "PERMISSION DENIED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, FILE_OPEN_ERROR):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "FILE OPEN ERROR\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, WARN_INCOMPLETE_RFTRS):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "WARNING INCOMPLETE RTFRS\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_TIMEOUT):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "COMMAND TIMEOUT\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, WARN_NOT_ALL_DEVICES_ENUMERATED):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "WARNING NOT ALL DEVICES ENUMERATED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, WARN_INVALID_CHECKSUM):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "WARN INVALID CHECKSUM\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_NOT_AVAILABLE):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "OS COMMAND NOT AVAILABLE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_BLOCKED):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "OS COMMAND BLOCKED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, COMMAND_INTERRUPTED):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "COMMAND INTERRUPTED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, VALIDATION_FAILURE):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "VALIDATION FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, STRIP_HDR_FOOTER_FAILURE):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "STRIP HDR FOOTER FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, PARSE_FAILURE):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "PARSE FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, INVALID_LENGTH):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "INVALID LENGTH\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, ERROR_WRITING_FILE):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "ERROR WRITING FILE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, TIMEOUT):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "TIMEOUT\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_TIMEOUT_TOO_LARGE):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "OS TIMEOUT TOO LARGE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, PARSING_EXCEPTION_FAILURE):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "PARSING EXCEPTION FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, POWER_CYCLE_REQUIRED):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "POWER CYCLE REQUIRED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DIR_CREATION_FAILED):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "DIR CREATION FAILED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, FILE_READ_ERROR):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "FILE READ ERROR\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_ACCESS_DENIED):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "DEVICE ACCESS DENIED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, NOT_PARSED):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "NOT PARSED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, MISSING_INFORMATION):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "MISSING INFORMATION\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, TRUNCATED_FILE):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "TRUNCATED FILE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, INSECURE_PATH):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "INSECURE PATH\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_BUSY):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "DEVICE BUSY\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_INVALID):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "DEVICE INVALID\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_DISCONNECTED):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "DEVICE DISCONNECTED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, UNKNOWN):
+        error = safe_strcpy_no_overlap(string, RETURN_VALUE_MAX_STR_LEN, "UNKNOWN\n");
+        break;
+        // NO DEFAULT CASE! This will cause warnings when an enum value is not
+        // in this switch-case so that it is never out of date!
+    }
+    if (error != 0)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
 void print_Return_Enum(const char* funcName, eReturnValues ret)
 {
+    DECLARE_ZERO_INIT_ARRAY(char, retStr, RETURN_VALUE_MAX_STR_LEN);
     if (M_NULLPTR == funcName)
     {
         print_str("Unknown function returning: ");
@@ -2335,130 +2474,13 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
         printf("%s returning: ", funcName);
     }
 
-    switch (ret)
+    if (!get_eReturnValues_To_String(ret, retStr))
     {
-    case M_ACCESS_ENUM(eReturnValues, SUCCESS):
-        print_str("SUCCESS\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, FAILURE):
-        print_str("FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, NOT_SUPPORTED):
-        print_str("NOT SUPPORTED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, COMMAND_FAILURE):
-        print_str("COMMAND FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, IN_PROGRESS):
-        print_str("IN PROGRESS\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, ABORTED):
-        print_str("ABORTED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER):
-        print_str("BAD PARAMETER\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE):
-        print_str("MEMORY FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_PASSTHROUGH_FAILURE):
-        print_str("OS PASSTHROUGH FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, LIBRARY_MISMATCH):
-        print_str("LIBRARY MISMATCH\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, FROZEN):
-        print_str("FROZEN\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, PERMISSION_DENIED):
-        print_str("PERMISSION DENIED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, FILE_OPEN_ERROR):
-        print_str("FILE OPEN ERROR\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, WARN_INCOMPLETE_RFTRS):
-        print_str("WARNING INCOMPLETE RTFRS\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_TIMEOUT):
-        print_str("COMMAND TIMEOUT\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, WARN_NOT_ALL_DEVICES_ENUMERATED):
-        print_str("WARNING NOT ALL DEVICES ENUMERATED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, WARN_INVALID_CHECKSUM):
-        print_str("WARN INVALID CHECKSUM\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_NOT_AVAILABLE):
-        print_str("OS COMMAND NOT AVAILABLE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_BLOCKED):
-        print_str("OS COMMAND BLOCKED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, COMMAND_INTERRUPTED):
-        print_str("COMMAND INTERRUPTED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, VALIDATION_FAILURE):
-        print_str("VALIDATION FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, STRIP_HDR_FOOTER_FAILURE):
-        print_str("STRIP HDR FOOTER FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, PARSE_FAILURE):
-        print_str("PARSE FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, INVALID_LENGTH):
-        print_str("INVALID LENGTH\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, ERROR_WRITING_FILE):
-        print_str("ERROR WRITING FILE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, TIMEOUT):
-        print_str("TIMEOUT\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_TIMEOUT_TOO_LARGE):
-        print_str("OS TIMEOUT TOO LARGE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, PARSING_EXCEPTION_FAILURE):
-        print_str("PARSING EXCEPTION FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, POWER_CYCLE_REQUIRED):
-        print_str("POWER CYCLE REQUIRED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DIR_CREATION_FAILED):
-        print_str("DIR CREATION FAILED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, FILE_READ_ERROR):
-        print_str("FILE READ ERROR\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DEVICE_ACCESS_DENIED):
-        print_str("DEVICE ACCESS DENIED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, NOT_PARSED):
-        print_str("NOT PARSED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, MISSING_INFORMATION):
-        print_str("MISSING INFORMATION\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, TRUNCATED_FILE):
-        print_str("TRUNCATED FILE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, INSECURE_PATH):
-        print_str("INSECURE PATH\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DEVICE_BUSY):
-        print_str("DEVICE BUSY\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DEVICE_INVALID):
-        print_str("DEVICE INVALID\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DEVICE_DISCONNECTED):
-        print_str("DEVICE DISCONNECTED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, UNKNOWN):
-        print_str("UNKNOWN\n");
-        break;
-        // NO DEFAULT CASE! This will cause warnings when an enum value is not
-        // in this switch-case so that it is never out of date!
+        print_str("Invalid return value - conversion not available.\n");
+    }
+    else
+    {
+        print_str(retStr);
     }
     print_str("\n");
 }

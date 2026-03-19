@@ -122,7 +122,7 @@ extern "C"
     //! - \a destsz is less than or equal to safe_strnlen(src, destsz); truncation would occur
     //!
     //! - overlap would occur between the source and destination strings.
-    M_PARAM_RW_SIZE(1, 2)
+    M_PARAM_WO_SIZE(1, 2)
     M_PARAM_RO(3)
     M_NULL_TERM_STRING(3)
     errno_t safe_strcpy_impl(char* M_RESTRICT M_NONNULL       dest,
