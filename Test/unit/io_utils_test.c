@@ -684,12 +684,12 @@ static void test_flush_stderr(void) {
 
 static void test_safe_fopen(void) {
     FILE* file;
-    safe_fopen(file,"test_safe_fopen.txt", "w");
+    errno_t err = safe_fopen(&file,"test_safe_fopen.txt", "w");
     TEST_ASSERT(file != NULL, "safe_fopen opened the file successfully");
     fprintf(file, "Testing safe_fopen.\n");
     fclose(file);
 
-    safe_fopen(file, "test_safe_fopen.txt", "r");
+    err = safe_fopen(&file, "test_safe_fopen.txt", "r");
     TEST_ASSERT(file != NULL, "safe_fopen opened the file successfully for reading");
 
     char buffer[256] = {0};
