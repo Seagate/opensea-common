@@ -722,7 +722,7 @@ static void test_safe_freopen(void) {
 
 static void test_safe_tmpfile(void) {
     FILE* file;
-    errno_t err = safe_tmpfile(NULL);
+    errno_t err = safe_tmpfile(&file);
     TEST_ASSERT(file != NULL, "safe_tmpfile created a temporary file successfully");
     fprintf(file, "Testing safe_tmpfile.\n");
     fflush(file);
@@ -737,6 +737,24 @@ static void test_safe_tmpfile(void) {
     TEST_ASSERT(strstr(buffer, "Testing safe_tmpfile.") != NULL, "safe_tmpfile wrote the correct content to the temporary file");
 
     fclose(file);
+}
+
+static void test_safe_gets(void) {
+    char buffer[256] = {0};
+
+    FILE* testFile = fopen("test_safe_gets.txt", "w");
+    fprintf(testFile, "This is a test for safe_gets.\n");
+
+    fclose(testFile);
+
+    testFile = fopen("test_safe_gets.txt", "r");
+
+    TEST_ASSERT(testFile != NULL, "Test file opened successfully");
+    char* result = safe_gets(buffer, sizeof(buffer), testFile);
+    TEST_ASSERT(result != NULL, "safe_gets read a line successfully");
+    TEST_ASSERT(strcmp(buffer, "This is a test for safe_gets.\n") == 0, "safe_gets read the correct line");
+    
+    fclose(testFile);
 }
 
 void run_io_utils_tests(void) {
@@ -780,4 +798,5 @@ void run_io_utils_tests(void) {
     test_safe_fopen();
     test_safe_freopen();
     test_safe_tmpfile();
+    test_safe_gets();
 }
