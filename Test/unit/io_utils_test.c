@@ -525,28 +525,30 @@ static void test_print_Data_Buffer(void) {
 
     FILE *fp = fopen("output.txt", "w+");
 
+    fflush(stdout);                      
+
     int saved_stdout = dup(fileno(stdout));
     dup2(fileno(fp), fileno(stdout));
 
     print_Data_Buffer(data, sizeof(data), true);
 
-    fflush(stdout);
+    fflush(stdout);                     
 
     dup2(saved_stdout, fileno(stdout));
     close(saved_stdout);
+
+    fflush(stdout);                   
 
     fseek(fp, 0, SEEK_SET);
 
     char buffer[512] = {0};
     size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
     buffer[n] = '\0';
-    
+
     printf("Captured output:\n%s\n", buffer);
 
     TEST_ASSERT(strstr(buffer, "DE AD BE EF 09") != NULL, "Hex bytes printed correctly");
-
     TEST_ASSERT(strstr(buffer, ".....") != NULL, "Non-printable character representation printed");
-
 
     fclose(fp);
 }
