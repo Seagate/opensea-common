@@ -226,7 +226,7 @@ static void test_safe_free(void) {
 }
 
 static void test_safe_free_tchar(void) {
-    TCHAR* memory = safe_malloc(100 * sizeof(TCHAR));
+    CHAR* memory = safe_malloc(100 * sizeof(CHAR));
     safe_free_tchar(&memory);
     TEST_ASSERT(memory == NULL, "safe_free_tchar should set the TCHAR pointer to NULL after freeing");
 }
