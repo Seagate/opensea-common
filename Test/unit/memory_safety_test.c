@@ -225,21 +225,6 @@ static void test_safe_free(void) {
     TEST_ASSERT(longdouble_ptr == NULL, "safe_free should set the long double pointer to NULL after freeing");
 }
 
-static void test_safe_free_tchar(void) {
-    TCHAR* memory = safe_malloc(100 * sizeof(TCHAR));
-    safe_free_tchar(&memory);
-    TEST_ASSERT(memory == NULL, "safe_free_tchar should set the TCHAR pointer to NULL after freeing");
-}
-
-static void test_is_Empty(void) {
-    char empty_buf[3] = {0,0,0};
-    char non_empty_buf[] = "not empty";
-
-    TEST_ASSERT(is_Empty(empty_buf, 3), "is_Empty should return true for zeroed memory");
-
-    TEST_ASSERT(!is_Empty(non_empty_buf, sizeof(non_empty_buf)), "is_Empty should return false for non-zero memory");
-}
-
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -262,6 +247,4 @@ void run_memory_safety_tests(void) {
     test_safe_free_double();
     test_safe_free_longdouble();
     test_safe_free();
-    // test_safe_free_tchar();
-    // test_is_Empty();
 }
