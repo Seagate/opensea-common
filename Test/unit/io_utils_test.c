@@ -540,6 +540,9 @@ static void test_print_Data_Buffer(void) {
 
     fflush(stdout);
 
+    /* Close the file */
+    fclose(fp);
+
     /* Restore stdout BEFORE reading */
     dup2(saved_stdout, fileno(stdout));
     close(saved_stdout);
@@ -555,8 +558,6 @@ static void test_print_Data_Buffer(void) {
     TEST_ASSERT(strstr(buffer, ".....") != NULL, "Non-printable character representation printed");
 
     printf("Captured output:\n%s\n", buffer);
-
-    fclose(fp);
 }
 
 static void test_print_Pipe_Data(void) {
@@ -606,7 +607,7 @@ void run_io_utils_tests(void) {
     // test_snprintf_err_handle(); needs to be commented
     test_verify_Format_String_And_Args();
     // test_set_Console_Colors(); Skip for now as it is complicated to test
-    // test_print_Data_Buffer();
+    test_print_Data_Buffer();
     // test_print_Pipe_Data();
     test_print_Return_Enum();
 }
