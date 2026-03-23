@@ -720,6 +720,25 @@ static void test_safe_freopen(void) {
     fclose(readFile);
 }
 
+static void test_safe_tmpfile(void) {
+    FILE* file;
+    errno_t err = safe_tmpfile(&file);
+    TEST_ASSERT(file != NULL, "safe_tmpfile created a temporary file successfully");
+    fprintf(file, "Testing safe_tmpfile.\n");
+    fflush(file);
+
+    fseek(file, 0, SEEK_SET);
+
+    char buffer[256] = {0};
+    size_t n = fread(buffer, 1, sizeof(buffer) - 1, file);
+    buffer[n] = '\0';
+
+    printf("Read from temporary file:\n%s\n", buffer);
+    TEST_ASSERT(strstr(buffer, "Testing safe_tmpfile.") != NULL, "safe_tmpfile wrote the correct content to the temporary file");
+
+    fclose(file);
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -760,4 +779,5 @@ void run_io_utils_tests(void) {
     test_flush_stderr();
     test_safe_fopen();
     test_safe_freopen();
+    test_safe_tmpfile();
 }
