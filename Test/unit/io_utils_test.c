@@ -651,6 +651,37 @@ static void test_flush_stdout(void) {
     fclose(fp);
 }
 
+static void test_flush_stderr(void) {
+    FILE *fp = fopen("flush_stderr_output.txt", "w+");
+
+    fflush(stderr);
+
+    int saved_stderr = dup(fileno(stderr));
+    dup2(fileno(fp), fileno(stderr));
+
+    fprintf(stderr, "This is a test for flush_stderr.");
+    flush_stderr();
+
+    fflush(stderr);
+
+    dup2(saved_stderr, fileno(stderr));
+    close(saved_stderr);
+
+    fflush(stderr);
+
+    fseek(fp, 0, SEEK_SET);
+
+    char buffer[256] = {0};
+    size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
+    buffer[n] = '\0';
+
+    printf("Captured output:\n%s\n", buffer);
+
+    TEST_ASSERT(strstr(buffer, "This is a test for flush_stderr.") != NULL, "flush_stderr flushed the output correctly");
+
+    fclose(fp);
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -688,4 +719,5 @@ void run_io_utils_tests(void) {
     test_print_Pipe_Data();
     test_print_Return_Enum();
     test_flush_stdout();
+    test_flush_stderr();
 }
