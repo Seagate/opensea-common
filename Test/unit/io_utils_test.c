@@ -553,9 +553,36 @@ static void test_print_Data_Buffer(void) {
     fclose(fp);
 }
 
-static void test_print_Pipe_Data(void) {
-    uint8_t data[] = {0xDE, 0xAD, 0xBE, 0xEF, 0x09};
+static void test_print_Pipe_Data(void)
+{
+    uint8_t data[] = {0xDE, 0xAD, 0xBE, 0xEF};
+
+    FILE *fp = fopen("pipe_output.bin", "w+");
+
+    fflush(stdout);
+
+    int saved_stdout = dup(fileno(stdout));
+    dup2(fileno(fp), fileno(stdout));
+
     print_Pipe_Data(data, sizeof(data));
+
+    fflush(stdout);
+
+    dup2(saved_stdout, fileno(stdout));
+    close(saved_stdout);
+
+    fflush(stdout);
+
+    fseek(fp, 0, SEEK_SET);
+
+    uint8_t buffer[16] = {0};
+    size_t n = fread(buffer, 1, sizeof(buffer), fp);
+
+    TEST_ASSERT(n == sizeof(data), "Correct number of bytes written");
+    TEST_ASSERT(memcmp(buffer, data, sizeof(data)) == 0,
+                "Pipe data printed correctly");
+
+    fclose(fp);
 }
 
 static void test_print_Return_Enum(void) {
@@ -601,6 +628,6 @@ void run_io_utils_tests(void) {
     test_verify_Format_String_And_Args();
     // test_set_Console_Colors(); Skip for now as it is complicated to test
     test_print_Data_Buffer();
-    // test_print_Pipe_Data();
+    test_print_Pipe_Data();
     // test_print_Return_Enum();
 }
