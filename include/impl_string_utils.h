@@ -138,6 +138,9 @@ extern "C"
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz is > RSIZE_MAX")
         M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
         M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, destsz), "source and destination regions overlap. Use safe_strmove instead.")
+#if defined(ALLOW_NO_OVERLAP_SUGGESTIONS)
+        M_DIAG_WARN(!M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, destsz) && dest != src, "No overlap detected; consider safe_strcpy_no_overlap for better performance.")
+#endif
         // clang-format on
         ;
 
@@ -247,6 +250,9 @@ extern "C"
         M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
         M_DIAG_ERROR(count > RSIZE_MAX, "count is > RSIZE_MAX")
         M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), "source and destination regions overlap. Use safe_strnmove instead.")
+#if defined(ALLOW_NO_OVERLAP_SUGGESTIONS)
+        M_DIAG_WARN(!M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count) && dest != src, "No overlap detected; consider safe_strncpy_no_overlap for better performance.")
+#endif
         // clang-format on
         ;
 
@@ -359,6 +365,9 @@ extern "C"
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz is > RSIZE_MAX")
         M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
         M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, destsz), "source and destination regions overlap")
+#if defined(ALLOW_NO_OVERLAP_SUGGESTIONS)
+        M_DIAG_WARN(!M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, destsz) && dest != src, "No overlap detected; consider safe_strcat_no_overlap for better performance.")
+#endif
         // TODO Add diagnostic for not enough space in dest to concatenate source
         // clang-format on
         ;
@@ -422,6 +431,120 @@ extern "C"
         M_DIAG_ERROR(count > RSIZE_MAX, "destsz is > RSIZE_MAX")
         M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
         M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), "source and destination regions overlap")
+#if defined(ALLOW_NO_OVERLAP_SUGGESTIONS)
+        M_DIAG_WARN(!M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count) && dest != src, "No overlap detected; consider safe_strncat_no_overlap for better performance.")
+#endif
+        // clang-format on
+        ;
+
+    //! \fn errno_t safe_strcatmove_impl(char*                dest,
+    //!                                  rsize_t              destsz,
+    //!                                  const char*          src,
+    //!                                  const char*          file,
+    //!                                  const char*          function,
+    //!                                  int                  line,
+    //!                                  const char*          expression)
+    //! \brief internal implementation of safe_strcatmove
+    //!
+    //! Works like safe_strcat, but allows overlapping source and destination buffers.
+    //! Appends a copy of the null-terminated byte string pointed to by \a src to the end of the null-terminated
+    //! byte string pointed to by \a dest. The character \a src[0] replaces the null terminator at the end of \a dest.
+    //! The resulting byte string is null-terminated.
+    //! Unlike safe_strcat, this allows for overlapping source and destination memory.
+    //! \param[in] dest pointer to the character array to write to
+    //! \param[in] destsz maximum number of characters to write, typically the size of the destination buffer
+    //! \param[in] src pointer to the null-terminated byte string to copy from
+    //! \param[in] file The source file name where this function is called.
+    //! \param[in] function The function name where this function is called.
+    //! \param[in] line The line number where this function is called.
+    //! \param[in] expression The expression being evaluated.
+    //! \return Zero on success, or an error code on failure.
+    //! \note The following errors are detected at runtime and call the installed constraint handler:
+    //!
+    //! - \a src is a null pointer
+    //!
+    //! - \a dest is a null pointer
+    //!
+    //! - \a destsz is zero or greater than \a RSIZE_MAX
+    //!
+    //! - there is no null terminator in the first \a destsz bytes of \a dest
+    //!
+    //! - truncation would occur due to not enough space in \a dest to concatenate \a src
+    M_PARAM_RW_SIZE(1, 2)
+    M_PARAM_RO(3)
+    M_NULL_TERM_STRING(1)
+    M_NULL_TERM_STRING(3)
+    errno_t safe_strcatmove_impl(char* M_NONNULL       dest,
+                                 rsize_t              destsz,
+                                 const char* M_NONNULL src,
+                                 const char* M_NULLABLE           file,
+                                 const char* M_NULLABLE           function,
+                                 int                              line,
+                                 const char* M_NULLABLE           expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_STR_CHECK(dest), "dest is NULL")
+        M_DIAG_ERROR(destsz == 0, "destsz is zero")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz is > RSIZE_MAX")
+        M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
+        // clang-format on
+        ;
+
+    //! \fn errno_t safe_strncatmove_impl(char*                dest,
+    //!                                   rsize_t              destsz,
+    //!                                   const char*          src,
+    //!                                   rsize_t              count,
+    //!                                   const char*          file,
+    //!                                   const char*          function,
+    //!                                   int                  line,
+    //!                                   const char*          expression)
+    //! \brief internal implementation of safe_strncatmove
+    //!
+    //! Works like safe_strncat, but allows overlapping source and destination buffers.
+    //! Appends at most count characters from the character array pointed to by \a src, stopping if the null character
+    //! is found, to the end of the null-terminated byte string pointed to by \a dest. The character \a src[0]
+    //! replaces the null terminator at the end of \a dest. The terminating null character is always appended in the
+    //! end (so the maximum number of bytes the function may write is \a count + 1)
+    //! Unlike safe_strncat, this allows for overlapping source and destination memory.
+    //! \param[in] dest pointer to the character array to write to
+    //! \param[in] destsz maximum number of characters to write, typically the size of the destination buffer
+    //! \param[in] src pointer to the null-terminated byte string to copy from
+    //! \param[in] count maximum number of characters to copy
+    //! \param[in] file The source file name where this function is called.
+    //! \param[in] function The function name where this function is called.
+    //! \param[in] line The line number where this function is called.
+    //! \param[in] expression The expression being evaluated.
+    //! \return Zero on success, or an error code on failure.
+    //! \note The following errors are detected at runtime and call the installed constraint handler:
+    //!
+    //! - \a src is a null pointer
+    //!
+    //! - \a dest is a null pointer
+    //!
+    //! - \a destsz is zero or greater than \a RSIZE_MAX
+    //!
+    //! - \a count is zero or greater than \a RSIZE_MAX
+    //!
+    //! - there is no null terminator in the first \a destsz bytes of \a dest
+    //!
+    //! - truncation would occur due to not enough space in \a dest to concatenate \a src or \a count bytes of \a src
+    M_PARAM_RW_SIZE(1, 2)
+    M_PARAM_RO_SIZE(3, 4)
+    M_NULL_TERM_STRING(1)
+    errno_t safe_strncatmove_impl(char* M_NONNULL       dest,
+                                  rsize_t              destsz,
+                                  const char* M_NONNULL src,
+                                  rsize_t              count,
+                                  const char* M_NULLABLE           file,
+                                  const char* M_NULLABLE           function,
+                                  int                              line,
+                                  const char* M_NULLABLE           expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_STR_CHECK(dest), "dest is NULL")
+        M_DIAG_ERROR(destsz == 0, "destsz is zero")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz is > RSIZE_MAX")
+        M_DIAG_ERROR(count == 0, "count is zero")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count is > RSIZE_MAX")
+        M_DIAG_ERROR(M_NULL_CONST_STR_CHECK(src), "src is NULL")
         // clang-format on
         ;
 

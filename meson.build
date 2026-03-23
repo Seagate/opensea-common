@@ -301,6 +301,18 @@ if get_option('directorysecurity').disabled()
     global_cpp_args += ['-DDISABLE_SECURE_FILE_PATH_CHECK']
 endif
 
+if get_option('memcpy-is-memcpy-not-memmove').enabled()
+    global_cpp_args += ['-DMEMCPY_IS_MEMCPY_NOT_MEMMOVE']
+endif
+
+if get_option('strcpy-is-strcpy-not-strmove').enabled()
+    global_cpp_args += ['-DSTRCPY_IS_STRCPY_NOT_STRMOVE']
+endif
+
+if get_option('allow-no-overlap-suggestions').enabled()
+    global_cpp_args += ['-DALLOW_NO_OVERLAP_SUGGESTIONS']
+endif
+
 src_files = [
     'src/bit_manip.c',
     'src/constraint_handling.c',

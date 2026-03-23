@@ -290,7 +290,7 @@ errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
                          const char*            expression)
 {
     errno_t           error  = 0;
-    size_t            srclen = safe_strnlen(src, destsz);
+    size_t            srclen = safe_strnlen(src, RSIZE_MAX);
     constraintEnvInfo envInfo;
     if (dest == M_NULLPTR)
     {
@@ -369,9 +369,9 @@ errno_t safe_strmove_impl(char*       dest,
                           int         line,
                           const char* expression)
 {
-    errno_t           error  = 0;
-    size_t            srclen = safe_strnlen(src, destsz);
+    size_t            srclen = safe_strnlen(src, RSIZE_MAX);
     constraintEnvInfo envInfo;
+    errno_t           error  = 0;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -805,6 +805,178 @@ errno_t safe_strncat_impl(char* M_RESTRICT       dest,
     }
 }
 
+errno_t safe_strcatmove_impl(char*       dest,
+                             rsize_t     destsz,
+                             const char* src,
+                             const char* file,
+                             const char* function,
+                             int         line,
+                             const char* expression)
+{
+    errno_t           error    = 0;
+    size_t            srclen   = safe_strnlen(src, RSIZE_MAX);
+    char*             destnull = M_NULLPTR;
+    constraintEnvInfo envInfo;
+    if (dest == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strcatmove: dest is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (src == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strcatmove: src is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        if (destsz > RSIZE_T_C(0) && destsz <= RSIZE_MAX)
+        {
+            dest[0] = 0;
+        }
+        errno = error;
+        return error;
+    }
+    else if (destsz == RSIZE_T_C(0))
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strcatmove: destsz is zero",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (destsz > RSIZE_MAX)
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strcatmove: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (M_NULLPTR == (destnull = M_REINTERPRET_CAST(char*, memchr(dest, '\0', destsz))))
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strcatmove: No NULL terminator found in dest",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if ((destsz - (M_REINTERPRET_CAST(uintptr_t, destnull) - M_REINTERPRET_CAST(uintptr_t, dest))) <=
+             srclen) // truncation
+    {
+        dest[0] = 0;
+        error   = ERANGE;
+        invoke_Constraint_Handler("safe_strcatmove: destsz too small. Src will be truncated.",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else
+    {
+        // Unlike safe_strcat, we allow overlapping ranges by using safe_memcmove
+        error = safe_memcmove(destnull, destsz - (C_CAST(uintptr_t, destnull) - C_CAST(uintptr_t, dest)), src, '\0',
+                              srclen + SIZE_T_C(1));
+        destnull[srclen] = '\0'; // ensuring NULL termination
+        errno            = error;
+        return error;
+    }
+}
+
+errno_t safe_strncatmove_impl(char*       dest,
+                              rsize_t     destsz,
+                              const char* src,
+                              rsize_t     count,
+                              const char* file,
+                              const char* function,
+                              int         line,
+                              const char* expression)
+{
+    errno_t           error    = 0;
+    size_t            srclen   = safe_strnlen(src, destsz);
+    char*             destnull = M_NULLPTR;
+    constraintEnvInfo envInfo;
+    if (dest == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strncatmove: dest is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (src == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strncatmove: src is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        if (destsz > RSIZE_T_C(0) && destsz <= RSIZE_MAX)
+        {
+            dest[0] = 0;
+        }
+        errno = error;
+        return error;
+    }
+    else if (destsz == RSIZE_T_C(0))
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strncatmove: destsz is zero",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (destsz > RSIZE_MAX)
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strncatmove: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (count == RSIZE_T_C(0))
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strncatmove: count is zero",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (count > RSIZE_MAX)
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strncatmove: count > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (M_NULLPTR == (destnull = M_REINTERPRET_CAST(char*, memchr(dest, '\0', destsz))))
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strncatmove: No NULL terminator found in dest",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (((destsz - (M_REINTERPRET_CAST(uintptr_t, destnull) - M_REINTERPRET_CAST(uintptr_t, dest))) <= srclen) ||
+             ((destsz - (M_REINTERPRET_CAST(uintptr_t, destnull) - M_REINTERPRET_CAST(uintptr_t, dest))) <=
+              count)) // truncation
+    {
+        dest[0] = 0;
+        error   = ERANGE;
+        invoke_Constraint_Handler("safe_strncatmove: destsz too small. Src will be truncated.",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else
+    {
+        // Unlike safe_strncat, we allow overlapping ranges by using safe_memcmove
+        error =
+            safe_memcmove(destnull, destsz - (C_CAST(uintptr_t, destnull) - C_CAST(uintptr_t, dest)), src, '\0', count);
+        destnull[count] = '\0'; // ensuring NULL termination
+        errno           = error;
+        return error;
+    }
+}
+
 size_t safe_strnlen_impl(const char* string, size_t n)
 {
 #if defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
@@ -841,8 +1013,9 @@ size_t safe_strnlen_impl(const char* string, size_t n)
 #if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
 M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size)
 {
-    size_t length = memchr(src, '\0', size) != M_NULLPTR
-                        ? C_CAST(size_t, C_CAST(uintptr_t, memchr(src, '\0', size)) - C_CAST(uintptr_t, src))
+    void * nullpos = memchr(src, '\0', size);
+    size_t length = nullpos != M_NULLPTR
+                        ? C_CAST(size_t, C_CAST(uintptr_t, nullpos) - C_CAST(uintptr_t, src))
                         : SIZE_T_C(0);
     char*  dupstr = M_REINTERPRET_CAST(char*, malloc(length + 1));
     if (dupstr == M_NULLPTR)
@@ -1090,8 +1263,8 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
     size_t end = stringlen;
     while (end > start)
     {
-        unsigned char currentEndChar = stringToChange[end - SIZE_T_C(1)];
-        if (currentEndChar <= 0x7F) 
+        unsigned char currentEndChar = M_STATIC_CAST(unsigned char, stringToChange[end - SIZE_T_C(1)]);
+        if (currentEndChar <= 0x7F)
         {
             if (!(safe_isspace(currentEndChar) || safe_iscntrl(currentEndChar)))
             {
@@ -1112,7 +1285,7 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
 
     if (newlen == stringlen && start == 0)
     {
-        return; // No changes needed, avoid unnecessary operations  
+        return; // No changes needed, avoid unnecessary operations
     }
 
     if (newlen < stringlen) // If these are equivalent, then it is possible to go out of bounds doing this.
@@ -1122,7 +1295,7 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
         // left after the memmove. This is not strictly necessary, but it is safer and does not have a significant
         // performance impact in most cases.
         size_t memsetlen = stringlen - newlen;
-        safe_memset(&stringToChange[newlen], memsetlen, 0, memsetlen); 
+        safe_memset(&stringToChange[newlen], memsetlen, 0, memsetlen);
     }
 }
 
