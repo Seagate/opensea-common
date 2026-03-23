@@ -722,7 +722,7 @@ static void test_safe_freopen(void) {
 
 static void test_safe_tmpfile(void) {
     FILE* file;
-    errno_t err = safe_tmpfile(&file);
+    errno_t err = safe_tmpfile(NULL);
     TEST_ASSERT(file != NULL, "safe_tmpfile created a temporary file successfully");
     fprintf(file, "Testing safe_tmpfile.\n");
     fflush(file);
