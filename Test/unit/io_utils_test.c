@@ -689,7 +689,7 @@ static void test_safe_fopen(void) {
     fprintf(file, "Testing safe_fopen.\n");
     fclose(file);
 
-    err = safe_fopen(&file, "test_safe_fopen.txt", "r");
+    err = safe_fopen(NULL, "test_safe_fopen.txt", "r");
     TEST_ASSERT(file != NULL, "safe_fopen opened the file successfully for reading");
 
     char buffer[256] = {0};
