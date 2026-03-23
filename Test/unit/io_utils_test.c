@@ -480,6 +480,7 @@ typedef struct
     uint8_t expectedEFIColor;
 } ColorTestCase;
 
+// Skip for now as it is complicated to test
 static void test_set_Console_Colors(void) {
     ColorTestCase tests[] =
     {
@@ -604,7 +605,7 @@ void run_io_utils_tests(void) {
     test_vsnprintf();
     // test_snprintf_err_handle(); needs to be commented
     test_verify_Format_String_And_Args();
-    // test_set_Console_Colors();
+    // test_set_Console_Colors(); Skip for now as it is complicated to test
     // test_print_Data_Buffer();
     // test_print_Pipe_Data();
     test_print_Return_Enum();
