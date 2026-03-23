@@ -578,6 +578,12 @@ static void test_print_Pipe_Data(void)
     uint8_t buffer[16] = {0};
     size_t n = fread(buffer, 1, sizeof(buffer), fp);
 
+    printf("Captured raw output:\n");
+    for (size_t i = 0; i < n; i++) {
+        printf("%02X ", buffer[i]);
+    }
+    printf("\n");
+
     TEST_ASSERT(n == sizeof(data), "Correct number of bytes written");
     TEST_ASSERT(memcmp(buffer, data, sizeof(data)) == 0,
                 "Pipe data printed correctly");
