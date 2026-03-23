@@ -739,22 +739,36 @@ static void test_safe_tmpfile(void) {
     fclose(file);
 }
 
-static void test_safe_gets(void) {
-    char buffer[256] = {0};
+static void test_safe_gets(void)
+{
+    char buffer[64] = {0};
 
-    FILE* testFile = fopen("test_safe_gets.txt", "w");
-    fprintf(testFile, "This is a test for safe_gets.\n");
+    FILE *fp = fopen("test_input.txt", "w");
+    TEST_ASSERT(fp != NULL, "input file created");
 
-    fclose(testFile);
+    fprintf(fp, "hello world\n");
+    fclose(fp);
 
-    testFile = fopen("test_safe_gets.txt", "r");
+    fp = fopen("test_input.txt", "r");
+    TEST_ASSERT(fp != NULL, "input file opened");
 
-    TEST_ASSERT(testFile != NULL, "Test file opened successfully");
-    char* result = safe_gets(buffer, sizeof(buffer), testFile);
-    TEST_ASSERT(result != NULL, "safe_gets read a line successfully");
-    TEST_ASSERT(strcmp(buffer, "This is a test for safe_gets.\n") == 0, "safe_gets read the correct line");
-    
-    fclose(testFile);
+    int saved_stdin = dup(fileno(stdin));
+
+    dup2(fileno(fp), fileno(stdin));
+
+    char *res = safe_gets(buffer, sizeof(buffer));
+
+    dup2(saved_stdin, fileno(stdin));
+    close(saved_stdin);
+
+    fclose(fp);
+
+    printf("Captured input: %s\n", buffer);
+
+    TEST_ASSERT(res != NULL, "safe_gets returned non-null");
+
+    TEST_ASSERT(strcmp(buffer, "hello world") == 0,
+                "safe_gets read correct string");
 }
 
 void run_io_utils_tests(void) {
