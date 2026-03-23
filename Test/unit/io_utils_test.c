@@ -540,12 +540,13 @@ static void test_print_Data_Buffer(void) {
     char buffer[512] = {0};
     size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
     buffer[n] = '\0';
+    
+    printf("Captured output:\n%s\n", buffer);
 
     TEST_ASSERT(strstr(buffer, "DE AD BE EF 09") != NULL, "Hex bytes printed correctly");
 
     TEST_ASSERT(strstr(buffer, ".....") != NULL, "Non-printable character representation printed");
 
-    printf("Captured output:\n%s\n", buffer);
 
     fclose(fp);
 }
