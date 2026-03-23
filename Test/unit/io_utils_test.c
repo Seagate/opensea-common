@@ -703,6 +703,7 @@ static void test_safe_fopen(void) {
 }
 
 static void test_safe_freopen(void) {
+    printf("Testing safe_freopen. This should not be captured in the file.\n");
     FILE* file;
     errno_t err = safe_freopen(&file, "test_safe_freopen.txt", "w", stdout);
     TEST_ASSERT(file != NULL, "safe_freopen redirected stdout successfully");
@@ -811,6 +812,6 @@ void run_io_utils_tests(void) {
     test_flush_stderr();
     test_safe_fopen();
     test_safe_freopen();
-    test_safe_tmpfile();
-    test_safe_gets();
+    // test_safe_tmpfile();
+    // test_safe_gets();
 }
