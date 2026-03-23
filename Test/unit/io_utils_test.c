@@ -702,20 +702,37 @@ static void test_safe_fopen(void) {
     fclose(file);
 }
 
-static void test_safe_freopen(void) {
+static void test_safe_freopen(void)
+{
     printf("Testing safe_freopen. This should not be captured in the file.\n");
-    FILE* file;
+
+    FILE *file = NULL;
+
+    int saved_stdout = dup(fileno(stdout));
+
     errno_t err = safe_freopen(&file, "test_safe_freopen.txt", "w", stdout);
+
+    TEST_ASSERT(err == 0, "safe_freopen returned success");
     TEST_ASSERT(file != NULL, "safe_freopen redirected stdout successfully");
+
     printf("Testing safe_freopen.\n");
     fflush(stdout);
 
+    dup2(saved_stdout, fileno(stdout));
+    close(saved_stdout);
+
+    fflush(stdout);
+
     char buffer[256] = {0};
-    FILE* readFile = fopen("test_safe_freopen.txt", "r");
+    FILE *readFile = fopen("test_safe_freopen.txt", "r");
+
+    TEST_ASSERT(readFile != NULL, "output file opened");
+
     size_t n = fread(buffer, 1, sizeof(buffer) - 1, readFile);
     buffer[n] = '\0';
 
     printf("Read from file:\n%s\n", buffer);
+
     TEST_ASSERT(strstr(buffer, "Testing safe_freopen.") != NULL, "safe_freopen wrote the correct content to the file");
 
     fclose(readFile);
