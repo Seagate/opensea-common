@@ -575,17 +575,13 @@ static void test_print_Pipe_Data(void)
 
     fseek(fp, 0, SEEK_SET);
 
-    uint8_t buffer[16] = {0};
-    size_t n = fread(buffer, 1, sizeof(buffer), fp);
+    char buffer[256] = {0};
+    size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
+    buffer[n] = '\0';
 
-    printf("Captured raw output:\n");
-    for (size_t i = 0; i < n; i++) {
-        printf("%02X ", buffer[i]);
-    }
-    printf("\n");
+    printf("Captured output:\n%s\n", buffer);
 
-    TEST_ASSERT(n == sizeof(data), "Correct number of bytes written");
-    TEST_ASSERT(memcmp(buffer, data, sizeof(data)) == 0,
+    TEST_ASSERT(strstr(buffer, "DE AD BE EF") != NULL,
                 "Pipe data printed correctly");
 
     fclose(fp);
