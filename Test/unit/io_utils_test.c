@@ -547,6 +547,14 @@ static void test_print_Data_Buffer(void) {
     dup2(saved_stdout, fileno(stdout));
     close(saved_stdout);
 
+    /* Reopen the file for reading */
+    fp = fopen("output.txt", "r");
+    if (!fp)
+    {
+        perror("fopen failed");
+        return;
+    }
+
     fseek(fp, 0, SEEK_SET);
 
     char buffer[512] = {0};
@@ -558,6 +566,8 @@ static void test_print_Data_Buffer(void) {
     TEST_ASSERT(strstr(buffer, ".....") != NULL, "Non-printable character representation printed");
 
     printf("Captured output:\n%s\n", buffer);
+
+    fclose(fp);
 }
 
 static void test_print_Pipe_Data(void) {
