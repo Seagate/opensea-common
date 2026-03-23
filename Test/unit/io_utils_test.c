@@ -682,6 +682,26 @@ static void test_flush_stderr(void) {
     fclose(fp);
 }
 
+static void test_safe_fopen(void) {
+    FILE* file;
+    safe_fopen(file,"test_safe_fopen.txt", "w");
+    TEST_ASSERT(file != NULL, "safe_fopen opened the file successfully");
+    fprintf(file, "Testing safe_fopen.\n");
+    fclose(file);
+
+    safe_fopen(file, "test_safe_fopen.txt", "r");
+    TEST_ASSERT(file != NULL, "safe_fopen opened the file successfully for reading");
+
+    char buffer[256] = {0};
+    size_t n = fread(buffer, 1, sizeof(buffer) - 1, file);
+    buffer[n] = '\0';
+
+    printf("Read from file:\n%s\n", buffer);
+    TEST_ASSERT(strstr(buffer, "Testing safe_fopen.") != NULL, "safe_fopen read the correct content");
+
+    fclose(file);
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -720,4 +740,5 @@ void run_io_utils_tests(void) {
     test_print_Return_Enum();
     test_flush_stdout();
     test_flush_stderr();
+    test_safe_fopen();
 }
