@@ -689,7 +689,7 @@ static void test_safe_fopen(void) {
     fprintf(file, "Testing safe_fopen.\n");
     fclose(file);
 
-    err = safe_fopen(&file, "test_safe_fopen.txt", NULL);
+    err = safe_fopen(&file, "test_safe_fopen.txt", "r");
     TEST_ASSERT(file != NULL, "safe_fopen opened the file successfully for reading");
 
     char buffer[256] = {0};
@@ -700,6 +700,24 @@ static void test_safe_fopen(void) {
     TEST_ASSERT(strstr(buffer, "Testing safe_fopen.") != NULL, "safe_fopen read the correct content");
 
     fclose(file);
+}
+
+static void test_safe_freopen(void) {
+    FILE* file;
+    errno_t err = safe_freopen(&file, "test_safe_freopen.txt", "w", stdout);
+    TEST_ASSERT(file != NULL, "safe_freopen redirected stdout successfully");
+    printf("Testing safe_freopen.\n");
+    fflush(stdout);
+
+    char buffer[256] = {0};
+    FILE* readFile = fopen("test_safe_freopen.txt", "r");
+    size_t n = fread(buffer, 1, sizeof(buffer) - 1, readFile);
+    buffer[n] = '\0';
+
+    printf("Read from file:\n%s\n", buffer);
+    TEST_ASSERT(strstr(buffer, "Testing safe_freopen.") != NULL, "safe_freopen wrote the correct content to the file");
+
+    fclose(readFile);
 }
 
 void run_io_utils_tests(void) {
@@ -741,4 +759,5 @@ void run_io_utils_tests(void) {
     test_flush_stdout();
     test_flush_stderr();
     test_safe_fopen();
+    test_safe_freopen();
 }
