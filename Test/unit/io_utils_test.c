@@ -591,9 +591,33 @@ static void test_print_Return_Enum(void) {
     char *input = NULL;
     size_t len = 0;
 
+    FILE *fp = fopen("pipe_output.bin", "w+");
+
+    fflush(stdout);
+
+    int saved_stdout = dup(fileno(stdout));
+    dup2(fileno(fp), fileno(stdout));
+
     eReturnValues ret = get_Secure_User_Input("Enter a number: ", &input, &len);
 
     print_Return_Enum("get_Secure_User_Input", ret);
+
+    fflush(stdout);
+
+    dup2(saved_stdout, fileno(stdout));
+    close(saved_stdout);
+
+    fflush(stdout);
+
+    fseek(fp, 0, SEEK_SET);
+    char buffer[256] = {0};
+    size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
+    buffer[n] = '\0';
+
+    printf("Captured output:\n%s\n", buffer);
+
+    TEST_ASSERT(strstr(buffer, "get_Secure_User_Input returning: FAILURE") != NULL, "Return enum printed correctly");
+    fclose(fp);
 }
 
 void run_io_utils_tests(void) {
@@ -631,5 +655,5 @@ void run_io_utils_tests(void) {
     // test_set_Console_Colors(); Skip for now as it is complicated to test
     test_print_Data_Buffer();
     test_print_Pipe_Data();
-    // test_print_Return_Enum();
+    test_print_Return_Enum();
 }
