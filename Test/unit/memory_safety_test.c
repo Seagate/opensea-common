@@ -234,12 +234,11 @@ static void test_safe_free(void) {
 #endif
 
 static void test_is_Empty(void) {
-    int* ptr = NULL;
-    TEST_ASSERT(is_Empty(ptr, 4), "is_Empty should return true for a null pointer");
+    char buffer[10] = {0};
+    TEST_ASSERT(is_Empty(buffer, sizeof(buffer)), "is_Empty should return true for a buffer initialized to zero");
 
-    ptr = safe_malloc(100);
-    TEST_ASSERT(!is_Empty(ptr, 4), "is_Empty should return false for a non-null pointer");
-    free(ptr);
+    buffer[5] = 'A';
+    TEST_ASSERT(!is_Empty(buffer, sizeof(buffer)), "is_Empty should return false for a buffer that contains non-zero values");
 }
 
 void run_memory_safety_tests(void) {
