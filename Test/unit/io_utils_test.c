@@ -1143,6 +1143,28 @@ static void test_safe_atof(void) {
     TEST_ASSERT(errno == EINVAL || errno == 0, "safe_atof set errno to EINVAL or left it unchanged for invalid input");
 }
 
+static void test_checked_fputs(void) {
+    FILE *fp = fopen("test_checked_fputs.txt", "w");
+    TEST_ASSERT(fp != NULL, "File opened successfully for checked_fputs test");
+
+    errno_t err = checked_fputs("Hello, World!\n", fp);
+    TEST_ASSERT(err == 0, "checked_fputs wrote to file successfully");
+
+    fclose(fp);
+
+    fp = fopen("test_checked_fputs.txt", "r");
+    TEST_ASSERT(fp != NULL, "File opened successfully for reading in checked_fputs test");
+
+    char buffer[256] = {0};
+    size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
+    buffer[n] = '\0';
+
+    printf("Read from file:\n%s\n", buffer);
+    TEST_ASSERT(strstr(buffer, "Hello, World!") != NULL, "checked_fputs wrote the correct content to the file");
+
+    fclose(fp);
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -1198,4 +1220,5 @@ void run_io_utils_tests(void) {
     test_safe_atol();
     test_safe_atoll();
     test_safe_atof();
+    test_checked_fputs();
 }
