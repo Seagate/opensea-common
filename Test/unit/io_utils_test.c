@@ -1125,17 +1125,17 @@ static void test_safe_atoll(void) {
 }
 
 static void test_safe_atof(void) {
-    float result;
+    double result;
     errno_t err = safe_atof(&result, "123.45");
-    TEST_ASSERT(result == 123.45f, "safe_atof converted string to float correctly");
+    TEST_ASSERT(result == 123.45, "safe_atof converted string to double correctly");
     TEST_ASSERT(errno == 0, "safe_atof did not set errno for valid input");
 
     err = safe_atof(&result, "12");
-    TEST_ASSERT(result == 12.0f, "safe_atof converted string to float correctly");
+    TEST_ASSERT(result == 12.0, "safe_atof converted string to double correctly");
     TEST_ASSERT(errno == 0, "safe_atof did not set errno for valid input");
 
     err = safe_atof(&result, "1e-10");
-    TEST_ASSERT(result == 1e-10f, "safe_atof converted string to float correctly for scientific notation");
+    TEST_ASSERT(result == 1e-10, "safe_atof converted string to double correctly for scientific notation");
     TEST_ASSERT(errno == 0, "safe_atof did not set errno for valid input");
 
     err = safe_atof(&result, "abc");
