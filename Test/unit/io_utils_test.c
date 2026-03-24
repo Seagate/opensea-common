@@ -774,7 +774,7 @@ static void test_safe_gets(void)
 
     dup2(fileno(fp), fileno(stdin));
 
-    char *res = safe_gets(buffer, RSIZE_MAX + 1);
+    char *res = safe_gets(buffer, 0);
 
     dup2(saved_stdin, fileno(stdin));
     close(saved_stdin);
