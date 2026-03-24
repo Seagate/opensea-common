@@ -710,7 +710,7 @@ static void test_safe_freopen(void)
 
     int saved_stdout = dup(fileno(stdout));
 
-    errno_t err = safe_freopen(&file, "test_safe_freopen.txt", "w", stdout);
+    errno_t err = safe_freopen(NULL, "test_safe_freopen.txt", "w", stdout);
 
     TEST_ASSERT(err == 0, "safe_freopen returned success");
     TEST_ASSERT(file != NULL, "safe_freopen redirected stdout successfully");
