@@ -968,6 +968,11 @@ static void test_safe_strtoimax(void) {
     err = safe_strtoimax(&result, "-99999999999999999999", &endptr, 10);
     TEST_ASSERT(result == INTMAX_MIN, "safe_strtoimax returned INTMAX_MIN for underflow");
     TEST_ASSERT(errno == ERANGE, "safe_strtoimax set errno to ERANGE for underflow");
+
+    err = safe_strtoimax(&result, "abc", &endptr, 10);
+    TEST_ASSERT(err == EINVAL, "safe_strtoimax returned EINVAL for invalid input");
+    TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtoimax set endptr correctly for invalid input");
+    TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtoimax set errno to EINVAL or left it unchanged for invalid input");
 }
 
 void run_io_utils_tests(void) {
