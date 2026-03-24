@@ -1069,7 +1069,7 @@ static void test_safe_strtold(void) {
 // Value is set to 0 on error
 static void test_safe_atoi(void) {
     int result;
-    errno_t err = safe_atoi(NULL, "12345");
+    errno_t err = safe_atoi(&result, NULL);
     TEST_ASSERT(result == 12345, "safe_atoi converted string to int correctly");
     TEST_ASSERT(errno == 0, "safe_atoi did not set errno for valid input");
 
