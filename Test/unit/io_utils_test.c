@@ -994,6 +994,30 @@ static void test_safe_strtoumax(void) {
     TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtoumax set errno to EINVAL or left it unchanged for invalid input");
 }
 
+static void test_safe_strtof(void) {
+    float result;
+    char *endptr;
+    errno_t err = safe_strtof(&result, "123.45", &endptr);
+    TEST_ASSERT(result == 123.45f, "safe_strtof converted string to float correctly");
+    TEST_ASSERT(*endptr == '\0', "safe_strtof consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtof did not set errno for valid input");
+
+    err = safe_strtof(&result, "12", &endptr);
+    TEST_ASSERT(result == 12.0f, "safe_strtof converted string to float correctly");
+    TEST_ASSERT(*endptr == '\0', "safe_strtof consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtof did not set errno for valid input");
+
+    err = safe_strtof(&result, "1e-10", &endptr);
+    TEST_ASSERT(result == 1e-10f, "safe_strtof converted string to float correctly for scientific notation");
+    TEST_ASSERT(*endptr == '\0', "safe_strtof consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtof did not set errno for valid input");
+
+    err = safe_strtof(&result, "abc", &endptr);
+    TEST_ASSERT(err == EINVAL, "safe_strtof returned EINVAL for invalid input");
+    TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtof set endptr correctly for invalid input");
+    TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtof set errno to EINVAL or left it unchanged for invalid input");
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -1042,4 +1066,5 @@ void run_io_utils_tests(void) {
     test_safe_strtoull();
     test_safe_strtoimax();
     test_safe_strtoumax();
+    test_safe_strtof();
 }
