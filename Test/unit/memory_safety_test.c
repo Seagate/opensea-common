@@ -241,6 +241,14 @@ static void test_is_Empty(void) {
     TEST_ASSERT(!is_Empty(buffer, sizeof(buffer)), "is_Empty should return false for a buffer that contains non-zero values");
 }
 
+static void test_safe_memset(void) {
+    char buffer[10];
+    safe_memset(buffer, sizeof(buffer), '3', sizeof(buffer));
+    for (size_t i = 0; i < sizeof(buffer); i++) {
+        TEST_ASSERT(buffer[i] == '3', "safe_memset should set all bytes in the buffer to '3'");
+    }
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -267,4 +275,5 @@ void run_memory_safety_tests(void) {
     test_safe_free_tchar();
     #endif
     test_is_Empty();
+    test_safe_memset();
 }
