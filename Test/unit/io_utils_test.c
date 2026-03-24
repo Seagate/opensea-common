@@ -792,7 +792,13 @@ static void test_safe_gets(void)
 static void test_safe_strtol(void) {
     long result;
     char *endptr;
-    errno_t err = safe_strtol(&result, "12345", &endptr, 3);
+    errno_t err = safe_strtol(&result, "12345", &endptr, 10);
+    TEST_ASSERT(result == 12345, "safe_strtol converted string to long correctly");
+    TEST_ASSERT(*endptr == '\0', "safe_strtol consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtol did not set errno for valid input");
+
+    errno_t err = safe_strtol(&result, "12345", &endptr, 2);
+    printf("Result: %ld, Endptr: '%s', Errno: %d\n", result, endptr, errno);
     TEST_ASSERT(result == 12345, "safe_strtol converted string to long correctly");
     TEST_ASSERT(*endptr == '\0', "safe_strtol consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtol did not set errno for valid input");
