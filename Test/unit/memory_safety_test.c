@@ -233,6 +233,15 @@ static void test_safe_free(void) {
     }
 #endif
 
+static void test_is_Empty(void) {
+    int* ptr = NULL;
+    TEST_ASSERT(is_Empty(ptr, 4), "is_Empty should return true for a null pointer");
+
+    ptr = safe_malloc(100);
+    TEST_ASSERT(!is_Empty(ptr, 4), "is_Empty should return false for a non-null pointer");
+    free(ptr);
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -258,4 +267,5 @@ void run_memory_safety_tests(void) {
     #ifdef _WIN32
     test_safe_free_tchar();
     #endif
+    test_is_Empty();
 }
