@@ -1124,6 +1124,25 @@ static void test_safe_atoll(void) {
     TEST_ASSERT(errno == ERANGE, "safe_atoll set errno to ERANGE for underflow");
 }
 
+static void test_safe_atof(void) {
+    float result;
+    errno_t err = safe_atof(&result, "123.45");
+    TEST_ASSERT(result == 123.45f, "safe_atof converted string to float correctly");
+    TEST_ASSERT(errno == 0, "safe_atof did not set errno for valid input");
+
+    err = safe_atof(&result, "12");
+    TEST_ASSERT(result == 12.0f, "safe_atof converted string to float correctly");
+    TEST_ASSERT(errno == 0, "safe_atof did not set errno for valid input");
+
+    err = safe_atof(&result, "1e-10");
+    TEST_ASSERT(result == 1e-10f, "safe_atof converted string to float correctly for scientific notation");
+    TEST_ASSERT(errno == 0, "safe_atof did not set errno for valid input");
+
+    err = safe_atof(&result, "abc");
+    TEST_ASSERT(err == EINVAL, "safe_atof returned EINVAL for invalid input");
+    TEST_ASSERT(errno == EINVAL || errno == 0, "safe_atof set errno to EINVAL or left it unchanged for invalid input");
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -1178,4 +1197,5 @@ void run_io_utils_tests(void) {
     test_safe_atoi();
     test_safe_atol();
     test_safe_atoll();
+    test_safe_atof();
 }
