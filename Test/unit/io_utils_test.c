@@ -997,7 +997,7 @@ static void test_safe_strtoumax(void) {
 static void test_safe_strtof(void) {
     float result;
     char *endptr;
-    errno_t err = safe_strtof(NULL, "123.45", &endptr);
+    errno_t err = safe_strtof(&result, NULL, &endptr);
     TEST_ASSERT(result == 123.45f, "safe_strtof converted string to float correctly");
     TEST_ASSERT(*endptr == '\0', "safe_strtof consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtof did not set errno for valid input");
