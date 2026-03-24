@@ -1088,7 +1088,7 @@ static void test_safe_atoi(void) {
 
 static void test_safe_atol(void) {
     long result;
-    errno_t err = safe_atol(NULL, "12345");
+    errno_t err = safe_atol(&result, NULL);
     TEST_ASSERT(result == 12345, "safe_atol converted string to long correctly");
     TEST_ASSERT(errno == 0, "safe_atol did not set errno for valid input");
 
