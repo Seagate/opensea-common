@@ -1042,6 +1042,30 @@ static void test_safe_strtod(void) {
     TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtod set errno to EINVAL or left it unchanged for invalid input");
 }
 
+static void test_safe_strtold(void) {
+    long double result;
+    char *endptr;
+    errno_t err = safe_strtold(&result, "123.45", &endptr);
+    TEST_ASSERT(result == 123.45L, "safe_strtold converted string to long double correctly");
+    TEST_ASSERT(*endptr == '\0', "safe_strtold consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtold did not set errno for valid input");
+
+    err = safe_strtold(&result, "12", &endptr);
+    TEST_ASSERT(result == 12.0L, "safe_strtold converted string to long double correctly");
+    TEST_ASSERT(*endptr == '\0', "safe_strtold consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtold did not set errno for valid input");
+
+    err = safe_strtold(&result, "1e-10", &endptr);
+    TEST_ASSERT(result == 1e-10L, "safe_strtold converted string to long double correctly for scientific notation");
+    TEST_ASSERT(*endptr == '\0', "safe_strtold consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtold did not set errno for valid input");
+
+    err = safe_strtold(&result, "abc", &endptr);
+    TEST_ASSERT(err == EINVAL, "safe_strtold returned EINVAL for invalid input");
+    TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtold set endptr correctly for invalid input");
+    TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtold set errno to EINVAL or left it unchanged for invalid input");
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -1092,4 +1116,5 @@ void run_io_utils_tests(void) {
     test_safe_strtoumax();
     test_safe_strtof();
     test_safe_strtod();
+    test_safe_strtold();
 }
