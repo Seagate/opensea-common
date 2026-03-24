@@ -952,6 +952,24 @@ static void test_safe_strtoull(void) {
     TEST_ASSERT(errno == 0, "safe_strtoull did not set errno for valid input"); 
 }
 
+static void test_safe_strtoimax(void) {
+    intmax_t result;
+    char *endptr;
+    errno_t err = safe_strtoimax(&result, "12345", &endptr, 10);
+    TEST_ASSERT(result == 12345, "safe_strtoimax converted string to intmax_t correctly for base 10");
+    TEST_ASSERT(*endptr == '\0', "safe_strtoimax consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtoimax did not set errno for valid input");
+
+    err = safe_strtoimax(&result, "0x7FFFFFFFFFFFFFFF", &endptr, 0);
+    TEST_ASSERT(result == INTMAX_MAX, "safe_strtoimax converted string to intmax_t correctly for base 0 (hexadecimal)");
+    TEST_ASSERT(*endptr == '\0', "safe_strtoimax consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtoimax did not set errno for valid input");
+
+    err = safe_strtoimax(&result, "-99999999999999999999", &endptr, 10);
+    TEST_ASSERT(result == INTMAX_MIN, "safe_strtoimax returned INTMAX_MIN for underflow");
+    TEST_ASSERT(errno == ERANGE, "safe_strtoimax set errno to ERANGE for underflow");
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -998,4 +1016,5 @@ void run_io_utils_tests(void) {
     test_safe_strtoll();
     test_safe_strtoul();
     test_safe_strtoull();
+    test_safe_strtoimax();
 }
