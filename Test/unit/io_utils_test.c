@@ -1166,23 +1166,32 @@ static void test_checked_fputs(void) {
 }
 
 static void test_print_str(void) {
-    FILE *fp = fopen("test_checked_fputs.txt", "w");
-    TEST_ASSERT(fp != NULL, "File opened successfully for checked_fputs test");
+    char *testStr = "This is a test string.";
+    FILE *fp = fopen("test_print_str.txt", "w+");
+    TEST_ASSERT(fp != NULL, "File opened successfully for test_print_str");
 
-    errno_t err = print_str("Hello, World!\n", fp);
-    TEST_ASSERT(err == 0, "print_str wrote to file successfully");
+    fflush(stdout);
 
-    fclose(fp);
+    int saved_stdout = dup(fileno(stdout));
+    dup2(fileno(fp), fileno(stdout));
 
-    fp = fopen("test_checked_fputs.txt", "r");
-    TEST_ASSERT(fp != NULL, "File opened successfully for reading in print_str test");
+    print_str(testStr);
+
+    fflush(stdout);
+
+    dup2(saved_stdout, fileno(stdout));
+    close(saved_stdout);
+
+    fflush(stdout);
+
+    fseek(fp, 0, SEEK_SET);
 
     char buffer[256] = {0};
     size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
     buffer[n] = '\0';
 
-    printf("Read from file:\n%s\n", buffer);
-    TEST_ASSERT(strstr(buffer, "Hello, World!") != NULL, "print_str wrote the correct content to the file");
+    printf("Captured output:\n%s\n", buffer);
+    TEST_ASSERT(strstr(buffer, testStr) != NULL, "print_str printed the correct string");
 
     fclose(fp);
 }
