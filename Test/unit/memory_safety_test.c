@@ -225,11 +225,13 @@ static void test_safe_free(void) {
     TEST_ASSERT(longdouble_ptr == NULL, "safe_free should set the long double pointer to NULL after freeing");
 }
 
-static void test_safe_free_tchar(void) {
-    TCHAR* memory = safe_malloc(50);
-    safe_free_tchar(&memory);
-    TEST_ASSERT(memory == NULL, "safe_free should set the TCHAR pointer to NULL after freeing");
-}
+#if defined(_WIN32)
+    static void test_safe_free_tchar(void) {
+        TCHAR* memory = safe_malloc(50);
+        safe_free_tchar(&memory);
+        TEST_ASSERT(memory == NULL, "safe_free should set the TCHAR pointer to NULL after freeing");
+    }
+#endif
 
 void run_memory_safety_tests(void) {
     test_safe_malloc();
