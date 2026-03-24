@@ -1093,7 +1093,7 @@ static void test_safe_atol(void) {
     TEST_ASSERT(errno == 0, "safe_atol did not set errno for valid input");
 
     err = safe_atol(&result, "   -42abc");
-    TEST_ASSERT(result == 42, "safe_atol converted string to long correctly with leading whitespace and sign");
+    TEST_ASSERT(result == 0, "safe_atol returns 0 for string with leading whitespace and sign");
     TEST_ASSERT(errno == EINVAL, "safe_atol set errno for invalid input");
 
     err = safe_atol(&result, "99999999999999999999");
