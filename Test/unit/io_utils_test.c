@@ -1126,7 +1126,7 @@ static void test_safe_atoll(void) {
 
 static void test_safe_atof(void) {
     double result;
-    errno_t err = safe_atof(&result, NULL);
+    errno_t err = safe_atof(&result, "123.45");
     TEST_ASSERT(result == 123.45, "safe_atof converted string to double correctly");
     TEST_ASSERT(errno == 0, "safe_atof did not set errno for valid input");
 
