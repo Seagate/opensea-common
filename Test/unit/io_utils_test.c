@@ -1107,7 +1107,7 @@ static void test_safe_atol(void) {
 
 static void test_safe_atoll(void) {
     long long result;
-    errno_t err = safe_atoll(&result, NULL);
+    errno_t err = safe_atoll(&result, "12345");
     TEST_ASSERT(result == 12345, "safe_atoll converted string to long long correctly");
     TEST_ASSERT(errno == 0, "safe_atoll did not set errno for valid input");
 
@@ -1126,7 +1126,7 @@ static void test_safe_atoll(void) {
 
 static void test_safe_atof(void) {
     double result;
-    errno_t err = safe_atof(&result, "123.45");
+    errno_t err = safe_atof(NULL, "123.45");
     TEST_ASSERT(result == 123.45, "safe_atof converted string to double correctly");
     TEST_ASSERT(errno == 0, "safe_atof did not set errno for valid input");
 
