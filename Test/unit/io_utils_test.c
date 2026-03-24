@@ -883,7 +883,7 @@ static void test_safe_strtoll(void) {
 static void test_safe_strtoul(void) {
     unsigned long result;
     char *endptr;
-    errno_t err = safe_strtoul(&result, "12345", &endptr, 37);
+    errno_t err = safe_strtoul(&result, "12345", &endptr, 10);
     TEST_ASSERT(result == 12345, "safe_strtoul converted string to unsigned long correctly for base 10");
     TEST_ASSERT(*endptr == '\0', "safe_strtoul consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoul did not set errno for valid input");
@@ -921,7 +921,7 @@ static void test_safe_strtoul(void) {
 static void test_safe_strtoull(void) {
     unsigned long long result;
     char *endptr;
-    errno_t err = safe_strtoull(&result, "12345", &endptr, 10);
+    errno_t err = safe_strtoull(NULL, "12345", &endptr, 10);
     TEST_ASSERT(result == 12345, "safe_strtoull converted string to unsigned long long correctly for base 10");
     TEST_ASSERT(*endptr == '\0', "safe_strtoull consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoull did not set errno for valid input");
