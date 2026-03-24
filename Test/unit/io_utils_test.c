@@ -1165,6 +1165,28 @@ static void test_checked_fputs(void) {
     fclose(fp);
 }
 
+static void test_print_str(void) {
+    FILE *fp = fopen("test_checked_fputs.txt", "w");
+    TEST_ASSERT(fp != NULL, "File opened successfully for checked_fputs test");
+
+    errno_t err = print_str("Hello, World!\n", fp);
+    TEST_ASSERT(err == 0, "print_str wrote to file successfully");
+
+    fclose(fp);
+
+    fp = fopen("test_checked_fputs.txt", "r");
+    TEST_ASSERT(fp != NULL, "File opened successfully for reading in print_str test");
+
+    char buffer[256] = {0};
+    size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
+    buffer[n] = '\0';
+
+    printf("Read from file:\n%s\n", buffer);
+    TEST_ASSERT(strstr(buffer, "Hello, World!") != NULL, "print_str wrote the correct content to the file");
+
+    fclose(fp);
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -1221,4 +1243,5 @@ void run_io_utils_tests(void) {
     test_safe_atoll();
     test_safe_atof();
     test_checked_fputs();
+    test_print_str();
 }
