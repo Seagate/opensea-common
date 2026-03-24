@@ -975,6 +975,25 @@ static void test_safe_strtoimax(void) {
     TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtoimax set errno to EINVAL or left it unchanged for invalid input");
 }
 
+static void test_safe_strtoumax(void) {
+    uintmax_t result;
+    char *endptr;
+    errno_t err = safe_strtoumax(&result, "12345", &endptr, 10);
+    TEST_ASSERT(result == 12345, "safe_strtoumax converted string to uintmax_t correctly for base 10");
+    TEST_ASSERT(*endptr == '\0', "safe_strtoumax consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtoumax did not set errno for valid input");
+
+    err = safe_strtoumax(&result, "0xFFFFFFFFFFFFFFFF", &endptr, 0);
+    TEST_ASSERT(result == UINTMAX_MAX, "safe_strtoumax converted string to uintmax_t correctly for base 0 (hexadecimal)");
+    TEST_ASSERT(*endptr == '\0', "safe_strtoumax consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtoumax did not set errno for valid input");
+
+    err = safe_strtoumax(&result, "abc", &endptr, 10);
+    TEST_ASSERT(err == EINVAL, "safe_strtoumax returned EINVAL for invalid input");
+    TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtoumax set endptr correctly for invalid input");
+    TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtoumax set errno to EINVAL or left it unchanged for invalid input");
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -1022,4 +1041,5 @@ void run_io_utils_tests(void) {
     test_safe_strtoul();
     test_safe_strtoull();
     test_safe_strtoimax();
+    test_safe_strtoumax();
 }
