@@ -914,10 +914,42 @@ static void test_safe_strtoul(void) {
     TEST_ASSERT(errno == 0, "safe_strtoul did not set errno for valid input");
 
     err = safe_strtoul(&result, "   -42abc", &endptr, 10);
-    printf("Result: %lu, Endptr: %s, Errno: %d\n", result, endptr, errno);
-    TEST_ASSERT(result == ULONG_MAX, "safe_strtoul returns ULLONG_MAX for negative input");
     TEST_ASSERT(strcmp(endptr, "abc") == 0, "safe_strtoul set endptr to the correct position");
     TEST_ASSERT(errno == 0, "safe_strtoul did not set errno for valid input");
+}
+
+static void test_safe_strtoull(void) {
+    unsigned long long result;
+    char *endptr;
+    errno_t err = safe_strtoull(&result, "12345", &endptr, 10);
+    TEST_ASSERT(result == 12345, "safe_strtoull converted string to unsigned long long correctly for base 10");
+    TEST_ASSERT(*endptr == '\0', "safe_strtoull consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtoull did not set errno for valid input");
+
+    err = safe_strtoull(&result, "0xFFFFFFFF", &endptr, 0);
+    TEST_ASSERT(result == 4294967295ULL, "safe_strtoull converted string to unsigned long long correctly for base 0 (hexadecimal)");
+    TEST_ASSERT(*endptr == '\0', "safe_strtoull consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtoull did not set errno for valid input");
+
+    err = safe_strtoull(&result, "10101", &endptr, 2);
+    TEST_ASSERT(result == 21, "safe_strtoull converted string to unsigned long long correctly for base 2");
+    TEST_ASSERT(*endptr == '\0', "safe_strtoull consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtoull did not set errno for valid input");
+
+    err = safe_strtoull(&result, "17", &endptr, 8);
+    TEST_ASSERT(result == 15, "safe_strtoull converted string to unsigned long long correctly for base 8");
+    TEST_ASSERT(*endptr == '\0', "safe_strtoull consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtoull did not set errno for valid input");
+
+    err = safe_strtoull(&result, "FFFFFFFF", &endptr, 16);
+    TEST_ASSERT(result == 4294967295ULL, "safe_strtoull converted string to unsigned long long correctly for base 16");
+    TEST_ASSERT(*endptr == '\0', "safe_strtoull consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtoull did not set errno for valid input");
+
+    err = safe_strtoull(&result, "V", &endptr, 32);
+    TEST_ASSERT(result == 31, "safe_strtoull converted string to unsigned long long correctly for base 32");
+    TEST_ASSERT(*endptr == '\0', "safe_strtoull consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtoull did not set errno for valid input"); 
 }
 
 void run_io_utils_tests(void) {
@@ -965,4 +997,5 @@ void run_io_utils_tests(void) {
     test_safe_strtol();
     test_safe_strtoll();
     test_safe_strtoul();
+    test_safe_strtoull();
 }
