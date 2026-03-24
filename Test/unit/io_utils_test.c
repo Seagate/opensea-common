@@ -1086,6 +1086,25 @@ static void test_safe_atoi(void) {
     TEST_ASSERT(errno == ERANGE, "safe_atoi set errno to ERANGE for underflow");
 }
 
+static void test_safe_atol(void) {
+    long result;
+    errno_t err = safe_atol(&result, "12345");
+    TEST_ASSERT(result == 12345, "safe_atol converted string to long correctly");
+    TEST_ASSERT(errno == 0, "safe_atol did not set errno for valid input");
+
+    err = safe_atol(&result, "   -42abc");
+    TEST_ASSERT(result == 42, "safe_atol converted string to long correctly with leading whitespace and sign");
+    TEST_ASSERT(errno == EINVAL, "safe_atol set errno for invalid input");
+
+    err = safe_atol(&result, "99999999999999999999");
+    TEST_ASSERT(result == LONG_MAX, "safe_atol returned LONG_MAX for overflow");
+    TEST_ASSERT(errno == ERANGE, "safe_atol set errno to ERANGE for overflow");
+
+    err = safe_atol(&result, "-99999999999999999999");
+    TEST_ASSERT(result == LONG_MIN, "safe_atol returned LONG_MIN for underflow");
+    TEST_ASSERT(errno == ERANGE, "safe_atol set errno to ERANGE for underflow");
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -1138,4 +1157,5 @@ void run_io_utils_tests(void) {
     test_safe_strtod();
     test_safe_strtold();
     test_safe_atoi();
+    test_safe_atol();
 }
