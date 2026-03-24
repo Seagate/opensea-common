@@ -1045,7 +1045,7 @@ static void test_safe_strtod(void) {
 static void test_safe_strtold(void) {
     long double result;
     char *endptr;
-    errno_t err = safe_strtold(&result, NULL, &endptr);
+    errno_t err = safe_strtold(&result, "123.45", &endptr);
     TEST_ASSERT(result == 123.45L, "safe_strtold converted string to long double correctly");
     TEST_ASSERT(*endptr == '\0', "safe_strtold consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtold did not set errno for valid input");
@@ -1069,7 +1069,7 @@ static void test_safe_strtold(void) {
 // Value is set to 0 on error
 static void test_safe_atoi(void) {
     int result;
-    errno_t err = safe_atoi(&result, "12345");
+    errno_t err = safe_atoi(NULL, "12345");
     TEST_ASSERT(result == 12345, "safe_atoi converted string to int correctly");
     TEST_ASSERT(errno == 0, "safe_atoi did not set errno for valid input");
 
