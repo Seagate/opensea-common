@@ -797,7 +797,7 @@ static void test_safe_strtol(void) {
     TEST_ASSERT(*endptr == '\0', "safe_strtol consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtol did not set errno for valid input");
 
-    errno_t err = safe_strtol(&result, "10101", &endptr, 2);
+    err = safe_strtol(&result, "10101", &endptr, 2);
     TEST_ASSERT(result == 21, "safe_strtol converted string to long correctly");
     TEST_ASSERT(*endptr == '\0', "safe_strtol consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtol did not set errno for valid input");
