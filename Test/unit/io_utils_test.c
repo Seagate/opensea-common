@@ -797,8 +797,28 @@ static void test_safe_strtol(void) {
     TEST_ASSERT(*endptr == '\0', "safe_strtol consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtol did not set errno for valid input");
 
+    err = safe_strtol(&result, "0xFF", &endptr, 0);
+    TEST_ASSERT(result == 255, "safe_strtol converted string to long correctly");
+    TEST_ASSERT(*endptr == '\0', "safe_strtol consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtol did not set errno for valid input");
+
     err = safe_strtol(&result, "10101", &endptr, 2);
     TEST_ASSERT(result == 21, "safe_strtol converted string to long correctly");
+    TEST_ASSERT(*endptr == '\0', "safe_strtol consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtol did not set errno for valid input");
+
+    err = safe_strtol(&result, "17", &endptr, 8);
+    TEST_ASSERT(result == 15, "safe_strtol converted string to long correctly");
+    TEST_ASSERT(*endptr == '\0', "safe_strtol consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtol did not set errno for valid input");
+
+    err = safe_strtol(&result, "FF", &endptr, 16);
+    TEST_ASSERT(result == 255, "safe_strtol converted string to long correctly");
+    TEST_ASSERT(*endptr == '\0', "safe_strtol consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtol did not set errno for valid input");
+
+    err = safe_strtol(&result, "V", &endptr, 32);
+    TEST_ASSERT(result == 31, "safe_strtol converted string to long correctly");
     TEST_ASSERT(*endptr == '\0', "safe_strtol consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtol did not set errno for valid input");
 
