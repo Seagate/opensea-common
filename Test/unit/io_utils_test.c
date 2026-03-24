@@ -844,7 +844,7 @@ static void test_safe_strtol(void) {
 static void test_safe_strtoll(void) {
     long long result;
     char *endptr;
-    errno_t err = safe_strtoll(NULL, "12345", &endptr, 10);
+    errno_t err = safe_strtoll(&result, NULL, &endptr, 10);
     TEST_ASSERT(result == 12345, "safe_strtoll converted string to long long correctly for base 10");
     TEST_ASSERT(*endptr == '\0', "safe_strtoll consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoll did not set errno for valid input");
