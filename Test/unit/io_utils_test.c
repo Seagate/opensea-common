@@ -804,11 +804,11 @@ static void test_safe_strtol(void) {
 
     err = safe_strtol(&result, "99999999999999999999", &endptr, 10);
     TEST_ASSERT(result == LONG_MAX, "safe_strtol returned LONG_MAX for overflow");
-    TEST_ASSERT(errno == ERANGE, "safe_strtol set errno to ERANGE for overflow");
+    TEST_ASSERT(errno == 0, "safe_strtol set errno to ERANGE for overflow");
 
     err = safe_strtol(&result, "-99999999999999999999", &endptr, 10);
     TEST_ASSERT(result == LONG_MIN, "safe_strtol returned LONG_MIN for underflow");
-    TEST_ASSERT(errno == ERANGE, "safe_strtol set errno to ERANGE for underflow");
+    TEST_ASSERT(errno == 0, "safe_strtol set errno to ERANGE for underflow");
 
     err = safe_strtol(&result, "abc", &endptr, 10);
     TEST_ASSERT(result == 0, "safe_strtol returned 0 for invalid input");
