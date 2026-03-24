@@ -710,7 +710,7 @@ static void test_safe_freopen(void)
 
     int saved_stdout = dup(fileno(stdout));
 
-    errno_t err = safe_freopen(&file, "test_safe_freopen.txt", "w", NULL);
+    errno_t err = safe_freopen(&file, "test_safe_freopen.txt", "w", stdout);
 
     TEST_ASSERT(err == 0, "safe_freopen returned success");
     TEST_ASSERT(file != NULL, "safe_freopen redirected stdout successfully");
@@ -774,7 +774,7 @@ static void test_safe_gets(void)
 
     dup2(fileno(fp), fileno(stdin));
 
-    char *res = safe_gets(buffer, sizeof(buffer));
+    char *res = safe_gets(NULL, sizeof(buffer));
 
     dup2(saved_stdin, fileno(stdin));
     close(saved_stdin);
