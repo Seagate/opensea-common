@@ -978,7 +978,7 @@ static void test_safe_strtoimax(void) {
 static void test_safe_strtoumax(void) {
     uintmax_t result;
     char *endptr;
-    errno_t err = safe_strtoumax(&result, "12345", &endptr, 37);
+    errno_t err = safe_strtoumax(&result, "12345", &endptr, 10);
     TEST_ASSERT(result == 12345, "safe_strtoumax converted string to uintmax_t correctly for base 10");
     TEST_ASSERT(*endptr == '\0', "safe_strtoumax consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoumax did not set errno for valid input");
@@ -997,7 +997,7 @@ static void test_safe_strtoumax(void) {
 static void test_safe_strtof(void) {
     float result;
     char *endptr;
-    errno_t err = safe_strtof(&result, "123.45", &endptr);
+    errno_t err = safe_strtof(NULL, "123.45", &endptr);
     TEST_ASSERT(result == 123.45f, "safe_strtof converted string to float correctly");
     TEST_ASSERT(*endptr == '\0', "safe_strtof consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtof did not set errno for valid input");
