@@ -1066,6 +1066,25 @@ static void test_safe_strtold(void) {
     TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtold set errno to EINVAL or left it unchanged for invalid input");
 }
 
+static void test_safe_atoi(void) {
+    int result;
+    errno_t err = safe_atoi(&result, "12345");
+    TEST_ASSERT(result == 12345, "safe_atoi converted string to int correctly");
+    TEST_ASSERT(errno == 0, "safe_atoi did not set errno for valid input");
+
+    err = safe_atoi(&result, "   -42abc");
+    TEST_ASSERT(result == -42, "safe_atoi converted string to int correctly with leading whitespace and sign");
+    TEST_ASSERT(errno == 0, "safe_atoi did not set errno for valid input");
+
+    err = safe_atoi(&result, "99999999999999999999");
+    TEST_ASSERT(result == INT_MAX, "safe_atoi returned INT_MAX for overflow");
+    TEST_ASSERT(errno == ERANGE, "safe_atoi set errno to ERANGE for overflow");
+
+    err = safe_atoi(&result, "-99999999999999999999");
+    TEST_ASSERT(result == INT_MIN, "safe_atoi returned INT_MIN for underflow");
+    TEST_ASSERT(errno == ERANGE, "safe_atoi set errno to ERANGE for underflow");
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -1117,4 +1136,5 @@ void run_io_utils_tests(void) {
     test_safe_strtof();
     test_safe_strtod();
     test_safe_strtold();
+    test_safe_atoi();
 }
