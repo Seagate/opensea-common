@@ -1073,14 +1073,17 @@ static void test_safe_atoi(void) {
     TEST_ASSERT(errno == 0, "safe_atoi did not set errno for valid input");
 
     err = safe_atoi(&result, "   -42abc");
+    printf("Captured result: %d, errno: %d\n", result, errno);
     TEST_ASSERT(result == -42, "safe_atoi converted string to int correctly with leading whitespace and sign");
     TEST_ASSERT(errno == 0, "safe_atoi did not set errno for valid input");
 
     err = safe_atoi(&result, "99999999999999999999");
+    printf("Captured result: %d, errno: %d\n", result, errno);
     TEST_ASSERT(result == INT_MAX, "safe_atoi returned INT_MAX for overflow");
     TEST_ASSERT(errno == ERANGE, "safe_atoi set errno to ERANGE for overflow");
 
     err = safe_atoi(&result, "-99999999999999999999");
+    printf("Captured result: %d, errno: %d\n", result, errno);
     TEST_ASSERT(result == INT_MIN, "safe_atoi returned INT_MIN for underflow");
     TEST_ASSERT(errno == ERANGE, "safe_atoi set errno to ERANGE for underflow");
 }
