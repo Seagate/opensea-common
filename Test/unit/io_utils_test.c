@@ -915,9 +915,9 @@ static void test_safe_strtoul(void) {
 
     err = safe_strtoul(&result, "   -42abc", &endptr, 10);
     printf("Result: %lu, Endptr: %s, Errno: %d\n", result, endptr, errno);
-    // TEST_ASSERT(result == -42, "safe_strtoul converted string to unsigned long correctly with leading whitespace and sign");
-    // TEST_ASSERT(strcmp(endptr, "abc") == 0, "safe_strtoul set endptr to the correct position");
-    // TEST_ASSERT(errno == 0, "safe_strtoul did not set errno for valid input");
+    TEST_ASSERT(result == ULLONG_MAX, "safe_strtoul returns ULLONG_MAX for negative input");
+    TEST_ASSERT(strcmp(endptr, "abc") == 0, "safe_strtoul set endptr to the correct position");
+    TEST_ASSERT(errno == 0, "safe_strtoul did not set errno for valid input");
 }
 
 void run_io_utils_tests(void) {
