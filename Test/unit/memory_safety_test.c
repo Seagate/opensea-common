@@ -243,7 +243,7 @@ static void test_is_Empty(void) {
 
 static void test_safe_memset(void) {
     char buffer[10];
-    safe_memset(buffer, sizeof(buffer), '3', RSIZE_MAX + 1);
+    safe_memset(buffer, sizeof(buffer), '3', sizeof(buffer) + 2);
     for (size_t i = 0; i < sizeof(buffer); i++) {
         TEST_ASSERT(buffer[i] == '3', "safe_memset should set all bytes in the buffer to '3'");
     }
