@@ -789,6 +789,33 @@ static void test_safe_gets(void)
                 "safe_gets read correct string");
 }
 
+static void test_safe_strtol(void) {
+    long result;
+    char *endptr;
+    errno_t err = safe_strtol(&result, "12345", &endptr, 10);
+    TEST_ASSERT(result == 12345, "safe_strtol converted string to long correctly");
+    TEST_ASSERT(*endptr == '\0', "safe_strtol consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtol did not set errno for valid input");
+
+    err = safe_strtol(&result, "   -42abc", &endptr, 10);
+    TEST_ASSERT(result == -42, "safe_strtol converted string to long correctly with leading whitespace and sign");
+    TEST_ASSERT(strcmp(endptr, "abc") == 0, "safe_strtol set endptr to the correct position");
+    TEST_ASSERT(errno == 0, "safe_strtol did not set errno for valid input");
+
+    err = safe_strtol(&result, "99999999999999999999", &endptr, 10);
+    TEST_ASSERT(result == LONG_MAX, "safe_strtol returned LONG_MAX for overflow");
+    TEST_ASSERT(errno == ERANGE, "safe_strtol set errno to ERANGE for overflow");
+
+    err = safe_strtol(&result, "-99999999999999999999", &endptr, 10);
+    TEST_ASSERT(result == LONG_MIN, "safe_strtol returned LONG_MIN for underflow");
+    TEST_ASSERT(errno == ERANGE, "safe_strtol set errno to ERANGE for underflow");
+
+    err = safe_strtol(&result, "abc", &endptr, 10);
+    TEST_ASSERT(result == 0, "safe_strtol returned 0 for invalid input");
+    TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtol set endptr correctly for invalid input");
+    TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtol set errno to EINVAL or left it unchanged for invalid input");
+}
+
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -831,4 +858,5 @@ void run_io_utils_tests(void) {
     test_safe_freopen();
     test_safe_tmpfile();
     test_safe_gets();
+    test_safe_strtol();
 }
