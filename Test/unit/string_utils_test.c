@@ -676,6 +676,14 @@ static void test_safe_strncat_no_overlap(void) {
     safe_strncat_no_overlap(dest, sizeof(dest), src, 3);
     TEST_ASSERT_EQ(strcmp(dest, "Hello Wor"), 0, "First n characters are correctly concatenated to destination buffer without overlap");
     TEST_ASSERT_EQ(dest[9], '\0', "Destination buffer is null-terminated after concatenating n characters without overlap");
+
+    // Test for overlapping - aborts the test
+    char str[20] = "This String";
+    // Attempt to concatenate "String" one position left (overwrite space)
+    errno_t err = safe_strncat_no_overlap(str + 4, sizeof(str) - 4, str + 5, 5);
+    printf("str after attempted overlapping concatenation: %s\n", str);
+    printf("errno after attempted overlapping concatenation: %d\n", err);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncat_no_overlap should fail with overlapping buffers");
 }
 
 static void test_common_String_Concat(void) {
