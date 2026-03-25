@@ -509,6 +509,12 @@ static void test_get_System_Pagesize(void) {
     TEST_ASSERT(page_size > 0, "get_System_Pagesize should return a positive page size");
 }
 
+static void test_free_page_aligned(void) {
+    char* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    free_page_aligned(ptr);
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -562,4 +568,5 @@ void run_memory_safety_tests(void) {
     test_safe_calloc_aligned();
     test_safe_realloc_aligned();
     test_get_System_Pagesize();
+    test_free_page_aligned();
 }
