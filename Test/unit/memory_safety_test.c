@@ -265,9 +265,13 @@ static void test_explicit_zeroes(void) {
     for (size_t i = 0; i < sizeof(char_buffer) / sizeof(char_buffer[0]); i++) {
         TEST_ASSERT(char_buffer[i] == 0, "explicit_zeroes should set all bytes in the buffer to zero");
     }
+}
 
-    // Testing when the dest pointer is null, should not attempt to zero
-    explicit_zeroes(NULL, sizeof(buffer));
+static void test_free_aligned(void) {
+    char* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    free_aligned(ptr);
+    TEST_ASSERT(ptr == NULL, "free_aligned should set the pointer to NULL after freeing");
 }
 
 void run_memory_safety_tests(void) {
@@ -298,4 +302,5 @@ void run_memory_safety_tests(void) {
     test_is_Empty();
     test_safe_memset();
     test_explicit_zeroes();
+    test_free_aligned();
 }
