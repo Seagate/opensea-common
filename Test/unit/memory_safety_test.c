@@ -584,8 +584,17 @@ static void test_realloc_page_aligned(void) {
 }
 
 static void test_safe_malloc_page_aligned(void) {
-    char* ptr = safe_malloc_page_aligned(0);
+    char* ptr = safe_malloc_page_aligned(100);
     TEST_ASSERT(ptr != NULL, "safe_malloc_page_aligned should return a non-null pointer for a non-zero size");
+    free_page_aligned(ptr);
+}
+
+static void test_safe_calloc_page_aligned(void) {
+    int* ptr = safe_calloc_page_aligned(10, sizeof(int));
+    TEST_ASSERT(ptr != NULL, "safe_calloc_page_aligned should return a non-null pointer for non-zero count and size");
+    for (size_t i = 0; i < 10; i++) {
+        TEST_ASSERT(ptr[i] == 0, "safe_calloc_page_aligned should initialize all elements to zero");
+    }
     free_page_aligned(ptr);
 }
 
@@ -649,4 +658,5 @@ void run_memory_safety_tests(void) {
     test_calloc_page_aligned();
     test_realloc_page_aligned();
     test_safe_malloc_page_aligned();
+    test_safe_calloc_page_aligned();
 }
