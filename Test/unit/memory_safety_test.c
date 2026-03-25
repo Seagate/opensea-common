@@ -440,6 +440,12 @@ static void test_realloc_aligned(void) {
     free_aligned(new_ptr);
 }
 
+static void test_safe_malloc_aligned(void) {
+    char* ptr = safe_malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "safe_malloc_aligned should return a non-null pointer for a non-zero size");
+    free_aligned(ptr);
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -489,4 +495,5 @@ void run_memory_safety_tests(void) {
     test_safe_free_aligned();
     test_calloc_aligned();
     test_realloc_aligned();
+    test_safe_malloc_aligned();
 }
