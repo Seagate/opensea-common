@@ -410,7 +410,7 @@ static void test_safe_free_aligned(void) {
 
 static void test_calloc_aligned(void) {
     size_t alignment = 16;
-    size_t num_elements = 0;
+    size_t num_elements = 10;
     size_t element_size = sizeof(int);
     int* ptr = calloc_aligned(num_elements, element_size, alignment);
     TEST_ASSERT(ptr != NULL, "calloc_aligned should return a non-null pointer for non-zero count and size");
@@ -418,6 +418,26 @@ static void test_calloc_aligned(void) {
         TEST_ASSERT(ptr[i] == 0, "calloc_aligned should initialize all elements to zero");
     }
     free_aligned(ptr);
+}
+
+static void test_realloc_aligned(void) {
+    size_t alignment = 16;
+    size_t num_elements = 10;
+    size_t element_size = sizeof(int);
+    int* ptr = calloc_aligned(num_elements, element_size, alignment);
+    for (size_t i = 0; i < num_elements; i++) {
+        ptr[i] = (int)i;
+    }
+    TEST_ASSERT(ptr != NULL, "calloc_aligned should return a non-null pointer for non-zero count and size");
+
+    // Reallocate to a larger size
+    size_t new_num_elements = 20;
+    int* new_ptr = realloc_aligned(ptr, sizeof(ptr), element_size, new_num_elements);
+    TEST_ASSERT(new_ptr != NULL, "realloc_aligned should return a non-null pointer when reallocating to a larger size");
+    for (size_t i = 0; i < num_elements; i++) {
+        TEST_ASSERT(new_ptr[i] == (int)i, "realloc_aligned should preserve the contents of the original memory block");
+    }
+    free_aligned(new_ptr);
 }
 
 void run_memory_safety_tests(void) {
@@ -468,4 +488,5 @@ void run_memory_safety_tests(void) {
     test_safe_free_aligned_longdouble();
     test_safe_free_aligned();
     test_calloc_aligned();
+    test_realloc_aligned();
 }
