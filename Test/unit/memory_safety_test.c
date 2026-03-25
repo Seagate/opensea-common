@@ -461,6 +461,11 @@ static void test_safe_calloc_aligned(void) {
         TEST_ASSERT(ptr[i] == 0, "safe_calloc_aligned should initialize all elements to zero");
     }
     free_aligned(ptr);
+
+    // Test when count is zero
+    ptr = safe_calloc_aligned(0, element_size, alignment);
+    TEST_ASSERT(ptr == NULL, "safe_calloc_aligned should return a null pointer for a count of zero");
+    free_aligned(ptr);
 }
 
 void run_memory_safety_tests(void) {
