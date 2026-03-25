@@ -408,6 +408,18 @@ static void test_safe_free_aligned(void) {
     TEST_ASSERT(ptr3 == NULL, "safe_free_aligned should set the pointer to NULL after freeing");
 }
 
+static void test_calloc_aligned(void) {
+    size_t alignment = 16;
+    size_t num_elements = 10;
+    size_t element_size = sizeof(int);
+    int* ptr = calloc_aligned(num_elements, element_size, alignment);
+    TEST_ASSERT(ptr != NULL, "calloc_aligned should return a non-null pointer for non-zero count and size");
+    for (size_t i = 0; i < num_elements; i++) {
+        TEST_ASSERT(ptr[i] == 0, "calloc_aligned should initialize all elements to zero");
+    }
+    free_aligned(ptr);
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -455,4 +467,5 @@ void run_memory_safety_tests(void) {
     test_safe_free_aligned_double();
     test_safe_free_aligned_longdouble();
     test_safe_free_aligned();
+    test_calloc_aligned();
 }
