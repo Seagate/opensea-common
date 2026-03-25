@@ -660,6 +660,14 @@ static void test_safe_strncpy_no_overlap(void) {
     safe_strncpy_no_overlap(dest, sizeof(dest), src, 5);
     TEST_ASSERT_EQ(strncmp(dest, src, 5), 0, "First n characters are correctly copied to destination buffer without overlap");
     TEST_ASSERT_EQ(dest[5], '\0', "Destination buffer is null-terminated after copying n characters without overlap");
+
+    // Test for overlapping - aborts the test
+    char str[20] = "This String";
+    // Attempt to copy "String" one position left (overwrite space)
+    errno_t err = safe_strncpy_no_overlap(str + 4, sizeof(str) - 4, str + 5, 5);
+    printf("str after attempted overlapping copy: %s\n", str);
+    printf("errno after attempted overlapping copy: %d\n", err);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncpy_no_overlap should fail with overlapping buffers");
 }
 
 static void test_common_String_Concat(void) {
