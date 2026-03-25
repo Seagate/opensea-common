@@ -409,8 +409,8 @@ static void test_safe_free_aligned(void) {
 }
 
 static void test_calloc_aligned(void) {
-    size_t alignment = 0;
-    size_t num_elements = 10;
+    size_t alignment = 16;
+    size_t num_elements = 0;
     size_t element_size = sizeof(int);
     int* ptr = calloc_aligned(num_elements, element_size, alignment);
     TEST_ASSERT(ptr != NULL, "calloc_aligned should return a non-null pointer for non-zero count and size");
