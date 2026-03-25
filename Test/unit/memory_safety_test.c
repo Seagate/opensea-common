@@ -486,6 +486,7 @@ static void test_safe_realloc_aligned(void) {
 }
 
 static void test_safe_reallocf_aligned(void) {
+    // Test where the function fails and frees the original block
     size_t alignment = 16;
     size_t num_elements = 10;
     size_t element_size = sizeof(int);
@@ -496,7 +497,7 @@ static void test_safe_reallocf_aligned(void) {
     TEST_ASSERT(ptr != NULL, "calloc_aligned should return a non-null pointer for non-zero count and size");
 
     // Reallocate to a larger size
-    size_t new_num_elements = 20;
+    size_t new_num_elements = SIZE_MAX / element_size; // This should cause realloc to fail due to size overflow
     int* new_ptr = safe_reallocf_aligned((void**)&ptr, element_size * num_elements, element_size * new_num_elements, alignment);
     TEST_ASSERT(new_ptr != NULL, "safe_reallocf_aligned should return a non-null pointer when reallocating to a larger size");
     for (size_t i = 0; i < num_elements; i++) {
