@@ -527,6 +527,8 @@ static void test_malloc_page_aligned(void) {
 
     // Allocating size of zero should return null
     ptr = malloc_page_aligned(0);   
+    TEST_ASSERT(ptr == NULL, "malloc_page_aligned should return a null pointer for a size of zero");
+    free_page_aligned(ptr);
 }
 
 void run_memory_safety_tests(void) {
