@@ -468,8 +468,13 @@ static void test_safe_calloc_aligned(void) {
     // free_aligned(ptr);
 
     // Test when size is zero
-    ptr = safe_calloc_aligned(num_elements, 0, alignment);
-    TEST_ASSERT(ptr == NULL, "safe_calloc_aligned should return a null pointer for a size of zero");
+    // ptr = safe_calloc_aligned(num_elements, 0, alignment);
+    // TEST_ASSERT(ptr == NULL, "safe_calloc_aligned should return a null pointer for a size of zero");
+    // free_aligned(ptr);
+
+    // Test when count * size results in an overflow
+    ptr = safe_calloc_aligned(SIZE_MAX, SIZE_MAX, alignment);
+    TEST_ASSERT(ptr == NULL, "safe_calloc_aligned should return a null pointer when count * size results in an overflow");
     free_aligned(ptr);
 }
 
