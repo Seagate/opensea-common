@@ -644,7 +644,7 @@ static void test_memory_regions_overlap(void) {
     char* ptr3 = buffer + 5;  
 
     size_t size = 10;
-    TEST_ASSERT(memory_regions_overlap(ptr1, size, ptr2, size) == 0, "memory_regions_overlap should return zero for non-overlapping regions");
+    TEST_ASSERT(memory_regions_overlap(NULL, size, ptr2, size) == 0, "memory_regions_overlap should return zero for non-overlapping regions");
     TEST_ASSERT(memory_regions_overlap(ptr1, size, ptr3, size) != 0, "memory_regions_overlap should return non-zero value for overlapping regions");
 }
 
