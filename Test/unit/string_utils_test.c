@@ -629,6 +629,14 @@ static void test_safe_strcpy_no_overlap(void) {
     const char* src = "Hello, World!";
     safe_strcpy_no_overlap(dest, sizeof(dest), src);
     TEST_ASSERT_EQ(strcmp(dest, src), 0, "String is correctly copied to destination buffer without overlap");
+
+    // Test for overlapping
+    char str[20] = "This String";
+    // Attempt to copy "String" one position left (overwrite space)
+    errno_t err = safe_strcpy_no_overlap(str + 4, sizeof(str) - 4, str + 5);
+    printf("str after attempted overlapping copy: %s\n", str);
+    printf("errno after attempted overlapping copy: %d\n", err);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strcpy_no_overlap should fail with overlapping buffers");
 }
 
 static void test_common_String_Concat(void) {
