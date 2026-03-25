@@ -575,12 +575,18 @@ static void test_realloc_page_aligned(void) {
 
     // Reallocate to a larger size
     size_t new_num_elements = 20;
-    int* new_ptr = realloc_page_aligned(ptr, element_size * num_elements, 0);
+    int* new_ptr = realloc_page_aligned(ptr, element_size * num_elements, element_size * new_num_elements);
     TEST_ASSERT(new_ptr != NULL, "realloc_page_aligned should return a non-null pointer when reallocating to a larger size");
     for (size_t i = 0; i < num_elements; i++) {
         TEST_ASSERT(new_ptr[i] == (int)i, "realloc_page_aligned should preserve the contents of the original memory block");
     }
     free_page_aligned(new_ptr);
+}
+
+static void test_safe_malloc_page_aligned(void) {
+    char* ptr = safe_malloc_page_aligned(100);
+    TEST_ASSERT(ptr != NULL, "safe_malloc_page_aligned should return a non-null pointer for a non-zero size");
+    free_page_aligned(ptr);
 }
 
 void run_memory_safety_tests(void) {
@@ -642,4 +648,5 @@ void run_memory_safety_tests(void) {
     test_safe_free_page_aligned();
     test_calloc_page_aligned();
     test_realloc_page_aligned();
+    test_safe_malloc_page_aligned();
 }
