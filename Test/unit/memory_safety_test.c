@@ -409,7 +409,7 @@ static void test_safe_free_aligned(void) {
 }
 
 static void test_calloc_aligned(void) {
-    size_t alignment = 16;
+    size_t alignment = 3;
     size_t num_elements = 10;
     size_t element_size = sizeof(int);
     int* ptr = calloc_aligned(num_elements, element_size, alignment);
