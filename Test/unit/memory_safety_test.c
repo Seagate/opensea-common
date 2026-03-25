@@ -286,6 +286,13 @@ static void test_safe_free_aligned_core(void) {
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_core should set the pointer to NULL after freeing");
 }
 
+static void test_safe_free_aligned_char(void) {
+    char* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned_char(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_aligned_char should set the pointer to NULL after freeing");
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -317,4 +324,5 @@ void run_memory_safety_tests(void) {
     test_free_aligned();
     test_malloc_aligned();
     test_safe_free_aligned_core();
+    test_safe_free_aligned_char();
 }
