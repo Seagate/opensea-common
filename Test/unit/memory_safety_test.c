@@ -356,6 +356,41 @@ static void test_safe_free_aligned_ulong(void) {
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_ulong should set the pointer to NULL after freeing");
 }
 
+static void test_safe_free_aligned_longlong(void) {
+    signed long long* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned_longlong(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_aligned_longlong should set the pointer to NULL after freeing");
+}
+
+static void test_safe_free_aligned_ulonglong(void) {
+    unsigned long long* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned_ulonglong(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_aligned_ulonglong should set the pointer to NULL after freeing");
+}
+
+static void test_safe_free_aligned_float(void) {
+    float* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned_float(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_aligned_float should set the pointer to NULL after freeing");
+}
+
+static void test_safe_free_aligned_double(void) {
+    double* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned_double(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_aligned_double should set the pointer to NULL after freeing");
+}
+
+static void test_safe_free_aligned_longdouble(void) {
+    long double* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned_longdouble(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_aligned_longdouble should set the pointer to NULL after freeing");
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -397,4 +432,9 @@ void run_memory_safety_tests(void) {
     test_safe_free_aligned_uint();
     test_safe_free_aligned_long();
     test_safe_free_aligned_ulong();
+    test_safe_free_aligned_longlong();
+    test_safe_free_aligned_ulonglong();
+    test_safe_free_aligned_float();
+    test_safe_free_aligned_double();
+    test_safe_free_aligned_longdouble();
 }
