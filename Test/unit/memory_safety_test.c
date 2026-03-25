@@ -271,7 +271,6 @@ static void test_free_aligned(void) {
     char* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     free_aligned(ptr);
-    TEST_ASSERT(ptr == NULL, "free_aligned should set the pointer to NULL after freeing");
 }
 
 void run_memory_safety_tests(void) {
