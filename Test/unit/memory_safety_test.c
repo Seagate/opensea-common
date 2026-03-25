@@ -391,6 +391,23 @@ static void test_safe_free_aligned_longdouble(void) {
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_longdouble should set the pointer to NULL after freeing");
 }
 
+static void test_safe_free_aligned(void) {
+    char* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_aligned should set the pointer to NULL after freeing");
+
+    float* ptr2 = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr2 != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned(&ptr2);
+    TEST_ASSERT(ptr2 == NULL, "safe_free_aligned should set the pointer to NULL after freeing");
+
+    long double* ptr3 = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr3 != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned(&ptr3);
+    TEST_ASSERT(ptr3 == NULL, "safe_free_aligned should set the pointer to NULL after freeing");
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -437,4 +454,5 @@ void run_memory_safety_tests(void) {
     test_safe_free_aligned_float();
     test_safe_free_aligned_double();
     test_safe_free_aligned_longdouble();
+    test_safe_free_aligned();
 }
