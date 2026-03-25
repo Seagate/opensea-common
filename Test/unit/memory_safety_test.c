@@ -526,10 +526,14 @@ static void test_malloc_page_aligned(void) {
     free_page_aligned(ptr);
 
     // Allocating size of zero should return null
-    ptr = malloc_page_aligned(0);   
-    printf("ptr: %p\n", (void*)ptr);
-    TEST_ASSERT(ptr == NULL, "malloc_page_aligned should return a null pointer for a size of zero");
-    free_page_aligned(ptr);
+    ptr = malloc_page_aligned(0);
+}
+
+static void test_safe_free_page_aligned_core(void) {
+    char* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_page_aligned_core((void**)&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_page_aligned_core should set the pointer to NULL after freeing");
 }
 
 void run_memory_safety_tests(void) {
@@ -587,4 +591,5 @@ void run_memory_safety_tests(void) {
     test_get_System_Pagesize();
     test_free_page_aligned();
     test_malloc_page_aligned();
+    test_safe_free_page_aligned_core();
 }

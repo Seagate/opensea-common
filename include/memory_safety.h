@@ -1166,7 +1166,7 @@ extern "C"
         ;
 
     //! \fn M_INLINE void safe_free_page_aligned_core(void** mem)
-    //! \brief convenience function around free_aligned.
+    //! \brief convenience function around free_page_aligned.
     M_PARAM_RW(1) static M_INLINE void safe_free_page_aligned_core(void* M_NULLABLE* M_NULLABLE mem)
     {
         if (mem && *mem)
