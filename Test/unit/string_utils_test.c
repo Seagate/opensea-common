@@ -624,6 +624,13 @@ static void test_safe_strncat(void) {
     // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when there is no null terminator in the first destsz bytes of dest");
 }
 
+static void test_safe_strcpy_no_overlap(void) {
+    char dest[20];
+    const char* src = "Hello, World!";
+    safe_strcpy(dest, sizeof(dest), src);
+    TEST_ASSERT_EQ(strcmp(dest, src), 0, "String is correctly copied to destination buffer without overlap");
+}
+
 static void test_common_String_Concat(void) {
     char dest[20] = "Hello ";
     const char* src = "World";
@@ -971,6 +978,8 @@ static void test_string_version_compare(void) {
     TEST_ASSERT(string_version_compare("file9.txt", "file10.txt") < 0, "Version file9.txt should be less than file10.txt");
 }
 
+
+
 void run_string_utils_tests(void) {
     test_strcasecmp();
     test_strncasecmp();
@@ -998,6 +1007,7 @@ void run_string_utils_tests(void) {
     test_safe_strnmove();
     test_safe_strcat();
     test_safe_strncat();
+    test_safe_strcpy_no_overlap();
     test_common_String_Concat();
     test_common_String_Concat_Len();
     test_safe_strtok();
