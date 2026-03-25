@@ -249,6 +249,17 @@ static void test_safe_memset(void) {
     }
 }
 
+static void test_explicit_zeroes(void) {
+    int buffer[10];
+    for (size_t i = 0; i < sizeof(buffer) / sizeof(buffer[0]); i++) {
+        buffer[i] = 42; // Fill with non-zero values
+    }
+    explicit_zeroes(buffer, sizeof(buffer));
+    for (size_t i = 0; i < sizeof(buffer) / sizeof(buffer[0]); i++) {
+        TEST_ASSERT(buffer[i] == 0, "explicit_zeroes should set all bytes in the buffer to zero");
+    }
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -276,4 +287,5 @@ void run_memory_safety_tests(void) {
     #endif
     test_is_Empty();
     test_safe_memset();
+    test_explicit_zeroes();
 }
