@@ -590,7 +590,7 @@ static void test_safe_malloc_page_aligned(void) {
 }
 
 static void test_safe_calloc_page_aligned(void) {
-    int* ptr = safe_calloc_page_aligned(10, 0);
+    int* ptr = safe_calloc_page_aligned(10, sizeof(int));
     TEST_ASSERT(ptr != NULL, "safe_calloc_page_aligned should return a non-null pointer for non-zero count and size");
     for (size_t i = 0; i < 10; i++) {
         TEST_ASSERT(ptr[i] == 0, "safe_calloc_page_aligned should initialize all elements to zero");
