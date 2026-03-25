@@ -321,6 +321,41 @@ static void test_safe_free_aligned_short(void) {
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_short should set the pointer to NULL after freeing");
 }
 
+static void test_safe_free_aligned_ushort(void) {
+    unsigned short* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned_ushort(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_aligned_ushort should set the pointer to NULL after freeing");
+}
+
+static void test_safe_free_aligned_int(void) {
+    signed int* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned_int(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_aligned_int should set the pointer to NULL after freeing");
+}
+
+static void test_safe_free_aligned_uint(void) {
+    unsigned int* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned_uint(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_aligned_uint should set the pointer to NULL after freeing");
+}
+
+static void test_safe_free_aligned_long(void) {
+    signed long* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned_long(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_aligned_long should set the pointer to NULL after freeing");
+}
+
+static void test_safe_free_aligned_ulong(void) {
+    unsigned long* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned_ulong(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_aligned_ulong should set the pointer to NULL after freeing");
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -357,4 +392,9 @@ void run_memory_safety_tests(void) {
     test_safe_free_aligned_schar();
     test_safe_free_aligned_uchar();
     test_safe_free_aligned_short();
+    test_safe_free_aligned_ushort();
+    test_safe_free_aligned_int();
+    test_safe_free_aligned_uint();
+    test_safe_free_aligned_long();
+    test_safe_free_aligned_ulong();
 }
