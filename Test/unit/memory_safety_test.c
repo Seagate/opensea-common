@@ -519,6 +519,11 @@ static void test_malloc_page_aligned(void) {
     char* ptr = malloc_page_aligned(100);
     TEST_ASSERT(ptr != NULL, "malloc_page_aligned should return a non-null pointer for a non-zero size");
     free_page_aligned(ptr);
+
+    // Allocating size > RSIZE_MAX should return null
+    ptr = malloc_page_aligned(RSIZE_MAX + 1);
+    TEST_ASSERT(ptr == NULL, "malloc_page_aligned should return a null pointer for a size greater than RSIZE_MAX");
+    free_page_aligned(ptr);
 }
 
 void run_memory_safety_tests(void) {
