@@ -646,8 +646,13 @@ static void test_memory_regions_overlap(void) {
     size_t size = 10;
     TEST_ASSERT(memory_regions_overlap(ptr1, size, ptr2, size) == 0, "memory_regions_overlap should return zero for non-overlapping regions");
     TEST_ASSERT(memory_regions_overlap(ptr1, size, ptr3, size) != 0, "memory_regions_overlap should return non-zero value for overlapping regions");
+}
 
-    int result = memory_regions_overlap(ptr1, NULL, ptr3, size);
+static void test_safe_memmove(void) {
+    char src[20] = "Hello, World!";
+    char dest[5];
+    safe_memmove(dest, sizeof(dest), src, 5);
+    TEST_ASSERT(strcmp(dest, "Hello") == 0, "safe_memmove should correctly copy the specified number of bytes from source to destination");
 }
 
 void run_memory_safety_tests(void) {
@@ -714,4 +719,5 @@ void run_memory_safety_tests(void) {
     test_safe_realloc_page_aligned();
     test_safe_reallocf_page_aligned();
     test_memory_regions_overlap();
+    test_safe_memmove();
 }
