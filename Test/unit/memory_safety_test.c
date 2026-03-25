@@ -432,7 +432,7 @@ static void test_realloc_aligned(void) {
 
     // Reallocate to a larger size
     size_t new_num_elements = 20;
-    int* new_ptr = realloc_aligned(ptr, sizeof(ptr), element_size, new_num_elements);
+    int* new_ptr = realloc_aligned(ptr, element_size * num_elements, element_size * new_num_elements, alignment);
     TEST_ASSERT(new_ptr != NULL, "realloc_aligned should return a non-null pointer when reallocating to a larger size");
     for (size_t i = 0; i < num_elements; i++) {
         TEST_ASSERT(new_ptr[i] == (int)i, "realloc_aligned should preserve the contents of the original memory block");
