@@ -553,6 +553,17 @@ static void test_safe_free_page_aligned(void) {
     TEST_ASSERT(ptr3 == NULL, "safe_free_page_aligned should set the float pointer to NULL after freeing");
 }
 
+static void test_calloc_page_aligned(void) {
+    size_t num_elements = 10;
+    size_t element_size = sizeof(int);
+    int* ptr = calloc_page_aligned(num_elements, element_size);
+    TEST_ASSERT(ptr != NULL, "calloc_page_aligned should return a non-null pointer for non-zero count and size");
+    for (size_t i = 0; i < num_elements; i++) {
+        TEST_ASSERT(ptr[i] == 0, "calloc_page_aligned should initialize all elements to zero");
+    }
+    free_page_aligned(ptr);
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -610,4 +621,5 @@ void run_memory_safety_tests(void) {
     test_malloc_page_aligned();
     test_safe_free_page_aligned_core();
     test_safe_free_page_aligned();
+    test_calloc_page_aligned();
 }
