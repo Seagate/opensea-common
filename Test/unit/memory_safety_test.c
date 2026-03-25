@@ -258,6 +258,13 @@ static void test_explicit_zeroes(void) {
     for (size_t i = 0; i < sizeof(buffer) / sizeof(buffer[0]); i++) {
         TEST_ASSERT(buffer[i] == 0, "explicit_zeroes should set all bytes in the buffer to zero");
     }
+
+    // Testing when the buffer is already zeroed out
+    int char_buffer[10] = {0};
+    explicit_zeroes(char_buffer, sizeof(char_buffer));
+    for (size_t i = 0; i < sizeof(char_buffer) / sizeof(char_buffer[0]); i++) {
+        TEST_ASSERT(char_buffer[i] == 0, "explicit_zeroes should set all bytes in the buffer to zero");
+    }
 }
 
 void run_memory_safety_tests(void) {
