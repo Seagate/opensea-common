@@ -651,9 +651,8 @@ static void test_memory_regions_overlap(void) {
 static void test_safe_memmove(void) {
     char src[20] = "Hello, World!";
     char dest[10];
-    errno_t result = safe_memmove(dest, sizeof(dest), src, 5);
+    errno_t result = safe_memmove(NULL, sizeof(dest), src, 5);
     TEST_ASSERT(result == 0, "safe_memmove should return zero on success");
-    printf("Destination: %s\n", dest);
 }
 
 void run_memory_safety_tests(void) {
