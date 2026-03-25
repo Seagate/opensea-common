@@ -636,6 +636,18 @@ static void test_safe_reallocf_page_aligned(void) {
     free_page_aligned(new_ptr);
 }
 
+static void test_memory_regions_overlap(void) {
+    char* buffer[20];
+
+    char* ptr1 = buffer;
+    char* ptr2 = buffer + 10; 
+    char* ptr3 = buffer + 5;  
+
+    size_t size = 10;
+    TEST_ASSERT(memory_regions_overlap(ptr1, size, ptr2, size) == 0, "memory_regions_overlap should return zero for non-overlapping regions");
+    TEST_ASSERT(memory_regions_overlap(ptr1, size, ptr3, size) != 0, "memory_regions_overlap should return non-zero value for overlapping regions");
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -699,4 +711,5 @@ void run_memory_safety_tests(void) {
     test_safe_calloc_page_aligned();
     test_safe_realloc_page_aligned();
     test_safe_reallocf_page_aligned();
+    test_memory_regions_overlap();
 }
