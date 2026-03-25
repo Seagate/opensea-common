@@ -265,6 +265,9 @@ static void test_explicit_zeroes(void) {
     for (size_t i = 0; i < sizeof(char_buffer) / sizeof(char_buffer[0]); i++) {
         TEST_ASSERT(char_buffer[i] == 0, "explicit_zeroes should set all bytes in the buffer to zero");
     }
+
+    // Testing when the dest pointer is null, should not attempt to zero
+    explicit_zeroes(NULL, sizeof(buffer));
 }
 
 void run_memory_safety_tests(void) {
