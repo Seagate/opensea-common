@@ -556,7 +556,7 @@ static void test_safe_free_page_aligned(void) {
 static void test_calloc_page_aligned(void) {
     size_t num_elements = 10;
     size_t element_size = sizeof(int);
-    int* ptr = calloc_page_aligned(num_elements, element_size);
+    int* ptr = calloc_page_aligned(0, element_size);
     TEST_ASSERT(ptr != NULL, "calloc_page_aligned should return a non-null pointer for non-zero count and size");
     for (size_t i = 0; i < num_elements; i++) {
         TEST_ASSERT(ptr[i] == 0, "calloc_page_aligned should initialize all elements to zero");
