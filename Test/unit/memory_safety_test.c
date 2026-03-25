@@ -444,6 +444,11 @@ static void test_safe_malloc_aligned(void) {
     char* ptr = safe_malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "safe_malloc_aligned should return a non-null pointer for a non-zero size");
     free_aligned(ptr);
+
+    // Test that safe_malloc_aligned returns null for a size of zero
+    ptr = safe_malloc_aligned(0, alignment);
+    TEST_ASSERT(ptr == NULL, "safe_malloc_aligned should return a null pointer for a size of zero");
+    free_aligned(ptr);
 }
 
 void run_memory_safety_tests(void) {
