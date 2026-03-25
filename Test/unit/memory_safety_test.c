@@ -314,6 +314,13 @@ static void test_safe_free_aligned_uchar(void) {
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_uchar should set the pointer to NULL after freeing");
 }
 
+static void test_safe_free_aligned_short(void) {
+    signed short* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    safe_free_aligned_short(&ptr);
+    TEST_ASSERT(ptr == NULL, "safe_free_aligned_short should set the pointer to NULL after freeing");
+}
+
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
@@ -349,4 +356,5 @@ void run_memory_safety_tests(void) {
     test_safe_free_aligned_wchar();
     test_safe_free_aligned_schar();
     test_safe_free_aligned_uchar();
+    test_safe_free_aligned_short();
 }
