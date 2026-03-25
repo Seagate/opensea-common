@@ -584,7 +584,7 @@ static void test_realloc_page_aligned(void) {
 }
 
 static void test_safe_malloc_page_aligned(void) {
-    char* ptr = safe_malloc_page_aligned(100);
+    char* ptr = safe_malloc_page_aligned(0);
     TEST_ASSERT(ptr != NULL, "safe_malloc_page_aligned should return a non-null pointer for a non-zero size");
     free_page_aligned(ptr);
 }
