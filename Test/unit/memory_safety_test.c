@@ -637,7 +637,7 @@ static void test_safe_reallocf_page_aligned(void) {
 }
 
 static void test_memory_regions_overlap(void) {
-    char* buffer[20];
+    char buffer[20];
 
     char* ptr1 = buffer;
     char* ptr2 = buffer + 10; 
