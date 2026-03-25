@@ -627,7 +627,7 @@ static void test_safe_strncat(void) {
 static void test_safe_strcpy_no_overlap(void) {
     char dest[20];
     const char* src = "Hello, World!";
-    safe_strcpy(dest, sizeof(dest), src);
+    safe_strcpy_no_overlap(dest, sizeof(dest), src);
     TEST_ASSERT_EQ(strcmp(dest, src), 0, "String is correctly copied to destination buffer without overlap");
 }
 
