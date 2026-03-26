@@ -67,4 +67,5 @@ static void test_fill_Incrementing_Pattern_In_Buffer(void) {
 void run_pattern_utils_tests(void) {
     test_fill_Random_Pattern_In_Buffer();
     test_fill_Hex_Pattern_In_Buffer();
+    test_fill_Incrementing_Pattern_In_Buffer();
 }
