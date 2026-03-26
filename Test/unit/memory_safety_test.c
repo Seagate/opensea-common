@@ -666,6 +666,8 @@ static void test_safe_memcpy(void) {
     char buffer[20] = "Hello, World!";
     result = safe_memcpy(buffer + 5, sizeof(buffer) - 5, buffer, 10);
     TEST_ASSERT(result == 0, "safe_memcpy should return zero for overlapping regions");
+    printf("Buffer after safe_memcpy: %s\n", buffer);
+    TEST_ASSERT(strncmp(buffer + 5, buffer, 10) == 0, "safe_memcpy should correctly handle overlapping regions");
 }
 
 void run_memory_safety_tests(void) {
