@@ -90,6 +90,7 @@ static void test_fill_Pattern_Buffer_Into_Another_Buffer(void) {
     uint8_t outBuffer[10];
     eReturnValues result = fill_Pattern_Buffer_Into_Another_Buffer(inPattern, 0, outBuffer, sizeof(outBuffer));
     TEST_ASSERT(result == SUCCESS, "Expected SUCCESS for valid parameters");
+    printf("Result: %d\n", result);
     printf("Buffer after fill_Pattern_Buffer_Into_Another_Buffer: ");
     for (size_t i = 0; i < sizeof(outBuffer); i++) {
         printf("%02X ", outBuffer[i]);
