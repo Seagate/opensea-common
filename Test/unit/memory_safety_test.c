@@ -685,7 +685,7 @@ static void test_safe_memcpy_no_overlap(void) {
 static void test_safe_memccpy(void) {
     char src[20] = "Hello, World!";
     char dest[20];
-    errno_t result = safe_memccpy(dest, sizeof(dest), src, 'o', 30);
+    errno_t result = safe_memccpy(dest, sizeof(dest), src, 'o', sizeof(src));
     TEST_ASSERT(result == 0, "safe_memccpy should return zero on success");
     TEST_ASSERT(strncmp(dest, src, 5) == 0, "safe_memccpy should copy up to and including the specified character");
 
@@ -697,6 +697,11 @@ static void test_safe_memccpy(void) {
     // Test when the count is less than the position of the specified character
     result = safe_memccpy(dest, sizeof(dest), src, 'o', 3);
     TEST_ASSERT(result == 0, "safe_memccpy should return zero when the count is less than the position of the specified character");
+    TEST_ASSERT(strncmp(dest, src, 3) == 0, "safe_memccpy should copy only the specified count of bytes when the count is less than the position of the specified character");
+
+    // Test for overlapping regions
+    char buffer[20] = "Hello, World!";
+    result = safe_memccpy(buffer + 5, sizeof(buffer) - 5, buffer, 'o', sizeof(buffer));
 }
 
 void run_memory_safety_tests(void) {
