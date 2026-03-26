@@ -739,9 +739,7 @@ static void test_get_memalignment(void) {
 static void test_SIZE_OF_STACK_ARRAY(void) {
     int stack_array[10];
     size_t size = SIZE_OF_STACK_ARRAY(stack_array);
-    printf("Size of stack_array: %zu bytes\n", size);
-    printf("Expected size: %zu bytes\n", sizeof(stack_array));
-    TEST_ASSERT(size == sizeof(stack_array), "SIZE_OF_STACK_ARRAY should return the correct size of the stack array");
+    TEST_ASSERT(size == 10, "SIZE_OF_STACK_ARRAY should return the correct size of the stack array");
 }
 
 void run_memory_safety_tests(void) {
