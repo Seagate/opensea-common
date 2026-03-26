@@ -693,6 +693,11 @@ static void test_safe_memccpy(void) {
     result = safe_memccpy(dest, sizeof(dest), src, 'x', sizeof(src));
     TEST_ASSERT(result == 0, "safe_memccpy should return zero when the specified character is not found");
     TEST_ASSERT(strncmp(dest, src, sizeof(src)) == 0, "safe_memccpy should copy the entire source buffer when the specified character is not found");
+
+    // Test when the count is less than the position of the specified character
+    result = safe_memccpy(dest, sizeof(dest), src, 'o', 3);
+    TEST_ASSERT(result == 0, "safe_memccpy should return zero when the count is less than the position of the specified character");
+    TEST_ASSERT(strncmp(dest, src, 3) == 0, "safe_memccpy should copy only the specified count of bytes when the count is less than the position of the specified character");
 }
 
 void run_memory_safety_tests(void) {
