@@ -688,6 +688,11 @@ static void test_safe_memccpy(void) {
     errno_t result = safe_memccpy(dest, sizeof(dest), src, 'o', sizeof(src));
     TEST_ASSERT(result == 0, "safe_memccpy should return zero on success");
     TEST_ASSERT(strncmp(dest, src, 5) == 0, "safe_memccpy should copy up to and including the specified character");
+
+    // Testing when the character is not found
+    result = safe_memccpy(dest, sizeof(dest), src, 'x', sizeof(src));
+    TEST_ASSERT(result == 0, "safe_memccpy should return zero when the specified character is not found");
+    TEST_ASSERT(strncmp(dest, src, sizeof(src)) == 0, "safe_memccpy should copy the entire source buffer when the specified character is not found");
 }
 
 void run_memory_safety_tests(void) {
