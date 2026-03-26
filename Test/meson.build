@@ -7,6 +7,7 @@ test_sources = [
     'unit/string_utils_test.c',
     'unit/io_utils_test.c',
     'unit/memory_safety_test.c',
+    'unit/pattern_utils_test.c',
     'main.c',
 ]
 
