@@ -481,6 +481,7 @@ typedef struct
 } ColorTestCase;
 
 // Skip for now as it is complicated to test
+// The test can differ as the OS or the terminal changes. Can be tested for windows.
 static void test_set_Console_Colors(void) {
     ColorTestCase tests[] =
     {
