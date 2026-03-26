@@ -95,6 +95,14 @@ static void test_fill_Pattern_Buffer_Into_Another_Buffer(void) {
         printf("%02X ", outBuffer[i]);
     }
     printf("\n");
+
+    // Test with zero data length
+    result = fill_Pattern_Buffer_Into_Another_Buffer(inPattern, sizeof(inPattern), outBuffer, 0);
+    TEST_ASSERT(result == BAD_PARAMETER, "Returns BAD_PARAMETER for zero data length");
+
+    // Test with null pointer
+    result = fill_Pattern_Buffer_Into_Another_Buffer(inPattern, sizeof(inPattern), NULL, sizeof(outBuffer));
+    TEST_ASSERT(result == BAD_PARAMETER, "Returns BAD_PARAMETER for null pointer");
 }
 
 void run_pattern_utils_tests(void) {
