@@ -4,7 +4,7 @@
 
 static void test_fill_Random_Pattern_In_Buffer(void) {
     // Test with valid parameters
-    uint8_t buffer[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    uint8_t buffer[10];
     eReturnValues result = fill_Random_Pattern_In_Buffer(buffer, sizeof(buffer));
     TEST_ASSERT(result == SUCCESS, "Expected SUCCESS for valid parameters");
     printf("Buffer after fill_Random_Pattern_In_Buffer: ");
@@ -33,6 +33,10 @@ static void test_fill_Hex_Pattern_In_Buffer(void) {
         printf("%02X ", buffer[i]);
     }
     printf("\n");
+
+    // Test with zero data length
+    result = fill_Hex_Pattern_In_Buffer(hexPattern, buffer, 0);
+    TEST_ASSERT(result == BAD_PARAMETER, "Gives error for zero data length");
 }
 
 void run_pattern_utils_tests(void) {
