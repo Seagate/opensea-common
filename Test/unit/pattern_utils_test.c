@@ -88,7 +88,7 @@ static void test_fill_ASCII_Pattern_In_Buffer(void) {
 static void test_fill_Pattern_Buffer_Into_Another_Buffer(void) {
     uint8_t inPattern[5] = {0x01, 0x02, 0x03, 0x04, 0x05};
     uint8_t outBuffer[10];
-    eReturnValues result = fill_Pattern_Buffer_Into_Another_Buffer(inPattern, 0, outBuffer, sizeof(outBuffer));
+    eReturnValues result = fill_Pattern_Buffer_Into_Another_Buffer(inPattern, sizeof(inPattern), outBuffer, 0);
     TEST_ASSERT(result == SUCCESS, "Expected SUCCESS for valid parameters");
     printf("Result: %d\n", result);
     printf("Buffer after fill_Pattern_Buffer_Into_Another_Buffer: ");
