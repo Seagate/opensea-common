@@ -77,8 +77,8 @@ static void test_fill_ASCII_Pattern_In_Buffer(void) {
     printf("\n");
 
     // Test with zero data length
-    // result = fill_ASCII_Pattern_In_Buffer(asciiPattern, strlen(asciiPattern), buffer, 0);
-    // printf("Result for zero data length: %d\n", result);
+    result = fill_ASCII_Pattern_In_Buffer(asciiPattern, strlen(asciiPattern), buffer, 0);
+    printf("Result for zero data length: %d\n", result);
 
     // Test with null pointer
 //     result = fill_ASCII_Pattern_In_Buffer(asciiPattern, strlen(asciiPattern), NULL, sizeof(buffer));
