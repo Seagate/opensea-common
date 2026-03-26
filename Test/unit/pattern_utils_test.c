@@ -56,8 +56,8 @@ static void test_fill_Incrementing_Pattern_In_Buffer(void) {
     printf("\n");
 
     // Test with zero data length
-    // result = fill_Incrementing_Pattern_In_Buffer(startValue, buffer, 0);
-    // TEST_ASSERT(result == BAD_PARAMETER, "Gives error for zero data length");
+    result = fill_Incrementing_Pattern_In_Buffer(startValue, buffer, 0);
+    TEST_ASSERT(result == BAD_PARAMETER, "Gives error for zero data length");
 
     // Test with null pointer
     // result = fill_Incrementing_Pattern_In_Buffer(startValue, NULL, sizeof(buffer));
