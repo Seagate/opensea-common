@@ -700,8 +700,32 @@ static void test_safe_memccpy(void) {
     TEST_ASSERT(strncmp(dest, src, 3) == 0, "safe_memccpy should copy only the specified count of bytes when the count is less than the position of the specified character");
 
     // Test for overlapping regions
+    // char buffer[20] = "Hello, World!";
+    // result = safe_memccpy(buffer + 5, sizeof(buffer) - 5, buffer, 'o', sizeof(buffer));
+}
+
+static void test_safe_memcmove(void) {
+    char src[20] = "Hello, World!";
+    char dest[20];
+    errno_t result = safe_memcmove(dest, sizeof(dest), src, 'o', sizeof(src));
+    TEST_ASSERT(result == 0, "safe_memcmove should return zero on success");
+    TEST_ASSERT(strncmp(dest, src, 5) == 0, "safe_memcmove should copy up to and including the specified character");
+
+    // Testing when the character is not found
+    result = safe_memcmove(dest, sizeof(dest), src, 'x', sizeof(src));
+    TEST_ASSERT(result == 0, "safe_memcmove should return zero when the specified character is not found");
+    TEST_ASSERT(strncmp(dest, src, sizeof(src)) == 0, "safe_memcmove should copy the entire source buffer when the specified character is not found");
+
+    // Test when the count is less than the position of the specified character
+    result = safe_memcmove(dest, sizeof(dest), src, 'o', 3);
+    TEST_ASSERT(result == 0, "safe_memcmove should return zero when the count is less than the position of the specified character");
+    TEST_ASSERT(strncmp(dest, src, 3) == 0, "safe_memcmove should copy only the specified count of bytes when the count is less than the position of the specified character");
+
+    // Test for overlapping regions
     char buffer[20] = "Hello, World!";
-    result = safe_memccpy(buffer + 5, sizeof(buffer) - 5, buffer, 'o', sizeof(buffer));
+    result = safe_memcmove(buffer + 5, sizeof(buffer) - 5, buffer, 'o', sizeof(buffer));
+    TEST_ASSERT(result == 0, "safe_memcmove should return zero for overlapping regions");
+    TEST_ASSERT(strcmp(buffer, "HelloHello, Wor") == 0, "safe_memcmove should correctly handle overlapping regions");
 }
 
 void run_memory_safety_tests(void) {
