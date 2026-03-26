@@ -22,6 +22,20 @@ static void test_fill_Random_Pattern_In_Buffer(void) {
     // TEST_ASSERT(result == BAD_PARAMETER, "Gives error for null pointer");
 }
 
+static void test_fill_Hex_Pattern_In_Buffer(void) {
+    // Test with valid parameters
+    uint8_t buffer[10];
+    uint32_t hexPattern = 0xAABBCCDD;
+    eReturnValues result = fill_Hex_Pattern_In_Buffer(hexPattern, buffer, sizeof(buffer));
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS for valid parameters");
+    printf("Buffer after fill_Hex_Pattern_In_Buffer: ");
+    for (size_t i = 0; i < sizeof(buffer); i++) {
+        printf("%02X ", buffer[i]);
+    }
+    printf("\n");
+}
+
 void run_pattern_utils_tests(void) {
     test_fill_Random_Pattern_In_Buffer();
+    test_fill_Hex_Pattern_In_Buffer();
 }
