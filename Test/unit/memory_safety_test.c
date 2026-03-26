@@ -707,7 +707,7 @@ static void test_safe_memccpy(void) {
 static void test_safe_memcmove(void) {
     char src[20] = "Hello, World!";
     char dest[20];
-    errno_t result = safe_memcmove(dest, sizeof(dest), src, 'o', 30);
+    errno_t result = safe_memcmove(dest, sizeof(dest), src, 'o', sizeof(src));
     TEST_ASSERT(result == 0, "safe_memcmove should return zero on success");
     TEST_ASSERT(strncmp(dest, src, 5) == 0, "safe_memcmove should copy up to and including the specified character");
 
@@ -726,6 +726,14 @@ static void test_safe_memcmove(void) {
     result = safe_memcmove(buffer + 5, sizeof(buffer) - 5, buffer, 'o', sizeof(buffer));
     TEST_ASSERT(result == 0, "safe_memcmove should return zero for overlapping regions");
     TEST_ASSERT(strcmp(buffer, "HelloHello, Wor") == 0, "safe_memcmove should correctly handle overlapping regions");
+}
+
+static void test_get_memalignment(void) {
+    char* ptr = malloc_aligned(100, 16);
+    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    size_t alignment = get_memalignment(ptr);
+    TEST_ASSERT(alignment > 0, "get_memalignment should return a positive alignment value");
+    printf("Memory alignment: %zu bytes\n", alignment);
 }
 
 void run_memory_safety_tests(void) {
@@ -796,4 +804,5 @@ void run_memory_safety_tests(void) {
     test_safe_memcpy();
     test_safe_memcpy_no_overlap();
     test_safe_memccpy();
+    test_get_memalignment();
 }
