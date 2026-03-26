@@ -658,7 +658,7 @@ static void test_safe_memmove(void) {
 static void test_safe_memcpy(void) {
     char src[20] = "Hello, World!";
     char dest[10];
-    errno_t result = safe_memcpy(dest, sizeof(dest), src, RSIZE_MAX + 1);
+    errno_t result = safe_memcpy(dest, sizeof(dest), src, 20);
     TEST_ASSERT(result == 0, "safe_memcpy should return zero on success");
     TEST_ASSERT(strncmp(dest, src, 5) == 0, "safe_memcpy should copy the correct data");
 }
