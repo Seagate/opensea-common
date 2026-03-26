@@ -81,8 +81,8 @@ static void test_fill_ASCII_Pattern_In_Buffer(void) {
     printf("Result for zero data length: %d\n", result);
 
     // Test with null pointer
-//     result = fill_ASCII_Pattern_In_Buffer(asciiPattern, strlen(asciiPattern), NULL, sizeof(buffer));
-//     TEST_ASSERT(result == BAD_PARAMETER, "Returns BAD_PARAMETER for null pointer");
+    result = fill_ASCII_Pattern_In_Buffer(asciiPattern, strlen(asciiPattern), NULL, sizeof(buffer));
+    TEST_ASSERT(result == BAD_PARAMETER, "Returns BAD_PARAMETER for null pointer");
 }
 
 void run_pattern_utils_tests(void) {
