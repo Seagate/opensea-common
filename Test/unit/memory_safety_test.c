@@ -733,7 +733,13 @@ static void test_get_memalignment(void) {
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     size_t alignment = get_memalignment(ptr);
     TEST_ASSERT(alignment > 0, "get_memalignment should return a positive alignment value");
-    printf("Memory alignment: %zu bytes\n", alignment);
+    free(ptr);
+}
+
+static void test_SIZE_OF_STACK_ARRAY(void) {
+    int stack_array[10];
+    size_t size = SIZE_OF_STACK_ARRAY(stack_array);
+    TEST_ASSERT(size == sizeof(stack_array), "SIZE_OF_STACK_ARRAY should return the correct size of the stack array");
 }
 
 void run_memory_safety_tests(void) {
@@ -805,4 +811,5 @@ void run_memory_safety_tests(void) {
     test_safe_memcpy_no_overlap();
     test_safe_memccpy();
     test_get_memalignment();
+    test_SIZE_OF_STACK_ARRAY();
 }
