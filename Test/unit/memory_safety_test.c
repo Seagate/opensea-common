@@ -672,9 +672,14 @@ static void test_safe_memcpy(void) {
 static void test_safe_memcpy_no_overlap(void) {
     char src[20] = "Hello, World!";
     char dest[10];
-    errno_t result = safe_memcpy_no_overlap(dest, sizeof(dest), src, 20);
+    errno_t result = safe_memcpy_no_overlap(dest, sizeof(dest), src, 10);
     TEST_ASSERT(result == 0, "safe_memcpy_no_overlap should return zero on success");
     TEST_ASSERT(strncmp(dest, src, 10) == 0, "safe_memcpy_no_overlap should copy the correct data");
+
+    // Test for overlapping
+    char buffer[20] = "Hello, World!";
+    result = safe_memcpy_no_overlap(buffer + 5, sizeof(buffer) - 5, buffer, 10);
+    TEST_ASSERT(result != 0, "safe_memcpy_no_overlap should return non-zero for overlapping regions");
 }
 
 void run_memory_safety_tests(void) {
