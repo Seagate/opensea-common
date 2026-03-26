@@ -1110,7 +1110,7 @@ extern "C"
         // clang-format on
         ;
 
-    //! \fn  void* safe_reallocf(void** block, size_t size)
+    //! \fn  void* safe_reallocf_aligned(void** block, size_t size)
     //! \brief allocates or reallocates memory pointed to by \a block
     //! If reallocation fails, frees the original memory block.
     //! \details
