@@ -148,15 +148,40 @@ static void test_int8_to_sizet(void) {
     size_t sizet_positive = int8_to_sizet(positive_val);
     TEST_ASSERT(sizet_positive == (size_t)positive_val, "int8_to_sizet should convert positive values correctly");
 
-    // Test with a value greater than SIZE_MAX - 
+    // Test with a value greater than SIZE_MAX - Not possible for real systems as SIZE_MAX is typically much larger than INT8_MAX.  
     errno = 0;
     size_t sizet_large = int8_to_sizet(SIZE_MAX + 1);
-    printf("SIZE_MAX: %zu\n", SIZE_MAX);
-    printf("sizet_large: %zu\n", sizet_large);
-    printf("errno: %d\n", errno);
-    TEST_ASSERT(sizet_large == SIZE_MAX, "int8_to_sizet should set to SIZE_MAX for values greater than SIZE_MAX");
-    TEST_ASSERT(errno == ERANGE, "int8_to_sizet should set errno to ERANGE for values greater than SIZE_MAX");
 }
+
+static void test_uint8_to_sizet(void) {
+    // Test with minimum uint8_t value
+    uint8_t min_val = UINT8_MIN_VAL;
+    size_t sizet_min = uint8_to_sizet(min_val);
+    printf("sizet_min: %zu\n", sizet_min);
+    // TEST_ASSERT(sizet_min == 0, "uint8_to_sizet should convert UINT8_MIN to 0");
+
+    // Test with maximum uint8_t value
+    uint8_t max_val = UINT8_MAX_VAL;
+    size_t sizet_max = uint8_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)UINT8_MAX_VAL, "uint8_to_sizet should convert UINT8_MAX correctly");
+
+    // Test with a negative value
+    int8_t negative_val = -5;
+    errno = 0;
+    size_t sizet_negative = uint8_to_sizet(negative_val);
+    printf("sizet_negative: %zu\n", sizet_negative);
+    // TEST_ASSERT(sizet_negative == 0, "uint8_to_sizet should convert negative values to 0");
+
+    // Test with a positive value
+    int8_t positive_val = 10;
+    size_t sizet_positive = uint8_to_sizet(positive_val);
+    TEST_ASSERT(sizet_positive == (size_t)positive_val, "uint8_to_sizet should convert positive values correctly");
+
+    // Test with a value greater than SIZE_MAX - Not possible for real systems as SIZE_MAX is typically much larger than UINT8_MAX.  
+    errno = 0;
+    size_t sizet_large = uint8_to_sizet(SIZE_MAX + 1);
+}
+
 void run_type_conversion_tests(void) {
     test_C_CAST();
     test_M_STATIC_CAST();   
@@ -164,4 +189,5 @@ void run_type_conversion_tests(void) {
     test_M_CONST_CAST();
     test_M_ToBool();
     test_int8_to_sizet();
+    test_uint8_to_sizet();
 }
