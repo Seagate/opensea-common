@@ -195,7 +195,7 @@ static void test_safe_lsearch_context(void) {
     size_t nelp = 3;
     char* key = "Banana";
     StringContext ctx = { .case_sensitive = 0 };
-    char** found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), NULL, &ctx);
+    char** found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
     TEST_ASSERT(found != NULL && strcmp(*found, "banana") == 0, "safe_lsearch_context finds the key in the array with context");
 
     // Test searching for a non-existent key
