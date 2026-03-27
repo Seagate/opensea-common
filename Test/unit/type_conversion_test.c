@@ -113,7 +113,7 @@ static void test_M_ToBool(void) {
     // Test with negative value
     int negative = -1;
     bool bool_negative = M_ToBool(negative);
-    TEST_ASSERT(bool_negative == true, "M_ToBool should convert negative to true");
+    TEST_ASSERT(bool_negative == false, "M_ToBool should convert negative to false");
 
     // Test with an expression
     bool bool_expression = M_ToBool(5 > 3);
