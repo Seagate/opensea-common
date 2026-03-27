@@ -214,7 +214,7 @@ static void test_safe_lfind(void) {
     int arr[] = {1, 2, 3, 4, 5};
     size_t nelp = sizeof(arr) / sizeof(arr[0]);
     int key = 3;
-    int* found = (int*)safe_lfind(&key, arr, RSIZE_MAX + 1, sizeof(arr[0]), compare_ints);
+    int* found = (int*)safe_lfind(&key, arr, &nelp, RSIZE_MAX + 1, compare_ints);
     TEST_ASSERT(found != NULL && *found == key, "safe_lfind finds the key in the array");
 
     // Test searching for a non-existent key
