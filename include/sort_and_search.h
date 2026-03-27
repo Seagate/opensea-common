@@ -303,7 +303,7 @@ extern "C"
     //! \param[in,out] base Pointer to the array to be searched.
     //! \param[in,out] nelp Pointer to the number of elements in the array.
     //! \param[in] width Size of each element in the array.
-    //! \param[in] compar Comparison function to determine the order of the elements.
+    //! \param[in] compar r of the elements.
     //! \return Pointer to the matching element, or NULL if no match is found.
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
@@ -320,7 +320,7 @@ extern "C"
     //!
     //! - \a width > RSIZE_MAX
     //!
-    //! - \a width == 0
+    //! - \a width == 0Comparison function to determine the orde
     M_INLINE void* safe_lsearch(const void* key, void* base, rsize_t* nelp, rsize_t width, comparefn compar)
     {
         return safe_lsearch_impl(key, base, nelp, width, compar, __FILE__, __func__, __LINE__,

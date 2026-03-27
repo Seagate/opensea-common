@@ -130,9 +130,8 @@ static void test_safe_bsearch_context(void) {
     size_t arr_size = sizeof(arr) / sizeof(arr[0]);
     int key = 5;
     search_ctx ctx = {2};
-    int* found = (int*)safe_bsearch_context(&key, arr, 0, sizeof(arr[0]), compare_with_context, &ctx);
-    // TEST_ASSERT(found != NULL && *found == 2*key, "safe_bsearch_context finds the key in the array with context");
-    TEST_ASSERT(found == NULL, "safe_bsearch_context fails to find the key in the array with context");
+    int* found = (int*)safe_bsearch_context(&key, arr, arr_size, sizeof(arr[0]), compare_with_context, &ctx);
+    TEST_ASSERT(found != NULL && *found == 2*key, "safe_bsearch_context finds the key in the array with context");
 
     // Test searching for a non-existent key
     key = 11;
@@ -140,9 +139,24 @@ static void test_safe_bsearch_context(void) {
     TEST_ASSERT(found == NULL, "safe_bsearch_context returns NULL for a non-existent key with context");
 }
 
+static void test_safe_lsearch(void) {
+    int arr[10] = {1, 2, 3, 4, 5};
+    size_t nelp = 5;
+    int key = 3;
+    int* found = (int*)safe_lsearch(&key, arr, &nelp, sizeof(arr[0]), compare_ints);
+    TEST_ASSERT(found != NULL && *found == key, "safe_lsearch finds the key in the array");
+
+    // Test searching for a non-existent key
+    key = 10;
+    found = (int*)safe_lsearch(&key, arr, &nelp, sizeof(arr[0]), compare_ints);
+    TEST_ASSERT(found != NULL && *found == key, "safe_lsearch inserts the non-existent key at the end of the array");
+    TEST_ASSERT(nelp == 6, "safe_lsearch increments the number of elements when inserting a new key");
+}
+
 void run_sort_and_search_tests(void) {
     test_safe_qsort();
     test_safe_qsort_context();
     test_safe_bsearch();
     test_safe_bsearch_context();
+    test_safe_lsearch();
 }
