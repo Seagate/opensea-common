@@ -98,7 +98,7 @@ static void test_safe_bsearch(void) {
     int arr[] = {1, 2, 5, 5, 6, 9};
     size_t arr_size = sizeof(arr) / sizeof(arr[0]);
     int key = 5;
-    int* found = (int*)safe_bsearch(NULL, arr, arr_size, sizeof(arr[0]), compare_ints);
+    int* found = (int*)safe_bsearch(&key, NULL, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found != NULL && *found == key, "safe_bsearch finds the key in the array");
 
     // Test searching for a non-existent key
