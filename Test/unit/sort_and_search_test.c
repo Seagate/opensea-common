@@ -148,7 +148,7 @@ static void test_safe_lsearch(void) {
 
     // Test searching for a non-existent key
     key = 10;
-    found = (int*)safe_lsearch(&key, arr, &nelp, sizeof(arr[0]), compare_ints);
+    found = (int*)safe_lsearch(&key, arr, NULL, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found != NULL && *found == key, "safe_lsearch inserts the non-existent key at the end of the array");
     TEST_ASSERT(nelp == 6, "safe_lsearch increments the number of elements when inserting a new key");
     printf("Array after safe_lsearch: ");
