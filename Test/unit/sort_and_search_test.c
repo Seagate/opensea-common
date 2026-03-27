@@ -214,13 +214,27 @@ static void test_safe_lfind(void) {
     int arr[] = {1, 2, 3, 4, 5};
     size_t nelp = sizeof(arr) / sizeof(arr[0]);
     int key = 3;
-    int* found = (int*)safe_lfind(&key, arr, &nelp, 0, compare_ints);
+    int* found = (int*)safe_lfind(&key, arr, &nelp, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found != NULL && *found == key, "safe_lfind finds the key in the array");
 
     // Test searching for a non-existent key
     key = 10;
     found = (int*)safe_lfind(&key, arr, &nelp, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_lfind returns NULL for a non-existent key");
+}
+
+static void test_safe_lfind_context(void) {
+    char* arr[] = {"apple", "banana", "cherry"};
+    size_t nelp = sizeof(arr) / sizeof(arr[0]);
+    char* key = "Banana";
+    StringContext ctx = { .case_sensitive = 0 };
+    char** found = (char**)safe_lfind_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
+    TEST_ASSERT(found != NULL && strcmp(*found, "banana") == 0, "safe_lfind_context finds the key in the array with context");
+
+    // Test searching for a non-existent key
+    key = "date";
+    found = (char**)safe_lfind_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
+    TEST_ASSERT(found == NULL, "safe_lfind_context returns NULL for a non-existent key with context");
 }
 
 void run_sort_and_search_tests(void) {
@@ -231,4 +245,5 @@ void run_sort_and_search_tests(void) {
     test_safe_lsearch();
     test_safe_lsearch_context();
     test_safe_lfind();
+    test_safe_lfind_context();
 }
