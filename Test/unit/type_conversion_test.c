@@ -236,7 +236,68 @@ static void test_uint16_to_sizet(void) {
     TEST_ASSERT(sizet_positive == (size_t)positive_val, "uint16_to_sizet should convert positive values correctly");
 }
 
+static void test_int32_to_sizet(void) {
+    // Test with minimum int32_t value
+    int32_t min_val = INT32_MIN_VAL;
+    errno = 0; 
+    size_t sizet_min = int32_to_sizet(min_val);
+    TEST_ASSERT(sizet_min == 0, "int32_to_sizet should convert INT32_MIN to 0");
+    TEST_ASSERT(errno == ERANGE, "int32_to_sizet should set errno to ERANGE for negative input");
 
+    // Test with maximum int32_t value
+    int32_t max_val = INT32_MAX_VAL;
+    size_t sizet_max = int32_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)INT32_MAX_VAL, "int32_to_sizet should convert INT32_MAX correctly");
+
+    // Test with a negative value
+    int32_t negative_val = -5;
+    errno = 0;
+    size_t sizet_negative = int32_to_sizet(negative_val);
+    TEST_ASSERT(sizet_negative == 0, "int32_to_sizet should convert negative values to 0");
+    TEST_ASSERT(errno == ERANGE, "int32_to_sizet should set errno to ERANGE for negative input");
+
+    // Test with a positive value
+    int32_t positive_val = 10;
+    size_t sizet_positive = int32_to_sizet(positive_val);
+    TEST_ASSERT(sizet_positive == (size_t)positive_val, "int32_to_sizet should convert positive values correctly");
+
+    // Test for val > INT32_MAX
+    int val = (int64_t)INT32_MAX + 1;
+    errno = 0;
+    size_t sizet_overflow = int32_to_sizet(val);
+    TEST_ASSERT(sizet_overflow == 0, "int32_to_sizet should convert the values to int32 first for values greater than INT32_MAX");
+    TEST_ASSERT(errno == ERANGE, "int32_to_sizet should set errno to ERANGE for values greater than INT32_MAX");
+}
+
+static void test_uint32_to_sizet(void) {
+    // Test with minimum uint32_t value
+    uint32_t min_val = UINT32_MIN_VAL;
+    size_t sizet_min = uint32_to_sizet(min_val);
+    TEST_ASSERT(sizet_min == 0, "uint32_to_sizet should convert UINT32_MIN to 0");
+
+    // Test with maximum uint32_t value
+    uint32_t max_val = UINT32_MAX_VAL;
+    size_t sizet_max = uint32_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)UINT32_MAX_VAL, "uint32_to_sizet should convert UINT32_MAX correctly");
+
+    // Test with a negative value
+    int64_t negative_val = -5;
+    errno = 0;
+    size_t sizet_negative = uint32_to_sizet(negative_val);
+    TEST_ASSERT(sizet_negative == 4294967291, "uint32_to_sizet should convert negative values to positive values");
+
+    // Test with a positive value
+    int64_t positive_val = 10;
+    size_t sizet_positive = uint32_to_sizet(positive_val);
+    TEST_ASSERT(sizet_positive == (size_t)positive_val, "uint32_to_sizet should convert positive values correctly");
+
+    // Test for val > UINT32_MAX
+    uint64_t val = (uint64_t)UINT32_MAX + 1;
+    errno = 0;
+    size_t sizet_overflow = uint32_to_sizet(val);
+    TEST_ASSERT(sizet_overflow == 0, "uint32_to_sizet should convert the values to uint32 first for values greater than UINT32_MAX");
+    TEST_ASSERT(errno == ERANGE, "uint32_to_sizet should set errno to ERANGE for values greater than UINT32_MAX");
+}
 
 void run_type_conversion_tests(void) {
     test_C_CAST();
@@ -248,4 +309,6 @@ void run_type_conversion_tests(void) {
     test_uint8_to_sizet();
     test_int16_to_sizet();
     test_uint16_to_sizet();
+    test_int32_to_sizet();
+    test_uint32_to_sizet();
 }
