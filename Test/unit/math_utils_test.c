@@ -882,10 +882,10 @@ static void test_log2_power2(void) {
 }
 
 static void test_raise_to_power(void) {
-    // TEST_ASSERT_EQ(raise_to_power((double)4, (double)3), (double)64, "4 to power 3");
-    // TEST_ASSERT_EQ(raise_to_power((double)12, (double)5), (double)248832, "12 to power 5");
-    // TEST_ASSERT_EQ(raise_to_power((double)-2, (double)3), (double)-8, "-2 to power 3");
-    // TEST_ASSERT_EQ(raise_to_power((double)-2, (double)4), (double)16, "-2 to power 4");
+    TEST_ASSERT(fabs(raise_to_power(4, 3) - 64) < EPSILON, "4 to power 3");
+    TEST_ASSERT(fabs(raise_to_power(12, 5) - 248832) < EPSILON, "12 to power 5");
+    TEST_ASSERT(fabs(raise_to_power(-2, 3) + 8) < EPSILON, "-2 to power 3");
+    TEST_ASSERT(fabs(raise_to_power(-2, 4) - 16) < EPSILON, "-2 to power 4");
     TEST_ASSERT(fabs(raise_to_power(2, -4) - 0.0625) < EPSILON, "2 raised to power -4");
     TEST_ASSERT(fabs(raise_to_power(3, -2) - 0.11111) < EPSILON, "3 raised to power -2");
 }
