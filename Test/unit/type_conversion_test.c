@@ -27,6 +27,12 @@ static void test_C_CAST(void) {
     long long long_long_val = 123456789012345LL;
     int_val = C_CAST(int, long_long_val);
     TEST_ASSERT(int_val == (int)long_long_val, "C_CAST should convert long long to int correctly");
+
+    // Cast int pointer to void pointer and back
+    int x = 10;
+    void *ptr = C_CAST(void*, &x);
+    int *int_ptr = C_CAST(int*, ptr);
+    TEST_ASSERT(*int_ptr == 10, "C_CAST should cast void* back to int*");
 }
 
 static void test_M_STATIC_CAST(void) {
