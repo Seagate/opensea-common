@@ -151,6 +151,12 @@ static void test_int8_to_sizet(void) {
     // Test with a value greater than SIZE_MAX - Not possible for real systems as SIZE_MAX is typically much larger than INT8_MAX.  
     errno = 0;
     size_t sizet_large = int8_to_sizet(SIZE_MAX + 1);
+
+    // Test for val > INT8_MAX
+    errno = 0;
+    size_t sizet_overflow = int8_to_sizet(INT8_MAX + 1);
+    TEST_ASSERT(sizet_overflow == SIZE_MAX, "int8_to_sizet should return SIZE_MAX for values greater than INT8_MAX");
+    TEST_ASSERT(errno == ERANGE, "int8_to_sizet should set errno to ERANGE for values greater than INT8_MAX");
 }
 
 static void test_uint8_to_sizet(void) {
@@ -228,6 +234,8 @@ static void test_uint16_to_sizet(void) {
     size_t sizet_positive = uint16_to_sizet(positive_val);
     TEST_ASSERT(sizet_positive == (size_t)positive_val, "uint16_to_sizet should convert positive values correctly");
 }
+
+
 
 void run_type_conversion_tests(void) {
     test_C_CAST();
