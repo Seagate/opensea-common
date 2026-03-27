@@ -148,12 +148,61 @@ static void test_safe_lsearch(void) {
 
     // Test searching for a non-existent key
     key = 10;
-    found = (int*)safe_lsearch(&key, arr, &nelp, RSIZE_MAX + 1, compare_ints);
+    found = (int*)safe_lsearch(&key, arr, &nelp, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found != NULL && *found == key, "safe_lsearch inserts the non-existent key at the end of the array");
     TEST_ASSERT(nelp == 6, "safe_lsearch increments the number of elements when inserting a new key");
     printf("Array after safe_lsearch: ");
     for (size_t i = 0; i < nelp; i++) {
         printf("%d ", arr[i]);
+    }
+    printf("\n");
+}
+
+typedef struct {
+    int case_sensitive;
+} StringContext;
+
+int compare_strings_ctx(const void* a, const void* b, void* ctx)
+{
+    const char* key = *(const char**)a;
+    const char* element = *(const char**)b;
+
+    StringContext* context = (StringContext*)ctx;
+
+    if (context->case_sensitive)
+        return strcmp(key, element);
+
+    /* case-insensitive comparison */
+    while (*key && *element) {
+        char c1 = tolower(*key);
+        char c2 = tolower(*element);
+
+        if (c1 != c2)
+            return c1 - c2;
+
+        key++;
+        element++;
+    }
+
+    return *key - *element;
+}
+
+static void test_safe_lsearch_context(void) {
+    const char* arr[] = {"apple", "banana", "cherry"};
+    size_t nelp = sizeof(arr) / sizeof(arr[0]);
+    const char* key = "Banana";
+    StringContext ctx = { .case_sensitive = 0 };
+    const char** found = (const char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
+    TEST_ASSERT(found != NULL && strcmp(*found, "banana") == 0, "safe_lsearch_context finds the key in the array with context");
+
+    // Test searching for a non-existent key
+    key = "date";
+    found = (const char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
+    TEST_ASSERT(found != NULL && strcmp(*found, "date") == 0, "safe_lsearch_context inserts the non-existent key at the end of the array with context");
+    TEST_ASSERT(nelp == 4, "safe_lsearch_context increments the number of elements when inserting a new key with context");
+    printf("Array after safe_lsearch_context: ");
+    for (size_t i = 0; i < nelp; i++) {
+        printf("%s ", arr[i]);
     }
     printf("\n");
 }
@@ -164,4 +213,5 @@ void run_sort_and_search_tests(void) {
     test_safe_bsearch();
     test_safe_bsearch_context();
     test_safe_lsearch();
+    test_safe_lsearch_context();
 }
