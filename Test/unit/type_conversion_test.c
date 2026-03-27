@@ -93,9 +93,34 @@ static void test_M_CONST_CAST(void) {
     const int* const_int_ptr = M_CONST_CAST(const int*, int_ptr);
     TEST_ASSERT(*const_int_ptr == 42, "M_CONST_CAST should cast int pointer back to const int pointer correctly");
 
+    // Cast volatile int pointer to int pointer
     volatile int volatile_int_val = 100;
     int* volatile_int_ptr = M_CONST_CAST(int*, &volatile_int_val);
     TEST_ASSERT(*volatile_int_ptr == 100, "M_CONST_CAST should cast volatile int pointer to int pointer correctly");
+}
+
+static void test_M_ToBool(void) {
+    // Test with zero value
+    int zero = 0;
+    bool bool_zero = M_ToBool(zero);
+    TEST_ASSERT(bool_zero == false, "M_ToBool should convert zero to false");
+
+    // Test with non-zero value
+    int non_zero = 42;
+    bool bool_non_zero = M_ToBool(non_zero);
+    TEST_ASSERT(bool_non_zero == true, "M_ToBool should convert non-zero to true");
+
+    // Test with negative value
+    int negative = -1;
+    bool bool_negative = M_ToBool(negative);
+    TEST_ASSERT(bool_negative == true, "M_ToBool should convert negative to true");
+
+    // Test with an expression
+    bool bool_expression = M_ToBool(5 > 3);
+    TEST_ASSERT(bool_expression == true, "M_ToBool should convert true expression to true");
+
+    bool bool_false_expression = M_ToBool(2 > 3);
+    TEST_ASSERT(bool_false_expression == false, "M_ToBool should convert false expression to false");
 }
 
 void run_type_conversion_tests(void) {
@@ -103,4 +128,5 @@ void run_type_conversion_tests(void) {
     test_M_STATIC_CAST();   
     test_M_REINTERPRET_CAST();
     test_M_CONST_CAST();
+    test_M_ToBool();
 }
