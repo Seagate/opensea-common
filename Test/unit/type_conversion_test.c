@@ -123,10 +123,37 @@ static void test_M_ToBool(void) {
     TEST_ASSERT(bool_false_expression == false, "M_ToBool should convert false expression to false");
 }
 
+static void test_int8_to_sizet(void) {
+    // Test with minimum int8_t value
+    int8_t min_val = INT8_MIN_VAL;
+    errno = 0; 
+    size_t sizet_min = int8_to_sizet(min_val);
+    TEST_ASSERT(sizet_min == 0, "int8_to_sizet should convert INT8_MIN to 0");
+    TEST_ASSERT(errno == ERANGE, "int8_to_sizet should set errno to ERANGE for negative input");
+
+    // Test with maximum int8_t value
+    int8_t max_val = INT8_MAX_VAL;
+    size_t sizet_max = int8_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)INT8_MAX_VAL, "int8_to_sizet should convert INT8_MAX correctly");
+
+    // Test with a negative value
+    int8_t negative_val = -5;
+    errno = 0;
+    size_t sizet_negative = int8_to_sizet(negative_val);
+    TEST_ASSERT(sizet_negative == 0, "int8_to_sizet should convert negative values to 0");
+    TEST_ASSERT(errno == ERANGE, "int8_to_sizet should set errno to ERANGE for negative input");
+
+    // Test with a positive value
+    int8_t positive_val = 10;
+    size_t sizet_positive = int8_to_sizet(positive_val);
+    TEST_ASSERT(sizet_positive == (size_t)positive_val, "int8_to_sizet should convert positive values correctly");
+}
+
 void run_type_conversion_tests(void) {
     test_C_CAST();
     test_M_STATIC_CAST();   
     test_M_REINTERPRET_CAST();
     test_M_CONST_CAST();
     test_M_ToBool();
+    test_int8_to_sizet();
 }
