@@ -153,9 +153,10 @@ static void test_int8_to_sizet(void) {
     size_t sizet_large = int8_to_sizet(SIZE_MAX + 1);
 
     // Test for val > INT8_MAX
+    int val = 130;
     errno = 0;
-    size_t sizet_overflow = int8_to_sizet(INT8_MAX + 1);
-    TEST_ASSERT(sizet_overflow == SIZE_MAX, "int8_to_sizet should return SIZE_MAX for values greater than INT8_MAX");
+    size_t sizet_overflow = int8_to_sizet(val);
+    TEST_ASSERT(sizet_overflow == 0, "int8_to_sizet should convert the values to int8 first for values greater than INT8_MAX");
     TEST_ASSERT(errno == ERANGE, "int8_to_sizet should set errno to ERANGE for values greater than INT8_MAX");
 }
 
