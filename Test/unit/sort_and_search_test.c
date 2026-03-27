@@ -85,7 +85,7 @@ static void test_safe_qsort_context(void) {
     int arr[] = {5, 2, 9, 1, 5, 6};
     size_t arr_size = sizeof(arr) / sizeof(arr[0]);
     sort_ctx ctx = { .descending = 1 };
-    errno_t result = safe_qsort_context(arr, arr_size, 0, compare_ints_ctx, &ctx);
+    errno_t result = safe_qsort_context(arr, arr_size, sizeof(arr[0]), compare_ints_ctx, &ctx);
     TEST_ASSERT(result == 0, "safe_qsort_context correctly sorts the array in descending order");
     printf("Sorted array with context: ");
     for (size_t i = 0; i < arr_size; i++) {
@@ -94,7 +94,16 @@ static void test_safe_qsort_context(void) {
     printf("\n");
 }
 
+static void test_safe_bsearch(void) {
+    int arr[] = {1, 2, 5, 5, 6, 9};
+    size_t arr_size = sizeof(arr) / sizeof(arr[0]);
+    int key = 5;
+    int* found = (int*)safe_bsearch(&key, arr, arr_size, sizeof(arr[0]), compare_ints);
+    TEST_ASSERT(found != NULL && *found == key, "safe_bsearch finds the key in the array");
+}
+
 void run_sort_and_search_tests(void) {
     test_safe_qsort();
     test_safe_qsort_context();
+    test_safe_bsearch();
 }
