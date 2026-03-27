@@ -175,7 +175,7 @@ int compare_strings_ctx(const void* a, const void* b, void* ctx)
     if (context->case_sensitive)
         return strcmp(key, element);
 
-    /* case-insensitive comparison */
+    // case-insensitive comparison 
     while (*key && *element) {
         char c1 = tolower(*key);
         char c2 = tolower(*element);
@@ -210,6 +210,19 @@ static void test_safe_lsearch_context(void) {
     printf("\n");
 }
 
+static void test_safe_lfind(void) {
+    int arr[] = {1, 2, 3, 4, 5};
+    size_t nelp = sizeof(arr) / sizeof(arr[0]);
+    int key = 3;
+    int* found = (int*)safe_lfind(&key, arr, &nelp, sizeof(arr[0]), compare_ints);
+    TEST_ASSERT(found != NULL && *found == key, "safe_lfind finds the key in the array");
+
+    // Test searching for a non-existent key
+    key = 10;
+    found = (int*)safe_lfind(&key, arr, &nelp, sizeof(arr[0]), compare_ints);
+    TEST_ASSERT(found == NULL, "safe_lfind returns NULL for a non-existent key");
+}
+
 void run_sort_and_search_tests(void) {
     test_safe_qsort();
     test_safe_qsort_context();
@@ -217,4 +230,5 @@ void run_sort_and_search_tests(void) {
     test_safe_bsearch_context();
     test_safe_lsearch();
     test_safe_lsearch_context();
+    test_safe_lfind();
 }
