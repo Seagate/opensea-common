@@ -45,7 +45,7 @@ static void test_safe_qsort(void) {
 }
 
 typedef struct {
-    int descending;
+    int descending ;
 } sort_ctx;
 
 static int compare_ints_ctx(const void* a, const void* b, void* context)
@@ -72,7 +72,7 @@ static int compare_ints_ctx(const void* a, const void* b, void* context)
 static void test_safe_qsort_context(void) {
     int arr[] = {5, 2, 9, 1, 5, 6};
     size_t arr_size = sizeof(arr) / sizeof(arr[0]);
-    sort_ctx ctx = { .descending = 0 };
+    sort_ctx ctx = { .descending = 1 };
     errno_t result = safe_qsort_context(arr, arr_size, sizeof(arr[0]), compare_ints_ctx, &ctx);
     TEST_ASSERT(result == 0, "safe_qsort_context correctly sorts the array in descending order");
     printf("Sorted array with context: ");
