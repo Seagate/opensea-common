@@ -180,6 +180,55 @@ static void test_uint8_to_sizet(void) {
     size_t sizet_large = uint8_to_sizet(SIZE_MAX + 1);
 }
 
+static void test_int16_to_sizet(void) {
+    // Test with minimum int16_t value
+    int16_t min_val = INT16_MIN_VAL;
+    errno = 0; 
+    size_t sizet_min = int16_to_sizet(min_val);
+    TEST_ASSERT(sizet_min == 0, "int16_to_sizet should convert INT16_MIN to 0");
+    TEST_ASSERT(errno == ERANGE, "int16_to_sizet should set errno to ERANGE for negative input");
+
+    // Test with maximum int16_t value
+    int16_t max_val = INT16_MAX_VAL;
+    size_t sizet_max = int16_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)INT16_MAX_VAL, "int16_to_sizet should convert INT16_MAX correctly");
+
+    // Test with a negative value
+    int16_t negative_val = -5;
+    errno = 0;
+    size_t sizet_negative = int16_to_sizet(negative_val);
+    TEST_ASSERT(sizet_negative == 0, "int16_to_sizet should convert negative values to 0");
+    TEST_ASSERT(errno == ERANGE, "int16_to_sizet should set errno to ERANGE for negative input");
+
+    // Test with a positive value
+    int16_t positive_val = 10;
+    size_t sizet_positive = int16_to_sizet(positive_val);
+    TEST_ASSERT(sizet_positive == (size_t)positive_val, "int16_to_sizet should convert positive values correctly");
+}
+
+static void test_uint16_to_sizet(void) {
+    // Test with minimum uint16_t value
+    uint16_t min_val = UINT16_MIN_VAL;
+    size_t sizet_min = uint16_to_sizet(min_val);
+    TEST_ASSERT(sizet_min == 0, "uint16_to_sizet should convert UINT16_MIN to 0");
+
+    // Test with maximum uint16_t value
+    uint16_t max_val = UINT16_MAX_VAL;
+    size_t sizet_max = uint16_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)UINT16_MAX_VAL, "uint16_to_sizet should convert UINT16_MAX correctly");
+
+    // Test with a negative value
+    int16_t negative_val = -5;
+    errno = 0;
+    size_t sizet_negative = uint16_to_sizet(negative_val);
+    TEST_ASSERT(sizet_negative == 65531, "uint16_to_sizet should convert negative values to positive values");
+
+    // Test with a positive value
+    int16_t positive_val = 10;
+    size_t sizet_positive = uint16_to_sizet(positive_val);
+    TEST_ASSERT(sizet_positive == (size_t)positive_val, "uint16_to_sizet should convert positive values correctly");
+}
+
 void run_type_conversion_tests(void) {
     test_C_CAST();
     test_M_STATIC_CAST();   
@@ -188,4 +237,6 @@ void run_type_conversion_tests(void) {
     test_M_ToBool();
     test_int8_to_sizet();
     test_uint8_to_sizet();
+    test_int16_to_sizet();
+    test_uint16_to_sizet();
 }
