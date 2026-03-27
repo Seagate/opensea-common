@@ -12,6 +12,16 @@ static int compare_ints(const void* a, const void* b)
     return 0;
 }
 
+static int compare_chars(const void* a, const void* b)
+{
+    char x = *(const char*)a;
+    char y = *(const char*)b;
+
+    if (x < y) return -1;
+    if (x > y) return 1;
+    return 0;
+}
+
 static void test_safe_qsort(void) {
     int arr[] = {5, 2, 9, 1, 5, 6};
     size_t arr_size = sizeof(arr) / sizeof(arr[0]);
@@ -21,6 +31,17 @@ static void test_safe_qsort(void) {
     for (size_t i = 0; i < arr_size; i++) {
         printf("%d ", arr[i]);
     }
+    printf("\n");
+
+    char char_arr[] = {'z', 'a', 'q', 'b', 'm'};
+    size_t char_arr_size = sizeof(char_arr) / sizeof(char_arr[0]);
+    result = safe_qsort(char_arr, char_arr_size, sizeof(char_arr[0]), compare_chars);
+    TEST_ASSERT(result == 0, "safe_qsort correctly sorts the character array");
+    printf("Sorted character array: ");
+    for (size_t i = 0; i < char_arr_size; i++) {
+        printf("%c ", char_arr[i]);
+    }
+    printf("\n");
 }
 
 void run_sort_and_search_tests(void) {
