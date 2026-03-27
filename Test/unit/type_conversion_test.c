@@ -26,6 +26,7 @@ static void test_C_CAST(void) {
     // Cast long long to int
     long long long_long_val = 123456789012345LL;
     int_val = C_CAST(int, long_long_val);
+    printf("C_CAST(long long to int) result: %d\n", int_val);
     TEST_ASSERT(int_val == (int)long_long_val, "C_CAST should convert long long to int correctly");
 }
 
