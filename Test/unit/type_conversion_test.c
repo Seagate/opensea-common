@@ -22,9 +22,13 @@ static void test_C_CAST(void) {
     char char_val = 'A';
     int_val = C_CAST(int, char_val);
     TEST_ASSERT(int_val == 65, "C_CAST should convert char to int correctly");
+
+    // Cast long long to int
+    long long long_long_val = 123456789012345LL;
+    int_val = C_CAST(int, long_long_val);
+    TEST_ASSERT(int_val == (int)long_long_val, "C_CAST should convert long long to int correctly");
 }
 
 void run_type_conversion_tests(void) {
-    printf("Running type conversion tests...\n");
     test_C_CAST();
 }
