@@ -25,7 +25,7 @@ static int compare_chars(const void* a, const void* b)
 static void test_safe_qsort(void) {
     int arr[] = {5, 2, 9, 1, 5, 6};
     size_t arr_size = sizeof(arr) / sizeof(arr[0]);
-    errno_t result = safe_qsort(arr, arr_size, sizeof(arr[0]), NULL);
+    errno_t result = safe_qsort(arr, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(result == 0, "safe_qsort correctly sorts the array");
     printf("Sorted array: ");
     for (size_t i = 0; i < arr_size; i++) {
@@ -44,6 +44,19 @@ static void test_safe_qsort(void) {
     printf("\n");
 }
 
+static void test_safe_qsort_context(void) {
+    int arr[] = {5, 2, 9, 1, 5, 6};
+    size_t arr_size = sizeof(arr) / sizeof(arr[0]);
+    errno_t result = safe_qsort_context(arr, arr_size, sizeof(arr[0]), compare_ints, NULL);
+    TEST_ASSERT(result == 0, "safe_qsort_context correctly sorts the array");
+    printf("Sorted array with context: ");
+    for (size_t i = 0; i < arr_size; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+}
+
 void run_sort_and_search_tests(void) {
     test_safe_qsort();
+    test_safe_qsort_context();
 }
