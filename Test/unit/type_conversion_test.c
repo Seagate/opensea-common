@@ -157,8 +157,7 @@ static void test_uint8_to_sizet(void) {
     // Test with minimum uint8_t value
     uint8_t min_val = UINT8_MIN_VAL;
     size_t sizet_min = uint8_to_sizet(min_val);
-    printf("sizet_min: %zu\n", sizet_min);
-    // TEST_ASSERT(sizet_min == 0, "uint8_to_sizet should convert UINT8_MIN to 0");
+    TEST_ASSERT(sizet_min == 0, "uint8_to_sizet should convert UINT8_MIN to 0");
 
     // Test with maximum uint8_t value
     uint8_t max_val = UINT8_MAX_VAL;
@@ -169,8 +168,7 @@ static void test_uint8_to_sizet(void) {
     int8_t negative_val = -5;
     errno = 0;
     size_t sizet_negative = uint8_to_sizet(negative_val);
-    printf("sizet_negative: %zu\n", sizet_negative);
-    // TEST_ASSERT(sizet_negative == 0, "uint8_to_sizet should convert negative values to 0");
+    TEST_ASSERT(sizet_negative == 251, "uint8_to_sizet should convert negative values to positive values");
 
     // Test with a positive value
     int8_t positive_val = 10;
