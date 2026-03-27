@@ -98,9 +98,8 @@ static void test_safe_bsearch(void) {
     int arr[] = {1, 2, 5, 5, 6, 9};
     size_t arr_size = sizeof(arr) / sizeof(arr[0]);
     int key = 5;
-    int* found = (int*)safe_bsearch(&key, arr, 0, sizeof(arr[0]), compare_ints);
-    // TEST_ASSERT(found != NULL && *found == key, "safe_bsearch finds the key in the array");
-    TEST_ASSERT(found == NULL, "safe_bsearch fails to find the key in the array");
+    int* found = (int*)safe_bsearch(&key, arr, arr_size, sizeof(arr[0]), compare_ints);
+    TEST_ASSERT(found != NULL && *found == key, "safe_bsearch finds the key in the array");
 
     // Test searching for a non-existent key
     key = 10;
@@ -108,8 +107,41 @@ static void test_safe_bsearch(void) {
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL for a non-existent key");
 }
 
+typedef struct {
+    int multiplier;
+} search_ctx;
+
+int compare_with_context(const void* a, const void* b, void* ctx)
+{
+    int key = *(const int*)a;
+    int element = *(const int*)b;
+
+    search_ctx* context = (search_ctx*)ctx;
+
+    key *= context->multiplier;
+
+    if (key < element) return -1;
+    if (key > element) return 1;
+    return 0;
+}
+
+static void test_safe_bsearch_context(void) {
+    int arr[] = {1, 2, 5, 5, 6, 9, 10};
+    size_t arr_size = sizeof(arr) / sizeof(arr[0]);
+    int key = 5;
+    search_ctx ctx = {2};
+    int* found = (int*)safe_bsearch_context(&key, arr, arr_size, sizeof(arr[0]), compare_with_context, &ctx);
+    TEST_ASSERT(found != NULL && *found == key, "safe_bsearch_context finds the key in the array with context");
+
+    // Test searching for a non-existent key
+    key = 11;
+    found = (int*)safe_bsearch_context(&key, arr, arr_size, sizeof(arr[0]), compare_with_context, &ctx);
+    TEST_ASSERT(found == NULL, "safe_bsearch_context returns NULL for a non-existent key with context");
+}
+
 void run_sort_and_search_tests(void) {
     test_safe_qsort();
     test_safe_qsort_context();
     test_safe_bsearch();
+    test_safe_bsearch_context();
 }
