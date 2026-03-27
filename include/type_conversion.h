@@ -55,7 +55,7 @@ extern "C"
 
 //! \def M_CONST_CAST
 //! \brief Macro to perform a const cast.
-//! This can also be used a a type qualifier cast, such as on types marked "volatile"
+//! This can also be used as a type qualifier cast, such as on types marked "volatile"
 //! \param[in] type the type to cast to
 //! \param[in] val the original data you want to convert with a cast
 //! \note For C++ it uses const_cast. In C it uses a C style cast to uintptr_t then to the final type

@@ -65,10 +65,30 @@ static void test_M_REINTERPRET_CAST(void) {
     // Cast char pointer back to int pointer
     int* int_ptr = M_REINTERPRET_CAST(int*, char_ptr);
     TEST_ASSERT(*int_ptr == 0x12345678, "M_REINTERPRET_CAST should reinterpret char pointer back to int pointer correctly");
+
+    // Cast int pointer to void pointer
+    void* void_ptr = M_REINTERPRET_CAST(void*, &int_val);
+    TEST_ASSERT(void_ptr == &int_val, "M_REINTERPRET_CAST should reinterpret int pointer as void pointer correctly");
+}
+
+static void test_M_CONST_CAST(void) {
+    // Cast const int pointer to int pointer
+    const int const_int_val = 42;
+    int* int_ptr = M_CONST_CAST(int*, &const_int_val);
+    TEST_ASSERT(*int_ptr == 42, "M_CONST_CAST should cast const int pointer to int pointer correctly");
+
+    // Cast int pointer back to const int pointer
+    const int* const_int_ptr = M_CONST_CAST(const int*, int_ptr);
+    TEST_ASSERT(*const_int_ptr == 42, "M_CONST_CAST should cast int pointer back to const int pointer correctly");
+
+    volatile int volatile_int_val = 100;
+    int* volatile_int_ptr = M_CONST_CAST(int*, &volatile_int_val);
+    TEST_ASSERT(*volatile_int_ptr == 100, "M_CONST_CAST should cast volatile int pointer to int pointer correctly");
 }
 
 void run_type_conversion_tests(void) {
     test_C_CAST();
     test_M_STATIC_CAST();   
     test_M_REINTERPRET_CAST();
+    test_M_CONST_CAST();
 }
