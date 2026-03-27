@@ -228,7 +228,7 @@ static void test_safe_lfind_context(void) {
     size_t nelp = sizeof(arr) / sizeof(arr[0]);
     char* key = "Banana";
     StringContext ctx = { .case_sensitive = 0 };
-    char** found = (char**)safe_lfind_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
+    char** found = (char**)safe_lfind_context(&key, arr, NULL, sizeof(arr[0]), compare_strings_ctx, &ctx);
     TEST_ASSERT(found != NULL && strcmp(*found, "banana") == 0, "safe_lfind_context finds the key in the array with context");
 
     // Test searching for a non-existent key
