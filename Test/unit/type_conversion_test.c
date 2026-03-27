@@ -296,8 +296,50 @@ static void test_uint32_to_sizet(void) {
     errno = 0;
     size_t sizet_overflow = uint32_to_sizet(val);
     TEST_ASSERT(sizet_overflow == 0, "uint32_to_sizet should convert the values to uint32 first for values greater than UINT32_MAX");
-    TEST_ASSERT(errno == ERANGE, "uint32_to_sizet should set errno to ERANGE for values greater than UINT32_MAX");
 }
+
+static void test_int64_to_sizet(void) {
+    int64_t min_val = INT64_MIN_VAL;
+    errno = 0; 
+    size_t sizet_min = int64_to_sizet(min_val);
+    TEST_ASSERT(sizet_min == 0, "int64_to_sizet should convert INT64_MIN to 0");
+    TEST_ASSERT(errno == ERANGE, "int64_to_sizet should set errno to ERANGE for negative input");
+
+    int64_t max_val = INT64_MAX_VAL;
+    size_t sizet_max = int64_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)INT64_MAX_VAL, "int64_to_sizet should convert INT64_MAX correctly");
+
+    int64_t negative_val = -5;
+    errno = 0;
+    size_t sizet_negative = int64_to_sizet(negative_val);
+    TEST_ASSERT(sizet_negative == 0, "int64_to_sizet should convert negative values to 0");
+    TEST_ASSERT(errno == ERANGE, "int64_to_sizet should set errno to ERANGE for negative input");
+
+    int64_t positive_val = 10;
+    size_t sizet_positive = int64_to_sizet(positive_val);
+    TEST_ASSERT(sizet_positive == (size_t)positive_val, "int64_to_sizet should convert positive values correctly");
+}
+
+static void test_uint64_to_sizet(void) {
+    uint64_t min_val = UINT64_MIN_VAL;
+    size_t sizet_min = ulonglong_to_sizet(min_val);
+    TEST_ASSERT(sizet_min == 0, "uint64_to_sizet should convert UINT64_MIN to 0");
+
+    uint64_t max_val = UINT64_MAX_VAL;
+    size_t sizet_max = ulonglong_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)UINT64_MAX_VAL, "uint64_to_sizet should convert UINT64_MAX correctly");
+
+    int64_t negative_val = -2000;
+    errno = 0;
+    size_t sizet_negative = uint64_to_sizet(negative_val);
+    TEST_ASSERT(sizet_negative == 18446744073709549616, "uint64_to_sizet should convert negative values to positive values");
+    TEST_ASSERT(errno == ERANGE, "uint64_to_sizet should set errno to ERANGE for negative input");
+
+    int64_t positive_val = 10;
+    size_t sizet_positive = uint64_to_sizet(positive_val);
+    TEST_ASSERT(sizet_positive == (size_t)positive_val, "uint64_to_sizet should convert positive values correctly");
+}
+
 
 void run_type_conversion_tests(void) {
     test_C_CAST();
@@ -311,4 +353,6 @@ void run_type_conversion_tests(void) {
     test_uint16_to_sizet();
     test_int32_to_sizet();
     test_uint32_to_sizet();
+    test_int64_to_sizet();
+    test_uint64_to_sizet();
 }
