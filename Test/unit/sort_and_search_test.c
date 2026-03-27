@@ -131,6 +131,7 @@ static void test_safe_bsearch_context(void) {
     int key = 5;
     search_ctx ctx = {2};
     int* found = (int*)safe_bsearch_context(&key, arr, arr_size, sizeof(arr[0]), compare_with_context, &ctx);
+    printf("found: %d\n", found ? *found : -1);
     TEST_ASSERT(found != NULL && *found == key, "safe_bsearch_context finds the key in the array with context");
 
     // Test searching for a non-existent key
