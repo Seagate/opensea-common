@@ -1,6 +1,9 @@
 #include"../framework/test_framework.h"
 #include"../../include/sort_and_search.h"
 #include"../testConstants.h"
+#include <string.h>
+#include <ctype.h>
+
 
 static int compare_ints(const void* a, const void* b)
 {
@@ -188,7 +191,7 @@ int compare_strings_ctx(const void* a, const void* b, void* ctx)
 }
 
 static void test_safe_lsearch_context(void) {
-    const char* arr[] = {"apple", "banana", "cherry"};
+    char* arr[10] = {"apple", "banana", "cherry"};
     size_t nelp = sizeof(arr) / sizeof(arr[0]);
     const char* key = "Banana";
     StringContext ctx = { .case_sensitive = 0 };
