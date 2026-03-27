@@ -148,11 +148,12 @@ static void test_int8_to_sizet(void) {
     size_t sizet_positive = int8_to_sizet(positive_val);
     TEST_ASSERT(sizet_positive == (size_t)positive_val, "int8_to_sizet should convert positive values correctly");
 
-    // Test with a value greater than SIZE_MAX
+    // Test with a value greater than SIZE_MAX - 
     errno = 0;
     size_t sizet_large = int8_to_sizet(SIZE_MAX + 1);
     printf("SIZE_MAX: %zu\n", SIZE_MAX);
     printf("sizet_large: %zu\n", sizet_large);
+    printf("errno: %d\n", errno);
     TEST_ASSERT(sizet_large == SIZE_MAX, "int8_to_sizet should set to SIZE_MAX for values greater than SIZE_MAX");
     TEST_ASSERT(errno == ERANGE, "int8_to_sizet should set errno to ERANGE for values greater than SIZE_MAX");
 }
