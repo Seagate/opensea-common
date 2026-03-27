@@ -192,7 +192,7 @@ int compare_strings_ctx(const void* a, const void* b, void* ctx)
 
 static void test_safe_lsearch_context(void) {
     char* arr[10] = {"apple", "banana", "cherry"};
-    size_t nelp = sizeof(arr) / sizeof(arr[0]);
+    size_t nelp = 3;
     char* key = "Banana";
     StringContext ctx = { .case_sensitive = 0 };
     char** found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
