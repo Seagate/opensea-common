@@ -9,6 +9,7 @@ void run_io_utils_tests(void);
 void run_memory_safety_tests(void);
 void run_pattern_utils_tests(void);
 void run_sort_and_search_tests(void);
+void run_type_conversion_tests(void);
 
 int main(void)
 {
@@ -22,6 +23,7 @@ int main(void)
     run_memory_safety_tests();
     run_pattern_utils_tests();
     run_sort_and_search_tests();
+    run_type_conversion_tests();
     
     // Print summary of test results
     print_test_summary();
