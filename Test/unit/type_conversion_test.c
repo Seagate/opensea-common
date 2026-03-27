@@ -1,6 +1,7 @@
 #include"../framework/test_framework.h"
 #include"../../include/type_conversion.h"
 #include"../testConstants.h"
+#include <limits.h>
 
 static void test_C_CAST(void) {
     // Cast int to double
@@ -33,6 +34,11 @@ static void test_C_CAST(void) {
     void *ptr = C_CAST(void*, &x);
     int *int_ptr = C_CAST(int*, ptr);
     TEST_ASSERT(*int_ptr == 10, "C_CAST should cast void* back to int*");
+
+    // Test truncation when casting a large long long to int
+    long long big = LLONG_MAX;
+    int truncated = C_CAST(int, big);
+    TEST_ASSERT(truncated == (int)big, "C_CAST handles truncation correctly");
 }
 
 static void test_M_STATIC_CAST(void) {
