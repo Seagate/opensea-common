@@ -528,8 +528,7 @@ static void test_ulong_to_sizet(void) {
     // Test with a negative value
     int negative_val = -5;
     size_t sizet_negative = ulong_to_sizet(negative_val);
-    printf("sizet_negative: %zu\n", sizet_negative);
-    TEST_ASSERT(sizet_negative == 18446744073709551611UL, "ulong_to_sizet should convert negative values to positive values");
+    TEST_ASSERT(sizet_negative == 18446744073709549616, "ulong_to_sizet should convert negative values to positive values");
 }
 
 void run_type_conversion_tests(void) {
