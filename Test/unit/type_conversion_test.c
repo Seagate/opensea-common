@@ -655,5 +655,5 @@ void run_type_conversion_tests(void) {
     test_ulong_to_sizet();
     test_longlong_to_sizet();
     test_ulonglong_to_sizet();
-    // test_to_sizet();
+    test_to_sizet();
 }
