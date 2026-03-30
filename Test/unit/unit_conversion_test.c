@@ -48,15 +48,15 @@ static void test_metric_Unit_Convert() {
     TEST_ASSERT(strcmp(metricUnit, "EB") == 0, "Expected metricUnit is EB");
     TEST_ASSERT(byteValue == 6, "Expected byteValue is 6");
 
-    byteValue = (double)7000000000000000000000;
+    byteValue = 7e21;
     result = metric_Unit_Convert(&byteValue, &metricUnit);
-    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 7000000000000000000000 B to 7ZB");
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 7e21 B to 7ZB");
     TEST_ASSERT(strcmp(metricUnit, "ZB") == 0, "Expected metricUnit is ZB");
     TEST_ASSERT(byteValue == 7, "Expected byteValue is 7");
 
-    byteValue = (double)8000000000000000000000000;
+    byteValue = 8e24;
     result = metric_Unit_Convert(&byteValue, &metricUnit);
-    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 8000000000000000000000000 B to 8YB");
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 8e24 B to 8YB");
     TEST_ASSERT(strcmp(metricUnit, "YB") == 0, "Expected metricUnit is YB");
     TEST_ASSERT(byteValue == 8, "Expected byteValue is 8");
 }
