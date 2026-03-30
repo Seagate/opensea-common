@@ -2,7 +2,6 @@
 #include"../../include/math_utils.h"
 #include <math.h>
 #include"../testConstants.h"
-#define EPSILON 1e-5
 
 static void test_M_Min(void) {
     TEST_ASSERT_EQ(M_Min(INT_MIN, INT_MAX), INT_MIN, "M_Min of INT_MIN and INT_MAX");

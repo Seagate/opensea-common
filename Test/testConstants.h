@@ -130,5 +130,6 @@
 #define NIBBLE0         0xF
 #define NIBBLE1         0xE
 #define MIN_VALUE       (-1)
+#define EPSILON         1e-5
 
 #endif // TEST_CONSTANTS_H 
