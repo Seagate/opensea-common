@@ -387,6 +387,54 @@ static void test_uchar_to_sizet(void) {
     TEST_ASSERT(sizet_negative == 251, "uchar_to_sizet should convert negative values to positive values");
 }
 
+static void test_short_to_sizet(void) {
+    // Test with minimum short value
+    short min_val = SHRT_MIN;
+    errno = 0; 
+    size_t sizet_min = short_to_sizet(min_val);
+    TEST_ASSERT(sizet_min == 0, "short_to_sizet should convert SHRT_MIN to 0");
+    TEST_ASSERT(errno == ERANGE, "short_to_sizet should set errno to ERANGE for negative input");
+
+    // Test with maximum short value
+    short max_val = SHRT_MAX;
+    size_t sizet_max = short_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)SHRT_MAX, "short_to_sizet should convert SHRT_MAX correctly");
+
+    // Test with a negative value
+    short negative_val = -5;
+    errno = 0;
+    size_t sizet_negative = short_to_sizet(negative_val);
+    TEST_ASSERT(sizet_negative == 0, "short_to_sizet should convert negative values to 0");
+    TEST_ASSERT(errno == ERANGE, "short_to_sizet should set errno to ERANGE for negative input");
+
+    // Test with a positive value
+    short positive_val = 10;
+    size_t sizet_positive = short_to_sizet(positive_val);
+    TEST_ASSERT(sizet_positive == (size_t)positive_val, "short_to_sizet should convert positive values correctly");
+}
+
+static void test_ushort_to_sizet(void) {
+    // Test with minimum unsigned short value
+    unsigned short min_val = 0;
+    size_t sizet_min = ushort_to_sizet(min_val);
+    TEST_ASSERT(sizet_min == 0, "ushort_to_sizet should convert USHRT_MIN to 0");
+
+    // Test with maximum unsigned short value
+    unsigned short max_val = USHRT_MAX;
+    size_t sizet_max = ushort_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)USHRT_MAX, "ushort_to_sizet should convert USHRT_MAX correctly");
+
+    // Test with a positive value
+    unsigned short positive_val = 10;
+    size_t sizet_positive = ushort_to_sizet(positive_val);
+    TEST_ASSERT(sizet_positive == (size_t)positive_val, "ushort_to_sizet should convert positive values correctly");
+
+    // Test with a negative value
+    int negative_val = -5;
+    size_t sizet_negative = ushort_to_sizet(negative_val);
+    TEST_ASSERT(sizet_negative == 65531, "ushort_to_sizet should convert negative values to positive values");
+}
+
 void run_type_conversion_tests(void) {
     test_C_CAST();
     test_M_STATIC_CAST();   
@@ -403,4 +451,6 @@ void run_type_conversion_tests(void) {
     test_uint64_to_sizet();
     test_char_to_sizet();
     test_uchar_to_sizet();
+    test_short_to_sizet();
+    test_ushort_to_sizet();
 }
