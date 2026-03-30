@@ -103,9 +103,9 @@ static void test_capacity_Unit_Convert() {
 
     byteValue = (double)2073741824;
     result = capacity_Unit_Convert(&byteValue, &capacityUnit);
-    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2073741824 B to 1GiB");
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2073741824 B to 1.9313225746154785GiB");
     TEST_ASSERT(strcmp(capacityUnit, "GiB") == 0, "Expected capacityUnit is GiB");
-    TEST_ASSERT(byteValue == 1.9313225746154785, "Expected byteValue is 1");
+    TEST_ASSERT(byteValue == 1.9313225746154785, "Expected byteValue is 1.9313225746154785");
 
     byteValue = (double)1099511627776;
     result = capacity_Unit_Convert(&byteValue, &capacityUnit);
@@ -127,9 +127,10 @@ static void test_capacity_Unit_Convert() {
 
     byteValue = 2e21;
     result = capacity_Unit_Convert(&byteValue, &capacityUnit);
-    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2e21 B to 1.818989403545856ZiB");
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2e21 B to 1.694066ZiB");
     TEST_ASSERT(strcmp(capacityUnit, "ZiB") == 0, "Expected capacityUnit is ZiB");
-    TEST_ASSERT(byteValue == 1.694066, "Expected byteValue is 1.6940658945");
+    printf("byteValue: %f\n", byteValue);
+    TEST_ASSERT(byteValue == 1.694066, "Expected byteValue is 1.694066");
 
     byteValue = 2e24;
     result = capacity_Unit_Convert(&byteValue, &capacityUnit);
