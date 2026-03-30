@@ -191,7 +191,6 @@ static void test_fahrenheit_To_celsius(void) {
 
     fahrenheit = -459;
     celsius = fahrenheit_To_celsius(&fahrenheit);
-    printf("celsius: %d\n", celsius);
     TEST_ASSERT(celsius == -272, "Expected -459°F to be -272°C");
 }
 
@@ -220,6 +219,7 @@ static void test_fahrenheit_To_Kelvin(void) {
 
     fahrenheit = -459;
     kelvin = fahrenheit_To_Kelvin(&fahrenheit);
+    printf("kelvin: %f\n", kelvin);
     TEST_ASSERT(kelvin == 0, "Expected -459°F to be 0K");
 }
 
