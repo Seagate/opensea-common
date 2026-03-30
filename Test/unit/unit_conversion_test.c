@@ -79,6 +79,36 @@ static void test_metric_Unit_Convert() {
     TEST_ASSERT(result == BAD_PARAMETER, "Expected BAD_PARAMETER for NULL *metricUnit");
 }
 
+static void test_capacity_Unit_Convert() {
+    double byteValue = (double)8;
+    char capacityUnitBuffer[UNIT_STRING_LENGTH];
+    char* capacityUnit = capacityUnitBuffer;
+
+    eReturnValues result = capacity_Unit_Convert(&byteValue, &capacityUnit);
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 8 B to 8B");
+    TEST_ASSERT(strcmp(capacityUnit, "B") == 0, "Expected capacityUnit is B");
+    TEST_ASSERT(byteValue == 8, "Expected byteValue is 8");
+
+    byteValue = (double)1024;
+    result = capacity_Unit_Convert(&byteValue, &capacityUnit);
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 1024 B to 1KiB");
+    TEST_ASSERT(strcmp(capacityUnit, "KiB") == 0, "Expected capacityUnit is KiB");
+    TEST_ASSERT(byteValue == 1, "Expected byteValue is 1");
+
+    byteValue = (double)1048576;
+    result = capacity_Unit_Convert(&byteValue, &capacityUnit);
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 1048576 B to 1MiB");
+    TEST_ASSERT(strcmp(capacityUnit, "MiB") == 0, "Expected capacityUnit is MiB");
+    TEST_ASSERT(byteValue == 1, "Expected byteValue is 1");
+
+    byteValue = (double)2073741824;
+    result = capacity_Unit_Convert(&byteValue, &capacityUnit);
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2073741824 B to 1GiB");
+    TEST_ASSERT(strcmp(capacityUnit, "GiB") == 0, "Expected capacityUnit is GiB");
+    TEST_ASSERT(byteValue == 1, "Expected byteValue is 1");
+}
+
 void run_unit_conversion_tests() {
     test_metric_Unit_Convert();
+    test_capacity_Unit_Convert();
 }
