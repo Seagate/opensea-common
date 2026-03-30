@@ -435,6 +435,54 @@ static void test_ushort_to_sizet(void) {
     TEST_ASSERT(sizet_negative == 65531, "ushort_to_sizet should convert negative values to positive values");
 }
 
+static void test_int_to_sizet(void) {
+    // Test with minimum int value
+    int min_val = INT_MIN;
+    errno = 0; 
+    size_t sizet_min = int_to_sizet(min_val);
+    TEST_ASSERT(sizet_min == 0, "int_to_sizet should convert INT_MIN to 0");
+    TEST_ASSERT(errno == ERANGE, "int_to_sizet should set errno to ERANGE for negative input");
+
+    // Test with maximum int value
+    int max_val = INT_MAX;
+    size_t sizet_max = int_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)INT_MAX, "int_to_sizet should convert INT_MAX correctly");
+
+    // Test with a negative value
+    int negative_val = -5;
+    errno = 0;
+    size_t sizet_negative = int_to_sizet(negative_val);
+    TEST_ASSERT(sizet_negative == 0, "int_to_sizet should convert negative values to 0");
+    TEST_ASSERT(errno == ERANGE, "int_to_sizet should set errno to ERANGE for negative input");
+
+    // Test with a positive value
+    int positive_val = 10;
+    size_t sizet_positive = int_to_sizet(positive_val);
+    TEST_ASSERT(sizet_positive == (size_t)positive_val, "int_to_sizet should convert positive values correctly");
+}
+
+static void test_uint_to_sizet(void) {
+    // Test with minimum unsigned int value
+    unsigned int min_val = 0;
+    size_t sizet_min = uint_to_sizet(min_val);
+    TEST_ASSERT(sizet_min == 0, "uint_to_sizet should convert UINT_MIN to 0");
+
+    // Test with maximum unsigned int value
+    unsigned int max_val = UINT_MAX;
+    size_t sizet_max = uint_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)UINT_MAX, "uint_to_sizet should convert UINT_MAX correctly");
+
+    // Test with a positive value
+    unsigned int positive_val = 10;
+    size_t sizet_positive = uint_to_sizet(positive_val);
+    TEST_ASSERT(sizet_positive == (size_t)positive_val, "uint_to_sizet should convert positive values correctly");
+
+    // Test with a negative value
+    int negative_val = -5;
+    size_t sizet_negative = uint_to_sizet(negative_val);
+    TEST_ASSERT(sizet_negative == 4294967291, "uint_to_sizet should convert negative values to positive values");
+}
+
 void run_type_conversion_tests(void) {
     test_C_CAST();
     test_M_STATIC_CAST();   
@@ -453,4 +501,6 @@ void run_type_conversion_tests(void) {
     test_uchar_to_sizet();
     test_short_to_sizet();
     test_ushort_to_sizet();
+    test_int_to_sizet();
+    test_uint_to_sizet();
 }
