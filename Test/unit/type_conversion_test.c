@@ -669,6 +669,7 @@ static void test_get_Decimal_From_4_byte_Float(void) {
     double result;
     get_Decimal_From_4_byte_Float(floatVal, &result);
     printf("result for INT32_MAX: %f\n", result);
+    printf("Expected result for INT32_MAX: %f\n", (double)INT32_MAX);
     TEST_ASSERT(result == (double)INT32_MAX, "get_Decimal_From_4_byte_Float should convert INT32_MAX correctly");
 }
 
