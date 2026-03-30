@@ -158,7 +158,26 @@ static void test_capacity_Unit_Convert() {
     TEST_ASSERT(result == BAD_PARAMETER, "Expected BAD_PARAMETER for NULL *capacityUnit");
 }
 
+static void test_celsius_To_Fahrenheit(void) {
+    int16_t celsius = 0;
+    int16_t fahrenheit = celsius_To_Fahrenheit(&celsius);
+    TEST_ASSERT(fahrenheit == 32, "Expected 0°C to be 32°F");
+
+    celsius = 100;
+    fahrenheit = celsius_To_Fahrenheit(&celsius);
+    TEST_ASSERT(fahrenheit == 212, "Expected 100°C to be 212°F");
+
+    celsius = -40;
+    fahrenheit = celsius_To_Fahrenheit(&celsius);
+    TEST_ASSERT(fahrenheit == -40, "Expected -40°C to be -40°F");
+
+    celsius = -273;
+    fahrenheit = celsius_To_Fahrenheit(&celsius);
+    TEST_ASSERT(fahrenheit == -459, "Expected -273°C to be -459°F");
+}
+
 void run_unit_conversion_tests() {
     test_metric_Unit_Convert();
     test_capacity_Unit_Convert();
+    test_celsius_To_Fahrenheit();
 }
