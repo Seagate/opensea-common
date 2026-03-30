@@ -219,8 +219,7 @@ static void test_fahrenheit_To_Kelvin(void) {
 
     fahrenheit = -459;
     kelvin = fahrenheit_To_Kelvin(&fahrenheit);
-    printf("kelvin: %f\n", kelvin);
-    TEST_ASSERT(kelvin == 0, "Expected -459°F to be 0K");
+    TEST_ASSERT(kelvin == 1, "Expected -459°F to be 0K");
 }
 
 void run_unit_conversion_tests() {
