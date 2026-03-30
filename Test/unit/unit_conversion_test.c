@@ -191,6 +191,7 @@ static void test_fahrenheit_To_celsius(void) {
 
     fahrenheit = -459;
     celsius = fahrenheit_To_celsius(&fahrenheit);
+    printf("celsius: %d\n", celsius);
     TEST_ASSERT(celsius == -273, "Expected -459°F to be -273°C");
 }
 
