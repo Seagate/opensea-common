@@ -579,6 +579,58 @@ static void test_ulonglong_to_sizet(void) {
     TEST_ASSERT(sizet_negative == 18446744073709551611, "ulonglong_to_sizet should convert negative values to positive values");
 }
 
+static void test_to_sizet(void) {
+    // Test with a valid char value
+    char char_val = 'A';
+    size_t sizet_char = to_sizet(char_val);
+    TEST_ASSERT(sizet_char == 65, "to_sizet should convert char to size_t correctly using to_sizet");
+
+    // Test with a valid unsigned char value
+    unsigned char uchar_val = 'B';
+    size_t sizet_uchar = to_sizet(uchar_val);
+    TEST_ASSERT(sizet_uchar == 66, "to_sizet should convert unsigned char to size_t correctly using to_sizet");
+
+    // Test with a valid short value
+    short short_val = 123;
+    size_t sizet_short = to_sizet(short_val);
+    TEST_ASSERT(sizet_short == 123, "to_sizet should convert short to size_t correctly using to_sizet");
+
+    // Test with a valid unsigned short value
+    unsigned short ushort_val = 456;
+    size_t sizet_ushort = to_sizet(ushort_val);
+    TEST_ASSERT(sizet_ushort == 456, "to_sizet should convert unsigned short to size_t correctly using to_sizet");
+
+    // Test with a valid int value
+    int int_val = 42;
+    size_t sizet_int = to_sizet(int_val);
+    TEST_ASSERT(sizet_int == 42, "to_sizet should convert int to size_t correctly using to_sizet");
+
+    // Test with a valid unsigned int value
+    unsigned int uint_val = 100;
+    size_t sizet_uint = to_sizet(uint_val);
+    TEST_ASSERT(sizet_uint == 100, "to_sizet should convert unsigned int to size_t correctly using to_sizet");
+
+    // Test with a valid long value
+    long long_val = 123456789L;
+    size_t sizet_long = to_sizet(long_val);
+    TEST_ASSERT(sizet_long == 123456789, "to_sizet should convert long to size_t correctly using to_sizet");
+
+    // Test with a valid unsigned long value
+    unsigned long ulong_val = 987654321UL;
+    size_t sizet_ulong = to_sizet(ulong_val);
+    TEST_ASSERT(sizet_ulong == 987654321, "to_sizet should convert unsigned long to size_t correctly using to_sizet");
+
+    // Test with a valid long long value
+    long long long_long_val = 123456789012345LL;
+    size_t sizet_long_long = to_sizet(long_long_val);
+    TEST_ASSERT(sizet_long_long == 123456789012345ULL, "to_sizet should convert long long to size_t correctly using to_sizet");
+
+    // Test with a valid unsigned long long value
+    unsigned long long ulong_long_val = 987654321098765ULL;
+    size_t sizet_ulong_long = to_sizet(ulong_long_val);
+    TEST_ASSERT(sizet_ulong_long == 987654321098765ULL, "to_sizet should convert unsigned long long to size_t correctly using to_sizet");
+}
+
 void run_type_conversion_tests(void) {
     test_C_CAST();
     test_M_STATIC_CAST();   
@@ -603,4 +655,5 @@ void run_type_conversion_tests(void) {
     test_ulong_to_sizet();
     test_longlong_to_sizet();
     test_ulonglong_to_sizet();
+    test_to_sizet();
 }
