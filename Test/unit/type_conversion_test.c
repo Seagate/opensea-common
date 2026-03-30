@@ -581,7 +581,7 @@ static void test_ulonglong_to_sizet(void) {
 
 static void test_to_sizet(void) {
     // Test with a valid char value
-    char char_val = CHAR_MAX;
+    signed char char_val = CHAR_MAX;
     size_t sizet_char = to_sizet(char_val);
     TEST_ASSERT(sizet_char == (size_t)CHAR_MAX, "to_sizet should convert char to size_t correctly using to_sizet");
 
