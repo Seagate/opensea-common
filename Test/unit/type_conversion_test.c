@@ -648,6 +648,20 @@ static void test_is_size_t_max(void) {
     TEST_ASSERT(is_max == false, "is_size_t_max should return false for values greater than SIZE_MAX");
 }
 
+static void test_convert_128bit_to_double(void) {
+    int array[16] = {0};
+    double result = convert_128bit_to_double(array);
+    TEST_ASSERT(result == 0.0, "convert_128bit_to_double should convert an array of zeros to 0.0");
+
+    array[15] = 1;
+    double result = convert_128bit_to_double(array);
+    TEST_ASSERT(result == 1.0, "128-bit value 1 should convert correctly");
+
+    array[15] = 255;
+    double result = convert_128bit_to_double(array);
+    TEST_ASSERT(result == 255.0, "128-bit value 255 should convert correctly");
+}
+
 void run_type_conversion_tests(void) {
     test_C_CAST();
     test_M_STATIC_CAST();   
@@ -674,4 +688,5 @@ void run_type_conversion_tests(void) {
     test_ulonglong_to_sizet();
     test_to_sizet();
     test_is_size_t_max();
+    test_convert_128bit_to_double();
 }
