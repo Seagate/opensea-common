@@ -664,6 +664,14 @@ static void test_convert_128bit_to_double(void) {
     TEST_ASSERT(result == 255.0, "128-bit value 255 should convert correctly");
 }
 
+static void test_get_Decimal_From_4_byte_Float(void) {
+    uint32_t floatVal = INT32_MAX; 
+    double result;
+    get_Decimal_From_4_byte_Float(floatVal, &result);
+    printf("result for INT32_MAX: %f\n", result);
+    TEST_ASSERT(result == (double)INT32_MAX, "get_Decimal_From_4_byte_Float should convert INT32_MAX correctly");
+}
+
 void run_type_conversion_tests(void) {
     test_C_CAST();
     test_M_STATIC_CAST();   
@@ -691,4 +699,5 @@ void run_type_conversion_tests(void) {
     test_to_sizet();
     test_is_size_t_max();
     test_convert_128bit_to_double();
+    test_get_Decimal_From_4_byte_Float();
 }
