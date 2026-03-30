@@ -528,7 +528,55 @@ static void test_ulong_to_sizet(void) {
     // Test with a negative value
     int negative_val = -5;
     size_t sizet_negative = ulong_to_sizet(negative_val);
-    TEST_ASSERT(sizet_negative == 18446744073709549616, "ulong_to_sizet should convert negative values to positive values");
+    TEST_ASSERT(sizet_negative == 18446744073709551611, "ulong_to_sizet should convert negative values to positive values");
+}
+
+static void test_longlong_to_sizet(void) {
+    // Test with minimum long long value
+    long long min_val = LLONG_MIN;
+    errno = 0; 
+    size_t sizet_min = longlong_to_sizet(min_val);
+    TEST_ASSERT(sizet_min == 0, "longlong_to_sizet should convert LLONG_MIN to 0");
+    TEST_ASSERT(errno == ERANGE, "longlong_to_sizet should set errno to ERANGE for negative input");
+
+    // Test with maximum long long value
+    long long max_val = LLONG_MAX;
+    size_t sizet_max = longlong_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)LLONG_MAX, "longlong_to_sizet should convert LLONG_MAX correctly");
+
+    // Test with a negative value
+    long long negative_val = -5;
+    errno = 0;
+    size_t sizet_negative = longlong_to_sizet(negative_val);
+    TEST_ASSERT(sizet_negative == 0, "longlong_to_sizet should convert negative values to 0");
+    TEST_ASSERT(errno == ERANGE, "longlong_to_sizet should set errno to ERANGE for negative input");
+
+    // Test with a positive value
+    long long positive_val = 10;
+    size_t sizet_positive = longlong_to_sizet(positive_val);
+    TEST_ASSERT(sizet_positive == (size_t)positive_val, "longlong_to_sizet should convert positive values correctly");
+}
+
+static void test_ulonglong_to_sizet(void) {
+    // Test with minimum unsigned long long value
+    unsigned long long min_val = 0;
+    size_t sizet_min = ulonglong_to_sizet(min_val);
+    TEST_ASSERT(sizet_min == 0, "ulonglong_to_sizet should convert ULLONG_MIN to 0");
+
+    // Test with maximum unsigned long long value
+    unsigned long long max_val = ULLONG_MAX;
+    size_t sizet_max = ulonglong_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)ULLONG_MAX, "ulonglong_to_sizet should convert ULLONG_MAX correctly");
+
+    // Test with a positive value
+    unsigned long long positive_val = 10;
+    size_t sizet_positive = ulonglong_to_sizet(positive_val);
+    TEST_ASSERT(sizet_positive == (size_t)positive_val, "ulonglong_to_sizet should convert positive values correctly");
+
+    // Test with a negative value
+    int64_t negative_val = -5;
+    size_t sizet_negative = ulonglong_to_sizet(negative_val);
+    TEST_ASSERT(sizet_negative == 18446744073709551611, "ulonglong_to_sizet should convert negative values to positive values");
 }
 
 void run_type_conversion_tests(void) {
