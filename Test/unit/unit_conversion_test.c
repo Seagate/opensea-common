@@ -106,6 +106,36 @@ static void test_capacity_Unit_Convert() {
     TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2073741824 B to 1GiB");
     TEST_ASSERT(strcmp(capacityUnit, "GiB") == 0, "Expected capacityUnit is GiB");
     TEST_ASSERT(byteValue == 1.9313225746154785, "Expected byteValue is 1");
+
+    byteValue = (double)1099511627776;
+    result = capacity_Unit_Convert(&byteValue, &capacityUnit);
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 1099511627776 B to 1TiB");
+    TEST_ASSERT(strcmp(capacityUnit, "TiB") == 0, "Expected capacityUnit is TiB");
+    TEST_ASSERT(byteValue == 1, "Expected byteValue is 1");
+
+    byteValue = (double)1125899906842624;
+    result = capacity_Unit_Convert(&byteValue, &capacityUnit);
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 1125899906842624 B to 1PiB");
+    TEST_ASSERT(strcmp(capacityUnit, "PiB") == 0, "Expected capacityUnit is PiB");
+    TEST_ASSERT(byteValue == 1, "Expected byteValue is 1");
+
+    byteValue = (double)1152921504606846976;
+    result = capacity_Unit_Convert(&byteValue, &capacityUnit);
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 1152921504606846976 B to 1EiB");
+    TEST_ASSERT(strcmp(capacityUnit, "EiB") == 0, "Expected capacityUnit is EiB");
+    TEST_ASSERT(byteValue == 1, "Expected byteValue is 1");
+
+    byteValue = 2e21;
+    result = capacity_Unit_Convert(&byteValue, &capacityUnit);
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2e21 B to 1.818989403545856ZiB");
+    TEST_ASSERT(strcmp(capacityUnit, "ZiB") == 0, "Expected capacityUnit is ZiB");
+    TEST_ASSERT(byteValue == 1.818989403545856, "Expected byteValue is 1.818989403545856");
+
+    byteValue = 2e24;
+    result = capacity_Unit_Convert(&byteValue, &capacityUnit);
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2e24 B to 1.4551915228366852YiB");
+    TEST_ASSERT(strcmp(capacityUnit, "YiB") == 0, "Expected capacityUnit is YiB");
+    TEST_ASSERT(byteValue == 1.4551915228366852, "Expected byteValue is 1.4551915228366852");
 }
 
 void run_unit_conversion_tests() {
