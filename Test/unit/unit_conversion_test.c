@@ -130,12 +130,14 @@ static void test_capacity_Unit_Convert() {
     TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2e21 B to 1.818989403545856ZiB");
     TEST_ASSERT(strcmp(capacityUnit, "ZiB") == 0, "Expected capacityUnit is ZiB");
     TEST_ASSERT(byteValue == 1.6940658945, "Expected byteValue is 1.6940658945");
+    printf("Converted 2e21 B to %f %s\n", byteValue, capacityUnit);
 
     byteValue = 2e24;
     result = capacity_Unit_Convert(&byteValue, &capacityUnit);
     TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2e24 B to 1.4551915228366852YiB");
     TEST_ASSERT(strcmp(capacityUnit, "ZiB") == 0, "Expected capacityUnit is ZiB");
     TEST_ASSERT(byteValue == 1694.0658945, "Expected byteValue is 1694.0658945");
+    printf("Converted 2e24 B to %f %s\n", byteValue, capacityUnit);
 }
 
 void run_unit_conversion_tests() {
