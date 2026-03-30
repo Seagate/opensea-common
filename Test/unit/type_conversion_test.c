@@ -631,6 +631,23 @@ static void test_to_sizet(void) {
     TEST_ASSERT(sizet_ulong_long == (size_t)ULLONG_MAX, "to_sizet should convert unsigned long long to size_t correctly using to_sizet");
 }
 
+static void test_is_size_t_max(void) {
+    // Test with a value equal to SIZE_MAX
+    size_t max_val = SIZE_MAX;
+    bool is_max = is_size_t_max(max_val);
+    TEST_ASSERT(is_max == true, "is_size_t_max should return true for SIZE_MAX");
+
+    // Test with a value less than SIZE_MAX
+    size_t less_than_max = SIZE_MAX - 1;
+    is_max = is_size_t_max(less_than_max);
+    TEST_ASSERT(is_max == false, "is_size_t_max should return false for values less than SIZE_MAX");
+
+    // Test with a value greater than SIZE_MAX - Not possible for real systems as SIZE_MAX is typically the maximum value for size_t.  
+    size_t greater_than_max = SIZE_MAX + 1;
+    is_max = is_size_t_max(greater_than_max);
+    TEST_ASSERT(is_max == false, "is_size_t_max should return false for values greater than SIZE_MAX");
+}
+
 void run_type_conversion_tests(void) {
     test_C_CAST();
     test_M_STATIC_CAST();   
@@ -656,4 +673,5 @@ void run_type_conversion_tests(void) {
     test_longlong_to_sizet();
     test_ulonglong_to_sizet();
     test_to_sizet();
+    test_is_size_t_max();
 }
