@@ -138,6 +138,11 @@ static void test_capacity_Unit_Convert() {
     TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2e24 B to 1.4551915228366852YiB");
     // TEST_ASSERT(strcmp(capacityUnit, "YiB") == 0, "Expected capacityUnit is YiB");
     // TEST_ASSERT(byteValue == 1.654361, "Expected byteValue is 1.654361");
+
+    // Test failure case for value > YiB
+    byteValue = 2e27;
+    result = capacity_Unit_Convert(&byteValue, &capacityUnit);
+    TEST_ASSERT(result == FAILURE, "Expected FAILURE, value exceeds YiB");
 }
 
 void run_unit_conversion_tests() {
