@@ -243,7 +243,7 @@ static void test_kelvin_To_Fahrenheit(void) {
 
     kelvin = 373;
     fahrenheit = kelvin_To_Fahrenheit(&kelvin);
-    TEST_ASSERT(fahrenheit == 200, "Expected 373K to be 212°F");
+    TEST_ASSERT(fahrenheit == 212, "Expected 373K to be 212°F");
 
     kelvin = 0;
     fahrenheit = kelvin_To_Fahrenheit(&kelvin);
