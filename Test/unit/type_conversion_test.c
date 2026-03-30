@@ -665,12 +665,16 @@ static void test_convert_128bit_to_double(void) {
 }
 
 static void test_get_Decimal_From_4_byte_Float(void) {
-    uint32_t floatVal = INT32_MAX; 
     double result;
-    get_Decimal_From_4_byte_Float(floatVal, &result);
-    printf("result for INT32_MAX: %f\n", result);
-    printf("Expected result for INT32_MAX: %f\n", (double)INT32_MAX);
-    TEST_ASSERT(result == (double)INT32_MAX, "get_Decimal_From_4_byte_Float should convert INT32_MAX correctly");
+
+    get_Decimal_From_4_byte_Float(0x3F800000, &result);
+    TEST_ASSERT(result == 1.0, "Should convert float 1.0 correctly");
+
+    get_Decimal_From_4_byte_Float(0x40000000, &result);
+    TEST_ASSERT(result == 2.0, "Should convert float 2.0 correctly");
+
+    get_Decimal_From_4_byte_Float(0x40400000, &result);
+    TEST_ASSERT(result == 3.0, "Should convert float 3.0 correctly");
 }
 
 void run_type_conversion_tests(void) {
