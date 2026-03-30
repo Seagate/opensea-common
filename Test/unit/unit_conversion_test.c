@@ -219,7 +219,35 @@ static void test_fahrenheit_To_Kelvin(void) {
 
     fahrenheit = -459;
     kelvin = fahrenheit_To_Kelvin(&fahrenheit);
-    TEST_ASSERT(kelvin == 1, "Expected -459°F to be 0K");
+    TEST_ASSERT(kelvin == 1, "Expected -459°F to be 1K");
+}
+
+static void test_kelvin_To_Celsius(void) {
+    int16_t kelvin = 273;
+    int16_t celsius = kelvin_To_Celsius(&kelvin);
+    TEST_ASSERT(celsius == 0, "Expected 273K to be 0°C");
+
+    kelvin = 373;
+    celsius = kelvin_To_Celsius(&kelvin);
+    TEST_ASSERT(celsius == 100, "Expected 373K to be 100°C");
+
+    kelvin = 0;
+    celsius = kelvin_To_Celsius(&kelvin);
+    TEST_ASSERT(celsius == -273, "Expected 0K to be -273°C");
+}
+
+static void test_kelvin_To_Fahrenheit(void) {
+    int16_t kelvin = 273;
+    int16_t fahrenheit = kelvin_To_Fahrenheit(&kelvin);
+    TEST_ASSERT(fahrenheit == 32, "Expected 273K to be 32°F");
+
+    kelvin = 373;
+    fahrenheit = kelvin_To_Fahrenheit(&kelvin);
+    TEST_ASSERT(fahrenheit == 212, "Expected 373K to be 212°F");
+
+    kelvin = 0;
+    fahrenheit = kelvin_To_Fahrenheit(&kelvin);
+    TEST_ASSERT(fahrenheit == -459, "Expected 0K to be -459°F");
 }
 
 void run_unit_conversion_tests() {
@@ -229,4 +257,6 @@ void run_unit_conversion_tests() {
     test_fahrenheit_To_celsius();
     test_celsius_To_Kelvin();
     test_fahrenheit_To_Kelvin();
+    test_kelvin_To_Celsius();
+    test_kelvin_To_Fahrenheit();
 }
