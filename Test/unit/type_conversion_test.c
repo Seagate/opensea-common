@@ -650,15 +650,15 @@ static void test_is_size_t_max(void) {
 
 static void test_convert_128bit_to_double(void) {
     int array[16] = {0};
-    double result = convert_128bit_to_double(array);
+    double result = convert_128bit_to_double(&array);
     TEST_ASSERT(result == 0.0, "convert_128bit_to_double should convert an array of zeros to 0.0");
 
     array[15] = 1;
-    double result = convert_128bit_to_double(array);
+    double result = convert_128bit_to_double(&array);
     TEST_ASSERT(result == 1.0, "128-bit value 1 should convert correctly");
 
     array[15] = 255;
-    double result = convert_128bit_to_double(array);
+    double result = convert_128bit_to_double(&array);
     TEST_ASSERT(result == 255.0, "128-bit value 255 should convert correctly");
 }
 
