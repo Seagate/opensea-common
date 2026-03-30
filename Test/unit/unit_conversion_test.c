@@ -1,6 +1,7 @@
 #include"../framework/test_framework.h"
 #include"../../include/unit_conversion.h"
 #include"../testConstants.h"
+#include <math.h>
 
 static void test_metric_Unit_Convert() {
     double byteValue = (double)8;
@@ -125,12 +126,12 @@ static void test_capacity_Unit_Convert() {
     TEST_ASSERT(strcmp(capacityUnit, "EiB") == 0, "Expected capacityUnit is EiB");
     TEST_ASSERT(byteValue == 1, "Expected byteValue is 1");
 
-    // byteValue = 2e21;
-    // result = capacity_Unit_Convert(&byteValue, &capacityUnit);
-    // TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2e21 B to 1.694066ZiB");
-    // TEST_ASSERT(strcmp(capacityUnit, "ZiB") == 0, "Expected capacityUnit is ZiB");
-    // printf("byteValue: %f\n", byteValue);
-    // TEST_ASSERT_FLOAT_EQ(byteValue, 1.694066, EPSILON,"Expected byteValue is roughly 1.694066");
+    byteValue = 2e21;
+    result = capacity_Unit_Convert(&byteValue, &capacityUnit);
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2e21 B to 1.694066ZiB");
+    TEST_ASSERT(strcmp(capacityUnit, "ZiB") == 0, "Expected capacityUnit is ZiB");
+    printf("byteValue: %f\n", byteValue);
+    TEST_ASSERT_FLOAT_EQ(byteValue, 1.694066, EPSILON,"Expected byteValue is roughly 1.694066");
 
     byteValue = 2e24;
     result = capacity_Unit_Convert(&byteValue, &capacityUnit);
