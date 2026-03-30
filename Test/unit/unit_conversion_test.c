@@ -4,7 +4,8 @@
 
 static void test_metric_Unit_Convert() {
     double byteValue = 8000 * 1000 * 1000 * 1000; // 8000 GB in bytes
-    char metricUnit[UNIT_STRING_LENGTH];
+    char metricUnitBuffer[UNIT_STRING_LENGTH];
+    char* metricUnit = metricUnitBuffer;
     eReturnValues result = metric_Unit_Convert(&byteValue, &metricUnit);
     TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 8000 GB to 8TB");
     TEST_ASSERT(strcmp(metricUnit, "TB") == 0, "Expected metricUnit is TB");
