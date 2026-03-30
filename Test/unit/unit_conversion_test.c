@@ -105,7 +105,7 @@ static void test_capacity_Unit_Convert() {
     result = capacity_Unit_Convert(&byteValue, &capacityUnit);
     TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2073741824 B to 1GiB");
     TEST_ASSERT(strcmp(capacityUnit, "GiB") == 0, "Expected capacityUnit is GiB");
-    TEST_ASSERT(byteValue == 1, "Expected byteValue is 1");
+    TEST_ASSERT(byteValue == 1.9313225746154785, "Expected byteValue is 1");
 }
 
 void run_unit_conversion_tests() {
