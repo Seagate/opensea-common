@@ -47,12 +47,14 @@ jobs:
 
     - name: Generate coverage
       run: |
-        ninja -C Meson/Executables coverage
+        lcov --capture --directory Meson/Executables --output-file coverage.info
+        lcov --remove coverage.info '/usr/*' --output-file coverage.info
+        genhtml coverage.info --output-directory coverage-html
 
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
-        path: Meson/Executables/meson-logs/coveragereport/
+        path: coverage-html/
 
     
