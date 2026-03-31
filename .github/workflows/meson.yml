@@ -28,12 +28,14 @@ jobs:
         python -m pip install --upgrade pip
         pip install meson ninja
     
-    - name: Install expect
-      run: sudo apt-get update && sudo apt-get install -y expect
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y expect lcov gcc
 
     - name: Configure Meson
       run: |
-        meson setup Meson/Executables --buildtype=release
+        meson setup Meson/Executables --buildtype=release -Db_coverage=true
 
     - name: Build with Meson
       run: |
@@ -42,4 +44,9 @@ jobs:
     - name: Run test
       run: |
         meson test -C Meson/Executables --verbose
+
+    - name: Generate coverage
+      run: |
+        ninja -C Meson/Executables coverage
+
     
