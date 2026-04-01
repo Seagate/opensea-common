@@ -1209,6 +1209,7 @@ static void test_get_Bytes_To_64(void) {
 
     // msb == lsb
     res = get_Bytes_To_64(buf, sizeof(buf), 3, 3, &out);
+    printf("Out: 0x%02" PRIx64 "\n", out);
     TEST_ASSERT_EQ(out, (uint64_t)0x78, "Extraction of a single byte from a buffer when msb == lsb");
 
     // Test for dataPtrBeginning == M_NULLPTR
