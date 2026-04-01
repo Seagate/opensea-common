@@ -38,7 +38,7 @@ static M_INLINE size_t get_Bytes_Abs_Range(size_t msb, size_t lsb)
 
 bool get_Bytes_To_64(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t* out)
 {
-    if (get_Bytes_Abs_Range(msb, lsb) > sizeof(uint64_t) ||dataPtrBeginning == M_NULLPTR || out == M_NULLPTR || msb > fullDataLen || lsb > fullDataLen)
+    if (dataPtrBeginning == M_NULLPTR || out == M_NULLPTR || msb > fullDataLen || lsb > fullDataLen || get_Bytes_Abs_Range(msb, lsb) > sizeof(uint64_t))
     {
         return false;
     }
