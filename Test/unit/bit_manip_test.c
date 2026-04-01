@@ -1201,16 +1201,17 @@ static void test_get_Bytes_To_64(void) {
     uint64_t out = 0;
     bool res;
 
-    res = get_Bytes_To_64(buf, sizeof(buf), 0, 7, &out);
-    TEST_ASSERT_EQ(out, (uint64_t)0x1234567890ABCDEF, "Big endian extraction of 8 bytes from a buffer");
-
-    res = get_Bytes_To_64(buf, sizeof(buf), 7, 0, &out);
-    TEST_ASSERT_EQ(out, (uint64_t)0xEFCDAB9078563412, "Little endian extraction of 8 bytes from a buffer");
-
     // msb == lsb
     res = get_Bytes_To_64(buf, sizeof(buf), 3, 3, &out);
-    printf("Out: 0x%02" PRIx64 "\n", out);
     TEST_ASSERT_EQ(out, (uint64_t)0x78, "Extraction of a single byte from a buffer when msb == lsb");
+    
+    // lsb < msb
+    res = get_Bytes_To_64(buf, sizeof(buf), 7, 0, &out);
+    TEST_ASSERT_EQ(out, (uint64_t)0xEFCDAB9078563412, "Little endian extraction of 8 bytes from a buffer");
+    
+    // lsb > msb
+    res = get_Bytes_To_64(buf, sizeof(buf), 0, 7, &out);
+    TEST_ASSERT_EQ(out, (uint64_t)0x1234567890ABCDEF, "Big endian extraction of 8 bytes from a buffer");
 
     // Test for dataPtrBeginning == M_NULLPTR
     res = get_Bytes_To_64(M_NULLPTR, 0, 0, 7, &out);
