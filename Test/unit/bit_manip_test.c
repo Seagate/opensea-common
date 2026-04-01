@@ -513,6 +513,22 @@ static void test_get_16bit_range_uint32(void) {
 
 static void test_get_bit_range_uint64(void) {
     TEST_ASSERT_EQ(get_bit_range_uint64(HEX_RANDOM, 63, 32), (uint64_t)(0xF0F0F0F0), "Extract bits 63 to 32 from 0xF0F0F0F0F0F0F0F0ULL");
+
+    errno = 0;
+    // Test for msb > GENERIC_INT_64BIT_MAX
+    get_bit_range_uint64(HEX_RANDOM, 64, 32);
+    TEST_ASSERT(errno == ERANGE, "get_bit_range_uint64 should set errno to ERANGE when msb > 63");
+
+    // Test for lsb > GENERIC_INT_64BIT_MAX
+    get_bit_range_uint64(HEX_RANDOM, 63, 64);
+    TEST_ASSERT(errno == ERANGE, "get_bit_range_uint64 should set errno to ERANGE when lsb > 63");
+
+    // Test for bitcount = 0
+    errno = 0;
+    get_bit_range_uint64(HEX_RANDOM, 5, 6);
+    TEST_ASSERT(errno == ERANGE, "get_bit_range_uint64 should set errno to ERANGE when bitcount = 0");
+
+    // Test for bitcount > GENERIC_WIDTH_64 - Not possible
 }
 
 static void test_get_8bit_range_uint64(void) {
