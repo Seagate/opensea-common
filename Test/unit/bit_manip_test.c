@@ -1233,8 +1233,8 @@ static void test_get_Bytes_To_64(void) {
     res = get_Bytes_To_64(buf, sizeof(buf), 0, 9, &out);
     TEST_ASSERT_EQ(res, false, "get_Bytes_To_64 returns false for get_Bytes_Abs_Range(msb, lsb) > sizeof(uint64_t)");
 
-    res = get_Bytes_To_64(buf, sizeof(buf), 1, 0, &out);
-    TEST_ASSERT_EQ(res, true, "Valid extraction");
+    res = get_Bytes_To_64(M_NULLPTR, sizeof(buf), 9, 20, M_NULLPTR);
+    TEST_ASSERT_EQ(res, false, "get_Bytes_To_64 returns false for all invalid parameters");
 }
 
 static void test_be16_to_host(void) {
