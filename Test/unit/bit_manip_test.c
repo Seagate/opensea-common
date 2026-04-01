@@ -455,6 +455,7 @@ static void test_get_bit_range_uint8(void) {
 
     // Test for bitcount > GENERIC_INT_8BIT_MAX
     get_bit_range_uint8((uint8_t)HEX_RANDOM, 7, 0);
+    printf("errno after bitcount > 7 test: %d\n", errno);
     TEST_ASSERT(errno == ERANGE, "get_bit_range_uint8 should set errno to ERANGE when bitcount > 7");
 }
 
