@@ -459,8 +459,24 @@ static void test_get_bit_range_uint8(void) {
     // Test for bitcount > GENERIC_INT_8BIT_MAX - Not possible
 }
 
-static void test_get_bit_range_uint16(void) {
+static void GENERIC_INT_16BIT_MAX(void) {
     TEST_ASSERT_EQ(get_bit_range_uint16((uint16_t)HEX_RANDOM, 15, 8), (uint16_t)(0xF0), "Extract bits 15 to 8 from 0xF0F0F0F0F0F0F0F0ULL");
+
+    errno = 0;
+    // Test for msb > GENERIC_INT_16BIT_MAX
+    get_bit_range_uint16((uint16_t)HEX_RANDOM, 16, 8);
+    TEST_ASSERT(errno == ERANGE, "get_bit_range_uint16 should set errno to ERANGE when msb > 15");
+
+    // Test for lsb > GENERIC_INT_16BIT_MAX
+    get_bit_range_uint16((uint16_t)HEX_RANDOM, 15, 16);
+    TEST_ASSERT(errno == ERANGE, "get_bit_range_uint16 should set errno to ERANGE when lsb > 15");
+
+    // Test for bitcount = 0
+    errno = 0;
+    get_bit_range_uint16((uint16_t)HEX_RANDOM, 5, 6);
+    TEST_ASSERT(errno == ERANGE, "get_bit_range_uint16 should set errno to ERANGE when bitcount = 0");
+
+    // Test for bitcount > GENERIC_INT_16BIT_MAX - Not possible
 }
 
 static void test_get_8bit_range_uint16(void) {
