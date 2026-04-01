@@ -459,7 +459,7 @@ static void test_get_bit_range_uint8(void) {
     // Test for bitcount > GENERIC_INT_8BIT_MAX - Not possible
 }
 
-static void GENERIC_INT_16BIT_MAX(void) {
+static void test_get_bit_range_uint16(void) {
     TEST_ASSERT_EQ(get_bit_range_uint16((uint16_t)HEX_RANDOM, 15, 8), (uint16_t)(0xF0), "Extract bits 15 to 8 from 0xF0F0F0F0F0F0F0F0ULL");
 
     errno = 0;
