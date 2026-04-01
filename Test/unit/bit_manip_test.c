@@ -1202,12 +1202,34 @@ static void test_get_Bytes_To_64(void) {
     bool res;
 
     res = get_Bytes_To_64(buf, sizeof(buf), 0, 7, &out);
-
     TEST_ASSERT_EQ(out, (uint64_t)0x1234567890ABCDEF, "Big endian extraction of 8 bytes from a buffer");
 
     res = get_Bytes_To_64(buf, sizeof(buf), 7, 0, &out);
-
     TEST_ASSERT_EQ(out, (uint64_t)0xEFCDAB9078563412, "Little endian extraction of 8 bytes from a buffer");
+
+    // msb == lsb
+    res = get_Bytes_To_64(buf, sizeof(buf), 3, 3, &out);
+    TEST_ASSERT_EQ(out, (uint64_t)0x78, "Extraction of a single byte from a buffer when msb == lsb");
+
+    // Test for dataPtrBeginning == M_NULLPTR
+    res = get_Bytes_To_64(M_NULLPTR, 0, 0, 7, &out);
+    TEST_ASSERT_EQ(res, false, "get_Bytes_To_64 returns false for NULL pointer");
+
+    // Test for out == M_NULLPTR
+    res = get_Bytes_To_64(buf, sizeof(buf), 0, 7, M_NULLPTR);
+    TEST_ASSERT_EQ(res, false, "get_Bytes_To_64 returns false for NULL output pointer");
+
+    // Test for msb > fullDataLen
+    res = get_Bytes_To_64(buf, sizeof(buf), 20, 0, &out);
+    TEST_ASSERT_EQ(res, false, "get_Bytes_To_64 returns false for msb > fullDataLen");
+
+    // Test for lsb > fullDataLen
+    res = get_Bytes_To_64(buf, sizeof(buf), 0, 20, &out);
+    TEST_ASSERT_EQ(res, false, "get_Bytes_To_64 returns false for lsb > fullDataLen");
+
+    // Test for get_Bytes_Abs_Range(msb, lsb) > sizeof(uint64_t)
+    res = get_Bytes_To_64(buf, sizeof(buf), 0, 64, &out);
+    TEST_ASSERT_EQ(res, false, "get_Bytes_To_64 returns false for get_Bytes_Abs_Range(msb, lsb) > sizeof(uint64_t)");
 }
 
 static void test_be16_to_host(void) {
