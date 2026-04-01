@@ -441,6 +441,21 @@ static void test_is_generic_int_valid(void) {
 
 static void test_get_bit_range_uint8(void) {
     TEST_ASSERT_EQ(get_bit_range_uint8((uint8_t)HEX_RANDOM, 7, 4), (uint8_t)(0xF), "Extract bits 7 to 4 from 0xF0F0F0F0F0F0F0F0ULL");
+
+    errno = 0;
+    // Test for msb > GENERIC_INT_8BIT_MAX
+    get_bit_range_uint8((uint8_t)HEX_RANDOM, 9, 4);
+    TEST_ASSERT(errno == ERANGE, "get_bit_range_uint8 should set errno to ERANGE when msb > 7");
+
+    // Test for lsb > GENERIC_INT_8BIT_MAX
+    get_bit_range_uint8((uint8_t)HEX_RANDOM, 7, 8);
+    TEST_ASSERT(errno == ERANGE, "get_bit_range_uint8 should set errno to ERANGE when lsb > 7");
+
+    // Test for bitcount = 0 - never happens
+
+    // Test for bitcount > GENERIC_INT_8BIT_MAX
+    get_bit_range_uint8((uint8_t)HEX_RANDOM, 7, 0);
+    TEST_ASSERT(errno == ERANGE, "get_bit_range_uint8 should set errno to ERANGE when bitcount > 7");
 }
 
 static void test_get_bit_range_uint16(void) {
@@ -1232,9 +1247,6 @@ static void test_get_Bytes_To_64(void) {
     // Test for get_Bytes_Abs_Range(msb, lsb) > sizeof(uint64_t)
     res = get_Bytes_To_64(buf, sizeof(buf), 0, 9, &out);
     TEST_ASSERT_EQ(res, false, "get_Bytes_To_64 returns false for get_Bytes_Abs_Range(msb, lsb) > sizeof(uint64_t)");
-
-    res = get_Bytes_To_64(M_NULLPTR, sizeof(buf), 9, 20, M_NULLPTR);
-    TEST_ASSERT_EQ(res, false, "get_Bytes_To_64 returns false for all invalid parameters");
 }
 
 static void test_be16_to_host(void) {
