@@ -1247,17 +1247,19 @@ static void test_get_Bytes_To_16(void) {
 }
 
 static void test_get_Bytes_To_32(void) {
-    uint8_t buf[] = {0x12, 0x34, 0x56, 0x78};
+    uint8_t buf[] = {0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF};
     uint32_t out = 0;
     bool res;
 
     res = get_Bytes_To_32(buf, sizeof(buf), 0, 3, &out);
-
     TEST_ASSERT_EQ(out, (uint32_t)0x12345678, "Big endian extraction of 4 bytes from a buffer");
 
     res = get_Bytes_To_32(buf, sizeof(buf), 3, 0, &out);
-
     TEST_ASSERT_EQ(out, (uint32_t)0x78563412, "Little endian extraction of 4 bytes from a buffer");
+
+    // Test to return false result
+    res = get_Bytes_To_32(buf, sizeof(buf), 0, 6, &out);
+    TEST_ASSERT_EQ(res, false, "get_Bytes_To_32 returns false for get_Bytes_Abs_Range(msb, lsb) > sizeof(uint32_t)");
 }
 
 static void test_get_Bytes_To_64(void) {
