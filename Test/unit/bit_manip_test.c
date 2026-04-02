@@ -553,6 +553,10 @@ static void test_get_bit_range_uint64(void) {
 static void test_get_8bit_range_uint64(void) {
     TEST_ASSERT_EQ(get_8bit_range_uint64(HEX_RANDOM, 31, 24), (uint8_t)(0xF0), "Extract bits 31 to 24 from 0xF0F0F0F0F0F0F0F0ULL");
 
+    // Test for lsb > GENERIC_INT_64BIT_MAX
+    get_8bit_range_uint64(HEX_RANDOM, 60, 64);
+    TEST_ASSERT(errno == ERANGE, "get_8bit_range_uint64 should set errno to ERANGE when lsb > 63");
+
     // Test for bit_count > GENERIC_WIDTH_8
     errno = 0;
     get_8bit_range_uint64(HEX_RANDOM, 15, 0);
