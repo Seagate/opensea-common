@@ -23,15 +23,15 @@ jobs:
       with:
         python-version: '3.x'
     
-    - name: Install Meson and Ninja
+    - name: Install Meson, Ninja and coverage tools
       run: |
         python -m pip install --upgrade pip
-        pip install meson ninja
+        pip install meson ninja gcovr
     
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y expect lcov gcc
+        sudo apt-get install -y expect lcov gcc g++
 
     - name: Configure Meson
       run: |
@@ -49,10 +49,21 @@ jobs:
       run: |
         ninja -C Meson/Executables coverage
 
+    - name: Generate grouped branch coverage (gcovr)
+      run: |
+        gcovr --root . \
+              --filter 'src/' \
+              --branch \
+              --html-details grouped_branch_coverage.html \
+              --html-title "Grouped Branch Coverage Report" \
+              --html-theme=green
+
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
-        path: Meson/Executables/meson-logs
+        path: |
+          Meson/Executables/meson-logs
+          grouped_branch_coverage.html
 
     
