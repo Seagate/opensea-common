@@ -442,6 +442,9 @@ static void test_is_generic_int_valid(void) {
 static void test_get_bit_range_uint8(void) {
     TEST_ASSERT_EQ(get_bit_range_uint8((uint8_t)HEX_RANDOM, 7, 4), (uint8_t)(0xF), "Extract bits 7 to 4 from 0xF0F0F0F0F0F0F0F0ULL");
 
+    // Test for width > GENERIC_WIDTH_8 and lsb = 0
+    TEST_ASSERT_EQ(get_bit_range_uint8((uint32_t)HEX_RANDOM, 7, 0), (uint8_t)HEX_RANDOM, "Extract bits 7 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
+
     errno = 0;
     // Test for msb > GENERIC_INT_8BIT_MAX
     get_bit_range_uint8((uint8_t)HEX_RANDOM, 9, 4);
@@ -461,6 +464,9 @@ static void test_get_bit_range_uint8(void) {
 
 static void test_get_bit_range_uint16(void) {
     TEST_ASSERT_EQ(get_bit_range_uint16((uint16_t)HEX_RANDOM, 15, 8), (uint16_t)(0xF0), "Extract bits 15 to 8 from 0xF0F0F0F0F0F0F0F0ULL");
+
+    // Test for width > GENERIC_WIDTH_16 and lsb = 0
+    TEST_ASSERT_EQ(get_bit_range_uint16((uint32_t)HEX_RANDOM, 15, 0), (uint16_t)HEX_RANDOM, "Extract bits 15 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
 
     errno = 0;
     // Test for msb > GENERIC_INT_16BIT_MAX
