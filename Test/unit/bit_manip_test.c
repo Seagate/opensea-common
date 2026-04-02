@@ -3864,12 +3864,13 @@ static void test_bit_floor_ull(void) {
 }
 
 static void test_bit_ceil_uc(void) {
-    uint8_t vals[] = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, 0x00};
+    uint8_t vals[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    uint8_t expected[] = {1, 1, 2, 4, 4, 8, 8, 8, 8, 16};
 
-    for(uint8_t i = 0; i < 9; i++) {
+    for(uint8_t i = 0; i < 10; i++) {
         char msg[100];
-        snprintf(msg, sizeof(msg), "the smallest integral power of two not less than the given value is %u", 2U << (7-(i-1)));
-        TEST_ASSERT_EQ(bit_ceil_uc(vals[i]), 2U << (7-(i-1)), msg);
+        snprintf(msg, sizeof(msg), "the smallest integral power of two not less than the given value is %u", expected[i]);
+        TEST_ASSERT_EQ(bit_ceil_uc(vals[i]), expected[i], msg);
     }
 }
 
