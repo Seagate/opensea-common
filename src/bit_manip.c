@@ -149,6 +149,7 @@ static M_INLINE size_t gen_bit_width(uint8_t msb, uint8_t lsb)
     return uint8_to_sizet(msb) - uint8_to_sizet(lsb) + SIZE_T_C(1);
 }
 
+
 static M_INLINE uint64_t gen_safe_mask_u64(size_t width)
 {
     if (width >= GENERIC_WIDTH_64)

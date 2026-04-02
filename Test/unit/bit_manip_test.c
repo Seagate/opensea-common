@@ -528,6 +528,11 @@ static void test_get_bit_range_uint64(void) {
     get_bit_range_uint64(HEX_RANDOM, 5, 6);
     TEST_ASSERT(errno == ERANGE, "get_bit_range_uint64 should set errno to ERANGE when bitcount = 0");
 
+    // Test for lsb >= GENERIC_WIDTH_64
+    errno = 0;
+    get_bit_range_uint64(HEX_RANDOM, 63, 64);
+    TEST_ASSERT(errno == 0, "get_bit_range_uint64 should not set errno when lsb >= 64");
+
     // Test for bitcount > GENERIC_WIDTH_64 - Not possible
 }
 
@@ -1238,12 +1243,14 @@ static void test_get_Bytes_To_16(void) {
     bool res;
 
     res = get_Bytes_To_16(buf, sizeof(buf), 0, 1, &out);
-
     TEST_ASSERT_EQ(out, (uint16_t)0x1234, "Big endian extraction of 2 bytes from a buffer");
 
     res = get_Bytes_To_16(buf, sizeof(buf), 1, 0, &out);
-
     TEST_ASSERT_EQ(out, (uint16_t)0x3412, "Little endian extraction of 2 bytes from a buffer");
+
+    // Test to return false result
+    res = get_Bytes_To_16(buf, sizeof(buf), 0, 3, &out);
+    TEST_ASSERT_EQ(res, false, "get_Bytes_To_16 returns false for get_Bytes_Abs_Range(msb, lsb) > sizeof(uint16_t)");
 }
 
 static void test_get_Bytes_To_32(void) {
