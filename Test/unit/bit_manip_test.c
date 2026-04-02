@@ -544,7 +544,7 @@ static void test_get_bit_range_uint64(void) {
     TEST_ASSERT(errno == ERANGE, "get_bit_range_uint64 should set errno to ERANGE when msb > 63");
 
     // Test for lsb > GENERIC_INT_64BIT_MAX
-    get_bit_range_uint64(HEX_RANDOM, 63, 64);
+    get_bit_range_uint64(HEX_RANDOM, 0, 64);
     TEST_ASSERT(errno == ERANGE, "get_bit_range_uint64 should set errno to ERANGE when lsb > 63");
 
     // Test for bitcount = 0
@@ -4459,6 +4459,11 @@ void run_bit_manip_tests(void)
     test_bit_floor_ui();
     test_bit_floor_ul();
     test_bit_floor_ull();
+    test_bit_ceil_uc();
+    test_bit_ceil_us();
+    test_bit_ceil_ui();
+    test_bit_ceil_ul();
+    test_bit_ceil_ull();
     test_rotate_left_uc();
     test_rotate_left_us();
     test_rotate_left_ui();
