@@ -888,6 +888,7 @@ static void test_raise_to_power(void) {
     TEST_ASSERT(fabs(raise_to_power(2, -4) - 0.0625) < EPSILON, "2 raised to power -4");
     TEST_ASSERT(fabs(raise_to_power(3, -2) - 0.11111) < EPSILON, "3 raised to power -2");
     TEST_ASSERT(isnan(raise_to_power(0, -4)), "0 raised to power -4 returns NaN");
+    TEST_ASSERT(fabs(raise_to_power(4, 0) - 1) < EPSILON, "4 to power 0 is 1");
 }
 
 void run_math_utils_tests(void) {
