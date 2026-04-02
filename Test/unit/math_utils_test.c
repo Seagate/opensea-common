@@ -254,6 +254,7 @@ static void test_unsigned_long_long_round_down_generic(void) {
 }
 
 static void test_int16_round_up_generic(void) {
+    TEST_ASSERT_EQ(int16_round_up_generic(-5, 3), -3, "Round -5 up to nearest multiple of 3");
     TEST_ASSERT_EQ(int16_round_up_generic(8, 2), 8, "Round 8 up to nearest multiple of 2: Roundto is power of 2");
     TEST_ASSERT_EQ(int16_round_up_generic(5, 3), 6, "Round 5 up to nearest multiple of 3");
     TEST_ASSERT_EQ(int16_round_up_generic(12, 1), 12, "Round 12 up to nearest multiple of 1: no-op operation");
@@ -272,6 +273,7 @@ static void test_uint16_round_up_generic(void) {
 }
 
 static void test_int32_round_up_generic(void) {
+    TEST_ASSERT_EQ(int32_round_up_generic(-5, 3), -3, "Round -5 up to nearest multiple of 3");
     TEST_ASSERT_EQ(int32_round_up_generic(8, 2), 8, "Round 8 up to nearest multiple of 2: Roundto is power of 2");
     TEST_ASSERT_EQ(int32_round_up_generic(5, 3), 6, "Round 5 up to nearest multiple of 3");
     TEST_ASSERT_EQ(int32_round_up_generic(12, 1), 12, "Round 12 up to nearest multiple of 1: no-op operation");
@@ -291,6 +293,7 @@ static void test_uint32_round_up_generic(void) {
 }
 
 static void test_int64_round_up_generic(void) {
+    TEST_ASSERT_EQ(int64_round_up_generic(-5, 3), -3, "Round -5 up to nearest multiple of 3");
     TEST_ASSERT_EQ(int64_round_up_generic(8, 2), 8, "Round 8 up to nearest multiple of 2: Roundto is power of 2");
     TEST_ASSERT_EQ(int64_round_up_generic(5, 3), 6, "Round 5 up to nearest multiple of 3");
     TEST_ASSERT_EQ(int64_round_up_generic(12, 1), 12, "Round 12 up to nearest multiple of 1: no-op operation");
