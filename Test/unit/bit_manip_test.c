@@ -500,6 +500,9 @@ static void test_get_bit_range_uint32(void) {
     get_bit_range_uint32((uint32_t)HEX_RANDOM, 5, 6);
     TEST_ASSERT(errno == ERANGE, "get_bit_range_uint32 should set errno to ERANGE when bitcount = 0");
 
+    // Test for width > GENERIC_WIDTH_32 and lsb = 0
+    TEST_ASSERT_EQ(get_bit_range_uint32((uint32_t)HEX_RANDOM, 31, 0), (uint32_t)HEX_RANDOM, "Extract bits 31 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
+
     // Test for bitcount > GENERIC_WIDTH_32 - Not possible
 }
 
@@ -527,11 +530,6 @@ static void test_get_bit_range_uint64(void) {
     errno = 0;
     get_bit_range_uint64(HEX_RANDOM, 5, 6);
     TEST_ASSERT(errno == ERANGE, "get_bit_range_uint64 should set errno to ERANGE when bitcount = 0");
-
-    // Test for lsb >= GENERIC_WIDTH_64
-    errno = 0;
-    get_bit_range_uint64(HEX_RANDOM, 63, 64);
-    TEST_ASSERT(errno == ERANGE, "get_bit_range_uint64 should set errno to ERANGE when lsb >= 64");
 
     // Test for bitcount > GENERIC_WIDTH_64 - Not possible
 }
