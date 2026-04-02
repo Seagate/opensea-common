@@ -487,6 +487,11 @@ static void test_get_bit_range_uint16(void) {
 
 static void test_get_8bit_range_uint16(void) {
     TEST_ASSERT_EQ(get_8bit_range_uint16((uint16_t)HEX_RANDOM, 7, 0), (uint8_t)(0xF0), "Extract bits 7 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
+
+    // Test for bit_count > GENERIC_WIDTH_8
+    errno = 0;
+    get_8bit_range_uint16((uint16_t)HEX_RANDOM, 15, 0);
+    TEST_ASSERT(errno == ERANGE, "get_8bit_range_uint16 should set errno to ERANGE when bit_count > 8");
 }
 
 static void test_get_bit_range_uint32(void) {
