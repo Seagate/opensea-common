@@ -62,6 +62,10 @@ static void test_safe_reallocf(void) {
     TEST_ASSERT(new_ptr != NULL, "safe_reallocf should return a non-null pointer when reallocating to a larger size");
     free(new_ptr);
 
+    // Test when block is NULL, should return NULL and not attempt to free
+    new_ptr = safe_reallocf(NULL, 100);
+    TEST_ASSERT(new_ptr == NULL, "safe_reallocf should return a null pointer when the input pointer is NULL");
+
     // Test that reallocating to zero frees the memory and returns null
     ptr = safe_malloc(100);
     new_ptr = safe_reallocf(&ptr, 0);
@@ -502,6 +506,11 @@ static void test_safe_realloc_aligned(void) {
     size_t num_elements = 20;
     int* new_ptr = safe_realloc_aligned(NULL, 0, sizeof(int) * num_elements, 16);
     TEST_ASSERT(new_ptr != NULL, "safe_realloc_aligned should return a non-null pointer");
+    free_aligned(new_ptr);
+
+    // alignment < sizeof(void*) should return null
+    new_ptr = safe_realloc_aligned(new_ptr, sizeof(int) * num_elements, sizeof(int) * num_elements, 1);
+    TEST_ASSERT(new_ptr != NULL, "safe_realloc_aligned should set alignment to sizeof(void*) when alignment is less than sizeof(void*)");
     free_aligned(new_ptr);
 }
 
