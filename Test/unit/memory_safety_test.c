@@ -239,6 +239,9 @@ static void test_is_Empty(void) {
 
     buffer[5] = 'A';
     TEST_ASSERT(!is_Empty(buffer, sizeof(buffer)), "is_Empty should return false for a buffer that contains non-zero values");
+
+    TEST_ASSERT(!is_Empty(NULL, sizeof(buffer)), "is_Empty should return false for a null pointer");
+    TEST_ASSERT(!is_Empty(buffer, 0), "is_Empty should return false for a zero size");
 }
 
 static void test_safe_memset(void) {
@@ -258,6 +261,9 @@ static void test_explicit_zeroes(void) {
     for (size_t i = 0; i < sizeof(buffer) / sizeof(buffer[0]); i++) {
         TEST_ASSERT(buffer[i] == 0, "explicit_zeroes should set all bytes in the buffer to zero");
     }
+
+    // Test when dest is NULL
+    TEST_ASSERT(explicit_zeroes(NULL, sizeof(buffer)) == NULL, "explicit_zeroes should return NULL when dest is NULL");
 
     // Testing when the buffer is already zeroed out
     int char_buffer[10] = {0};
