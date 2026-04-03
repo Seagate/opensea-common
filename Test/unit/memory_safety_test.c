@@ -439,9 +439,9 @@ static void test_realloc_aligned(void) {
     }
 
     // Test when size is zero, should free the original block and return null
-    int* ptr2 = realloc_aligned(new_ptr, element_size * new_num_elements, 0, alignment);
-    TEST_ASSERT(ptr2 == NULL, "realloc_aligned should return a null pointer when reallocating to zero");
-    
+    int* new_ptr = realloc_aligned(new_ptr, element_size * new_num_elements, 0, alignment);
+    TEST_ASSERT(new_ptr == NULL, "realloc_aligned should return a null pointer when reallocating to zero");
+
     free_aligned(new_ptr);
 }
 
