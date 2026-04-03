@@ -38,6 +38,15 @@ static void test_safe_realloc(void) {
     TEST_ASSERT(new_ptr != NULL, "safe_realloc should return a non-null pointer when reallocating to a larger size");
     free(new_ptr);
 
+    // Test when block is NULL, should behave like safe_malloc
+    new_ptr = safe_realloc(NULL, 100);
+    TEST_ASSERT(new_ptr != NULL, "safe_realloc should return a non-null pointer when the input pointer is NULL");
+    free(new_ptr);
+
+    // Test for huge size
+    new_ptr = safe_realloc(ptr, SIZE_MAX);
+    TEST_ASSERT(new_ptr == NULL, "safe_realloc should return NULL when realloc fails");
+
     // Test that reallocating to zero frees the memory and returns null
     ptr = safe_malloc(100);
     new_ptr = safe_realloc(ptr, 0);
