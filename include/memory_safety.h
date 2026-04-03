@@ -1101,7 +1101,7 @@ extern "C"
     //! failure.
     M_NODISCARD
     M_PARAM_RW_SIZE(1, 2)
-    M_ALLOC_ALIGN(4)
+    M_ALLOC_ALIGN(4) 
     M_MALLOC_SIZE(3)
     void* M_NULLABLE safe_realloc_aligned(void* M_NULLABLE block, size_t originalSize, size_t size, size_t alignment)
         // clang-format off
