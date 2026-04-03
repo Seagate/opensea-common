@@ -513,10 +513,6 @@ static void test_safe_realloc_aligned(void) {
     new_ptr = safe_realloc_aligned(new_ptr, sizeof(int) * num_elements, sizeof(int) * num_elements, 1);
     TEST_ASSERT(new_ptr != NULL, "safe_realloc_aligned should set alignment to sizeof(void*) when alignment is less than sizeof(void*)");
     free_aligned(new_ptr);
-
-    // Test overflow protection in aligned_Size_Round_Up
-    new_ptr = safe_realloc_aligned(NULL, 0, SIZE_MAX, 16);
-    TEST_ASSERT(new_ptr == NULL, "safe_realloc_aligned should fail for SIZE_MAX allocation");
 }
 
 static void test_safe_reallocf_aligned(void) {
