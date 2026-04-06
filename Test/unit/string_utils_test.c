@@ -1094,6 +1094,7 @@ void run_string_utils_tests(void) {
     test_find_last_occurrence_in_string();
     test_find_first_occurrence_in_string();
     test_wildcard_match();
+    test_wildcard_Match();
     test_wildcard_case_match();
     test_string_version_compare();
 }
