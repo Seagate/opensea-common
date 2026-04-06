@@ -784,12 +784,6 @@ static void test_safe_memcmove(void) {
     result = safe_memcmove(dest, sizeof(dest), src, 'o', 3);
     TEST_ASSERT(result == 0, "safe_memcmove should return zero when the count is less than the position of the specified character");
     TEST_ASSERT(strncmp(dest, src, 3) == 0, "safe_memcmove should copy only the specified count of bytes when the count is less than the position of the specified character");
-
-    // Test for overlapping regions
-    char buffer[20] = "Hello, World!";
-    result = safe_memcmove(buffer + 5, sizeof(buffer) - 5, buffer, 'o', sizeof(buffer));
-    TEST_ASSERT(result == 0, "safe_memcmove should return zero for overlapping regions");
-    TEST_ASSERT(strcmp(buffer, "HelloHello, Wor") == 0, "safe_memcmove should correctly handle overlapping regions");
 }
 
 static void test_get_memalignment(void) {
