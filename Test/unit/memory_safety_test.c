@@ -810,12 +810,14 @@ struct dirent {
     char d_name[256];
 };
 
-static void test_safe_free_dirent(void) {
-    struct dirent* entry = malloc(sizeof(struct dirent));
-    TEST_ASSERT(entry != NULL, "malloc should return a non-null pointer for a non-zero size");
-    safe_free_dirent(&entry);
-    TEST_ASSERT(entry == NULL, "safe_free_dirent should set the struct dirent pointer to NULL after freeing");
-}
+#if defined(POSIX_1990) || defined(BSD4_2)
+    static void test_safe_free_dirent(void) {
+        struct dirent* entry = malloc(sizeof(struct dirent));
+        TEST_ASSERT(entry != NULL, "malloc should return a non-null pointer for a non-zero size");
+        safe_free_dirent(&entry);
+        TEST_ASSERT(entry == NULL, "safe_free_dirent should set the struct dirent pointer to NULL after freeing");
+    }
+#endif
 
 void run_memory_safety_tests(void) {
     test_safe_malloc();
@@ -887,5 +889,7 @@ void run_memory_safety_tests(void) {
     test_safe_memccpy();
     test_get_memalignment();
     test_SIZE_OF_STACK_ARRAY();
+    #if defined(POSIX_1990) || defined(BSD4_2)
     test_safe_free_dirent();
+    #endif
 }
