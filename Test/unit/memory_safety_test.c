@@ -477,7 +477,7 @@ static void test_safe_malloc_aligned(void) {
     TEST_ASSERT(ptr == NULL, "safe_malloc_aligned should return a null pointer for a size of zero");
 
     size_t size = SIZE_MAX - alignment + 2; // forces overflow condition
-    char* ptr = safe_malloc_aligned(size, alignment);
+    ptr = safe_malloc_aligned(size, alignment);
     TEST_ASSERT(ptr == NULL || ptr != NULL, "safe_malloc_aligned should return a null pointer when size is large enough to cause overflow");
 
 }
