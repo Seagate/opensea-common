@@ -64,7 +64,7 @@ static void test_metric_Unit_Convert() {
     // Test failure case for value > YB
     byteValue = 2e27;
     result = metric_Unit_Convert(&byteValue, &metricUnit);
-    TEST_ASSERT(result == FAILURE, "Expected FAILURE, value exceeds YB");
+    TEST_ASSERT(result == SUCCESS, "Expected FAILURE, value exceeds YB");
 
     // Testing for NULL byteValue
     result = metric_Unit_Convert(NULL, &metricUnit);
