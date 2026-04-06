@@ -885,6 +885,7 @@ void run_memory_safety_tests(void) {
     test_safe_memcpy();
     test_safe_memcpy_no_overlap();
     test_safe_memccpy();
+    test_safe_memcmove();
     test_get_memalignment();
     test_SIZE_OF_STACK_ARRAY();
     #if defined(POSIX_1990) || defined(BSD4_2)
