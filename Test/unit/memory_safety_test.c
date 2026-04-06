@@ -552,19 +552,19 @@ static void test_safe_reallocf_aligned(void) {
 
     // Test when *block is NULL, should behave like safe_malloc_aligned
     ptr = NULL;
-    new_ptr = safe_reallocf_aligned(&ptr, 0, element_size * num_elements, alignment);
+    new_ptr = safe_reallocf_aligned((void**)&ptr, 0, element_size * num_elements, alignment);
     TEST_ASSERT(new_ptr != NULL, "safe_reallocf_aligned should return a non-null pointer when the input pointer is NULL");
     free_aligned(new_ptr);
 
     // Test when size is zero, should free the original block and return null
     ptr = calloc_aligned(num_elements, element_size, alignment);
-    new_ptr = safe_reallocf_aligned(&ptr, element_size * num_elements, 0, alignment);
+    new_ptr = safe_reallocf_aligned((void**)&ptr, element_size * num_elements, 0, alignment);
     TEST_ASSERT(new_ptr == NULL, "safe_reallocf_aligned should return a null pointer when reallocating to zero");
     TEST_ASSERT(ptr == NULL, "safe_reallocf_aligned should set the original pointer to NULL when reallocating to zero");
 
     // Test when size is large enough to cause overflow, should free the original block and return null
     ptr = calloc_aligned(num_elements, element_size, alignment);
-    new_ptr = safe_reallocf_aligned(&ptr, 64, SIZE_MAX, alignment);
+    new_ptr = safe_reallocf_aligned((void**)&ptr, 64, SIZE_MAX, alignment);
     TEST_ASSERT(new_ptr == NULL, "safe_reallocf_aligned should return a null pointer when size is large enough to cause overflow");
     TEST_ASSERT(ptr == NULL, "safe_reallocf_aligned should set the original pointer to NULL when size is large enough to cause overflow");
 }
