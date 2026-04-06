@@ -2,6 +2,17 @@
 #include"../../include/pattern_utils.h"
 #include"../testConstants.h"
 
+int force_calloc_fail = 0;
+
+void* safe_calloc(size_t n, size_t size)
+{
+    if (force_calloc_fail)
+    {
+        return NULL;
+    }
+    return calloc(n, size);
+}
+
 static void test_fill_Random_Pattern_In_Buffer(void) {
     // Test with valid parameters
     uint8_t buffer[10];
@@ -14,8 +25,11 @@ static void test_fill_Random_Pattern_In_Buffer(void) {
     printf("\n");
 
     // Test for memory failure
-    eReturnValues res = fill_Random_Pattern_In_Buffer(buffer, UINT32_MAX);
+    extern int force_calloc_fail;
+    force_calloc_fail = 1;
+    eReturnValues res = fill_Random_Pattern_In_Buffer(buffer, sizeof(buffer));
     TEST_ASSERT(res == MEMORY_FAILURE, "Function should return MEMORY_FAILURE when calloc fails");
+    force_calloc_fail = 0;
 
     // Test with zero data length
     // result = fill_Random_Pattern_In_Buffer(buffer, 0);
