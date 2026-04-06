@@ -687,9 +687,13 @@ static void test_safe_strncat_no_overlap(void) {
 }
 
 static void test_common_String_Concat(void) {
-    char dest[20] = "Hello ";
+    char dest[20] = "Hello "; 
     const char* src = "World";
     TEST_ASSERT_EQ(common_String_Concat(dest, sizeof(dest), src), dest, "String is correctly concatenated to destination buffer");
+
+    // Test for small buffer - should truncate and return NULL
+    char smallDest[5] = "Hi ";
+    TEST_ASSERT_EQ(common_String_Concat(smallDest, sizeof(smallDest), src), NULL, "common_String_Concat returns NULL when destination buffer is too small");
 
     // Test for null pointer protection
     // errno = 0;
@@ -715,6 +719,11 @@ static void test_common_String_Concat_Len(void) {
     char* result = common_String_Concat_Len(dest, sizeof(dest), src, 3);
     TEST_ASSERT_EQ(result, dest, "First n characters are correctly concatenated to destination buffer");
     TEST_ASSERT_EQ(dest[9], '\0', "Destination buffer is null-terminated after concatenating n characters");
+
+     // Test for small buffer - should truncate and return NULL
+    char smallDest[5] = "Hi ";
+    TEST_ASSERT_EQ(common_String_Concat_Len(smallDest, sizeof(smallDest), src, 5), NULL, "common_String_Concat_Len returns NULL when destination buffer is too small");
+
     // Test for null pointer protection
     // errno = 0;
     //result = common_String_Concat_Len(NULL, sizeof(dest), src, 3);
