@@ -806,16 +806,13 @@ static void test_SIZE_OF_STACK_ARRAY(void) {
     TEST_ASSERT(size == 10, "SIZE_OF_STACK_ARRAY should return the correct size of the stack array");
 }
 
-struct dirent {
-    char d_name[256];
-};
-
 #if defined(POSIX_1990) || defined(BSD4_2)
-    static void test_safe_free_dirent(void) {
-        struct dirent* entry = malloc(sizeof(struct dirent));
+    static void test_safe_free_dirent(void)
+    {
+        struct dirent *entry = malloc(sizeof(struct dirent));
         TEST_ASSERT(entry != NULL, "malloc should return a non-null pointer for a non-zero size");
         safe_free_dirent(&entry);
-        TEST_ASSERT(entry == NULL, "safe_free_dirent should set the struct dirent pointer to NULL after freeing");
+        TEST_ASSERT(entry == NULL, "safe_free_dirent should set the pointer to NULL");
     }
 #endif
 
