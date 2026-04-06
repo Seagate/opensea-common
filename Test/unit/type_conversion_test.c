@@ -365,6 +365,24 @@ static void test_char_to_sizet(void) {
     TEST_ASSERT(sizet_positive == (size_t)positive_val, "char_to_sizet should convert positive values correctly");
 }
 
+static void test_schar_to_sizet(void) {
+    signed char min_val = SCHAR_MIN;
+    errno = 0;
+    size_t sizet_min = schar_to_sizet(min_val);
+    TEST_ASSERT(sizet_min == 0, "schar_to_sizet should convert SCHAR_MIN to 0");
+    TEST_ASSERT(errno == ERANGE, "schar_to_sizet should set errno to ERANGE for negative input");
+
+    signed char max_val = SCHAR_MAX;
+    size_t sizet_max = schar_to_sizet(max_val);
+    TEST_ASSERT(sizet_max == (size_t)SCHAR_MAX, "schar_to_sizet should convert SCHAR_MAX correctly");
+
+    signed char negative_val = -5;
+    errno = 0;
+    size_t sizet_negative = schar_to_sizet(negative_val);
+    TEST_ASSERT(sizet_negative == 0, "schar_to_sizet should convert negative values to 0");
+    TEST_ASSERT(errno == ERANGE, "schar_to_sizet should set errno to ERANGE for negative input");
+}
+
 static void test_uchar_to_sizet(void) {
     // Test with minimum unsigned char value
     unsigned char min_val = 0;
@@ -677,6 +695,8 @@ static void test_get_Decimal_From_4_byte_Float(void) {
     TEST_ASSERT(result == 3.0, "Should convert float 3.0 correctly");
 }
 
+
+
 void run_type_conversion_tests(void) {
     test_C_CAST();
     test_M_STATIC_CAST();   
@@ -692,6 +712,7 @@ void run_type_conversion_tests(void) {
     test_int64_to_sizet();
     test_uint64_to_sizet();
     test_char_to_sizet();
+    test_schar_to_sizet();
     test_uchar_to_sizet();
     test_short_to_sizet();
     test_ushort_to_sizet();
