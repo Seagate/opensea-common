@@ -29,6 +29,7 @@ static void test_fill_Random_Pattern_In_Buffer(void) {
     extern int force_calloc_fail;
     force_calloc_fail = 1;
     eReturnValues res = fill_Random_Pattern_In_Buffer(buffer, sizeof(buffer));
+    printf("Result for forced calloc failure: %d\n", res);
     TEST_ASSERT(res == MEMORY_FAILURE, "Function should return MEMORY_FAILURE when calloc fails");
     force_calloc_fail = 0;
 
