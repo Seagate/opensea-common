@@ -18,6 +18,7 @@ static void test_fill_Random_Pattern_In_Buffer(void) {
     // One way to simulate this is to temporarily redefine safe_calloc to return NULL.
     #define safe_calloc(num, size) NULL
     result = fill_Random_Pattern_In_Buffer(buffer, sizeof(buffer));
+    printf("Result for simulated memory allocation failure: %d\n", result);
     TEST_ASSERT(result == MEMORY_FAILURE, "Returns MEMORY_FAILURE when memory allocation fails");
     #undef safe_calloc
 
