@@ -21,13 +21,25 @@ double raise_to_power(double number, double power)
     {
         return 1.0;
     }
-    if (localPower == INT64_C(1))
+    if (localPower > INT64_C(0))
     {
-        return number;
+        // Positive exponent: multiply number by itself localPower times
+        for (int64_t i = INT64_C(0); i < localPower; i++)
+        {
+            result = result * number;
+        }
     }
-    for (int64_t i = INT64_C(-1); i >= localPower && localPower != INT64_C(0); i--)
+    else
     {
-        result = result * (1.0 / number);
+        // Negative exponent: multiply (1.0/number) by itself |localPower| times
+        if (number == 0.0)
+        {
+            return 0.0 / 0.0; // Division by zero: return NaN
+        }
+        for (int64_t i = INT64_C(0); i < -localPower; i++)
+        {
+            result = result * (1.0 / number);
+        }
     }
     return result;
 }
