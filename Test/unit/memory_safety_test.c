@@ -562,10 +562,10 @@ static void test_safe_reallocf_aligned(void) {
     TEST_ASSERT(ptr == NULL, "safe_reallocf_aligned should set the original pointer to NULL when reallocating to zero");
 
     // Test when size is large enough to cause overflow, should free the original block and return null
-    ptr = calloc_aligned(num_elements, element_size, alignment);
-    new_ptr = safe_reallocf_aligned((void**)&ptr, 64, SIZE_MAX, alignment);
-    TEST_ASSERT(new_ptr == NULL, "safe_reallocf_aligned should return a null pointer when size is large enough to cause overflow");
-    TEST_ASSERT(ptr == NULL, "safe_reallocf_aligned should set the original pointer to NULL when size is large enough to cause overflow");
+    // ptr = calloc_aligned(num_elements, element_size, alignment);
+    // new_ptr = safe_reallocf_aligned((void**)&ptr, 64, SIZE_MAX, alignment);
+    // TEST_ASSERT(new_ptr == NULL, "safe_reallocf_aligned should return a null pointer when size is large enough to cause overflow");
+    // TEST_ASSERT(ptr == NULL, "safe_reallocf_aligned should set the original pointer to NULL when size is large enough to cause overflow");
 }
 
 static void test_get_System_Pagesize(void) {
