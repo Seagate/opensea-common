@@ -13,6 +13,14 @@ static void test_fill_Random_Pattern_In_Buffer(void) {
     }
     printf("\n");
 
+    // Test when localPtr is NULL (simulate memory allocation failure)
+    // This is a bit tricky to test directly since it depends on the behavior of safe_calloc.
+    // One way to simulate this is to temporarily redefine safe_calloc to return NULL.
+    #define safe_calloc(num, size) NULL
+    result = fill_Random_Pattern_In_Buffer(buffer, sizeof(buffer));
+    TEST_ASSERT(result == MEMORY_FAILURE, "Returns MEMORY_FAILURE when memory allocation fails");
+    #undef safe_calloc
+
     // Test with zero data length
     // result = fill_Random_Pattern_In_Buffer(buffer, 0);
     // TEST_ASSERT(result == BAD_PARAMETER, "Gives error for zero data length");
