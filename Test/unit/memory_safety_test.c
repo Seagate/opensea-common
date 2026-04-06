@@ -528,45 +528,44 @@ static void test_safe_realloc_aligned(void) {
     // TEST_ASSERT(new_ptr == NULL, "safe_realloc_aligned should return a null pointer when size is large enough to cause overflow");
 }
 
-static void test_safe_reallocf_aligned(void) {
-    // Test where the function fails and frees the original block
-    size_t alignment = 16;
-    size_t num_elements = 10;
-    size_t element_size = sizeof(int);
-    int* ptr = calloc_aligned(num_elements, element_size, alignment);
-    for (size_t i = 0; i < num_elements; i++) {
-        ptr[i] = (int)i;
-    }
-    TEST_ASSERT(ptr != NULL, "calloc_aligned should return a non-null pointer for non-zero count and size");
+static void test_safe_reallocf_aligned(void)
+{
+    void *ptr = NULL;
+    void *result = NULL;
 
-    // Reallocate to a larger size
-    size_t new_num_elements = RSIZE_MAX * 10;
-    int* new_ptr = safe_reallocf_aligned((void**)&ptr, element_size * num_elements, element_size * new_num_elements, alignment);
-    TEST_ASSERT(new_ptr == NULL, "safe_reallocf_aligned should return a null pointer when reallocating to an excessively large size");
-    TEST_ASSERT(ptr == NULL, "safe_reallocf_aligned should return a null pointer when reallocating to a larger size fails");
-    free_aligned(new_ptr);
+    // Test when block pointer itself is NULL
+    result = safe_reallocf_aligned(NULL, 0, 100, 16);
+    TEST_ASSERT(result == NULL, "block == NULL should return NULL");
 
-    // Test when block is NULL, should return M_NULLPTR
-    new_ptr = safe_reallocf_aligned(NULL, 0, element_size * num_elements, alignment);
-    TEST_ASSERT(new_ptr == NULL, "safe_reallocf_aligned should return a null pointer when the input pointer is NULL");
+    // Test when *block == NULL (acts like malloc) 
+    result = safe_reallocf_aligned(&ptr, 0, 128, 16);
+    TEST_ASSERT(result != NULL, "Allocation should succeed");
+    TEST_ASSERT(ptr != NULL, "Pointer should be updated");
 
-    // Test when *block is NULL, should behave like safe_malloc_aligned
+    // Normal realloc 
+    void *oldptr = ptr;
+
+    result = safe_reallocf_aligned(&ptr, 128, 256, 16);
+    TEST_ASSERT(result != NULL, "Realloc should succeed");
+    TEST_ASSERT(ptr != NULL, "Pointer should still be valid");
+
+    // Test when size == 0
+    result = safe_reallocf_aligned(&ptr, 256, 0, 16);
+
+    TEST_ASSERT(result == NULL, "size 0 should return NULL");
+    TEST_ASSERT(ptr == NULL, "Pointer should be freed and set to NULL");
+
+    //realloc failure case - force allocation failure with huge size
     ptr = NULL;
-    new_ptr = safe_reallocf_aligned((void**)&ptr, 0, element_size * num_elements, alignment);
-    TEST_ASSERT(new_ptr != NULL, "safe_reallocf_aligned should return a non-null pointer when the input pointer is NULL");
-    free_aligned(new_ptr);
 
-    // Test when size is zero, should free the original block and return null
-    ptr = calloc_aligned(num_elements, element_size, alignment);
-    new_ptr = safe_reallocf_aligned((void**)&ptr, element_size * num_elements, 0, alignment);
-    TEST_ASSERT(new_ptr == NULL, "safe_reallocf_aligned should return a null pointer when reallocating to zero");
-    TEST_ASSERT(ptr == NULL, "safe_reallocf_aligned should set the original pointer to NULL when reallocating to zero");
+    result = safe_reallocf_aligned(&ptr, 0, 64, 16);
+    TEST_ASSERT(result != NULL, "Initial allocation must succeed");
 
-    // Test when size is large enough to cause overflow, should free the original block and return null
-    ptr = calloc_aligned(num_elements, element_size, alignment);
-    new_ptr = safe_reallocf_aligned((void**)&ptr, 64, SIZE_MAX, alignment);
-    TEST_ASSERT(new_ptr == NULL, "safe_reallocf_aligned should return a null pointer when size is large enough to cause overflow");
-    TEST_ASSERT(ptr == NULL, "safe_reallocf_aligned should set the original pointer to NULL when size is large enough to cause overflow");
+    // try impossible allocation
+    result = safe_reallocf_aligned(&ptr, 64, SIZE_MAX, 16);
+
+    TEST_ASSERT(result == NULL, "Allocation should fail");
+    TEST_ASSERT(ptr == NULL, "Original block should be freed");
 }
 
 static void test_get_System_Pagesize(void) {
