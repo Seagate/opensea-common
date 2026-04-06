@@ -1,10 +1,11 @@
 #include"../framework/test_framework.h"
 #include"../../include/pattern_utils.h"
 #include"../testConstants.h"
+#include <stdlib.h>
 
 int force_calloc_fail = 0;
 
-void* safe_calloc(size_t n, size_t size)
+static void* safe_calloc(size_t n, size_t size)
 {
     if (force_calloc_fail)
     {
