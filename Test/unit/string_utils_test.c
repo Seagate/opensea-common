@@ -1110,6 +1110,11 @@ static void test_find_last_occurrence_in_string(void) {
     const char* substr3 = "notfound";
     size_t offset5 = find_last_occurrence_in_string(str, substr3);
     TEST_ASSERT_EQ(offset5, strlen(str), "Should return length of string when substring is not found");
+
+    // Test for substr = 0 length string
+    const char* substr4 = "";
+    size_t offset6 = find_last_occurrence_in_string(str, substr4);
+    TEST_ASSERT_EQ(offset6, SIZE_MAX, "Should return SIZE_MAX when substring is an empty string");
 }
 
 static void test_find_first_occurrence_in_string(void) {
@@ -1134,6 +1139,7 @@ static void test_find_first_occurrence_in_string(void) {
 }
 
 static void test_wildcard_match(void) {
+    TEST_ASSERT(!wildcard_match(NULL, "string"), "Null pattern should not match any string");
     TEST_ASSERT(wildcard_match("he*o", "hello"), "Pattern with wildcard should match string");
     TEST_ASSERT(wildcard_match("h?llo", "hello"), "Pattern with single character wildcard should match string");
     TEST_ASSERT(wildcard_match("*", "anything"), "Wildcard pattern should match any string");
@@ -1169,9 +1175,10 @@ static void test_string_version_compare(void) {
     TEST_ASSERT(string_version_compare("1.0.0", "1.0.1") < 0, "Version 1.0.0 should be less than 1.0.1");
     TEST_ASSERT(string_version_compare("2.0", "10.0") < 0, "Version 2.0 should be less than 10.0");
     TEST_ASSERT(string_version_compare("file9.txt", "file10.txt") < 0, "Version file9.txt should be less than file10.txt");
+    TEST_ASSERT(string_version_compare("file01.txt", "file1.txt") < 0, "Version file01.txt should be less than file1.txt");
+    TEST_ASSERT(string_version_compare("abc", "abd") < 0, "Version abc should be less than abd");
+    TEST_ASSERT(string_version_compare("v00123", "v123") < 0, "Version v00123 should be less than v123");
 }
-
-
 
 void run_string_utils_tests(void) {
     test_strcasecmp();
