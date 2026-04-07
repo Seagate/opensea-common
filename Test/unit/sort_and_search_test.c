@@ -198,21 +198,21 @@ static void test_safe_lsearch_context(void) {
     char* arr[10] = {"apple", "banana", "cherry"};
     size_t nelp = 3;
     char* key = "Banana";
-
-    // case sensitive search for existing key
-    StringContext ctx = { .case_sensitive = 1 };
+    StringContext ctx = { .case_sensitive = 0 };
     char** found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
-    TEST_ASSERT(found == NULL, "safe_lsearch_context does not find the key in the array when case sensitive context is used");
-
-    ctx = (StringContext){ .case_sensitive = 0 };
-    found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
     TEST_ASSERT(found != NULL && strcmp(*found, "banana") == 0, "safe_lsearch_context finds the key in the array with context");
+
+    // case sensitive search
+    ctx.case_sensitive = 1;
+    found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
+    TEST_ASSERT(found != NULL && strcmp(*found, "Banana") == 0, "safe_lsearch_context inserts the non-existent key at the end of the array with context");
+    TEST_ASSERT(nelp == 4, "safe_lsearch_context increments the number of elements when inserting a new key with context");
 
     // Test searching for a non-existent key
     key = "date";
     found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
     TEST_ASSERT(found != NULL && strcmp(*found, "date") == 0, "safe_lsearch_context inserts the non-existent key at the end of the array with context");
-    TEST_ASSERT(nelp == 4, "safe_lsearch_context increments the number of elements when inserting a new key with context");
+    TEST_ASSERT(nelp == 5, "safe_lsearch_context increments the number of elements when inserting a new key with context");
     printf("Array after safe_lsearch_context: ");
     for (size_t i = 0; i < nelp; i++) {
         printf("%s ", arr[i]);
