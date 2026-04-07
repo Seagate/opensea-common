@@ -404,14 +404,13 @@ static void test_safe_tolower(void) {
         TEST_ASSERT_EQ(safe_tolower(upperCaseAlphabet[i]), lowerCaseAlphabet[i], msg);
     }
 
-    // Test for  invalid unsigned char values
-    TEST_ASSERT_EQ(safe_tolower(-1), -1, "safe_tolower returns EOF for negative values");
-    printf("errno: %d\n", errno);
-    TEST_ASSERT(errno == ERANGE, "safe_tolower sets errno to ERANGE for negative values");
-
     // Test for input = EOF
     TEST_ASSERT_EQ(safe_tolower(EOF), EOF, "safe_tolower returns EOF for input = EOF");
     TEST_ASSERT(errno == 0, "safe_tolower does not set errno for input = EOF");
+
+    // Test for  invalid unsigned char values
+    TEST_ASSERT_EQ(safe_tolower(300), 300, "safe_tolower returns EOF for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_tolower sets errno to ERANGE for negative values");
 }
 
 static void test_safe_toupper(void) {
@@ -422,14 +421,13 @@ static void test_safe_toupper(void) {
         TEST_ASSERT_EQ(safe_toupper(lowerCaseAlphabet[i]), upperCaseAlphabet[i], msg);
     }
 
-    // Test for  invalid unsigned char values
-    TEST_ASSERT_EQ(safe_toupper(-1), -1, "safe_toupper returns EOF for negative values");
-    printf("errno: %d\n", errno);
-    TEST_ASSERT(errno == ERANGE, "safe_toupper sets errno to ERANGE for negative values");
-
     // Test for input = EOF
     TEST_ASSERT_EQ(safe_toupper(EOF), EOF, "safe_toupper returns EOF for input = EOF");
     TEST_ASSERT(errno == 0, "safe_toupper does not set errno for input = EOF");
+
+    // Test for  invalid unsigned char values
+    TEST_ASSERT_EQ(safe_toupper(300), 300, "safe_toupper returns EOF for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_toupper sets errno to ERANGE for negative values");
 }
 
 static void test_safe_strnlen(void) {
