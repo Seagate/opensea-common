@@ -406,6 +406,7 @@ static void test_safe_tolower(void) {
 
     // Test for  invalid unsigned char values
     TEST_ASSERT_EQ(safe_tolower(-1), -1, "safe_tolower returns EOF for negative values");
+    printf("errno: %d\n", errno);
     TEST_ASSERT(errno == ERANGE, "safe_tolower sets errno to ERANGE for negative values");
 
     // Test for input = EOF
@@ -423,6 +424,7 @@ static void test_safe_toupper(void) {
 
     // Test for  invalid unsigned char values
     TEST_ASSERT_EQ(safe_toupper(-1), -1, "safe_toupper returns EOF for negative values");
+    printf("errno: %d\n", errno);
     TEST_ASSERT(errno == ERANGE, "safe_toupper sets errno to ERANGE for negative values");
 
     // Test for input = EOF
