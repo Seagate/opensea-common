@@ -17,9 +17,6 @@ static void test_get_Secure_User_Input(void)
     TEST_ASSERT(ret == 0, "get_Secure_User_Input succeeded");
     TEST_ASSERT(input != NULL, "Input is not NULL");
 
-    if (input == NULL)
-        return;
-
     input[strcspn(input, "\n")] = '\0';
 
     TEST_ASSERT(len > 0, "Input length is greater than 0");

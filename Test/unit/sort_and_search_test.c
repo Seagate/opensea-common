@@ -36,7 +36,7 @@ static void test_safe_qsort(void) {
     }
     printf("\n");
 
-    char char_arr[] = {'z', 'a', 'q', 'b', 'm'};
+    char char_arr[] = {'z', 'a', 'q', 'b', 'm', 'a'};
     size_t char_arr_size = sizeof(char_arr) / sizeof(char_arr[0]);
     result = safe_qsort(char_arr, char_arr_size, sizeof(char_arr[0]), compare_chars);
     TEST_ASSERT(result == 0, "safe_qsort correctly sorts the character array");
@@ -80,29 +80,17 @@ static int compare_ints_ctx(const void* a, const void* b, void* context)
     }
 }
 
-static int compare_ints_no_ctx(const void* a, const void* b, void* context)
-{
-    (void)context;  // context not used
-
-    int x = *(const int*)a;
-    int y = *(const int*)b;
-
-    if (x < y) return 1;
-    if (x > y) return -1;
-    return 0;
-}
-
 static void test_safe_qsort_context(void) {
     int arr[] = {5, 2, 9, 1, 5, 6};
     size_t arr_size = sizeof(arr) / sizeof(arr[0]);
     sort_ctx ctx = { .descending = 1 };
     errno_t result = safe_qsort_context(arr, arr_size, sizeof(arr[0]), compare_ints_ctx, &ctx);
     TEST_ASSERT(result == 0, "safe_qsort_context correctly sorts the array in descending order");
-    printf("Sorted array with context: ");
-    for (size_t i = 0; i < arr_size; i++) {
-        printf("%d ", arr[i]);
-    }
-    printf("\n");
+    
+    // Ascending order
+    ctx.descending = 0;
+    result = safe_qsort_context(arr, arr_size, sizeof(arr[0]), compare_ints_ctx, &ctx);
+    TEST_ASSERT(result == 0, "safe_qsort_context correctly sorts the array in ascending order");
 }
 
 static void test_safe_bsearch(void) {
@@ -213,6 +201,11 @@ static void test_safe_lsearch_context(void) {
     StringContext ctx = { .case_sensitive = 0 };
     char** found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
     TEST_ASSERT(found != NULL && strcmp(*found, "banana") == 0, "safe_lsearch_context finds the key in the array with context");
+
+    // case sensitive search for existing key
+    ctx.case_sensitive = 1;
+    found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
+    TEST_ASSERT(found == NULL, "safe_lsearch_context does not find the key in the array when case sensitive context is used");
 
     // Test searching for a non-existent key
     key = "date";
