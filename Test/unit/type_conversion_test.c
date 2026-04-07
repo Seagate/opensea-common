@@ -673,12 +673,10 @@ static void test_convert_128bit_to_double(void) {
 
     array[0] = 1;
     result = convert_128bit_to_double(array);
-    printf("result for 1: %f\n", result);
     TEST_ASSERT(result == 1.0, "128-bit value 1 should convert correctly");
 
     array[0] = 255;
     result = convert_128bit_to_double(array);
-    printf("result for 255: %f\n", result);
     TEST_ASSERT(result == 255.0, "128-bit value 255 should convert correctly");
 }
 

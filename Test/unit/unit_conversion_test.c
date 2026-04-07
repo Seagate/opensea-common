@@ -130,7 +130,6 @@ static void test_capacity_Unit_Convert() {
     result = capacity_Unit_Convert(&byteValue, &capacityUnit);
     TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2e21 B to 1.694066ZiB");
     TEST_ASSERT(strcmp(capacityUnit, "ZiB") == 0, "Expected capacityUnit is ZiB");
-    printf("byteValue: %f\n", byteValue);
     TEST_ASSERT_FLOAT_EQ(byteValue, 1.694066, EPSILON,"Expected byteValue is roughly 1.694066");
 
     byteValue = 2e24;
