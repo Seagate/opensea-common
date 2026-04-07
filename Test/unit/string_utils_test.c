@@ -997,8 +997,9 @@ static void test_remove_Leading_And_Trailing_Whitespace_Len(void) {
     TEST_ASSERT_EQ(strcmp(str2, ""), 0, "String with only whitespaces should become an empty string after removing leading and trailing whitespace using remove_Leading_And_Trailing_Whitespace_Len");
 
     // Test when no change is needed
-    remove_Leading_And_Trailing_Whitespace_Len(str, SIZE_OF_STACK_ARRAY(str));
-    TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "String without leading or trailing whitespace should remain unchanged when using remove_Leading_And_Trailing_Whitespace_Len");
+    char str3[] = "Hello World";
+    remove_Leading_And_Trailing_Whitespace_Len(str3, SIZE_OF_STACK_ARRAY(str3));
+    TEST_ASSERT_EQ(strcmp(str3, "Hello World"), 0, "String without leading or trailing whitespace should remain unchanged when using remove_Leading_And_Trailing_Whitespace_Len");
 }
 
 static void test_remove_Leading_And_Trailing_Control_Char(void) {
