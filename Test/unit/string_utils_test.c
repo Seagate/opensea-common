@@ -950,6 +950,7 @@ static void test_remove_Trailing_Whitespace_Len(void) {
 
     // Test when string is NULL
     remove_Trailing_Whitespace_Len(NULL, 0);
+    printf("str: '%s'\n", str);
     TEST_ASSERT_EQ(strcmp(str, "Hello World        "), 0, "String should remain unchanged when input is NULL for remove_Trailing_Whitespace_Len");
 }
 
@@ -972,6 +973,7 @@ static void test_remove_Leading_Whitespace_Len(void) {
 
     // Test when string is NULL
     remove_Leading_Whitespace_Len(NULL, 0);
+    printf("str: '%s'\n", str);
     TEST_ASSERT_EQ(strcmp(str, "         Hello World"), 0, "String should remain unchanged when input is NULL for remove_Leading_Whitespace_Len");
 }
 
@@ -999,6 +1001,7 @@ static void test_remove_Leading_And_Trailing_Whitespace_Len(void) {
 
     // Test when string is NULL
     remove_Leading_And_Trailing_Whitespace_Len(NULL, 0);
+    printf("str: '%s'\n", str);
     TEST_ASSERT_EQ(strcmp(str, "   Hello World        "), 0, "String should remain unchanged when input is NULL for remove_Leading_And_Trailing_Whitespace_Len");
 }
 
