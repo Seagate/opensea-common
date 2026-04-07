@@ -45,6 +45,14 @@ static void test_safe_qsort(void) {
         printf("%c ", char_arr[i]);
     }
     printf("\n");
+
+    // Test for size 0
+    result = safe_qsort(arr, arr_size, 0, compare_ints);
+    TEST_ASSERT(result == 0, "safe_qsort returns 0 when size is 0");
+
+    // Test for count 0
+    result = safe_qsort(arr, 0, sizeof(arr[0]), compare_ints);
+    TEST_ASSERT(result == 0, "safe_qsort returns 0 when count is 0");
 }
 
 typedef struct {

@@ -32,7 +32,7 @@ errno_t safe_qsort_impl(void*       ptr,
                         const char* expression)
 {
     errno_t           error = 0;
-    constraintEnvInfo envInfo;
+    constraintEnvInfo envInfo; 
     if (count > RSIZE_T_C(0) && ptr == M_NULLPTR)
     {
         error = EINVAL;
