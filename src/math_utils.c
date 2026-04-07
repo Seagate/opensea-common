@@ -12,22 +12,9 @@
 
 #include "math_utils.h"
 #include "type_conversion.h"
+#include <math.h>
 
 double raise_to_power(double number, double power)
 {
-    double  result     = 1.0;
-    int64_t localPower = C_CAST(int64_t, power);
-    if (localPower == INT64_C(0))
-    {
-        return 1.0;
-    }
-    if (localPower == INT64_C(1))
-    {
-        return number;
-    }
-    for (int64_t i = INT64_C(-1); i >= localPower && localPower != INT64_C(0); i--)
-    {
-        result = result * (1.0 / number);
-    }
-    return result;
+    return pow(number, power);
 }
