@@ -134,7 +134,7 @@ void* safe_bsearch_impl(const void* key,
         errno = 0;
         if (count > RSIZE_T_C(0))
         {
-            // Const cast to deal with changes to bseach for const and non-const searches in C23
+            // Const cast to deal with changes to bsearch for const and non-const searches in C23
             return M_CONST_CAST(void*, bsearch(key, ptr, count, size, compare));
         }
         else

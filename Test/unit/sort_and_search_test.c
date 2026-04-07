@@ -108,6 +108,10 @@ static void test_safe_bsearch(void) {
     key = 10;
     found = (int*)safe_bsearch(&key, arr, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL for a non-existent key");
+
+    // Test for size 0
+    found = (int*)safe_bsearch(&key, arr, arr_size, 0, compare_ints);
+    TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when count is 0");
 }
 
 typedef struct {
