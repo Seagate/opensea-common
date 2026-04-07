@@ -420,8 +420,8 @@ static void test_verify_Format_String_And_Args(void)
     TEST_ASSERT(result2 == -1, "Returns -1 for invalid argument");
 }
 
-// function test_get_Secure_User_Input added to file test_secure_inputs.c as 
-// it is an interactive test function and requires user input from terminal
+/* function test_get_Secure_User_Input added to file test_secure_inputs.c as 
+it is an interactive test function and requires user input from terminal
 
 typedef struct {
     UINTN Attribute;
@@ -480,8 +480,9 @@ typedef struct
     uint8_t expectedEFIColor;
 } ColorTestCase;
 
-// Skip for now as it is complicated to test
-// The test can differ as the OS or the terminal changes. Can be tested for windows.
+Skip for now as it is complicated to test
+The test can differ as the OS or the terminal changes. Can be tested for windows.
+
 static void test_set_Console_Colors(void) {
     ColorTestCase tests[] =
     {
@@ -493,7 +494,7 @@ static void test_set_Console_Colors(void) {
 
     for (size_t i = 0; i < sizeof(tests)/sizeof(tests[0]); i++)
     {
-        /* ---- Test Foreground ---- */
+        //Test Foreground 
         set_attribute_called = 0;
 
         set_Console_Colors(true, tests[i].color);
@@ -506,7 +507,7 @@ static void test_set_Console_Colors(void) {
                        tests[i].expectedEFIColor,
                        "Foreground color mismatch");
 
-        /* ---- Test Background ---- */
+        //Test Background
         set_attribute_called = 0;
 
         set_Console_Colors(false, tests[i].color);
@@ -520,6 +521,7 @@ static void test_set_Console_Colors(void) {
                        "Background color mismatch");
     }
 }
+*/
 
 static void test_print_Data_Buffer(void) {
     uint8_t data[] = {0xDE, 0xAD, 0xBE, 0xEF, 0x09};
