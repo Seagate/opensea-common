@@ -112,6 +112,10 @@ static void test_safe_bsearch(void) {
     // Test for size 0
     found = (int*)safe_bsearch(&key, arr, arr_size, 0, compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when count is 0");
+
+    // Test for count 0
+    found = (int*)safe_bsearch(&key, arr, 0, sizeof(arr[0]), compare_ints);
+    TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when count is 0");
 }
 
 typedef struct {
