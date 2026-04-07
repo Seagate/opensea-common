@@ -198,14 +198,15 @@ static void test_safe_lsearch_context(void) {
     char* arr[10] = {"apple", "banana", "cherry"};
     size_t nelp = 3;
     char* key = "Banana";
-    StringContext ctx = { .case_sensitive = 0 };
-    char** found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
-    TEST_ASSERT(found != NULL && strcmp(*found, "banana") == 0, "safe_lsearch_context finds the key in the array with context");
 
     // case sensitive search for existing key
-    ctx.case_sensitive = 1;
-    found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
+    StringContext ctx = { .case_sensitive = 1 };
+    char** found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
     TEST_ASSERT(found == NULL, "safe_lsearch_context does not find the key in the array when case sensitive context is used");
+
+    ctx = (StringContext){ .case_sensitive = 0 };
+    found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
+    TEST_ASSERT(found != NULL && strcmp(*found, "banana") == 0, "safe_lsearch_context finds the key in the array with context");
 
     // Test searching for a non-existent key
     key = "date";
