@@ -168,6 +168,10 @@ static void test_safe_isdigit(void) {
         snprintf(msg, sizeof(msg), "Non-digit character %c return 0", specialChars[i]);
         TEST_ASSERT_EQ(safe_isdigit(specialChars[i]), 0, msg);
     }
+
+    // Test for invalid unsigned char values
+    TEST_ASSERT_EQ(safe_isdigit(-1), 0, "safe_isdigit returns 0 for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_isdigit sets errno to ERANGE for negative values");
 }
 
 static void test_safe_isxdigit(void) {
@@ -200,6 +204,10 @@ static void test_safe_isxdigit(void) {
         snprintf(msg, sizeof(msg), "Non-hexadecimal digit character %c return 0", specialChars[i]);
         TEST_ASSERT_EQ(safe_isxdigit(specialChars[i]), 0, msg);
     }
+
+    // Test for invalid unsigned char values
+    TEST_ASSERT_EQ(safe_isxdigit(-1), 0, "safe_isxdigit returns 0 for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_isxdigit sets errno to ERANGE for negative values");
 }
 
 uint8_t cntrl_chars[] = {
@@ -237,6 +245,10 @@ static void test_safe_iscntrl(void) {
         snprintf(msg, sizeof(msg), "Non-control character %c return 0", specialChars[i]);
         TEST_ASSERT_EQ(safe_iscntrl(specialChars[i]), 0, msg);
     }
+
+    // Test for invalid unsigned char values
+    TEST_ASSERT_EQ(safe_iscntrl(-1), 0, "safe_iscntrl returns 0 for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_iscntrl sets errno to ERANGE for negative values");
 }
 
 char space_chars[] = " \t\n\r\f\v";
@@ -273,6 +285,10 @@ static void test_safe_isgraph(void) {
         snprintf(msg, sizeof(msg), "Whitespace character returns 0", space_chars[i]);
         TEST_ASSERT_EQ(safe_isgraph(space_chars[i]), 0, msg);
     }
+
+    // Test for invalid unsigned char values
+    TEST_ASSERT_EQ(safe_isgraph(-1), 0, "safe_isgraph returns 0 for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_isgraph sets errno to ERANGE for negative values");
 }
 
 static void test_safe_isspace(void) {
@@ -302,6 +318,10 @@ static void test_safe_isspace(void) {
         snprintf(msg, sizeof(msg), "Non-whitespace character %c return 0", specialChars[i]);
         TEST_ASSERT_EQ(safe_isspace(specialChars[i]), 0, msg);
     }
+
+    // Test for invalid unsigned char values
+    TEST_ASSERT_EQ(safe_isspace(-1), 0, "safe_isspace returns 0 for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_isspace sets errno to ERANGE for negative values");
 }
 
 static void test_safe_isblank(void) {
@@ -336,6 +356,10 @@ static void test_safe_isblank(void) {
         snprintf(msg, sizeof(msg), "Non-blank character %c returns 0", specialChars[i]);
         TEST_ASSERT_EQ(safe_isblank(specialChars[i]), 0, msg);
     }
+
+    // Test for invalid unsigned char values
+    TEST_ASSERT_EQ(safe_isblank(-1), 0, "safe_isblank returns 0 for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_isblank sets errno to ERANGE for negative values");
 }
 
 static void test_safe_isprint(void) {
@@ -365,6 +389,10 @@ static void test_safe_isprint(void) {
         snprintf(msg, sizeof(msg), "Control character 0x%02X returns 0", cntrl_chars[i]);
         TEST_ASSERT_EQ(safe_isprint(cntrl_chars[i]), 0, msg);
     }
+
+    // Test for invalid unsigned char values
+    TEST_ASSERT_EQ(safe_isprint(-1), 0, "safe_isprint returns 0 for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_isprint sets errno to ERANGE for negative values");
 }
 
 static void test_safe_ispunct(void) {
@@ -394,6 +422,10 @@ static void test_safe_ispunct(void) {
         snprintf(msg, sizeof(msg), "Non-punctuation character 0x%02X returns 0", cntrl_chars[i]);
         TEST_ASSERT_EQ(safe_ispunct(cntrl_chars[i]), 0, msg);
     }
+
+    // Test for invalid unsigned char values
+    TEST_ASSERT_EQ(safe_ispunct(-1), 0, "safe_ispunct returns 0 for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_ispunct sets errno to ERANGE for negative values");
 }
 
 static void test_safe_tolower(void) {
