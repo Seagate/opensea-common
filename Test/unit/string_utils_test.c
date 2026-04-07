@@ -1016,30 +1016,55 @@ static void test_remove_Leading_And_Trailing_Control_Char_Len(void) {
 
 static void test_convert_String_To_Upper_Case(void) {
     char str[] = "HEllO World!";
+
+    // Test when string is NULL
+    convert_String_To_Upper_Case(NULL);
+    TEST_ASSERT_EQ(strcmp(str, "HEllO World!"), 0, "String should remain unchanged when input is NULL for convert_String_To_Upper_Case");
+
     convert_String_To_Upper_Case(str);
     TEST_ASSERT_EQ(strcmp(str, "HELLO WORLD!"), 0, "String should be converted to upper case");
 }
 
 static void test_convert_String_To_Upper_Case_Len(void) {
     char str[] = "HEllO World!";
+
+    // Test when string is NULL
+    convert_String_To_Upper_Case_Len(NULL, 0);
+    TEST_ASSERT_EQ(strcmp(str, "HEllO World!"), 0, "String should remain unchanged when input is NULL for convert_String_To_Upper_Case_Len");
+
     convert_String_To_Upper_Case_Len(str, SIZE_OF_STACK_ARRAY(str));
     TEST_ASSERT_EQ(strcmp(str, "HELLO WORLD!"), 0, "String should be converted to upper case using convert_String_To_Upper_Case_Len");
 }
 
 static void test_convert_String_To_Lower_Case(void) {
     char str[] = "HEllO World!";
+
+    // Test when string is NULL
+    convert_String_To_Lower_Case(NULL);
+    TEST_ASSERT_EQ(strcmp(str, "HEllO World!"), 0, "String should remain unchanged when input is NULL for convert_String_To_Lower_Case");
+
     convert_String_To_Lower_Case(str);
     TEST_ASSERT_EQ(strcmp(str, "hello world!"), 0, "String should be converted to lower case");
 }
 
 static void test_convert_String_To_Lower_Case_Len(void) {
     char str[] = "HEllO World!";
+
+    // Test when string is NULL
+    convert_String_To_Lower_Case_Len(NULL, 0);
+    TEST_ASSERT_EQ(strcmp(str, "HEllO World!"), 0, "String should remain unchanged when input is NULL for convert_String_To_Lower_Case_Len");
+
     convert_String_To_Lower_Case_Len(str, SIZE_OF_STACK_ARRAY(str));
     TEST_ASSERT_EQ(strcmp(str, "hello world!"), 0, "String should be converted to lower case using convert_String_To_Lower_Case_Len");
 }
 
 static void test_convert_String_To_Inverse_Case(void) {
     char str[] = "hello world!";
+
+    // Test when string is NULL
+    convert_String_To_Inverse_Case(NULL);
+    TEST_ASSERT_EQ(strcmp(str, "hello world!"), 0, "String should remain unchanged when input is NULL for convert_String_To_Inverse_Case");
+
     convert_String_To_Inverse_Case(str);
     TEST_ASSERT_EQ(strcmp(str, "HELLO WORLD!"), 0, "Lower case string should be converted to upper case");
 
@@ -1050,6 +1075,11 @@ static void test_convert_String_To_Inverse_Case(void) {
 
 static void test_convert_String_To_Inverse_Case_Len(void) {
     char str[] = "hello world!";
+
+    // Test when string is NULL
+    convert_String_To_Inverse_Case_Len(NULL, 0);
+    TEST_ASSERT_EQ(strcmp(str, "hello world!"), 0, "String should remain unchanged when input is NULL for convert_String_To_Inverse_Case_Len");
+
     convert_String_To_Inverse_Case_Len(str, SIZE_OF_STACK_ARRAY(str));
     TEST_ASSERT_EQ(strcmp(str, "HELLO WORLD!"), 0, "Lower case string should be converted to upper case using convert_String_To_Inverse_Case_Len");
 
@@ -1062,27 +1092,45 @@ static void test_find_last_occurrence_in_string(void) {
     const char* str = "This test string contains the word test multiple times to test the function.";
     const char* substr = "test";
     const char* substr2 = "the";
-    size_t offset = find_last_occurrence_in_string(str, substr);
-    size_t offset2 = find_last_occurrence_in_string(str, substr2);
-    TEST_ASSERT_EQ(offset, 18, "Last occurrence of substring should be at offset 18 from end of string");
-    TEST_ASSERT_EQ(offset2, 13, "Last occurrence of substring 'the' should be at offset 13 from end of string");
+
+    // Test if str is NULL
+    size_t offset = find_last_occurrence_in_string(NULL, substr);
+    TEST_ASSERT_EQ(offset, SIZE_MAX, "Should return SIZE_MAX when input string is NULL for find_last_occurrence_in_string");
+
+    // Test if substr is NULL
+    size_t offset2 = find_last_occurrence_in_string(str, NULL);
+    TEST_ASSERT_EQ(offset2, SIZE_MAX, "Should return SIZE_MAX when substring is NULL for find_last_occurrence_in_string");
+
+    size_t offset3 = find_last_occurrence_in_string(str, substr);
+    size_t offset4 = find_last_occurrence_in_string(str, substr2);
+    TEST_ASSERT_EQ(offset3, 18, "Last occurrence of substring should be at offset 18 from end of string");
+    TEST_ASSERT_EQ(offset4, 13, "Last occurrence of substring 'the' should be at offset 13 from end of string");
 
     // Test for substring not found
     const char* substr3 = "notfound";
-    size_t offset3 = find_last_occurrence_in_string(str, substr3);
-    TEST_ASSERT_EQ(offset3, strlen(str), "Should return size of string when substring is not found");
+    size_t offset5 = find_last_occurrence_in_string(str, substr3);
+    TEST_ASSERT_EQ(offset5, SIZE_MAX, "Should return SIZE_MAX when substring is not found");
 }
 
 static void test_find_first_occurrence_in_string(void) {
     const char* str = "This test string contains the word test multiple times to test the function.";
     const char* substr = "test";
-    size_t offset = find_first_occurrence_in_string(str, substr);
-    TEST_ASSERT_EQ(offset, 5, "First occurrence of substring should be at offset 5 from start of string");
+
+    // Test if str is NULL
+    size_t offset = find_first_occurrence_in_string(NULL, substr);
+    TEST_ASSERT_EQ(offset, SIZE_MAX, "Should return SIZE_MAX when input string is NULL for find_first_occurrence_in_string");
+
+    // Test if substr is NULL
+    size_t offset2 = find_first_occurrence_in_string(str, NULL);
+    TEST_ASSERT_EQ(offset2, SIZE_MAX, "Should return SIZE_MAX when substring is NULL for find_first_occurrence_in_string");
+
+    size_t offset3 = find_first_occurrence_in_string(str, substr);
+    TEST_ASSERT_EQ(offset3, 5, "First occurrence of substring should be at offset 5 from start of string");
 
     // Test for substring not found
     const char* substr2 = "notfound";
-    size_t offset2 = find_first_occurrence_in_string(str, substr2);
-    TEST_ASSERT_EQ(offset2, SIZE_MAX , "Should return size of string when substring is not found");
+    size_t offset4 = find_first_occurrence_in_string(str, substr2);
+    TEST_ASSERT_EQ(offset4, SIZE_MAX , "Should return SIZE_MAX when substring is not found");
 }
 
 static void test_wildcard_match(void) {
