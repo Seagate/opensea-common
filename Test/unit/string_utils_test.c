@@ -549,6 +549,12 @@ static void test_safe_strncpy(void) {
     TEST_ASSERT_EQ(strncmp(dest, src, 5), 0, "First n characters are correctly copied to destination buffer");
     TEST_ASSERT_EQ(dest[5], '\0', "Destination buffer is null-terminated after copying n characters");
 
+    // Test when srclen < count
+    char shortSrc[5] = "Hi";
+    safe_strncpy(dest, sizeof(dest), shortSrc, 5);
+    TEST_ASSERT_EQ(strncmp(dest, shortSrc, 5), 0, "When srclen is less than count, entire source string is copied and destination buffer is null-terminated");
+    TEST_ASSERT_EQ(dest[2], '\0', "Destination buffer is null-terminated after copying entire source string when srclen is less than count");
+
     // Test for buffer overflow protection
     // char smallDest[5];
     // errno = 0;

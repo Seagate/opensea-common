@@ -280,7 +280,7 @@ int safe_ispunct(int c)
         return 0;
     }
 }
-
+ 
 errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
                          rsize_t                destsz,
                          const char* M_RESTRICT src,
