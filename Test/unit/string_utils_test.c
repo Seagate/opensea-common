@@ -947,6 +947,10 @@ static void test_remove_Trailing_Whitespace_Len(void) {
     remove_Trailing_Whitespace_Len(str, SIZE_OF_STACK_ARRAY(str));
     printf("Result after removing trailing whitespace: '%s'\n", str);
     TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Trailing whitespace should be removed using remove_Trailing_Whitespace_Len");
+
+    // Test when string is NULL
+    remove_Trailing_Whitespace_Len(NULL, 0);
+    TEST_ASSERT_EQ(strcmp(str, "Hello World        "), 0, "String should remain unchanged when input is NULL for remove_Trailing_Whitespace_Len");
 }
 
 static void test_remove_Leading_Whitespace(void) {
@@ -965,6 +969,10 @@ static void test_remove_Leading_Whitespace_Len(void) {
     char str[] = "         Hello World";
     remove_Leading_Whitespace_Len(str, SIZE_OF_STACK_ARRAY(str));
     TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Leading whitespace should be removed using remove_Leading_Whitespace_Len");
+
+    // Test when string is NULL
+    remove_Leading_Whitespace_Len(NULL, 0);
+    TEST_ASSERT_EQ(strcmp(str, "         Hello World"), 0, "String should remain unchanged when input is NULL for remove_Leading_Whitespace_Len");
 }
 
 static void test_remove_Leading_And_Trailing_Whitespace(void) {
@@ -983,6 +991,15 @@ static void test_remove_Leading_And_Trailing_Whitespace_Len(void) {
     remove_Leading_And_Trailing_Whitespace_Len(str2, SIZE_OF_STACK_ARRAY(str2));
     printf("Result after removing leading and trailing whitespace from a string with only whitespaces: '%s'\n", str2);
     TEST_ASSERT_EQ(strcmp(str2, ""), 0, "String with only whitespaces should become an empty string after removing leading and trailing whitespace using remove_Leading_And_Trailing_Whitespace_Len");
+
+    // Test when no change is needed
+    char str3[] = "Hello World";
+    remove_Leading_And_Trailing_Whitespace_Len(str3, SIZE_OF_STACK_ARRAY(str3));
+    TEST_ASSERT_EQ(strcmp(str3, "Hello World"), 0, "String without leading or trailing whitespace should remain unchanged when using remove_Leading_And_Trailing_Whitespace_Len");
+
+    // Test when string is NULL
+    remove_Leading_And_Trailing_Whitespace_Len(NULL, 0);
+    TEST_ASSERT_EQ(strcmp(str, "   Hello World        "), 0, "String should remain unchanged when input is NULL for remove_Leading_And_Trailing_Whitespace_Len");
 }
 
 static void test_remove_Leading_And_Trailing_Control_Char(void) {
