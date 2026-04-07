@@ -58,7 +58,7 @@ static int is_valid_unsigned_char_range(int c)
     return (c >= 0 && c <= UCHAR_MAX);
 }
 
-int safe_isascii(int c)
+int safe_isascii(int c) 
 {
     if (is_valid_unsigned_char_range(c))
     {

@@ -25,6 +25,8 @@ static void test_safe_isascii(void) {
     TEST_ASSERT_EQ(safe_isascii('A'), 1, "ASCII characters return non-zero value using safe_isascii");
     TEST_ASSERT_EQ(safe_isascii(290), 0, "non-ASCII characters return 0 using safe_isascii");
     TEST_ASSERT_EQ(safe_isascii(-1), 0, "EOF returns 0 using safe_isascii");
+    // handles eof
+    TEST_ASSERT_EQ(safe_isascii(EOF), 0, "EOF returns 0 using safe_isascii");
 }
 
 char lowerCaseAlphabet[] = "abcdefghijklmnopqrstuvwxyz";
@@ -54,6 +56,10 @@ static void test_safe_isalnum(void) {
         snprintf(msg, sizeof(msg), "Non-alphanumeric character %c return 0", specialChars[i]);
         TEST_ASSERT_EQ(safe_isalnum(specialChars[i]), 0, msg);
     }
+
+    // Test for invalid unsigned char values
+    TEST_ASSERT_EQ(safe_isalnum(-1), 0, "safe_isalnum returns 0 for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_isalnum sets errno to ERANGE for negative values");
 }
 
 static void test_safe_isalpha(void) {
@@ -78,6 +84,10 @@ static void test_safe_isalpha(void) {
         snprintf(msg, sizeof(msg), "Non-alphabetic character %c return 0", specialChars[i]);
         TEST_ASSERT_EQ(safe_isalpha(specialChars[i]), 0, msg);
     }
+
+    // Test for invalid unsigned char values
+    TEST_ASSERT_EQ(safe_isalpha(-1), 0, "safe_isalpha returns 0 for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_isalpha sets errno to ERANGE for negative values");
 }
 
 static void test_safe_islower(void) {
@@ -102,6 +112,10 @@ static void test_safe_islower(void) {
         snprintf(msg, sizeof(msg), "Non-lowercase character %c return 0", specialChars[i]);
         TEST_ASSERT_EQ(safe_islower(specialChars[i]), 0, msg);
     }
+
+    // Test for invalid unsigned char values
+    TEST_ASSERT_EQ(safe_islower(-1), 0, "safe_islower returns 0 for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_islower sets errno to ERANGE for negative values");
 }
 
 static void test_safe_isupper(void) {
@@ -126,6 +140,10 @@ static void test_safe_isupper(void) {
         snprintf(msg, sizeof(msg), "Non-uppercase character %c return 0", specialChars[i]);
         TEST_ASSERT_EQ(safe_isupper(specialChars[i]), 0, msg);
     }
+
+    // Test for invalid unsigned char values
+    TEST_ASSERT_EQ(safe_isupper(-1), 0, "safe_isupper returns 0 for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_isupper sets errno to ERANGE for negative values");
 }
 
 static void test_safe_isdigit(void) {
@@ -385,6 +403,14 @@ static void test_safe_tolower(void) {
         snprintf(msg, sizeof(msg), "tolower converts %c to %c", upperCaseAlphabet[i], lowerCaseAlphabet[i]);
         TEST_ASSERT_EQ(safe_tolower(upperCaseAlphabet[i]), lowerCaseAlphabet[i], msg);
     }
+
+    // Test for  invalid unsigned char values
+    TEST_ASSERT_EQ(safe_tolower(-1), -1, "safe_tolower returns EOF for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_tolower sets errno to ERANGE for negative values");
+
+    // Test for input = EOF
+    TEST_ASSERT_EQ(safe_tolower(EOF), EOF, "safe_tolower returns EOF for input = EOF");
+    TEST_ASSERT(errno == 0, "safe_tolower does not set errno for input = EOF");
 }
 
 static void test_safe_toupper(void) {
@@ -394,6 +420,14 @@ static void test_safe_toupper(void) {
         snprintf(msg, sizeof(msg), "toupper converts %c to %c", lowerCaseAlphabet[i], upperCaseAlphabet[i]);
         TEST_ASSERT_EQ(safe_toupper(lowerCaseAlphabet[i]), upperCaseAlphabet[i], msg);
     }
+
+    // Test for  invalid unsigned char values
+    TEST_ASSERT_EQ(safe_toupper(-1), -1, "safe_toupper returns EOF for negative values");
+    TEST_ASSERT(errno == ERANGE, "safe_toupper sets errno to ERANGE for negative values");
+
+    // Test for input = EOF
+    TEST_ASSERT_EQ(safe_toupper(EOF), EOF, "safe_toupper returns EOF for input = EOF");
+    TEST_ASSERT(errno == 0, "safe_toupper does not set errno for input = EOF");
 }
 
 static void test_safe_strnlen(void) {
