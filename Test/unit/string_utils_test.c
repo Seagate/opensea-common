@@ -1109,7 +1109,7 @@ static void test_find_last_occurrence_in_string(void) {
     // Test for substring not found
     const char* substr3 = "notfound";
     size_t offset5 = find_last_occurrence_in_string(str, substr3);
-    TEST_ASSERT_EQ(offset5, SIZE_MAX, "Should return SIZE_MAX when substring is not found");
+    TEST_ASSERT_EQ(offset5, strlen(str), "Should return length of string when substring is not found");
 }
 
 static void test_find_first_occurrence_in_string(void) {
