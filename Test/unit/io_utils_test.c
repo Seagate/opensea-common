@@ -269,8 +269,34 @@ static void test_get_And_Validate_Float_Input(void) {
     TEST_ASSERT(get_And_Validate_Float_Input("123SECTORS", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
     TEST_ASSERT(get_And_Validate_Float_Input("123", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
 
+    // unittype - ALLOW_UNIT_SECTOR_TYPE
+    TEST_ASSERT(get_And_Validate_Float_Input("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("5l", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("5logical", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("5physical", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("5", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat), "Converted string to float successfully");
+
+    // unittype - ALLOW_UNIT_TIME
+    TEST_ASSERT(get_And_Validate_Float_Input("12ns", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12us", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12ms", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12s", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12m", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12h", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
+
+    // unittype - ALLOW_UNIT_POWER
+    TEST_ASSERT(get_And_Validate_Float_Input("123w", &unit, ALLOW_UNIT_POWER, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123mw", &unit, ALLOW_UNIT_POWER, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123", &unit, ALLOW_UNIT_POWER, &outputFloat), "Converted string to float successfully");
+
+    // unittype - ALLOW_UNIT_VOLTS
+    TEST_ASSERT(get_And_Validate_Float_Input("12v", &unit, ALLOW_UNIT_VOLTS, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12mv", &unit, ALLOW_UNIT_VOLTS, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12", &unit, ALLOW_UNIT_VOLTS, &outputFloat), "Converted string to float successfully");
+
+    TEST_ASSERT(get_And_Validate_Float_Input("20.34", NULL, ALLOW_UNIT_NONE, &outputFloat), "Converted string to float successfully");
     TEST_ASSERT(get_And_Validate_Float_Input("20.34f", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("56.78ms", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
     TEST_ASSERT(!get_And_Validate_Float_Input("xyz", NULL, ALLOW_UNIT_NONE, &outputFloat), "Could not convert string to float successfully");
     TEST_ASSERT(!get_And_Validate_Float_Input("123KB", &unit, ALLOW_UNIT_NONE, &outputFloat), "Could not convert string to float successfully");
 }
