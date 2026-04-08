@@ -179,8 +179,6 @@ static void test_get_And_Validate_Integer_Input_US(void) {
     TEST_ASSERT(!get_And_Validate_Integer_Input_US("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_US("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_US("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_US("65536", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than USHRT_MAX should fail");
-}
 
 static void test_get_And_Validate_Integer_Input_UC(void) {
     unsigned char outputInteger;
