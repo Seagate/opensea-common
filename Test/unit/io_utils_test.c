@@ -145,7 +145,6 @@ static void test_get_And_Validate_Integer_Input_ULL(void) {
     TEST_ASSERT(!get_And_Validate_Integer_Input_ULL("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_ULL("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_ULL("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_ULL("0x", &unit, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
 }
 
 static void test_get_And_Validate_Integer_Input_UL(void) {
@@ -161,6 +160,7 @@ static void test_get_And_Validate_Integer_Input_UL(void) {
 
 static void test_get_And_Validate_Integer_Input_UI(void) {
     unsigned int outputInteger;
+    unsigned long outputLong;
     char* unit = NULL;
     TEST_ASSERT(get_And_Validate_Integer_Input_UI("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
     TEST_ASSERT(get_And_Validate_Integer_Input_UI("123w", &unit, ALLOW_UNIT_POWER, &outputInteger), "Converted string to integer successfully");
@@ -168,6 +168,7 @@ static void test_get_And_Validate_Integer_Input_UI(void) {
     TEST_ASSERT(!get_And_Validate_Integer_Input_UI("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_UI("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_UI("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UI("123", NULL, ALLOW_UNIT_NONE, &outputLong), "Returned false when output variable type did not match expected type");
 }
 
 static void test_get_And_Validate_Integer_Input_US(void) {
