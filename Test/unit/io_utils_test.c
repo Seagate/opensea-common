@@ -252,6 +252,8 @@ static void test_get_And_Validate_Integer_Input_C(void) {
     TEST_ASSERT(!get_And_Validate_Integer_Input_C("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_C("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_C("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_C("128", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than CHAR_MAX should fail");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_C("-129", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value smaller than CHAR_MIN should fail");
 }
 
 static void test_get_And_Validate_Float_Input(void) {
