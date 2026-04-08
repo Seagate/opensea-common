@@ -1,5 +1,6 @@
 #include"../framework/test_framework.h"
 #include"../../include/io_utils.h"
+#include"../../include/pattern_utils.h"
 #include"../testConstants.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -680,6 +681,14 @@ static void test_print_Return_Enum(void) {
 
     // Test when funcName is NULL
     print_Return_Enum(NULL, FAILURE);
+
+    // Test when returnValue is SUCCESS
+    uint8_t buffer[10];
+    print_Return_Enum(fill_Random_Pattern_In_Buffer(buffer, sizeof(buffer)), SUCCESS);
+
+    // Test when returnValue is BAD_PARAMETER
+    uint8_t startValue = 0x00;
+    print_Return_Enum(fill_Incrementing_Pattern_In_Buffer(startValue, NULL, sizeof(buffer)), BAD_PARAMETER);
 }
 
 static void test_flush_stdout(void) {
