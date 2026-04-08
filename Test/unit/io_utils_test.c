@@ -677,6 +677,9 @@ static void test_print_Return_Enum(void) {
 
     TEST_ASSERT(strstr(buffer, "get_Secure_User_Input returning: FAILURE") != NULL, "Return enum printed correctly");
     fclose(fp);
+
+    // Test when funcName is NULL
+    print_Return_Enum(NULL, FAILURE);
 }
 
 static void test_flush_stdout(void) {
