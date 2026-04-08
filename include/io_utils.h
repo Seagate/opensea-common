@@ -402,7 +402,7 @@ extern "C"
     //!
     //! \param[in] strToConvert The buffer to convert to a float.
     //! \param[out] unit Pointer to the unit string.
-    //! \param[in] unittype The type of unit allowed.
+    //! \param[in] unittype The type of unit allowed. 
     //! \param[out] outputFloat Pointer to the float to store the output.
     //! \return true if able to read a float number, false if the format is invalid.
     M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)

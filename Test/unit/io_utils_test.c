@@ -254,6 +254,21 @@ static void test_get_And_Validate_Float_Input(void) {
     float outputFloat;
     char* unit = NULL;
     TEST_ASSERT(get_And_Validate_Float_Input("12.34", NULL, ALLOW_UNIT_NONE, &outputFloat), "Converted string to float successfully");
+
+    // unittype - ALLOW_UNIT_DATASIZE
+    TEST_ASSERT(get_And_Validate_Float_Input("123B", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123KB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123KiB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123MB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123MiB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123GB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123GiB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123TB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123TiB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123BLOCKS", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123SECTORS", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
+
     TEST_ASSERT(get_And_Validate_Float_Input("20.34f", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to float successfully");
     TEST_ASSERT(get_And_Validate_Float_Input("56.78ms", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
     TEST_ASSERT(!get_And_Validate_Float_Input("xyz", NULL, ALLOW_UNIT_NONE, &outputFloat), "Could not convert string to float successfully");
@@ -329,7 +344,7 @@ static void test_getdelim(void) {
                 "Line read matches expected content");
 
     fclose(testFile);
-    free(buffer);
+    free(buffer); 
 }
 
 static void test_asprintf(void) {
