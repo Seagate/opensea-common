@@ -227,6 +227,8 @@ static void test_get_And_Validate_Integer_Input_I(void) {
     TEST_ASSERT(!get_And_Validate_Integer_Input_I("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_I("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_I("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_I("2147483648", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than INT_MAX should fail");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_I("-2147483649", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value smaller than INT_MIN should fail");
 }
 
 static void test_get_And_Validate_Integer_Input_S(void) {
