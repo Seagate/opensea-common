@@ -126,6 +126,9 @@ static void test_get_And_Validate_Integer_Input_Int16(void) {
     TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("32768", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than INT16_MAX should fail");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("-32769", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value smaller than INT16_MIN should fail");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int16(NULL, NULL, ALLOW_UNIT_NONE, &outputInteger),"Null string should not be converted to integer successfully");
 }
 
 static void test_get_And_Validate_Integer_Input_Int8(void) {
@@ -138,6 +141,9 @@ static void test_get_And_Validate_Integer_Input_Int8(void) {
     TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("127", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than INT8_MAX should fail");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("-128", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value smaller than INT8_MIN should fail");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8(NULL, NULL, ALLOW_UNIT_NONE, &outputInteger),"Null string should not be converted to integer successfully");
 }
 
 static void test_get_And_Validate_Integer_Input_ULL(void) {
