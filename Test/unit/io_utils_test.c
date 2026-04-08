@@ -683,13 +683,13 @@ static void test_print_Return_Enum(void) {
     print_Return_Enum(NULL, FAILURE);
 
     // Test when returnValue is SUCCESS
-    uint8_t buffer[10];
-    eReturnValues result_success = fill_Random_Pattern_In_Buffer(buffer, sizeof(buffer));
+    uint8_t buffer1[10];
+    eReturnValues result_success = fill_Random_Pattern_In_Buffer(buffer1, sizeof(buffer1));
     print_Return_Enum("fill_Random_Pattern_In_Buffer", result_success);
 
     // Test when returnValue is BAD_PARAMETER
     uint8_t startValue = 0x00;
-    eReturnValues result_bad_param = fill_Incrementing_Pattern_In_Buffer(startValue, NULL, sizeof(buffer));
+    eReturnValues result_bad_param = fill_Incrementing_Pattern_In_Buffer(startValue, NULL, sizeof(buffer1));
     print_Return_Enum("fill_Incrementing_Pattern_In_Buffer", result_bad_param);
 }
 
