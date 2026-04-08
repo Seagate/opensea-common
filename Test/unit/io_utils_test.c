@@ -88,6 +88,8 @@ static void test_get_And_Validate_Integer_Input_Uint8(void) {
     TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8("256", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than UINT8_MAX should fail");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8(NULL, NULL, ALLOW_UNIT_NONE, &outputInteger),"Null string should not be converted to integer successfully");
 }
 
 static void test_get_And_Validate_Integer_Input_Int64(void) {
