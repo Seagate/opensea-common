@@ -190,7 +190,7 @@ static void test_fahrenheit_To_celsius(void) {
 
     fahrenheit = -459;
     celsius = fahrenheit_To_celsius(&fahrenheit);
-    TEST_ASSERT(celsius == -272, "Expected -459°F to be -272°C");
+    TEST_ASSERT(celsius == -273, "Expected -459°F to be -273°C");
 }
 
 static void test_celsius_To_Kelvin(void) {
@@ -218,7 +218,7 @@ static void test_fahrenheit_To_Kelvin(void) {
 
     fahrenheit = -459;
     kelvin = fahrenheit_To_Kelvin(&fahrenheit);
-    TEST_ASSERT(kelvin == 1, "Expected -459°F to be 1K");
+    TEST_ASSERT(kelvin == 0, "Expected -459°F to be 0K");
 }
 
 static void test_kelvin_To_Celsius(void) {
