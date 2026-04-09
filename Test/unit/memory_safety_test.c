@@ -599,12 +599,10 @@ static void test_malloc_page_aligned(void) {
     // Allocating size > RSIZE_MAX should return null
     char* ptr2 = malloc_page_aligned(RSIZE_MAX + 1);
     TEST_ASSERT(ptr2 == NULL, "malloc_page_aligned should return a null pointer for a size greater than RSIZE_MAX");
-    free_page_aligned(ptr2);
 
     // Allocating size of zero should return null
     char* ptr3 = malloc_page_aligned(0);
     TEST_ASSERT(ptr3 == NULL, "malloc_page_aligned should return a null pointer for a size of zero");
-    free_page_aligned(ptr3);
 }
 
 static void test_safe_free_page_aligned_core(void) {
@@ -805,6 +803,9 @@ static void test_safe_memcmove(void) {
     result = safe_memcmove(dest, sizeof(dest), src, 'o', 3);
     TEST_ASSERT(result == 0, "safe_memcmove should return zero when the count is less than the position of the specified character");
     TEST_ASSERT(strncmp(dest, src, 3) == 0, "safe_memcmove should copy only the specified count of bytes when the count is less than the position of the specified character");
+
+    // Test when dest is NULL
+    result = safe_memcmove(NULL, sizeof(dest), src, 'o', sizeof(src));
 }
 
 static void test_get_memalignment(void) {
