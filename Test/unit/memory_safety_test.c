@@ -260,11 +260,14 @@ static void test_is_Empty(void) {
 }
 
 static void test_safe_memset(void) {
-    char buffer[10];
+    char buffer[10]; 
     safe_memset(buffer, sizeof(buffer), '3', sizeof(buffer));
     for (size_t i = 0; i < sizeof(buffer); i++) {
         TEST_ASSERT(buffer[i] == '3', "safe_memset should set all bytes in the buffer to '3'");
     }
+
+    // Test when dest is NULL
+    TEST_ASSERT(safe_memset(NULL, sizeof(buffer), '3', sizeof(buffer)) != 0, "safe_memset should return an error code when dest is NULL");
 }
 
 static void test_explicit_zeroes(void) {
