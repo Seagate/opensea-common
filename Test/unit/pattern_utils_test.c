@@ -50,7 +50,7 @@ static void test_fill_Incrementing_Pattern_In_Buffer(void) {
     eReturnValues result = fill_Incrementing_Pattern_In_Buffer(startValue, buffer, sizeof(buffer));
     TEST_ASSERT(result == SUCCESS, "Expected SUCCESS for valid parameters");
 
-    // Test with zero data length
+    // Test with zero data length 
     result = fill_Incrementing_Pattern_In_Buffer(startValue, buffer, 0);
 
     // Test with null pointer

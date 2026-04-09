@@ -603,6 +603,7 @@ static void test_malloc_page_aligned(void) {
 
     // Allocating size of zero should return null
     ptr = malloc_page_aligned(0);
+    TEST_ASSERT(ptr == NULL, "malloc_page_aligned should return a null pointer for a size of zero");
 }
 
 static void test_safe_free_page_aligned_core(void) {
@@ -642,7 +643,7 @@ static void test_calloc_page_aligned(void) {
     ptr = calloc_page_aligned(0, element_size);
     TEST_ASSERT(ptr == NULL, "calloc_page_aligned should return a null pointer for a count of zero");
 
-    // Test for size of zero
+    // Test for size of zero    
     ptr = calloc_page_aligned(10, 0);
     TEST_ASSERT(ptr == NULL, "calloc_page_aligned should return a null pointer for a size of zero");
 }
@@ -667,7 +668,7 @@ static void test_realloc_page_aligned(void) {
 }
 
 static void test_safe_malloc_page_aligned(void) {
-    char* ptr = safe_malloc_page_aligned(100);
+    char* ptr = safe_malloc_page_aligned(100); 
     TEST_ASSERT(ptr != NULL, "safe_malloc_page_aligned should return a non-null pointer for a non-zero size");
     free_page_aligned(ptr);
 }

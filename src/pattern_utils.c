@@ -64,7 +64,7 @@ eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* ptrData, 
 
 eReturnValues fill_Incrementing_Pattern_In_Buffer(uint8_t incrementStartValue, uint8_t* ptrData, uint32_t dataLength)
 {
-    if (ptrData == M_NULLPTR)
+    if (ptrData == M_NULLPTR) 
     {
         return M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER);
     }
