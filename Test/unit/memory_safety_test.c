@@ -808,7 +808,10 @@ static void test_safe_memcmove(void) {
     // result = safe_memcmove(NULL, sizeof(dest), src, 'o', sizeof(src));
 
     // Test when src is NULL - calls abort handler
-    result = safe_memcmove(dest, sizeof(dest), NULL, 'o', sizeof(src));
+    // result = safe_memcmove(dest, sizeof(dest), NULL, 'o', sizeof(src));
+
+    // Test when destsz > RSIZE_MAX - calls abort handler
+    result = safe_memcmove(dest, RSIZE_MAX + 1, src, 'o', sizeof(src));
 }
 
 static void test_get_memalignment(void) {
