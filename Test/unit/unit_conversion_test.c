@@ -135,10 +135,9 @@ static void test_capacity_Unit_Convert() {
 
     byteValue = 2e24;
     result = capacity_Unit_Convert(&byteValue, &capacityUnit);
-    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2e24 B to 1.4551915228366852YiB");
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 2e24 B to 1.654361YiB");
     TEST_ASSERT(strcmp(capacityUnit, "YiB") == 0, "Expected capacityUnit is YiB");
-    printf("byteValue for 2e24 B: %f\n", byteValue);
-    TEST_ASSERT(byteValue == 1.654361, "Expected byteValue is 1.654361");
+    TEST_ASSERT_FLOAT_EQ(byteValue, 1.654361, EPSILON, "Expected byteValue is roughly 1.654361");
 
     // Test failure case for value > YiB
     byteValue = 2e27;
