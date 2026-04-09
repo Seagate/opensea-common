@@ -40,10 +40,10 @@ bool get_Bytes_To_64(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t
 {
     if (dataPtrBeginning == M_NULLPTR || out == M_NULLPTR || msb > fullDataLen || lsb > fullDataLen || get_Bytes_Abs_Range(msb, lsb) > sizeof(uint64_t))
     {
-        return false;
+        return false; 
     }
     if (lsb <= msb) // allowing equals for single bytes
-    {
+    { 
         for (size_t iter = msb, counter = 0; counter < fullDataLen && counter < SIZE_MAX && iter >= lsb;
              --iter, ++counter)
         {

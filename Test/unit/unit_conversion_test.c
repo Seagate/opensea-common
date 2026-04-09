@@ -58,8 +58,8 @@ static void test_metric_Unit_Convert() {
     byteValue = 8e24;
     result = metric_Unit_Convert(&byteValue, &metricUnit);
     TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, converted 8e24 B to 8YB");
-    // TEST_ASSERT(strcmp(metricUnit, "YB") == 0, "Expected metricUnit is YB");
-    // TEST_ASSERT(byteValue == 8, "Expected byteValue is 8");
+    TEST_ASSERT(strcmp(metricUnit, "YB") == 0, "Expected metricUnit is YB");
+    TEST_ASSERT(byteValue == 8, "Expected byteValue is 8");
 
     // Test failure case for value > YB
     byteValue = 2e27;
