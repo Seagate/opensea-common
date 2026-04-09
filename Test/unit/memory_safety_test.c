@@ -804,8 +804,11 @@ static void test_safe_memcmove(void) {
     TEST_ASSERT(result == 0, "safe_memcmove should return zero when the count is less than the position of the specified character");
     TEST_ASSERT(strncmp(dest, src, 3) == 0, "safe_memcmove should copy only the specified count of bytes when the count is less than the position of the specified character");
 
-    // Test when dest is NULL
-    result = safe_memcmove(NULL, sizeof(dest), src, 'o', sizeof(src));
+    // Test when dest is NULL - calls abort handler
+    // result = safe_memcmove(NULL, sizeof(dest), src, 'o', sizeof(src));
+
+    // Test when src is NULL - calls abort handler
+    result = safe_memcmove(dest, sizeof(dest), NULL, 'o', sizeof(src));
 }
 
 static void test_get_memalignment(void) {
