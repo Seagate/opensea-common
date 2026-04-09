@@ -638,6 +638,9 @@ static void test_calloc_page_aligned(void) {
         TEST_ASSERT(ptr[i] == 0, "calloc_page_aligned should initialize all elements to zero");
     }
 
+    // Test for num = 0
+    ptr = calloc_page_aligned(0, element_size);
+
     // Test for size of zero
     ptr = calloc_page_aligned(10, 0);
     TEST_ASSERT(ptr == NULL, "calloc_page_aligned should return a null pointer for a size of zero");
