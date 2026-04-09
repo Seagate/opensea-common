@@ -247,7 +247,7 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* malloc_page_aligned(size_t
 M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* calloc_page_aligned(size_t num, size_t size)
 {
     size_t pageSize = get_System_Pagesize();
-    if (pageSize > SIZE_T_C(0))
+    if (pageSize > SIZE_T_C(0)) 
     {
         return calloc_aligned(num, size, get_System_Pagesize());
     }
