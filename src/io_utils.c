@@ -517,26 +517,26 @@ static eKnownTERM get_Term_From_Env_TERM(bool* M_NONNULL haveCompleteMatch)
     if (get_Environment_Variable("TERM", &termEnv) == ENV_VAR_SUCCESS && termEnv != M_NULLPTR)
     {
         // do exact matches up top, then search for substrings
-        if (strcmp(termEnv, "xterm-256color") == 0)
+        if (strcasecmp(termEnv, "xterm-256color") == 0)
         {
             terminalType       = TERM_XTERM_256COLOR;
             *haveCompleteMatch = true;
         }
-        else if (strcmp(termEnv, "aixterm") == 0)
+        else if (strcasecmp(termEnv, "aixterm") == 0)
         {
             terminalType       = TERM_AIXTERM;
             *haveCompleteMatch = true;
         }
-        else if (strcmp(termEnv, "sun-color") == 0)
+        else if (strcasecmp(termEnv, "sun-color") == 0)
         {
             terminalType       = TERM_SUN_COLOR;
             *haveCompleteMatch = true;
         }
-        else if (strcmp(termEnv, "xterm") == 0)
+        else if (strcasecmp(termEnv, "xterm") == 0)
         {
             terminalType = TERM_XTERM;
         }
-        else if (strcmp(termEnv, "linux") == 0)
+        else if (strcasecmp(termEnv, "linux") == 0)
         {
             // alpine linux does not set COLORTERM or anything else, so this
             // would be complete there, but let the other checks run too linux
@@ -590,7 +590,7 @@ static eKnownTERM get_Term_From_Env_COLORTERM(bool* M_NONNULL haveCompleteMatch)
     {
         // check what this is set to.
         // truecolor seems to mean supports 256 colors
-        if (strcmp(termEnv, "gnome-terminal") == 0)
+        if (strcasecmp(termEnv, "gnome-terminal") == 0)
         {
             // centos6 reports "gnome-terminal" which seems to support 256
             // colors output mode
@@ -1217,10 +1217,10 @@ static M_INLINE bool is_Allowed_Datasize_Unit(const char* unit)
 {
     bool allowed = false;
     // allowed units must match exactly at the end of the string!
-    if (strcmp(unit, "B") == 0 || strcmp(unit, "KB") == 0 || strcmp(unit, "KiB") == 0 || strcmp(unit, "MB") == 0 ||
-        strcmp(unit, "MiB") == 0 || strcmp(unit, "GB") == 0 || strcmp(unit, "GiB") == 0 || strcmp(unit, "TB") == 0 ||
-        strcmp(unit, "TiB") == 0 || strcmp(unit, "BLOCKS") == 0 || strcmp(unit, "SECTORS") == 0 ||
-        strcmp(unit, "") == 0)
+    if (strcasecmp(unit, "B") == 0 || strcasecmp(unit, "KB") == 0 || strcasecmp(unit, "KiB") == 0 || strcasecmp(unit, "MB") == 0 ||
+        strcasecmp(unit, "MiB") == 0 || strcasecmp(unit, "GB") == 0 || strcasecmp(unit, "GiB") == 0 || strcasecmp(unit, "TB") == 0 ||
+        strcasecmp(unit, "TiB") == 0 || strcasecmp(unit, "BLOCKS") == 0 || strcasecmp(unit, "SECTORS") == 0 ||
+        strcasecmp(unit, "") == 0)
     {
         allowed = true;
     }
@@ -1233,8 +1233,8 @@ static M_INLINE bool is_Allowed_Sector_Size_Unit(const char* unit)
     // l is used by some utilities to indicate a count is in
     // logical sectors instead of physical sectors
     // an empty unit should be allowed for default behavior for these kinds of options. - TJE
-    if (strcmp(unit, "l") == 0 || strcmp(unit, "p") == 0 || strcmp(unit, "logical") == 0 ||
-        strcmp(unit, "physical") == 0 || strcmp(unit, "") == 0)
+    if (strcasecmp(unit, "l") == 0 || strcasecmp(unit, "p") == 0 || strcasecmp(unit, "logical") == 0 ||
+        strcasecmp(unit, "physical") == 0 || strcasecmp(unit, "") == 0)
     {
         allowed = true;
     }
@@ -1244,13 +1244,13 @@ static M_INLINE bool is_Allowed_Sector_Size_Unit(const char* unit)
 static M_INLINE bool is_Allowed_Time_Unit(const char* unit)
 {
     bool allowed = false;
-    if (strcmp(unit, "ns") == 0    // nanoseconds
-        || strcmp(unit, "us") == 0 // microseconds
-        || strcmp(unit, "ms") == 0 // milliseconds
-        || strcmp(unit, "s") == 0  // seconds
-        || strcmp(unit, "m") == 0  // minutes
-        || strcmp(unit, "h") == 0  // hours
-        || strcmp(unit, "") == 0   // no unit, default expected for the given option
+    if (strcasecmp(unit, "ns") == 0    // nanoseconds
+        || strcasecmp(unit, "us") == 0 // microseconds
+        || strcasecmp(unit, "ms") == 0 // milliseconds
+        || strcasecmp(unit, "s") == 0  // seconds
+        || strcasecmp(unit, "m") == 0  // minutes
+        || strcasecmp(unit, "h") == 0  // hours
+        || strcasecmp(unit, "") == 0   // no unit, default expected for the given option
     )
     {
         allowed = true;
@@ -1261,9 +1261,9 @@ static M_INLINE bool is_Allowed_Time_Unit(const char* unit)
 static M_INLINE bool is_Allowed_Power_Unit(const char* unit)
 {
     bool allowed = false;
-    if (strcmp(unit, "w") == 0     // watts
-        || strcmp(unit, "mw") == 0 // milliwatts
-        || strcmp(unit, "") == 0   // no unit, default expected for the given option
+    if (strcasecmp(unit, "w") == 0     // watts
+        || strcasecmp(unit, "mw") == 0 // milliwatts
+        || strcasecmp(unit, "") == 0   // no unit, default expected for the given option
     )
     {
         allowed = true;
@@ -1274,9 +1274,9 @@ static M_INLINE bool is_Allowed_Power_Unit(const char* unit)
 static M_INLINE bool is_Allowed_Volts_Unit(const char* unit)
 {
     bool allowed = false;
-    if (strcmp(unit, "v") == 0     // volts
-        || strcmp(unit, "mv") == 0 // millivolts
-        || strcmp(unit, "") == 0   // no unit, default expected for the given option
+    if (strcasecmp(unit, "v") == 0     // volts
+        || strcasecmp(unit, "mv") == 0 // millivolts
+        || strcasecmp(unit, "") == 0   // no unit, default expected for the given option
     )
     {
         allowed = true;
@@ -1287,9 +1287,9 @@ static M_INLINE bool is_Allowed_Volts_Unit(const char* unit)
 static M_INLINE bool is_Allowed_Amps_Unit(const char* unit)
 {
     bool allowed = false;
-    if (strcmp(unit, "a") == 0     // amps
-        || strcmp(unit, "ma") == 0 // milliamps
-        || strcmp(unit, "") == 0   // no unit, default expected for the given option
+    if (strcasecmp(unit, "a") == 0     // amps
+        || strcasecmp(unit, "ma") == 0 // milliamps
+        || strcasecmp(unit, "") == 0   // no unit, default expected for the given option
     )
     {
         allowed = true;
@@ -1300,10 +1300,10 @@ static M_INLINE bool is_Allowed_Amps_Unit(const char* unit)
 static M_INLINE bool is_Allowed_Temperature_Unit(const char* unit)
 {
     bool allowed = false;
-    if (strcmp(unit, "c") == 0    // celsius
-        || strcmp(unit, "f") == 0 // fahrenheit
-        || strcmp(unit, "k") == 0 // kelvin
-        || strcmp(unit, "") == 0  // no unit, default expected for the given option
+    if (strcasecmp(unit, "c") == 0    // celsius
+        || strcasecmp(unit, "f") == 0 // fahrenheit
+        || strcasecmp(unit, "k") == 0 // kelvin
+        || strcasecmp(unit, "") == 0  // no unit, default expected for the given option
     )
     {
         allowed = true;
@@ -1324,7 +1324,7 @@ static bool is_Allowed_Unit_For_Get_And_Validate_Input(const char* unit, eAllowe
         switch (unittype)
         {
         case M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE):
-            if (strcmp(unit, "") == 0)
+            if (strcasecmp(unit, "") == 0)
             {
                 allowed = true;
             }
@@ -1375,24 +1375,63 @@ typedef eintegerInputStrType eintergetInputStrType; // Misspelled
 static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str, eAllowedUnitInput unittype)
 {
     eintergetInputStrType type = INT_INPUT_DECIMAL;
+
+    // When units are allowed, hex notation is completely disabled (both 0x prefix and h suffix).
+    // Hex notation is only permitted when unittype == ALLOW_UNIT_NONE (pure hex context).
+    // This eliminates collisions where unit characters (F/A/B/C/K) could be mistaken for hex digits.
+    if (unittype != M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE))
+    {
+        // With units allowed: scan only for decimal digits, no hex
+        if (str != M_NULLPTR)
+        {
+            const char* temp = str;
+            // Scan for decimal digits only; stop at first non-digit (unit starts here)
+            while (*temp != '\0' && safe_isdigit(*temp))
+            {
+                ++temp;
+            }
+            // Validate the unit portion
+            if (!is_Allowed_Unit_For_Get_And_Validate_Input(temp, unittype))
+            {
+                return INT_INPUT_INVALID;
+            }
+            return INT_INPUT_DECIMAL;
+        }
+        else
+        {
+            return INT_INPUT_INVALID;
+        }
+    }
+
+    // Original logic for ALLOW_UNIT_NONE: hex (0x prefix or h suffix) is allowed
     if (str != M_NULLPTR)
     {
         const char* temp = str;
-        while (*temp != '\0')
+        size_t     templen = safe_strlen(str);
+        // check for 0x at the beginning for hex.
+        if (strstr(str, "0x") == str || strstr(str, "0X") == str)
         {
-            if ((!safe_isxdigit(*temp)) && (*temp != 'x') && (*temp != 'h'))
+            type = INT_INPUT_HEX;
+            temp += 2;
+            templen -= 2;
+        }
+        else if (temp[templen - 1] == 'h' || temp[templen - 1] == 'H')
+        {
+            type = INT_INPUT_HEX;
+            templen -= 1;
+        }
+
+        // Check that all provided chars are valid for the string type.
+        size_t count = 0;
+        while (*temp != '\0' && count < templen)
+        {
+            if ((type == INT_INPUT_HEX && !safe_isxdigit(*temp)) || (type == INT_INPUT_DECIMAL && !safe_isdigit(*temp)))
             {
+                type = INT_INPUT_INVALID;
                 break;
             }
-            else if (!safe_isdigit(*temp))
-            {
-                type = INT_INPUT_HEX;
-            }
             ++temp;
-        }
-        if (!is_Allowed_Unit_For_Get_And_Validate_Input(temp, unittype))
-        {
-            type = INT_INPUT_INVALID;
+            ++count;
         }
     }
     else
