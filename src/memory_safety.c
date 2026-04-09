@@ -640,7 +640,7 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) M_ALLOC_ALIGN(2) void* safe_mall
     {
         // do not alloc size zero
         errno = EINVAL;
-        invoke_Constraint_Handler("safe_malloc_aligned: count == 0",
+        invoke_Constraint_Handler("safe_malloc_aligned: size == 0",
                                   set_Env_Info(&envInfo, file, function, expression, line), errno);
         return M_NULLPTR;
     }
