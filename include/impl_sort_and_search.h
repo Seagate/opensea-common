@@ -98,11 +98,9 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a size or \a count > RSIZE_MAX
+    //! - \a count or \a size is > RSIZE_MAX
     //!
-    //! - \a ptr is a null pointer and \a count > 0
-    //!
-    //! - \a compare is a null pointer and \a count > 0
+    //! - \a ptr or \a compare is a null pointer (unless count is zero)
     M_PARAM_RW(1)
     errno_t safe_qsort_impl(void* M_NONNULL        ptr,
                             rsize_t                count,
@@ -141,11 +139,9 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a size or \a count > RSIZE_MAX
+    //! - \a count or \a size is > RSIZE_MAX
     //!
-    //! - \a ptr is a null pointer and \a count > 0
-    //!
-    //! - \a compare is a null pointer and \a count > 0
+    //! - \a ptr or \a compare is a null pointer (unless count is zero)
     M_PARAM_RW(1)
     errno_t safe_qsort_context_impl(void* M_NONNULL        ptr,
                                     rsize_t                count,
@@ -185,13 +181,9 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a key is a null pointer and \a count > 0
-    //!
-    //! - \a ptr is a null pointer and \a count > 0
-    //!
     //! - \a count or \a size is > RSIZE_MAX
     //!
-    //! - \a compare is a null pointer and \a count > 0
+    //! - \a key or \a ptr or \a compare is a null pointer (unless count is zero)
     M_PARAM_RO(1)
     M_PARAM_RO(2)
     void* M_NULLABLE safe_bsearch_impl(const void* M_NONNULL  key,
@@ -235,13 +227,9 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a key is a null pointer and \a count > 0
-    //!
-    //! - \a ptr is a null pointer and \a count > 0
-    //!
     //! - \a count or \a size is > RSIZE_MAX
     //!
-    //! - \a compare is a null pointer and \a count > 0
+    //! - \a key or \a ptr or \a compare is a null pointer (unless count is zero)
     M_PARAM_RO(1)
     M_PARAM_RO(2)
     void* M_NULLABLE safe_bsearch_context_impl(const void* M_NONNULL  key,
