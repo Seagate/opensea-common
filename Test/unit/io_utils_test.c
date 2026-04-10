@@ -1075,6 +1075,12 @@ static void test_safe_strtoull(void) {
     TEST_ASSERT(result == 31, "safe_strtoull converted string to unsigned long long correctly for base 32");
     TEST_ASSERT(*endptr == '\0', "safe_strtoull consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoull did not set errno for valid input"); 
+
+    err = safe_strtoull(&result, "abc", &endptr, 10);
+    TEST_ASSERT(result == 0, "Result should be 0 for invalid input");
+    TEST_ASSERT(endptr != NULL && *endptr == 'a', "endptr should point to start of string");
+    TEST_ASSERT(err == EINVAL, "Function should return EINVAL");
+    TEST_ASSERT(errno == EINVAL, "errno should be set to EINVAL");
 }
 
 static void test_safe_strtoimax(void) {
