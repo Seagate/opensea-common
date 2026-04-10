@@ -631,6 +631,21 @@ static void test_print_Data_Buffer(void) {
     // Test for bufferLen = 0
     print_Data_Buffer(data, 0, true);
 
+    // UINT16_MAX branch (>255)
+    uint32_t mediumSize = 1000;
+    uint8_t *mediumBuf = malloc(mediumSize);
+    print_Data_Buffer(mediumBuf, mediumSize, true);
+
+    // 0xFFFFFF branch (>65535)
+    uint32_t largeSize = 70000;
+    uint8_t *largeBuf = malloc(largeSize);
+    print_Data_Buffer(largeBuf, largeSize, true);
+
+    // else branch (>0xFFFFFF ≈ 16MB)
+    uint32_t hugeSize = 17000000;
+    uint8_t *hugeBuf = malloc(hugeSize);
+    print_Data_Buffer(hugeBuf, hugeSize, true);
+
     fclose(fp);
 }
 
