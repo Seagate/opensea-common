@@ -1225,6 +1225,16 @@ static void test_safe_atoi(void) {
     err = safe_atoi(&result, "-99999999999999999999");
     TEST_ASSERT(result == 0, "safe_atoi returned INT_MIN for underflow");
     TEST_ASSERT(errno == ERANGE, "safe_atoi set errno to ERANGE for underflow");
+
+    // Test when value is NULL
+    err = safe_atoi(NULL, "12345");
+    TEST_ASSERT(err == EINVAL, "safe_atoi returned EINVAL when value is NULL");
+    TEST_ASSERT(errno == EINVAL, "safe_atoi set errno to EINVAL when value is NULL");
+
+    // Test when value > INT_MAX
+    err = safe_atoi(&result, INT_MAX + 1);
+    TEST_ASSERT(err == ERANGE, "safe_atoi returned ERANGE for value greater than INT_MAX");
+    TEST_ASSERT(errno == ERANGE, "safe_atoi set errno to ERANGE for value greater than INT_MAX");
 }
 
 static void test_safe_atol(void) {
