@@ -1035,6 +1035,12 @@ static void test_safe_strtoul(void) {
     err = safe_strtoul(&result, "   -42abc", &endptr, 10);
     TEST_ASSERT(strcmp(endptr, "abc") == 0, "safe_strtoul set endptr to the correct position");
     TEST_ASSERT(errno == 0, "safe_strtoul did not set errno for valid input");
+
+    err = safe_strtoul(&result, "abc", &endptr, 10);
+    TEST_ASSERT(result == 0, "Result should be 0 for invalid input");
+    TEST_ASSERT(endptr != NULL && *endptr == 'a', "endptr should point to start of string");
+    TEST_ASSERT(err == EINVAL, "Function should return EINVAL");
+    TEST_ASSERT(errno == EINVAL, "errno should be set to EINVAL");
 }
 
 static void test_safe_strtoull(void) {
