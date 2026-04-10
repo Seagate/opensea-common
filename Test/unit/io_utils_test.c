@@ -1235,6 +1235,11 @@ static void test_safe_atoi(void) {
     err = safe_atoi(&result, "2147483648");
     TEST_ASSERT(err == ERANGE, "safe_atoi returned ERANGE for value greater than INT_MAX");
     TEST_ASSERT(errno == ERANGE, "safe_atoi set errno to ERANGE for value greater than INT_MAX");
+
+    // Test when value < INT_MIN
+    err = safe_atoi(&result, "-2147483649");
+    TEST_ASSERT(err == ERANGE, "safe_atoi returned ERANGE for value less than INT_MIN");
+    TEST_ASSERT(errno == ERANGE, "safe_atoi set errno to ERANGE for value less than INT_MIN");
 }
 
 static void test_safe_atol(void) {
