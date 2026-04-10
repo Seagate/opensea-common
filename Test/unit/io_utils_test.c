@@ -897,6 +897,9 @@ static void test_safe_gets(void)
 
     TEST_ASSERT(strcmp(buffer, "hello world") == 0,
                 "safe_gets read correct string");
+
+    // Test for n = 1
+    res = safe_gets(buffer, 1);
 }
 
 static void test_safe_strtol(void) {
