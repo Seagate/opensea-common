@@ -1096,7 +1096,7 @@ static void test_safe_strtoimax(void) {
     TEST_ASSERT(*endptr == '\0', "safe_strtoimax consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoimax did not set errno for valid input");
 
-    err = safe_strtoimax(&result, "10101", &endptr, 2);
+    err = safe_strtoimax(&result, "10101", NULL, 2);
     TEST_ASSERT(result == 21, "safe_strtoimax converted string to intmax_t correctly for base 2");
     TEST_ASSERT(*endptr == '\0', "safe_strtoimax consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoimax did not set errno for valid input");
