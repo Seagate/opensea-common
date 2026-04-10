@@ -61,14 +61,13 @@ static void test_metric_Unit_Convert() {
     TEST_ASSERT(strcmp(metricUnit, "YB") == 0, "Expected metricUnit is YB");
     TEST_ASSERT(byteValue == 8, "Expected byteValue is 8");
 
-    // Test failure case for value > YB
+    // Test for value > YB
     byteValue = 2e27;
     result = metric_Unit_Convert(&byteValue, &metricUnit);
     printf("Result for value > YB: %d\n", result);
-    TEST_ASSERT(result == FAILURE, "Expected FAILURE, value exceeds YB");
-    printf("Result for value > YB: %d\n", result);
-    printf("byteValue: %e\n", byteValue);   
-    printf("metricUnit: %s\n", metricUnit);
+    TEST_ASSERT(result == SUCCESS, "Expected SUCCESS, value exceeds YB but should still convert to YB");
+    TEST_ASSERT(strcmp(metricUnit, "YB") == 0, "Expected metricUnit is YB for value > YB");
+    TEST_ASSERT(byteValue == 2000, "Expected byteValue is 2000 YB for value > YB");
 
     // Testing for NULL byteValue
     result = metric_Unit_Convert(NULL, &metricUnit);
