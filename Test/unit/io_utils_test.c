@@ -1119,6 +1119,11 @@ static void test_safe_strtoumax(void) {
     TEST_ASSERT(*endptr == '\0', "safe_strtoumax consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoumax did not set errno for valid input");
 
+    err = safe_strtoumax(&result, "10101", NULL, 2);
+    TEST_ASSERT(result == 21, "safe_strtoumax converted string to uintmax_t correctly for base 2");
+    TEST_ASSERT(*endptr == '\0', "safe_strtoumax consumed the entire string");
+    TEST_ASSERT(errno == 0, "safe_strtoumax did not set errno for valid input");
+
     err = safe_strtoumax(&result, "0xFFFFFFFFFFFFFFFF", &endptr, 0);
     TEST_ASSERT(result == UINTMAX_MAX, "safe_strtoumax converted string to uintmax_t correctly for base 0 (hexadecimal)");
     TEST_ASSERT(*endptr == '\0', "safe_strtoumax consumed the entire string");
