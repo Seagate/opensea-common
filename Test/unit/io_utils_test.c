@@ -643,6 +643,10 @@ static void test_print_Data_Buffer(void) {
     uint8_t *hugeBuf = malloc(hugeSize);
     print_Data_Buffer(hugeBuf, hugeSize, true);
 
+    // Test for printable characters
+    uint8_t printableBuf[] = {'A', 'B', 'C', '1', '2', '3'};
+    print_Data_Buffer(printableBuf, sizeof(printableBuf), true);
+
     fclose(fp);
 }
 
