@@ -628,6 +628,9 @@ static void test_print_Data_Buffer(void) {
     // Test for dataBuffer = NULL
     print_Data_Buffer(NULL, sizeof(data), true);
 
+    // Test for bufferLen = 0
+    print_Data_Buffer(data, 0, true);
+
     fclose(fp);
 }
 
