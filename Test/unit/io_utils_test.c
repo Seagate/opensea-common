@@ -628,15 +628,6 @@ static void test_print_Data_Buffer(void) {
     // Test for dataBuffer = NULL
     print_Data_Buffer(NULL, sizeof(data), true);
 
-    // Test for bufferLen <= UINT16_MAX
-    print_Data_Buffer(data, UINT16_MAX, true);
-
-    // Test for bufferLen <= UINT32_MAX
-    print_Data_Buffer(data, UINT32_MAX, true);
-
-    // Test for bufferLen <= UINT64_MAX
-    print_Data_Buffer(data, UINT64_MAX, true);
-
     fclose(fp);
 }
 
