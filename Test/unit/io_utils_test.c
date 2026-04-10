@@ -1232,7 +1232,7 @@ static void test_safe_atoi(void) {
     TEST_ASSERT(errno == EINVAL, "safe_atoi set errno to EINVAL when value is NULL");
 
     // Test when value > INT_MAX
-    err = safe_atoi(&result, INT_MAX + 1);
+    err = safe_atoi(&result, "2147483648");
     TEST_ASSERT(err == ERANGE, "safe_atoi returned ERANGE for value greater than INT_MAX");
     TEST_ASSERT(errno == ERANGE, "safe_atoi set errno to ERANGE for value greater than INT_MAX");
 }
