@@ -65,7 +65,10 @@ static void test_metric_Unit_Convert() {
     byteValue = 2e27;
     result = metric_Unit_Convert(&byteValue, &metricUnit);
     printf("Result for value > YB: %d\n", result);
-    // TEST_ASSERT(result == FAILURE, "Expected FAILURE, value exceeds YB");
+    TEST_ASSERT(result == FAILURE, "Expected FAILURE, value exceeds YB");
+    printf("Result for value > YB: %d\n", result);
+    printf("byteValue: %e\n", byteValue);   
+    printf("metricUnit: %s\n", metricUnit);
 
     // Testing for NULL byteValue
     result = metric_Unit_Convert(NULL, &metricUnit);
