@@ -991,6 +991,12 @@ static void test_safe_strtoll(void) {
     TEST_ASSERT(result == -42, "safe_strtoll converted string to long long correctly with leading whitespace and sign");
     TEST_ASSERT(strcmp(endptr, "abc") == 0, "safe_strtoll set endptr to the correct position");
     TEST_ASSERT(errno == 0, "safe_strtoll did not set errno for valid input");
+
+    err = safe_strtoll(&result, "abc", &endptr, 10);
+    TEST_ASSERT(result == 0, "Result should be 0 for invalid input");
+    TEST_ASSERT(endptr != NULL && *endptr == 'a', "endptr should point to start of string");
+    TEST_ASSERT(err == EINVAL, "Function should return EINVAL");
+    TEST_ASSERT(errno == EINVAL, "errno should be set to EINVAL");
 }
 
 static void test_safe_strtoul(void) {
