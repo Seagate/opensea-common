@@ -21,8 +21,10 @@
 #include "memory_safety.h"
 #include "string_utils.h"
 #include "type_conversion.h"
+#include "unit_conversion.h"
 #include "warning_ctl.h"
 #include <ctype.h>
+#include <errno.h>
 #include <math.h>   //HUGE_VALF, HUGE_VAL, HUGE_VALL
 #include <stdarg.h> //asprintf/vasprintf
 #include <string.h>
@@ -3729,5 +3731,339 @@ errno_t checked_fputs(const char* nofmt, FILE* out)
         safe_free(&errmsg);
         return error;
     }
+    return 0;
+}
+
+errno_t get_And_Validate_Celsius_Input_int16(const char* input_str, int16_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    int16_t tempValue = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Int16(input_str, ALLOW_UNIT_TEMPERATURE, &tempValue, &unit);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    // Convert to Celsius based on unit specified
+    int16_t celsius_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        errno = 0;
+        if (strcasecmp(unit, "F") == 0)
+        {
+            celsius_value = fahrenheit_To_celsius(&tempValue);
+        }
+        else if (strcasecmp(unit, "K") == 0)
+        {
+            celsius_value = kelvin_To_Celsius(&tempValue);
+        }
+        // If 'C' or any other valid unit, tempValue is already in Celsius
+
+        if (errno != 0)
+        {
+            *outputValue = 0;
+            return errno;
+        }
+    }
+
+    *outputValue = celsius_value;
+    return 0;
+}
+
+errno_t get_And_Validate_Milliwatt_Input_uint32(const char* input_str, uint32_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t mw_value = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, ALLOW_UNIT_POWER, &mw_value, &unit);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "W") == 0)
+        {
+            mw_value *= UINT64_C(1000);  // W to mW
+            if (mw_value > UINT32_MAX)
+            {
+                *outputValue = 0;
+                return ERANGE;
+            }
+        }
+        // If 'mW' or other valid unit, tempValue is already in mW
+    }
+
+    *outputValue = C_CAST(uint32_t, mw_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Byte_Input_uint64(const char* input_str, uint64_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t tempValue = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, ALLOW_UNIT_DATASIZE, &tempValue, &unit);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint64_t byte_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "KB") == 0)
+        {
+            byte_value *= UINT64_C(1000);
+        }
+        else if (strcasecmp(unit, "KiB") == 0)
+        {
+            byte_value *= UINT64_C(1024);
+        }
+        else if (strcasecmp(unit, "MB") == 0)
+        {
+            byte_value *= UINT64_C(1000000);
+        }
+        else if (strcasecmp(unit, "MiB") == 0)
+        {
+            byte_value *= UINT64_C(1048576);
+        }
+        else if (strcasecmp(unit, "GB") == 0)
+        {
+            byte_value *= UINT64_C(1000000000);
+        }
+        else if (strcasecmp(unit, "GiB") == 0)
+        {
+            byte_value *= UINT64_C(1073741824);
+        }
+        else if (strcasecmp(unit, "TB") == 0)
+        {
+            byte_value *= UINT64_C(1000000000000);
+        }
+        else if (strcasecmp(unit, "TiB") == 0)
+        {
+            byte_value *= UINT64_C(1099511627776);
+        }
+        // If 'B' or other valid unit, tempValue is already in bytes
+
+        if (byte_value < tempValue)  // Overflow check
+        {
+            *outputValue = 0;
+            return EOVERFLOW;
+        }
+    }
+
+    *outputValue = byte_value;
+    return 0;
+}
+
+errno_t get_And_Validate_Millisecond_Input_uint32(const char* input_str, uint32_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t tempValue = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, ALLOW_UNIT_TIME, &tempValue, &unit);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint64_t ms_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "s") == 0)
+        {
+            ms_value *= UINT64_C(1000);  // seconds to ms
+        }
+        else if (strcasecmp(unit, "m") == 0)
+        {
+            ms_value *= UINT64_C(60000);  // minutes to ms
+        }
+        else if (strcasecmp(unit, "h") == 0)
+        {
+            ms_value *= UINT64_C(3600000);  // hours to ms
+        }
+        // If 'ms' or other valid unit, tempValue is already in ms
+
+        if (ms_value > UINT32_MAX)
+        {
+            *outputValue = 0;
+            return EOVERFLOW;
+        }
+    }
+
+    *outputValue = C_CAST(uint32_t, ms_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Volt_Input_uint16(const char* input_str, uint16_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint32_t tempValue = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint32(input_str, ALLOW_UNIT_VOLTS, &tempValue, &unit);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint32_t v_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "mV") == 0)
+        {
+            v_value /= UINT32_C(1000);  // mV to V
+        }
+        // If 'V' or other valid unit, tempValue is already in V
+    }
+
+    if (v_value > UINT16_MAX)
+    {
+        *outputValue = 0;
+        return EOVERFLOW;
+    }
+
+    *outputValue = C_CAST(uint16_t, v_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Millivolt_Input_uint32(const char* input_str, uint32_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t tempValue = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, ALLOW_UNIT_VOLTS, &tempValue, &unit);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint64_t mv_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "V") == 0)
+        {
+            mv_value *= UINT64_C(1000);  // V to mV
+            if (mv_value > UINT32_MAX)
+            {
+                *outputValue = 0;
+                return EOVERFLOW;
+            }
+        }
+        // If 'mV' or other valid unit, tempValue is already in mV
+    }
+
+    *outputValue = C_CAST(uint32_t, mv_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Amp_Input_uint16(const char* input_str, uint16_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint32_t tempValue = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint32(input_str, ALLOW_UNIT_AMPS, &tempValue, &unit);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint32_t a_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "mA") == 0)
+        {
+            a_value /= UINT32_C(1000);  // mA to A
+        }
+        // If 'A' or other valid unit, tempValue is already in A
+    }
+
+    if (a_value > UINT16_MAX)
+    {
+        *outputValue = 0;
+        return EOVERFLOW;
+    }
+
+    *outputValue = C_CAST(uint16_t, a_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Milliamp_Input_uint32(const char* input_str, uint32_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t tempValue = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, ALLOW_UNIT_AMPS, &tempValue, &unit);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint64_t ma_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "A") == 0)
+        {
+            ma_value *= UINT64_C(1000);  // A to mA
+            if (ma_value > UINT32_MAX)
+            {
+                *outputValue = 0;
+                return EOVERFLOW;
+            }
+        }
+        // If 'mA' or other valid unit, tempValue is already in mA
+    }
+
+    *outputValue = C_CAST(uint32_t, ma_value);
     return 0;
 }

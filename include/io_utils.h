@@ -24,6 +24,7 @@
 #include "impl_io_utils.h"
 #include "memory_safety.h"
 #include "type_conversion.h"
+#include "unit_conversion.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -1693,6 +1694,70 @@ extern "C"
     {
         return checked_fputs(nofmt, stdout);
     }
+
+    //! \fn errno_t get_And_Validate_Celsius_Input_int16(const char* input_str, int16_t* outputValue)
+    //! \brief Converts temperature input (any unit) to Celsius as int16_t
+    //! \param[in] input_str The input string with temperature value and optional unit
+    //! \param[out] outputValue Pointer to store the temperature in Celsius
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2)
+        errno_t get_And_Validate_Celsius_Input_int16(const char* M_NONNULL input_str, int16_t* M_NONNULL outputValue);
+
+    //! \fn errno_t get_And_Validate_Milliwatt_Input_uint32(const char* input_str, uint32_t* outputValue)
+    //! \brief Converts power input (any unit) to milliwatts as uint32_t
+    //! \param[in] input_str The input string with power value and optional unit
+    //! \param[out] outputValue Pointer to store the power in milliwatts
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2)
+        errno_t get_And_Validate_Milliwatt_Input_uint32(const char* M_NONNULL input_str, uint32_t* M_NONNULL outputValue);
+
+    //! \fn errno_t get_And_Validate_Byte_Input_uint64(const char* input_str, uint64_t* outputValue)
+    //! \brief Converts data size input (any unit) to bytes as uint64_t
+    //! \param[in] input_str The input string with data size value and optional unit
+    //! \param[out] outputValue Pointer to store the data size in bytes
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2)
+        errno_t get_And_Validate_Byte_Input_uint64(const char* M_NONNULL input_str, uint64_t* M_NONNULL outputValue);
+
+    //! \fn errno_t get_And_Validate_Millisecond_Input_uint32(const char* input_str, uint32_t* outputValue)
+    //! \brief Converts time input (any unit) to milliseconds as uint32_t
+    //! \param[in] input_str The input string with time value and optional unit
+    //! \param[out] outputValue Pointer to store the time in milliseconds
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2)
+        errno_t get_And_Validate_Millisecond_Input_uint32(const char* M_NONNULL input_str, uint32_t* M_NONNULL outputValue);
+
+    //! \fn errno_t get_And_Validate_Volt_Input_uint16(const char* input_str, uint16_t* outputValue)
+    //! \brief Converts voltage input (any unit) to volts as uint16_t
+    //! \param[in] input_str The input string with voltage value and optional unit
+    //! \param[out] outputValue Pointer to store the voltage in volts
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2)
+        errno_t get_And_Validate_Volt_Input_uint16(const char* M_NONNULL input_str, uint16_t* M_NONNULL outputValue);
+
+    //! \fn errno_t get_And_Validate_Millivolt_Input_uint32(const char* input_str, uint32_t* outputValue)
+    //! \brief Converts voltage input (any unit) to millivolts as uint32_t
+    //! \param[in] input_str The input string with voltage value and optional unit
+    //! \param[out] outputValue Pointer to store the voltage in millivolts
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2)
+        errno_t get_And_Validate_Millivolt_Input_uint32(const char* M_NONNULL input_str, uint32_t* M_NONNULL outputValue);
+
+    //! \fn errno_t get_And_Validate_Amp_Input_uint16(const char* input_str, uint16_t* outputValue)
+    //! \brief Converts current input (any unit) to amps as uint16_t
+    //! \param[in] input_str The input string with current value and optional unit
+    //! \param[out] outputValue Pointer to store the current in amps
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2)
+        errno_t get_And_Validate_Amp_Input_uint16(const char* M_NONNULL input_str, uint16_t* M_NONNULL outputValue);
+
+    //! \fn errno_t get_And_Validate_Milliamp_Input_uint32(const char* input_str, uint32_t* outputValue)
+    //! \brief Converts current input (any unit) to milliamps as uint32_t
+    //! \param[in] input_str The input string with current value and optional unit
+    //! \param[out] outputValue Pointer to store the current in milliamps
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2)
+        errno_t get_And_Validate_Milliamp_Input_uint32(const char* M_NONNULL input_str, uint32_t* M_NONNULL outputValue);
 
 #if defined(__cplusplus)
 }
