@@ -3744,7 +3744,7 @@ errno_t get_And_Validate_Celsius_Input_int16(const char* input_str, int16_t* out
     int16_t tempValue = 0;
     char *unit = M_NULLPTR;
 
-    bool ret = get_And_Validate_Integer_Input_Int16(input_str, ALLOW_UNIT_TEMPERATURE, &tempValue, &unit);
+    bool ret = get_And_Validate_Integer_Input_Int16(input_str, &unit, ALLOW_UNIT_TEMPERATURE, &tempValue);
     if (!ret)
     {
         *outputValue = 0;
@@ -3787,7 +3787,7 @@ errno_t get_And_Validate_Milliwatt_Input_uint32(const char* input_str, uint32_t*
     uint64_t mw_value = 0;
     char *unit = M_NULLPTR;
 
-    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, ALLOW_UNIT_POWER, &mw_value, &unit);
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_POWER, &mw_value);
     if (!ret)
     {
         *outputValue = 0;
@@ -3822,7 +3822,7 @@ errno_t get_And_Validate_Byte_Input_uint64(const char* input_str, uint64_t* outp
     uint64_t tempValue = 0;
     char *unit = M_NULLPTR;
 
-    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, ALLOW_UNIT_DATASIZE, &tempValue, &unit);
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_DATASIZE, &tempValue);
     if (!ret)
     {
         *outputValue = 0;
@@ -3887,7 +3887,7 @@ errno_t get_And_Validate_Millisecond_Input_uint32(const char* input_str, uint32_
     uint64_t tempValue = 0;
     char *unit = M_NULLPTR;
 
-    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, ALLOW_UNIT_TIME, &tempValue, &unit);
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_TIME, &tempValue);
     if (!ret)
     {
         *outputValue = 0;
@@ -3932,7 +3932,7 @@ errno_t get_And_Validate_Volt_Input_uint16(const char* input_str, uint16_t* outp
     uint32_t tempValue = 0;
     char *unit = M_NULLPTR;
 
-    bool ret = get_And_Validate_Integer_Input_Uint32(input_str, ALLOW_UNIT_VOLTS, &tempValue, &unit);
+    bool ret = get_And_Validate_Integer_Input_Uint32(input_str, &unit, ALLOW_UNIT_VOLTS, &tempValue);
     if (!ret)
     {
         *outputValue = 0;
@@ -3969,7 +3969,7 @@ errno_t get_And_Validate_Millivolt_Input_uint32(const char* input_str, uint32_t*
     uint64_t tempValue = 0;
     char *unit = M_NULLPTR;
 
-    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, ALLOW_UNIT_VOLTS, &tempValue, &unit);
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_VOLTS, &tempValue);
     if (!ret)
     {
         *outputValue = 0;
@@ -4005,7 +4005,7 @@ errno_t get_And_Validate_Amp_Input_uint16(const char* input_str, uint16_t* outpu
     uint32_t tempValue = 0;
     char *unit = M_NULLPTR;
 
-    bool ret = get_And_Validate_Integer_Input_Uint32(input_str, ALLOW_UNIT_AMPS, &tempValue, &unit);
+    bool ret = get_And_Validate_Integer_Input_Uint32(input_str, &unit, ALLOW_UNIT_AMPS, &tempValue);
     if (!ret)
     {
         *outputValue = 0;
@@ -4042,7 +4042,7 @@ errno_t get_And_Validate_Milliamp_Input_uint32(const char* input_str, uint32_t* 
     uint64_t tempValue = 0;
     char *unit = M_NULLPTR;
 
-    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, ALLOW_UNIT_AMPS, &tempValue, &unit);
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_AMPS, &tempValue);
     if (!ret)
     {
         *outputValue = 0;
