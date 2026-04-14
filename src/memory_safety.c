@@ -1122,7 +1122,7 @@ errno_t safe_memcmove_impl(void* M_RESTRICT       dest,
     {
         // on error when dest is not NULL and destsz is valid, then this memset
         // is done
-        if (destsz <= RSIZE_MAX)
+        if (destsz < RSIZE_MAX)
         {
             safe_memset(dest, destsz, 0, destsz);
         }
