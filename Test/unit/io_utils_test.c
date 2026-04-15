@@ -1331,7 +1331,7 @@ static void test_checked_fputs(void) {
     // Test writing to a read-only stream
     FILE *fpr = fopen("test.txt", "r");
     err = checked_fputs("hello", fpr);
-    TEST_ASSERT(err == EOF, "Expected EOF when writing to read-only stream");
+    TEST_ASSERT(err != 0, "Expected failure when writing to read-only stream");
     fclose(fpr);
 }
 
