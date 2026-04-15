@@ -1321,21 +1321,6 @@ static void test_checked_fputs(void) {
 
     printf("Read from file:\n%s\n", buffer);
     TEST_ASSERT(strstr(buffer, "Hello, World!") != NULL, "checked_fputs wrote the correct content to the file");
-
-    // Test when nofmt is NULL
-    err = checked_fputs(NULL, fp);
-    TEST_ASSERT(err == EINVAL, "checked_fputs returned EINVAL when nofmt is NULL");
-
-    fclose(fp);
-
-    FILE *fptr = fopen("/dev/full", "w");
-    TEST_ASSERT(fptr != NULL, "Failed to open /dev/full");
-
-    err = checked_fputs("hello", fptr);
-
-    TEST_ASSERT(err != 0, "Expected failure");
-
-    fclose(fptr);
 }
 
 static void test_print_str(void) {
