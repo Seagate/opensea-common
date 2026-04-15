@@ -22,6 +22,7 @@
 #include "type_conversion.h"
 
 #include <stdio.h>
+#include <stdarg.h>
 
 #if defined(__cplusplus)
 extern "C"
