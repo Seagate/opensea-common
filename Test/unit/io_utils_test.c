@@ -1328,11 +1328,14 @@ static void test_checked_fputs(void) {
 
     fclose(fp);
 
-    // Test writing to a read-only stream
-    FILE *fpr = fopen("test.txt", "r");
-    err = checked_fputs("hello", fpr);
-    TEST_ASSERT(err != 0, "Expected failure when writing to read-only stream");
-    fclose(fpr);
+    FILE *fptr = fopen("/dev/full", "w");
+    TEST_ASSERT(fptr != NULL, "Failed to open /dev/full");
+
+    err = checked_fputs("hello", fptr);
+
+    TEST_ASSERT(err != 0, "Expected failure");
+
+    fclose(fptr);
 }
 
 static void test_print_str(void) {
