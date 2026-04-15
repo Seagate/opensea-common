@@ -1321,6 +1321,7 @@ static void test_checked_fputs(void) {
 
     printf("Read from file:\n%s\n", buffer);
     TEST_ASSERT(strstr(buffer, "Hello, World!") != NULL, "checked_fputs wrote the correct content to the file");
+    fclose(fp);
 }
 
 static void test_print_str(void) {
