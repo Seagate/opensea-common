@@ -1327,6 +1327,12 @@ static void test_checked_fputs(void) {
     TEST_ASSERT(err == EINVAL, "checked_fputs returned EINVAL when nofmt is NULL");
 
     fclose(fp);
+
+    // Test writing to a read-only stream
+    FILE *fpr = fopen("test.txt", "r");
+    errno_t err = checked_fputs("hello", fpr);
+    TEST_ASSERT(err == EOF, "Expected EOF when writing to read-only stream");
+    fclose(fpr);
 }
 
 static void test_print_str(void) {
