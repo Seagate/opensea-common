@@ -1322,6 +1322,10 @@ static void test_checked_fputs(void) {
     printf("Read from file:\n%s\n", buffer);
     TEST_ASSERT(strstr(buffer, "Hello, World!") != NULL, "checked_fputs wrote the correct content to the file");
 
+    // Test when nofmt is NULL
+    err = checked_fputs(NULL, fp);
+    TEST_ASSERT(err == EINVAL, "checked_fputs returned EINVAL when nofmt is NULL");
+
     fclose(fp);
 }
 
