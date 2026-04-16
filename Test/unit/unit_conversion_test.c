@@ -299,8 +299,7 @@ static void test_kelvin_To_Fahrenheit(void) {
 
     kelvin = 251;
     fahrenheit = kelvin_To_Fahrenheit(&kelvin);
-    printf("fahrenheit for 251K: %d\n", fahrenheit);
-    TEST_ASSERT(fahrenheit == 28, "Expected 251K to be 28°F");
+    TEST_ASSERT(fahrenheit == -8, "Expected 251K to be -8°F");
 
     // Test for kelvin value < absolute zero
     kelvin = -1;
