@@ -225,7 +225,7 @@ static void test_celsius_To_Kelvin(void) {
     celsius = -300;
     kelvin = celsius_To_Kelvin(&celsius);
     TEST_ASSERT(errno == ERANGE, "Expected ERANGE for celsius value below absolute zero");
-    TEST_ASSERT(kelvin == 0, "Expected 0K for celsius value below absolute zero");
+    TEST_ASSERT(kelvin == 0, "Expected KELVIN_ABSOLUTE_ZERO(0) for celsius value below absolute zero");
 }
 
 static void test_fahrenheit_To_Kelvin(void) {
@@ -245,7 +245,7 @@ static void test_fahrenheit_To_Kelvin(void) {
     fahrenheit = -500;
     kelvin = fahrenheit_To_Kelvin(&fahrenheit);
     TEST_ASSERT(errno == ERANGE, "Expected ERANGE for fahrenheit value below absolute zero");
-    TEST_ASSERT(kelvin == 0, "Expected 0K for fahrenheit value below absolute zero");
+    TEST_ASSERT(kelvin == 0, "Expected KELVIN_ABSOLUTE_ZERO(0) for fahrenheit value below absolute zero");
 }
 
 static void test_kelvin_To_Celsius(void) {
@@ -265,7 +265,7 @@ static void test_kelvin_To_Celsius(void) {
     kelvin = -1;
     celsius = kelvin_To_Celsius(&kelvin);
     TEST_ASSERT(errno == ERANGE, "Expected ERANGE for kelvin value below absolute zero");
-    TEST_ASSERT(celsius == 0, "Expected 0°C for kelvin value below absolute zero");
+    TEST_ASSERT(celsius == -273, "Expected CELSIUS_ABSOLUTE_ZERO(-273) for kelvin value below absolute zero");
 }
 
 static void test_kelvin_To_Fahrenheit(void) {
