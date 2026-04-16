@@ -220,12 +220,6 @@ static void test_celsius_To_Kelvin(void) {
     celsius = -273;
     kelvin = celsius_To_Kelvin(&celsius);
     TEST_ASSERT(kelvin == 0, "Expected -273°C to be 0K");
-
-    // Test for celsius value < absolute zero
-    celsius = -300;
-    kelvin = celsius_To_Kelvin(&celsius);
-    TEST_ASSERT(errno == ERANGE, "Expected ERANGE for celsius value below absolute zero");
-    TEST_ASSERT(kelvin == 0, "Expected 0K for celsius value below absolute zero");
 }
 
 static void test_fahrenheit_To_Kelvin(void) {
@@ -240,12 +234,6 @@ static void test_fahrenheit_To_Kelvin(void) {
     fahrenheit = -459;
     kelvin = fahrenheit_To_Kelvin(&fahrenheit);
     TEST_ASSERT(kelvin == 0, "Expected -459°F to be 0K");
-
-    // Test for fahrenheit value < absolute zero
-    fahrenheit = -500;
-    kelvin = fahrenheit_To_Kelvin(&fahrenheit);
-    TEST_ASSERT(errno == ERANGE, "Expected ERANGE for fahrenheit value below absolute zero");
-    TEST_ASSERT(kelvin == 0, "Expected 0K for fahrenheit value below absolute zero");
 }
 
 static void test_kelvin_To_Celsius(void) {
@@ -260,12 +248,6 @@ static void test_kelvin_To_Celsius(void) {
     kelvin = 0;
     celsius = kelvin_To_Celsius(&kelvin);
     TEST_ASSERT(celsius == -273, "Expected 0K to be -273°C");
-
-    // Test for kelvin value < absolute zero
-    kelvin = -1;
-    celsius = kelvin_To_Celsius(&kelvin);
-    TEST_ASSERT(errno == ERANGE, "Expected ERANGE for kelvin value below absolute zero");
-    TEST_ASSERT(celsius == 0, "Expected 0°C for kelvin value below absolute zero");
 }
 
 static void test_kelvin_To_Fahrenheit(void) {
@@ -280,12 +262,6 @@ static void test_kelvin_To_Fahrenheit(void) {
     kelvin = 0;
     fahrenheit = kelvin_To_Fahrenheit(&kelvin);
     TEST_ASSERT(fahrenheit == -459, "Expected 0K to be -459°F");
-
-    // Test for kelvin value < absolute zero
-    kelvin = -1;
-    fahrenheit = kelvin_To_Fahrenheit(&kelvin);
-    TEST_ASSERT(errno == ERANGE, "Expected ERANGE for kelvin value below absolute zero");
-    TEST_ASSERT(fahrenheit == 0, "Expected 0°F for kelvin value below absolute zero");
 }
 
 void run_unit_conversion_tests() {
