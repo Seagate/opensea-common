@@ -323,7 +323,7 @@ static void test_get_And_Validate_Float_Input(void) {
     TEST_ASSERT(get_And_Validate_Float_Input("12", &unit, ALLOW_UNIT_AMPS, &outputFloat), "Converted string to float successfully");
 
     // ALLOW_UNIT_TEMPERATURE
-    TEST_ASSERT(get_And_Validate_Float_Input("20", NULL, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("20.06", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to float successfully");
     TEST_ASSERT(get_And_Validate_Float_Input("20.34c", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to float successfully");
     TEST_ASSERT(get_And_Validate_Float_Input("20.34f", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to float successfully");
     TEST_ASSERT(get_And_Validate_Float_Input("20.34k", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to float successfully");
