@@ -240,6 +240,12 @@ static void test_fahrenheit_To_Kelvin(void) {
     fahrenheit = -459;
     kelvin = fahrenheit_To_Kelvin(&fahrenheit);
     TEST_ASSERT(kelvin == 0, "Expected -459°F to be 0K");
+
+    // Test for fahrenheit value < absolute zero
+    fahrenheit = -500;
+    kelvin = fahrenheit_To_Kelvin(&fahrenheit);
+    TEST_ASSERT(errno == ERANGE, "Expected ERANGE for fahrenheit value below absolute zero");
+    TEST_ASSERT(kelvin == 0, "Expected 0K for fahrenheit value below absolute zero");
 }
 
 static void test_kelvin_To_Celsius(void) {
