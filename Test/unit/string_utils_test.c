@@ -762,6 +762,10 @@ static void test_common_String_Concat(void) {
     const char* src = "World";
     TEST_ASSERT_EQ(common_String_Concat(dest, sizeof(dest), src), dest, "String is correctly concatenated to destination buffer");
 
+    // Test for buffer overflow protection
+    char destSmall[8] = "Hello ";
+    TEST_ASSERT_EQ(common_String_Concat(destSmall, sizeof(destSmall), src), NULL, "common_String_Concat returns NULL when destination buffer is too small");
+
     // Test for null pointer protection
     // errno = 0;
     // TEST_ASSERT_EQ(common_String_Concat(NULL, sizeof(dest), src), NULL, "common_String_Concat returns NULL when destination pointer is null");
