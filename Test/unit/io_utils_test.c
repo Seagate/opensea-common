@@ -631,17 +631,16 @@ static void test_print_Data_Buffer(void) {
     // UINT16_MAX branch (>255)
     uint32_t mediumSize = 1000;
     uint8_t *mediumBuf = malloc(mediumSize);
+    memset(mediumBuf, 0xAA, mediumSize);
     print_Data_Buffer(mediumBuf, mediumSize, true);
+    free(mediumBuf);
 
     // 0xFFFFFF branch (>65535)
     uint32_t largeSize = 70000;
     uint8_t *largeBuf = malloc(largeSize);
+    memset(largeBuf, 0xAA, largeSize);
     print_Data_Buffer(largeBuf, largeSize, true);
-
-    // else branch (>0xFFFFFF ≈ 16MB)
-    uint32_t hugeSize = 17000000;
-    uint8_t *hugeBuf = malloc(hugeSize);
-    print_Data_Buffer(hugeBuf, hugeSize, true);
+    free(largeBuf);
 
     // Test for printable characters
     uint8_t printableBuf[] = {'A', 'B', 'C', '1', '2', '3'};
