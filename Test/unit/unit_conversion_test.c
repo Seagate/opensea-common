@@ -176,6 +176,12 @@ static void test_celsius_To_Fahrenheit(void) {
     celsius = -273;
     fahrenheit = celsius_To_Fahrenheit(&celsius);
     TEST_ASSERT(fahrenheit == -459, "Expected -273°C to be -459°F");
+
+    // Test for celsius value < absolute zero
+    celsius = -300;
+    fahrenheit = celsius_To_Fahrenheit(&celsius);
+    TEST_ASSERT(errno == ERANGE, "Expected ERANGE for celsius value below absolute zero");
+    TEST_ASSERT(fahrenheit == 0, "Expected 0°F for celsius value below absolute zero");
 }
 
 static void test_fahrenheit_To_celsius(void) {
