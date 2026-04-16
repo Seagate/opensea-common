@@ -205,6 +205,10 @@ static void test_fahrenheit_To_celsius(void) {
     celsius = fahrenheit_To_celsius(&fahrenheit);
     TEST_ASSERT(celsius == -40, "Expected -40°F to be -40°C");
 
+    fahrenheit = 40;
+    celsius = fahrenheit_To_celsius(&fahrenheit);
+    TEST_ASSERT(celsius == 5, "Expected 40°F to be 5°C");
+
     fahrenheit = -459;
     celsius = fahrenheit_To_celsius(&fahrenheit);
     TEST_ASSERT(celsius == -273, "Expected -459°F to be -273°C");
