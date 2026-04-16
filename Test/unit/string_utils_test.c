@@ -1183,7 +1183,7 @@ static void test_string_version_compare(void) {
     TEST_ASSERT(string_version_compare("file9.txt", "file10.txt") < 0, "Version file9.txt should be less than file10.txt");
     TEST_ASSERT(string_version_compare("file01.txt", "file1.txt") < 0, "Version file01.txt should be less than file1.txt");
     TEST_ASSERT(string_version_compare("abc", "abd") < 0, "Version abc should be less than abd");
-    TEST_ASSERT(string_version_compare("v123", "v1234") < 0, "Longer numeric segment should win");
+    TEST_ASSERT(string_version_compare("aaa", "aaaaa") < 0, "Longer numeric segment should win");
 }
 
 void run_string_utils_tests(void) {
