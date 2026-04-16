@@ -733,10 +733,11 @@ static void test_safe_strncpy_no_overlap(void) {
     TEST_ASSERT_EQ(dest[5], '\0', "Destination buffer is null-terminated after copying n characters without overlap");
 
     // Test for srclen < count
-    char shortSrc[] = "Hi";
-    safe_strncpy_no_overlap(dest, sizeof(dest), shortSrc, 10);
-    TEST_ASSERT(strcmp(dest, "Hi") == 0, "Source shorter than count copied correctly without overlap");
-    TEST_ASSERT(dest[2] == '\0', "Null terminator placed after source without overlap");
+    char dest2[10];
+    const char* shortSrc = "Hi";
+    safe_strncpy_no_overlap(dest2, sizeof(dest2), shortSrc, 10);
+    TEST_ASSERT(strcmp(dest2, "Hi") == 0, "Source shorter than count copied correctly without overlap");
+    TEST_ASSERT(dest2[2] == '\0', "Null terminator placed after source without overlap");
 
     // Test for overlapping - aborts the test
     // char str[20] = "This String";
