@@ -280,6 +280,12 @@ static void test_kelvin_To_Fahrenheit(void) {
     kelvin = 0;
     fahrenheit = kelvin_To_Fahrenheit(&kelvin);
     TEST_ASSERT(fahrenheit == -459, "Expected 0K to be -459°F");
+
+    // Test for kelvin value < absolute zero
+    kelvin = -1;
+    fahrenheit = kelvin_To_Fahrenheit(&kelvin);
+    TEST_ASSERT(errno == ERANGE, "Expected ERANGE for kelvin value below absolute zero");
+    TEST_ASSERT(fahrenheit == -459, "Expected FAHRENHEIT_ABSOLUTE_ZERO(-459) for kelvin value below absolute zero");
 }
 
 void run_unit_conversion_tests() {
