@@ -170,6 +170,7 @@ static void test_get_And_Validate_Integer_Input_UL(void) {
     TEST_ASSERT(!get_And_Validate_Integer_Input_UL("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_UL("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_UL("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UL("0xFF", NULL, ALLOW_UNIT_VOLTS, &outputInteger), "Could not convert string to integer successfully");
 }
 
 static void test_get_And_Validate_Integer_Input_UI(void) {
