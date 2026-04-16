@@ -293,6 +293,14 @@ static void test_kelvin_To_Fahrenheit(void) {
     fahrenheit = kelvin_To_Fahrenheit(&kelvin);
     TEST_ASSERT(fahrenheit == -459, "Expected 0K to be -459°F");
 
+    kelvin = 275;
+    fahrenheit = kelvin_To_Fahrenheit(&kelvin);
+    TEST_ASSERT(fahrenheit == 36, "Expected 275K to be 36°F");
+
+    kelvin = 271;
+    fahrenheit = kelvin_To_Fahrenheit(&kelvin);
+    TEST_ASSERT(fahrenheit == 28, "Expected 271K to be 28°F");
+
     // Test for kelvin value < absolute zero
     kelvin = -1;
     fahrenheit = kelvin_To_Fahrenheit(&kelvin);
