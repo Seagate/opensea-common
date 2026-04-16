@@ -260,6 +260,12 @@ static void test_kelvin_To_Celsius(void) {
     kelvin = 0;
     celsius = kelvin_To_Celsius(&kelvin);
     TEST_ASSERT(celsius == -273, "Expected 0K to be -273°C");
+
+    // Test for kelvin value < absolute zero
+    kelvin = -1;
+    celsius = kelvin_To_Celsius(&kelvin);
+    TEST_ASSERT(errno == ERANGE, "Expected ERANGE for kelvin value below absolute zero");
+    TEST_ASSERT(celsius == 0, "Expected 0°C for kelvin value below absolute zero");
 }
 
 static void test_kelvin_To_Fahrenheit(void) {
