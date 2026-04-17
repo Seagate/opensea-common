@@ -557,7 +557,7 @@ static void test_safe_reallocf_aligned(void) {
     TEST_ASSERT(ptr == NULL, "safe_reallocf_aligned should return a null pointer when reallocating to a larger size fails");
 
     // Test when block is NULL, should return M_NULLPTR
-    int* new_ptr = safe_reallocf_aligned(NULL, 0, element_size * num_elements, alignment);
+    new_ptr = safe_reallocf_aligned(NULL, 0, element_size * num_elements, alignment);
     TEST_ASSERT(new_ptr == NULL, "safe_reallocf_aligned should return a null pointer when the input pointer is NULL");
 
     // Test when *block is NULL, should behave like safe_malloc_aligned
