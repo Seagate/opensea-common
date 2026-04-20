@@ -244,7 +244,7 @@ static void test_get_And_Validate_Integer_Input_I(void) {
     TEST_ASSERT(!get_And_Validate_Integer_Input_I("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_I("2147483648", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than INT_MAX should fail");
     TEST_ASSERT(!get_And_Validate_Integer_Input_I("-2147483649", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value smaller than INT_MIN should fail");
-}
+} 
 
 static void test_get_And_Validate_Integer_Input_S(void) {
     short outputInteger;
@@ -812,6 +812,21 @@ static void test_safe_fopen(void) {
     TEST_ASSERT(strstr(buffer, "Testing safe_fopen.") != NULL, "safe_fopen read the correct content");
 
     fclose(file);
+
+    // Test when streamptr == M_NULLPTR
+    err = safe_fopen(NULL, "test_safe_fopen.txt", "r");
+    TEST_ASSERT(errno == EINVAL, "safe_fopen returned EINVAL for NULL streamptr");
+    TEST_ASSERT(err == errno, "safe_fopen returned the correct error code for NULL streamptr");
+
+    // Test when filename == M_NULLPTR
+    err = safe_fopen(&file, NULL, "r");
+    TEST_ASSERT(errno == EINVAL, "safe_fopen returned EINVAL for NULL filename");
+    TEST_ASSERT(err == errno, "safe_fopen returned the correct error code for NULL filename");
+
+    // Test when mode == M_NULLPTR
+    err = safe_fopen(&file, "test_safe_fopen.txt", NULL);
+    TEST_ASSERT(errno == EINVAL, "safe_fopen returned EINVAL for NULL mode");
+    TEST_ASSERT(err == errno, "safe_fopen returned the correct error code for NULL mode");
 }
 
 static void test_safe_freopen(void)
