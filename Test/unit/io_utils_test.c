@@ -971,15 +971,27 @@ static void test_safe_gets(void)
     fclose(fp);
 
     // Test when buffer is filled to capacity without a newline
+    char buff[8] = {0};  // small buffer
+
     fp = fopen("test_input.txt", "w");
-    TEST_ASSERT(fp != NULL, "input file opened for capacity test");
-    for (size_t i = 0; i < sizeof(buffer) - 1; i++) {
-        fputc('A', fp);
-    }
-    res = safe_gets(buffer, sizeof(buffer));
-    TEST_ASSERT(res == NULL, "safe_gets returned NULL when buffer filled without newline");
-    TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL when buffer filled without newline");
+    TEST_ASSERT(fp != NULL, "input file created");
+
+    fprintf(fp, "AAAAAAAAAAAAAA");  
     fclose(fp);
+
+    fp = fopen("test_input.txt", "r");
+    TEST_ASSERT(fp != NULL, "input file opened");
+
+    int saved_stdin = dup(fileno(stdin));
+    dup2(fileno(fp), fileno(stdin));
+
+    res = safe_gets(buffer, sizeof(buffer));
+
+    dup2(saved_stdin, fileno(stdin));
+    close(saved_stdin);
+    fclose(fp);
+    TEST_ASSERT(res == NULL, "Expected NULL when buffer full without newline");
+    TEST_ASSERT(errno == EINVAL, "Expected EINVAL when buffer full without newline");
 }
 
 static void test_safe_strtol(void) {
