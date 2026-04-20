@@ -865,7 +865,9 @@ static void test_safe_memccpy(void) {
     // Test for overlapping regions
     char buffer[20] = "Hello, World!";
     result = safe_memccpy(buffer + 2, 10, buffer, 'o', 8);
-    printf("Result for overlapping regions: %d\n", result);
+    TEST_ASSERT(result == EINVAL, "safe_memccpy should return errno for overlapping regions");
+
+    result = safe_memccpy(buffer, 10, buffer + 2, 'o', 8);
     TEST_ASSERT(result == EINVAL, "safe_memccpy should return errno for overlapping regions");
 }
 
