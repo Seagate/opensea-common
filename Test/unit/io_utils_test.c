@@ -985,7 +985,7 @@ static void test_safe_gets(void)
     saved_stdin = dup(fileno(stdin));
     dup2(fileno(fp), fileno(stdin));
 
-    res = safe_gets(buffer, sizeof(buffer));
+    res = safe_gets(buff, sizeof(buff));
 
     dup2(saved_stdin, fileno(stdin));
     close(saved_stdin);
