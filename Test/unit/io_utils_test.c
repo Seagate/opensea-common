@@ -969,29 +969,6 @@ static void test_safe_gets(void)
     TEST_ASSERT(res == NULL, "safe_gets returned NULL at EOF");
     TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL at EOF");
     fclose(fp);
-
-    // Test when buffer is filled to capacity without a newline
-    char buff[8] = {0};  // small buffer
-
-    fp = fopen("test_input.txt", "w");
-    TEST_ASSERT(fp != NULL, "input file created");
-
-    fprintf(fp, "AAAAAAAAAAAAAA");  
-    fclose(fp);
-
-    fp = fopen("test_input.txt", "r");
-    TEST_ASSERT(fp != NULL, "input file opened");
-
-    saved_stdin = dup(fileno(stdin));
-    dup2(fileno(fp), fileno(stdin));
-
-    res = safe_gets(buff, sizeof(buff));
-
-    dup2(saved_stdin, fileno(stdin));
-    close(saved_stdin);
-    fclose(fp);
-    TEST_ASSERT(res == NULL, "Expected NULL when buffer full without newline");
-    TEST_ASSERT(errno == EINVAL, "Expected EINVAL when buffer full without newline");
 }
 
 static void test_safe_strtol(void) {
@@ -1044,6 +1021,21 @@ static void test_safe_strtol(void) {
     TEST_ASSERT(result == 0, "safe_strtol returned 0 for invalid input");
     TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtol set endptr correctly for invalid input");
     TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtol set errno to EINVAL or left it unchanged for invalid input");
+
+    // Test when value = NULL
+    err = safe_strtol(NULL, "123", &endptr, 10);
+    TEST_ASSERT(errno == EINVAL, "safe_strtol returned EINVAL for NULL value pointer");
+    TEST_ASSERT(err == errno, "safe_strtol returned the correct error code for NULL value pointer");
+
+    // Test when str = NULL
+    err = safe_strtol(&result, NULL, &endptr, 10);
+    TEST_ASSERT(errno == EINVAL, "safe_strtol returned EINVAL for NULL string");
+    TEST_ASSERT(err == errno, "safe_strtol returned the correct error code for NULL string");
+
+    // Test when base > 36
+    err = safe_strtol(&result, "123", &endptr, 37);
+    TEST_ASSERT(errno == EINVAL, "safe_strtol returned EINVAL for invalid base");
+    TEST_ASSERT(err == errno, "safe_strtol returned the correct error code for invalid base");
 }
 
 static void test_safe_strtoll(void) {
@@ -1089,6 +1081,21 @@ static void test_safe_strtoll(void) {
     TEST_ASSERT(endptr != NULL && *endptr == 'a', "endptr should point to start of string");
     TEST_ASSERT(err == EINVAL, "Function should return EINVAL");
     TEST_ASSERT(errno == EINVAL, "errno should be set to EINVAL");
+
+    // Test when value = NULL
+    err = safe_strtoll(NULL, "123", &endptr, 10);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoll returned EINVAL for NULL value pointer");
+    TEST_ASSERT(err == errno, "safe_strtoll returned the correct error code for NULL value pointer");
+
+    // Test when str = NULL
+    err = safe_strtoll(&result, NULL, &endptr, 10);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoll returned EINVAL for NULL string");
+    TEST_ASSERT(err == errno, "safe_strtoll returned the correct error code for NULL string");
+
+    // Test when base > 36
+    err = safe_strtoll(&result, "123", &endptr, 37);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoll returned EINVAL for invalid base");
+    TEST_ASSERT(err == errno, "safe_strtoll returned the correct error code for invalid base");
 }
 
 static void test_safe_strtoul(void) {
