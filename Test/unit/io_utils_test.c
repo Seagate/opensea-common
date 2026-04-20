@@ -948,6 +948,21 @@ static void test_safe_gets(void)
 
     // Test for n = 1
     res = safe_gets(buffer, 1);
+
+    // Test for n = 0
+    res = safe_gets(buffer, 0);
+    TEST_ASSERT(res == NULL, "safe_gets returned NULL for n = 0");
+    TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for n = 0");
+
+    // Test for n > INT_MAX
+    res = safe_gets(buffer, (size_t)INT_MAX + 1);
+    TEST_ASSERT(res == NULL, "safe_gets returned NULL for n > INT_MAX");
+    TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for n > INT_MAX");
+
+    // Test for str = NULL
+    res = safe_gets(NULL, sizeof(buffer));
+    TEST_ASSERT(res == NULL, "safe_gets returned NULL for str = NULL");
+    TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for str = NULL");
 }
 
 static void test_safe_strtol(void) {
