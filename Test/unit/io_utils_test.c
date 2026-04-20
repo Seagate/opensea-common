@@ -878,6 +878,10 @@ static void test_safe_freopen(void)
     err = safe_freopen(&file, "test_safe_freopen.txt", NULL, stdout);
     TEST_ASSERT(errno == EINVAL, "safe_freopen returned EINVAL for NULL mode");
     TEST_ASSERT(err == errno, "safe_freopen returned the correct error code for NULL mode");
+
+    // Test with invalid filename
+    err = safe_freopen(&file, "/invalid_path/test_safe_freopen.txt", "w", stdout);
+    TEST_ASSERT(err != 0, "safe_freopen returned error for invalid filename");
 }
 
 static void test_safe_tmpfile(void) {
