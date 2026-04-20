@@ -939,10 +939,7 @@ static void test_safe_gets(void)
 
     fclose(fp);
 
-    printf("Captured input: %s\n", buffer);
-
     TEST_ASSERT(res != NULL, "safe_gets returned non-null");
-
     TEST_ASSERT(strcmp(buffer, "hello world") == 0,
                 "safe_gets read correct string");
 
@@ -963,6 +960,26 @@ static void test_safe_gets(void)
     res = safe_gets(NULL, sizeof(buffer));
     TEST_ASSERT(res == NULL, "safe_gets returned NULL for str = NULL");
     TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for str = NULL");
+
+    // Test when fgets returns NULL due to EOF
+    fp = fopen("test_input.txt", "r");
+    TEST_ASSERT(fp != NULL, "input file opened for EOF test");  
+    fseek(fp, 0, SEEK_END); // Move to end of file to simulate EOF
+    res = safe_gets(buffer, sizeof(buffer));
+    TEST_ASSERT(res == NULL, "safe_gets returned NULL at EOF");
+    TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL at EOF");
+    fclose(fp);
+
+    // Test when buffer is filled to capacity without a newline
+    fp = fopen("test_input.txt", "w");
+    TEST_ASSERT(fp != NULL, "input file opened for capacity test");
+    for (size_t i = 0; i < sizeof(buffer) - 1; i++) {
+        fputc('A', fp);
+    }
+    res = safe_gets(buffer, sizeof(buffer));
+    TEST_ASSERT(res == NULL, "safe_gets returned NULL when buffer filled without newline");
+    TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL when buffer filled without newline");
+    fclose(fp);
 }
 
 static void test_safe_strtol(void) {
