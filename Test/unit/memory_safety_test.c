@@ -7,11 +7,10 @@ static void test_safe_malloc(void) {
     TEST_ASSERT(ptr != NULL, "safe_malloc should return a non-null pointer for a non-zero size");
     free(ptr);
 
-    // Test that safe_malloc returns null for a size of zero
-    // ptr = safe_malloc(0);
-    // TEST_ASSERT(ptr == NULL, "safe_malloc should return a null pointer for a size of zero");
-    // free(ptr);
-}
+    // Test that safe_malloc returns null for a size of zero - invokes constraint handler
+    ptr = safe_malloc(0);
+    TEST_ASSERT(ptr == NULL, "safe_malloc should return a null pointer for a size of zero");
+} 
 
 static void test_safe_calloc(void) {
     void* ptr = safe_calloc(10, 20);
