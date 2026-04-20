@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<../include/constraint_handling.h>
 #include "framework/test_framework.h"
 
 // Forward declarations of test functions
@@ -15,6 +16,9 @@ void run_unit_conversion_tests(void);
 int main(void)
 {
     printf("Starting unit tests...\n\n");
+
+    // set constraint handler to ignore errors to prevent test suite from crashing on expected failures
+    set_Constraint_Handler(ERR_IGNORE);
 
     // Run individual test suites
     run_bit_manip_tests();
