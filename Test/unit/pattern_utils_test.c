@@ -13,6 +13,10 @@ static void test_fill_Random_Pattern_In_Buffer(void) {
     }
     printf("\n");
 
+    // Test for localPtr = NULL
+    result = fill_Random_Pattern_In_Buffer(NULL, SIZE_MAX);
+    TEST_ASSERT(result == MEMORY_FAILURE, "Gives MEMORY_FAILURE for null pointer");
+
     // Test with zero data length
     // result = fill_Random_Pattern_In_Buffer(buffer, 0);
     // TEST_ASSERT(result == BAD_PARAMETER, "Gives error for zero data length");
