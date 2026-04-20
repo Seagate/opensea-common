@@ -274,16 +274,20 @@ static void test_safe_memset(void) {
     TEST_ASSERT(safe_memset(buffer, 0, '3', 0) == 0, "safe_memset should return an error code when destsz is zero");
 
     // Test when dest is NULL
-    // TEST_ASSERT(safe_memset(NULL, sizeof(buffer), '3', sizeof(buffer)) != 0, "safe_memset should return an error code when dest is NULL");
+    TEST_ASSERT(safe_memset(NULL, sizeof(buffer), '3', sizeof(buffer)) != 0, "safe_memset should return an error code when dest is NULL");
+    TEST_ASSERT(errno == EINVAL, "safe_memset should set errno to EINVAL when dest is NULL");
 
     // Test when destsz > RSIZE_MAX
-    // TEST_ASSERT(safe_memset(buffer, RSIZE_MAX + 1, '3', sizeof(buffer)) != 0, "safe_memset should return an error code when destsz is greater than RSIZE_MAX");
+    TEST_ASSERT(safe_memset(buffer, RSIZE_MAX + 1, '3', sizeof(buffer)) != 0, "safe_memset should return an error code when destsz is greater than RSIZE_MAX");
+    TEST_ASSERT(errno == EINVAL, "safe_memset should set errno to EINVAL when destsz is greater than RSIZE_MAX");
 
     // Test when count > RSIZE_MAX
-    // TEST_ASSERT(safe_memset(buffer, sizeof(buffer), '3', RSIZE_MAX + 1) != 0, "safe_memset should return an error code when count is greater than RSIZE_MAX");
+    TEST_ASSERT(safe_memset(buffer, sizeof(buffer), '3', RSIZE_MAX + 1) != 0, "safe_memset should return an error code when count is greater than RSIZE_MAX");
+    TEST_ASSERT(errno == EINVAL, "safe_memset should set errno to EINVAL when count is greater than RSIZE_MAX");
 
     // Test when count > destsz
-    // TEST_ASSERT(safe_memset(buffer, sizeof(buffer), '3', sizeof(buffer) + 1) != 0, "safe_memset should return an error code when count is greater than destsz");
+    TEST_ASSERT(safe_memset(buffer, sizeof(buffer), '3', sizeof(buffer) + 1) != 0, "safe_memset should return an error code when count is greater than destsz");
+    TEST_ASSERT(errno == EINVAL, "safe_memset should set errno to EINVAL when count is greater than destsz");
 }
 
 static void test_explicit_zeroes(void) {
