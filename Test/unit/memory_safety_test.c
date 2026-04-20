@@ -741,6 +741,31 @@ static void test_safe_memmove(void) {
     char dest[10];
     errno_t result = safe_memmove(dest, sizeof(dest), src, 5);
     TEST_ASSERT(result == 0, "safe_memmove should return zero on success");
+
+    // Test when dest = NULL
+    result = safe_memmove(NULL, sizeof(dest), src, 5);
+    TEST_ASSERT(errno == EINVAL, "safe_memmove should set errno to EINVAL when dest is NULL");
+    TEST_ASSERT(result == errno, "safe_memmove should return errno when dest is NULL");
+
+    // Test when src = NULL
+    result = safe_memmove(dest, sizeof(dest), NULL, 5);
+    TEST_ASSERT(errno == EINVAL, "safe_memmove should set errno to EINVAL when src is NULL");
+    TEST_ASSERT(result == 0, "safe_memmove should return zero when src is NULL");
+
+    // Test when destsz > RSIZE_MAX
+    result = safe_memmove(dest, RSIZE_MAX + 1, src, 5);
+    TEST_ASSERT(errno == EINVAL, "safe_memmove should set errno to EINVAL when destsz is greater than RSIZE_MAX");
+    TEST_ASSERT(result == 0, "safe_memmove should return zero when destsz is greater than RSIZE_MAX");
+
+    // Test when count > RSIZE_MAX
+    result = safe_memmove(dest, sizeof(dest), src, RSIZE_MAX + 1);
+    TEST_ASSERT(errno == EINVAL, "safe_memmove should set errno to EINVAL when count is greater than RSIZE_MAX");
+    TEST_ASSERT(result == 0, "safe_memmove should return zero when count is greater than RSIZE_MAX");
+
+    // Test when count > destsz
+    result = safe_memmove(dest, sizeof(dest), src, sizeof(dest) + 1);
+    TEST_ASSERT(errno == ERANGE, "safe_memmove should set errno to ERANGE when count is greater than destsz");
+    TEST_ASSERT(result == 0, "safe_memmove should return zero when count is greater than destsz");
 }
 
 static void test_safe_memcpy(void) {
