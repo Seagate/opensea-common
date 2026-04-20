@@ -863,6 +863,21 @@ static void test_safe_freopen(void)
     TEST_ASSERT(strstr(buffer, "Testing safe_freopen.") != NULL, "safe_freopen wrote the correct content to the file");
 
     fclose(readFile);
+
+    // Test when newstreamptr == M_NULLPTR
+    err = safe_freopen(NULL, "test_safe_freopen.txt", "w", stdout);
+    TEST_ASSERT(errno == EINVAL, "safe_freopen returned EINVAL for NULL newstreamptr");
+    TEST_ASSERT(err == errno, "safe_freopen returned the correct error code for NULL newstreamptr");
+
+    // Test when stream == M_NULLPTR
+    err = safe_freopen(&file, "test_safe_freopen.txt", "w", NULL);
+    TEST_ASSERT(errno == EINVAL, "safe_freopen returned EINVAL for NULL stream");
+    TEST_ASSERT(err == errno, "safe_freopen returned the correct error code for NULL stream");
+
+    // Test when mode == M_NULLPTR
+    err = safe_freopen(&file, "test_safe_freopen.txt", NULL, stdout);
+    TEST_ASSERT(errno == EINVAL, "safe_freopen returned EINVAL for NULL mode");
+    TEST_ASSERT(err == errno, "safe_freopen returned the correct error code for NULL mode");
 }
 
 static void test_safe_tmpfile(void) {
