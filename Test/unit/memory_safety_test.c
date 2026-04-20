@@ -863,8 +863,10 @@ static void test_safe_memccpy(void) {
     TEST_ASSERT(result == errno, "safe_memccpy should return errno when count is greater than destsz");
 
     // Test for overlapping regions
-    // char buffer[20] = "Hello, World!";
-    // result = safe_memccpy(buffer + 5, sizeof(buffer) - 5, buffer, 'o', sizeof(buffer));
+    char buffer[20] = "Hello, World!";
+    result = safe_memccpy(buffer + 5, sizeof(buffer) - 5, buffer, 'o', sizeof(buffer));
+    TEST_ASSERT(errno == EINVAL, "safe_memccpy should set errno to EINVAL for overlapping regions");
+    TEST_ASSERT(result == errno, "safe_memccpy should return errno for overlapping regions");
 }
 
 static void test_safe_memcmove(void) {
