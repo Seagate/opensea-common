@@ -982,7 +982,7 @@ static void test_safe_gets(void)
     fp = fopen("test_input.txt", "r");
     TEST_ASSERT(fp != NULL, "input file opened");
 
-    int saved_stdin = dup(fileno(stdin));
+    saved_stdin = dup(fileno(stdin));
     dup2(fileno(fp), fileno(stdin));
 
     res = safe_gets(buffer, sizeof(buffer));
