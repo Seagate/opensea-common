@@ -516,20 +516,20 @@ static void test_safe_calloc_aligned(void) {
     }
     free_aligned(ptr);
 
-    // Test when count is zero
-    // ptr = safe_calloc_aligned(0, element_size, alignment);
-    // TEST_ASSERT(ptr == NULL, "safe_calloc_aligned should return a null pointer for a count of zero");
-    // free_aligned(ptr);
+    // Test when count is zero - invokes constraint handler
+    ptr = safe_calloc_aligned(0, element_size, alignment);
+    TEST_ASSERT(ptr == NULL, "safe_calloc_aligned should return a null pointer for a count of zero");
+    TEST_ASSERT(errno == EINVAL, "safe_calloc_aligned should set errno to EINVAL when count is zero");
 
-    // Test when size is zero
-    // ptr = safe_calloc_aligned(num_elements, 0, alignment);
-    // TEST_ASSERT(ptr == NULL, "safe_calloc_aligned should return a null pointer for a size of zero");
-    // free_aligned(ptr);
+    // Test when size is zero - invokes constraint handler
+    ptr = safe_calloc_aligned(num_elements, 0, alignment);
+    TEST_ASSERT(ptr == NULL, "safe_calloc_aligned should return a null pointer for a size of zero");
+    TEST_ASSERT(errno == EINVAL, "safe_calloc_aligned should set errno to EINVAL when size is zero");
 
-    // Test when count * size results in an overflow
-    // ptr = safe_calloc_aligned(SIZE_MAX, SIZE_MAX, alignment);
-    // TEST_ASSERT(ptr == NULL, "safe_calloc_aligned should return a null pointer when count * size results in an overflow");
-    // free_aligned(ptr);
+    // Test when count > (SIZE_MAX / size) - invokes constraint handler
+    ptr = safe_calloc_aligned(SIZE_MAX, 2, alignment);
+    TEST_ASSERT(ptr == NULL, "safe_calloc_aligned should return a null pointer for a count > (SIZE_MAX / size)");
+    TEST_ASSERT(errno == EINVAL, "safe_calloc_aligned should set errno to EINVAL when count > (SIZE_MAX / size)");
 }
 
 static void test_safe_realloc_aligned(void) {
