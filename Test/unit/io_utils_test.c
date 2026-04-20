@@ -908,6 +908,11 @@ static void test_safe_tmpfile(void) {
     TEST_ASSERT(strstr(buffer, "Testing safe_tmpfile.") != NULL, "safe_tmpfile wrote the correct content to the temporary file");
 
     fclose(file);
+
+    // Test when streamptr == M_NULLPTR
+    err = safe_tmpfile(NULL);
+    TEST_ASSERT(errno == EINVAL, "safe_tmpfile returned EINVAL for NULL streamptr");
+    TEST_ASSERT(err == errno, "safe_tmpfile returned the correct error code for NULL streamptr");
 }
 
 static void test_safe_gets(void)
