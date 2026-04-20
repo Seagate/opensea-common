@@ -885,7 +885,10 @@ static void test_safe_freopen(void)
     err = safe_freopen(&invalidfile, "/invalid_path/test_safe_freopen.txt", "w", invalidfile);
     TEST_ASSERT(err != 0, "safe_freopen returned error for invalid filename");
 
-    fclose(invalidfile);
+    if (invalidfile != NULL)
+    {
+        fclose(invalidfile);
+    }
 }
 
 static void test_safe_tmpfile(void) {
