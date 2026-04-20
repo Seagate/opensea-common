@@ -266,8 +266,9 @@ static void test_safe_memset(void) {
         TEST_ASSERT(buffer[i] == '3', "safe_memset should set all bytes in the buffer to '3'");
     }
 
-    // Test when destsz = 0
+    // Test when destsz = 0 and count = 0
     TEST_ASSERT(safe_memset(buffer, 0, '3', 0) != 0, "safe_memset should return an error code when destsz is zero");
+    printf("errno: %d\n", errno);
 
     // Test when dest is NULL
     // TEST_ASSERT(safe_memset(NULL, sizeof(buffer), '3', sizeof(buffer)) != 0, "safe_memset should return an error code when dest is NULL");
