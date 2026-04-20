@@ -17,15 +17,20 @@ static void test_safe_calloc(void) {
     TEST_ASSERT(ptr != NULL, "safe_calloc should return a non-null pointer for non-zero count and size");
     free(ptr);
 
-    // Test that safe_calloc returns null for a count of zero
-    // ptr = safe_calloc(0, 20);
-    // TEST_ASSERT(ptr == NULL, "safe_calloc should return a null pointer for a count of zero");
-    // free(ptr);
+    // Test that safe_calloc returns null for a count of zero - invokes constraint handler
+    ptr = safe_calloc(0, 20);
+    TEST_ASSERT(ptr == NULL, "safe_calloc should return a null pointer for a count of zero");
+    TEST_ASSERT(errno == EINVAL, "safe_calloc should set errno to EINVAL when count is zero");
 
-    // Test that safe_calloc returns null for a size of zero
-    // ptr = safe_calloc(10, 0);
-    // TEST_ASSERT(ptr == NULL, "safe_calloc should return a null pointer for a size of zero");
-    // free(ptr);
+    // Test that safe_calloc returns null for a size of zero - invokes constraint handler
+    ptr = safe_calloc(10, 0);
+    TEST_ASSERT(ptr == NULL, "safe_calloc should return a null pointer for a size of zero");
+    TEST_ASSERT(errno == EINVAL, "safe_calloc should set errno to EINVAL when size is zero");
+
+    // Test that safe_calloc returns null for a count > (SIZE_MAX / size) - invokes constraint handler
+    ptr = safe_calloc(SIZE_MAX, 2);
+    TEST_ASSERT(ptr == NULL, "safe_calloc should return a null pointer for a count > (SIZE_MAX / size)");
+    TEST_ASSERT(errno == EINVAL, "safe_calloc should set errno to EINVAL when count > (SIZE_MAX / size)");
 }
 
 static void test_safe_realloc(void) {
