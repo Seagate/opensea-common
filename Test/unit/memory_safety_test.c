@@ -551,8 +551,7 @@ static void test_safe_reallocf_aligned(void) {
     TEST_ASSERT(ptr != NULL, "calloc_aligned should return a non-null pointer for non-zero count and size");
 
     // Reallocate to a larger size
-    size_t new_num_elements = RSIZE_MAX;
-    int* new_ptr = safe_reallocf_aligned((void**)&ptr, element_size * num_elements, element_size * new_num_elements, alignment);
+    int* new_ptr = safe_reallocf_aligned((void**)&ptr, element_size * num_elements, RSIZE_MAX, alignment);
     TEST_ASSERT(new_ptr == NULL, "safe_reallocf_aligned should return a null pointer when reallocating to an excessively large size");
     TEST_ASSERT(ptr == NULL, "safe_reallocf_aligned should return a null pointer when reallocating to a larger size fails");
 
