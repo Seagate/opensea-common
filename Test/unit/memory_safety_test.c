@@ -533,11 +533,9 @@ static void test_safe_realloc_aligned(void) {
     // Test when size is zero, should free the original block and return null
     new_ptr = safe_realloc_aligned(new_ptr, sizeof(int) * num_elements, 0, 16);
     TEST_ASSERT(new_ptr == NULL, "safe_realloc_aligned should return a null pointer when reallocating to zero");
-
-    // Test when size is large enough to cause overflow, should free the original block and return null
-    // size_t size = SIZE_MAX - 16 + 2; 
-    // new_ptr = safe_realloc_aligned(NULL, sizeof(int) * num_elements, size, 16);
-    // TEST_ASSERT(new_ptr == NULL, "safe_realloc_aligned should return a null pointer when size is large enough to cause overflow");
+    // Test for RSIZE_MAX, should free the original block and return null
+    new_ptr = safe_realloc_aligned(NULL, sizeof(int) * num_elements, RSIZE_MAX, 16);
+    TEST_ASSERT(new_ptr == NULL, "safe_realloc_aligned should return a null pointer when size is large enough to cause overflow");
 }
 
 static void test_safe_reallocf_aligned(void) {
