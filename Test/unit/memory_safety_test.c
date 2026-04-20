@@ -815,9 +815,9 @@ static void test_safe_memcpy_no_overlap(void) {
     TEST_ASSERT(result == errno, "safe_memcpy_no_overlap should return errno when count is greater than destsz");
 
     // Test for overlapping
-    // char buffer[20] = "Hello, World!";
-    // result = safe_memcpy_no_overlap(buffer + 5, sizeof(buffer) - 5, buffer, 10);
-    // TEST_ASSERT(result != 0, "safe_memcpy_no_overlap should return non-zero for overlapping regions");
+    char buffer[20] = "Hello, World!";
+    result = safe_memcpy_no_overlap(buffer + 5, sizeof(buffer) - 5, buffer, 10);
+    TEST_ASSERT(result != 0, "safe_memcpy_no_overlap should return non-zero for overlapping regions");
 }
 
 static void test_safe_memccpy(void) {
