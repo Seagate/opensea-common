@@ -880,9 +880,12 @@ static void test_safe_freopen(void)
     TEST_ASSERT(err == errno, "safe_freopen returned the correct error code for NULL mode");
 
     // Test with invalid filename
-    FILE *invalidFile = NULL;
-    err = safe_freopen(&invalidFile, "/invalid_path/test_safe_freopen.txt", "w", invalidFile);
+    FILE *invalidfile = fopen("temp.txt", "w");
+    TEST_ASSERT(invalidfile != NULL, "temp file opened");
+    err = safe_freopen(&invalidfile, "/invalid_path/test_safe_freopen.txt", "w", invalidfile);
     TEST_ASSERT(err != 0, "safe_freopen returned error for invalid filename");
+
+    fclose(invalidfile);
 }
 
 static void test_safe_tmpfile(void) {
