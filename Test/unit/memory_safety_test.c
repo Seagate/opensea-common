@@ -495,8 +495,10 @@ static void test_safe_malloc_aligned(void) {
     TEST_ASSERT(ptr != NULL, "safe_malloc_aligned should return a non-null pointer for a non-zero size");
     free_aligned(ptr);
 
-    // Test that size = 0 - gives runtime error
-    // ptr = safe_malloc_aligned(0, alignment);
+    // Test for size = 0 - invokes constraint handler
+    ptr = safe_malloc_aligned(0, alignment);
+    TEST_ASSERT(ptr == NULL, "safe_malloc_aligned should return a null pointer for a size of zero");
+    TEST_ASSERT(errno == EINVAL, "safe_malloc_aligned should set errno to EINVAL when size is zero");
    
     size_t size = SIZE_MAX - alignment + 2; // forces overflow condition
     ptr = safe_malloc_aligned(size, alignment);
