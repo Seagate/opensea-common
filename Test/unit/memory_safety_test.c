@@ -742,27 +742,27 @@ static void test_safe_memmove(void) {
     errno_t result = safe_memmove(dest, sizeof(dest), src, 5);
     TEST_ASSERT(result == 0, "safe_memmove should return zero on success");
 
-    // Test when dest = NULL
+    // Test when dest = NULL - invokes constraint handler
     result = safe_memmove(NULL, sizeof(dest), src, 5);
     TEST_ASSERT(errno == EINVAL, "safe_memmove should set errno to EINVAL when dest is NULL");
     TEST_ASSERT(result == errno, "safe_memmove should return errno when dest is NULL");
 
-    // Test when src = NULL
+    // Test when src = NULL - invokes constraint handler
     result = safe_memmove(dest, sizeof(dest), NULL, 5);
     TEST_ASSERT(errno == EINVAL, "safe_memmove should set errno to EINVAL when src is NULL");
     TEST_ASSERT(result == errno, "safe_memmove should return errno when src is NULL");
 
-    // Test when destsz > RSIZE_MAX
+    // Test when destsz > RSIZE_MAX - invokes constraint handler
     result = safe_memmove(dest, RSIZE_MAX + 1, src, 5);
     TEST_ASSERT(errno == EINVAL, "safe_memmove should set errno to EINVAL when destsz is greater than RSIZE_MAX");
     TEST_ASSERT(result == errno, "safe_memmove should return errno when destsz is greater than RSIZE_MAX");
 
-    // Test when count > RSIZE_MAX
+    // Test when count > RSIZE_MAX - invokes constraint handler
     result = safe_memmove(dest, sizeof(dest), src, RSIZE_MAX + 1);
     TEST_ASSERT(errno == EINVAL, "safe_memmove should set errno to EINVAL when count is greater than RSIZE_MAX");
     TEST_ASSERT(result == errno, "safe_memmove should return errno when count is greater than RSIZE_MAX");
 
-    // Test when count > destsz
+    // Test when count > destsz - invokes constraint handler
     result = safe_memmove(dest, sizeof(dest), src, sizeof(dest) + 1);
     TEST_ASSERT(errno == ERANGE, "safe_memmove should set errno to ERANGE when count is greater than destsz");
     TEST_ASSERT(result == errno, "safe_memmove should return errno when count is greater than destsz");
@@ -780,6 +780,31 @@ static void test_safe_memcpy(void) {
     result = safe_memcpy(buffer + 5, sizeof(buffer) - 5, buffer, 10);
     TEST_ASSERT(result == 0, "safe_memcpy should return zero for overlapping regions");
     TEST_ASSERT(strcmp(buffer, "HelloHello, Wor") == 0, "safe_memcpy should correctly handle overlapping regions");
+
+    // Test when dest = NULL - invokes constraint handler
+    result = safe_memcpy(NULL, sizeof(dest), src, 5);
+    TEST_ASSERT(errno == EINVAL, "safe_memcpy should set errno to EINVAL when dest is NULL");
+    TEST_ASSERT(result == errno, "safe_memcpy should return errno when dest is NULL");
+
+    // Test when src = NULL - invokes constraint handler
+    result = safe_memcpy(dest, sizeof(dest), NULL, 5);
+    TEST_ASSERT(errno == EINVAL, "safe_memcpy should set errno to EINVAL when src is NULL");
+    TEST_ASSERT(result == errno, "safe_memcpy should return errno when src is NULL");
+
+    // Test when destsz > RSIZE_MAX - invokes constraint handler
+    result = safe_memcpy(dest, RSIZE_MAX + 1, src, 5);
+    TEST_ASSERT(errno == EINVAL, "safe_memcpy should set errno to EINVAL when destsz is greater than RSIZE_MAX");
+    TEST_ASSERT(result == errno, "safe_memcpy should return errno when destsz is greater than RSIZE_MAX");
+
+    // Test when count > RSIZE_MAX - invokes constraint handler
+    result = safe_memcpy(dest, sizeof(dest), src, RSIZE_MAX + 1);
+    TEST_ASSERT(errno == EINVAL, "safe_memcpy should set errno to EINVAL when count is greater than RSIZE_MAX");
+    TEST_ASSERT(result == errno, "safe_memcpy should return errno when count is greater than RSIZE_MAX");
+
+    // Test when count > destsz - invokes constraint handler
+    result = safe_memcpy(dest, sizeof(dest), src, sizeof(dest) + 1);
+    TEST_ASSERT(errno == ERANGE, "safe_memcpy should set errno to ERANGE when count is greater than destsz");
+    TEST_ASSERT(result == errno, "safe_memcpy should return errno when count is greater than destsz");
 }
 
 static void test_safe_memcpy_no_overlap(void) {
