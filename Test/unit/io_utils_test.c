@@ -1140,6 +1140,21 @@ static void test_safe_strtoul(void) {
     TEST_ASSERT(endptr != NULL && *endptr == 'a', "endptr should point to start of string");
     TEST_ASSERT(err == EINVAL, "Function should return EINVAL");
     TEST_ASSERT(errno == EINVAL, "errno should be set to EINVAL");
+
+    // Test when value = NULL
+    err = safe_strtoul(NULL, "123", &endptr, 10);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoul returned EINVAL for NULL value pointer");
+    TEST_ASSERT(err == errno, "safe_strtoul returned the correct error code for NULL value pointer");
+
+    // Test when str = NULL
+    err = safe_strtoul(&result, NULL, &endptr, 10);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoul returned EINVAL for NULL string");
+    TEST_ASSERT(err == errno, "safe_strtoul returned the correct error code for NULL string");
+
+    // Test when base > 36
+    err = safe_strtoul(&result, "123", &endptr, 37);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoul returned EINVAL for invalid base");
+    TEST_ASSERT(err == errno, "safe_strtoul returned the correct error code for invalid base");
 }
 
 static void test_safe_strtoull(void) {
@@ -1180,6 +1195,21 @@ static void test_safe_strtoull(void) {
     TEST_ASSERT(endptr != NULL && *endptr == 'a', "endptr should point to start of string");
     TEST_ASSERT(err == EINVAL, "Function should return EINVAL");
     TEST_ASSERT(errno == EINVAL, "errno should be set to EINVAL");
+
+    // Test when value = NULL
+    err = safe_strtoull(NULL, "123", &endptr, 10);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoull returned EINVAL for NULL value pointer");
+    TEST_ASSERT(err == errno, "safe_strtoull returned the correct error code for NULL value pointer");
+
+    // Test when str = NULL
+    err = safe_strtoull(&result, NULL, &endptr, 10);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoull returned EINVAL for NULL string");
+    TEST_ASSERT(err == errno, "safe_strtoull returned the correct error code for NULL string");
+
+    // Test when base > 36
+    err = safe_strtoull(&result, "123", &endptr, 37);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoull returned EINVAL for invalid base");
+    TEST_ASSERT(err == errno, "safe_strtoull returned the correct error code for invalid base");
 }
 
 static void test_safe_strtoimax(void) {
@@ -1208,6 +1238,21 @@ static void test_safe_strtoimax(void) {
     TEST_ASSERT(err == EINVAL, "safe_strtoimax returned EINVAL for invalid input");
     TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtoimax set endptr correctly for invalid input");
     TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtoimax set errno to EINVAL or left it unchanged for invalid input");
+
+    // Test when value = NULL
+    err = safe_strtoimax(NULL, "123", &endptr, 10);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoimax returned EINVAL for NULL value pointer");
+    TEST_ASSERT(err == errno, "safe_strtoimax returned the correct error code for NULL value pointer");
+
+    // Test when str = NULL
+    err = safe_strtoimax(&result, NULL, &endptr, 10);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoimax returned EINVAL for NULL string");
+    TEST_ASSERT(err == errno, "safe_strtoimax returned the correct error code for NULL string");
+
+    // Test when base > 36
+    err = safe_strtoimax(&result, "123", &endptr, 37);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoimax returned EINVAL for invalid base");
+    TEST_ASSERT(err == errno, "safe_strtoimax returned the correct error code for invalid base");
 }
 
 static void test_safe_strtoumax(void) {
@@ -1232,6 +1277,21 @@ static void test_safe_strtoumax(void) {
     TEST_ASSERT(err == EINVAL, "safe_strtoumax returned EINVAL for invalid input");
     TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtoumax set endptr correctly for invalid input");
     TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtoumax set errno to EINVAL or left it unchanged for invalid input");
+
+    // Test when value = NULL
+    err = safe_strtoumax(NULL, "123", &endptr, 10);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoumax returned EINVAL for NULL value pointer");
+    TEST_ASSERT(err == errno, "safe_strtoumax returned the correct error code for NULL value pointer");
+
+    // Test when str = NULL
+    err = safe_strtoumax(&result, NULL, &endptr, 10);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoumax returned EINVAL for NULL string");
+    TEST_ASSERT(err == errno, "safe_strtoumax returned the correct error code for NULL string");
+
+    // Test when base > 36
+    err = safe_strtoumax(&result, "123", &endptr, 37);
+    TEST_ASSERT(errno == EINVAL, "safe_strtoumax returned EINVAL for invalid base");
+    TEST_ASSERT(err == errno, "safe_strtoumax returned the correct error code for invalid base");
 }
 
 static void test_safe_strtof(void) {
@@ -1256,6 +1316,16 @@ static void test_safe_strtof(void) {
     TEST_ASSERT(err == EINVAL, "safe_strtof returned EINVAL for invalid input");
     TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtof set endptr correctly for invalid input");
     TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtof set errno to EINVAL or left it unchanged for invalid input");
+
+    // Test when value = NULL
+    err = safe_strtof(NULL, "123", &endptr);
+    TEST_ASSERT(errno == EINVAL, "safe_strtof returned EINVAL for NULL value pointer");
+    TEST_ASSERT(err == errno, "safe_strtof returned the correct error code for NULL value pointer");
+
+    // Test when str = NULL
+    err = safe_strtof(&result, NULL, &endptr);
+    TEST_ASSERT(errno == EINVAL, "safe_strtof returned EINVAL for NULL string");
+    TEST_ASSERT(err == errno, "safe_strtof returned the correct error code for NULL string");
 }
 
 static void test_safe_strtod(void) {
@@ -1280,6 +1350,16 @@ static void test_safe_strtod(void) {
     TEST_ASSERT(err == EINVAL, "safe_strtod returned EINVAL for invalid input");
     TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtod set endptr correctly for invalid input");
     TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtod set errno to EINVAL or left it unchanged for invalid input");
+
+    // Test when value = NULL
+    err = safe_strtod(NULL, "123", &endptr);
+    TEST_ASSERT(errno == EINVAL, "safe_strtod returned EINVAL for NULL value pointer");
+    TEST_ASSERT(err == errno, "safe_strtod returned the correct error code for NULL value pointer");
+
+    // Test when str = NULL
+    err = safe_strtod(&result, NULL, &endptr);
+    TEST_ASSERT(errno == EINVAL, "safe_strtod returned EINVAL for NULL string");
+    TEST_ASSERT(err == errno, "safe_strtod returned the correct error code for NULL string");
 }
 
 static void test_safe_strtold(void) {
@@ -1304,6 +1384,16 @@ static void test_safe_strtold(void) {
     TEST_ASSERT(err == EINVAL, "safe_strtold returned EINVAL for invalid input");
     TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtold set endptr correctly for invalid input");
     TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtold set errno to EINVAL or left it unchanged for invalid input");
+
+    // Test when value = NULL
+    err = safe_strtold(NULL, "123", &endptr);
+    TEST_ASSERT(errno == EINVAL, "safe_strtold returned EINVAL for NULL value pointer");
+    TEST_ASSERT(err == errno, "safe_strtold returned the correct error code for NULL value pointer");
+
+    // Test when str = NULL
+    err = safe_strtold(&result, NULL, &endptr);
+    TEST_ASSERT(errno == EINVAL, "safe_strtold returned EINVAL for NULL string");
+    TEST_ASSERT(err == errno, "safe_strtold returned the correct error code for NULL string");
 }
 
 // Value is set to 0 on error
