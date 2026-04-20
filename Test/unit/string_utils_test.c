@@ -1004,7 +1004,7 @@ static void test_remove_Leading_And_Trailing_Whitespace_Len(void) {
 
     // Test when no change is needed
     char str3[] = "Hello World";
-    remove_Leading_And_Trailing_Whitespace_Len(str3, SIZE_OF_STACK_ARRAY(str3));
+    remove_Leading_And_Trailing_Whitespace_Len(str3, strlen(str3));
     TEST_ASSERT_EQ(strcmp(str3, "Hello World"), 0, "String without leading or trailing whitespace should remain unchanged when using remove_Leading_And_Trailing_Whitespace_Len");
 }
 
