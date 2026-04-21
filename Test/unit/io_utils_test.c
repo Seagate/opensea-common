@@ -1524,6 +1524,9 @@ static void test_checked_fputs(void) {
     FILE* newfp = fopen("/dev/full", "w");
     TEST_ASSERT(newfp != NULL, "opened /dev/full");
 
+    // Disable buffering to ensure the write happens immediately and we can detect the error
+    setvbuf(newfp, NULL, _IONBF, 0);
+
     err = checked_fputs("hello", newfp);
     TEST_ASSERT(err != 0, "Expected write failure on /dev/full");
     fclose(newfp);
