@@ -655,27 +655,40 @@ static void test_safe_strncat(void) {
     TEST_ASSERT_EQ(strcmp(dest, "Hello Wor"), 0, "First n characters are correctly concatenated to destination buffer");
     TEST_ASSERT_EQ(dest[9], '\0', "Destination buffer is null-terminated after concatenating n characters");
     
-    // Test for null pointer protection
-    // errno = 0;
-    // safe_strncat(NULL, sizeof(dest), src, 3);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when destination pointer is null");
-    // errno = 0;   
-    // safe_strncat(dest, sizeof(dest), NULL, 3);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when source pointer is null");
-    
-    // Test for zero and too large destsz
-    // errno = 0;
-    // safe_strncat(dest, 0, src, 3);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when destsz is zero");
-    // errno = 0;
-    // safe_strncat(dest, RSIZE_MAX + 1, src, 3);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when destsz is greater than RSIZE_MAX");
-    
-    // Test for no null terminator in the first destsz bytes of dest
-    // char str[20] = "This string is too long for the buffer";
-    // errno = 0;   
-    // safe_strncat(str, sizeof(str), src, 3);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncat sets errno to ERANGE when there is no null terminator in the first destsz bytes of dest");
+    // Test when dest = NULL - calls abort handler
+    errno_t err = safe_strncat(NULL, sizeof(dest), src, 3);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strncat sets errno to EINVAL when destination pointer is null");
+
+    // Test when src = NULL - calls abort handler
+    err = safe_strncat(dest, sizeof(dest), NULL, 3);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strncat sets errno to EINVAL when source pointer is null");
+
+    // Test when destsz = 0 - calls abort handler
+    err = safe_strncat(dest, 0, src, 3);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncat sets errno to ERANGE when destsz is zero");
+
+    // Test when destsz > RSIZE_MAX - calls abort handler
+    err = safe_strncat(dest, RSIZE_MAX + 1, src, 3);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncat sets errno to ERANGE when destsz is greater than RSIZE_MAX");
+
+    // Test when count = 0 - calls abort handler
+    err = safe_strncat(dest, sizeof(dest), src, 0);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncat sets errno to ERANGE when count is zero");
+
+    // Test when count > RSIZE_MAX - calls abort handler
+    err = safe_strncat(dest, sizeof(dest), src, RSIZE_MAX + 1);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncat sets errno to ERANGE when count is greater than RSIZE_MAX");
+
+    // Test when No NULL terminator found in dest - calls abort handler
+    char dest1[10];
+    memset(dest1, 'A', sizeof(dest1)); // Fill dest1 with 'A' to ensure no null terminator
+    err = safe_strncat(dest1, sizeof(dest1), src, 3);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strncat sets errno to EINVAL when there is no null terminator in the first destsz bytes of dest");
+
+    // Test when dest is too small, src will be truncated - calls abort handler
+    char dest2[10] = "Hello ";
+    err = safe_strncat(dest2, sizeof(dest2), src, 5);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncat sets errno to ERANGE when the destination buffer is too small to hold the concatenated result");
 }
 
 static void test_safe_strcpy_no_overlap(void) {
