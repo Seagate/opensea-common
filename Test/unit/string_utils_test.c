@@ -515,7 +515,7 @@ static void test_safe_strmove(void) {
     TEST_ASSERT_EQ(strcmp(str, "ThisString"), 0, "String should be shifted left correctly");
 
     // Test when dest = NULL - calls abort handler
-    errno_t err = safe_strmove(NULL, sizeof(dest), src);
+    err = safe_strmove(NULL, sizeof(dest), src);
     TEST_ASSERT_EQ(err, EINVAL, "safe_strmove sets errno to EINVAL when destination pointer is null");
 
     // Test when src = NULL - calls abort handler
