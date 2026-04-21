@@ -725,7 +725,7 @@ static void test_safe_strcpy_no_overlap(void) {
     char str[20] = "This String";
     // Attempt to copy "String" one position left (overwrite space)
     err = safe_strcpy_no_overlap(str + 4, sizeof(str) - 4, str + 5);
-    TEST_ASSERT_EQ(err, ERANGE, "safe_strcpy_no_overlap should fail with overlapping buffers");
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strcpy_no_overlap should fail with overlapping buffers");
 }
 
 static void test_safe_strcat_no_overlap(void) {
