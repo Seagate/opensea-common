@@ -837,7 +837,7 @@ static void test_safe_strncat_no_overlap(void) {
     // Test for overlapping - aborts the test
     char str[20] = "This String";
     // Attempt to concatenate "String" one position left (overwrite space)
-    errno_t err = safe_strncat_no_overlap(str + 4, sizeof(str) - 4, str + 5, 5);
+    err = safe_strncat_no_overlap(str + 4, sizeof(str) - 4, str + 5, 5);
     TEST_ASSERT_EQ(err, EINVAL, "safe_strncat_no_overlap should fail with overlapping buffers");
 }
 
