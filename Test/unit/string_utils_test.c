@@ -1032,6 +1032,10 @@ static void test_safe_strndup(void) {
     err = safe_strndup(&dup, str, RSIZE_MAX + 1);
     TEST_ASSERT_EQ(err, EINVAL, "safe_strndup sets errno to EINVAL when size is greater than RSIZE_MAX");
 
+    // Test when size = 0 - calls abort handler
+    err = safe_strndup(&dup, str, 0);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strndup sets errno to EINVAL when size is zero");
+
     free(dup);
 }
 
