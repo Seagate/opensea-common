@@ -701,13 +701,31 @@ static void test_safe_strcpy_no_overlap(void) {
     safe_strcpy_no_overlap(dest, sizeof(dest), src);
     TEST_ASSERT_EQ(strcmp(dest, src), 0, "String is correctly copied to destination buffer without overlap");
 
-    // Test for overlapping - aborts the test
-    // char str[20] = "This String";
+    //Test when dest = NULL - calls abort handler
+    errno_t err = safe_strcpy_no_overlap(NULL, sizeof(dest), src);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strcpy_no_overlap sets errno to EINVAL when destination pointer is null");
+
+    // Test when src = NULL - calls abort handler
+    err = safe_strcpy_no_overlap(dest, sizeof(dest), NULL);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strcpy_no_overlap sets errno to EINVAL when source pointer is null");
+
+    // Test when destsz = 0 - calls abort handler
+    err = safe_strcpy_no_overlap(dest, 0, src);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strcpy_no_overlap sets errno to ERANGE when destsz is zero");
+
+    // Test when destsz > RSIZE_MAX - calls abort handler
+    err = safe_strcpy_no_overlap(dest, RSIZE_MAX + 1, src);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strcpy_no_overlap sets errno to ERANGE when destsz is greater than RSIZE_MAX");
+
+    // Test when destsz <= srclen - calls abort handler
+    err = safe_strcpy_no_overlap(dest, 5, src);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strcpy_no_overlap sets errno to ERANGE when destsz is less than or equal to srclen");
+
+    // Test for overlapping - calls abort handler
+    char str[20] = "This String";
     // Attempt to copy "String" one position left (overwrite space)
-    // errno_t err = safe_strcpy_no_overlap(str + 4, sizeof(str) - 4, str + 5);
-    // printf("str after attempted overlapping copy: %s\n", str);
-    // printf("errno after attempted overlapping copy: %d\n", err);
-    // TEST_ASSERT_EQ(err, ERANGE, "safe_strcpy_no_overlap should fail with overlapping buffers");
+    err = safe_strcpy_no_overlap(str + 4, sizeof(str) - 4, str + 5);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strcpy_no_overlap should fail with overlapping buffers");
 }
 
 static void test_safe_strcat_no_overlap(void) {
@@ -1184,7 +1202,7 @@ static void test_string_version_compare(void) {
     TEST_ASSERT(string_version_compare("file01.txt", "file1.txt") < 0, "Version file01.txt should be less than file1.txt");
     TEST_ASSERT(string_version_compare("abc", "abd") < 0, "Version abc should be less than abd");
     TEST_ASSERT(string_version_compare("/dev/sg10", "/dev/sg1") > 0, "Longer numeric segment should win");
-}
+} 
 
 void run_string_utils_tests(void) {
     test_strcasecmp();
