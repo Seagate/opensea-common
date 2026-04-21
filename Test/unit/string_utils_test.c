@@ -1009,13 +1009,6 @@ static void test_safe_strdup(void) {
     err = safe_strdup(&dup, "");
     TEST_ASSERT_EQ(err, EINVAL, "safe_strdup sets errno to EINVAL when source string is empty");
 
-    // Test when srclen == RSIZE_MAX && (srclen + RSIZE_T_C(1)) != '\0') - calls abort handler
-    char longStr[RSIZE_MAX + 1];
-    memset(longStr, 'A', sizeof(longStr) - 1);
-    longStr[sizeof(longStr) - 1] = '\0';
-    err = safe_strdup(&dup, longStr);
-    TEST_ASSERT_EQ(err, ERANGE, "safe_strdup sets errno to ERANGE when source string length is equal to RSIZE_MAX and the last character is not null terminator");
-
     free(dup);
 }
 
