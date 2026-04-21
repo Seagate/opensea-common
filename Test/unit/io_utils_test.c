@@ -1351,12 +1351,12 @@ static void test_safe_strtod(void) {
     TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtod set endptr correctly for invalid input");
     TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtod set errno to EINVAL or left it unchanged for invalid input");
 
-    // Test when value = NULL
+    // Test when value = NULL - calls constraint handler
     err = safe_strtod(NULL, "123", &endptr);
     TEST_ASSERT(errno == EINVAL, "safe_strtod returned EINVAL for NULL value pointer");
     TEST_ASSERT(err == errno, "safe_strtod returned the correct error code for NULL value pointer");
 
-    // Test when str = NULL
+    // Test when str = NULL - calls constraint handler
     err = safe_strtod(&result, NULL, &endptr);
     TEST_ASSERT(errno == EINVAL, "safe_strtod returned EINVAL for NULL string");
     TEST_ASSERT(err == errno, "safe_strtod returned the correct error code for NULL string");
@@ -1475,9 +1475,9 @@ static void test_safe_atof(void) {
     TEST_ASSERT(result == 123.45, "safe_atof converted string to double correctly");
     TEST_ASSERT(errno == 0, "safe_atof did not set errno for valid input");
 
-    // err = safe_atof(&result, "   -42.5abc");
-    // TEST_ASSERT(result == 0, "safe_atof returns 0 for string with leading whitespace and sign");
-    // TEST_ASSERT(errno == EINVAL, "safe_atof set errno for invalid input");
+    err = safe_atof(&result, "123abc");
+    TEST_ASSERT(result == 0, "safe_atof should return 0 for string with valid number followed by invalid characters");
+    TEST_ASSERT(errno == 0, "safe_atof did not set errno for valid input with trailing characters");
 
     err = safe_atof(&result, "12");
     TEST_ASSERT(result == 12.0, "safe_atof converted string to double correctly");
