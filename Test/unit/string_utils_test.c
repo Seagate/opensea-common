@@ -548,38 +548,30 @@ static void test_safe_strncpy(void) {
     TEST_ASSERT(strcmp(dest, "Hi") == 0, "Source shorter than count copied correctly");
     TEST_ASSERT(dest[2] == '\0', "Null terminator placed after source");
 
-    // Test for buffer overflow protection
-    // char smallDest[5];
-    // errno = 0;
-    // safe_strncpy(smallDest, sizeof(smallDest), src, 5);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destination buffer is too small");
+    // Test when dest = NULL - calls abort handler
+    errno_t err = safe_strncpy(NULL, sizeof(dest), src, 5);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strncpy sets errno to EINVAL when destination pointer is null");
 
-    // Test for null pointer protection
-    // errno = 0;
-    // safe_strncpy(NULL, sizeof(dest), src, 5);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destination pointer is null");
-    // errno = 0;
-    // src = NULL;
-    // safe_strncpy(dest, sizeof(dest), NULL, 5);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when source pointer is null");
+    // Test when src = NULL - calls abort handler
+    err = safe_strncpy(dest, sizeof(dest), NULL, 5);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strncpy sets errno to EINVAL when source pointer is null");
 
-    // Test for zero and too large destsz
-    // errno = 0;
-    // safe_strncpy(dest, 0, src, 5);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destsz is zero");
-    // errno = 0;
-    // safe_strncpy(dest, RSIZE_MAX + 1, src, 5);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destsz is greater than RSIZE_MAX");
+    // Test when destsz = 0 - calls abort handler
+    err = safe_strncpy(dest, 0, src, 5);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncpy sets errno to ERANGE when destsz is zero");
 
-    // Count greater than RSIZE_MAX
-    // errno = 0;
-    // safe_strncpy(dest, sizeof(dest), src, RSIZE_MAX + 1);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when count is greater than RSIZE_MAX");
+    // Test when destsz > RSIZE_MAX - calls abort handler
+    err = safe_strncpy(dest, RSIZE_MAX + 1, src, 5);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncpy sets errno to ERANGE when destsz is greater than RSIZE_MAX");
 
-    // Count greater than or equal to destsz, but destsz is less than or equal to strnlen_s(src, count); truncation would occur
-    // errno = 0;
-    // safe_strncpy(dest, 5, src, 10);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when count is greater than or equal to destsz and destsz is less than or equal to strnlen_s(src, count)");
+    // Test when count > RSIZE_MAX - calls abort handler
+    err = safe_strncpy(dest, sizeof(dest), src, RSIZE_MAX + 1);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncpy sets errno to ERANGE when count is greater than RSIZE_MAX");
+
+    // Test when count >= destsz and destsz <= srclen - calls abort handler
+    char smallDest[5];
+    err = safe_strncpy(smallDest, sizeof(smallDest), src, 7);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncpy sets errno to ERANGE when count is greater than or equal to destsz and destsz is less than or equal to srclen");
 }
 
 static void test_safe_strnmove(void) {
@@ -596,38 +588,30 @@ static void test_safe_strnmove(void) {
     TEST_ASSERT_EQ(err, 0, "Move should succeed");
     TEST_ASSERT_EQ(strcmp(str, "ThisStrin"), 0, "String should be shifted left correctly");
 
-    // Test for buffer overflow protection
-    // char smallDest[5];
-    // errno = 0;
-    // safe_strncpy(smallDest, sizeof(smallDest), src, 5);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destination buffer is too small");
+    // Test when dest = NULL - calls abort handler
+    err = safe_strnmove(NULL, sizeof(dest), src, 5);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strnmove sets errno to EINVAL when destination pointer is null");
 
-    // Test for null pointer protection
-    // errno = 0;
-    // safe_strncpy(NULL, sizeof(dest), src, 5);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destination pointer is null");
-    // errno = 0;
-    // src = NULL;
-    // safe_strncpy(dest, sizeof(dest), NULL, 5);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when source pointer is null");
+    // Test when src = NULL - calls abort handler
+    err = safe_strnmove(dest, sizeof(dest), NULL, 5);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strnmove sets errno to EINVAL when source pointer is null");
 
-    // Test for zero and too large destsz
-    // errno = 0;
-    // safe_strncpy(dest, 0, src, 5);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destsz is zero");
-    // errno = 0;
-    // safe_strncpy(dest, RSIZE_MAX + 1, src, 5);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when destsz is greater than RSIZE_MAX");
+    // Test when destsz = 0 - calls abort handler
+    err = safe_strnmove(dest, 0, src, 5);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strnmove sets errno to ERANGE when destsz is zero");
 
-    // Count greater than RSIZE_MAX
-    // errno = 0;
-    // safe_strncpy(dest, sizeof(dest), src, RSIZE_MAX + 1);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when count is greater than RSIZE_MAX");
+    // Test when destsz > RSIZE_MAX - calls abort handler
+    err = safe_strnmove(dest, RSIZE_MAX + 1, src, 5);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strnmove sets errno to ERANGE when destsz is greater than RSIZE_MAX");
 
-    // Count greater than or equal to destsz, but destsz is less than or equal to strnlen_s(src, count); truncation would occur
-    // errno = 0;
-    // safe_strncpy(dest, 5, src, 10);
-    // TEST_ASSERT_EQ(errno, ERANGE, "safe_strncpy sets errno to ERANGE when count is greater than or equal to destsz and destsz is less than or equal to strnlen_s(src, count)");
+    // Test when count > RSIZE_MAX - calls abort handler
+    err = safe_strnmove(dest, sizeof(dest), src, RSIZE_MAX + 1);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strnmove sets errno to ERANGE when count is greater than RSIZE_MAX");
+
+    // Test when count >= destsz and destsz <= srclen - calls abort handler
+    char smallDest[5];
+    err = safe_strnmove(smallDest, sizeof(smallDest), src, 7);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strnmove sets errno to ERANGE when count is greater than or equal to destsz and destsz is less than or equal to srclen");
 }
 
 static void test_safe_strcat(void) {
