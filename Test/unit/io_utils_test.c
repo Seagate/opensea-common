@@ -1477,7 +1477,7 @@ static void test_safe_atof(void) {
 
     err = safe_atof(&result, "123abc");
     TEST_ASSERT(result == 0, "safe_atof should return 0 for string with valid number followed by invalid characters");
-    TEST_ASSERT(errno == 0, "safe_atof did not set errno for valid input with trailing characters");
+    TEST_ASSERT(errno == EINVAL, "safe_atof set errno to EINVAL for valid input with trailing characters");
 
     err = safe_atof(&result, "12");
     TEST_ASSERT(result == 12.0, "safe_atof converted string to double correctly");
