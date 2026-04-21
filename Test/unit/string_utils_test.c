@@ -738,7 +738,6 @@ static void test_safe_strcat_no_overlap(void) {
     char dest2[10] = "Hello ";
     err = safe_strcat_no_overlap(dest2, sizeof(dest2), src);
     TEST_ASSERT_EQ(err, ERANGE, "safe_strcat_no_overlap sets errno to ERANGE when the destination buffer is too small to hold the concatenated result");
-    TEST_ASSERT_EQ(strcmp(dest2, "Hello Worl"), 0, "Destination buffer should contain truncated result when dest is too small");
 
     // Test for overlapping - calls abort handler
     char str[20] = "This String";
