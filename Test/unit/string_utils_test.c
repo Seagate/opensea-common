@@ -751,13 +751,36 @@ static void test_safe_strncpy_no_overlap(void) {
     TEST_ASSERT(strcmp(dest2, "Hi") == 0, "Source shorter than count copied correctly without overlap");
     TEST_ASSERT(dest2[2] == '\0', "Null terminator placed after source without overlap");
 
-    // Test for overlapping - aborts the test
-    // char str[20] = "This String";
+    // Test when dest = NULL - calls abort handler
+    errno_t err = safe_strncpy_no_overlap(NULL, sizeof(dest), src, 5);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strncpy_no_overlap sets errno to EINVAL when destination pointer is null");
+
+    // Test when src = NULL - calls abort handler
+    err = safe_strncpy_no_overlap(dest, sizeof(dest), NULL, 5);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strncpy_no_overlap sets errno to EINVAL when source pointer is null");
+
+    // Test when destsz = 0 - calls abort handler
+    err = safe_strncpy_no_overlap(dest, 0, src, 5);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncpy_no_overlap sets errno to ERANGE when destsz is zero");
+
+    // Test when destsz > RSIZE_MAX - calls abort handler
+    err = safe_strncpy_no_overlap(dest, RSIZE_MAX + 1, src, 5);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncpy_no_overlap sets errno to ERANGE when destsz is greater than RSIZE_MAX");
+
+    // Test when count > RSIZE_MAX - calls abort handler
+    err = safe_strncpy_no_overlap(dest, sizeof(dest), src, RSIZE_MAX + 1);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncpy_no_overlap sets errno to ERANGE when count is greater than RSIZE_MAX");
+
+    // Test when count >= destsz and destsz <= srclen - calls abort handler
+    char smallDest[5];
+    err = safe_strncpy_no_overlap(smallDest, sizeof(smallDest), src, 7);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strncpy_no_overlap sets errno to ERANGE when count is greater than or equal to destsz and destsz is less than or equal to srclen");
+
+    // Test for overlapping - calls abort handler
+    char str[20] = "This String";
     // Attempt to copy "String" one position left (overwrite space)
-    // errno_t err = safe_strncpy_no_overlap(str + 4, sizeof(str) - 4, str + 5, 5);
-    // printf("str after attempted overlapping copy: %s\n", str);
-    // printf("errno after attempted overlapping copy: %d\n", err);
-    // TEST_ASSERT_EQ(err, ERANGE, "safe_strncpy_no_overlap should fail with overlapping buffers");
+    err = safe_strncpy_no_overlap(str + 4, sizeof(str) - 4, str + 5, 5);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strncpy_no_overlap should fail with overlapping buffers");
 }
 
 static void test_safe_strncat_no_overlap(void) {
