@@ -712,13 +712,39 @@ static void test_safe_strcat_no_overlap(void) {
     safe_strcat_no_overlap(dest, sizeof(dest), src);
     TEST_ASSERT_EQ(strcmp(dest, "Hello World"), 0, "String is correctly concatenated to destination buffer without overlap");
 
-    // Test for overlapping - aborts the test
-    // char str[20] = "This String";
+    // Test when dest = NULL - calls abort handler
+    errno_t err = safe_strcat_no_overlap(NULL, sizeof(dest), src);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strcat_no_overlap sets errno to EINVAL when destination pointer is null");
+
+    // Test when src = NULL - calls abort handler
+    err = safe_strcat_no_overlap(dest, sizeof(dest), NULL);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strcat_no_overlap sets errno to EINVAL when source pointer is null");
+
+    // Test when destsz = 0 - calls abort handler
+    err = safe_strcat_no_overlap(dest, 0, src);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strcat_no_overlap sets errno to ERANGE when destsz is zero");
+
+    // Test when destsz > RSIZE_MAX - calls abort handler
+    err = safe_strcat_no_overlap(dest, RSIZE_MAX + 1, src);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strcat_no_overlap sets errno to ERANGE when destsz is greater than RSIZE_MAX");
+
+    // Test when No NULL terminator found in dest - calls abort handler
+    char dest1[10];
+    memset(dest1, 'A', sizeof(dest1)); // Fill dest1 with 'A' to ensure no null terminator
+    err = safe_strcat_no_overlap(dest1, sizeof(dest1), src);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strcat_no_overlap sets errno to EINVAL when there is no null terminator in the first destsz bytes of dest");
+
+    // Test when dest is too small, src will be truncated - calls abort handler
+    char dest2[10] = "Hello ";
+    err = safe_strcat_no_overlap(dest2, sizeof(dest2), src);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strcat_no_overlap sets errno to ERANGE when the destination buffer is too small to hold the concatenated result");
+    TEST_ASSERT_EQ(strcmp(dest2, "Hello Worl"), 0, "Destination buffer should contain truncated result when dest is too small");
+
+    // Test for overlapping - calls abort handler
+    char str[20] = "This String";
     // Attempt to concatenate "String" one position left (overwrite space)
-    // errno_t err = safe_strcat_no_overlap(str + 4, sizeof(str) - 4, str + 5);
-    // printf("str after attempted overlapping concatenation: %s\n", str);
-    // printf("errno after attempted overlapping concatenation: %d\n", err);
-    // TEST_ASSERT_EQ(err, ERANGE, "safe_strcat_no_overlap should fail with overlapping buffers");
+    err = safe_strcat_no_overlap(str + 4, sizeof(str) - 4, str + 5);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strcat_no_overlap should fail with overlapping buffers");
 }
 
 static void test_safe_strncpy_no_overlap(void) {
