@@ -994,9 +994,27 @@ static void test_safe_strdup(void) {
     char* dup;
 
     errno_t err = safe_strdup(&dup, str);
-
     TEST_ASSERT_EQ(err, 0, "Duplication should succeed");
     TEST_ASSERT_EQ(strcmp(dup, str), 0, "String should be correctly duplicated");
+
+    // Test when dup = NULL - calls abort handler
+    err = safe_strdup(NULL, str);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strdup sets errno to EINVAL when destination pointer is null");
+
+    // Test when src = NULL - calls abort handler
+    err = safe_strdup(&dup, NULL);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strdup sets errno to EINVAL when source pointer is null");
+
+    // Test when srclen = 0 - calls abort handler
+    err = safe_strdup(&dup, "");
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strdup sets errno to EINVAL when source string is empty");
+
+    // Test when srclen == RSIZE_MAX && (srclen + RSIZE_T_C(1)) != '\0') - calls abort handler
+    char longStr[RSIZE_MAX + 1];
+    memset(longStr, 'A', sizeof(longStr) - 1);
+    longStr[sizeof(longStr) - 1] = '\0';
+    err = safe_strdup(&dup, longStr);
+    TEST_ASSERT_EQ(err, ERANGE, "safe_strdup sets errno to ERANGE when source string length is equal to RSIZE_MAX and the last character is not null terminator");
 
     free(dup);
 }
@@ -1006,9 +1024,20 @@ static void test_safe_strndup(void) {
     char* dup;
 
     errno_t err = safe_strndup(&dup, str, 5);
-
     TEST_ASSERT_EQ(err, 0, "Duplication should succeed");
     TEST_ASSERT_EQ(strncmp(dup, str, 5), 0, "First n characters should be correctly duplicated");
+
+    // Test when dup = NULL - calls abort handler
+    err = safe_strndup(NULL, str, 5);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strndup sets errno to EINVAL when destination pointer is null");
+
+    // Test when src = NULL - calls abort handler
+    err = safe_strndup(&dup, NULL, 5);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strndup sets errno to EINVAL when source pointer is null");
+
+    // Test when size > RSIZE_MAX - calls abort handler
+    err = safe_strndup(&dup, str, RSIZE_MAX + 1);
+    TEST_ASSERT_EQ(err, EINVAL, "safe_strndup sets errno to EINVAL when size is greater than RSIZE_MAX");
 
     free(dup);
 }
