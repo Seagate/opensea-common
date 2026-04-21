@@ -1519,6 +1519,13 @@ static void test_checked_fputs(void) {
     // Test when out is NULL
     err = checked_fputs("Hello, World!\n", NULL);
     TEST_ASSERT(err == EINVAL, "checked_fputs returned EINVAL for NULL file pointer");
+
+    fp = fopen("/dev/full", "w");
+    TEST_ASSERT(fp != NULL, "opened /dev/full");
+
+    err = checked_fputs("hello", fp);
+    TEST_ASSERT(err != 0, "Expected write failure on /dev/full");
+    fclose(fp);
 }
 
 static void test_print_str(void) {
