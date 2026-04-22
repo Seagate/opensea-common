@@ -13,6 +13,7 @@ void run_sort_and_search_tests(void);
 void run_type_conversion_tests(void);
 void run_unit_conversion_tests(void);
 void run_precision_timer_and_sleep_tests(void);
+void run_secure_file_tests(void);
 
 int main(void)
 {
@@ -32,6 +33,7 @@ int main(void)
     run_type_conversion_tests();
     run_unit_conversion_tests();
     run_precision_timer_and_sleep_tests();
+    run_secure_file_tests();
     
     // Print summary of test results
     print_test_summary();
