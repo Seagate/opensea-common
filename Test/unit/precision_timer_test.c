@@ -13,6 +13,15 @@ static void create_free_seatimer_test(void) {
     TEST_ASSERT(heapTimer == M_NULLPTR, "heapTimer should be null after freeing");
 }
 
+static void get_Nano_Seconds_test(void) {
+    start_Timer(&timer);
+    usleep(SLEEP_MICROSECONDS);
+    stop_Timer(&timer);
+    uint64_t elapsedNanoSeconds = get_Nano_Seconds(timer);
+    TEST_ASSERT(elapsedNanoSeconds >= (SLEEP_MICROSECONDS * 1000), "Elapsed nanoseconds should be at least the sleep time in nanoseconds");
+}
+
 void run_precision_timer_tests(void) {
     create_free_seatimer_test();
+    get_Nano_Seconds_test();
 }

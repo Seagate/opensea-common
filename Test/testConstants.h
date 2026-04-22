@@ -111,25 +111,26 @@
 #define FLOAT64_MID2        (DBL_MAX / 2.0)
 
 // custom values 
-#define SERIAL_NUM      0x1234567890ABCDEFULL
-#define HEX_ZERO        0x0000000000000000ULL
-#define HEX_FULL        0xFFFFFFFFFFFFFFFFULL
-#define HEX_RANDOM      0xF0F0F0F0F0F0F0F0ULL
-#define HIGHER4BYTE     0x12345678U
-#define LOWER4BYTE      0x90ABCDEFU
-#define LOWER2BYTE      0xCDEFU
-#define HIGHER2BYTE     0x1234U
-#define MSB             0x12
-#define BYTE6           0x34
-#define BYTE5           0x56
-#define BYTE4           0x78    
-#define BYTE3           0x90
-#define BYTE2           0xAB
-#define BYTE1           0xCD
-#define LSB             0xEF
-#define NIBBLE0         0xF
-#define NIBBLE1         0xE
-#define MIN_VALUE       (-1)
-#define EPSILON         1e-5
+#define SERIAL_NUM          0x1234567890ABCDEFULL
+#define HEX_ZERO            0x0000000000000000ULL
+#define HEX_FULL            0xFFFFFFFFFFFFFFFFULL
+#define HEX_RANDOM          0xF0F0F0F0F0F0F0F0ULL
+#define HIGHER4BYTE         0x12345678U
+#define LOWER4BYTE          0x90ABCDEFU
+#define LOWER2BYTE          0xCDEFU
+#define HIGHER2BYTE         0x1234U
+#define MSB                 0x12
+#define BYTE6               0x34
+#define BYTE5               0x56
+#define BYTE4               0x78    
+#define BYTE3               0x90
+#define BYTE2               0xAB
+#define BYTE1               0xCD
+#define LSB                 0xEF
+#define NIBBLE0             0xF
+#define NIBBLE1             0xE
+#define MIN_VALUE           (-1)
+#define EPSILON             1e-5
+#define SLEEP_MICROSECONDS  5000000
 
 #endif // TEST_CONSTANTS_H 
