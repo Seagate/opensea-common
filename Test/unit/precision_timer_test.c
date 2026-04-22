@@ -9,6 +9,12 @@ static void start_Timer_test(void) {
     TEST_ASSERT(timer.timerStart != UINT64_C(0), "timer start time should not be zero after starting the timer");
 }
 
+static void stop_Timer_test(void) {
+    stop_Timer(&timer);
+    TEST_ASSERT(timer.timerStop != UINT64_C(0), "timer stop time should not be zero after stopping the timer");
+}
+
 void run_precision_timer_tests(void) {
     start_Timer_test();
+    stop_Timer_test();
 }
