@@ -39,6 +39,9 @@ static void get_Milli_Seconds_test(void) {
 
 static void get_Seconds_test(void) {
     start_Timer(&timer);
+    uint32_t threshold = UINT32_MAX / 1000;
+    errno_t err = sleepsec(threshold + 1);
+    TEST_ASSERT(err == EOVERFLOW, "sleepsec should return EOVERFLOW when sleep time exceeds maximum");
     sleepsec(SLEEP_MICROSECONDS / 1000000); // Convert microseconds to seconds
     stop_Timer(&timer);
     double elapsedSeconds = get_Seconds(timer);
