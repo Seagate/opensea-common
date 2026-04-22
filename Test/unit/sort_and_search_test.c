@@ -4,7 +4,6 @@
 #include <string.h>
 #include <ctype.h>
 
-
 static int compare_ints(const void* a, const void* b)
 {
     int x = *(const int*)a;
