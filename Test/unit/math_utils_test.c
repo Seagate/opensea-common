@@ -33,12 +33,12 @@ static void test_M_Max(void) {
     TEST_ASSERT_EQ(M_Max(FLOAT64_MIN_VAL, FLOAT64_MAX_VAL), FLOAT64_MAX_VAL, "M_Max of FLOAT64_MIN_VAL and FLOAT64_MAX_VAL");
 }
 
-static void test_uint8_round_up_generic(void) {
+static void test_uint8_round_up_generic(void) { 
     TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)8, 2), 8, "Round 8 up to nearest multiple of 2: Roundto is power of 2");
     TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)5, 3), 6, "Round 5 up to nearest multiple of 3");
     TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)12, 1), 12, "Round 12 up to nearest multiple of 1: no-op operation");
     TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)251, 10), 4, "Round 251 up to nearest multiple of 10: Overflow case");
-    // TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)16, 0), 16, "Round 16 up to nearest multiple of 0: returns value"); Assertion causes tests to fail
+    TEST_ASSERT_EQ(uint8_round_up_generic((uint8_t)16, 0), 16, "Round 16 up to nearest multiple of 0: returns value"); 
 }
 
 static void test_int8_round_up_generic(void) {
