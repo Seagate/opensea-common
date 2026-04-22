@@ -495,7 +495,7 @@ static void test_get_8bit_range_uint16(void) {
 }
 
 static void test_get_bit_range_uint32(void) {
-    TEST_ASSERT_EQ(get_bit_range_uint32((uint32_t)HEX_RANDOM, 7, 0), (UINT32_C)(0xF0), "Extract bits 7 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
+    TEST_ASSERT_EQ(get_bit_range_uint32((uint32_t)HEX_RANDOM, 7, 0), (UINT32_C(0xF0)), "Extract bits 7 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
 
     errno = 0;
     // Test for msb > GENERIC_INT_32BIT_MAX
@@ -574,7 +574,7 @@ static void test_get_16bit_range_uint64(void) {
 }
 
 static void test_get_32bit_range_uint64(void) {
-    TEST_ASSERT_EQ(get_32bit_range_uint64(HEX_RANDOM, 63, 32), (UINT32_C)(0xF0F0F0F0), "Extract bits 63 to 32 from 0xF0F0F0F0F0F0F0F0ULL");
+    TEST_ASSERT_EQ(get_32bit_range_uint64(HEX_RANDOM, 63, 32), (UINT32_C(0xF0F0F0F0)), "Extract bits 63 to 32 from 0xF0F0F0F0F0F0F0F0ULL");
 
     // Test for bit_count > GENERIC_WIDTH_32
     errno = 0;
@@ -627,7 +627,7 @@ static void test_M_GETBITRANGE(void) {
     TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 7, 4), (uint8_t)(0xF), "Extract bits 7 to 4 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
     TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 15, 8), (uint8_t)(0xF0), "Extract bits 15 to 8 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
     TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 15, 0), (uint16_t)(0xF0F0), "Extract bits 15 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
-    TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 31, 0), (UINT32_C)(0xF0F0F0F0), "Extract bits 31 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
+    TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 31, 0), (UINT32_C(0xF0F0F0F0)), "Extract bits 31 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
     TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 63, 0), (uint64_t)(HEX_RANDOM), "Extract bits 63 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
 }
 
