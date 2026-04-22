@@ -495,7 +495,7 @@ static void test_get_8bit_range_uint16(void) {
 }
 
 static void test_get_bit_range_uint32(void) {
-    TEST_ASSERT_EQ(get_bit_range_uint32((uint32_t)HEX_RANDOM, 7, 0), (uint32_t)(0xF0), "Extract bits 7 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
+    TEST_ASSERT_EQ(get_bit_range_uint32((uint32_t)HEX_RANDOM, 7, 0), (UINT32_C)(0xF0), "Extract bits 7 to 0 from 0xF0F0F0F0F0F0F0F0ULL");
 
     errno = 0;
     // Test for msb > GENERIC_INT_32BIT_MAX
@@ -536,7 +536,7 @@ static void test_get_16bit_range_uint32(void) {
 }
 
 static void test_get_bit_range_uint64(void) {
-    TEST_ASSERT_EQ(get_bit_range_uint64(HEX_RANDOM, 63, 32), (uint64_t)(0xF0F0F0F0), "Extract bits 63 to 32 from 0xF0F0F0F0F0F0F0F0ULL");
+    TEST_ASSERT_EQ(get_bit_range_uint64(HEX_RANDOM, 63, 32), (UINT64_C(0xF0F0F0F0)), "Extract bits 63 to 32 from 0xF0F0F0F0F0F0F0F0ULL");
 
     errno = 0;
     // Test for msb > GENERIC_INT_64BIT_MAX
@@ -574,7 +574,7 @@ static void test_get_16bit_range_uint64(void) {
 }
 
 static void test_get_32bit_range_uint64(void) {
-    TEST_ASSERT_EQ(get_32bit_range_uint64(HEX_RANDOM, 63, 32), (uint32_t)(0xF0F0F0F0), "Extract bits 63 to 32 from 0xF0F0F0F0F0F0F0F0ULL");
+    TEST_ASSERT_EQ(get_32bit_range_uint64(HEX_RANDOM, 63, 32), (UINT32_C)(0xF0F0F0F0), "Extract bits 63 to 32 from 0xF0F0F0F0F0F0F0F0ULL");
 
     // Test for bit_count > GENERIC_WIDTH_32
     errno = 0;
@@ -627,7 +627,7 @@ static void test_M_GETBITRANGE(void) {
     TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 7, 4), (uint8_t)(0xF), "Extract bits 7 to 4 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
     TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 15, 8), (uint8_t)(0xF0), "Extract bits 15 to 8 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
     TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 15, 0), (uint16_t)(0xF0F0), "Extract bits 15 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
-    TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 31, 0), (uint32_t)(0xF0F0F0F0), "Extract bits 31 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
+    TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 31, 0), (UINT32_C)(0xF0F0F0F0), "Extract bits 31 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
     TEST_ASSERT_EQ(M_GETBITRANGE(HEX_RANDOM, 63, 0), (uint64_t)(HEX_RANDOM), "Extract bits 63 to 0 from 0xF0F0F0F0F0F0F0F0ULL using M_GETBITRANGE");
 }
 
@@ -678,7 +678,7 @@ static void test_M_BitN16(void) {
 static void test_M_BitN32(void) {
     for(uint32_t bit = 0; bit < 32; bit++) {
         
-        uint32_t expected = (uint32_t)(1U << bit);
+        uint32_t expected = (UINT32_C(1) << bit);
 
         char msg[80];
         snprintf(msg, sizeof(msg), "Set %uth bit of uint32_t", bit);
@@ -764,195 +764,195 @@ static void test_BIT15(void) {
 }
 
 static void test_BIT16(void) {
-    TEST_ASSERT_EQ(BIT16, (uint32_t)1 << 16, "Set 16th bit of uint32_t");
+    TEST_ASSERT_EQ(BIT16, (UINT32_C(1) << 16), "Set 16th bit of uint32_t");
 }
 
 static void test_BIT17(void) {
-    TEST_ASSERT_EQ(BIT17, (uint32_t)1 << 17, "Set 17th bit of uint32_t");
+    TEST_ASSERT_EQ(BIT17, (UINT32_C(1) << 17), "Set 17th bit of uint32_t");
 }
 
 static void test_BIT18(void) {
-    TEST_ASSERT_EQ(BIT18, (uint32_t)1 << 18, "Set 18th bit of uint32_t");
+    TEST_ASSERT_EQ(BIT18, (UINT32_C(1) << 18), "Set 18th bit of uint32_t");
 }
 
 static void test_BIT19(void) {
-    TEST_ASSERT_EQ(BIT19, (uint32_t)1 << 19, "Set 19th bit of uint32_t");
+    TEST_ASSERT_EQ(BIT19, (UINT32_C(1) << 19), "Set 19th bit of uint32_t");
 }
 
 static void test_BIT20(void) {
-    TEST_ASSERT_EQ(BIT20, (uint32_t)1 << 20, "Set 20th bit of uint32_t");
+    TEST_ASSERT_EQ(BIT20, (UINT32_C(1) << 20), "Set 20th bit of uint32_t");
 }
 
 static void test_BIT21(void) {
-    TEST_ASSERT_EQ(BIT21, (uint32_t)1 << 21, "Set 21st bit of uint32_t");
+    TEST_ASSERT_EQ(BIT21, (UINT32_C(1) << 21), "Set 21st bit of uint32_t");
 }
 
 static void test_BIT22(void) {
-    TEST_ASSERT_EQ(BIT22, (uint32_t)1 << 22, "Set 22nd bit of uint32_t");
+    TEST_ASSERT_EQ(BIT22, (UINT32_C(1) << 22), "Set 22nd bit of uint32_t");
 }
 
 static void test_BIT23(void) {
-    TEST_ASSERT_EQ(BIT23, (uint32_t)1 << 23, "Set 23rd bit of uint32_t");
+    TEST_ASSERT_EQ(BIT23, (UINT32_C(1) << 23), "Set 23rd bit of uint32_t");
 }
 
 static void test_BIT24(void) {
-    TEST_ASSERT_EQ(BIT24, (uint32_t)1 << 24, "Set 24th bit of uint32_t");
+    TEST_ASSERT_EQ(BIT24, (UINT32_C(1) << 24), "Set 24th bit of uint32_t");
 }
 
 static void test_BIT25(void) {
-    TEST_ASSERT_EQ(BIT25, (uint32_t)1 << 25, "Set 25th bit of uint32_t");
+    TEST_ASSERT_EQ(BIT25, (UINT32_C(1) << 25), "Set 25th bit of uint32_t");
 }
 
 static void test_BIT26(void) {
-    TEST_ASSERT_EQ(BIT26, (uint32_t)1 << 26, "Set 26th bit of uint32_t");
+    TEST_ASSERT_EQ(BIT26, (UINT32_C(1) << 26), "Set 26th bit of uint32_t");
 }
 
 static void test_BIT27(void) {
-    TEST_ASSERT_EQ(BIT27, (uint32_t)1 << 27, "Set 27th bit of uint32_t");
+    TEST_ASSERT_EQ(BIT27, (UINT32_C(1) << 27), "Set 27th bit of uint32_t");
 }
 
 static void test_BIT28(void) {
-    TEST_ASSERT_EQ(BIT28, (uint32_t)1 << 28, "Set 28th bit of uint32_t");
+    TEST_ASSERT_EQ(BIT28, (UINT32_C(1) << 28), "Set 28th bit of uint32_t");
 }
 
 static void test_BIT29(void) {
-    TEST_ASSERT_EQ(BIT29, (uint32_t)1 << 29, "Set 29th bit of uint32_t");
+    TEST_ASSERT_EQ(BIT29, (UINT32_C(1) << 29), "Set 29th bit of uint32_t");
 }
 
 static void test_BIT30(void) {
-    TEST_ASSERT_EQ(BIT30, (uint32_t)1 << 30, "Set 30th bit of uint32_t");
+    TEST_ASSERT_EQ(BIT30, (UINT32_C(1) << 30), "Set 30th bit of uint32_t");
 }
 
 static void test_BIT31(void) {
-    TEST_ASSERT_EQ(BIT31, (uint32_t)1 << 31, "Set 31st bit of uint32_t");
+    TEST_ASSERT_EQ(BIT31, (UINT32_C(1) << 31), "Set 31st bit of uint32_t");
 }
 
 static void test_BIT32(void) {
-    TEST_ASSERT_EQ(BIT32, (uint64_t)1 << 32, "Set 32nd bit of uint64_t");
+    TEST_ASSERT_EQ(BIT32, (UINT64_C(1) << 32), "Set 32nd bit of uint64_t");
 }
 
 static void test_BIT33(void) {
-    TEST_ASSERT_EQ(BIT33, (uint64_t)1 << 33, "Set 33rd bit of uint64_t");
+    TEST_ASSERT_EQ(BIT33, (UINT64_C(1) << 33), "Set 33rd bit of uint64_t");
 }
 
 static void test_BIT34(void) {
-    TEST_ASSERT_EQ(BIT34, (uint64_t)1 << 34, "Set 34th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT34, (UINT64_C(1) << 34), "Set 34th bit of uint64_t");
 }
 
 static void test_BIT35(void) {
-    TEST_ASSERT_EQ(BIT35, (uint64_t)1 << 35, "Set 35th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT35, (UINT64_C(1) << 35), "Set 35th bit of uint64_t");
 }
 
 static void test_BIT36(void) {
-    TEST_ASSERT_EQ(BIT36, (uint64_t)1 << 36, "Set 36th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT36, (UINT64_C(1) << 36), "Set 36th bit of uint64_t");
 }
 
 static void test_BIT37(void) {
-    TEST_ASSERT_EQ(BIT37, (uint64_t)1 << 37, "Set 37th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT37, (UINT64_C(1) << 37), "Set 37th bit of uint64_t");
 }
 
 static void test_BIT38(void) {
-    TEST_ASSERT_EQ(BIT38, (uint64_t)1 << 38, "Set 38th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT38, (UINT64_C(1) << 38), "Set 38th bit of uint64_t");
 }
 
 static void test_BIT39(void) {
-    TEST_ASSERT_EQ(BIT39, (uint64_t)1 << 39, "Set 39th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT39, (UINT64_C(1) << 39), "Set 39th bit of uint64_t");
 }
 
 static void test_BIT40(void) {
-    TEST_ASSERT_EQ(BIT40, (uint64_t)1 << 40, "Set 40th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT40, (UINT64_C(1) << 40), "Set 40th bit of uint64_t");
 }
 
 static void test_BIT41(void) {
-    TEST_ASSERT_EQ(BIT41, (uint64_t)1 << 41, "Set 41st bit of uint64_t");
+    TEST_ASSERT_EQ(BIT41, (UINT64_C(1) << 41), "Set 41st bit of uint64_t");
 }
 
 static void test_BIT42(void) {
-    TEST_ASSERT_EQ(BIT42, (uint64_t)1 << 42, "Set 42nd bit of uint64_t");
+    TEST_ASSERT_EQ(BIT42, (UINT64_C(1) << 42), "Set 42nd bit of uint64_t");
 }
 
 static void test_BIT43(void) {
-    TEST_ASSERT_EQ(BIT43, (uint64_t)1 << 43, "Set 43rd bit of uint64_t");
+    TEST_ASSERT_EQ(BIT43, (UINT64_C(1) << 43), "Set 43rd bit of uint64_t");
 }
 
 static void test_BIT44(void) {
-    TEST_ASSERT_EQ(BIT44, (uint64_t)1 << 44, "Set 44th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT44, (UINT64_C(1) << 44), "Set 44th bit of uint64_t");
 }
 
 static void test_BIT45(void) {
-    TEST_ASSERT_EQ(BIT45, (uint64_t)1 << 45, "Set 45th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT45, (UINT64_C(1) << 45), "Set 45th bit of uint64_t");
 }
 
 static void test_BIT46(void) {
-    TEST_ASSERT_EQ(BIT46, (uint64_t)1 << 46, "Set 46th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT46, (UINT64_C(1) << 46), "Set 46th bit of uint64_t");
 }
 
 static void test_BIT47(void) {
-    TEST_ASSERT_EQ(BIT47, (uint64_t)1 << 47, "Set 47th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT47, (UINT64_C(1) << 47), "Set 47th bit of uint64_t");
 }
 
 static void test_BIT48(void) {
-    TEST_ASSERT_EQ(BIT48, (uint64_t)1 << 48, "Set 48th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT48, (UINT64_C(1) << 48), "Set 48th bit of uint64_t");
 }
 
 static void test_BIT49(void) {
-    TEST_ASSERT_EQ(BIT49, (uint64_t)1 << 49, "Set 49th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT49, (UINT64_C(1) << 49), "Set 49th bit of uint64_t");
 }
 
 static void test_BIT50(void) {
-    TEST_ASSERT_EQ(BIT50, (uint64_t)1 << 50, "Set 50th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT50, (UINT64_C(1) << 50), "Set 50th bit of uint64_t");
 }
 
 static void test_BIT51(void) {
-    TEST_ASSERT_EQ(BIT51, (uint64_t)1 << 51, "Set 51st bit of uint64_t");
+    TEST_ASSERT_EQ(BIT51, (UINT64_C(1) << 51), "Set 51st bit of uint64_t");
 }
 
 static void test_BIT52(void) {
-    TEST_ASSERT_EQ(BIT52, (uint64_t)1 << 52, "Set 52nd bit of uint64_t");
+    TEST_ASSERT_EQ(BIT52, (UINT64_C(1) << 52), "Set 52nd bit of uint64_t");
 }
 
 static void test_BIT53(void) {
-    TEST_ASSERT_EQ(BIT53, (uint64_t)1 << 53, "Set 53rd bit of uint64_t");
+    TEST_ASSERT_EQ(BIT53, (UINT64_C(1) << 53), "Set 53rd bit of uint64_t");
 }
 
 static void test_BIT54(void) {
-    TEST_ASSERT_EQ(BIT54, (uint64_t)1 << 54, "Set 54th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT54, (UINT64_C(1) << 54), "Set 54th bit of uint64_t");
 }
 
 static void test_BIT55(void) {
-    TEST_ASSERT_EQ(BIT55, (uint64_t)1 << 55, "Set 55th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT55, (UINT64_C(1) << 55), "Set 55th bit of uint64_t");
 }
 
 static void test_BIT56(void) {
-    TEST_ASSERT_EQ(BIT56, (uint64_t)1 << 56, "Set 56th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT56, (UINT64_C(1) << 56), "Set 56th bit of uint64_t");
 }
 
 static void test_BIT57(void) {
-    TEST_ASSERT_EQ(BIT57, (uint64_t)1 << 57, "Set 57th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT57, (UINT64_C(1) << 57), "Set 57th bit of uint64_t");
 }
 
 static void test_BIT58(void) {
-    TEST_ASSERT_EQ(BIT58, (uint64_t)1 << 58, "Set 58th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT58, (UINT64_C(1) << 58), "Set 58th bit of uint64_t");
 }
 
 static void test_BIT59(void) {
-    TEST_ASSERT_EQ(BIT59, (uint64_t)1 << 59, "Set 59th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT59, (UINT64_C(1) << 59), "Set 59th bit of uint64_t");
 }
 
 static void test_BIT60(void) {
-    TEST_ASSERT_EQ(BIT60, (uint64_t)1 << 60, "Set 60th bit of uint64_t");
+    TEST_ASSERT_EQ(BIT60, (UINT64_C(1) << 60), "Set 60th bit of uint64_t");
 }
 
 static void test_BIT61(void) {
-    TEST_ASSERT_EQ(BIT61, (uint64_t)1 << 61, "Set 61st bit of uint64_t");
+    TEST_ASSERT_EQ(BIT61, (UINT64_C(1) << 61), "Set 61st bit of uint64_t");
 }
 
 static void test_BIT62(void) {
-    TEST_ASSERT_EQ(BIT62, (uint64_t)1 << 62, "Set 62nd bit of uint64_t");
+    TEST_ASSERT_EQ(BIT62, (UINT64_C(1) << 62), "Set 62nd bit of uint64_t");
 }
 
 static void test_BIT63(void) {
-    TEST_ASSERT_EQ(BIT63, (uint64_t)1 << 63, "Set 63rd bit of uint64_t");
+    TEST_ASSERT_EQ(BIT63, (UINT64_C(1) << 63), "Set 63rd bit of uint64_t");
 }
 
 static void test_M_SET_BIT(void) {
@@ -1184,15 +1184,15 @@ static void test_b_swap_16(void) {
 }
 
 static void test_b_swap_32(void) {
-    TEST_ASSERT_EQ(b_swap_32(HIGHER4BYTE), (uint32_t)(0x78563412), "Swap bytes in a uint32_t");
+    TEST_ASSERT_EQ(b_swap_32(HIGHER4BYTE), (UINT32_C(0x78563412)), "Swap bytes in a uint32_t");
 }
 
 static void test_b_swap_64(void) {
-    TEST_ASSERT_EQ(b_swap_64(SERIAL_NUM), (uint64_t)(0xEFCDAB9078563412), "Swap bytes in a uint64_t");
+    TEST_ASSERT_EQ(b_swap_64(SERIAL_NUM), (UINT64_C(0xEFCDAB9078563412)), "Swap bytes in a uint64_t");
 }
 
 static void test_by_swap_64(void) {
-    TEST_ASSERT_EQ(by_swap_64(SERIAL_NUM), (uint64_t)(0xEFCDAB9078563412), "Swap bytes in a uint64_t using by_swap_64");
+    TEST_ASSERT_EQ(by_swap_64(SERIAL_NUM), (UINT64_C(0xEFCDAB9078563412)), "Swap bytes in a uint64_t using by_swap_64");
 }
 
 static void test_byte_Swap_16(void) {
@@ -1215,7 +1215,7 @@ static void test_byte_Swap_Int16(void) {
 
 static void test_byte_Swap_32(void) {
     uint32_t dWord = HIGHER4BYTE;           
-    uint32_t expected = (uint32_t)(0x78563412);
+    uint32_t expected = (UINT32_C(0x78563412));
 
     byte_Swap_32(&dWord);
 
@@ -1232,12 +1232,12 @@ static void test_byte_Swap_Int32(void) {
 }
 
 static void test_w_swap_32(void) {
-    TEST_ASSERT_EQ(w_swap_32(HIGHER4BYTE), (uint32_t)(0x56781234), "Swap word within a dword");
+    TEST_ASSERT_EQ(w_swap_32(HIGHER4BYTE), (UINT32_C(0x56781234)), "Swap word within a dword");
 }
 
 static void test_word_Swap_32(void) {
     uint32_t dWord = HIGHER4BYTE;           
-    uint32_t expected = (uint32_t)(0x56781234);
+    uint32_t expected = (UINT32_C(0x56781234));
 
     word_Swap_32(&dWord);
 
@@ -1246,7 +1246,7 @@ static void test_word_Swap_32(void) {
 
 static void test_byte_Swap_64(void) {
     uint64_t qWord = SERIAL_NUM;           
-    uint64_t expected = (uint64_t)(0xEFCDAB9078563412);
+    uint64_t expected = (UINT64_C(0xEFCDAB9078563412));
 
     byte_Swap_64(&qWord);
 
@@ -1255,7 +1255,7 @@ static void test_byte_Swap_64(void) {
 
 static void test_word_Swap_64(void) {
     uint64_t qWord = SERIAL_NUM;           
-    uint64_t expected = (uint64_t)(0xCDEF90AB56781234);
+    uint64_t expected = (UINT64_C(0xCDEF90AB56781234));
 
     word_Swap_64(&qWord);
 
@@ -1264,7 +1264,7 @@ static void test_word_Swap_64(void) {
 
 static void test_double_Word_Swap_64(void) {
     uint64_t qWord = SERIAL_NUM;           
-    uint64_t expected = (uint64_t)(0x90ABCDEF12345678);
+    uint64_t expected = (UINT64_C(0x90ABCDEF12345678));
 
     double_Word_Swap_64(&qWord);
 
@@ -1293,10 +1293,10 @@ static void test_get_Bytes_To_32(void) {
     bool res;
 
     res = get_Bytes_To_32(buf, sizeof(buf), 0, 3, &out);
-    TEST_ASSERT_EQ(out, (uint32_t)0x12345678, "Big endian extraction of 4 bytes from a buffer");
+    TEST_ASSERT_EQ(out, (UINT32_C(0x12345678)), "Big endian extraction of 4 bytes from a buffer");
 
     res = get_Bytes_To_32(buf, sizeof(buf), 3, 0, &out);
-    TEST_ASSERT_EQ(out, (uint32_t)0x78563412, "Little endian extraction of 4 bytes from a buffer");
+    TEST_ASSERT_EQ(out, (UINT32_C(0x78563412)), "Little endian extraction of 4 bytes from a buffer");
 
     // Test to return false result
     res = get_Bytes_To_32(buf, sizeof(buf), 0, 6, &out);
@@ -1310,15 +1310,15 @@ static void test_get_Bytes_To_64(void) {
 
     // msb == lsb
     res = get_Bytes_To_64(buf, sizeof(buf), 3, 3, &out);
-    TEST_ASSERT_EQ(out, (uint64_t)0x78, "Extraction of a single byte from a buffer when msb == lsb");
+    TEST_ASSERT_EQ(out, (UINT64_C(0x78)), "Extraction of a single byte from a buffer when msb == lsb");
     
     // lsb < msb
     res = get_Bytes_To_64(buf, sizeof(buf), 7, 0, &out);
-    TEST_ASSERT_EQ(out, (uint64_t)0xEFCDAB9078563412, "Little endian extraction of 8 bytes from a buffer");
+    TEST_ASSERT_EQ(out, (UINT64_C(0xEFCDAB9078563412)), "Little endian extraction of 8 bytes from a buffer");
     
     // lsb > msb
     res = get_Bytes_To_64(buf, sizeof(buf), 0, 7, &out);
-    TEST_ASSERT_EQ(out, (uint64_t)0x1234567890ABCDEF, "Big endian extraction of 8 bytes from a buffer");
+    TEST_ASSERT_EQ(out, (UINT64_C(0x1234567890ABCDEF)), "Big endian extraction of 8 bytes from a buffer");
 
     // Test for dataPtrBeginning == M_NULLPTR
     res = get_Bytes_To_64(M_NULLPTR, 0, 0, 7, &out);
@@ -1357,9 +1357,9 @@ static void test_be32_to_host(void) {
     uint32_t result = be32_to_host(val);
 
     #if defined(ENV_BIG_ENDIAN)
-        TEST_ASSERT_EQ(result, (uint32_t)0x12345678, "Big endian host returns the same value");
+        TEST_ASSERT_EQ(result, (UINT32_C(0x12345678)), "Big endian host returns the same value");
     #else
-        TEST_ASSERT_EQ(result, (uint32_t)0x78563412, "Little endian host swaps to return little indian");
+        TEST_ASSERT_EQ(result, (UINT32_C(0x78563412)), "Little endian host swaps to return little indian");
     #endif
 }
 
@@ -1368,9 +1368,9 @@ static void test_be64_to_host(void) {
     uint64_t result = be64_to_host(val);
 
     #if defined(ENV_BIG_ENDIAN)
-        TEST_ASSERT_EQ(result, (uint64_t)0x1234567890ABCDEF, "Big endian host returns the same value");
+        TEST_ASSERT_EQ(result, (UINT64_C(0x1234567890ABCDEF)), "Big endian host returns the same value");
     #else
-        TEST_ASSERT_EQ(result, (uint64_t)0xEFCDAB9078563412, "Little endian host swaps to return little indian");
+        TEST_ASSERT_EQ(result, (UINT64_C(0xEFCDAB9078563412)), "Little endian host swaps to return little indian");
     #endif
 }
 
@@ -1390,9 +1390,9 @@ static void test_host_to_be32(void) {
     uint32_t result = host_to_be32(val);
 
     #if defined(ENV_BIG_ENDIAN)
-        TEST_ASSERT_EQ(result, (uint32_t)0x12345678, "Big endian host returns the same value");
+        TEST_ASSERT_EQ(result, (UINT32_C(0x12345678)), "Big endian host returns the same value");
     #else
-        TEST_ASSERT_EQ(result, (uint32_t)0x78563412, "Little endian host swaps to big endian");
+        TEST_ASSERT_EQ(result, (UINT32_C(0x78563412)), "Little endian host swaps to big endian");
     #endif
 }
 
@@ -1401,9 +1401,9 @@ static void test_host_to_be64(void) {
     uint64_t result = host_to_be64(val);
 
     #if defined(ENV_BIG_ENDIAN)
-        TEST_ASSERT_EQ(result, (uint64_t)0x1234567890ABCDEF, "Big endian host returns the same value");
+        TEST_ASSERT_EQ(result, (UINT64_C(0x1234567890ABCDEF)), "Big endian host returns the same value");
     #else
-        TEST_ASSERT_EQ(result, (uint64_t)0xEFCDAB9078563412, "Little endian host swaps to big endian");
+        TEST_ASSERT_EQ(result, (UINT64_C(0xEFCDAB9078563412)), "Little endian host swaps to big endian");
     #endif
 }
 
@@ -1423,9 +1423,9 @@ static void test_host_to_le32(void) {
     uint32_t result = host_to_le32(val);
 
     #if defined(ENV_BIG_ENDIAN)
-        TEST_ASSERT_EQ(result, (uint32_t)0x78563412, "Big endian host swaps to little endian");
+        TEST_ASSERT_EQ(result, (UINT32_C(0x78563412)), "Big endian host swaps to little endian");
     #else
-        TEST_ASSERT_EQ(result, (uint32_t)0x12345678, "Little endian host returns the same value");
+        TEST_ASSERT_EQ(result, (UINT32_C(0x12345678)), "Little endian host returns the same value");
     #endif
 }
 
@@ -1434,9 +1434,9 @@ static void test_host_to_le64(void) {
     uint64_t result = host_to_le64(val);
 
     #if defined(ENV_BIG_ENDIAN)
-        TEST_ASSERT_EQ(result, (uint64_t)0xEFCDAB9078563412, "Big endian host swaps to little endian");
+        TEST_ASSERT_EQ(result, (UINT64_C(0xEFCDAB9078563412)), "Big endian host swaps to little endian");
     #else
-        TEST_ASSERT_EQ(result, (uint64_t)0x1234567890ABCDEF, "Little endian host returns the same value");
+        TEST_ASSERT_EQ(result, (UINT64_C(0x1234567890ABCDEF)), "Little endian host returns the same value");
     #endif
 }
 
@@ -1456,9 +1456,9 @@ static void test_le32_to_host(void) {
     uint32_t result = le32_to_host(val);
 
     #if defined(ENV_BIG_ENDIAN)
-        TEST_ASSERT_EQ(result, (uint32_t)0x78563412, "Big endian host swaps to little endian");
+        TEST_ASSERT_EQ(result, (UINT32_C(0x78563412)), "Big endian host swaps to little endian");
     #else
-        TEST_ASSERT_EQ(result, (uint32_t)0x12345678, "Little endian host returns the same value");
+        TEST_ASSERT_EQ(result, (UINT32_C(0x12345678)), "Little endian host returns the same value");
     #endif
 }
 
@@ -1467,9 +1467,9 @@ static void test_le64_to_host(void) {
     uint64_t result = le64_to_host(val);
 
     #if defined(ENV_BIG_ENDIAN)
-        TEST_ASSERT_EQ(result, (uint64_t)0xEFCDAB9078563412, "Big endian host swaps to little endian");
+        TEST_ASSERT_EQ(result, (UINT64_C(0xEFCDAB9078563412)), "Big endian host swaps to little endian");
     #else
-        TEST_ASSERT_EQ(result, (uint64_t)0x1234567890ABCDEF, "Little endian host returns the same value");
+        TEST_ASSERT_EQ(result, (UINT64_C(0x1234567890ABCDEF)), "Little endian host returns the same value");
     #endif
 }
 
@@ -1491,9 +1491,9 @@ static void test_big_To_Little_Endian_32(void) {
     big_To_Little_Endian_32(&dWord);
 
     #if defined(ENV_BIG_ENDIAN)
-        TEST_ASSERT_EQ(dWord, (uint32_t)(0x12345678), "Big endian host returns the same value");
+        TEST_ASSERT_EQ(dWord, (UINT32_C(0x12345678)), "Big endian host returns the same value");
     #else
-        TEST_ASSERT_EQ(dWord, (uint32_t)(0x78563412), "Little endian host swaps to little endian");
+        TEST_ASSERT_EQ(dWord, (UINT32_C(0x78563412)), "Little endian host swaps to little endian");
     #endif
 }  
 
