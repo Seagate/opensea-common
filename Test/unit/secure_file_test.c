@@ -160,6 +160,22 @@ static void test_free_Secure_File_Info(void) {
     TEST_ASSERT(fileInfo == NULL, "secureFileInfo pointer should be set to NULL after freeing");
 }
 
+static void test_secure_Open_File(void) {
+    const char* filename = "test_secure_open.txt";
+    FILE* f = fopen(filename, "w");
+    fprintf(f, "hello");
+    fclose(f);
+    fileExt extList[] = {{"txt"}, {"log"}, {NULL}};
+
+    secureFileInfo* fileInfo = secure_Open_File(filename, "r", extList, NULL, NULL);
+    TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
+    TEST_ASSERT(fileInfo->file != NULL, "secure_Open_File should have a valid FILE pointer");
+    TEST_ASSERT(fileInfo->fileSize == 5, "File size should be 5 bytes");
+
+    free_Secure_File_Info(&fileInfo);
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
@@ -168,4 +184,5 @@ void run_secure_file_tests(void) {
     test_os_Get_File_Attributes_By_Name();
     test_os_Get_File_Attributes_By_File();
     test_free_Secure_File_Info();
+    test_secure_Open_File();
 }
