@@ -60,7 +60,6 @@ static void test_os_Is_Directory_Secure(void) {
     char* error = NULL;
     TEST_ASSERT(!os_Is_Directory_Secure("insecure_dir", &error), "Directory should not be secure");
     TEST_ASSERT(error != NULL, "Error message should be set for insecure directory");
-    free(error);
 }
 
 void run_secure_file_tests(void) {
