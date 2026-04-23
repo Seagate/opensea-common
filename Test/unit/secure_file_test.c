@@ -318,6 +318,7 @@ static void test_secure_Remove_File(void) {
     TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
 
     eSecureFileError result = secure_Remove_File(fileInfo);
+    printf("secure_Remove_File result: %d\n", result);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Remove_File should succeed");
 
     secure_Close_File(fileInfo);
