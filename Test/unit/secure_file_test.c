@@ -2,6 +2,7 @@
 #include"../../include/secure_file.h"
 #include"../testConstants.h"
 #include <sys/stat.h>
+#include <stdlib.h>
 
 static void test_compare_File_Unique_ID(void) {
     fileUniqueIDInfo a = {0}, b = {0};
@@ -54,13 +55,32 @@ static void test_os_Get_File_Unique_Identifying_Information(void) {
 
 static void test_os_Is_Directory_Secure(void) {
     mkdir("secure_dir", 0700);
-    char* error = NULL;
-    TEST_ASSERT(os_Is_Directory_Secure("secure_dir", NULL), "Directory should be secure");
-    printf("error: %s\n", error);
+    char *abs_path = realpath("secure_dir", NULL);
 
+    if (!abs_path) {
+        perror("realpath failed");
+        return;
+    }
+
+    TEST_ASSERT(os_Is_Directory_Secure(abs_path, NULL), "Directory should be secure");
+
+    free(abs_path);
+    
+    char* error = NULL;
     mkdir("insecure_dir", 0777);
-    TEST_ASSERT(!os_Is_Directory_Secure("insecure_dir", &error), "Directory should not be secure");
+    char *abs_bad = realpath("insecure_dir", NULL);
+
+    if (!abs_bad) {
+        perror("realpath failed");
+        return;
+    }
+
+    TEST_ASSERT(!os_Is_Directory_Secure(abs_bad, &error), "Directory should not be secure");
     TEST_ASSERT(error != NULL, "Error message should be set for insecure directory");
+    free(abs_bad);
+
+    rmdir("secure_dir");
+    rmdir("insecure_dir");
 }
 
 void run_secure_file_tests(void) {
