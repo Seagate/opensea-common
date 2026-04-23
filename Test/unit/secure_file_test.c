@@ -313,11 +313,12 @@ static void test_secure_Remove_File(void) {
     fprintf(f, "hello world");
     fclose(f);
 
-    secureFileInfo* fileInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    secureFileInfo* fileInfo = secure_Open_File(filename, "r+", NULL, NULL, NULL);
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
 
     secure_Close_File(fileInfo);
+    printf("isValid after close: %d\n", fileInfo->isValid);
 
     eSecureFileError result = secure_Remove_File(fileInfo);
     printf("secure_Remove_File result: %d\n", result);
