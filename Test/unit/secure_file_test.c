@@ -31,6 +31,13 @@ static void test_os_Get_File_Unique_Identifying_Information(void) {
 
     f = fopen("test.txt", "r");
 
+    fprintf(stderr, "fd = %d\n", fileno(f));
+
+    struct stat st;
+    if (fstat(fileno(f), &st) == 0) {
+        fprintf(stderr, "mode = %o\n", st.st_mode);
+    }
+
     fileUniqueIDInfo *id1 = os_Get_File_Unique_Identifying_Information(f);
     fileUniqueIDInfo *id2 = os_Get_File_Unique_Identifying_Information(f);
 
@@ -40,12 +47,6 @@ static void test_os_Get_File_Unique_Identifying_Information(void) {
         return;
     }
 
-    fprintf(stderr, "ID1: inode=%" PRIu64 ", deviceid=%" PRIu64 "\n",
-    id1->inode, id1->deviceid);
-
-    fprintf(stderr, "ID2: inode=%" PRIu64 ", deviceid=%" PRIu64 "\n",
-    id2->inode, id2->deviceid);
-    
     TEST_ASSERT(compare_File_Unique_ID(id1, id2), "File unique IDs should be equal");
 
     // Test for different files

@@ -152,7 +152,7 @@ extern "C"
     //! \param[in] b Pointer to the second fileUniqueIDInfo structure.
     //! \return true if the structures represent the same file, false otherwise.
     //! \note This function is used because a memcmp is not appropriate for comparing fileUniqueIDInfo structures.
-    M_PARAM_RO(1)
+    M_PARAM_RO(1) 
     M_PARAM_RO(2) bool compare_File_Unique_ID(const fileUniqueIDInfo* M_NONNULL a, const fileUniqueIDInfo* M_NONNULL b);
 
     //! \fn M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
