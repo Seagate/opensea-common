@@ -47,10 +47,8 @@ static void test_os_Get_File_Unique_Identifying_Information(void) {
 
     TEST_ASSERT(!compare_File_Unique_ID(id1, id3), "File unique IDs should not be equal for different files");
 
-    free(id1);
-    free(id2);
-    free(id3);
     fclose(f);
+    fclose(f2);
 }
 
 void run_secure_file_tests(void) {
