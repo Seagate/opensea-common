@@ -54,10 +54,11 @@ static void test_os_Get_File_Unique_Identifying_Information(void) {
 
 static void test_os_Is_Directory_Secure(void) {
     mkdir("secure_dir", 0700);
+    char* error = NULL;
     TEST_ASSERT(os_Is_Directory_Secure("secure_dir", NULL), "Directory should be secure");
+    printf("error: %s\n", error);
 
     mkdir("insecure_dir", 0777);
-    char* error = NULL;
     TEST_ASSERT(!os_Is_Directory_Secure("insecure_dir", &error), "Directory should not be secure");
     TEST_ASSERT(error != NULL, "Error message should be set for insecure directory");
 }
