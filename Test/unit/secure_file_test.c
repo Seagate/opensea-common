@@ -67,7 +67,8 @@ static void test_os_Is_Directory_Secure(void) {
     free(abs_path);
     
     char* error = NULL;
-    mkdir("insecure_dir", 0777);
+    mkdir("insecure_dir", 0777); // umask removes the permissions for group and others, so we need to explicitly set them to make it insecure.
+    chmod("insecure_dir", 0777); // Make the directory writable by others, which should make it insecure.
     char *abs_bad = realpath("insecure_dir", NULL);
 
     if (!abs_bad) {
