@@ -36,6 +36,8 @@ static void test_os_Get_File_Unique_Identifying_Information(void) {
     struct stat st;
     if (fstat(fileno(f), &st) == 0) {
         fprintf(stderr, "mode = %o\n", st.st_mode);
+        fprintf(stderr, "inode = %lu\n", st.st_ino);
+        fprintf(stderr, "device = %lu\n", st.st_dev);
     }
 
     fileUniqueIDInfo *id1 = os_Get_File_Unique_Identifying_Information(f);
