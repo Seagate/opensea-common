@@ -99,8 +99,25 @@ static void test_os_Is_Directory_Secure(void) {
     rmdir("insecure_dir");
 }
 
+static void test_free_File_Attributes(void) {
+    fileAttributes* attributes = malloc(sizeof(fileAttributes));
+    TEST_ASSERT(attributes != NULL, "Memory allocation for fileAttributes successful");
+
+    // Set some dummy values
+    attributes->deviceID = 123;
+    attributes->inode = 456;
+    attributes->filemode = 0644;
+    attributes->numberOfLinks = 1;
+    attributes->userID = 1000;
+    attributes->groupID = 1000;
+
+    free_File_Attributes(&attributes);
+    TEST_ASSERT(attributes == NULL, "fileAttributes pointer should be set to NULL after freeing");
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
     test_os_Is_Directory_Secure();
+    test_free_File_Attributes();
 } 
