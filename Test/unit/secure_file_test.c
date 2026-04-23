@@ -115,9 +115,22 @@ static void test_free_File_Attributes(void) {
     TEST_ASSERT(attributes == NULL, "fileAttributes pointer should be set to NULL after freeing");
 }
 
+static void test_os_Get_File_Attributes_By_Name(void) {
+    FILE* f = fopen("test_attributes.txt", "w");
+    fprintf(f, "hello");
+    fclose(f);
+
+    fileAttributes* attributes = os_Get_File_Attributes_By_Name("test_attributes.txt");
+    TEST_ASSERT(attributes != NULL, "Should retrieve file attributes successfully");
+    TEST_ASSERT(attributes->filesize == 5, "File size should be 5 bytes");
+
+    free_File_Attributes(&attributes);
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
     test_os_Is_Directory_Secure();
     test_free_File_Attributes();
-} 
+    test_os_Get_File_Attributes_By_Name();
+}
