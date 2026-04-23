@@ -232,6 +232,31 @@ static void test_secure_Write_File(void) {
     TEST_ASSERT(strcmp(buffer, "hello") == 0, "File should contain 'hello'");
 }
 
+static void test_secure_Seek_File(void) {
+    const char* filename = "test_secure_seek.txt";
+    FILE* f = fopen(filename, "w");
+    fprintf(f, "hello world");
+    fclose(f);
+
+    secureFileInfo* fileInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
+
+    // Move the file position to 6 (after "hello ")
+    long pos = 6;
+    eSecureFileError result = secure_Seek_File(fileInfo, pos, SEEK_SET);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Seek_File should succeed");
+
+    // Read the next 5 characters ("world")
+    char buffer[10] = {0};
+    eSecureFileError readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 5, NULL);
+    TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed");
+    TEST_ASSERT(strcmp(buffer, "world") == 0, "Buffer should contain 'world'");
+
+    secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo);
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
@@ -244,4 +269,5 @@ void run_secure_file_tests(void) {
     test_secure_Close_File();
     test_secure_Read_File();
     test_secure_Write_File();
+    test_secure_Seek_File();
 }
