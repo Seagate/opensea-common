@@ -176,6 +176,27 @@ static void test_secure_Open_File(void) {
     free_Secure_File_Info(&fileInfo);
 }
 
+static void test_secure_Close_File(void) {
+    const char* filename = "test_secure_close.txt";
+    FILE* f = fopen(filename, "w");
+    fprintf(f, "hello");
+    fclose(f);
+
+    secureFileInfo* fileInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
+
+    eSecureFileError closeResult = secure_Close_File(fileInfo);
+    TEST_ASSERT(closeResult == SEC_FILE_SUCCESS, "secure_Close_File should succeed");
+
+    // Attempt to use the file after closing to ensure it's no longer usable
+    char buffer[10];
+    size_t bytesRead = fread(buffer, 1, sizeof(buffer), fileInfo->file);
+    TEST_ASSERT(bytesRead == 0, "Should not be able to read from a closed file");
+
+    free_Secure_File_Info(&fileInfo);
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
@@ -185,4 +206,5 @@ void run_secure_file_tests(void) {
     test_os_Get_File_Attributes_By_File();
     test_free_Secure_File_Info();
     test_secure_Open_File();
+    test_secure_Close_File();
 }
