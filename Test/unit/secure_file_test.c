@@ -24,6 +24,36 @@ static void test_compare_File_Unique_ID(void) {
     TEST_ASSERT(!compare_File_Unique_ID(&a, &b), "File unique IDs should not be equal when device IDs differ");
 }
 
+static void test_os_Get_File_Unique_Identifying_Information(void) {
+    FILE *f = fopen("test.txt", "w");
+    fprintf(f, "hello");
+    fclose(f);
+
+    f = fopen("test.txt", "r");
+
+    fileUniqueIDInfo *id1 = os_Get_File_Unique_Identifying_Information(f);
+    fileUniqueIDInfo *id2 = os_Get_File_Unique_Identifying_Information(f);
+
+    TEST_ASSERT(compare_File_Unique_ID(id1, id2), "File unique IDs should be equal");
+
+    // Test for different files
+    FILE *f2 = fopen("test2.txt", "w");
+    fprintf(f2, "hello");
+    fclose(f2);
+
+    f2 = fopen("test2.txt", "r");
+
+    fileUniqueIDInfo *id3 = os_Get_File_Unique_Identifying_Information(f2);
+
+    TEST_ASSERT(!compare_File_Unique_ID(id1, id3), "File unique IDs should not be equal for different files");
+
+    free(id1);
+    free(id2);
+    free(id3);
+    fclose(f);
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
+    test_os_Get_File_Unique_Identifying_Information();
 } 
