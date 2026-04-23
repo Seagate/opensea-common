@@ -80,6 +80,21 @@ static void test_os_Is_Directory_Secure(void) {
     TEST_ASSERT(error != NULL, "Error message should be set for insecure directory");
     free(abs_bad);
 
+    // Test for nested directories
+    mkdir("secure_dir/nested_secure", 0700);
+    mkdir("secure_dir/nested_secure/inner_secure", 0700);
+    char *abs_nested = realpath("secure_dir/nested_secure/inner_secure", NULL);
+
+    if (!abs_nested) {
+        perror("realpath failed");
+        return;
+    }
+
+    TEST_ASSERT(os_Is_Directory_Secure(abs_nested, NULL), "Nested directory should be secure");
+    free(abs_nested);
+
+    rmdir("secure_dir/nested_secure/inner_secure");
+    rmdir("secure_dir/nested_secure");
     rmdir("secure_dir");
     rmdir("insecure_dir");
 }
