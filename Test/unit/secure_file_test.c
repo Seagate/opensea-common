@@ -127,10 +127,25 @@ static void test_os_Get_File_Attributes_By_Name(void) {
     free_File_Attributes(&attributes);
 }
 
+static void test_os_Get_File_Attributes_By_File(void) {
+    FILE* f = fopen("test_attributes_file.txt", "w");
+    fprintf(f, "hello");
+    fclose(f);
+
+    f = fopen("test_attributes_file.txt", "r");
+    fileAttributes* attributes = os_Get_File_Attributes_By_File(f);
+    TEST_ASSERT(attributes != NULL, "Should retrieve file attributes successfully");
+    TEST_ASSERT(attributes->filesize == 5, "File size should be 5 bytes");
+
+    free_File_Attributes(&attributes);
+    fclose(f);
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
     test_os_Is_Directory_Secure();
     test_free_File_Attributes();
     test_os_Get_File_Attributes_By_Name();
+    test_os_Get_File_Attributes_By_File();
 }
