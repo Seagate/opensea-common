@@ -141,6 +141,25 @@ static void test_os_Get_File_Attributes_By_File(void) {
     fclose(f);
 }
 
+static void test_free_Secure_File_Info(void) {
+    secureFileInfo* fileInfo = malloc(sizeof(secureFileInfo));
+    TEST_ASSERT(fileInfo != NULL, "Memory allocation for secureFileInfo successful");
+
+    // Set some dummy values
+    fileInfo->error = SEC_FILE_SUCCESS;
+    fileInfo->isValid = true;
+    fileInfo->file = NULL;
+    fileInfo->filename = NULL;
+    fileInfo->fileno = 0;
+    fileInfo->fileSize = 0;
+    fileInfo->attributes = NULL;
+    fileInfo->uniqueID = NULL;
+    fileInfo->errorString = NULL;
+
+    free_Secure_File_Info(&fileInfo);
+    TEST_ASSERT(fileInfo == NULL, "secureFileInfo pointer should be set to NULL after freeing");
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
@@ -148,4 +167,5 @@ void run_secure_file_tests(void) {
     test_free_File_Attributes();
     test_os_Get_File_Attributes_By_Name();
     test_os_Get_File_Attributes_By_File();
+    test_free_Secure_File_Info();
 }
