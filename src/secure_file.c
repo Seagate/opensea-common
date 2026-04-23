@@ -29,7 +29,10 @@
 #    include <unistd.h> //getcwd
 #endif
 
-eReturnValues replace_File_Name_In_Path(char fullPath[M_NONNULL_ARRAY OPENSEA_PATH_MAX], const char* newFileName)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+eReturnValues replace_File_Name_In_Path(char                  fullPath[M_NONNULL_ARRAY OPENSEA_PATH_MAX],
+                                        const char* M_NONNULL newFileName)
 {
     char*  ptr        = strrchr(fullPath, SYSTEM_PATH_SEPARATOR);
     size_t ptrLen     = SIZE_T_C(0);
@@ -86,7 +89,7 @@ FUNC_ATTR_PRINTF(2, 3) static M_INLINE void set_Secure_File_error_message(char**
     }
 }
 
-void free_File_Attributes(fileAttributes** attributes)
+void free_File_Attributes(fileAttributes* M_NULLABLE* M_NULLABLE attributes)
 {
     if (attributes != M_NULLPTR)
     {
@@ -106,7 +109,7 @@ void free_File_Attributes(fileAttributes** attributes)
     }
 }
 
-void free_Secure_File_Info(secureFileInfo** fileInfo)
+void free_Secure_File_Info(secureFileInfo* M_NULLABLE* M_NULLABLE fileInfo)
 {
     if (fileInfo != M_NULLPTR)
     {
@@ -135,7 +138,9 @@ void free_Secure_File_Info(secureFileInfo** fileInfo)
 
 // This exists to fix this cert-c identified issue
 // https://wiki.sei.cmu.edu/confluence/display/c/EXP42-C.+Do+not+compare+padding+data
-bool compare_File_Unique_ID(const fileUniqueIDInfo* a, const fileUniqueIDInfo* b)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+bool compare_File_Unique_ID(const fileUniqueIDInfo* M_NONNULL a, const fileUniqueIDInfo* M_NONNULL b)
 {
     bool equal = false;
     if (a != M_NULLPTR && b != M_NULLPTR)
@@ -160,11 +165,19 @@ bool compare_File_Unique_ID(const fileUniqueIDInfo* a, const fileUniqueIDInfo* b
 //  it can be validated as the same file It is recommended to not reopen files,
 //  but that may not always be possible. So this exists to help validate that a
 //  file has not changed in some unexpected way.-TJE
-M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
-                                             const char*       mode,
-                                             const fileExt*    extList,
-                                             fileAttributes*   expectedFileInfo,
-                                             fileUniqueIDInfo* uniqueIdInfo /*optional*/)
+M_NODISCARD_REASON("The returned pointer must be freed by the caller using free_Secure_File_Info()")
+M_NULL_TERM_STRING(1)
+M_PARAM_RO(1)
+M_NULL_TERM_STRING(2)
+M_PARAM_RO(2)
+M_PARAM_RO(3)
+M_PARAM_RO(4)
+M_PARAM_RO(5)
+secureFileInfo* M_NULLABLE secure_Open_File(const char* M_NONNULL        filename,
+                                            const char* M_NONNULL        mode,
+                                            const fileExt* M_NULLABLE    extList /*optional*/,
+                                            fileAttributes* M_NULLABLE   expectedFileInfo /*optional*/,
+                                            fileUniqueIDInfo* M_NULLABLE uniqueIdInfo /*optional*/)
 {
     secureFileInfo* fileInfo = M_REINTERPRET_CAST(secureFileInfo*, safe_calloc(1, sizeof(secureFileInfo)));
     if (fileInfo && filename != M_NULLPTR &&
@@ -753,7 +766,7 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
 
 // We can add additional things to do before closing the file to validate
 // things, flush, etc as needed to make this better.
-M_NODISCARD eSecureFileError secure_Close_File(secureFileInfo* fileInfo)
+M_NODISCARD M_PARAM_RW(1) eSecureFileError secure_Close_File(secureFileInfo* M_NONNULL fileInfo)
 {
     if (fileInfo != M_NULLPTR)
     {
@@ -795,12 +808,13 @@ M_NODISCARD eSecureFileError secure_Close_File(secureFileInfo* fileInfo)
     return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
-M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInfo,
-                                              void* M_RESTRICT           buffer,
-                                              size_t                     buffersize,
-                                              size_t                     elementsize,
-                                              size_t                     count,
-                                              size_t*                    numberread /*optional*/)
+M_NODISCARD M_PARAM_RW(1) M_PARAM_WO_SIZE(2, 3) M_PARAM_WO(6) eSecureFileError
+    secure_Read_File(secureFileInfo* M_RESTRICT M_NONNULL fileInfo,
+                     void* M_RESTRICT M_NONNULL           buffer,
+                     size_t                               buffersize,
+                     size_t                               elementsize,
+                     size_t                               count,
+                     size_t* M_NULLABLE                   numberread /*optional*/)
 {
     if (fileInfo != M_NULLPTR)
     {
@@ -891,12 +905,13 @@ M_NODISCARD eSecureFileError secure_Read_File(secureFileInfo* M_RESTRICT fileInf
     return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
-M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileInfo,
-                                               void* M_RESTRICT           buffer,
-                                               size_t                     buffersize,
-                                               size_t                     elementsize,
-                                               size_t                     count,
-                                               size_t*                    numberwritten /*optional*/)
+M_NODISCARD M_PARAM_RW(1) M_PARAM_RO_SIZE(2, 3) M_PARAM_WO(6) eSecureFileError
+    secure_Write_File(secureFileInfo* M_RESTRICT M_NONNULL fileInfo,
+                      void* M_RESTRICT M_NONNULL           buffer,
+                      size_t                               buffersize,
+                      size_t                               elementsize,
+                      size_t                               count,
+                      size_t* M_NULLABLE                   numberwritten /*optional*/)
 {
     if (fileInfo != M_NULLPTR)
     {
@@ -976,7 +991,8 @@ M_NODISCARD eSecureFileError secure_Write_File(secureFileInfo* M_RESTRICT fileIn
     return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
-M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, oscoffset_t offset, int initialPosition)
+M_NODISCARD M_PARAM_RW(1) eSecureFileError
+    secure_Seek_File(secureFileInfo* M_NONNULL fileInfo, oscoffset_t offset, int initialPosition)
 {
     if (fileInfo != M_NULLPTR)
     {
@@ -1016,7 +1032,7 @@ M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, oscoffse
     return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
-M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
+M_NODISCARD M_PARAM_RW(1) eSecureFileError secure_Rewind_File(secureFileInfo* M_NONNULL fileInfo)
 {
     if (fileInfo != M_NULLPTR)
     {
@@ -1041,7 +1057,7 @@ M_NODISCARD eSecureFileError secure_Rewind_File(secureFileInfo* fileInfo)
     return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
-M_NODISCARD oscoffset_t secure_Tell_File(secureFileInfo* fileInfo)
+M_NODISCARD M_PARAM_RW(1) oscoffset_t secure_Tell_File(secureFileInfo* M_NONNULL fileInfo)
 {
     if (fileInfo != M_NULLPTR)
     {
@@ -1082,7 +1098,8 @@ M_NODISCARD oscoffset_t secure_Tell_File(secureFileInfo* fileInfo)
     return -1;
 }
 
-eSecureFileError secure_Flush_File(secureFileInfo* fileInfo)
+M_PARAM_RW(1)
+eSecureFileError secure_Flush_File(secureFileInfo* M_NONNULL fileInfo)
 {
     if (fileInfo != M_NULLPTR)
     {
@@ -1116,7 +1133,7 @@ eSecureFileError secure_Flush_File(secureFileInfo* fileInfo)
     return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
-M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
+M_NODISCARD M_PARAM_RW(1) eSecureFileError secure_Remove_File(secureFileInfo* M_NONNULL fileInfo)
 {
     if (fileInfo != M_NULLPTR)
     {
@@ -1136,12 +1153,24 @@ M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "Failed to unlink file from file system");
             }
+            else
+            {
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                              "File unlinked successfully from file system");
+            }
 #elif defined(POSIX_2001) || defined(BSD4_3) || defined(__svr4__)
             if (0 != unlink(fileInfo->fullpath))
             {
                 fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "Failed to unlink file from file system");
+            }
+            else
+            {
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                              "File unlinked successfully from file system");
             }
 #else
             fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN);
@@ -1160,8 +1189,7 @@ M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
             else
             {
                 fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
-                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
-                                              "File removed successfully");
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "File removed successfully");
             }
         }
         return fileInfo->error;
@@ -1169,7 +1197,8 @@ M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
     return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
-M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eSecureFileDeleteNameAction deleteAction)
+M_NODISCARD M_PARAM_RO(1) eSecureFileError
+    secure_Delete_File_By_Name(const char* M_NONNULL filename, eSecureFileDeleteNameAction deleteAction)
 {
     if (filename != M_NULLPTR)
     {
@@ -1257,7 +1286,9 @@ M_NODISCARD eSecureFileError secure_Delete_File_By_Name(const char* filename, eS
     return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PATH);
 }
 
-eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT fileInfo, fpos_t* M_RESTRICT pos)
+M_PARAM_RW(1)
+M_PARAM_WO(2)
+eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT M_NONNULL fileInfo, fpos_t* M_RESTRICT M_NONNULL pos)
 {
     if (fileInfo != M_NULLPTR && pos != M_NULLPTR)
     {
@@ -1296,7 +1327,9 @@ eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT fileInfo, fpos_t*
     return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
-eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+eSecureFileError secure_SetPos_File(secureFileInfo* M_NONNULL fileInfo, const fpos_t* M_NONNULL pos)
 {
     if (fileInfo != M_NULLPTR && pos != M_NULLPTR)
     {
@@ -1336,7 +1369,11 @@ eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos)
 }
 
 FUNC_ATTR_PRINTF(2, 0)
-eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, va_list args)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT M_NONNULL fileInfo,
+                                      const char* M_RESTRICT M_NONNULL     format,
+                                      va_list                              args)
 {
     if (fileInfo != M_NULLPTR && fileInfo->file != M_NULLPTR)
     {
@@ -1393,7 +1430,11 @@ eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo, const
 }
 
 FUNC_ATTR_PRINTF(2, 3)
-eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const char* M_RESTRICT format, ...)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT M_NONNULL fileInfo,
+                                     const char* M_RESTRICT M_NONNULL     format,
+                                     ...)
 {
     if (fileInfo != M_NULLPTR && fileInfo->file != M_NULLPTR)
     {
@@ -1421,19 +1462,23 @@ eSecureFileError secure_fprintf_File(secureFileInfo* M_RESTRICT fileInfo, const 
     return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
 }
 
-M_FUNC_ATTR_MALLOC char* generate_Log_Name(
-    eLogFileNamingConvention logFileNamingConvention, // required
-    const char*              deviceIdentifier,        // required
-    size_t                   deviceIDLen,             // required
-    const char*              logPath,                 // optional /*requested path to output to. Will be checked for
-                                                      // security. If NULL, current directory will be used*/
-    size_t      logPathLen,                           // may be 0
-    const char* logName,                              // optional /*name of the log file from the drive,
-                                                      // FARM, DST, etc*/
-    size_t      logNameLen,                           // may be 0
-    const char* logExt,                               // optional /*extension for the log file. If NULL, set to .bin*/
-    size_t      logExtLen                             // may be 0
-)
+M_NODISCARD_REASON("The returned pointer must be freed by the caller using free()/safe_free()")
+M_PARAM_RO_SIZE(2, 3)
+M_NONNULL_IF_NONZERO_PARAM(4, 5)
+M_PARAM_RO_SIZE(4, 5)
+M_NONNULL_IF_NONZERO_PARAM(6, 7)
+M_PARAM_RO_SIZE(6, 7)
+M_NONNULL_IF_NONZERO_PARAM(8, 9)
+M_PARAM_RO_SIZE(8, 9)
+M_FUNC_ATTR_MALLOC char* M_NULLABLE generate_Log_Name(eLogFileNamingConvention logFileNamingConvention,
+                                                      const char* M_NONNULL    deviceIdentifier,
+                                                      size_t                   deviceIDLen,
+                                                      const char* M_NULLABLE   logPath,
+                                                      size_t                   logPathLen,
+                                                      const char* M_NULLABLE   logName,
+                                                      size_t                   logNameLen,
+                                                      const char* M_NULLABLE   logExt,
+                                                      size_t                   logExtLen)
 {
     DECLARE_ZERO_INIT_ARRAY(char, path, OPENSEA_PATH_MAX);
     char* logExtension  = M_NULLPTR;
@@ -1568,23 +1613,27 @@ M_FUNC_ATTR_MALLOC char* generate_Log_Name(
     return generatedName;
 }
 
-eReturnValues create_And_Open_Secure_Log_File(
-    const char*              deviceIdentifier,        // required
-    size_t                   deviceIDLen,             // required
-    secureFileInfo**         file,                    // required
-    eLogFileNamingConvention logFileNamingConvention, // required
-    const char*              logPath,                 // optional /*requested path to output to. Will be checked for
-                                                      // security. If NULL, current directory will be used*/
-    size_t      logPathLen,                           // may be 0
-    const char* logName,                              // optional /*name of the log file from the drive,
-                                                      // FARM, DST, etc*/
-    size_t      logNameLen,                           // may be 0
-    const char* logExt,                               // optional /*extension for the log file. If NULL, set to .bin*/
-    size_t      logExtLen                             // may be 0
+M_PARAM_RO_SIZE(1, 2)
+M_NONNULL_IF_NONZERO_PARAM(5, 6)
+M_PARAM_RO_SIZE(5, 6)
+M_NONNULL_IF_NONZERO_PARAM(7, 8)
+M_PARAM_RO_SIZE(7, 8)
+M_NONNULL_IF_NONZERO_PARAM(9, 10)
+M_PARAM_RO_SIZE(9, 10)
+eReturnValues create_And_Open_Secure_Log_File(const char* M_NONNULL                 deviceIdentifier,
+                                              size_t                                deviceIDLen,
+                                              secureFileInfo* M_NONNULL* M_NULLABLE file,
+                                              eLogFileNamingConvention              logFileNamingConvention,
+                                              const char* M_NULLABLE                logPath,
+                                              size_t                                logPathLen,
+                                              const char* M_NULLABLE                logName,
+                                              size_t                                logNameLen,
+                                              const char* M_NULLABLE                logExt,
+                                              size_t                                logExtLen)
+{
+
     // NOTE: This function does not return the name used as that is part of the
     // secureFileInfo -TJE
-)
-{
     eReturnValues result = M_ACCESS_ENUM(eReturnValues, SUCCESS);
     // Step 1: Validate required parameters
     if (deviceIdentifier == M_NULLPTR || deviceIDLen == 0 || file == M_NULLPTR || logPathLen > OPENSEA_PATH_MAX ||
