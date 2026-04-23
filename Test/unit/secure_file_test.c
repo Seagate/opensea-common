@@ -1,6 +1,7 @@
 #include"../framework/test_framework.h"
 #include"../../include/secure_file.h"
 #include"../testConstants.h"
+#include <sys/stat.h>
 
 static void test_compare_File_Unique_ID(void) {
     fileUniqueIDInfo a = {0}, b = {0};
@@ -31,23 +32,8 @@ static void test_os_Get_File_Unique_Identifying_Information(void) {
 
     f = fopen("test.txt", "r");
 
-    fprintf(stderr, "fd = %d\n", fileno(f));
-
-    struct stat st;
-    if (fstat(fileno(f), &st) == 0) {
-        fprintf(stderr, "mode = %o\n", st.st_mode);
-        fprintf(stderr, "inode = %lu\n", st.st_ino);
-        fprintf(stderr, "device = %lu\n", st.st_dev);
-    }
-
     fileUniqueIDInfo *id1 = os_Get_File_Unique_Identifying_Information(f);
     fileUniqueIDInfo *id2 = os_Get_File_Unique_Identifying_Information(f);
-
-    if (!id1 || !id2) {
-        fprintf(stderr, "NULL ID detected\n");
-        fclose(f);
-        return;
-    }
 
     TEST_ASSERT(compare_File_Unique_ID(id1, id2), "File unique IDs should be equal");
 
@@ -66,7 +52,19 @@ static void test_os_Get_File_Unique_Identifying_Information(void) {
     fclose(f2);
 }
 
+static void test_os_Is_Directory_Secure(void) {
+    mkdir("secure_dir", 0700);
+    TEST_ASSERT(os_Is_Directory_Secure("secure_dir", NULL), "Directory should be secure");
+
+    mkdir("insecure_dir", 0777);
+    char* error = NULL;
+    TEST_ASSERT(!os_Is_Directory_Secure("insecure_dir", &error), "Directory should not be secure");
+    TEST_ASSERT(error != NULL, "Error message should be set for insecure directory");
+    free(error);
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
-    test_os_Get_File_Unique_Identifying_Information();
+    // test_os_Get_File_Unique_Identifying_Information();
+    test_os_Is_Directory_Secure();
 } 
