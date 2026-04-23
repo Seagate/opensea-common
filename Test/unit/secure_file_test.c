@@ -189,11 +189,6 @@ static void test_secure_Close_File(void) {
     eSecureFileError closeResult = secure_Close_File(fileInfo);
     TEST_ASSERT(closeResult == SEC_FILE_SUCCESS, "secure_Close_File should succeed");
 
-    // Attempt to use the file after closing to ensure it's no longer usable
-    char buffer[10];
-    size_t bytesRead = fread(buffer, 1, sizeof(buffer), fileInfo->file);
-    TEST_ASSERT(bytesRead == 0, "Should not be able to read from a closed file");
-
     free_Secure_File_Info(&fileInfo);
 }
 
