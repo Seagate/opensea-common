@@ -34,7 +34,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoCheck)
+M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* M_NONNULL filetoCheck)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct stat     st;
@@ -70,7 +70,7 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoChe
     return attrs;
 }
 
-M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
+M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* M_NONNULL file)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct stat     st;
@@ -106,14 +106,14 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
     return attrs;
 }
 
-M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
+M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* M_NONNULL file)
 {
     fileUniqueIDInfo* uniqueID = M_NULLPTR;
 #if defined(UEFI_C_SOURCE)
     M_USE_UNUSED(file);
 #else
     struct stat st;
-    M_INITIALIZE_STRUCTURE(&st, sizeof(struct stat));
+    safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
     if (file != M_NULLPTR && fstat(fileno(file), &st) == 0)
     {
         // device ID and inode
@@ -504,13 +504,13 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     return secure;
 }
 
-bool os_Is_Directory_Secure(const char* fullpath, char** outputError)
+bool os_Is_Directory_Secure(const char* M_NONNULL fullpath, char** outputError)
 {
     unsigned int num_symlinks = 0U;
     return internal_OS_Is_Directory_Secure(fullpath, num_symlinks, outputError);
 }
 
-bool os_Directory_Exists(const char* pathToCheck)
+bool os_Directory_Exists(const char* M_NONNULL pathToCheck)
 {
     fileAttributes* attrs = os_Get_File_Attributes_By_Name(pathToCheck);
     if (attrs != M_NULLPTR)
@@ -525,7 +525,7 @@ bool os_Directory_Exists(const char* pathToCheck)
     }
 }
 
-bool os_File_Exists(const char* filetoCheck)
+bool os_File_Exists(const char* M_NONNULL filetoCheck)
 {
     fileAttributes* attrs = os_Get_File_Attributes_By_Name(filetoCheck);
     if (attrs != M_NULLPTR)
@@ -540,7 +540,7 @@ bool os_File_Exists(const char* filetoCheck)
     }
 }
 
-int64_t os_Get_File_Size(FILE* filePtr)
+int64_t os_Get_File_Size(FILE* M_NONNULL filePtr)
 {
     struct stat st;
     M_INITIALIZE_STRUCTURE(&st, sizeof(struct stat));
@@ -554,7 +554,7 @@ int64_t os_Get_File_Size(FILE* filePtr)
     }
 }
 
-eReturnValues os_Create_Directory(const char* filePath)
+M_PARAM_RO(1) eReturnValues os_Create_Directory(const char* M_NONNULL filePath)
 {
     // mkdirres should be an int as it is the output of the mkdir command
     // We are returning enum values, not the result of this command!
@@ -574,7 +574,7 @@ eReturnValues os_Create_Directory(const char* filePath)
 
 // Does not set group write permissions or other write permissions.
 // User gets rwx, group gets rx, other gets rx
-eReturnValues os_Create_Secure_Directory(const char* filePath)
+M_PARAM_RO(1) eReturnValues os_Create_Secure_Directory(const char* M_NONNULL filePath)
 {
     // mkdirres should be an int as it is the output of the mkdir command
     // We are returning enum values, not the result of this command!
@@ -593,7 +593,9 @@ eReturnValues os_Create_Secure_Directory(const char* filePath)
 }
 
 // https://linux.die.net/man/3/realpath
-eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[M_NONNULL_ARRAY OPENSEA_PATH_MAX])
+M_PARAM_RO(1)
+M_PARAM_WO(2)
+eReturnValues get_Full_Path(const char* M_NONNULL pathAndFile, char fullPath[M_NONNULL_ARRAY OPENSEA_PATH_MAX])
 {
     char* resolvedPath = realpath(pathAndFile, fullPath);
     if (resolvedPath != M_NULLPTR)
