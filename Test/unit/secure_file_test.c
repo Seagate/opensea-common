@@ -375,18 +375,18 @@ static void test_secure_Seek_File(void) {
     result = secure_Seek_File(fileInfo, pos, SEEK_SET);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Seek_File should succeed");
 
+    // Read the next 5 characters ("world")
+    char buffer[10] = {0};
+    eSecureFileError readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 5, NULL);
+    TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed");
+    TEST_ASSERT(strcmp(buffer, "world") == 0, "Buffer should contain 'world'");
+
     fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
     result = secure_Seek_File(fileInfo, 0, SEEK_SET);
     TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Seek_File should return failure closing file error if fileInfo is in that state");
 
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
-
-    // Read the next 5 characters ("world")
-    char buffer[10] = {0};
-    eSecureFileError readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 5, NULL);
-    TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed");
-    TEST_ASSERT(strcmp(buffer, "world") == 0, "Buffer should contain 'world'");
 }
 
 static void test_secure_Rewind_File(void) {
