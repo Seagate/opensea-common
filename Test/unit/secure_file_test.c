@@ -570,6 +570,29 @@ static void test_replace_File_Name_In_Path(void) {
     remove(filename);
 }
 
+static void test_os_Get_File_Size(void) {
+    const char* filename = "test_file_size.txt";
+    FILE* f = fopen(filename, "w");
+    fprintf(f, "hello world");
+    fclose(f);
+
+    size_t fileSize = os_Get_File_Size(filename);
+    TEST_ASSERT(fileSize == 11, "File size should be 11 bytes");
+
+    remove(filename);
+}
+
+#if defined(_WIN32)
+static void test_exact_Compare_SIDS_And_DACL_Strings(void) {
+    const char* sidAndDACL1 = "S-1-5-21-3623811015-3361044348-30300820-1013:D:(A;;FA;;;S-1-1-0)";
+    const char* sidAndDACL2 = "S-1-5-21-3623811015-3361044348-30300820-1013:D:(A;;FA;;;S-1-1-0)";
+    const char* sidAndDACL3 = "S-1-5-21-3623811015-3361044348-30300820-1014:D:(A;;FA;;;S-1-1-0)";
+
+    TEST_ASSERT(exact_Compare_SIDS_And_DACL_Strings(sidAndDACL1, sidAndDACL2), "SID and DACL strings should be considered equal");
+    TEST_ASSERT(!exact_Compare_SIDS_And_DACL_Strings(sidAndDACL1, sidAndDACL3), "SID and DACL strings should not be considered equal");
+}
+#endif
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
@@ -598,4 +621,8 @@ void run_secure_file_tests(void) {
     test_os_Create_Secure_Directory();
     test_get_Full_Path();
     test_replace_File_Name_In_Path();
+    test_os_Get_File_Size();
+    #if defined(_WIN32)
+    test_exact_Compare_SIDS_And_DACL_Strings();
+    #endif
 }
