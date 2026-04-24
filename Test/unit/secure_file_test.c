@@ -277,9 +277,35 @@ static void test_secure_Write_File(void) {
     TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
 
     const char* data = "hello";
-    eSecureFileError writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 1, strlen(data), NULL);
-    TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed");
+    // Test when fileInfo = NULL
+    eSecureFileError writeResult = secure_Write_File(NULL, (void*)data, strlen(data), 1, strlen(data), NULL);
+    TEST_ASSERT(writeResult == SEC_FILE_INVALID_SECURE_FILE, "secure_Write_File should return invalid secure file error when fileInfo is NULL");
 
+    // Test when buffer = NULL
+    writeResult = secure_Write_File(fileInfo, NULL, strlen(data), 1, strlen(data), NULL);
+    TEST_ASSERT(writeResult == SEC_FILE_INVALID_PARAMETER, "secure_Write_File should return invalid parameter error when buffer is NULL");
+
+    // Test when buffersize < elementsize * count
+    writeResult = secure_Write_File(fileInfo, (void*)data, 2, 1, strlen(data), NULL);
+    TEST_ASSERT(writeResult == SEC_FILE_BUFFER_TOO_SMALL, "secure_Write_File should return buffer too small error when buffersize is insufficient");
+
+    // Test when numberwritten is provided
+    size_t numberWritten = 0;
+    writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 1, strlen(data), &numberWritten);
+    TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed when numberwritten is provided");
+    TEST_ASSERT(numberWritten == strlen(data), "numberwritten should be set to the number of elements written");
+
+    // Test when count is 0
+    writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 1, 0, NULL);
+    TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed when count is 0");
+
+    // Test when elementsize is 0
+    writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 0, strlen(data), NULL);
+    TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed when elementsize is 0");
+
+    writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 1, strlen(data), NULL);
+    TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed");
+    
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 
