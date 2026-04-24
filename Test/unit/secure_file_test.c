@@ -544,9 +544,29 @@ static void test_get_Full_Path(void) {
     eReturnValues result = get_Full_Path(abs_path, fullpath);
     TEST_ASSERT(result == SUCCESS, "get_Full_Path should succeed");
     TEST_ASSERT(strlen(fullpath) > 0, "Full path should not be empty");
-    printf("Full path: %s\n", fullpath);
     free(abs_path);
 
+    remove(filename);
+}
+
+static void test_replace_File_Name_In_Path(void) {
+    const char* filename = "test_replace_filename.txt";
+    FILE* f = fopen(filename, "w");
+    fprintf(f, "hello");
+    fclose(f);
+
+    char fullpath[260] = {0};
+    char* abs_path = realpath(filename, NULL);
+    TEST_ASSERT(abs_path != NULL, "realpath should succeed");
+    eReturnValues result = get_Full_Path(abs_path, fullpath);
+    TEST_ASSERT(result == SUCCESS, "get_Full_Path should succeed");
+
+    char newPath[260] = {0};
+    result = replace_File_Name_In_Path(fullpath, "newfile.txt", newPath);
+    TEST_ASSERT(result == SUCCESS, "replace_File_Name_In_Path should succeed");
+    TEST_ASSERT(strstr(newPath, "newfile.txt") != NULL, "New path should contain the new filename");
+
+    free(abs_path);
     remove(filename);
 }
 
@@ -577,4 +597,5 @@ void run_secure_file_tests(void) {
     test_os_Create_Directory();
     test_os_Create_Secure_Directory();
     test_get_Full_Path();
+    test_replace_File_Name_In_Path();
 }
