@@ -230,6 +230,7 @@ static void test_secure_Read_File(void) {
 
     // Test when numberread is provided
     size_t numberRead = 0;
+    secure_Seek_File(fileInfo, 0, SEEK_SET);
     readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 5, &numberRead);
     TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed when numberread is provided");
     TEST_ASSERT(numberRead == 5, "numberread should be set to the number of elements read");
