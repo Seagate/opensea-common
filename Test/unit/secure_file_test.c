@@ -251,6 +251,12 @@ static void test_secure_Read_File(void) {
     readResult = secure_Read_File(emptyFileInfo, buffer, sizeof(buffer), 1, 5, &numberRead);
     TEST_ASSERT(readResult == SEC_FILE_READ_WRITE_ERROR, "secure_Read_File should return read/write error when reading from an empty file");
 
+    // Test when readResult is less than count (partial read)
+    numberRead = 0;
+    secure_Seek_File(fileInfo, 0, SEEK_SET);
+    readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 6, &numberRead);
+    TEST_ASSERT(readResult == SEC_FILE_END_OF_FILE_REACHED, "secure_Read_File should return end of file error when reading past the end of the file");
+
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 }
