@@ -302,10 +302,16 @@ static void test_secure_Write_File(void) {
     // Test when elementsize is 0
     writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 0, strlen(data), NULL);
     TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed when elementsize is 0");
-    
+
+    // Test for writing to a read-only file
+    fileInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 1, strlen(data), NULL);
+    TEST_ASSERT(writeResult == SEC_FILE_READ_WRITE_ERROR, "secure_Write_File should return read/write error when writing to a read-only file");
+
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 
+    // Test for writeing to a file and then reading it back to verify the contents
     const char* filename2 = "test_secure_write2.txt";
     fileInfo = secure_Open_File(filename2, "w", NULL, NULL, NULL);
 
