@@ -345,9 +345,13 @@ static void test_secure_Seek_File(void) {
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
 
+    // Test when fileInfo = NULL
+    eSecureFileError result = secure_Seek_File(NULL, 0, SEEK_SET);
+    TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_Seek_File should return invalid secure file error when fileInfo is NULL");
+
     // Move the file position to 6 (after "hello ")
     long pos = 6;
-    eSecureFileError result = secure_Seek_File(fileInfo, pos, SEEK_SET);
+    result = secure_Seek_File(fileInfo, pos, SEEK_SET);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Seek_File should succeed");
 
     // Read the next 5 characters ("world")
