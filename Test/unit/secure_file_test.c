@@ -325,6 +325,17 @@ static void test_secure_Remove_File(void) {
     free_Secure_File_Info(&fileInfo);
 }
 
+static void test_secure_Delete_File_By_Name(void) {
+    const char* filename = "test_secure_delete_by_name.txt";
+    FILE* f = fopen(filename, "w");
+    fprintf(f, "hello world");
+    fclose(f);
+
+    eSecureFileError result = secure_Delete_File_By_Name(filename, SEC_DELETE_NAME_FAIL_IF_OPEN);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Delete_File_By_Name should succeed");
+    TEST_ASSERT(!os_File_Exists(filename), "File should be removed");
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
@@ -341,4 +352,5 @@ void run_secure_file_tests(void) {
     test_secure_Rewind_File();
     test_secure_Tell_File();
     // test_secure_Remove_File();
+    test_secure_Delete_File_By_Name();
 }
