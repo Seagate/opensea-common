@@ -144,16 +144,21 @@ static void test_os_Get_File_Attributes_By_File(void) {
 static void test_free_Secure_File_Info(void) {
     secureFileInfo* fileInfo = malloc(sizeof(secureFileInfo));
     TEST_ASSERT(fileInfo != NULL, "Memory allocation for secureFileInfo successful");
+    fileUniqueIDInfo* uniqueID = malloc(sizeof(fileUniqueIDInfo));
+    TEST_ASSERT(uniqueID != NULL, "uniqueID allocation successful");
+
+    uniqueID->inode = 123;
+    uniqueID->deviceid = 456;
 
     // Set some dummy values
     fileInfo->error = SEC_FILE_SUCCESS;
     fileInfo->isValid = true;
     fileInfo->file = NULL;
     fileInfo->filename = NULL;
+    fileInfo->uniqueID = uniqueID;
     fileInfo->fileno = 0;
     fileInfo->fileSize = 0;
     fileInfo->attributes = NULL;
-    fileInfo->uniqueID = NULL;
     fileInfo->errorString = NULL;
 
     free_Secure_File_Info(&fileInfo);
