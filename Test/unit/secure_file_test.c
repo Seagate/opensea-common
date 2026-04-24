@@ -413,18 +413,26 @@ static void test_secure_SetPos_File(void) {
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
 
-    fpos_t pos;
-    eSecureFileError result = secure_GetPos_File(fileInfo, &pos);
-    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_GetPos_File should succeed");
-    long current = ftell(fileInfo->file);
-    TEST_ASSERT(current == 0, "Initial file position should be 0");
+    // Move to position 6
+    long offset = 6;
+    eSecureFileError result = secure_Seek_File(fileInfo, offset, SEEK_SET);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Seek_File should succeed");
 
-    // Set the file position to 6 (after "hello ")
-    pos = 6; // Assuming fpos_t has a member __pos that holds the position
+    fpos_t pos;
+    result = secure_GetPos_File(fileInfo, &pos);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_GetPos_File should succeed");
+
+    result = secure_Seek_File(fileInfo, 0, SEEK_SET);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Seek_File should succeed");
+
+    long current = ftell(fileInfo->file);
+    TEST_ASSERT(current == 0, "Position should now be 0");
+
+    // Restore position using fpos_t
     result = secure_SetPos_File(fileInfo, &pos);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_SetPos_File should succeed");
     current = ftell(fileInfo->file);
-    TEST_ASSERT(current == 6, "File position should be set to 6");
+    TEST_ASSERT(current == offset, "File position should be restored to 6");
 
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
