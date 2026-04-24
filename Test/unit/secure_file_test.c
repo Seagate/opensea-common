@@ -338,6 +338,11 @@ static void test_secure_Delete_File_By_Name(void) {
     TEST_ASSERT(!os_File_Exists(filename), "File should be unlinked and not exist");
     fclose(f);
 
+    // Create the file again for the next test
+    f = fopen(filename, "w");
+    fprintf(f, "hello world");
+    fclose(f);
+
     result = secure_Delete_File_By_Name(filename, SEC_DELETE_NAME_FAIL_IF_OPEN);
     printf("Result of deleting non-existent file: %d\n", result);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Delete_File_By_Name should succeed");
