@@ -71,11 +71,9 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a ptr is a null pointer
+    //! - \a count or \a size is > RSIZE_MAX
     //!
-    //! - \a count or \a size is zero
-    //!
-    //! - \a compare is a null pointer
+    //! - \a ptr or \a compare is a null pointer (unless count is zero)
     M_INLINE errno_t safe_qsort(void* ptr, rsize_t count, rsize_t size, comparefn compare)
     {
         return safe_qsort_impl(ptr, count, size, compare, __FILE__, __func__, __LINE__,
@@ -97,11 +95,9 @@ extern "C"
 //!
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
-//! - \a ptr is a null pointer
+//! - \a count or \a size is > RSIZE_MAX
 //!
-//! - \a count or \a size is zero
-//!
-//! - \a compare is a null pointer
+//! - \a ptr or \a compare is a null pointer (unless count is zero)
 #    define safe_qsort(ptr, count, size, compare)                                                                      \
         safe_qsort_impl(ptr, count, size, compare, __FILE__, __func__, __LINE__,                                       \
                         "safe_qsort(" #ptr ", " #count ", " #size ", " #compare ")")
@@ -124,11 +120,9 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a ptr is a null pointer
+    //! - \a count or \a size is > RSIZE_MAX
     //!
-    //! - \a count or \a size is zero
-    //!
-    //! - \a compare is a null pointer
+    //! - \a ptr or \a compare is a null pointer (unless count is zero)
     M_INLINE errno_t safe_qsort_context(void* ptr, rsize_t count, rsize_t size, ctxcomparefn compare, void* context)
     {
         return safe_qsort_context_impl(ptr, count, size, compare, context, __FILE__, __func__, __LINE__,
@@ -151,11 +145,9 @@ extern "C"
 //!
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
-//! - \a ptr is a null pointer
+//! - \a count or \a size is > RSIZE_MAX
 //!
-//! - \a count or \a size is zero
-//!
-//! - \a compare is a null pointer
+//! - \a ptr or \a compare is a null pointer (unless count is zero)
 #    define safe_qsort_context(ptr, count, size, compare, context)                                                     \
         safe_qsort_context_impl(ptr, count, size, compare, context, __FILE__, __func__, __LINE__,                      \
                                 "safe_qsort_context(" #ptr ", " #count ", " #size ", " #compare ", " #context ")")
@@ -178,13 +170,9 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a key is a null pointer
+    //! - \a count or \a size is > RSIZE_MAX
     //!
-    //! - \a ptr is a null pointer
-    //!
-    //! - \a count or \a size is zero
-    //!
-    //! - \a compare is a null pointer
+    //! - \a key or \a ptr or \a compare is a null pointer (unless count is zero)
     M_INLINE void* safe_bsearch(const void* key, const void* ptr, rsize_t count, rsize_t size, comparefn compare)
     {
         return safe_bsearch_impl(key, ptr, count, size, compare, __FILE__, __func__, __LINE__,
@@ -207,13 +195,9 @@ extern "C"
 //!
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
-//! - \a key is a null pointer
+//! - \a count or \a size is > RSIZE_MAX
 //!
-//! - \a ptr is a null pointer
-//!
-//! - \a count or \a size is zero
-//!
-//! - \a compare is a null pointer
+//! - \a key or \a ptr or \a compare is a null pointer (unless count is zero)
 #    define safe_bsearch(key, ptr, count, size, compare)                                                               \
         safe_bsearch_impl(key, ptr, count, size, compare, __FILE__, __func__, __LINE__,                                \
                           "safe_bsearch(" #key ", " #ptr ", " #count ", " #size ", " #compare ")")
@@ -239,13 +223,9 @@ extern "C"
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
-    //! - \a key is a null pointer
+    //! - \a count or \a size is > RSIZE_MAX
     //!
-    //! - \a ptr is a null pointer
-    //!
-    //! - \a count or \a size is zero
-    //!
-    //! - \a compare is a null pointer
+    //! - \a key or \a ptr or \a compare is a null pointer (unless count is zero)
     M_INLINE void* safe_bsearch_context(const void*  key,
                                         const void*  ptr,
                                         rsize_t      count,
@@ -275,13 +255,9 @@ extern "C"
 //!
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
-//! - \a key is a null pointer
+//! - \a count or \a size is > RSIZE_MAX
 //!
-//! - \a ptr is a null pointer
-//!
-//! - \a count or \a size is zero
-//!
-//! - \a compare is a null pointer
+//! - \a key or \a ptr or \a compare is a null pointer (unless count is zero)
 #    define safe_bsearch_context(key, ptr, count, size, compare, context)                                              \
         safe_bsearch_context_impl(key, ptr, count, size, compare, context, __FILE__, __func__, __LINE__,               \
                                   "safe_bsearch_context(" #key ", " #ptr ", " #count ", " #size ", " #compare          \

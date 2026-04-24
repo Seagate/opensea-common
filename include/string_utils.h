@@ -26,6 +26,42 @@ extern "C"
 {
 #endif
 
+//! \def STRCPY_IS_STRCPY_NOT_STRMOVE
+//! \brief Controls the default behavior of safe_strcpy, safe_strcat, safe_strncat, and safe_strncpy functions.
+//!
+//! When STRCPY_IS_STRCPY_NOT_STRMOVE is defined:
+//!   - safe_strcpy, safe_strcat, safe_strncat, safe_strncpy behave strictly like the C11 annex K functions
+//!   - They do not allow overlapping source and destination buffers
+//!   - Overlapping ranges are detected as an error at runtime
+//!
+//! When STRCPY_IS_STRCPY_NOT_STRMOVE is NOT defined (default):
+//!   - safe_strcpy routes to safe_strmove (memmove-like behavior)
+//!   - safe_strcat routes to safe_strcatmove (allows overlaps)
+//!   - safe_strncat routes to safe_strncatmove (allows overlaps)
+//!   - safe_strncpy routes to safe_strnmove (allows overlaps)
+//!   - Overlapping source and destination buffers are allowed and handled safely
+//!
+//! This flag follows the same pattern as MEMCPY_IS_MEMCPY_NOT_MEMMOVE for memory functions.
+//! See also: safe_strcpy_no_overlap, safe_strcat_no_overlap, safe_strncat_no_overlap, safe_strncpy_no_overlap for explicit variants.
+// #define STRCPY_IS_STRCPY_NOT_STRMOVE
+
+//! \def ALLOW_NO_OVERLAP_SUGGESTIONS
+//! \brief Controls whether compile-time diagnostics suggest performance optimization using _no_overlap variants.
+//!
+//! When ALLOW_NO_OVERLAP_SUGGESTIONS is defined:
+//!   - M_DIAG_WARNING messages are emitted for memory and string functions when compile-time analysis
+//!     proves that no overlap exists between source and destination buffers
+//!   - These warnings suggest using the _no_overlap variant for better performance
+//!   - Example: "No overlap detected; consider safe_strcpy_no_overlap for better performance"
+//!
+//! When ALLOW_NO_OVERLAP_SUGGESTIONS is NOT defined (default):
+//!   - No performance optimization suggestions are emitted
+//!   - Only errors (M_DIAG_ERROR) for actual problems are reported
+//!
+//! This flag is useful during performance profiling and optimization phases to identify
+//! opportunities for optimization where non-overlapping variants could be safely used.
+// #define ALLOW_NO_OVERLAP_SUGGESTIONS
+
 // Including strings.h to have string case compare functionality and working
 // around Windows.
 // TODO: improve this check as needed for other systems.
@@ -312,6 +348,10 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! \param[in] destsz maximum number of characters to write, typically the size of the destination buffer
     //! \param[in] src pointer to the null-terminated byte string to copy from
     //! \return Zero on success, or an error code on failure.
+    //! \note By default, this function allows overlapping source and destination buffers (memmove-like behavior).
+    //! When STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlapping buffers are detected as an error.
+    //! Use safe_strcpy_no_overlap when you need to explicitly require non-overlapping buffers for performance.
+    //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a src is a null pointer
@@ -322,11 +362,18 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //!
     //! - \a destsz is less than or equal to safe_strnlen(src, destsz); truncation would occur
     //!
-    //! - overlap would occur between the source and destination strings.
+    //! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between the source and destination strings.
+#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
     M_INLINE errno_t safe_strcpy(char* M_RESTRICT M_NONNULL dest, rsize_t destsz, const char* M_RESTRICT M_NONNULL src)
     {
         return safe_strcpy_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strcpy(dest, destsz, src)");
     }
+#else
+    M_INLINE errno_t safe_strcpy(char* M_NONNULL dest, rsize_t destsz, const char* M_NONNULL src)
+    {
+        return safe_strmove_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strcpy(dest, destsz, src)");
+    }
+#endif
 #else
 //! \def safe_strcpy
 //! \brief safe_strcpy that works like C11 annex K's strcpy_s
@@ -338,6 +385,10 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //! \param[in] destsz maximum number of characters to write, typically the size of the destination buffer
 //! \param[in] src pointer to the null-terminated byte string to copy from
 //! \return Zero on success, or an error code on failure.
+//! \note By default, this function allows overlapping source and destination buffers (memmove-like behavior).
+//! When STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlapping buffers are detected as an error.
+//! Use safe_strcpy_no_overlap when you need to explicitly require non-overlapping buffers for performance.
+//!
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
 //! - \a src is a null pointer
@@ -348,10 +399,16 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //!
 //! - \a destsz is less than or equal to safe_strnlen(src, destsz); truncation would occur
 //!
-//! - overlap would occur between the source and destination strings.
+//! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between the source and destination strings.
+#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
 #    define safe_strcpy(dest, destsz, src)                                                                             \
         safe_strcpy_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                              \
                          "safe_strcpy(" #dest ", " #destsz ", " #src ")")
+#else
+#    define safe_strcpy(dest, destsz, src)                                                                             \
+        safe_strmove_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                             \
+                          "safe_strcpy(" #dest ", " #destsz ", " #src ")")
+#endif
 #endif
 
 #if defined(DEV_ENVIRONMENT)
@@ -426,6 +483,10 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! \param[in] src pointer to the null-terminated byte string to copy from
     //! \param[in] count maximum number of characters to copy
     //! \return Zero on success, or an error code on failure.
+    //! \note By default, this function allows overlapping source and destination buffers (memmove-like behavior).
+    //! When STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlapping buffers are detected as an error.
+    //! Use safe_strncpy_no_overlap when you need to explicitly require non-overlapping buffers for performance.
+    //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a src is a null pointer
@@ -441,7 +502,8 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! - \a count is greater than or equal to \a destsz, but \a destsz is less than or equal to
     //!   strnlen_s(src, count); truncation would occur.
     //!
-    //! - overlap would occur between the source and destination strings.
+    //! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between the source and destination strings.
+#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
     M_INLINE errno_t safe_strncpy(char* M_RESTRICT M_NONNULL       dest,
                                   rsize_t                          destsz,
                                   const char* M_RESTRICT M_NONNULL src,
@@ -450,6 +512,16 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
         return safe_strncpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
                                  "safe_strncpy(dest, destsz, src, count)");
     }
+#else
+    M_INLINE errno_t safe_strncpy(char* M_NONNULL       dest,
+                                  rsize_t              destsz,
+                                  const char* M_NONNULL src,
+                                  rsize_t              count)
+    {
+        return safe_strnmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
+                                  "safe_strncpy(dest, destsz, src, count)");
+    }
+#endif
 #else
 //! \def safe_strncpy
 //! \brief safe_strncpy works like C11 annex K's strncpy_s
@@ -462,6 +534,10 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //! \param[in] src pointer to the null-terminated byte string to copy from
 //! \param[in] count maximum number of characters to copy
 //! \return Zero on success, or an error code on failure.
+//! \note By default, this function allows overlapping source and destination buffers (memmove-like behavior).
+//! When STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlapping buffers are detected as an error.
+//! Use safe_strncpy_no_overlap when you need to explicitly require non-overlapping buffers for performance.
+//!
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
 //! - \a src is a null pointer
@@ -477,10 +553,16 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //! - \a count is greater than or equal to \a destsz, but \a destsz is less than or equal to
 //!   strnlen_s(src, count); truncation would occur.
 //!
-//! - overlap would occur between the source and destination strings.
+//! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between the source and destination strings.
+#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
 #    define safe_strncpy(dest, destsz, src, count)                                                                     \
         safe_strncpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                      \
                           "safe_strncpy(" #dest ", " #destsz ", " #src ", " #count ")")
+#else
+#    define safe_strncpy(dest, destsz, src, count)                                                                     \
+        safe_strnmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                     \
+                           "safe_strncpy(" #dest ", " #destsz ", " #src ", " #count ")")
+#endif
 #endif
 
 #if defined(DEV_ENVIRONMENT)
@@ -566,6 +648,10 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! \param[in] destsz maximum number of characters to write, typically the size of the destination buffer
     //! \param[in] src pointer to the null-terminated byte string to copy from
     //! \return Zero on success, or an error code on failure.
+    //! \note By default, this function allows overlapping source and destination buffers (memmove-like behavior).
+    //! When STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlapping buffers are detected as an error.
+    //! Use safe_strcat_no_overlap when you need to explicitly require non-overlapping buffers for performance.
+    //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a src is a null pointer
@@ -578,11 +664,18 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //!
     //! - truncation would occur due to not enough space in \a dest to concatenate \a src
     //!
-    //! - overlap would occur between \a src and \a dest strings
+    //! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between \a src and \a dest strings
+#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
     M_INLINE errno_t safe_strcat(char* M_RESTRICT M_NONNULL dest, rsize_t destsz, const char* M_RESTRICT M_NONNULL src)
     {
         return safe_strcat_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strcat(dest, destsz, src)");
     }
+#else
+    M_INLINE errno_t safe_strcat(char* M_NONNULL dest, rsize_t destsz, const char* M_NONNULL src)
+    {
+        return safe_strcatmove_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strcat(dest, destsz, src)");
+    }
+#endif
 #else
 //! \def safe_strcat
 //! \brief safe_strcat works like C11 annex K's strcat_s
@@ -595,6 +688,10 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //! \param[in] destsz maximum number of characters to write, typically the size of the destination buffer
 //! \param[in] src pointer to the null-terminated byte string to copy from
 //! \return Zero on success, or an error code on failure.
+//! \note By default, this function allows overlapping source and destination buffers (memmove-like behavior).
+//! When STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlapping buffers are detected as an error.
+//! Use safe_strcat_no_overlap when you need to explicitly require non-overlapping buffers for performance.
+//!
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
 //! - \a src is a null pointer
@@ -607,10 +704,16 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //!
 //! - truncation would occur due to not enough space in \a dest to concatenate \a src
 //!
-//! - overlap would occur between \a src and \a dest strings
+//! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between \a src and \a dest strings
+#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
 #    define safe_strcat(dest, destsz, src)                                                                             \
         safe_strcat_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                              \
                          "safe_strcat(" #dest ", " #destsz ", " #src ")")
+#else
+#    define safe_strcat(dest, destsz, src)                                                                             \
+        safe_strcatmove_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                          \
+                             "safe_strcat(" #dest ", " #destsz ", " #src ")")
+#endif
 #endif
 
 #if defined(DEV_ENVIRONMENT)
@@ -630,6 +733,10 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! \param[in] src pointer to the null-terminated byte string to copy from
     //! \param[in] count maximum number of characters to copy
     //! \return Zero on success, or an error code on failure.
+    //! \note By default, this function allows overlapping source and destination buffers (memmove-like behavior).
+    //! When STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlapping buffers are detected as an error.
+    //! Use safe_strncat_no_overlap when you need to explicitly require non-overlapping buffers for performance.
+    //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
     //! - \a src is a null pointer
@@ -642,7 +749,8 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //!
     //! - truncation would occur due to not enough space in \a dest to concatenate \a src or \a count bytes of \a src
     //!
-    //! - overlap would occur between \a src and \a dest strings
+    //! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between \a src and \a dest strings
+#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
     M_INLINE errno_t safe_strncat(char* M_RESTRICT M_NONNULL       dest,
                                   rsize_t                          destsz,
                                   const char* M_RESTRICT M_NONNULL src,
@@ -651,6 +759,16 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
         return safe_strncat_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
                                  "safe_strncat(dest, destsz, src, count)");
     }
+#else
+    M_INLINE errno_t safe_strncat(char* M_NONNULL       dest,
+                                  rsize_t              destsz,
+                                  const char* M_NONNULL src,
+                                  rsize_t              count)
+    {
+        return safe_strncatmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
+                                     "safe_strncat(dest, destsz, src, count)");
+    }
+#endif
 #else
 //! \def safe_strncat
 //! \brief safe_strncat works like C11 annex K's strncat_s
@@ -665,6 +783,10 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //! \param[in] src pointer to the null-terminated byte string to copy from
 //! \param[in] count maximum number of characters to copy
 //! \return Zero on success, or an error code on failure.
+//! \note By default, this function allows overlapping source and destination buffers (memmove-like behavior).
+//! When STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlapping buffers are detected as an error.
+//! Use safe_strncat_no_overlap when you need to explicitly require non-overlapping buffers for performance.
+//!
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
 //! - \a src is a null pointer
@@ -677,10 +799,202 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //!
 //! - truncation would occur due to not enough space in \a dest to concatenate \a src or \a count bytes of \a src
 //!
-//! - overlap would occur between \a src and \a dest strings
+//! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between \a src and \a dest strings
+#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
 #    define safe_strncat(dest, destsz, src, count)                                                                     \
         safe_strncat_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                      \
                           "safe_strncat(" #dest ", " #destsz ", " #src ", " #count ")")
+#else
+#    define safe_strncat(dest, destsz, src, count)                                                                     \
+        safe_strncatmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                  \
+                              "safe_strncat(" #dest ", " #destsz ", " #src ", " #count ")")
+#endif
+#endif
+
+#if defined(DEV_ENVIRONMENT)
+    //! \fn errno_t safe_strcpy_no_overlap(char* M_RESTRICT       dest,
+    //!                                    rsize_t                destsz,
+    //!                                    const char* M_RESTRICT src)
+    //! \brief safe_strcpy variant for non-overlapping buffers with explicit performance intent.
+    //!
+    //! This function copies a null-terminated string from \a src to \a dest,
+    //! with the explicit requirement that source and destination must not overlap.
+    //! Use this when you know for certain that buffers don't overlap and need the performance benefit.
+    //!
+    //! This is semantically equivalent to safe_strcpy when STRCPY_IS_STRCPY_NOT_STRMOVE is defined,
+    //! but makes the intent clear when called explicitly.
+    //!
+    //! \param[in] dest pointer to the character array to write to
+    //! \param[in] destsz maximum number of characters to write, typically the size of the destination buffer
+    //! \param[in] src pointer to the null-terminated byte string to copy from
+    //! \return Zero on success, or an error code on failure.
+    //! \note Overlapping buffers will be detected and reported as an error.
+    M_INLINE errno_t safe_strcpy_no_overlap(char* M_RESTRICT M_NONNULL dest, rsize_t destsz, const char* M_RESTRICT M_NONNULL src)
+    {
+        return safe_strcpy_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strcpy_no_overlap(dest, destsz, src)");
+    }
+#else
+//! \def safe_strcpy_no_overlap
+//! \brief safe_strcpy variant for non-overlapping buffers with explicit performance intent.
+//!
+//! This function copies a null-terminated string from \a src to \a dest,
+//! with the explicit requirement that source and destination must not overlap.
+//! Use this when you know for certain that buffers don't overlap and need the performance benefit.
+//!
+//! This is semantically equivalent to safe_strcpy when STRCPY_IS_STRCPY_NOT_STRMOVE is defined,
+//! but makes the intent clear when called explicitly.
+//!
+//! \param[in] dest pointer to the character array to write to
+//! \param[in] destsz maximum number of characters to write, typically the size of the destination buffer
+//! \param[in] src pointer to the null-terminated byte string to copy from
+//! \return Zero on success, or an error code on failure.
+//! \note Overlapping buffers will be detected and reported as an error.
+#    define safe_strcpy_no_overlap(dest, destsz, src)                                                                   \
+        safe_strcpy_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                              \
+                         "safe_strcpy_no_overlap(" #dest ", " #destsz ", " #src ")")
+#endif
+
+#if defined(DEV_ENVIRONMENT)
+    //! \fn errno_t safe_strcat_no_overlap(char* M_RESTRICT       dest,
+    //!                                    rsize_t                destsz,
+    //!                                    const char* M_RESTRICT src)
+    //! \brief safe_strcat variant for non-overlapping buffers with explicit performance intent.
+    //!
+    //! This function concatenates a null-terminated string from \a src to the end of \a dest,
+    //! with the explicit requirement that source and destination must not overlap.
+    //! Use this when you know for certain that buffers don't overlap and need the performance benefit.
+    //!
+    //! This is semantically equivalent to safe_strcat when STRCPY_IS_STRCPY_NOT_STRMOVE is defined,
+    //! but makes the intent clear when called explicitly.
+    //!
+    //! \param[in] dest pointer to the character array to write to
+    //! \param[in] destsz maximum number of characters to write, typically the size of the destination buffer
+    //! \param[in] src pointer to the null-terminated byte string to copy from
+    //! \return Zero on success, or an error code on failure.
+    //! \note Overlapping buffers will be detected and reported as an error.
+    M_INLINE errno_t safe_strcat_no_overlap(char* M_RESTRICT M_NONNULL dest, rsize_t destsz, const char* M_RESTRICT M_NONNULL src)
+    {
+        return safe_strcat_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strcat_no_overlap(dest, destsz, src)");
+    }
+#else
+//! \def safe_strcat_no_overlap
+//! \brief safe_strcat variant for non-overlapping buffers with explicit performance intent.
+//!
+//! This function concatenates a null-terminated string from \a src to the end of \a dest,
+//! with the explicit requirement that source and destination must not overlap.
+//! Use this when you know for certain that buffers don't overlap and need the performance benefit.
+//!
+//! This is semantically equivalent to safe_strcat when STRCPY_IS_STRCPY_NOT_STRMOVE is defined,
+//! but makes the intent clear when called explicitly.
+//!
+//! \param[in] dest pointer to the character array to write to
+//! \param[in] destsz maximum number of characters to write, typically the size of the destination buffer
+//! \param[in] src pointer to the null-terminated byte string to copy from
+//! \return Zero on success, or an error code on failure.
+//! \note Overlapping buffers will be detected and reported as an error.
+#    define safe_strcat_no_overlap(dest, destsz, src)                                                                   \
+        safe_strcat_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                              \
+                         "safe_strcat_no_overlap(" #dest ", " #destsz ", " #src ")")
+#endif
+
+#if defined(DEV_ENVIRONMENT)
+    //! \fn errno_t safe_strncpy_no_overlap(char* M_RESTRICT       dest,
+    //!                                     rsize_t                destsz,
+    //!                                     const char* M_RESTRICT src,
+    //!                                     rsize_t                count)
+    //! \brief safe_strncpy variant for non-overlapping buffers with explicit performance intent.
+    //!
+    //! This function copies at most \a count characters from \a src to \a dest,
+    //! with the explicit requirement that source and destination must not overlap.
+    //! Use this when you know for certain that buffers don't overlap and need the performance benefit.
+    //!
+    //! This is semantically equivalent to safe_strncpy when STRCPY_IS_STRCPY_NOT_STRMOVE is defined,
+    //! but makes the intent clear when called explicitly.
+    //!
+    //! \param[in] dest pointer to the character array to write to
+    //! \param[in] destsz maximum number of characters to write, typically the size of the destination buffer
+    //! \param[in] src pointer to the null-terminated byte string to copy from
+    //! \param[in] count maximum number of characters to copy
+    //! \return Zero on success, or an error code on failure.
+    //! \note Overlapping buffers will be detected and reported as an error.
+    M_INLINE errno_t safe_strncpy_no_overlap(char* M_RESTRICT M_NONNULL       dest,
+                                             rsize_t                          destsz,
+                                             const char* M_RESTRICT M_NONNULL src,
+                                             rsize_t                          count)
+    {
+        return safe_strncpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
+                                 "safe_strncpy_no_overlap(dest, destsz, src, count)");
+    }
+#else
+//! \def safe_strncpy_no_overlap
+//! \brief safe_strncpy variant for non-overlapping buffers with explicit performance intent.
+//!
+//! This function copies at most \a count characters from \a src to \a dest,
+//! with the explicit requirement that source and destination must not overlap.
+//! Use this when you know for certain that buffers don't overlap and need the performance benefit.
+//!
+//! This is semantically equivalent to safe_strncpy when STRCPY_IS_STRCPY_NOT_STRMOVE is defined,
+//! but makes the intent clear when called explicitly.
+//!
+//! \param[in] dest pointer to the character array to write to
+//! \param[in] destsz maximum number of characters to write, typically the size of the destination buffer
+//! \param[in] src pointer to the null-terminated byte string to copy from
+//! \param[in] count maximum number of characters to copy
+//! \return Zero on success, or an error code on failure.
+//! \note Overlapping buffers will be detected and reported as an error.
+#    define safe_strncpy_no_overlap(dest, destsz, src, count)                                                           \
+        safe_strncpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                      \
+                          "safe_strncpy_no_overlap(" #dest ", " #destsz ", " #src ", " #count ")")
+#endif
+
+#if defined(DEV_ENVIRONMENT)
+    //! \fn errno_t safe_strncat_no_overlap(char* M_RESTRICT       dest,
+    //!                                     rsize_t                destsz,
+    //!                                     const char* M_RESTRICT src,
+    //!                                     rsize_t                count)
+    //! \brief safe_strncat variant for non-overlapping buffers with explicit performance intent.
+    //!
+    //! This function concatenates at most \a count characters from \a src to the end of \a dest,
+    //! with the explicit requirement that source and destination must not overlap.
+    //! Use this when you know for certain that buffers don't overlap and need the performance benefit.
+    //!
+    //! This is semantically equivalent to safe_strncat when STRCPY_IS_STRCPY_NOT_STRMOVE is defined,
+    //! but makes the intent clear when called explicitly.
+    //!
+    //! \param[in] dest pointer to the character array to write to
+    //! \param[in] destsz maximum number of characters to write, typically the size of the destination buffer
+    //! \param[in] src pointer to the null-terminated byte string to copy from
+    //! \param[in] count maximum number of characters to copy
+    //! \return Zero on success, or an error code on failure.
+    //! \note Overlapping buffers will be detected and reported as an error.
+    M_INLINE errno_t safe_strncat_no_overlap(char* M_RESTRICT M_NONNULL       dest,
+                                             rsize_t                          destsz,
+                                             const char* M_RESTRICT M_NONNULL src,
+                                             rsize_t                          count)
+    {
+        return safe_strncat_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
+                                 "safe_strncat_no_overlap(dest, destsz, src, count)");
+    }
+#else
+//! \def safe_strncat_no_overlap
+//! \brief safe_strncat variant for non-overlapping buffers with explicit performance intent.
+//!
+//! This function concatenates at most \a count characters from \a src to the end of \a dest,
+//! with the explicit requirement that source and destination must not overlap.
+//! Use this when you know for certain that buffers don't overlap and need the performance benefit.
+//!
+//! This is semantically equivalent to safe_strncat when STRCPY_IS_STRCPY_NOT_STRMOVE is defined,
+//! but makes the intent clear when called explicitly.
+//!
+//! \param[in] dest pointer to the character array to write to
+//! \param[in] destsz maximum number of characters to write, typically the size of the destination buffer
+//! \param[in] src pointer to the null-terminated byte string to copy from
+//! \param[in] count maximum number of characters to copy
+//! \return Zero on success, or an error code on failure.
+//! \note Overlapping buffers will be detected and reported as an error.
+#    define safe_strncat_no_overlap(dest, destsz, src, count)                                                           \
+        safe_strncat_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                      \
+                          "safe_strncat_no_overlap(" #dest ", " #destsz ", " #src ", " #count ")")
 #endif
 
     //! \fn char* common_String_Concat_Len(char* destination, size_t
@@ -1012,7 +1326,8 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! \brief remove the whitespace at the beginning and end of a string of a specified length
     //! \param[out] stringToChange a pointer to the data containing a string
     //! that needs to have the beginning whitespace removed
-    //! \param[in] stringlen total length of the string pointed to by \a stringToChange
+    //! \param[in] stringlen total length of the string pointed to by \a stringToChange. This will be accessed as
+    //! stringToChange[stringlen-1], so stringlen must be greater than 0.
     M_PARAM_RW_SIZE(1, 2)
     void remove_Leading_And_Trailing_Whitespace_Len(char* M_NONNULL stringToChange, size_t stringlen)
         // clang-format off

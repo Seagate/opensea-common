@@ -60,10 +60,15 @@ static int is_valid_unsigned_char_range(int c)
 
 int safe_isascii(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(is_ASCII(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return is_ASCII(C_CAST(unsigned char, c));
     }
     else
     {
@@ -74,10 +79,15 @@ int safe_isascii(int c)
 
 int safe_isalnum(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isalnum(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isalnum(C_CAST(unsigned char, c));
     }
     else
     {
@@ -88,10 +98,15 @@ int safe_isalnum(int c)
 
 int safe_isalpha(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isalpha(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isalpha(C_CAST(unsigned char, c));
     }
     else
     {
@@ -102,10 +117,15 @@ int safe_isalpha(int c)
 
 int safe_islower(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(islower(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return islower(C_CAST(unsigned char, c));
     }
     else
     {
@@ -135,10 +155,15 @@ int safe_tolower(int c)
 
 int safe_isupper(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isupper(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isupper(C_CAST(unsigned char, c));
     }
     else
     {
@@ -168,10 +193,15 @@ int safe_toupper(int c)
 
 int safe_isdigit(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isdigit(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isdigit(C_CAST(unsigned char, c));
     }
     else
     {
@@ -182,10 +212,15 @@ int safe_isdigit(int c)
 
 int safe_isxdigit(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isxdigit(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isxdigit(C_CAST(unsigned char, c));
     }
     else
     {
@@ -196,10 +231,15 @@ int safe_isxdigit(int c)
 
 int safe_iscntrl(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(iscntrl(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return iscntrl(C_CAST(unsigned char, c));
     }
     else
     {
@@ -210,10 +250,15 @@ int safe_iscntrl(int c)
 
 int safe_isgraph(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isgraph(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isgraph(C_CAST(unsigned char, c));
     }
     else
     {
@@ -224,10 +269,15 @@ int safe_isgraph(int c)
 
 int safe_isspace(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isspace(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isspace(C_CAST(unsigned char, c));
     }
     else
     {
@@ -241,10 +291,15 @@ int safe_isspace(int c)
 // this check-TJE
 int safe_isblank(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isblank(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isblank(C_CAST(unsigned char, c));
     }
     else
     {
@@ -255,10 +310,15 @@ int safe_isblank(int c)
 
 int safe_isprint(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isprint(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isprint(C_CAST(unsigned char, c));
     }
     else
     {
@@ -269,10 +329,15 @@ int safe_isprint(int c)
 
 int safe_ispunct(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(ispunct(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return ispunct(C_CAST(unsigned char, c));
     }
     else
     {
@@ -290,7 +355,7 @@ errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
                          const char*            expression)
 {
     errno_t           error  = 0;
-    size_t            srclen = safe_strnlen(src, destsz);
+    size_t            srclen = safe_strnlen(src, RSIZE_MAX);
     constraintEnvInfo envInfo;
     if (dest == M_NULLPTR)
     {
@@ -369,9 +434,9 @@ errno_t safe_strmove_impl(char*       dest,
                           int         line,
                           const char* expression)
 {
-    errno_t           error  = 0;
-    size_t            srclen = safe_strnlen(src, destsz);
+    size_t            srclen = safe_strnlen(src, RSIZE_MAX);
     constraintEnvInfo envInfo;
+    errno_t           error  = 0;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -805,6 +870,178 @@ errno_t safe_strncat_impl(char* M_RESTRICT       dest,
     }
 }
 
+errno_t safe_strcatmove_impl(char*       dest,
+                             rsize_t     destsz,
+                             const char* src,
+                             const char* file,
+                             const char* function,
+                             int         line,
+                             const char* expression)
+{
+    errno_t           error    = 0;
+    size_t            srclen   = safe_strnlen(src, RSIZE_MAX);
+    char*             destnull = M_NULLPTR;
+    constraintEnvInfo envInfo;
+    if (dest == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strcatmove: dest is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (src == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strcatmove: src is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        if (destsz > RSIZE_T_C(0) && destsz <= RSIZE_MAX)
+        {
+            dest[0] = 0;
+        }
+        errno = error;
+        return error;
+    }
+    else if (destsz == RSIZE_T_C(0))
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strcatmove: destsz is zero",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (destsz > RSIZE_MAX)
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strcatmove: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (M_NULLPTR == (destnull = M_REINTERPRET_CAST(char*, memchr(dest, '\0', destsz))))
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strcatmove: No NULL terminator found in dest",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if ((destsz - (M_REINTERPRET_CAST(uintptr_t, destnull) - M_REINTERPRET_CAST(uintptr_t, dest))) <=
+             srclen) // truncation
+    {
+        dest[0] = 0;
+        error   = ERANGE;
+        invoke_Constraint_Handler("safe_strcatmove: destsz too small. Src will be truncated.",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else
+    {
+        // Unlike safe_strcat, we allow overlapping ranges by using safe_memcmove
+        error = safe_memcmove(destnull, destsz - (C_CAST(uintptr_t, destnull) - C_CAST(uintptr_t, dest)), src, '\0',
+                              srclen + SIZE_T_C(1));
+        destnull[srclen] = '\0'; // ensuring NULL termination
+        errno            = error;
+        return error;
+    }
+}
+
+errno_t safe_strncatmove_impl(char*       dest,
+                              rsize_t     destsz,
+                              const char* src,
+                              rsize_t     count,
+                              const char* file,
+                              const char* function,
+                              int         line,
+                              const char* expression)
+{
+    errno_t           error    = 0;
+    size_t            srclen   = safe_strnlen(src, destsz);
+    char*             destnull = M_NULLPTR;
+    constraintEnvInfo envInfo;
+    if (dest == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strncatmove: dest is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (src == M_NULLPTR)
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strncatmove: src is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        if (destsz > RSIZE_T_C(0) && destsz <= RSIZE_MAX)
+        {
+            dest[0] = 0;
+        }
+        errno = error;
+        return error;
+    }
+    else if (destsz == RSIZE_T_C(0))
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strncatmove: destsz is zero",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (destsz > RSIZE_MAX)
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strncatmove: destsz > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (count == RSIZE_T_C(0))
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strncatmove: count is zero",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (count > RSIZE_MAX)
+    {
+        error = ERANGE;
+        invoke_Constraint_Handler("safe_strncatmove: count > RSIZE_MAX",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (M_NULLPTR == (destnull = M_REINTERPRET_CAST(char*, memchr(dest, '\0', destsz))))
+    {
+        error = EINVAL;
+        invoke_Constraint_Handler("safe_strncatmove: No NULL terminator found in dest",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else if (((destsz - (M_REINTERPRET_CAST(uintptr_t, destnull) - M_REINTERPRET_CAST(uintptr_t, dest))) <= srclen) ||
+             ((destsz - (M_REINTERPRET_CAST(uintptr_t, destnull) - M_REINTERPRET_CAST(uintptr_t, dest))) <=
+              count)) // truncation
+    {
+        dest[0] = 0;
+        error   = ERANGE;
+        invoke_Constraint_Handler("safe_strncatmove: destsz too small. Src will be truncated.",
+                                  set_Env_Info(&envInfo, file, function, expression, line), error);
+        errno = error;
+        return error;
+    }
+    else
+    {
+        // Unlike safe_strncat, we allow overlapping ranges by using safe_memcmove
+        error =
+            safe_memcmove(destnull, destsz - (C_CAST(uintptr_t, destnull) - C_CAST(uintptr_t, dest)), src, '\0', count);
+        destnull[count] = '\0'; // ensuring NULL termination
+        errno           = error;
+        return error;
+    }
+}
+
 size_t safe_strnlen_impl(const char* string, size_t n)
 {
 #if defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
@@ -841,8 +1078,9 @@ size_t safe_strnlen_impl(const char* string, size_t n)
 #if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
 M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size)
 {
-    size_t length = memchr(src, '\0', size) != M_NULLPTR
-                        ? C_CAST(size_t, C_CAST(uintptr_t, memchr(src, '\0', size)) - C_CAST(uintptr_t, src))
+    void * nullpos = memchr(src, '\0', size);
+    size_t length = nullpos != M_NULLPTR
+                        ? C_CAST(size_t, C_CAST(uintptr_t, nullpos) - C_CAST(uintptr_t, src))
                         : SIZE_T_C(0);
     char*  dupstr = M_REINTERPRET_CAST(char*, malloc(length + 1));
     if (dupstr == M_NULLPTR)
@@ -900,7 +1138,7 @@ errno_t safe_strdup_impl(char**      dup,
             errno = error;
             return error;
         }
-        *dup = M_REINTERPRET_CAST(char*, malloc(srclen + RSIZE_T_C(1)));
+        *dup = M_REINTERPRET_CAST(char*, safe_calloc(srclen + RSIZE_T_C(1), sizeof(char)));
         if (*dup != M_NULLPTR)
         {
             safe_memcpy(*dup, srclen + RSIZE_T_C(1), src, srclen);
@@ -961,7 +1199,7 @@ errno_t safe_strndup_impl(char**      dup,
     }
     else
     {
-        *dup = M_REINTERPRET_CAST(char*, safe_malloc(size + RSIZE_T_C(1)));
+        *dup = M_REINTERPRET_CAST(char*, safe_calloc(size + RSIZE_T_C(1), sizeof(char)));
         if (*dup != M_NULLPTR)
         {
             safe_memcpy(*dup, size + 1, src, size);
@@ -995,62 +1233,19 @@ void byte_Swap_String_Len(char* stringToChange, size_t stringlen)
 // use this to swap the bytes in a string...useful for ATA strings
 void byte_Swap_String(char* stringToChange)
 {
-    size_t stringlen = safe_strlen(stringToChange);
-    if (stringlen > SIZE_T_C(1)) // Check if the string has more than one character
-    {
-        for (size_t stringIter = SIZE_T_C(0); stringIter < stringlen - SIZE_T_C(1); stringIter += SIZE_T_C(2))
-        {
-            // Swap the characters
-            char temp                                = stringToChange[stringIter];
-            stringToChange[stringIter]               = stringToChange[stringIter + SIZE_T_C(1)];
-            stringToChange[stringIter + SIZE_T_C(1)] = temp;
-        }
-    }
+    byte_Swap_String_Len(stringToChange, safe_strlen(stringToChange));
 }
 
 void remove_Whitespace_Left(char* stringToChange)
 {
-    size_t iter = SIZE_T_C(0);
-    size_t len  = SIZE_T_C(0);
-    if (stringToChange == M_NULLPTR)
-    {
-        return;
-    }
-    len = strspn(stringToChange,
-                 " \t\n\v\f"); // only touch spaces at the beginning of the
-                               // string, not the whole string
-    if (len == SIZE_T_C(0))
-    {
-        return;
-    }
-
-    while ((iter < (safe_strlen(stringToChange) - SIZE_T_C(1)) &&
-            stringToChange[iter])) // having issues with the isspace command
-                                   // leaving extra chars in the string
-    {
-        stringToChange[iter] = stringToChange[iter + len];
-        iter++;
-    }
+    // Previous code basically did the exact same thing but handled control characters.
+    // Updated remove_Leading_Whitespace_Len to also remove control characters and work the same way.
+    remove_Leading_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
 void remove_Trailing_Whitespace(char* stringToChange)
 {
-    size_t iter = SIZE_T_C(0);
-    if (stringToChange == M_NULLPTR)
-    {
-        return;
-    }
-    iter = (safe_strlen(stringToChange));
-    if (iter == SIZE_T_C(0))
-    {
-        return;
-    }
-    while (iter > SIZE_T_C(0) && safe_isascii(stringToChange[iter - SIZE_T_C(1)]) &&
-           safe_isspace(stringToChange[iter - SIZE_T_C(1)]))
-    {
-        stringToChange[iter - SIZE_T_C(1)] = '\0'; // replace spaces with null terminators
-        iter--;
-    }
+    remove_Trailing_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
 void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
@@ -1060,35 +1255,33 @@ void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
         return;
     }
 
-    size_t iter = stringlen;
-    while (iter > SIZE_T_C(0) && safe_isascii(stringToChange[iter - SIZE_T_C(1)]) &&
-           safe_isspace(stringToChange[iter - SIZE_T_C(1)]))
+    size_t end = stringlen;
+
+    while (end > SIZE_T_C(0))
     {
-        stringToChange[iter - SIZE_T_C(1)] = '\0'; // Replace spaces with null terminators
-        iter--;
+        unsigned char currentEndChar = M_STATIC_CAST(unsigned char, stringToChange[end - SIZE_T_C(1)]);
+        if (currentEndChar <= 0x7F)
+        {
+            if (!(safe_isspace(currentEndChar) || safe_iscntrl(currentEndChar)))
+            {
+                break;
+            }
+        }
+        end--;
     }
+
+    if (end == stringlen)
+    {
+        return; // No trailing whitespace, avoid unnecessary operations
+    }
+
+    size_t memsetlen = stringlen - end;
+    safe_memset(&stringToChange[end], memsetlen, 0, memsetlen);
 }
 
 void remove_Leading_Whitespace(char* stringToChange)
 {
-    size_t iter              = SIZE_T_C(0);
-    size_t stringToChangeLen = SIZE_T_C(0);
-    if (stringToChange == M_NULLPTR)
-    {
-        return;
-    }
-    stringToChangeLen = safe_strlen(stringToChange);
-    while (safe_isascii(stringToChange[iter]) && safe_isspace(stringToChange[iter]) && iter < stringToChangeLen)
-    {
-        iter++;
-    }
-    if (iter > SIZE_T_C(0))
-    {
-        safe_memmove(&stringToChange[0], stringToChangeLen, &stringToChange[iter], stringToChangeLen - iter);
-        safe_memset(&stringToChange[stringToChangeLen - iter], stringToChangeLen - iter, 0,
-                    iter); // should this be a null? Or a space? Leaving as null
-                           // for now since it seems to work...
-    }
+    remove_Leading_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
 void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
@@ -1098,7 +1291,8 @@ void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
         return;
     }
     size_t iter = SIZE_T_C(0);
-    while (iter < stringlen && safe_isascii(stringToChange[iter]) && safe_isspace(stringToChange[iter]))
+    while (iter < stringlen && safe_isascii(stringToChange[iter]) &&
+           (safe_isspace(stringToChange[iter]) || safe_iscntrl(stringToChange[iter])))
     {
         iter++;
     }
@@ -1113,42 +1307,7 @@ void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
 
 void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
 {
-    if (stringToChange == M_NULLPTR)
-    {
-        return;
-    }
-    size_t stringlen = safe_strlen(stringToChange);
-    if (stringlen == SIZE_T_C(0))
-    {
-        return;
-    }
-
-    // Remove leading whitespace (calculate for memmove later)
-    size_t start = SIZE_T_C(0);
-    while (start < stringlen && safe_isascii(stringToChange[start]) && safe_isspace(stringToChange[start]))
-    {
-        start++;
-    }
-
-    // Remove trailing whitespace
-    size_t end = stringlen;
-    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
-           safe_isspace(stringToChange[end - SIZE_T_C(1)]))
-    {
-        end--;
-    }
-
-    // Calculate new length after removing whitespace
-    size_t newlen = end - start;
-
-    // If there's leading whitespace, shift the string to the start
-    if (start > SIZE_T_C(0))
-    {
-        safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
-    }
-
-    // Null-terminate the string after the last non-whitespace character
-    stringToChange[newlen] = '\0';
+    remove_Leading_And_Trailing_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
 void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
@@ -1159,16 +1318,24 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
     }
     // Remove leading whitespace (calculate for memmove later)
     size_t start = SIZE_T_C(0);
-    while (start < stringlen && safe_isascii(stringToChange[start]) && safe_isspace(stringToChange[start]))
+    while (start < stringlen && safe_isascii(stringToChange[start]) &&
+           (safe_isspace(stringToChange[start]) || safe_iscntrl(stringToChange[start])))
     {
         start++;
     }
 
-    // Remove trailing whitespace
+    // Remove trailing whitespace (and control characters). These should not be present in the strings in here anyways!
     size_t end = stringlen;
-    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
-           safe_isspace(stringToChange[end - SIZE_T_C(1)]))
+    while (end > start)
     {
+        unsigned char currentEndChar = M_STATIC_CAST(unsigned char, stringToChange[end - SIZE_T_C(1)]);
+        if (currentEndChar <= 0x7F)
+        {
+            if (!(safe_isspace(currentEndChar) || safe_iscntrl(currentEndChar)))
+            {
+                break;
+            }
+        }
         end--;
     }
 
@@ -1176,87 +1343,35 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
     size_t newlen = end - start;
 
     // If there's leading whitespace, shift the string to the start
-    if (start > SIZE_T_C(0))
+    if (start > SIZE_T_C(0) && newlen > 0)
     {
         safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
     }
 
-    // Null-terminate the string after the last non-whitespace character
-    stringToChange[newlen] = '\0';
+    if (newlen == stringlen && start == 0)
+    {
+        return; // No changes needed, avoid unnecessary operations
+    }
+
+    if (newlen < stringlen) // If these are equivalent, then it is possible to go out of bounds doing this.
+    {
+        // Zero out everything. This not only null terminates, but also help correct other potentially bad
+        // behavior if someone made an access past the new end of this string to read the old partial string
+        // left after the memmove. This is not strictly necessary, but it is safer and does not have a significant
+        // performance impact in most cases.
+        size_t memsetlen = stringlen - newlen;
+        safe_memset(&stringToChange[newlen], memsetlen, 0, memsetlen);
+    }
 }
 
 void remove_Leading_And_Trailing_Control_Char(char* stringToChange)
 {
-    if (stringToChange == M_NULLPTR)
-    {
-        return;
-    }
-    size_t stringlen = safe_strlen(stringToChange);
-    if (stringlen == SIZE_T_C(0))
-    {
-        return;
-    }
-
-    // Remove leading whitespace (calculate for memmove later)
-    size_t start = SIZE_T_C(0);
-    while (start < stringlen && safe_isascii(stringToChange[start]) && safe_iscntrl(stringToChange[start]))
-    {
-        start++;
-    }
-
-    // Remove trailing whitespace
-    size_t end = stringlen;
-    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
-           safe_iscntrl(stringToChange[end - SIZE_T_C(1)]))
-    {
-        end--;
-    }
-
-    // Calculate new length after removing whitespace
-    size_t newlen = end - start;
-
-    // If there's leading whitespace, shift the string to the start
-    if (start > SIZE_T_C(0))
-    {
-        safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
-    }
-
-    // Null-terminate the string after the last non-whitespace character
-    stringToChange[newlen] = '\0';
+    remove_Leading_And_Trailing_Control_Char_Len(stringToChange, safe_strlen(stringToChange));
 }
 
 void remove_Leading_And_Trailing_Control_Char_Len(char* stringToChange, size_t stringlen)
 {
-    if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
-    {
-        return;
-    }
-    // Remove leading whitespace (calculate for memmove later)
-    size_t start = SIZE_T_C(0);
-    while (start < stringlen && safe_isascii(stringToChange[start]) && safe_iscntrl(stringToChange[start]))
-    {
-        start++;
-    }
-
-    // Remove trailing whitespace
-    size_t end = stringlen;
-    while (end > start && safe_isascii(stringToChange[end - SIZE_T_C(1)]) &&
-           safe_iscntrl(stringToChange[end - SIZE_T_C(1)]))
-    {
-        end--;
-    }
-
-    // Calculate new length after removing whitespace
-    size_t newlen = end - start;
-
-    // If there's leading whitespace, shift the string to the start
-    if (start > SIZE_T_C(0))
-    {
-        safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
-    }
-
-    // Null-terminate the string after the last non-whitespace character
-    stringToChange[newlen] = '\0';
+    remove_Leading_And_Trailing_Whitespace_Len(stringToChange, stringlen);
 }
 
 void convert_String_To_Upper_Case(char* stringToChange)
