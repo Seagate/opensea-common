@@ -555,10 +555,14 @@ static void test_replace_File_Name_In_Path(void) {
     fprintf(f, "hello");
     fclose(f);
 
+    // When fullpath is invalid, replace_File_Name_In_Path should fail
+    eReturnValues result = replace_File_Name_In_Path(NULL, "newfile.txt");
+    TEST_ASSERT(result == FAILURE, "replace_File_Name_In_Path should fail with invalid fullpath");
+
     char fullpath[260] = {0};
     char* abs_path = realpath(filename, NULL);
     TEST_ASSERT(abs_path != NULL, "realpath should succeed");
-    eReturnValues result = get_Full_Path(abs_path, fullpath);
+    result = get_Full_Path(abs_path, fullpath);
     TEST_ASSERT(result == SUCCESS, "get_Full_Path should succeed");
 
     char newPath[260] = {0};
