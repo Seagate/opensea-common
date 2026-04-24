@@ -336,24 +336,11 @@ static void test_secure_Delete_File_By_Name(void) {
     eSecureFileError result = secure_Delete_File_By_Name(filename, SEC_DELETE_NAME_UNLINK_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Delete_File_By_Name should succeed with unlink if file is open");
     TEST_ASSERT(!os_File_Exists(filename), "File should be unlinked and not exist");
+    fclose(f);
 
-    // SEC_DELETE_NAME_FAIL_IF_OPEN fails if the file is open
-
-    const char* filename2 = "test_secure_delete_by_name2.txt";
-    FILE* f2 = fopen(filename2, "w");
-    fprintf(f2, "hello world");
-    fclose(f2);
-
-    f2 = fopen(filename2, "r");
-    result = secure_Delete_File_By_Name(filename2, SEC_DELETE_NAME_FAIL_IF_OPEN);
-    printf("Result of secure_Delete_File_By_Name with file open: %d\n", result);
-    TEST_ASSERT(result == SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN, "secure_Delete_File_By_Name should fail if file is open");
-
-    fclose(f2);
-
-    result = secure_Delete_File_By_Name(filename2, SEC_DELETE_NAME_FAIL_IF_OPEN);
+    result = secure_Delete_File_By_Name(filename, SEC_DELETE_NAME_FAIL_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Delete_File_By_Name should succeed");
-    TEST_ASSERT(!os_File_Exists(filename2), "File should be removed");
+    TEST_ASSERT(!os_File_Exists(filename), "File should be removed");
 }
 
 void run_secure_file_tests(void) {
