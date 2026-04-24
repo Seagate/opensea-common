@@ -243,6 +243,14 @@ static void test_secure_Read_File(void) {
     readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 0, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed when elementsize is 0");
 
+    // Test for an empty file
+    const char* emptyFilename = "test_secure_read_empty.txt";
+    f = fopen(emptyFilename, "w");
+    fclose(f);
+    secureFileInfo* emptyFileInfo = secure_Open_File(emptyFilename, "r", NULL, NULL, NULL);
+    readResult = secure_Read_File(emptyFileInfo, buffer, sizeof(buffer), 1, 5, &numberRead);
+    TEST_ASSERT(readResult == SEC_FILE_READ_WRITE_ERROR, "secure_Read_File should return read/write error when reading from an empty file");
+
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 }
