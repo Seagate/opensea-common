@@ -621,7 +621,7 @@ static void test_create_And_Open_Secure_Log_File(void) {
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
 
-    eReturnValues result = create_And_Open_Secure_Log_File("device123", strlen("device123"), fileInfo, NAMING_SERIAL_NUMBER_DATE_TIME, NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
+    eReturnValues result = create_And_Open_Secure_Log_File("device123", strlen("device123"), &fileInfo, NAMING_SERIAL_NUMBER_DATE_TIME, NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
     TEST_ASSERT(result == SUCCESS, "create_And_Open_Secure_Log_File should succeed");
     TEST_ASSERT(fileInfo->isValid, "File info should be valid after creating secure log file");
     TEST_ASSERT(fileInfo->file != NULL, "File pointer should be valid after creating secure log file");
