@@ -383,10 +383,11 @@ static void test_secure_GetPos_File(void) {
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
 
-    long pos;
+    fpos_t pos;
     eSecureFileError result = secure_GetPos_File(fileInfo, &pos);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_GetPos_File should succeed");
-    TEST_ASSERT(pos == 0, "Initial file position should be 0");
+    long current = ftell(fileInfo->file);
+    TEST_ASSERT(current == 0, "Initial file position should be 0");
 
     // Move the file position to 6 (after "hello ")
     long offset = 6;
@@ -395,7 +396,8 @@ static void test_secure_GetPos_File(void) {
 
     result = secure_GetPos_File(fileInfo, &pos);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_GetPos_File should succeed");
-    TEST_ASSERT(pos == offset, "File position should be updated to the offset");
+    current = ftell(fileInfo->file);
+    TEST_ASSERT(current == offset, "File position should be updated to the offset");
 
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
