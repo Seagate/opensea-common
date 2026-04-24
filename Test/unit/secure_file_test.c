@@ -178,7 +178,12 @@ static void test_secure_Open_File(void) {
     TEST_ASSERT(fileInfo->file != NULL, "secure_Open_File should have a valid FILE pointer");
     TEST_ASSERT(fileInfo->fileSize == 5, "File size should be 5 bytes");
 
+    // Open file with invalid mode
+    secureFileInfo* invalidModeInfo = secure_Open_File(filename, "x", extList, NULL, NULL);
+    TEST_ASSERT(invalidModeInfo->error == SEC_FILE_INVALID_MODE, "Should return invalid mode error");
+
     free_Secure_File_Info(&fileInfo);
+    free_Secure_File_Info(&invalidModeInfo);
 }
 
 static void test_secure_Close_File(void) {
