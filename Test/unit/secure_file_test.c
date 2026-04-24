@@ -345,7 +345,7 @@ static void test_secure_Delete_File_By_Name(void) {
 
     fclose(f);
 
-    eSecureFileError result = secure_Delete_File_By_Name(filename, SEC_DELETE_NAME_FAIL_IF_OPEN);
+    result = secure_Delete_File_By_Name(filename, SEC_DELETE_NAME_FAIL_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Delete_File_By_Name should succeed");
     TEST_ASSERT(!os_File_Exists(filename), "File should be removed");
 }
