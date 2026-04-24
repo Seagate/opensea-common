@@ -532,6 +532,23 @@ static void test_os_Create_Secure_Directory(void) {
     rmdir(dirname);
 }
 
+static void test_get_Full_Path(void) {
+    const char* filename = "test_full_path.txt";
+    FILE* f = fopen(filename, "w");
+    fprintf(f, "hello");
+    fclose(f);
+
+    char fullpath[260] = {0};
+    char* abs_path = realpath(filename, NULL);
+    TEST_ASSERT(abs_path != NULL, "realpath should succeed");
+    eReturnValues result = get_Full_Path(abs_path, fullpath);
+    TEST_ASSERT(result == SUCCESS, "get_Full_Path should succeed");
+    TEST_ASSERT(strlen(fullpath) > 0, "Full path should not be empty");
+    free(abs_path);
+
+    remove(filename);
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
@@ -558,4 +575,5 @@ void run_secure_file_tests(void) {
     test_os_File_Exists();
     test_os_Create_Directory();
     test_os_Create_Secure_Directory();
+    test_get_Full_Path();
 }
