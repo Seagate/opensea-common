@@ -509,6 +509,29 @@ static void test_os_File_Exists(void) {
     TEST_ASSERT(!os_File_Exists(filename), "File should not exist");
 }
 
+static void test_os_Create_Directory(void) {
+    const char* dirname = "test_create_directory";
+    eSecureFileError result = os_Create_Directory(dirname);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "os_Create_Directory should succeed");
+    TEST_ASSERT(os_Directory_Exists(dirname), "Directory should exist after creation");
+
+    rmdir(dirname);
+}
+
+static void test_os_Create_Secure_Directory(void) {
+    const char* dirname = "test_create_secure_directory";
+    eSecureFileError result = os_Create_Secure_Directory(dirname);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "os_Create_Secure_Directory should succeed");
+    TEST_ASSERT(os_Directory_Exists(dirname), "Directory should exist after creation");
+
+    // Verify the directory is secure
+    char* abs_path = realpath(dirname, NULL);
+    TEST_ASSERT(os_Is_Directory_Secure(abs_path, NULL), "Directory should be secure");
+    free(abs_path);
+
+    rmdir(dirname);
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
@@ -533,4 +556,6 @@ void run_secure_file_tests(void) {
     test_secure_fprintf_File();
     test_os_Directory_Exists();
     test_os_File_Exists();
+    test_os_Create_Directory();
+    test_os_Create_Secure_Directory();
 }
