@@ -383,13 +383,13 @@ static void test_secure_GetPos_File(void) {
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
 
-    fpos_t pos;
+    long pos;
     eSecureFileError result = secure_GetPos_File(fileInfo, &pos);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_GetPos_File should succeed");
-    TEST_ASSERT(pos == (fpos_t)0, "Initial file position should be 0");
+    TEST_ASSERT(pos == 0, "Initial file position should be 0");
 
     // Move the file position to 6 (after "hello ")
-    fpos_t offset = (fpos_t)6;
+    long offset = 6;
     result = secure_Seek_File(fileInfo, offset, SEEK_SET);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Seek_File should succeed");
 
