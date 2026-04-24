@@ -21,8 +21,10 @@
 #include "memory_safety.h"
 #include "string_utils.h"
 #include "type_conversion.h"
+#include "unit_conversion.h"
 #include "warning_ctl.h"
 #include <ctype.h>
+#include <errno.h>
 #include <math.h>   //HUGE_VALF, HUGE_VAL, HUGE_VALL
 #include <stdarg.h> //asprintf/vasprintf
 #include <string.h>
@@ -134,128 +136,80 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
     }
     if (SUCCESS == get_Simple_Text_Output_Protocol_Ptr((void**)&outputProtocol))
     {
+        int32_t currentAttributes = outputProtocol->Mode->Attribute;
+        uint8_t currentBackground = M_Nibble1(C_CAST(unsigned long long, currentAttributes));
+        uint8_t currentForeground = M_Nibble0(C_CAST(unsigned long long, currentAttributes));
+        int32_t newAttributes     = 0;
+        switch (consoleColor)
+        {
+        case DARK_BLUE:
+            newAttributes = EFI_BLUE;
+            break;
+        case CONSOLE_COLOR_BLUE:
+            newAttributes = EFI_LIGHTBLUE;
+            break;
+        case DARK_GREEN:
+            newAttributes = EFI_GREEN;
+            break;
+        case CONSOLE_COLOR_GREEN:
+            newAttributes = EFI_LIGHTGREEN;
+            break;
+        case DARK_RED:
+            newAttributes = EFI_RED;
+            break;
+        case CONSOLE_COLOR_RED:
+            newAttributes = EFI_LIGHTRED;
+            break;
+        case BLACK:
+            newAttributes = EFI_BLACK;
+            break;
+        case BROWN:
+            newAttributes = EFI_BROWN;
+            break;
+        case YELLOW:
+            newAttributes = EFI_YELLOW;
+            break;
+        case TEAL:
+            newAttributes = EFI_CYAN;
+            break;
+        case CYAN:
+            newAttributes = EFI_LIGHTCYAN;
+            break;
+        case PURPLE:
+            newAttributes = EFI_MAGENTA;
+            break;
+        case MAGENTA:
+            newAttributes = EFI_LIGHTMAGENTA;
+            break;
+        case WHITE:
+            newAttributes = EFI_WHITE;
+            break;
+        case DARK_GRAY:
+            newAttributes = EFI_DARKGRAY;
+            break;
+        case CONSOLE_COLOR_GRAY:
+            newAttributes = EFI_LIGHTGRAY;
+            break;
+        case CONSOLE_COLOR_DEFAULT:
+        default:
+            if (foregroundBackground)
+            {
+                newAttributes = M_Nibble0(C_CAST(unsigned long long, get_Default_Console_Colors()));
+            }
+            else
+            {
+                newAttributes = M_Nibble1(C_CAST(unsigned long long, get_Default_Console_Colors()));
+            }
+            break;
+        }
+
         if (foregroundBackground) // change foreground color
         {
-            // save current background color
-            uint8_t currentBackground = M_Nibble1(C_CAST(unsigned long long, outputProtocol->Mode->Attribute));
-            switch (consoleColor)
-            {
-            case DARK_BLUE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_BLUE, currentBackground));
-                break;
-            case CONSOLE_COLOR_BLUE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTBLUE, currentBackground));
-                break;
-            case DARK_GREEN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_GREEN, currentBackground));
-                break;
-            case CONSOLE_COLOR_GREEN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTGREEN, currentBackground));
-                break;
-            case DARK_RED:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_RED, currentBackground));
-                break;
-            case CONSOLE_COLOR_RED:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTRED, currentBackground));
-                break;
-            case BLACK:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_BLACK, currentBackground));
-                break;
-            case BROWN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_BROWN, currentBackground));
-                break;
-            case YELLOW:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_YELLOW, currentBackground));
-                break;
-            case TEAL:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_CYAN, currentBackground));
-                break;
-            case CYAN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTCYAN, currentBackground));
-                break;
-            case PURPLE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_MAGENTA, currentBackground));
-                break;
-            case MAGENTA:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTMAGENTA, currentBackground));
-                break;
-            case WHITE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_WHITE, currentBackground));
-                break;
-            case DARK_GRAY:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_DARKGRAY, currentBackground));
-                break;
-            case CONSOLE_COLOR_GRAY:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTGRAY, currentBackground));
-                break;
-            case CONSOLE_COLOR_DEFAULT:
-            default:
-                outputProtocol->SetAttribute(
-                    outputProtocol, EFI_TEXT_ATTR(M_Nibble0(C_CAST(unsigned long long, get_Default_Console_Colors())),
-                                                  currentBackground));
-                break;
-            }
+            outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(newAttributes, currentBackground));
         }
         else // change background color
         {
-            uint8_t currentForeground = M_Nibble0(C_CAST(unsigned long long, outputProtocol->Mode->Attribute));
-            switch (consoleColor)
-            {
-            case DARK_BLUE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_BLUE));
-                break;
-            case CONSOLE_COLOR_BLUE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTBLUE));
-                break;
-            case DARK_GREEN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_GREEN));
-                break;
-            case CONSOLE_COLOR_GREEN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTGREEN));
-                break;
-            case DARK_RED:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_RED));
-                break;
-            case CONSOLE_COLOR_RED:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTRED));
-                break;
-            case BLACK:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_BLACK));
-                break;
-            case BROWN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_BROWN));
-                break;
-            case YELLOW:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_YELLOW));
-                break;
-            case TEAL:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_CYAN));
-                break;
-            case CYAN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTCYAN));
-                break;
-            case PURPLE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_MAGENTA));
-                break;
-            case MAGENTA:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTMAGENTA));
-                break;
-            case WHITE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_WHITE));
-                break;
-            case DARK_GRAY:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_DARKGRAY));
-                break;
-            case CONSOLE_COLOR_GRAY:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTGRAY));
-                break;
-            case CONSOLE_COLOR_DEFAULT:
-            default:
-                outputProtocol->SetAttribute(
-                    outputProtocol, EFI_TEXT_ATTR(currentForeground,
-                                                  M_Nibble1(C_CAST(unsigned long long, get_Default_Console_Colors()))));
-                break;
-            }
+            outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, newAttributes));
         }
         // close the protocol since we are done for now.
         close_Simple_Text_Output_Protocol_Ptr((void**)&outputProtocol);
@@ -565,26 +519,26 @@ static eKnownTERM get_Term_From_Env_TERM(bool* M_NONNULL haveCompleteMatch)
     if (get_Environment_Variable("TERM", &termEnv) == ENV_VAR_SUCCESS && termEnv != M_NULLPTR)
     {
         // do exact matches up top, then search for substrings
-        if (strcmp(termEnv, "xterm-256color") == 0)
+        if (strcasecmp(termEnv, "xterm-256color") == 0)
         {
             terminalType       = TERM_XTERM_256COLOR;
             *haveCompleteMatch = true;
         }
-        else if (strcmp(termEnv, "aixterm") == 0)
+        else if (strcasecmp(termEnv, "aixterm") == 0)
         {
             terminalType       = TERM_AIXTERM;
             *haveCompleteMatch = true;
         }
-        else if (strcmp(termEnv, "sun-color") == 0)
+        else if (strcasecmp(termEnv, "sun-color") == 0)
         {
             terminalType       = TERM_SUN_COLOR;
             *haveCompleteMatch = true;
         }
-        else if (strcmp(termEnv, "xterm") == 0)
+        else if (strcasecmp(termEnv, "xterm") == 0)
         {
             terminalType = TERM_XTERM;
         }
-        else if (strcmp(termEnv, "linux") == 0)
+        else if (strcasecmp(termEnv, "linux") == 0)
         {
             // alpine linux does not set COLORTERM or anything else, so this
             // would be complete there, but let the other checks run too linux
@@ -638,7 +592,7 @@ static eKnownTERM get_Term_From_Env_COLORTERM(bool* M_NONNULL haveCompleteMatch)
     {
         // check what this is set to.
         // truecolor seems to mean supports 256 colors
-        if (strcmp(termEnv, "gnome-terminal") == 0)
+        if (strcasecmp(termEnv, "gnome-terminal") == 0)
         {
             // centos6 reports "gnome-terminal" which seems to support 256
             // colors output mode
@@ -1265,10 +1219,10 @@ static M_INLINE bool is_Allowed_Datasize_Unit(const char* unit)
 {
     bool allowed = false;
     // allowed units must match exactly at the end of the string!
-    if (strcmp(unit, "B") == 0 || strcmp(unit, "KB") == 0 || strcmp(unit, "KiB") == 0 || strcmp(unit, "MB") == 0 ||
-        strcmp(unit, "MiB") == 0 || strcmp(unit, "GB") == 0 || strcmp(unit, "GiB") == 0 || strcmp(unit, "TB") == 0 ||
-        strcmp(unit, "TiB") == 0 || strcmp(unit, "BLOCKS") == 0 || strcmp(unit, "SECTORS") == 0 ||
-        strcmp(unit, "") == 0)
+    if (strcasecmp(unit, "B") == 0 || strcasecmp(unit, "KB") == 0 || strcasecmp(unit, "KiB") == 0 || strcasecmp(unit, "MB") == 0 ||
+        strcasecmp(unit, "MiB") == 0 || strcasecmp(unit, "GB") == 0 || strcasecmp(unit, "GiB") == 0 || strcasecmp(unit, "TB") == 0 ||
+        strcasecmp(unit, "TiB") == 0 || strcasecmp(unit, "BLOCKS") == 0 || strcasecmp(unit, "SECTORS") == 0 ||
+        strcasecmp(unit, "") == 0)
     {
         allowed = true;
     }
@@ -1281,8 +1235,8 @@ static M_INLINE bool is_Allowed_Sector_Size_Unit(const char* unit)
     // l is used by some utilities to indicate a count is in
     // logical sectors instead of physical sectors
     // an empty unit should be allowed for default behavior for these kinds of options. - TJE
-    if (strcmp(unit, "l") == 0 || strcmp(unit, "p") == 0 || strcmp(unit, "logical") == 0 ||
-        strcmp(unit, "physical") == 0 || strcmp(unit, "") == 0)
+    if (strcasecmp(unit, "l") == 0 || strcasecmp(unit, "p") == 0 || strcasecmp(unit, "logical") == 0 ||
+        strcasecmp(unit, "physical") == 0 || strcasecmp(unit, "") == 0)
     {
         allowed = true;
     }
@@ -1292,13 +1246,13 @@ static M_INLINE bool is_Allowed_Sector_Size_Unit(const char* unit)
 static M_INLINE bool is_Allowed_Time_Unit(const char* unit)
 {
     bool allowed = false;
-    if (strcmp(unit, "ns") == 0    // nanoseconds
-        || strcmp(unit, "us") == 0 // microseconds
-        || strcmp(unit, "ms") == 0 // milliseconds
-        || strcmp(unit, "s") == 0  // seconds
-        || strcmp(unit, "m") == 0  // minutes
-        || strcmp(unit, "h") == 0  // hours
-        || strcmp(unit, "") == 0   // no unit, default expected for the given option
+    if (strcasecmp(unit, "ns") == 0    // nanoseconds
+        || strcasecmp(unit, "us") == 0 // microseconds
+        || strcasecmp(unit, "ms") == 0 // milliseconds
+        || strcasecmp(unit, "s") == 0  // seconds
+        || strcasecmp(unit, "m") == 0  // minutes
+        || strcasecmp(unit, "h") == 0  // hours
+        || strcasecmp(unit, "") == 0   // no unit, default expected for the given option
     )
     {
         allowed = true;
@@ -1309,9 +1263,9 @@ static M_INLINE bool is_Allowed_Time_Unit(const char* unit)
 static M_INLINE bool is_Allowed_Power_Unit(const char* unit)
 {
     bool allowed = false;
-    if (strcmp(unit, "w") == 0     // watts
-        || strcmp(unit, "mw") == 0 // milliwatts
-        || strcmp(unit, "") == 0   // no unit, default expected for the given option
+    if (strcasecmp(unit, "w") == 0     // watts
+        || strcasecmp(unit, "mw") == 0 // milliwatts
+        || strcasecmp(unit, "") == 0   // no unit, default expected for the given option
     )
     {
         allowed = true;
@@ -1322,9 +1276,9 @@ static M_INLINE bool is_Allowed_Power_Unit(const char* unit)
 static M_INLINE bool is_Allowed_Volts_Unit(const char* unit)
 {
     bool allowed = false;
-    if (strcmp(unit, "v") == 0     // volts
-        || strcmp(unit, "mv") == 0 // millivolts
-        || strcmp(unit, "") == 0   // no unit, default expected for the given option
+    if (strcasecmp(unit, "v") == 0     // volts
+        || strcasecmp(unit, "mv") == 0 // millivolts
+        || strcasecmp(unit, "") == 0   // no unit, default expected for the given option
     )
     {
         allowed = true;
@@ -1335,9 +1289,9 @@ static M_INLINE bool is_Allowed_Volts_Unit(const char* unit)
 static M_INLINE bool is_Allowed_Amps_Unit(const char* unit)
 {
     bool allowed = false;
-    if (strcmp(unit, "a") == 0     // amps
-        || strcmp(unit, "ma") == 0 // milliamps
-        || strcmp(unit, "") == 0   // no unit, default expected for the given option
+    if (strcasecmp(unit, "a") == 0     // amps
+        || strcasecmp(unit, "ma") == 0 // milliamps
+        || strcasecmp(unit, "") == 0   // no unit, default expected for the given option
     )
     {
         allowed = true;
@@ -1348,10 +1302,10 @@ static M_INLINE bool is_Allowed_Amps_Unit(const char* unit)
 static M_INLINE bool is_Allowed_Temperature_Unit(const char* unit)
 {
     bool allowed = false;
-    if (strcmp(unit, "c") == 0    // celsius
-        || strcmp(unit, "f") == 0 // fahrenheit
-        || strcmp(unit, "k") == 0 // kelvin
-        || strcmp(unit, "") == 0  // no unit, default expected for the given option
+    if (strcasecmp(unit, "c") == 0    // celsius
+        || strcasecmp(unit, "f") == 0 // fahrenheit
+        || strcasecmp(unit, "k") == 0 // kelvin
+        || strcasecmp(unit, "") == 0  // no unit, default expected for the given option
     )
     {
         allowed = true;
@@ -1372,7 +1326,7 @@ static bool is_Allowed_Unit_For_Get_And_Validate_Input(const char* unit, eAllowe
         switch (unittype)
         {
         case M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE):
-            if (strcmp(unit, "") == 0)
+            if (strcasecmp(unit, "") == 0)
             {
                 allowed = true;
             }
@@ -1423,24 +1377,63 @@ typedef eintegerInputStrType eintergetInputStrType; // Misspelled
 static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str, eAllowedUnitInput unittype)
 {
     eintergetInputStrType type = INT_INPUT_DECIMAL;
+
+    // When units are allowed, hex notation is completely disabled (both 0x prefix and h suffix).
+    // Hex notation is only permitted when unittype == ALLOW_UNIT_NONE (pure hex context).
+    // This eliminates collisions where unit characters (F/A/B/C/K) could be mistaken for hex digits.
+    if (unittype != M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE))
+    {
+        // With units allowed: scan only for decimal digits, no hex
+        if (str != M_NULLPTR)
+        {
+            const char* temp = str;
+            // Scan for decimal digits only; stop at first non-digit (unit starts here)
+            while (*temp != '\0' && safe_isdigit(*temp))
+            {
+                ++temp;
+            }
+            // Validate the unit portion
+            if (!is_Allowed_Unit_For_Get_And_Validate_Input(temp, unittype))
+            {
+                return INT_INPUT_INVALID;
+            }
+            return INT_INPUT_DECIMAL;
+        }
+        else
+        {
+            return INT_INPUT_INVALID;
+        }
+    }
+
+    // Original logic for ALLOW_UNIT_NONE: hex (0x prefix or h suffix) is allowed
     if (str != M_NULLPTR)
     {
         const char* temp = str;
-        while (*temp != '\0')
+        size_t     templen = safe_strlen(str);
+        // check for 0x at the beginning for hex.
+        if (strstr(str, "0x") == str || strstr(str, "0X") == str)
         {
-            if ((!safe_isxdigit(*temp)) && (*temp != 'x') && (*temp != 'h'))
+            type = INT_INPUT_HEX;
+            temp += 2;
+            templen -= 2;
+        }
+        else if (temp[templen - 1] == 'h' || temp[templen - 1] == 'H')
+        {
+            type = INT_INPUT_HEX;
+            templen -= 1;
+        }
+
+        // Check that all provided chars are valid for the string type.
+        size_t count = 0;
+        while (*temp != '\0' && count < templen)
+        {
+            if ((type == INT_INPUT_HEX && !safe_isxdigit(*temp)) || (type == INT_INPUT_DECIMAL && !safe_isdigit(*temp)))
             {
+                type = INT_INPUT_INVALID;
                 break;
             }
-            else if (!safe_isdigit(*temp))
-            {
-                type = INT_INPUT_HEX;
-            }
             ++temp;
-        }
-        if (!is_Allowed_Unit_For_Get_And_Validate_Input(temp, unittype))
-        {
-            type = INT_INPUT_INVALID;
+            ++count;
         }
     }
     else
@@ -2324,8 +2317,148 @@ int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
 }
 #endif // defined (_MSC_VER) && _MSC_VER <= MSVC_2013 && defined _WIN32
 
+M_NODISCARD bool get_eReturnValues_To_String(eReturnValues ret, char string[M_NONNULL_ARRAY RETURN_VALUE_MAX_STR_LEN])
+{
+    errno_t error = EINVAL; // start with this as safe_strcpy *should* return success
+    explicit_zeroes(string, RETURN_VALUE_MAX_STR_LEN);
+    switch (ret)
+    {
+    case M_ACCESS_ENUM(eReturnValues, SUCCESS):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "SUCCESS\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, NOT_SUPPORTED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "NOT SUPPORTED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, COMMAND_FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "COMMAND FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, IN_PROGRESS):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "IN PROGRESS\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, ABORTED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "ABORTED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "BAD PARAMETER\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "MEMORY FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_PASSTHROUGH_FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "OS PASSTHROUGH FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, LIBRARY_MISMATCH):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "LIBRARY MISMATCH\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, FROZEN):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "FROZEN\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, PERMISSION_DENIED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "PERMISSION DENIED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, FILE_OPEN_ERROR):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "FILE OPEN ERROR\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, WARN_INCOMPLETE_RFTRS):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "WARNING INCOMPLETE RTFRS\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_TIMEOUT):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "COMMAND TIMEOUT\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, WARN_NOT_ALL_DEVICES_ENUMERATED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "WARNING NOT ALL DEVICES ENUMERATED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, WARN_INVALID_CHECKSUM):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "WARN INVALID CHECKSUM\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_NOT_AVAILABLE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "OS COMMAND NOT AVAILABLE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_BLOCKED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "OS COMMAND BLOCKED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, COMMAND_INTERRUPTED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "COMMAND INTERRUPTED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, VALIDATION_FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "VALIDATION FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, STRIP_HDR_FOOTER_FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "STRIP HDR FOOTER FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, PARSE_FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "PARSE FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, INVALID_LENGTH):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "INVALID LENGTH\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, ERROR_WRITING_FILE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "ERROR WRITING FILE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, TIMEOUT):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "TIMEOUT\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_TIMEOUT_TOO_LARGE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "OS TIMEOUT TOO LARGE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, PARSING_EXCEPTION_FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "PARSING EXCEPTION FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, POWER_CYCLE_REQUIRED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "POWER CYCLE REQUIRED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DIR_CREATION_FAILED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "DIR CREATION FAILED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, FILE_READ_ERROR):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "FILE READ ERROR\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_ACCESS_DENIED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "DEVICE ACCESS DENIED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, NOT_PARSED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "NOT PARSED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, MISSING_INFORMATION):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "MISSING INFORMATION\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, TRUNCATED_FILE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "TRUNCATED FILE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, INSECURE_PATH):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "INSECURE PATH\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_BUSY):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "DEVICE BUSY\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_INVALID):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "DEVICE INVALID\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_DISCONNECTED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "DEVICE DISCONNECTED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, UNKNOWN):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "UNKNOWN\n");
+        break;
+        // NO DEFAULT CASE! This will cause warnings when an enum value is not
+        // in this switch-case so that it is never out of date!
+    }
+    if (error != 0)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
 void print_Return_Enum(const char* funcName, eReturnValues ret)
 {
+    DECLARE_ZERO_INIT_ARRAY(char, retStr, RETURN_VALUE_MAX_STR_LEN);
     if (M_NULLPTR == funcName)
     {
         print_str("Unknown function returning: ");
@@ -2335,130 +2468,13 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
         printf("%s returning: ", funcName);
     }
 
-    switch (ret)
+    if (!get_eReturnValues_To_String(ret, retStr))
     {
-    case M_ACCESS_ENUM(eReturnValues, SUCCESS):
-        print_str("SUCCESS\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, FAILURE):
-        print_str("FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, NOT_SUPPORTED):
-        print_str("NOT SUPPORTED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, COMMAND_FAILURE):
-        print_str("COMMAND FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, IN_PROGRESS):
-        print_str("IN PROGRESS\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, ABORTED):
-        print_str("ABORTED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER):
-        print_str("BAD PARAMETER\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE):
-        print_str("MEMORY FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_PASSTHROUGH_FAILURE):
-        print_str("OS PASSTHROUGH FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, LIBRARY_MISMATCH):
-        print_str("LIBRARY MISMATCH\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, FROZEN):
-        print_str("FROZEN\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, PERMISSION_DENIED):
-        print_str("PERMISSION DENIED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, FILE_OPEN_ERROR):
-        print_str("FILE OPEN ERROR\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, WARN_INCOMPLETE_RFTRS):
-        print_str("WARNING INCOMPLETE RTFRS\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_TIMEOUT):
-        print_str("COMMAND TIMEOUT\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, WARN_NOT_ALL_DEVICES_ENUMERATED):
-        print_str("WARNING NOT ALL DEVICES ENUMERATED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, WARN_INVALID_CHECKSUM):
-        print_str("WARN INVALID CHECKSUM\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_NOT_AVAILABLE):
-        print_str("OS COMMAND NOT AVAILABLE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_BLOCKED):
-        print_str("OS COMMAND BLOCKED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, COMMAND_INTERRUPTED):
-        print_str("COMMAND INTERRUPTED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, VALIDATION_FAILURE):
-        print_str("VALIDATION FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, STRIP_HDR_FOOTER_FAILURE):
-        print_str("STRIP HDR FOOTER FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, PARSE_FAILURE):
-        print_str("PARSE FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, INVALID_LENGTH):
-        print_str("INVALID LENGTH\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, ERROR_WRITING_FILE):
-        print_str("ERROR WRITING FILE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, TIMEOUT):
-        print_str("TIMEOUT\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_TIMEOUT_TOO_LARGE):
-        print_str("OS TIMEOUT TOO LARGE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, PARSING_EXCEPTION_FAILURE):
-        print_str("PARSING EXCEPTION FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, POWER_CYCLE_REQUIRED):
-        print_str("POWER CYCLE REQUIRED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DIR_CREATION_FAILED):
-        print_str("DIR CREATION FAILED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, FILE_READ_ERROR):
-        print_str("FILE READ ERROR\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DEVICE_ACCESS_DENIED):
-        print_str("DEVICE ACCESS DENIED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, NOT_PARSED):
-        print_str("NOT PARSED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, MISSING_INFORMATION):
-        print_str("MISSING INFORMATION\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, TRUNCATED_FILE):
-        print_str("TRUNCATED FILE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, INSECURE_PATH):
-        print_str("INSECURE PATH\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DEVICE_BUSY):
-        print_str("DEVICE BUSY\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DEVICE_INVALID):
-        print_str("DEVICE INVALID\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DEVICE_DISCONNECTED):
-        print_str("DEVICE DISCONNECTED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, UNKNOWN):
-        print_str("UNKNOWN\n");
-        break;
-        // NO DEFAULT CASE! This will cause warnings when an enum value is not
-        // in this switch-case so that it is never out of date!
+        print_str("Invalid return value - conversion not available.\n");
+    }
+    else
+    {
+        print_str(retStr);
     }
     print_str("\n");
 }
@@ -3565,6 +3581,70 @@ errno_t safe_atof_impl(double*                value,
     return error;
 }
 
+int impl_vsnprintf_err_handle(const char* file,
+                              const char* function,
+                              int         line,
+                              const char* expression,
+                              char*       buf,
+                              size_t      bufsize,
+                              const char* format,
+                              va_list     args)
+{
+    int               n = 0;
+    constraintEnvInfo envInfo;
+    if (buf == M_NULLPTR && bufsize != 0)
+    {
+        errno = EINVAL;
+        invoke_Constraint_Handler("vsnprintf_error_handler_macro: buf is NULL and bufsize != 0",
+                                  set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
+        return -1;
+    }
+    else if (format == M_NULLPTR)
+    {
+        if (buf != M_NULLPTR && bufsize > 0)
+        {
+            buf[0] = 0;
+        }
+        errno = EINVAL;
+        invoke_Constraint_Handler("vsnprintf_error_handler_macro: format is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
+        return -1;
+    }
+    // Disabling this warning in GCC and Clang for now. It only seems to show in Windows at the moment-TJE
+    DISABLE_WARNING_FORMAT_NONLITERAL
+    // NOLINTBEGIN(clang-analyzer-valist.Uninitialized,clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    // - false positive
+    va_list args_copy;
+    va_copy(args_copy, args);
+    n = vsnprintf(buf, bufsize, format, args_copy);
+    va_end(args_copy);
+    // NOLINTEND(clang-analyzer-valist.Uninitialized,clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    // - false positive
+    RESTORE_WARNING_FORMAT_NONLITERAL
+
+    if (n < 0)
+    {
+        if (buf != M_NULLPTR && bufsize > 0)
+        {
+            buf[bufsize - 1] = 0;
+        }
+        errno = EINVAL;
+        invoke_Constraint_Handler("vsnprintf_error_handler_macro: Encoding error occurred",
+                                  set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
+    }
+    else if ((buf != M_NULLPTR && bufsize != 0 && int_to_sizet(n) >= bufsize))
+    {
+        if (buf != M_NULLPTR && bufsize > 0)
+        {
+            buf[bufsize - 1] = 0;
+        }
+        errno = ERANGE;
+        invoke_Constraint_Handler("vsnprintf_error_handler_macro: output was truncated",
+                                  set_Env_Info(&envInfo, file, function, expression, line), ERANGE);
+    }
+    return n;
+}
+
 int impl_snprintf_err_handle(const char* file,
                              const char* function,
                              int         line,
@@ -3580,6 +3660,17 @@ int impl_snprintf_err_handle(const char* file,
     {
         errno = EINVAL;
         invoke_Constraint_Handler("snprintf_error_handler_macro: buf is NULL and bufsize != 0",
+                                  set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
+        return -1;
+    }
+    else if (format == M_NULLPTR)
+    {
+        if (buf != M_NULLPTR && bufsize > 0)
+        {
+            buf[0] = 0;
+        }
+        errno = EINVAL;
+        invoke_Constraint_Handler("snprintf_error_handler_macro: format is NULL",
                                   set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
         return -1;
     }
@@ -3640,5 +3731,339 @@ errno_t checked_fputs(const char* nofmt, FILE* out)
         safe_free(&errmsg);
         return error;
     }
+    return 0;
+}
+
+errno_t get_And_Validate_Celsius_Input_int16(const char* input_str, int16_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    int16_t tempValue = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Int16(input_str, &unit, ALLOW_UNIT_TEMPERATURE, &tempValue);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    // Convert to Celsius based on unit specified
+    int16_t celsius_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        errno = 0;
+        if (strcasecmp(unit, "F") == 0)
+        {
+            celsius_value = fahrenheit_To_celsius(&tempValue);
+        }
+        else if (strcasecmp(unit, "K") == 0)
+        {
+            celsius_value = kelvin_To_Celsius(&tempValue);
+        }
+        // If 'C' or any other valid unit, tempValue is already in Celsius
+
+        if (errno != 0)
+        {
+            *outputValue = 0;
+            return errno;
+        }
+    }
+
+    *outputValue = celsius_value;
+    return 0;
+}
+
+errno_t get_And_Validate_Milliwatt_Input_uint32(const char* input_str, uint32_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t mw_value = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_POWER, &mw_value);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "W") == 0)
+        {
+            mw_value *= UINT64_C(1000);  // W to mW
+            if (mw_value > UINT32_MAX)
+            {
+                *outputValue = 0;
+                return ERANGE;
+            }
+        }
+        // If 'mW' or other valid unit, tempValue is already in mW
+    }
+
+    *outputValue = C_CAST(uint32_t, mw_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Byte_Input_uint64(const char* input_str, uint64_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t tempValue = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_DATASIZE, &tempValue);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint64_t byte_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "KB") == 0)
+        {
+            byte_value *= UINT64_C(1000);
+        }
+        else if (strcasecmp(unit, "KiB") == 0)
+        {
+            byte_value *= UINT64_C(1024);
+        }
+        else if (strcasecmp(unit, "MB") == 0)
+        {
+            byte_value *= UINT64_C(1000000);
+        }
+        else if (strcasecmp(unit, "MiB") == 0)
+        {
+            byte_value *= UINT64_C(1048576);
+        }
+        else if (strcasecmp(unit, "GB") == 0)
+        {
+            byte_value *= UINT64_C(1000000000);
+        }
+        else if (strcasecmp(unit, "GiB") == 0)
+        {
+            byte_value *= UINT64_C(1073741824);
+        }
+        else if (strcasecmp(unit, "TB") == 0)
+        {
+            byte_value *= UINT64_C(1000000000000);
+        }
+        else if (strcasecmp(unit, "TiB") == 0)
+        {
+            byte_value *= UINT64_C(1099511627776);
+        }
+        // If 'B' or other valid unit, tempValue is already in bytes
+
+        if (byte_value < tempValue)  // Overflow check
+        {
+            *outputValue = 0;
+            return EOVERFLOW;
+        }
+    }
+
+    *outputValue = byte_value;
+    return 0;
+}
+
+errno_t get_And_Validate_Millisecond_Input_uint32(const char* input_str, uint32_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t tempValue = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_TIME, &tempValue);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint64_t ms_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "s") == 0)
+        {
+            ms_value *= UINT64_C(1000);  // seconds to ms
+        }
+        else if (strcasecmp(unit, "m") == 0)
+        {
+            ms_value *= UINT64_C(60000);  // minutes to ms
+        }
+        else if (strcasecmp(unit, "h") == 0)
+        {
+            ms_value *= UINT64_C(3600000);  // hours to ms
+        }
+        // If 'ms' or other valid unit, tempValue is already in ms
+
+        if (ms_value > UINT32_MAX)
+        {
+            *outputValue = 0;
+            return EOVERFLOW;
+        }
+    }
+
+    *outputValue = C_CAST(uint32_t, ms_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Volt_Input_uint16(const char* input_str, uint16_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint32_t tempValue = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint32(input_str, &unit, ALLOW_UNIT_VOLTS, &tempValue);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint32_t v_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "mV") == 0)
+        {
+            v_value /= UINT32_C(1000);  // mV to V
+        }
+        // If 'V' or other valid unit, tempValue is already in V
+    }
+
+    if (v_value > UINT16_MAX)
+    {
+        *outputValue = 0;
+        return EOVERFLOW;
+    }
+
+    *outputValue = C_CAST(uint16_t, v_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Millivolt_Input_uint32(const char* input_str, uint32_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t tempValue = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_VOLTS, &tempValue);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint64_t mv_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "V") == 0)
+        {
+            mv_value *= UINT64_C(1000);  // V to mV
+            if (mv_value > UINT32_MAX)
+            {
+                *outputValue = 0;
+                return EOVERFLOW;
+            }
+        }
+        // If 'mV' or other valid unit, tempValue is already in mV
+    }
+
+    *outputValue = C_CAST(uint32_t, mv_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Amp_Input_uint16(const char* input_str, uint16_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint32_t tempValue = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint32(input_str, &unit, ALLOW_UNIT_AMPS, &tempValue);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint32_t a_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "mA") == 0)
+        {
+            a_value /= UINT32_C(1000);  // mA to A
+        }
+        // If 'A' or other valid unit, tempValue is already in A
+    }
+
+    if (a_value > UINT16_MAX)
+    {
+        *outputValue = 0;
+        return EOVERFLOW;
+    }
+
+    *outputValue = C_CAST(uint16_t, a_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Milliamp_Input_uint32(const char* input_str, uint32_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t tempValue = 0;
+    char *unit = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_AMPS, &tempValue);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint64_t ma_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "A") == 0)
+        {
+            ma_value *= UINT64_C(1000);  // A to mA
+            if (ma_value > UINT32_MAX)
+            {
+                *outputValue = 0;
+                return EOVERFLOW;
+            }
+        }
+        // If 'mA' or other valid unit, tempValue is already in mA
+    }
+
+    *outputValue = C_CAST(uint32_t, ma_value);
     return 0;
 }

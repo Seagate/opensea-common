@@ -60,10 +60,15 @@ static int is_valid_unsigned_char_range(int c)
 
 int safe_isascii(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(is_ASCII(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return is_ASCII(C_CAST(unsigned char, c));
     }
     else
     {
@@ -74,10 +79,15 @@ int safe_isascii(int c)
 
 int safe_isalnum(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isalnum(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isalnum(C_CAST(unsigned char, c));
     }
     else
     {
@@ -88,10 +98,15 @@ int safe_isalnum(int c)
 
 int safe_isalpha(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isalpha(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isalpha(C_CAST(unsigned char, c));
     }
     else
     {
@@ -102,10 +117,15 @@ int safe_isalpha(int c)
 
 int safe_islower(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(islower(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return islower(C_CAST(unsigned char, c));
     }
     else
     {
@@ -135,10 +155,15 @@ int safe_tolower(int c)
 
 int safe_isupper(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isupper(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isupper(C_CAST(unsigned char, c));
     }
     else
     {
@@ -168,10 +193,15 @@ int safe_toupper(int c)
 
 int safe_isdigit(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isdigit(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isdigit(C_CAST(unsigned char, c));
     }
     else
     {
@@ -182,10 +212,15 @@ int safe_isdigit(int c)
 
 int safe_isxdigit(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isxdigit(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isxdigit(C_CAST(unsigned char, c));
     }
     else
     {
@@ -196,10 +231,15 @@ int safe_isxdigit(int c)
 
 int safe_iscntrl(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(iscntrl(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return iscntrl(C_CAST(unsigned char, c));
     }
     else
     {
@@ -210,10 +250,15 @@ int safe_iscntrl(int c)
 
 int safe_isgraph(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isgraph(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isgraph(C_CAST(unsigned char, c));
     }
     else
     {
@@ -224,10 +269,15 @@ int safe_isgraph(int c)
 
 int safe_isspace(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isspace(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isspace(C_CAST(unsigned char, c));
     }
     else
     {
@@ -241,10 +291,15 @@ int safe_isspace(int c)
 // this check-TJE
 int safe_isblank(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isblank(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isblank(C_CAST(unsigned char, c));
     }
     else
     {
@@ -255,10 +310,15 @@ int safe_isblank(int c)
 
 int safe_isprint(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isprint(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isprint(C_CAST(unsigned char, c));
     }
     else
     {
@@ -269,10 +329,15 @@ int safe_isprint(int c)
 
 int safe_ispunct(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(ispunct(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return ispunct(C_CAST(unsigned char, c));
     }
     else
     {
