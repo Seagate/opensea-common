@@ -575,8 +575,13 @@ static void test_os_Get_File_Size(void) {
     fprintf(f, "hello world");
     fclose(f);
 
-    f = fopen("test_file_size.txt", "r");
+    // Test when file pointer is valid
     size_t fileSize = os_Get_File_Size(f);
+    TEST_ASSERT(fileSize == (size_t)-1, "File size should be (size_t)-1 when file pointer is invalid");
+
+    // Reopen the file to get a valid file pointer
+    f = fopen("test_file_size.txt", "r");
+    fileSize = os_Get_File_Size(f);
     TEST_ASSERT(fileSize == 11, "File size should be 11 bytes");
     fclose(f);
     remove("test_file_size.txt");
