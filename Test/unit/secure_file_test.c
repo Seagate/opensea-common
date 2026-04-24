@@ -243,6 +243,15 @@ static void test_secure_Read_File(void) {
     readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 0, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed when elementsize is 0");
 
+    // Test when readResult is less than count (partial read)
+    numberRead = 0;
+    secure_Seek_File(fileInfo, 0, SEEK_SET);
+    readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 6, &numberRead);
+    TEST_ASSERT(readResult == SEC_FILE_END_OF_FILE_REACHED, "secure_Read_File should return end of file error when reading past the end of the file");
+
+    secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo);
+
     // Test for an empty file
     const char* emptyFilename = "test_secure_read_empty.txt";
     f = fopen(emptyFilename, "w");
@@ -250,24 +259,19 @@ static void test_secure_Read_File(void) {
     secureFileInfo* emptyFileInfo = secure_Open_File(emptyFilename, "r", NULL, NULL, NULL);
     readResult = secure_Read_File(emptyFileInfo, buffer, sizeof(buffer), 1, 5, &numberRead);
     TEST_ASSERT(readResult == SEC_FILE_READ_WRITE_ERROR, "secure_Read_File should return read/write error when reading from an empty file");
-
-    // Test when readResult is less than count (partial read)
-    numberRead = 0;
-    secure_Seek_File(fileInfo, 0, SEEK_SET);
-    readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 6, &numberRead);
-    TEST_ASSERT(readResult == SEC_FILE_END_OF_FILE_REACHED, "secure_Read_File should return end of file error when reading past the end of the file");
+    secure_Close_File(emptyFileInfo);
+    free_Secure_File_Info(&emptyFileInfo);
 
     // Test when reading from a write-only file
     secureFileInfo* writeOnlyInfo = secure_Open_File(filename, "w", NULL, NULL, NULL);
     readResult = secure_Read_File(writeOnlyInfo, buffer, sizeof(buffer), 1, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_READ_WRITE_ERROR, "secure_Read_File should return read/write error when reading from a write-only file");
+    secure_Close_File(writeOnlyInfo);
+    free_Secure_File_Info(&writeOnlyInfo);
 
     // Test when fileInfo = NULL
     readResult = secure_Read_File(NULL, buffer, sizeof(buffer), 1, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_INVALID_SECURE_FILE, "secure_Read_File should return invalid secure file error when fileInfo is NULL");
-
-    secure_Close_File(fileInfo);
-    free_Secure_File_Info(&fileInfo);
 }
 
 static void test_secure_Write_File(void) {
