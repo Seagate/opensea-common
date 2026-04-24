@@ -488,6 +488,15 @@ static void test_secure_fprintf_File(void) {
     TEST_ASSERT(strcmp(buffer, "Hello world!") == 0, "File should contain 'Hello world!'");
 }
 
+static void test_os_Directory_Exists(void) {
+    mkdir("test_dir_exists", 0700);
+    char* abs_path = realpath("test_dir_exists", NULL);
+    TEST_ASSERT(os_Directory_Exists(abs_path), "Directory should exist");
+    rmdir("test_dir_exists");
+    TEST_ASSERT(!os_Directory_Exists(abs_path), "Directory should not exist");
+    free(abs_path);
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
@@ -510,4 +519,5 @@ void run_secure_file_tests(void) {
     test_secure_SetPos_File();
     test_secure_vfprintf_File();
     test_secure_fprintf_File();
+    test_os_Directory_Exists();
 }
