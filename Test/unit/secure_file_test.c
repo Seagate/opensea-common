@@ -598,6 +598,17 @@ static void test_exact_Compare_SIDS_And_DACL_Strings(void) {
 }
 #endif
 
+static void test_generate_Log_Name(void) {
+    FILE* f = fopen("test_log_name.txt", "w");
+    fprintf(f, "hello");
+    fclose(f);
+
+    char* logName = generate_Log_Name(NAMING_SERIAL_NUMBER_DATE_TIME, "device123", strlen("device123"), NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
+    TEST_ASSERT(logName != NULL, "generate_Log_Name should return a valid pointer");
+    printf("Generated log name: %s\n", logName);
+    free(logName);
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
@@ -630,4 +641,5 @@ void run_secure_file_tests(void) {
     #if defined(_WIN32)
     test_exact_Compare_SIDS_And_DACL_Strings();
     #endif
+    test_generate_Log_Name();
 }
