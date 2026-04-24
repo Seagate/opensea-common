@@ -349,6 +349,10 @@ static void test_secure_Seek_File(void) {
     eSecureFileError result = secure_Seek_File(NULL, 0, SEEK_SET);
     TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_Seek_File should return invalid secure file error when fileInfo is NULL");
 
+    // Test when initialPosition is invalid
+    result = secure_Seek_File(fileInfo, 6, -1);
+    TEST_ASSERT(result == SEC_FILE_SEEK_FAILURE, "secure_Seek_File should return seek failure error when initialPosition is invalid");
+
     // Move the file position to 6 (after "hello ")
     long pos = 6;
     result = secure_Seek_File(fileInfo, pos, SEEK_SET);
