@@ -326,7 +326,7 @@ static void test_secure_Remove_File(void) {
 }
 
 static void test_secure_Delete_File_By_Name(void) {
-    const char* filename = "test_secure_delete_by_name.txt";
+    const char* filename = "test_secure_delete_by_name1.txt";
     FILE* f = fopen(filename, "w");
     fprintf(f, "hello world");
     fclose(f);
@@ -339,13 +339,14 @@ static void test_secure_Delete_File_By_Name(void) {
 
     // SEC_DELETE_NAME_FAIL_IF_OPEN fails if the file is open
 
-    const char* filename2 = "test_secure_delete_by_name_fail.txt";
+    const char* filename2 = "test_secure_delete_by_name2.txt";
     FILE* f2 = fopen(filename2, "w");
     fprintf(f2, "hello world");
     fclose(f2);
 
     f2 = fopen(filename2, "r");
     result = secure_Delete_File_By_Name(filename2, SEC_DELETE_NAME_FAIL_IF_OPEN);
+    printf("Result of secure_Delete_File_By_Name with file open: %d\n", result);
     TEST_ASSERT(result == SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN, "secure_Delete_File_By_Name should fail if file is open");
 
     fclose(f2);
