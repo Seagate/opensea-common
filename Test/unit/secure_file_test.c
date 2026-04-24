@@ -383,6 +383,10 @@ static void test_secure_Rewind_File(void) {
     eSecureFileError result = secure_Seek_File(fileInfo, pos, SEEK_SET);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Seek_File should succeed");
 
+    // Test when fileInfo = NULL
+    result = secure_Rewind_File(NULL);
+    TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_Rewind_File should return invalid secure file error when fileInfo is NULL");
+
     // Rewind the file back to the beginning
     eSecureFileError rewindResult = secure_Rewind_File(fileInfo);
     TEST_ASSERT(rewindResult == SEC_FILE_SUCCESS, "secure_Rewind_File should succeed");
