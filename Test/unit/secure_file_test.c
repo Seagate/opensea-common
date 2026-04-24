@@ -397,6 +397,11 @@ static void test_secure_Rewind_File(void) {
     TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed");
     TEST_ASSERT(strcmp(buffer, "hello") == 0, "Buffer should contain 'hello'");
 
+    // Test when file is in failure closing state
+    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    result = secure_Rewind_File(fileInfo);
+    TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Rewind_File should return failure closing file error if file is in that state");
+
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 }
