@@ -386,10 +386,10 @@ static void test_secure_GetPos_File(void) {
     fpos_t pos;
     eSecureFileError result = secure_GetPos_File(fileInfo, &pos);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_GetPos_File should succeed");
-    TEST_ASSERT(pos == 0, "Initial file position should be 0");
+    TEST_ASSERT(pos == (fpos_t)0, "Initial file position should be 0");
 
     // Move the file position to 6 (after "hello ")
-    long offset = 6;
+    fpos_t offset = (fpos_t)6;
     result = secure_Seek_File(fileInfo, offset, SEEK_SET);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Seek_File should succeed");
 
