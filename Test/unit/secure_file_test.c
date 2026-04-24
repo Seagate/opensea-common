@@ -544,6 +544,7 @@ static void test_get_Full_Path(void) {
     eReturnValues result = get_Full_Path(abs_path, fullpath);
     TEST_ASSERT(result == SUCCESS, "get_Full_Path should succeed");
     TEST_ASSERT(strlen(fullpath) > 0, "Full path should not be empty");
+    printf("Full path: %s\n", fullpath);
     free(abs_path);
 
     remove(filename);
