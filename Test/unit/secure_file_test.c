@@ -349,6 +349,30 @@ static void test_secure_Delete_File_By_Name(void) {
     TEST_ASSERT(!os_File_Exists(filename), "File should be removed");
 }
 
+static void test_secure_Flush_File(void) {
+    const char* filename = "test_secure_flush.txt";
+    secureFileInfo* fileInfo = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
+
+    const char* data = "hello";
+    eSecureFileError writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 1, strlen(data), NULL);
+    TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed");
+
+    eSecureFileError flushResult = secure_Flush_File(fileInfo);
+    TEST_ASSERT(flushResult == SEC_FILE_SUCCESS, "secure_Flush_File should succeed");
+
+    secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo);
+
+    // Verify the file was written correctly
+    FILE* f = fopen(filename, "r");
+    char buffer[10] = {0};
+    fread(buffer, 1, sizeof(buffer), f);
+    fclose(f);
+    TEST_ASSERT(strcmp(buffer, "hello") == 0, "File should contain 'hello'");
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
@@ -366,4 +390,5 @@ void run_secure_file_tests(void) {
     test_secure_Tell_File();
     // test_secure_Remove_File();
     test_secure_Delete_File_By_Name();
+    test_secure_Flush_File();
 }
