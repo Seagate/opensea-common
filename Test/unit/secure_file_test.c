@@ -571,15 +571,12 @@ static void test_replace_File_Name_In_Path(void) {
 }
 
 static void test_os_Get_File_Size(void) {
-    const char* filename = "test_file_size.txt";
-    FILE* f = fopen(filename, "w");
+    FILE* f = fopen("test_file_size.txt", "w");
     fprintf(f, "hello world");
     fclose(f);
 
-    size_t fileSize = os_Get_File_Size(filename);
+    size_t fileSize = os_Get_File_Size(f);
     TEST_ASSERT(fileSize == 11, "File size should be 11 bytes");
-
-    remove(filename);
 }
 
 #if defined(_WIN32)
