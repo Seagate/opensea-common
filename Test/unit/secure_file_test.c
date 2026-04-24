@@ -437,12 +437,20 @@ static void test_secure_Tell_File(void) {
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
 
+    // Test when fileInfo = NULL
+    oscoffset_t tellResult = secure_Tell_File(NULL);
+    TEST_ASSERT(tellResult == -1, "secure_Tell_File should return -1 when fileInfo is NULL");
+
     // Move the file position to 6 (after "hello ")
     long pos = 6;
     eSecureFileError result = secure_Seek_File(fileInfo, pos, SEEK_SET);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Seek_File should succeed");
     oscoffset_t currentPos = secure_Tell_File(fileInfo);
     TEST_ASSERT(currentPos == pos, "secure_Tell_File should return the correct file position");
+
+    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    tellResult = secure_Tell_File(fileInfo);
+    TEST_ASSERT(tellResult == -1, "secure_Tell_File should return -1 when fileInfo is in failure closing state");
 
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
