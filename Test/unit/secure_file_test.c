@@ -438,6 +438,26 @@ static void test_secure_SetPos_File(void) {
     free_Secure_File_Info(&fileInfo);
 }
 
+static void test_secure_vfprintf_File(void) {
+    const char* filename = "test_secure_vfprintf.txt";
+    secureFileInfo* fileInfo = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
+
+    eSecureFileError result = secure_vfprintf_File(fileInfo, "Hello %s!", (va_list){"world"});
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_vfprintf_File should succeed");
+
+    secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo);
+
+    // Verify the file was written correctly
+    FILE* f = fopen(filename, "r");
+    char buffer[20] = {0};
+    fread(buffer, 1, sizeof(buffer), f);
+    fclose(f);
+    TEST_ASSERT(strcmp(buffer, "Hello world!") == 0, "File should contain 'Hello world!'");
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
@@ -458,4 +478,5 @@ void run_secure_file_tests(void) {
     test_secure_Flush_File();
     test_secure_GetPos_File();
     test_secure_SetPos_File();
+    test_secure_vfprintf_File();
 }
