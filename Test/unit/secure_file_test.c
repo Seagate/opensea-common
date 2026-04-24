@@ -497,6 +497,18 @@ static void test_os_Directory_Exists(void) {
     free(abs_path);
 }
 
+static void test_os_File_Exists(void) {
+    const char* filename = "test_file_exists.txt";
+    FILE* f = fopen(filename, "w");
+    fprintf(f, "hello");
+    fclose(f);
+
+    TEST_ASSERT(os_File_Exists(filename), "File should exist");
+
+    remove(filename);
+    TEST_ASSERT(!os_File_Exists(filename), "File should not exist");
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
@@ -520,4 +532,5 @@ void run_secure_file_tests(void) {
     test_secure_vfprintf_File();
     test_secure_fprintf_File();
     test_os_Directory_Exists();
+    test_os_File_Exists();
 }
