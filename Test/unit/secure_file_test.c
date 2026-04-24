@@ -373,6 +373,34 @@ static void test_secure_Flush_File(void) {
     TEST_ASSERT(strcmp(buffer, "hello") == 0, "File should contain 'hello'");
 }
 
+static void test_secure_GetPos_File(void) {
+    const char* filename = "test_secure_getpos.txt";
+    FILE* f = fopen(filename, "w");
+    fprintf(f, "hello world");
+    fclose(f);
+
+    secureFileInfo* fileInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
+
+    fpos_t pos;
+    eSecureFileError result = secure_GetPos_File(fileInfo, &pos);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_GetPos_File should succeed");
+    TEST_ASSERT(pos == 0, "Initial file position should be 0");
+
+    // Move the file position to 6 (after "hello ")
+    long offset = 6;
+    result = secure_Seek_File(fileInfo, offset, SEEK_SET);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Seek_File should succeed");
+
+    result = secure_GetPos_File(fileInfo, &pos);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_GetPos_File should succeed");
+    TEST_ASSERT(pos == offset, "File position should be updated to the offset");
+
+    secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo);
+}
+
 void run_secure_file_tests(void) {
     test_compare_File_Unique_ID();
     // test_os_Get_File_Unique_Identifying_Information();
@@ -391,4 +419,5 @@ void run_secure_file_tests(void) {
     // test_secure_Remove_File();
     test_secure_Delete_File_By_Name();
     test_secure_Flush_File();
+    test_secure_GetPos_File();
 }
