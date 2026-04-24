@@ -262,6 +262,10 @@ static void test_secure_Read_File(void) {
     readResult = secure_Read_File(writeOnlyInfo, buffer, sizeof(buffer), 1, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_READ_WRITE_ERROR, "secure_Read_File should return read/write error when reading from a write-only file");
 
+    // Test when fileInfo = NULL
+    readResult = secure_Read_File(NULL, buffer, sizeof(buffer), 1, 5, NULL);
+    TEST_ASSERT(readResult == SEC_FILE_INVALID_SECURE_FILE, "secure_Read_File should return invalid secure file error when fileInfo is NULL");
+
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 }
