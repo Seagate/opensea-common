@@ -556,7 +556,7 @@ static void test_replace_File_Name_In_Path(void) {
     fclose(f);
 
     // When fullpath is invalid, replace_File_Name_In_Path should fail
-    eReturnValues result = replace_File_Name_In_Path(NULL, "newfile.txt");
+    eReturnValues result = replace_File_Name_In_Path("testfile.txt", "newfile.txt");
     TEST_ASSERT(result == FAILURE, "replace_File_Name_In_Path should fail with invalid fullpath");
 
     char fullpath[260] = {0};
