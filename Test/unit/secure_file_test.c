@@ -206,6 +206,7 @@ static void test_secure_Close_File(void) {
     // Change fileInfo state to simulate failure closing file
     fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
     closeResult = secure_Close_File(fileInfo);
+    printf("closeResult: %d\n", closeResult);
     TEST_ASSERT(closeResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Close_File should return failure closing file error if fileInfo is in that state");
 
     free_Secure_File_Info(&fileInfo);
