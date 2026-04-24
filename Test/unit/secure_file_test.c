@@ -331,6 +331,20 @@ static void test_secure_Delete_File_By_Name(void) {
     fprintf(f, "hello world");
     fclose(f);
 
+    // If file is open, SEC_DELETE_NAME_UNLINK_IF_OPEN should succeed by unlinking the file
+    f = fopen(filename, "r");
+    eSecureFileError result = secure_Delete_File_By_Name(filename, SEC_DELETE_NAME_UNLINK_IF_OPEN);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Delete_File_By_Name should succeed with unlink if file is open");
+    TEST_ASSERT(!os_File_Exists(filename), "File should be unlinked and not exist");
+
+    // SEC_DELETE_NAME_FAIL_IF_OPEN fails if the file is open
+
+    FILE* f2 = fopen(filename, "r");
+    result = secure_Delete_File_By_Name(filename, SEC_DELETE_NAME_FAIL_IF_OPEN);
+    TEST_ASSERT(result == SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN, "secure_Delete_File_By_Name should fail if file is open");
+
+    fclose(f);
+
     eSecureFileError result = secure_Delete_File_By_Name(filename, SEC_DELETE_NAME_FAIL_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Delete_File_By_Name should succeed");
     TEST_ASSERT(!os_File_Exists(filename), "File should be removed");
