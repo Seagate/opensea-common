@@ -605,8 +605,29 @@ static void test_generate_Log_Name(void) {
 
     char* logName = generate_Log_Name(NAMING_SERIAL_NUMBER_DATE_TIME, "device123", strlen("device123"), NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
     TEST_ASSERT(logName != NULL, "generate_Log_Name should return a valid pointer");
+    TEST_ASSERT(strstr(logName, "device123") != NULL, "Log name should contain the device identifier");
+    TEST_ASSERT(strstr(logName, "logfile") != NULL, "Log name should contain the log name");
+    TEST_ASSERT(strstr(logName, "txt") != NULL, "Log name should contain the log extension");
     printf("Generated log name: %s\n", logName);
     free(logName);
+}
+
+static void test_create_And_Open_Secure_Log_File(void) {
+    FILE* f = fopen("test_secure_log_file.txt", "w");
+    fprintf(f, "hello");
+    fclose(f);
+
+    secureFileInfo* fileInfo = secure_Open_File("test_secure_log_file.txt", "r", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
+
+    eReturnValues result = create_And_Open_Secure_Log_File("device123", strlen("device123"), fileInfo, NAMING_SERIAL_NUMBER_DATE_TIME, NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
+    TEST_ASSERT(result == SUCCESS, "create_And_Open_Secure_Log_File should succeed");
+    TEST_ASSERT(fileInfo->isValid, "File info should be valid after creating secure log file");
+    TEST_ASSERT(fileInfo->file != NULL, "File pointer should be valid after creating secure log file");
+
+    secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo);
 }
 
 void run_secure_file_tests(void) {
@@ -642,4 +663,5 @@ void run_secure_file_tests(void) {
     test_exact_Compare_SIDS_And_DACL_Strings();
     #endif
     test_generate_Log_Name();
+    test_create_And_Open_Secure_Log_File();
 }
