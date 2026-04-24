@@ -438,13 +438,23 @@ static void test_secure_SetPos_File(void) {
     free_Secure_File_Info(&fileInfo);
 }
 
+static eSecureFileError test_wrapper_vfprintf(secureFileInfo* fileInfo, const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+
+    eSecureFileError result = secure_vfprintf_File(fileInfo, fmt, args);
+
+    va_end(args);
+    return result;
+}
+
 static void test_secure_vfprintf_File(void) {
     const char* filename = "test_secure_vfprintf.txt";
     secureFileInfo* fileInfo = secure_Open_File(filename, "w", NULL, NULL, NULL);
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
 
-    eSecureFileError result = secure_vfprintf_File(fileInfo, "Hello %s!", (va_list){"world"});
+    eSecureFileError result = test_wrapper_vfprintf(fileInfo, "Hello %s!", "world");
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_vfprintf_File should succeed");
 
     secure_Close_File(fileInfo);
