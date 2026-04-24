@@ -302,15 +302,21 @@ static void test_secure_Write_File(void) {
     // Test when elementsize is 0
     writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 0, strlen(data), NULL);
     TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed when elementsize is 0");
-
-    writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 1, strlen(data), NULL);
-    TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed");
     
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 
+    const char* filename2 = "test_secure_write2.txt";
+    fileInfo = secure_Open_File(filename2, "w", NULL, NULL, NULL);
+
+    writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 1, strlen(data), NULL);
+    TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed");
+
+    secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo);
+
     // Verify the file was written correctly
-    FILE* f = fopen(filename, "r");
+    FILE* f = fopen(filename2, "r");
     char buffer[10] = {0};
     fread(buffer, 1, sizeof(buffer), f);
     fclose(f);
