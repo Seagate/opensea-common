@@ -258,6 +258,10 @@ static void test_secure_Read_File(void) {
     readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 6, &numberRead);
     TEST_ASSERT(readResult == SEC_FILE_END_OF_FILE_REACHED, "secure_Read_File should return end of file error when reading past the end of the file");
 
+    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 5, NULL);
+    TEST_ASSERT(readResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Read_File should return failure closing file error if fileInfo is in that state");
+
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 
@@ -315,6 +319,10 @@ static void test_secure_Write_File(void) {
     // Test when elementsize is 0
     writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 0, strlen(data), NULL);
     TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed when elementsize is 0");
+
+    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 1, strlen(data), NULL);
+    TEST_ASSERT(writeResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Write_File should return failure closing file error if fileInfo is in that state");
 
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
