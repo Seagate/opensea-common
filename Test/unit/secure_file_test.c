@@ -575,9 +575,11 @@ static void test_os_Get_File_Size(void) {
     fprintf(f, "hello world");
     fclose(f);
 
+    f = fopen("test_file_size.txt", "r");
     size_t fileSize = os_Get_File_Size(f);
-    printf("File size returned by os_Get_File_Size: %zu\n", fileSize);
     TEST_ASSERT(fileSize == 11, "File size should be 11 bytes");
+    fclose(f);
+    remove("test_file_size.txt");
 }
 
 #if defined(_WIN32)
