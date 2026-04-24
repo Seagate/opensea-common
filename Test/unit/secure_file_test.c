@@ -562,9 +562,9 @@ static void test_replace_File_Name_In_Path(void) {
     TEST_ASSERT(result == SUCCESS, "get_Full_Path should succeed");
 
     char newPath[260] = {0};
-    result = replace_File_Name_In_Path(fullpath, "newfile.txt", newPath);
+    result = replace_File_Name_In_Path(fullpath, "newfile.txt");
     TEST_ASSERT(result == SUCCESS, "replace_File_Name_In_Path should succeed");
-    TEST_ASSERT(strstr(newPath, "newfile.txt") != NULL, "New path should contain the new filename");
+    TEST_ASSERT(strstr(fullpath, "newfile.txt") != NULL, "New path should contain the new filename");
 
     free(abs_path);
     remove(filename);
