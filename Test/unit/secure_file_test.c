@@ -217,6 +217,31 @@ static void test_secure_Read_File(void) {
     TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed");
     TEST_ASSERT(strcmp(buffer, "hello") == 0, "Buffer should contain 'hello'");
 
+    // Test when buffer = NULL
+    readResult = secure_Read_File(fileInfo, NULL, sizeof(buffer), 1, 5, NULL);
+    TEST_ASSERT(readResult == SEC_FILE_INVALID_PARAMETER, "Should return invalid parameter error when buffer is NULL");
+    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_PARAMETER, "fileInfo error should be set to invalid parameter when buffer is NULL");
+
+    // Test when buffersize < elementsize * count
+    char smallBuffer[2] = {0};
+    readResult = secure_Read_File(fileInfo, smallBuffer, sizeof(smallBuffer), 1, 5, NULL);
+    TEST_ASSERT(readResult == SEC_FILE_BUFFER_TOO_SMALL, "Should return buffer too small error when buffersize is insufficient");
+    TEST_ASSERT(fileInfo->error == SEC_FILE_BUFFER_TOO_SMALL, "fileInfo error should be set to buffer too small when buffersize is insufficient");
+
+    // Test when numberread is provided
+    size_t numberRead = 0;
+    readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 5, &numberRead);
+    TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed when numberread is provided");
+    TEST_ASSERT(numberRead == 5, "numberread should be set to the number of elements read");
+
+    // Test when count is 0
+    readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 0, NULL);
+    TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed when count is 0");
+
+    // Test when elementsize is 0
+    readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 0, 5, NULL);
+    TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed when elementsize is 0");
+
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 }
