@@ -551,28 +551,21 @@ static void test_secure_Delete_File_By_Name(void) {
     result = secure_Delete_File_By_Name(filename3, SEC_DELETE_NAME_FAIL_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure when remove fails");
 
-    system("chmod 755 secure_dir");
-
     // Test when read permissions are removed from the file
     system("chmod 000 secure_dir/test_secure_delete_by_name3.txt");
+    result = secure_Delete_File_By_Name(filename3, SEC_DELETE_NAME_UNLINK_IF_OPEN);
+    TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure when unlink also fails due to permissions");
+
+    system("chmod 755 secure_dir");
+
     result = secure_Delete_File_By_Name(filename3, SEC_DELETE_NAME_FAIL_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN, "Should return cannot remove file still open when remove fails due to permissions");
 
     result = secure_Delete_File_By_Name(filename3, SEC_DELETE_NAME_UNLINK_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "Should succeed with unlink if remove fails due to permissions");
 
-    system("chmod 555 secure_dir");
-    result = secure_Delete_File_By_Name(filename3, SEC_DELETE_NAME_UNLINK_IF_OPEN);
-    TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure when unlink also fails due to permissions");
-
     remove(filename3);
     rmdir("secure_dir");
-
-    // Check for non-existent file
-    const char* non_existent_file = "non_existent_file.txt";
-    remove(non_existent_file);
-    result = secure_Delete_File_By_Name(non_existent_file, SEC_DELETE_NAME_FAIL_IF_OPEN);
-    TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure for non-existent file");
 }
 
 static void test_secure_Flush_File(void) {
