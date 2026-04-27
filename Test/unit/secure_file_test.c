@@ -513,6 +513,11 @@ static void test_secure_Delete_File_By_Name(void) {
     fprintf(f, "hello world");
     fclose(f);
 
+    // Test when path is invalid
+    const char* badPath = "???///invalid_path_###";
+    result = secure_Delete_File_By_Name(badPath, SEC_DELETE_NAME_FAIL_IF_OPEN);
+    TEST_ASSERT(result == SEC_FILE_INVALID_PATH, "Should fail when full path resolution fails");
+
     result = secure_Delete_File_By_Name(filename, SEC_DELETE_NAME_FAIL_IF_OPEN);
     printf("Result of deleting non-existent file: %d\n", result);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Delete_File_By_Name should succeed");
