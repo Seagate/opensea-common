@@ -525,7 +525,11 @@ static void test_secure_Flush_File(void) {
     eSecureFileError writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 1, strlen(data), NULL);
     TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed");
 
-    eSecureFileError flushResult = secure_Flush_File(fileInfo);
+    // Test when fileInfo = NULL
+    eSecureFileError flushResult = secure_Flush_File(NULL);
+    TEST_ASSERT(flushResult == SEC_FILE_INVALID_SECURE_FILE, "secure_Flush_File should return invalid secure file error when fileInfo is NULL");
+
+    flushResult = secure_Flush_File(fileInfo);
     TEST_ASSERT(flushResult == SEC_FILE_SUCCESS, "secure_Flush_File should succeed");
 
     fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
