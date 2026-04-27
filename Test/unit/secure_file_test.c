@@ -454,6 +454,23 @@ static void test_secure_Tell_File(void) {
 
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
+
+    // Test when FILE pointer is NULL
+    const char* filename2 = "test_secure_tell2.txt";
+    FILE* f2 = fopen(filename2, "w");
+    fprintf(f2, "hello world");
+    fclose(f2);
+
+    secureFileInfo* fileInfo2 = secure_Open_File(filename2, "r", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo2 != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo2->isValid, "secure_Open_File should return valid file info");
+
+    fileInfo2->file = NULL;
+    oscoffset_t tellResult2 = secure_Tell_File(fileInfo2);
+    TEST_ASSERT(tellResult2 == -1, "secure_Tell_File should return -1 when FILE pointer is NULL");
+
+    secure_Close_File(fileInfo2);
+    free_Secure_File_Info(&fileInfo2);
 }
 
 static void test_secure_Remove_File(void) {
