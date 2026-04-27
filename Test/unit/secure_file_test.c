@@ -656,6 +656,7 @@ static void test_secure_GetPos_File(void) {
     // Test when file is closed
     result = secure_GetPos_File(fileInfo1, &pos);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "secure_GetPos_File should return failure when file is closed");
+    printf("result: %d\n", result);
     free_Secure_File_Info(&fileInfo1);
 }
 
