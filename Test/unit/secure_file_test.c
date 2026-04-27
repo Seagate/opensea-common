@@ -626,6 +626,19 @@ static void test_secure_GetPos_File(void) {
     current = ftell(fileInfo->file);
     TEST_ASSERT(current == offset, "File position should be updated to the offset");
 
+    // Test when pos == NULL
+    result = secure_GetPos_File(fileInfo, NULL);
+    TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_GetPos_File should return invalid parameter error when pos is NULL");
+    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_PARAMETER, "fileInfo error should be set to invalid parameter when pos is NULL");
+
+    // Test when fileInfo = NULL
+    result = secure_GetPos_File(NULL, &pos);
+    TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_GetPos_File should return invalid secure file error when fileInfo is NULL");
+
+    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    result = secure_GetPos_File(fileInfo, &pos);
+    TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_GetPos_File should return failure closing file error if fileInfo is in that state");
+
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 }
