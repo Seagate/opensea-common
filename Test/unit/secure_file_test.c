@@ -651,7 +651,7 @@ static void test_secure_GetPos_File(void) {
     TEST_ASSERT(fileInfo1 != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo1->isValid, "secure_Open_File should return valid file info");
 
-    secure_Close_File(fileInfo1);
+    fclose(fileInfo1->file);
 
     // Test when file is closed
     result = secure_GetPos_File(fileInfo1, &pos);
