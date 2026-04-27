@@ -522,6 +522,18 @@ static void test_secure_Delete_File_By_Name(void) {
     printf("Result of deleting non-existent file: %d\n", result);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Delete_File_By_Name should succeed");
     TEST_ASSERT(!os_File_Exists(filename), "File should be removed");
+
+    // Test for a not secure directory
+    system("mkdir insecure_dir");
+    system("chmod 777 insecure_dir");
+
+    const char* filename2 = "insecure_dir/test.txt";
+    FILE* f = fopen(filename2, "w");
+    fprintf(f, "Hello world");
+    fclose(f);
+
+    result = secure_Delete_File_By_Name(filename2, SEC_DELETE_NAME_FAIL_IF_OPEN);
+    TEST_ASSERT(result == SEC_FILE_INSECURE_PATH, "Should fail when parent directory is not secure");
 }
 
 static void test_secure_Flush_File(void) {
