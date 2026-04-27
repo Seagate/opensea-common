@@ -535,15 +535,24 @@ static void test_secure_Delete_File_By_Name(void) {
     result = secure_Delete_File_By_Name(filename2, SEC_DELETE_NAME_FAIL_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_INSECURE_PATH, "Should fail when parent directory is not secure");
 
-    // Test when file does not have write permissions
-    const char* filename3 = "test_secure_delete_by_name3.txt";
+    remove(filename2);
+    rmdir("insecure_dir");
+
+    // Test when the directory does not have write permissions
+    system("mkdir secure_dir");
+
+    const char* filename3 = "secure_dir/test_secure_delete_by_name3.txt";
     FILE* f3 = fopen(filename3, "w");
     fprintf(f3, "hello world");
     fclose(f3);
 
-    chmod(filename3, 0444);
+    system("chmod 555 secure_dir");
+
     result = secure_Delete_File_By_Name(filename3, SEC_DELETE_NAME_FAIL_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure when remove fails");
+
+    remove(filename3);
+    rmdir("secure_dir");
 }
 
 static void test_secure_Flush_File(void) {
