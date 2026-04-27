@@ -569,8 +569,8 @@ static void test_secure_Delete_File_By_Name(void) {
 
     // Test when the file does not exist
     const char* fileName = "ghost_file.txt";
-    FILE* f = fopen(fileName, "w");
-    fclose(f);
+    FILE* f4 = fopen(fileName, "w");
+    fclose(f4);
     remove(fileName);
 
     result = secure_Delete_File_By_Name(fileName, SEC_DELETE_NAME_FAIL_IF_OPEN);
