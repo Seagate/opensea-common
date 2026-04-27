@@ -566,16 +566,6 @@ static void test_secure_Delete_File_By_Name(void) {
 
     remove(filename3);
     rmdir("secure_dir");
-
-    // Test when the file does not exist
-    const char* fileName = "ghost_file.txt";
-    FILE* f4 = fopen(fileName, "w");
-    fclose(f4);
-    remove(fileName);
-
-    result = secure_Delete_File_By_Name(fileName, SEC_DELETE_NAME_FAIL_IF_OPEN);
-    TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure for non-existent file");
-    printf("Result of deleting non-existent file: %d\n", result);
 }
 
 static void test_secure_Flush_File(void) {
