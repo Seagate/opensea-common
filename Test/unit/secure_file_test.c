@@ -643,9 +643,9 @@ static void test_secure_GetPos_File(void) {
     free_Secure_File_Info(&fileInfo);
 
     const char* filename1 = "test_secure_getpos1.txt";
-    FILE* f = fopen(filename1, "w");
-    fprintf(f, "hello world");
-    fclose(f);
+    FILE* f1 = fopen(filename1, "w");
+    fprintf(f1, "hello world");
+    fclose(f1);
 
     secureFileInfo* fileInfo1 = secure_Open_File(filename1, "r", NULL, NULL, NULL);
     TEST_ASSERT(fileInfo1 != NULL, "secure_Open_File should return a valid pointer");
