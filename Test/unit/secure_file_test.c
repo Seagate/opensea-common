@@ -575,6 +575,7 @@ static void test_secure_Delete_File_By_Name(void) {
 
     result = secure_Delete_File_By_Name(fileName, SEC_DELETE_NAME_FAIL_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure for non-existent file");
+    printf("Result of deleting non-existent file: %d\n", result);
 }
 
 static void test_secure_Flush_File(void) {
