@@ -551,6 +551,13 @@ static void test_secure_Delete_File_By_Name(void) {
     result = secure_Delete_File_By_Name(filename3, SEC_DELETE_NAME_FAIL_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure when remove fails");
 
+    system("chmod 755 secure_dir");
+
+    // Test when read permissions are removed from the file
+    system("chmod 000 secure_dir/test_secure_delete_by_name3.txt");
+    result = secure_Delete_File_By_Name(filename3, SEC_DELETE_NAME_FAIL_IF_OPEN);
+    TEST_ASSERT(result == SEC_FILE_CANNOT_REMOVE_FILE_STILL_OPEN, "Should return cannot remove file still open when remove fails due to permissions");
+
     remove(filename3);
     rmdir("secure_dir");
 }
