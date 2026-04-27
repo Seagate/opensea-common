@@ -568,12 +568,12 @@ static void test_secure_Delete_File_By_Name(void) {
     rmdir("secure_dir");
 
     // Test when the file does not exist
-    const char* filename = "ghost_file.txt";
+    const char* fileName = "ghost_file.txt";
 
     // Ensure file does NOT exist
-    remove(filename);
+    remove(fileName);
 
-    result = secure_Delete_File_By_Name(filename, SEC_DELETE_NAME_FAIL_IF_OPEN);
+    result = secure_Delete_File_By_Name(fileName, SEC_DELETE_NAME_FAIL_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure for non-existent file");
 }
 
