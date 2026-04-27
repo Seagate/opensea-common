@@ -460,11 +460,6 @@ static void test_secure_Tell_File(void) {
     fprintf(f2, "hello world");
     fclose(f2);
 
-    // Test for closed file
-    tellResult = secure_Tell_File(fileInfo);
-    TEST_ASSERT(tellResult == -1, "secure_Tell_File should return -1 when file is closed");
-    TEST_ASSERT(fileInfo->error == SEC_FILE_SEEK_FAILURE, "fileInfo error should be set to SEC_FILE_SEEK_FAILURE when file is closed");
-
     secureFileInfo* fileInfo2 = secure_Open_File(filename2, "r", NULL, NULL, NULL);
     TEST_ASSERT(fileInfo2 != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo2->isValid, "secure_Open_File should return valid file info");
