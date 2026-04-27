@@ -497,9 +497,13 @@ static void test_secure_Delete_File_By_Name(void) {
     fprintf(f, "hello world");
     fclose(f);
 
+    // Test when filename = NULL
+    eSecureFileError result = secure_Delete_File_By_Name(NULL, SEC_DELETE_NAME_FAIL_IF_OPEN);
+    TEST_ASSERT(result == SEC_FILE_INVALID_PATH, "secure_Delete_File_By_Name should return invalid parameter error when filename is NULL");
+
     // If file is open, SEC_DELETE_NAME_UNLINK_IF_OPEN should succeed by unlinking the file
     f = fopen(filename, "r");
-    eSecureFileError result = secure_Delete_File_By_Name(filename, SEC_DELETE_NAME_UNLINK_IF_OPEN);
+    result = secure_Delete_File_By_Name(filename, SEC_DELETE_NAME_UNLINK_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Delete_File_By_Name should succeed with unlink if file is open");
     TEST_ASSERT(!os_File_Exists(filename), "File should be unlinked and not exist");
     fclose(f);
