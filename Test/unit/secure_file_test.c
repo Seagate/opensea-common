@@ -566,12 +566,13 @@ static void test_secure_Delete_File_By_Name(void) {
     TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure when unlink also fails due to permissions");
 
     remove(filename3);
+    rmdir("secure_dir");
 
     // Check for non-existent file
-    result = secure_Delete_File_By_Name(filename3, SEC_DELETE_NAME_FAIL_IF_OPEN);
+    const char* non_existent_file = "non_existent_file.txt";
+    remove(non_existent_file);
+    result = secure_Delete_File_By_Name(non_existent_file, SEC_DELETE_NAME_FAIL_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure for non-existent file");
-
-    rmdir("secure_dir");
 }
 
 static void test_secure_Flush_File(void) {
