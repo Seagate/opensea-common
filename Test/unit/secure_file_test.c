@@ -528,6 +528,10 @@ static void test_secure_Flush_File(void) {
     eSecureFileError flushResult = secure_Flush_File(fileInfo);
     TEST_ASSERT(flushResult == SEC_FILE_SUCCESS, "secure_Flush_File should succeed");
 
+    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    flushResult = secure_Flush_File(fileInfo);
+    TEST_ASSERT(flushResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Flush_File should return failure closing file error if fileInfo is in that state");
+
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 
