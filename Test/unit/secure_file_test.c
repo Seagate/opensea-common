@@ -641,6 +641,22 @@ static void test_secure_GetPos_File(void) {
 
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
+
+    const char* filename1 = "test_secure_getpos1.txt";
+    FILE* f = fopen(filename1, "w");
+    fprintf(f, "hello world");
+    fclose(f);
+
+    secureFileInfo* fileInfo1 = secure_Open_File(filename1, "r", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo1 != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo1->isValid, "secure_Open_File should return valid file info");
+
+    secure_Close_File(fileInfo1);
+
+    // Test when file is closed
+    result = secure_GetPos_File(fileInfo1, &pos);
+    TEST_ASSERT(result == SEC_FILE_FAILURE, "secure_GetPos_File should return failure when file is closed");
+    free_Secure_File_Info(&fileInfo1);
 }
 
 static void test_secure_SetPos_File(void) {
