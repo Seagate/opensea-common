@@ -551,9 +551,6 @@ static void test_secure_Delete_File_By_Name(void) {
     result = secure_Delete_File_By_Name(filename3, SEC_DELETE_NAME_FAIL_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure when remove fails");
 
-    result = secure_Delete_File_By_Name(filename3, SEC_DELETE_NAME_UNLINK_IF_OPEN);
-    TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure when unlink also fails due to permissions");
-
     system("chmod 755 secure_dir");
 
     // Test when read permissions are removed from the file
@@ -564,7 +561,16 @@ static void test_secure_Delete_File_By_Name(void) {
     result = secure_Delete_File_By_Name(filename3, SEC_DELETE_NAME_UNLINK_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "Should succeed with unlink if remove fails due to permissions");
 
+    system("chmod 555 secure_dir");
+    result = secure_Delete_File_By_Name(filename3, SEC_DELETE_NAME_UNLINK_IF_OPEN);
+    TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure when unlink also fails due to permissions");
+
     remove(filename3);
+
+    // Check for non-existent file
+    result = secure_Delete_File_By_Name(filename3, SEC_DELETE_NAME_FAIL_IF_OPEN);
+    TEST_ASSERT(result == SEC_FILE_FAILURE, "Should return failure for non-existent file");
+
     rmdir("secure_dir");
 }
 
