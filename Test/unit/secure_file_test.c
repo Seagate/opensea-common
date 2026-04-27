@@ -528,9 +528,9 @@ static void test_secure_Delete_File_By_Name(void) {
     system("chmod 777 insecure_dir");
 
     const char* filename2 = "insecure_dir/test.txt";
-    FILE* f = fopen(filename2, "w");
-    fprintf(f, "Hello world");
-    fclose(f);
+    FILE* f2 = fopen(filename2, "w");
+    fprintf(f2, "Hello world");
+    fclose(f2);
 
     result = secure_Delete_File_By_Name(filename2, SEC_DELETE_NAME_FAIL_IF_OPEN);
     TEST_ASSERT(result == SEC_FILE_INSECURE_PATH, "Should fail when parent directory is not secure");
