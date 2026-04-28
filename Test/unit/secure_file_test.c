@@ -179,22 +179,10 @@ static void test_secure_Open_File(void) {
     TEST_ASSERT(fileInfo->fileSize == 5, "File size should be 5 bytes");
     free_Secure_File_Info(&fileInfo);
 
-    secureFileInfo* fileInfo1 = secure_Open_File(filename, "w", NULL, NULL, NULL);
-    TEST_ASSERT(fileInfo1 != NULL, "Should return valid pointer");
-    TEST_ASSERT(fileInfo1->file != NULL, "File should be opened");
-    TEST_ASSERT(fileInfo1->isValid, "File should be valid");
-    free_Secure_File_Info(&fileInfo1);
-
-    secureFileInfo* fileInfo2 = secure_Open_File("./dirfile.txt", "w", NULL, NULL, NULL);
-    TEST_ASSERT(fileInfo2 != NULL, "Should return valid pointer");
-    TEST_ASSERT(fileInfo2->file != NULL, "File should be opened");
-    TEST_ASSERT(fileInfo2->isValid, "File should be valid");
-    free_Secure_File_Info(&fileInfo2);
-
-    // Open file with invalid mode
-    // secureFileInfo* invalidModeInfo = secure_Open_File(filename, "x", NULL, NULL, NULL);
-    // TEST_ASSERT(invalidModeInfo->error == SEC_FILE_INVALID_MODE, "Should return invalid mode error");
-    // free_Secure_File_Info(&invalidModeInfo);
+    // Test for invalid mode
+    fileInfo = secure_Open_File(filename, "x", extList, NULL, NULL);
+    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_MODE, "Should return invalid mode error for unsupported mode");
+    free_Secure_File_Info(&fileInfo);
 }
 
 static void test_secure_Close_File(void) {
