@@ -742,6 +742,15 @@ static void test_secure_vfprintf_File(void) {
     eSecureFileError result = test_wrapper_vfprintf(fileInfo, "Hello %s!", "world");
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_vfprintf_File should succeed");
 
+    // Test when format = NULL
+    result = test_wrapper_vfprintf(fileInfo, NULL);
+    TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_vfprintf_File should return invalid parameter error when format is NULL");
+    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_PARAMETER, "fileInfo error should be set to invalid parameter when format is NULL");
+
+    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    result = test_wrapper_vfprintf(fileInfo, "This should fail");
+    TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_vfprintf_File should return failure closing file error if fileInfo is in that state");
+
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 
@@ -751,6 +760,21 @@ static void test_secure_vfprintf_File(void) {
     fread(buffer, 1, sizeof(buffer), f);
     fclose(f);
     TEST_ASSERT(strcmp(buffer, "Hello world!") == 0, "File should contain 'Hello world!'");
+
+    // Test when file is closed
+    const char* filename2 = "test_secure_vfprintf2.txt";
+    FILE* f2 = fopen(filename2, "w");
+    fprintf(f2, "hello world");
+    fclose(f2);
+
+    secureFileInfo* fileInfo2 = secure_Open_File(filename2, "r", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo2 != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo2->isValid, "secure_Open_File should return valid file info");
+
+    fclose(fileInfo2->file);
+    result = test_wrapper_vfprintf(fileInfo2, "This should fail");
+    TEST_ASSERT(result == SEC_FILE_FAILURE, "secure_vfprintf_File should return failure when file is closed");
+    free_Secure_File_Info(&fileInfo2);
 }
 
 static void test_secure_fprintf_File(void) {
