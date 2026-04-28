@@ -970,7 +970,11 @@ static void test_generate_Log_Name(void) {
 static void test_create_And_Open_Secure_Log_File(void) {
     secureFileInfo* fileInfo = NULL;
 
-    eReturnValues result = create_And_Open_Secure_Log_File("device123", strlen("device123"), &fileInfo, NAMING_SERIAL_NUMBER_DATE_TIME, NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
+    // Test when deviceIdentifier is NULL
+    eReturnValues result = create_And_Open_Secure_Log_File(NULL, 0, &fileInfo, NAMING_SERIAL_NUMBER_DATE_TIME, NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
+    TEST_ASSERT(result == BAD_PARAMETER, "Function should return BAD_PARAMETER when device identifier is NULL");
+
+    result = create_And_Open_Secure_Log_File("device123", strlen("device123"), &fileInfo, NAMING_SERIAL_NUMBER_DATE_TIME, NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
     TEST_ASSERT(result == SUCCESS, "Function should succeed");
     TEST_ASSERT(fileInfo != NULL, "fileInfo should be allocated");
     TEST_ASSERT(fileInfo->isValid, "File info should be valid");
