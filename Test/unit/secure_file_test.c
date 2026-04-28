@@ -948,16 +948,16 @@ static void test_generate_Log_Name(void) {
     TEST_ASSERT(logName != NULL, "generate_Log_Name should return a valid pointer when logPath is provided");
     TEST_ASSERT(strstr(logName, "/logs") != NULL, "Log name should contain the log path");
 
-    // Test when device identifier is NULL
-    char* logName2 = generate_Log_Name(NAMING_SERIAL_NUMBER_DATE_TIME, NULL, 0, NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
-    TEST_ASSERT(logName2 == NULL, "generate_Log_Name should return NULL when device identifier is NULL");
-
     // Test when logExt is NULL
-    logName2 = generate_Log_Name(NAMING_SERIAL_NUMBER_DATE_TIME, "device123", strlen("device123"), NULL, 0, "logfile", strlen("logfile"), NULL, 0);
-    TEST_ASSERT(logName2 != NULL, "generate_Log_Name should return a valid pointer when log extension is NULL");
+    logName = generate_Log_Name(NAMING_SERIAL_NUMBER_DATE_TIME, "device123", strlen("device123"), NULL, 0, "logfile", strlen("logfile"), NULL, 0);
+    TEST_ASSERT(logName != NULL, "generate_Log_Name should return a valid pointer when log extension is NULL");
+
+    // Test when device identifier is NULL
+    logName = generate_Log_Name(NAMING_SERIAL_NUMBER_DATE_TIME, NULL, 0, NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
+    TEST_ASSERT(logName == NULL, "generate_Log_Name should return NULL when device identifier is NULL");
+
 
     free(logName);
-    free(logName2);
 }
 
 static void test_create_And_Open_Secure_Log_File(void) {
