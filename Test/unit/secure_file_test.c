@@ -180,12 +180,16 @@ static void test_secure_Open_File(void) {
     free_Secure_File_Info(&fileInfo);
 
     const char* filename2 = "test_secure_open_invalid_ext.log";
+    FILE* f2 = fopen(filename2, "w");
+    fclose(f2);
     secureFileInfo* fileInfo2 = secure_Open_File(filename2, "r", extList, NULL, NULL);
     TEST_ASSERT(fileInfo2 != NULL, "secure_Open_File should return a valid pointer even for invalid extension");
     free_Secure_File_Info(&fileInfo2);
 
     // Test for invalid extension
     const char* filename3 = "test_secure_open_invalid_ext.abc";
+    FILE* f3 = fopen(filename3, "w");
+    fclose(f3);
     secureFileInfo* fileInfo3 = secure_Open_File(filename3, "r", extList, NULL, NULL);
     TEST_ASSERT(fileInfo3->error == SEC_FILE_INVALID_FILE_EXTENSION, "Should return invalid file extension error for unsupported extension");
     free_Secure_File_Info(&fileInfo3);
