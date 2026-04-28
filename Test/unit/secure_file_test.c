@@ -784,6 +784,19 @@ static void test_secure_fprintf_File(void) {
     eSecureFileError result = secure_fprintf_File(fileInfo, "Hello %s!", "world");
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fprintf_File should succeed");
 
+    // Test when format = NULL
+    result = secure_fprintf_File(fileInfo, NULL);
+    TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_fprintf_File should return invalid parameter error when format is NULL");
+    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_PARAMETER, "fileInfo error should be set to invalid parameter when format is NULL");
+
+    // Test when fileInfo = NULL
+    result = secure_fprintf_File(NULL, "This should fail");
+    TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_fprintf_File should return invalid secure file error when fileInfo is NULL");
+
+    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    result = secure_fprintf_File(fileInfo, "This should fail");
+    TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_fprintf_File should return failure closing file error if fileInfo is in that state");
+
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 
