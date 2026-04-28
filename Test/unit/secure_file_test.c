@@ -735,6 +735,10 @@ static eSecureFileError test_wrapper_vfprintf(secureFileInfo* fileInfo, const ch
 
 static void test_secure_vfprintf_File(void) {
     const char* filename = "test_secure_vfprintf.txt";
+    FILE* f = fopen(filename, "w");
+    fprintf(f, "hello");
+    fclose(f);
+    
     secureFileInfo* fileInfo = secure_Open_File(filename, "w", NULL, NULL, NULL);
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
@@ -761,8 +765,12 @@ static void test_secure_vfprintf_File(void) {
     fclose(f);
     TEST_ASSERT(strcmp(buffer, "Hello world!") == 0, "File should contain 'Hello world!'");
 
-    // Test when file is closed
+    // Test for writing to a read-only file
     const char* filename2 = "test_secure_vfprintf2.txt";
+    FILE* f2 = fopen(filename2, "w");
+    fprintf(f2, "hello");
+    fclose(f2);
+
     secureFileInfo* fileInfo2 = secure_Open_File(filename2, "r", NULL, NULL, NULL);
     TEST_ASSERT(fileInfo2 != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo2->isValid, "secure_Open_File should return valid file info");
