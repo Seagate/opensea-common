@@ -774,6 +774,7 @@ static void test_secure_vfprintf_File(void) {
     fclose(fileInfo2->file);
     result = test_wrapper_vfprintf(fileInfo2, "This should fail");
     TEST_ASSERT(result == SEC_FILE_FAILURE, "secure_vfprintf_File should return failure when file is closed");
+    printf("Result of vfprintf on closed file: %d\n", result);
     free_Secure_File_Info(&fileInfo2);
 }
 
