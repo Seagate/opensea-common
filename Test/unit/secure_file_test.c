@@ -746,6 +746,14 @@ static void test_secure_vfprintf_File(void) {
     eSecureFileError result = test_wrapper_vfprintf(fileInfo, "Hello %s!", "world");
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_vfprintf_File should succeed");
 
+    // Test for a missing argument
+    result = test_wrapper_vfprintf(fileInfo, "This is a number: %d");
+    TEST_ASSERT(result == SEC_FILE_READ_WRITE_ERROR, "secure_vfprintf_File should return read/write error when format string expects an argument that is not provided");
+
+    // Test when fileInfo = NULL
+    result = test_wrapper_vfprintf(NULL, "This should fail");
+    TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_vfprintf_File should return invalid secure file error when fileInfo is NULL");
+
     // Test when format = NULL
     result = test_wrapper_vfprintf(fileInfo, NULL);
     TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_vfprintf_File should return invalid parameter error when format is NULL");
