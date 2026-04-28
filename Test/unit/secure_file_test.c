@@ -179,6 +179,11 @@ static void test_secure_Open_File(void) {
     TEST_ASSERT(fileInfo->fileSize == 5, "File size should be 5 bytes");
     free_Secure_File_Info(&fileInfo);
 
+    // Test for invalid mode
+    fileInfo = secure_Open_File(filename, "x", extList, NULL, NULL);
+    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_MODE, "Should return invalid mode error for unsupported mode");
+    free_Secure_File_Info(&fileInfo);
+
     const char* filename2 = "test_secure_open_invalid_ext.log";
     FILE* f2 = fopen(filename2, "w");
     fclose(f2);
@@ -194,10 +199,14 @@ static void test_secure_Open_File(void) {
     TEST_ASSERT(fileInfo3->error == SEC_FILE_INVALID_FILE_EXTENSION, "Should return invalid file extension error for unsupported extension");
     free_Secure_File_Info(&fileInfo3);
 
-    // Test for invalid mode
-    fileInfo = secure_Open_File(filename, "x", extList, NULL, NULL);
-    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_MODE, "Should return invalid mode error for unsupported mode");
-    free_Secure_File_Info(&fileInfo);
+    // Test for case-insensitive extension match
+    fileExt caseInsensitiveExtList[] = {{"TXT", true}, {NULL, false}};
+    const char* filename4 = "test_secure_open_case_insensitive.TXT";
+    FILE* f4 = fopen(filename4, "w");
+    fclose(f4);
+    secureFileInfo* fileInfo4 = secure_Open_File(filename4, "r", caseInsensitiveExtList, NULL, NULL);
+    TEST_ASSERT(fileInfo4 != NULL, "secure_Open_File should return a valid pointer for case-insensitive extension match");
+    free_Secure_File_Info(&fileInfo4);
 
     // Test when filename is NULL
     fileInfo = secure_Open_File(NULL, "r", extList, NULL, NULL);
