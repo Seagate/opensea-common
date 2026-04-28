@@ -183,6 +183,11 @@ static void test_secure_Open_File(void) {
     fileInfo = secure_Open_File(filename, "x", extList, NULL, NULL);
     TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_MODE, "Should return invalid mode error for unsupported mode");
     free_Secure_File_Info(&fileInfo);
+
+    // Test when filename is NULL
+    fileInfo = secure_Open_File(NULL, "r", extList, NULL, NULL);
+    TEST_ASSERT(fileInfo->error == SEC_FILE_FAILURE, "Should return failure when filename is NULL");
+    free_Secure_File_Info(&fileInfo);
 }
 
 static void test_secure_Close_File(void) {
