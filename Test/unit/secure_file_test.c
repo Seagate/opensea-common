@@ -954,8 +954,7 @@ static void test_generate_Log_Name(void) {
 
     // Test when logExt is NULL
     logName2 = generate_Log_Name(NAMING_SERIAL_NUMBER_DATE_TIME, "device123", strlen("device123"), NULL, 0, "logfile", strlen("logfile"), NULL, 0);
-    TEST_ASSERT(logName2 == NULL, "generate_Log_Name should return NULL when log extension is NULL");
-    printf("Generated log name with missing log extension: %s\n", logName2);
+    TEST_ASSERT(logName2 != NULL, "generate_Log_Name should return a valid pointer when log extension is NULL");
 
     free(logName);
     free(logName2);
