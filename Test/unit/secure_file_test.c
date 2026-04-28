@@ -992,6 +992,15 @@ static void test_create_And_Open_Secure_Log_File(void) {
 
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
+
+    // Test with pre-created file
+    FILE* f = fopen("testfile.bin", "wb");
+    fclose(f);
+
+    secureFileInfo* file = NULL;
+
+    result = create_And_Open_Secure_Log_File("testfile", strlen("testfile"), &file, NAMING_SERIAL_NUMBER_ONLY, NULL, 0, NULL, 0, ".bin", 4);
+    TEST_ASSERT(result == FAILURE, "Function should fail when file already exists");
 }
 
 void run_secure_file_tests(void) {
