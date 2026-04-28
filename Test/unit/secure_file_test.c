@@ -746,10 +746,10 @@ static void test_secure_vfprintf_File(void) {
     eSecureFileError result = test_wrapper_vfprintf(fileInfo, "Hello %s!", "world");
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_vfprintf_File should succeed");
 
-    // Test for a missing argument
-    result = test_wrapper_vfprintf(fileInfo, "This is a number: %d");
-    TEST_ASSERT(result == SEC_FILE_READ_WRITE_ERROR, "secure_vfprintf_File should return read/write error when format string expects an argument that is not provided");
-    printf("Result of missing argument test: %d\n", result);
+   // Test for invalid format string
+    result = test_wrapper_vfprintf(fileInfo, "Hello %q!", "world");
+    TEST_ASSERT(result == SEC_FILE_READ_WRITE_ERROR, "secure_vfprintf_File should return read/write error for invalid format string");
+    printf("Result of invalid format string: %d\n", result);
 
     // Test when fileInfo = NULL
     result = test_wrapper_vfprintf(NULL, "This should fail");
