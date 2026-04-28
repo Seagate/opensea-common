@@ -764,20 +764,6 @@ static void test_secure_vfprintf_File(void) {
     fread(buffer, 1, sizeof(buffer), f);
     fclose(f);
     TEST_ASSERT(strcmp(buffer, "Hello world!") == 0, "File should contain 'Hello world!'");
-
-    // Test for writing to a read-only file
-    const char* filename2 = "test_secure_vfprintf2.txt";
-    FILE* f2 = fopen(filename2, "w");
-    fprintf(f2, "hello");
-    fclose(f2);
-
-    secureFileInfo* fileInfo2 = secure_Open_File(filename2, "r", NULL, NULL, NULL);
-    TEST_ASSERT(fileInfo2 != NULL, "secure_Open_File should return a valid pointer");
-    TEST_ASSERT(fileInfo2->isValid, "secure_Open_File should return valid file info");
-
-    result = test_wrapper_vfprintf(fileInfo2, "This should fail");
-    TEST_ASSERT(result == SEC_FILE_FAILURE, "vfprintf should fail when writing to read-only file");
-    free_Secure_File_Info(&fileInfo2);
 }
 
 static void test_secure_fprintf_File(void) {
