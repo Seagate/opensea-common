@@ -738,7 +738,7 @@ static void test_secure_vfprintf_File(void) {
     FILE* f = fopen(filename, "w");
     fprintf(f, "hello");
     fclose(f);
-    
+
     secureFileInfo* fileInfo = secure_Open_File(filename, "w", NULL, NULL, NULL);
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
@@ -759,7 +759,7 @@ static void test_secure_vfprintf_File(void) {
     free_Secure_File_Info(&fileInfo);
 
     // Verify the file was written correctly
-    FILE* f = fopen(filename, "r");
+    f = fopen(filename, "r");
     char buffer[20] = {0};
     fread(buffer, 1, sizeof(buffer), f);
     fclose(f);
