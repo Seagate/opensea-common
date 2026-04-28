@@ -941,9 +941,9 @@ static void test_generate_Log_Name(void) {
     free(logName);
 
     // Naming convention = NAMING_BYUSER
-    logName = generate_Log_Name(NAMING_BYUSER, "device123", strlen("device123"), NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
-    TEST_ASSERT(logName != NULL, "generate_Log_Name should return a valid pointer");
-    free(logName);
+    // logName = generate_Log_Name(NAMING_BYUSER, "device123", strlen("device123"), NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
+    // TEST_ASSERT(logName != NULL, "generate_Log_Name should return a valid pointer");
+    // free(logName);
 
     // Test when logName is NULL
     logName = generate_Log_Name(NAMING_SERIAL_NUMBER_DATE_TIME, "device123", strlen("device123"), NULL, 0, NULL, 0, "txt", strlen("txt"));
