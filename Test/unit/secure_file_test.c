@@ -656,7 +656,6 @@ static void test_secure_GetPos_File(void) {
     // Test when file is closed
     result = secure_GetPos_File(fileInfo1, &pos);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "secure_GetPos_File should return failure when file is closed");
-    printf("result: %d\n", result);
     free_Secure_File_Info(&fileInfo1);
 }
 
@@ -691,8 +690,37 @@ static void test_secure_SetPos_File(void) {
     current = ftell(fileInfo->file);
     TEST_ASSERT(current == offset, "File position should be restored to 6");
 
+    // Test when pos == NULL
+    result = secure_SetPos_File(fileInfo, NULL);
+    TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_SetPos_File should return invalid parameter error when pos is NULL");
+    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_PARAMETER, "fileInfo error should be set to invalid parameter when pos is NULL");
+
+    // Test when fileInfo = NULL
+    result = secure_SetPos_File(NULL, &pos);
+    TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_SetPos_File should return invalid secure file error when fileInfo is NULL");
+
+    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    result = secure_SetPos_File(fileInfo, &pos);
+    TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_SetPos_File should return failure closing file error if fileInfo is in that state");
+
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
+
+    const char* filename1 = "test_secure_setpos1.txt";
+    FILE* f1 = fopen(filename1, "w");
+    fprintf(f1, "hello world");
+    fclose(f1);
+
+    secureFileInfo* fileInfo1 = secure_Open_File(filename1, "r", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo1 != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo1->isValid, "secure_Open_File should return valid file info");
+
+    fclose(fileInfo1->file);
+
+    // Test when file is closed
+    result = secure_SetPos_File(fileInfo1, &pos);
+    TEST_ASSERT(result == SEC_FILE_FAILURE, "secure_SetPos_File should return failure when file is closed");
+    free_Secure_File_Info(&fileInfo1);
 }
 
 static eSecureFileError test_wrapper_vfprintf(secureFileInfo* fileInfo, const char* fmt, ...) {
