@@ -974,6 +974,10 @@ static void test_create_And_Open_Secure_Log_File(void) {
     eReturnValues result = create_And_Open_Secure_Log_File(NULL, 0, &fileInfo, NAMING_SERIAL_NUMBER_DATE_TIME, NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
     TEST_ASSERT(result == BAD_PARAMETER, "Function should return BAD_PARAMETER when device identifier is NULL");
 
+    // Test for insecure path
+    result = create_And_Open_Secure_Log_File("device123", strlen("device123"), &fileInfo, NAMING_SERIAL_NUMBER_DATE_TIME, "../", strlen("../"), "logfile", strlen("logfile"), "txt", strlen("txt"));
+    TEST_ASSERT(result == INSECURE_PATH, "Function should return INSECURE_PATH for insecure log path");
+
     result = create_And_Open_Secure_Log_File("device123", strlen("device123"), &fileInfo, NAMING_SERIAL_NUMBER_DATE_TIME, NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
     TEST_ASSERT(result == SUCCESS, "Function should succeed");
     TEST_ASSERT(fileInfo != NULL, "fileInfo should be allocated");
