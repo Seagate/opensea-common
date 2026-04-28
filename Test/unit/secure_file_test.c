@@ -746,8 +746,8 @@ static void test_secure_vfprintf_File(void) {
     eSecureFileError result = test_wrapper_vfprintf(fileInfo, "Hello %s!", "world");
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_vfprintf_File should succeed");
 
-   // Test for invalid format string
-    result = test_wrapper_vfprintf(fileInfo, "Hello %q!", "world");
+   // Test for incomplete format
+    result = test_wrapper_vfprintf(fileInfo, "Hello %");
     TEST_ASSERT(result == SEC_FILE_READ_WRITE_ERROR, "secure_vfprintf_File should return read/write error for invalid format string");
     printf("Result of invalid format string: %d\n", result);
 
