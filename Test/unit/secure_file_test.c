@@ -951,10 +951,10 @@ static void test_generate_Log_Name(void) {
     TEST_ASSERT(strstr(logName, "/logs") != NULL, "Log name should contain the log path");
     free(logName);
 
-    // // Test when logExt is NULL
-    // logName = generate_Log_Name(NAMING_SERIAL_NUMBER_DATE_TIME, "device123", strlen("device123"), NULL, 0, "logfile", strlen("logfile"), NULL, 0);
-    // TEST_ASSERT(logName != NULL, "generate_Log_Name should return a valid pointer when log extension is NULL");
-    // free(logName);
+    // Test when logExt is NULL
+    logName = generate_Log_Name(NAMING_SERIAL_NUMBER_DATE_TIME, "device123", strlen("device123"), NULL, 0, "logfile", strlen("logfile"), NULL, 0);
+    TEST_ASSERT(logName != NULL, "generate_Log_Name should return a valid pointer when log extension is NULL");
+    free(logName);
 
     // // Test when device identifier is NULL
     // logName = generate_Log_Name(NAMING_SERIAL_NUMBER_DATE_TIME, NULL, 0, NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
