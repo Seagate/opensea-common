@@ -763,18 +763,12 @@ static void test_secure_vfprintf_File(void) {
 
     // Test when file is closed
     const char* filename2 = "test_secure_vfprintf2.txt";
-    FILE* f2 = fopen(filename2, "w");
-    fprintf(f2, "hello world");
-    fclose(f2);
-
     secureFileInfo* fileInfo2 = secure_Open_File(filename2, "r", NULL, NULL, NULL);
     TEST_ASSERT(fileInfo2 != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo2->isValid, "secure_Open_File should return valid file info");
 
-    fclose(fileInfo2->file);
     result = test_wrapper_vfprintf(fileInfo2, "This should fail");
-    TEST_ASSERT(result == SEC_FILE_FAILURE, "secure_vfprintf_File should return failure when file is closed");
-    printf("Result of vfprintf on closed file: %d\n", result);
+    TEST_ASSERT(result == SEC_FILE_FAILURE, "vfprintf should fail when writing to read-only file");
     free_Secure_File_Info(&fileInfo2);
 }
 
