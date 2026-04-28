@@ -935,7 +935,7 @@ static void test_generate_Log_Name(void) {
     free(logName);
 
     // Naming convention with serial number only
-    logName = generate_Log_Name(NAMING_SERIAL_NUMBER_ONLY, "device123", strlen("device123"), NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
+    logName = generate_Log_Name(NAMING_SERIAL_NUMBER_ONLY, "device123", strlen("device123"), NULL, 0, "logfile", strlen("logfile"), ".txt", strlen(".txt"));
     TEST_ASSERT(logName != NULL, "generate_Log_Name should return a valid pointer");
     TEST_ASSERT(strstr(logName, "device123") != NULL, "Log name should contain the device identifier");
     free(logName);
@@ -944,6 +944,12 @@ static void test_generate_Log_Name(void) {
     // logName = generate_Log_Name(NAMING_BYUSER, "device123", strlen("device123"), NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
     // TEST_ASSERT(logName != NULL, "generate_Log_Name should return a valid pointer");
     // free(logName);
+
+    // Test when logName is NULL
+    logName = generate_Log_Name(NAMING_SERIAL_NUMBER_DATE_TIME, "device123", strlen("device123"), NULL, 0, NULL, 0, "txt", strlen("txt"));
+    TEST_ASSERT(logName != NULL, "generate_Log_Name should return a valid pointer when log name is NULL");
+    TEST_ASSERT(strstr(logName, "unknown") != NULL, "Log name should contain 'unknown' when log name is NULL");
+    free(logName);
 
     // Test when logPath != NULL and > 0
     logName = generate_Log_Name(NAMING_SERIAL_NUMBER_DATE_TIME, "device123", strlen("device123"), "/logs", strlen("/logs"), "logfile", strlen("logfile"), "txt", strlen("txt"));
