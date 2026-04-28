@@ -179,6 +179,11 @@ static void test_secure_Open_File(void) {
     TEST_ASSERT(fileInfo->fileSize == 5, "File size should be 5 bytes");
     free_Secure_File_Info(&fileInfo);
 
+    const char* filename2 = "test_secure_open_invalid_ext.log";
+    secureFileInfo* fileInfo2 = secure_Open_File(filename2, "r", extList, NULL, NULL);
+    TEST_ASSERT(fileInfo2 != NULL, "secure_Open_File should return a valid pointer even for invalid extension");
+    free_Secure_File_Info(&fileInfo2);
+
     // Test for invalid mode
     fileInfo = secure_Open_File(filename, "x", extList, NULL, NULL);
     TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_MODE, "Should return invalid mode error for unsupported mode");
