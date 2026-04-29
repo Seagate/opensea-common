@@ -226,13 +226,15 @@ static void test_secure_Open_File(void) {
     // Test for invalid file unique ID
     const char* filename6 = "test_secure_open_invalid_unique_id.txt";
     FILE* f6 = fopen(filename6, "w");
-    fclose(f6);
     fileUniqueIDInfo* realID = os_Get_File_Unique_Identifying_Information(f6);
     fileUniqueIDInfo wrongID = *realID;
     wrongID.inode += 1;
+    fclose(f6);
     secureFileInfo* fileInfo6 = secure_Open_File(filename6, "r", extList, NULL, &wrongID);
     TEST_ASSERT(fileInfo6->error == SEC_FILE_INVALID_FILE_UNIQUE_ID, "Should return invalid file unique ID error when unique ID does not match");
-    free_Secure_File_Info(&fileInfo6);
+    if(fileInfo6 && fileInfo6->isValid) {
+        free_Secure_File_Info(&fileInfo6);
+    }
 
     // Test when filename is NULL
     fileInfo = secure_Open_File(NULL, "r", extList, NULL, NULL);
