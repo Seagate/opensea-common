@@ -171,6 +171,7 @@ static void test_secure_Open_File(void) {
     fprintf(f, "hello");
     fclose(f);
     fileExt extList[] = {{"txt"}, {"log"}, {NULL}};
+    fileAttributes expectedAttributes = {0};
 
     secureFileInfo* fileInfo = secure_Open_File(filename, "r", extList, NULL, NULL);
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
@@ -178,6 +179,12 @@ static void test_secure_Open_File(void) {
     TEST_ASSERT(fileInfo->file != NULL, "secure_Open_File should have a valid FILE pointer");
     TEST_ASSERT(fileInfo->fileSize == 5, "File size should be 5 bytes");
     free_Secure_File_Info(&fileInfo);
+
+    // Check actual file attributes
+    printf("Device ID: %lu\n",fileInfo->attributes->deviceID);
+    printf("Inode: %lu\n",fileInfo->attributes->inode);
+    printf("User ID: %u\n",fileInfo->attributes->userID);
+    printf("Group ID: %u\n",fileInfo->attributes->groupID);
 
     // Test for invalid mode
     fileInfo = secure_Open_File(filename, "x", extList, NULL, NULL);
