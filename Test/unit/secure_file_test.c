@@ -219,6 +219,21 @@ static void test_secure_Open_File(void) {
     invalidAttrs.deviceID = 999; 
     secureFileInfo* fileInfo5 = secure_Open_File(filename5, "r", extList, &invalidAttrs, NULL);
     TEST_ASSERT(fileInfo5->error == SEC_FILE_INVALID_FILE_ATTRIBUTES, "Should return invalid file attributes error when attributes do not match");
+    if(fileInfo5 && fileInfo5->isValid) {
+        free_Secure_File_Info(&fileInfo5);
+    }
+
+    // Test for invalid file unique ID
+    const char* filename6 = "test_secure_open_invalid_unique_id.txt";
+    FILE* f6 = fopen(filename6, "w");
+    fclose(f6);
+    fileUniqueIDInfo* realID = os_Get_File_Unique_Identifying_Information_By_Name(filename6);
+    fileUniqueIDInfo wrongID = *realID;
+    wrongID.inode += 1;
+    secureFileInfo* fileInfo6 = secure_Open_File(filename6, "r", extList, NULL, &wrongID);
+    TEST_ASSERT(fileInfo6->error == SEC_FILE_INVALID_FILE_UNIQUE_ID, "Should return invalid file unique ID error when unique ID does not match");
+    free_Secure_File_Info(&fileInfo6);
+    safe_free(&realID);
 
     // Test when filename is NULL
     fileInfo = secure_Open_File(NULL, "r", extList, NULL, NULL);
