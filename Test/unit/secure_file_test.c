@@ -263,9 +263,7 @@ static void test_secure_Close_File(void) {
     // fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
     // closeResult = secure_Close_File(fileInfo);
     // TEST_ASSERT(closeResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Close_File should return failure closing file error if fileInfo is in that state");
-
-    free_Secure_File_Info(&fileInfo);
-}
+} 
 
 static void test_secure_Read_File(void) {
     const char* filename = "test_secure_read.txt";
