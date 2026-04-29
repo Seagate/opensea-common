@@ -240,7 +240,7 @@ static void test_secure_Close_File(void) {
     const char* filename = "test_secure_close.txt";
     FILE* f = fopen(filename, "w");
     fprintf(f, "hello");
-    fclose(f);
+    fclose(f); 
 
     secureFileInfo* fileInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
