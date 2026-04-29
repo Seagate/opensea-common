@@ -1033,7 +1033,7 @@ static void test_create_And_Open_Secure_Log_File(void) {
 }
 
 void run_secure_file_tests(void) {
-    // test_compare_File_Unique_ID();
+    test_compare_File_Unique_ID();
     // // test_os_Get_File_Unique_Identifying_Information();
     // test_os_Is_Directory_Secure();
     // test_free_File_Attributes();
