@@ -182,8 +182,12 @@ static void test_secure_Open_File(void) {
     free_File_Attributes(&realAttrs);
 
     // Test for invalid mode
-    fileInfo = secure_Open_File(filename, "x", extList, NULL, NULL);
-    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_MODE, "Should return invalid mode error for unsupported mode");
+    const char* filename1 = "test_secure_open_invalid_mode.txt";
+    FILE* f1 = fopen(filename1, "w");
+    fprintf(f1, "hello");
+    fclose(f1);
+    secureFileInfo* fileInfo1 = secure_Open_File(filename1, "x", extList, NULL, NULL);
+    TEST_ASSERT(fileInfo1->error == SEC_FILE_INVALID_MODE, "Should return invalid mode error for unsupported mode");
 
     const char* filename2 = "test_secure_open_invalid_ext.log";
     FILE* f2 = fopen(filename2, "w");
