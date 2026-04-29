@@ -225,9 +225,9 @@ static void test_secure_Open_File(void) {
 
     // Test for comparison with user provided attributes
     const char* filename6 = "attr_test.txt";
-    FILE* f = fopen(filename6, "w");
-    fprintf(f, "Hello World");
-    fclose(f);
+    FILE* f6 = fopen(filename6, "w");
+    fprintf(f6, "Hello World");
+    fclose(f6);
 
     secureFileInfo* temp = secure_Open_File(filename6, "r", NULL, NULL, NULL);
     fileAttributes expected = *temp->attributes;
