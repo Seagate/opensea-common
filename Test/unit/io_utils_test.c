@@ -334,7 +334,7 @@ static void test_get_And_Validate_Float_Input(void) {
     TEST_ASSERT(get_And_Validate_Float_Input("20.34f", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to float successfully");
     TEST_ASSERT(!get_And_Validate_Float_Input("xyz", NULL, ALLOW_UNIT_NONE, &outputFloat), "Could not convert string to float successfully");
     TEST_ASSERT(!get_And_Validate_Float_Input("123KB", &unit, ALLOW_UNIT_NONE, &outputFloat), "Could not convert string to float successfully");
-} 
+}
 
 static void test_get_And_Validate_Double_Input(void) {
     double outputFloat;
@@ -730,6 +730,10 @@ static void test_print_Return_Enum(void) {
     uint8_t startValue = 0x00;
     eReturnValues result_bad_param = fill_Incrementing_Pattern_In_Buffer(startValue, NULL, sizeof(buffer1));
     print_Return_Enum("fill_Incrementing_Pattern_In_Buffer", result_bad_param);
+
+    // Test when returnValue is NOT_SUPPORTED
+    eReturnValues not_supported_result = NOT_SUPPORTED;
+    print_Return_Enum("some_Function", not_supported_result);
 }
 
 static void test_flush_stdout(void) {
