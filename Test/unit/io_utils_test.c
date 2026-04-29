@@ -731,9 +731,154 @@ static void test_print_Return_Enum(void) {
     eReturnValues result_bad_param = fill_Incrementing_Pattern_In_Buffer(startValue, NULL, sizeof(buffer1));
     print_Return_Enum("fill_Incrementing_Pattern_In_Buffer", result_bad_param);
 
+    // Test dummy return values for code-coverage
     // Test when returnValue is NOT_SUPPORTED
     eReturnValues not_supported_result = NOT_SUPPORTED;
     print_Return_Enum("some_Function", not_supported_result);
+
+    // Test when returnValue is COMMAND_FAILURE
+    eReturnValues command_failure_result = COMMAND_FAILURE;
+    print_Return_Enum("some_Command", command_failure_result);
+
+    // Test when returnValue is IN_PROGRESS
+    eReturnValues in_progress_result = IN_PROGRESS;
+    print_Return_Enum("some_Other_Command", in_progress_result);
+
+    // Test when returnValue is ABORTED
+    eReturnValues aborted_result = ABORTED;
+    print_Return_Enum("some_Operation", aborted_result);
+
+    // Test when returnValue is MEMORY_FAILURE
+    eReturnValues memory_failure_result = MEMORY_FAILURE;
+    print_Return_Enum("some_Memory_Operation", memory_failure_result);
+
+    // Test when returnValue is OS_PASSTHROUGH_FAILURE
+    eReturnValues os_passthrough_failure_result = OS_PASSTHROUGH_FAILURE;
+    print_Return_Enum("some_OS_Operation", os_passthrough_failure_result);
+
+    // Test when returnValue is LIBRARY_MISMATCH
+    eReturnValues library_mismatch_result = LIBRARY_MISMATCH;
+    print_Return_Enum("some_Library_Function", library_mismatch_result);
+
+    // Test when returnValue is FROZEN
+    eReturnValues frozen_result = FROZEN;
+    print_Return_Enum("some_Frozen_Function", frozen_result);
+
+    // Test when returnValue is PERMISSION_DENIED
+    eReturnValues permission_denied_result = PERMISSION_DENIED;
+    print_Return_Enum("some_Restricted_Function", permission_denied_result);
+
+    // Test when returnValue is FILE_OPEN_ERROR
+    eReturnValues file_open_error_result = FILE_OPEN_ERROR;
+    print_Return_Enum("some_File_Operation", file_open_error_result);
+
+    // Test when returnValue is WARN_INCOMPLETE_RFTRS
+    eReturnValues warn_incomplete_rftrs_result = WARN_INCOMPLETE_RFTRS;
+    print_Return_Enum("some_RFTRS_Operation", warn_incomplete_rftrs_result);
+
+    // Test when returnValue is OS_COMMAND_TIMEOUT
+    eReturnValues os_command_timeout_result = OS_COMMAND_TIMEOUT;
+    print_Return_Enum("some_OS_Command", os_command_timeout_result);
+
+    // Test when returnValue WARN_NOT_ALL_DEVICES_ENUMERATED
+    eReturnValues warn_not_all_devices_enumerated_result = WARN_NOT_ALL_DEVICES_ENUMERATED;
+    print_Return_Enum("some_Enumeration_Function", warn_not_all_devices_enumerated_result);
+
+    // Test when returnValue is WARN_INVALID_CHECKSUM
+    eReturnValues warn_invalid_checksum_result = WARN_INVALID_CHECKSUM;
+    print_Return_Enum("some_Checksum_Function", warn_invalid_checksum_result);
+
+    // Test when returnValue is OS_COMMAND_NOT_AVAILABLE
+    eReturnValues os_command_not_available_result = OS_COMMAND_NOT_AVAILABLE;
+    print_Return_Enum("some_OS_Command", os_command_not_available_result);
+
+    // Test when returnValue is OS_COMMAND_BLOCKED
+    eReturnValues os_command_blocked_result = OS_COMMAND_BLOCKED;
+    print_Return_Enum("some_OS_Command", os_command_blocked_result);
+
+    // Test when returnValue is COMMAND_INTERRUPTED
+    eReturnValues command_interrupted_result = COMMAND_INTERRUPTED;
+    print_Return_Enum("some_Command", command_interrupted_result);
+
+    // Test when returnValue is VALIDATION_FAILURE
+    eReturnValues validation_failure_result = VALIDATION_FAILURE;
+    print_Return_Enum("some_Validation_Function", validation_failure_result);
+
+    // Test when returnValue is STRIP_HDR_FOOTER_FAILURE
+    eReturnValues strip_hdr_footer_failure_result = STRIP_HDR_FOOTER_FAILURE;
+    print_Return_Enum("some_Header_Footer_Function", strip_hdr_footer_failure_result);
+
+    // Test when returnValue is PARSE_FAILURE
+    eReturnValues parse_failure_result = PARSE_FAILURE;
+    print_Return_Enum("some_Parsing_Function", parse_failure_result);
+
+    // Test when returnValue is INVALID_LENGTH
+    eReturnValues invalid_length_result = INVALID_LENGTH;
+    print_Return_Enum("some_Length_Function", invalid_length_result);
+
+    // Test when returnValue is ERROR_WRITING_FILE
+    eReturnValues error_writing_file_result = ERROR_WRITING_FILE;
+    print_Return_Enum("some_File_Writing_Function", error_writing_file_result);
+
+    // Test when returnValue is TIMEOUT
+    eReturnValues timeout_result = TIMEOUT;
+    print_Return_Enum("some_Operation", timeout_result);
+
+    // Test when returnValue is OS_TIMEOUT_TOO_LARGE
+    eReturnValues os_timeout_too_large_result = OS_TIMEOUT_TOO_LARGE;
+    print_Return_Enum("some_OS_Operation", os_timeout_too_large_result);
+
+    // Test when returnValue is PARSING_EXCEPTION_FAILURE
+    eReturnValues parsing_exception_failure_result = PARSING_EXCEPTION_FAILURE;
+    print_Return_Enum("some_Parsing_Function", parsing_exception_failure_result);
+
+    // Test when returnValue is POWER_CYCLE_REQUIRED
+    eReturnValues power_cycle_required_result = POWER_CYCLE_REQUIRED;
+    print_Return_Enum("some_Operation", power_cycle_required_result);
+
+    // Test when returnValue is DIR_CREATION_FAILED
+    eReturnValues dir_creation_failed_result = DIR_CREATION_FAILED;
+    print_Return_Enum("some_Directory_Operation", dir_creation_failed_result);
+
+    // Test when returnValue is FILE_READ_ERROR
+    eReturnValues file_read_error_result = FILE_READ_ERROR;
+    print_Return_Enum("some_File_Reading_Function", file_read_error_result);
+
+    // Test when returnValue is DEVICE_ACCESS_DENIED
+    eReturnValues device_access_denied_result = DEVICE_ACCESS_DENIED;
+    print_Return_Enum("some_Device_Access_Function", device_access_denied_result);
+
+    // Test when returnValue is NOT_PARSED
+    eReturnValues not_parsed_result = NOT_PARSED;
+    print_Return_Enum("some_Parsing_Function", not_parsed_result);
+
+    // Test when returnValue is MISSING_INFORMATION
+    eReturnValues missing_information_result = MISSING_INFORMATION;
+    print_Return_Enum("some_Information_Function", missing_information_result);
+
+    // Test when returnValue is TRUNCATED_FILE
+    eReturnValues truncated_file_result = TRUNCATED_FILE;
+    print_Return_Enum("some_File_Function", truncated_file_result);
+
+    // Test when returnValue is INSECURE_PATH
+    eReturnValues insecure_path_result = INSECURE_PATH;
+    print_Return_Enum("some_Path_Function", insecure_path_result);
+
+    // Test when returnValue is DEVICE_BUSY
+    eReturnValues device_busy_result = DEVICE_BUSY;
+    print_Return_Enum("some_Device_Function", device_busy_result);
+
+    // Test when returnValue is DEVICE_INVALID
+    eReturnValues device_invalid_result = DEVICE_INVALID;
+    print_Return_Enum("some_Device_Function", device_invalid_result);
+
+    // Test when returnValue is DEVICE_DISCONNECTED
+    eReturnValues device_disconnected_result = DEVICE_DISCONNECTED;
+    print_Return_Enum("some_Device_Function", device_disconnected_result);
+
+    // Test when returnValue is UNKNOWN
+    eReturnValues unknown_result = UNKNOWN;
+    print_Return_Enum("some_Function", unknown_result);
 }
 
 static void test_flush_stdout(void) {
