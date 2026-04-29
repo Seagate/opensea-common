@@ -181,6 +181,12 @@ static void test_secure_Open_File(void) {
     TEST_ASSERT(fileInfo->attributes != NULL, "File attributes should be populated");
     free_Secure_File_Info(&fileInfo);
 
+    // Check actual file attributes
+    printf("Device ID: %lu\n",fileInfo->attributes->deviceID);
+    printf("Inode: %lu\n",fileInfo->attributes->inode);
+    printf("User ID: %u\n",fileInfo->attributes->userID);
+    printf("Group ID: %u\n",fileInfo->attributes->groupID);
+
     // Test for invalid mode
     fileInfo = secure_Open_File(filename, "x", extList, NULL, NULL);
     TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_MODE, "Should return invalid mode error for unsupported mode");
