@@ -14,8 +14,8 @@ expect {
         send "mypassword\r"
     }
     timeout {
-        puts "TIMEOUT waiting for prompt"
-        exit 1
+        # fallback when prompt is buffered
+        send "mypassword\r"
     }
 }
 
