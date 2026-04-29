@@ -180,6 +180,7 @@ static void test_secure_Open_File(void) {
     TEST_ASSERT(fileInfo->fileSize == 5, "File size should be 5 bytes");
     TEST_ASSERT(fileInfo->attributes != NULL, "File attributes should be populated");
     free_Secure_File_Info(&fileInfo);
+    free_File_Attributes(&realAttrs);
 
     // Test for invalid mode
     fileInfo = secure_Open_File(filename, "x", extList, NULL, NULL);
@@ -209,6 +210,16 @@ static void test_secure_Open_File(void) {
     secureFileInfo* fileInfo4 = secure_Open_File(filename4, "r", caseInsensitiveExtList, NULL, NULL);
     TEST_ASSERT(fileInfo4 != NULL, "secure_Open_File should return a valid pointer for case-insensitive extension match");
     free_Secure_File_Info(&fileInfo4);
+
+    // Test for invalid file attributes
+    const char* filename5 = "test_secure_open_invalid_attrs.txt";
+    FILE* f5 = fopen(filename5, "w");
+    fclose(f5);
+    fileAttributes invalidAttrs = {0};
+    invalidAttrs.deviceID = 999; 
+    fileInfo = secure_Open_File(filename5, "r", extList, &invalidAttrs, NULL);
+    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_FILE_ATTRIBUTES, "Should return invalid file attributes error when attributes do not match");
+    free_Secure_File_Info(&fileInfo);
 
     // Test when filename is NULL
     fileInfo = secure_Open_File(NULL, "r", extList, NULL, NULL);
