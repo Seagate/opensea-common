@@ -539,6 +539,7 @@ static void test_safe_realloc_aligned(void) {
     for (size_t i = 0; i < num_elements; i++) {
         ptr[i] = (int)i;
     }
+    safe_free_aligned(&ptr);
 
     // Test when block is NULL, should behave like safe_malloc_aligned
     int* new_ptr = safe_realloc_aligned(NULL, 0, sizeof(int) * num_elements, 16);
