@@ -217,9 +217,8 @@ static void test_secure_Open_File(void) {
     fclose(f5);
     fileAttributes invalidAttrs = {0};
     invalidAttrs.deviceID = 999; 
-    fileInfo = secure_Open_File(filename5, "r", extList, &invalidAttrs, NULL);
-    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_FILE_ATTRIBUTES, "Should return invalid file attributes error when attributes do not match");
-    free_Secure_File_Info(&fileInfo);
+    secureFileInfo* fileInfo5 = secure_Open_File(filename5, "r", extList, &invalidAttrs, NULL);
+    TEST_ASSERT(fileInfo5->error == SEC_FILE_INVALID_FILE_ATTRIBUTES, "Should return invalid file attributes error when attributes do not match");
 
     // Test when filename is NULL
     fileInfo = secure_Open_File(NULL, "r", extList, NULL, NULL);
