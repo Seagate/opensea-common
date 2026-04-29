@@ -179,20 +179,17 @@ static void test_secure_Open_File(void) {
     TEST_ASSERT(fileInfo->file != NULL, "secure_Open_File should have a valid FILE pointer");
     TEST_ASSERT(fileInfo->fileSize == 5, "File size should be 5 bytes");
     TEST_ASSERT(fileInfo->attributes != NULL, "File attributes should be populated");
-    free_Secure_File_Info(&fileInfo);
     free_File_Attributes(&realAttrs);
 
     // Test for invalid mode
     fileInfo = secure_Open_File(filename, "x", extList, NULL, NULL);
     TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_MODE, "Should return invalid mode error for unsupported mode");
-    free_Secure_File_Info(&fileInfo);
 
     const char* filename2 = "test_secure_open_invalid_ext.log";
     FILE* f2 = fopen(filename2, "w");
     fclose(f2);
     secureFileInfo* fileInfo2 = secure_Open_File(filename2, "r", extList, NULL, NULL);
     TEST_ASSERT(fileInfo2 != NULL, "secure_Open_File should return a valid pointer even for invalid extension");
-    free_Secure_File_Info(&fileInfo2);
 
     // Test for invalid extension
     const char* filename3 = "test_secure_open_invalid_ext.abc";
@@ -200,7 +197,6 @@ static void test_secure_Open_File(void) {
     fclose(f3);
     secureFileInfo* fileInfo3 = secure_Open_File(filename3, "r", extList, NULL, NULL);
     TEST_ASSERT(fileInfo3->error == SEC_FILE_INVALID_FILE_EXTENSION, "Should return invalid file extension error for unsupported extension");
-    free_Secure_File_Info(&fileInfo3);
 
     // Test for case-insensitive extension match
     fileExt caseInsensitiveExtList[] = {{"TXT", true}, {NULL, false}};
@@ -209,7 +205,6 @@ static void test_secure_Open_File(void) {
     fclose(f4);
     secureFileInfo* fileInfo4 = secure_Open_File(filename4, "r", caseInsensitiveExtList, NULL, NULL);
     TEST_ASSERT(fileInfo4 != NULL, "secure_Open_File should return a valid pointer for case-insensitive extension match");
-    free_Secure_File_Info(&fileInfo4);
 
     // Test for invalid file attributes
     const char* filename5 = "test_secure_open_invalid_attrs.txt";
@@ -219,9 +214,6 @@ static void test_secure_Open_File(void) {
     invalidAttrs.deviceID = 999; 
     secureFileInfo* fileInfo5 = secure_Open_File(filename5, "r", extList, &invalidAttrs, NULL);
     TEST_ASSERT(fileInfo5->error == SEC_FILE_INVALID_FILE_ATTRIBUTES, "Should return invalid file attributes error when attributes do not match");
-    if(fileInfo5) {
-        free_Secure_File_Info(&fileInfo5);
-    }
 
     // Test for invalid file unique ID - error while fetching realID as os_Get_File_Unique_Identifying_Information has a bug, not resolved yet.
     // const char* filename6 = "test_secure_open_invalid_unique_id.txt";
@@ -234,12 +226,10 @@ static void test_secure_Open_File(void) {
     // fclose(f6);
     // secureFileInfo* fileInfo6 = secure_Open_File(filename6, "r", extList, NULL, &wrongID);
     // TEST_ASSERT(fileInfo6->error == SEC_FILE_INVALID_FILE_UNIQUE_ID, "Should return invalid file unique ID error when unique ID does not match");
-    // free_Secure_File_Info(&fileInfo6);
 
     // Test when filename is NULL
     fileInfo = secure_Open_File(NULL, "r", extList, NULL, NULL);
     TEST_ASSERT(fileInfo->error == SEC_FILE_FAILURE, "Should return failure when filename is NULL");
-    free_Secure_File_Info(&fileInfo);
 }
 
 static void test_secure_Close_File(void) {
@@ -317,7 +307,6 @@ static void test_secure_Read_File(void) {
     TEST_ASSERT(readResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Read_File should return failure closing file error if fileInfo is in that state");
 
     secure_Close_File(fileInfo);
-    free_Secure_File_Info(&fileInfo);
 
     // Test for an empty file
     const char* emptyFilename = "test_secure_read_empty.txt";
@@ -327,14 +316,12 @@ static void test_secure_Read_File(void) {
     readResult = secure_Read_File(emptyFileInfo, buffer, sizeof(buffer), 1, 5, &numberRead);
     TEST_ASSERT(readResult == SEC_FILE_READ_WRITE_ERROR, "secure_Read_File should return read/write error when reading from an empty file");
     secure_Close_File(emptyFileInfo);
-    free_Secure_File_Info(&emptyFileInfo);
 
     // Test when reading from a write-only file
     secureFileInfo* writeOnlyInfo = secure_Open_File(filename, "w", NULL, NULL, NULL);
     readResult = secure_Read_File(writeOnlyInfo, buffer, sizeof(buffer), 1, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_READ_WRITE_ERROR, "secure_Read_File should return read/write error when reading from a write-only file");
     secure_Close_File(writeOnlyInfo);
-    free_Secure_File_Info(&writeOnlyInfo);
 
     // Test when fileInfo = NULL
     readResult = secure_Read_File(NULL, buffer, sizeof(buffer), 1, 5, NULL);
@@ -379,14 +366,12 @@ static void test_secure_Write_File(void) {
     TEST_ASSERT(writeResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Write_File should return failure closing file error if fileInfo is in that state");
 
     secure_Close_File(fileInfo);
-    free_Secure_File_Info(&fileInfo);
 
     // Test for writing to a read-only file
     secureFileInfo* readOnlyInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
     writeResult = secure_Write_File(readOnlyInfo, (void*)data, strlen(data), 1, strlen(data), NULL);
     TEST_ASSERT(writeResult == SEC_FILE_READ_WRITE_ERROR, "secure_Write_File should return read/write error when writing to a read-only file");
     secure_Close_File(readOnlyInfo);
-    free_Secure_File_Info(&readOnlyInfo);
 
     // Test for writing to a file and then reading it back to verify the contents
     const char* filename2 = "test_secure_write2.txt";
@@ -396,7 +381,6 @@ static void test_secure_Write_File(void) {
     TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed");
 
     secure_Close_File(fileInfo);
-    free_Secure_File_Info(&fileInfo);
 
     // Verify the file was written correctly
     FILE* f = fopen(filename2, "r");
@@ -440,7 +424,6 @@ static void test_secure_Seek_File(void) {
     TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Seek_File should return failure closing file error if fileInfo is in that state");
 
     secure_Close_File(fileInfo);
-    free_Secure_File_Info(&fileInfo);
 }
 
 static void test_secure_Rewind_File(void) {
@@ -478,7 +461,6 @@ static void test_secure_Rewind_File(void) {
     TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Rewind_File should return failure closing file error if file is in that state");
 
     secure_Close_File(fileInfo);
-    free_Secure_File_Info(&fileInfo);
 }
 
 static void test_secure_Tell_File(void) {
@@ -507,7 +489,6 @@ static void test_secure_Tell_File(void) {
     TEST_ASSERT(tellResult == -1, "secure_Tell_File should return -1 when fileInfo is in failure closing state");
 
     secure_Close_File(fileInfo);
-    free_Secure_File_Info(&fileInfo);
 
     const char* filename2 = "test_secure_tell2.txt";
     FILE* f2 = fopen(filename2, "w");
@@ -524,7 +505,6 @@ static void test_secure_Tell_File(void) {
     TEST_ASSERT(tellResult == -1, "secure_Tell_File should return -1 when FILE pointer is NULL");
 
     secure_Close_File(fileInfo2);
-    free_Secure_File_Info(&fileInfo2);
 }
 
 static void test_secure_Remove_File(void) {
@@ -542,7 +522,6 @@ static void test_secure_Remove_File(void) {
     eSecureFileError result = secure_Remove_File(fileInfo);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Remove_File should succeed");
     TEST_ASSERT(!os_File_Exists(filename), "File should be removed");
-    free_Secure_File_Info(&fileInfo);
 }
 
 static void test_secure_Delete_File_By_Name(void) {
@@ -644,7 +623,6 @@ static void test_secure_Flush_File(void) {
     TEST_ASSERT(flushResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Flush_File should return failure closing file error if fileInfo is in that state");
 
     secure_Close_File(fileInfo);
-    free_Secure_File_Info(&fileInfo);
 
     // Verify the file was written correctly
     FILE* f = fopen(filename, "r");
@@ -694,7 +672,6 @@ static void test_secure_GetPos_File(void) {
     TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_GetPos_File should return failure closing file error if fileInfo is in that state");
 
     secure_Close_File(fileInfo);
-    free_Secure_File_Info(&fileInfo);
 
     const char* filename1 = "test_secure_getpos1.txt";
     FILE* f1 = fopen(filename1, "w");
@@ -710,7 +687,6 @@ static void test_secure_GetPos_File(void) {
     // Test when file is closed
     result = secure_GetPos_File(fileInfo1, &pos);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "secure_GetPos_File should return failure when file is closed");
-    free_Secure_File_Info(&fileInfo1);
 }
 
 static void test_secure_SetPos_File(void) {
@@ -758,7 +734,6 @@ static void test_secure_SetPos_File(void) {
     TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_SetPos_File should return failure closing file error if fileInfo is in that state");
 
     secure_Close_File(fileInfo);
-    free_Secure_File_Info(&fileInfo);
 
     const char* filename1 = "test_secure_setpos1.txt";
     FILE* f1 = fopen(filename1, "w");
@@ -774,7 +749,6 @@ static void test_secure_SetPos_File(void) {
     // Test when file is closed
     result = secure_SetPos_File(fileInfo1, &pos);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "secure_SetPos_File should return failure when file is closed");
-    free_Secure_File_Info(&fileInfo1);
 }
 
 static eSecureFileError test_wrapper_vfprintf(secureFileInfo* fileInfo, const char* fmt, ...) {
@@ -819,7 +793,6 @@ static void test_secure_vfprintf_File(void) {
     TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_vfprintf_File should return failure closing file error if fileInfo is in that state");
 
     secure_Close_File(fileInfo);
-    free_Secure_File_Info(&fileInfo);
 
     // Verify the file was written correctly
     f = fopen(filename, "r");
@@ -852,7 +825,6 @@ static void test_secure_fprintf_File(void) {
     TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_fprintf_File should return failure closing file error if fileInfo is in that state");
 
     secure_Close_File(fileInfo);
-    free_Secure_File_Info(&fileInfo);
 
     // Verify the file was written correctly
     FILE* f = fopen(filename, "r");
@@ -1045,7 +1017,6 @@ static void test_create_And_Open_Secure_Log_File(void) {
     TEST_ASSERT(strstr(fileInfo->filename, ".txt") != NULL, "File should have .txt extension");
 
     secure_Close_File(fileInfo);
-    free_Secure_File_Info(&fileInfo);
 
     // Test with pre-created file
     FILE* f = fopen("testfile.bin", "wb");
