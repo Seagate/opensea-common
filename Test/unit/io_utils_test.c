@@ -732,7 +732,6 @@ static void test_print_Return_Enum(void) {
     print_Return_Enum("fill_Incrementing_Pattern_In_Buffer", result_bad_param);
 
     // Test dummy return values for code-coverage
-    
     // Test when returnValue is NOT_SUPPORTED
     eReturnValues not_supported_result = NOT_SUPPORTED;
     print_Return_Enum("some_Function", not_supported_result);
