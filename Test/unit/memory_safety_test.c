@@ -642,6 +642,7 @@ static void test_calloc_page_aligned(void) {
     for (size_t i = 0; i < num_elements; i++) {
         TEST_ASSERT(ptr[i] == 0, "calloc_page_aligned should initialize all elements to zero");
     }
+    free_page_aligned(ptr);
 
     // Test for num = 0
     ptr = calloc_page_aligned(0, element_size);
