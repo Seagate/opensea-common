@@ -48,7 +48,8 @@ static void test_safe_realloc(void) {
     free(new_ptr);
 
     // Test for huge size
-    new_ptr = safe_realloc(ptr, SIZE_MAX);
+    size_t huge = (size_t)1 << 40;
+    new_ptr = safe_realloc(ptr, huge);
     TEST_ASSERT(new_ptr == NULL, "safe_realloc should return NULL when realloc fails");
 
     // Test that reallocating to zero frees the memory and returns null
