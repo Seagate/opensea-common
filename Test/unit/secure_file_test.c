@@ -179,13 +179,14 @@ static void test_secure_Open_File(void) {
     TEST_ASSERT(fileInfo->file != NULL, "secure_Open_File should have a valid FILE pointer");
     TEST_ASSERT(fileInfo->fileSize == 5, "File size should be 5 bytes");
     TEST_ASSERT(fileInfo->attributes != NULL, "File attributes should be populated");
-    free_Secure_File_Info(&fileInfo);
-
+    
     // Check actual file attributes
     printf("Device ID: %lu\n",fileInfo->attributes->deviceID);
     printf("Inode: %lu\n",fileInfo->attributes->inode);
     printf("User ID: %u\n",fileInfo->attributes->userID);
     printf("Group ID: %u\n",fileInfo->attributes->groupID);
+    
+    free_Secure_File_Info(&fileInfo);
 
     // Test for invalid mode
     fileInfo = secure_Open_File(filename, "x", extList, NULL, NULL);
