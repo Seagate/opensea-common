@@ -236,11 +236,10 @@ static void test_secure_Open_File(void) {
     free_Secure_File_Info(&temp);
 
     secureFileInfo* fileInfo6 = secure_Open_File(filename6, "r", NULL, &expected, NULL);
-    printf("error = %d, isValid = %d\n", fileInfo6->error, fileInfo6->isValid);
     TEST_ASSERT(fileInfo6->error == SEC_FILE_INVALID_FILE_ATTRIBUTES, "Should return invalid file attributes error when attributes do not match");
-    // if(fileInfo6) {
-    //     free_Secure_File_Info(&fileInfo6);
-    // }
+    if(fileInfo6 && fileInfo6->isValid) {
+        free_Secure_File_Info(&fileInfo6);
+    }
 
     // Test for invalid file unique ID - error while fetching realID as os_Get_File_Unique_Identifying_Information has a bug, not resolved yet.
     // const char* filename6 = "test_secure_open_invalid_unique_id.txt";
