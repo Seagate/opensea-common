@@ -1,18 +1,22 @@
 #!/usr/bin/expect -f
 
-set timeout 10
+exp_internal 1
+log_user 1
+
+set timeout 30
 
 set prog [lindex $argv 0]
 
-spawn $prog
+spawn {*}$prog
 
-expect "Enter password:"
-send "mypassword\r"
+expect {
+    -re "Enter password.*" {
+        send "mypassword\r"
+    }
+    timeout {
+        puts "TIMEOUT waiting for prompt"
+        exit 1
+    }
+}
 
-# wait for the program to finish and print everything
 expect eof
-
-catch wait result
-set exit_status [lindex $result 3]
-
-exit $exit_status
