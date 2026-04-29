@@ -219,9 +219,26 @@ static void test_secure_Open_File(void) {
     invalidAttrs.deviceID = 999; 
     secureFileInfo* fileInfo5 = secure_Open_File(filename5, "r", extList, &invalidAttrs, NULL);
     TEST_ASSERT(fileInfo5->error == SEC_FILE_INVALID_FILE_ATTRIBUTES, "Should return invalid file attributes error when attributes do not match");
-    if(fileInfo5 && fileInfo5->isValid) {
+    if(fileInfo5) {
         free_Secure_File_Info(&fileInfo5);
     }
+
+    // Test for comparison with user provided attributes
+    const char* filename6 = "attr_test.txt";
+    FILE* f = fopen(filename6, "w");
+    fprintf(f, "Hello World");
+    fclose(f);
+
+    secureFileInfo* temp = secure_Open_File(filename6, "r", NULL, NULL, NULL);
+    fileAttributes expected = *temp->attributes;
+
+    expected.groupID += 1;
+    free_Secure_File_Info(&temp);
+
+    secureFileInfo* fileInfo6 = secure_Open_File(filename6, "r", NULL, &expected, NULL);
+    TEST_ASSERT(fileInfo6->error == SEC_FILE_INVALID_FILE_ATTRIBUTES, "Should return invalid file attributes error when attributes do not match");
+    free_Secure_File_Info(&fileInfo6);
+
 
     // Test for invalid file unique ID - error while fetching realID as os_Get_File_Unique_Identifying_Information has a bug, not resolved yet.
     // const char* filename6 = "test_secure_open_invalid_unique_id.txt";
