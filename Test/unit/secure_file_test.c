@@ -171,13 +171,9 @@ static void test_secure_Open_File(void) {
     fprintf(f, "hello");
     fclose(f);
     fileExt extList[] = {{"txt"}, {"log"}, {NULL}};
-    fileAttributes expectedAttributes = {0};
-    expectedAttributes.deviceID = 2049; 
-    expectedAttributes.inode = 8655856;    
-    expectedAttributes.userID = 1001;    
-    expectedAttributes.groupID = 1001;   
+    fileAttributes* realAttrs = os_Get_File_Attributes_By_Name(filename); 
 
-    secureFileInfo* fileInfo = secure_Open_File(filename, "r", extList, &expectedAttributes, NULL);
+    secureFileInfo* fileInfo = secure_Open_File(filename, "r", extList, realAttrs, NULL);
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
     TEST_ASSERT(fileInfo->file != NULL, "secure_Open_File should have a valid FILE pointer");
