@@ -33,8 +33,10 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y expect lcov gcc
 
-    - name: Configure Meson
+    - name: Configure Meson with ASan
       run: |
+        CFLAGS="-fsanitize=address -fno-omit-frame-pointer" \
+        LDFLAGS="-fsanitize=address" \
         meson setup Meson/Executables --buildtype=debug -Db_coverage=true
 
     - name: Build with Meson
@@ -43,6 +45,7 @@ jobs:
     
     - name: Run test
       run: |
+        ASAN_OPTIONS=detect_leaks=1:abort_on_error=1 \
         meson test -C Meson/Executables --verbose
 
     - name: Generate coverage
