@@ -232,8 +232,8 @@ static void test_secure_Open_File(void) {
     // TEST_ASSERT(fileInfo6->error == SEC_FILE_INVALID_FILE_UNIQUE_ID, "Should return invalid file unique ID error when unique ID does not match");
 
     // Test when filename is NULL
-    fileInfo = secure_Open_File(NULL, "r", extList, NULL, NULL);
-    TEST_ASSERT(fileInfo->error == SEC_FILE_FAILURE, "Should return failure when filename is NULL");
+    secureFileInfo* fileInfoNULL = secure_Open_File(NULL, "r", extList, NULL, NULL);
+    TEST_ASSERT(fileInfoNULL->error == SEC_FILE_FAILURE, "Should return failure when filename is NULL");
 }
 
 static void test_secure_Close_File(void) {
