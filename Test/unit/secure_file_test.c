@@ -1087,9 +1087,9 @@ void run_secure_file_tests(void) {
     test_secure_SetPos_File();
     test_secure_vfprintf_File();
     test_secure_fprintf_File();
-    // test_os_Directory_Exists();
-    // test_os_File_Exists();
-    // test_os_Create_Directory();
+    test_os_Directory_Exists();
+    test_os_File_Exists();
+    test_os_Create_Directory();
     // test_os_Create_Secure_Directory();
     // test_get_Full_Path();
     // test_replace_File_Name_In_Path();
