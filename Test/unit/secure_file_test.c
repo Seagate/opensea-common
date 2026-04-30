@@ -283,6 +283,7 @@ static void test_secure_Read_File(void) {
     eSecureFileError readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed");
     TEST_ASSERT(strcmp(buffer, "hello") == 0, "Buffer should contain 'hello'");
+    free_Secure_File_Info(&fileInfo);
 
     // Test when buffer = NULL
     readResult = secure_Read_File(fileInfo, NULL, sizeof(buffer), 1, 5, NULL);
@@ -1052,7 +1053,7 @@ void run_secure_file_tests(void) {
     test_free_Secure_File_Info();
     test_secure_Open_File();
     test_secure_Close_File();
-    // test_secure_Read_File();
+    test_secure_Read_File();
     // test_secure_Write_File();
     // test_secure_Seek_File();
     // test_secure_Rewind_File();
