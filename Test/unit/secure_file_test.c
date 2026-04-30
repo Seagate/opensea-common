@@ -261,6 +261,7 @@ static void test_secure_Close_File(void) {
 
     closeResult = secure_Close_File(fileInfo);
     TEST_ASSERT(closeResult == SEC_FILE_SUCCESS, "secure_Close_File should succeed");
+    free_Secure_File_Info(&fileInfo);
 
     // Change fileInfo state to simulate failure closing file
     // fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
