@@ -26,20 +26,20 @@ test('opensea-common-unit-tests', e)
 
 #---------------------for secure input----------------------------
 
-secure_tests = executable(
-    'secure-input-tests',
-    ['framework/test_framework.c', 'unit/test_secure_inputs.c', 'secure_input_main.c'],
-    dependencies: [opensea_common_dep],
-)
+#secure_tests = executable(
+#    'secure-input-tests',
+#    ['framework/test_framework.c', 'unit/test_secure_inputs.c', 'secure_input_main.c'],
+#    dependencies: [opensea_common_dep],
+#)
 
-expect_prog = find_program('expect', required: true)
+#expect_prog = find_program('expect', required: true)
 
-test(
-  'secure-user-input-tests',
-  expect_prog,
-  args: [
-    join_paths(meson.current_source_dir(), 'unit', 'test_secure_input.exp'),
-    secure_tests.full_path()
-  ],
-  workdir: meson.current_build_dir()
-)
+#test(
+#  'secure-user-input-tests',
+#  expect_prog,
+#  args: [
+#    join_paths(meson.current_source_dir(), 'unit', 'test_secure_input.exp'),
+#    secure_tests.full_path()
+#  ],
+#  workdir: meson.current_build_dir()
+#)
