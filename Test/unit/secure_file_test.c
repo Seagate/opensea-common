@@ -79,6 +79,7 @@ static void test_os_Is_Directory_Secure(void) {
     TEST_ASSERT(!os_Is_Directory_Secure(abs_bad, &error), "Directory should not be secure");
     TEST_ASSERT(error != NULL, "Error message should be set for insecure directory");
     free(abs_bad);
+    free(error);
 
     // Test for nested directories
     mkdir("secure_dir/nested_secure", 0700);
