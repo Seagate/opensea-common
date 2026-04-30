@@ -802,32 +802,38 @@ static void test_secure_vfprintf_File(void) {
     eSecureFileError result = test_wrapper_vfprintf(fileInfo, "Hello %s!", "world");
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_vfprintf_File should succeed");
 
-   // Test for incomplete format
-    result = test_wrapper_vfprintf(fileInfo, "Hello %");
-    TEST_ASSERT(result == SEC_FILE_READ_WRITE_ERROR, "secure_vfprintf_File should return read/write error for invalid format string");
-    printf("Result of invalid format string: %d\n", result);
-
-    // Test when fileInfo = NULL
-    result = test_wrapper_vfprintf(NULL, "This should fail");
-    TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_vfprintf_File should return invalid secure file error when fileInfo is NULL");
-
-    // Test when format = NULL
-    result = test_wrapper_vfprintf(fileInfo, NULL);
-    TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_vfprintf_File should return invalid parameter error when format is NULL");
-    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_PARAMETER, "fileInfo error should be set to invalid parameter when format is NULL");
-
-    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
-    result = test_wrapper_vfprintf(fileInfo, "This should fail");
-    TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_vfprintf_File should return failure closing file error if fileInfo is in that state");
-
-    secure_Close_File(fileInfo);
-
     // Verify the file was written correctly
     f = fopen(filename, "r");
     char buffer[20] = {0};
     fread(buffer, 1, sizeof(buffer), f);
     fclose(f);
     TEST_ASSERT(strcmp(buffer, "Hello world!") == 0, "File should contain 'Hello world!'");
+
+    free_Secure_File_Info(&fileInfo);
+
+   // Test for incomplete format
+   secureFileInfo* fileInfo2 = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    result = test_wrapper_vfprintf(fileInfo2, "Hello %");
+    TEST_ASSERT(result == SEC_FILE_READ_WRITE_ERROR, "secure_vfprintf_File should return read/write error for invalid format string");
+    printf("Result of invalid format string: %d\n", result);
+    free_Secure_File_Info(&fileInfo2);
+
+    // Test when fileInfo = NULL
+    result = test_wrapper_vfprintf(NULL, "This should fail");
+    TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_vfprintf_File should return invalid secure file error when fileInfo is NULL");
+
+    // Test when format = NULL
+    secureFileInfo* fileInfo3 = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    result = test_wrapper_vfprintf(fileInfo3, NULL);
+    TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_vfprintf_File should return invalid parameter error when format is NULL");
+    TEST_ASSERT(fileInfo3->error == SEC_FILE_INVALID_PARAMETER, "fileInfo error should be set to invalid parameter when format is NULL");
+    free_Secure_File_Info(&fileInfo3);
+
+    secureFileInfo* fileInfo4 = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    fileInfo4->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    result = test_wrapper_vfprintf(fileInfo4, "This should fail");
+    TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_vfprintf_File should return failure closing file error if fileInfo is in that state");
+    free_Secure_File_Info(&fileInfo4);
 }
 
 static void test_secure_fprintf_File(void) {
@@ -1076,7 +1082,7 @@ void run_secure_file_tests(void) {
     test_secure_Flush_File();
     test_secure_GetPos_File();
     test_secure_SetPos_File();
-    // test_secure_vfprintf_File();
+    test_secure_vfprintf_File();
     // test_secure_fprintf_File();
     // test_os_Directory_Exists();
     // test_os_File_Exists();
