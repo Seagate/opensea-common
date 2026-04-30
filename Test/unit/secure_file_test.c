@@ -329,8 +329,8 @@ static void test_secure_Read_File(void) {
     TEST_ASSERT(readResult == SEC_FILE_END_OF_FILE_REACHED, "secure_Read_File should return end of file error when reading past the end of the file");
     free_Secure_File_Info(&fileInfo7);
 
-    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
     secureFileInfo* fileInfo8 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    fileInfo8->error = SEC_FILE_FAILURE_CLOSING_FILE;
     readResult = secure_Read_File(fileInfo8, buffer, sizeof(buffer), 1, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Read_File should return failure closing file error if fileInfo is in that state");
     free_Secure_File_Info(&fileInfo8);
