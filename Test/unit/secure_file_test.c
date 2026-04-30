@@ -700,27 +700,23 @@ static void test_secure_GetPos_File(void) {
     // Test when fileInfo = NULL
     result = secure_GetPos_File(NULL, &pos);
     TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_GetPos_File should return invalid secure file error when fileInfo is NULL");
+    free_Secure_File_Info(&fileInfo);
 
-    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
-    result = secure_GetPos_File(fileInfo, &pos);
+    secureFileInfo* fileInfo2 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    fileInfo2->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    result = secure_GetPos_File(fileInfo2, &pos);
     TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_GetPos_File should return failure closing file error if fileInfo is in that state");
+    free_Secure_File_Info(&fileInfo2);
 
-    secure_Close_File(fileInfo);
-
-    const char* filename1 = "test_secure_getpos1.txt";
-    FILE* f1 = fopen(filename1, "w");
-    fprintf(f1, "hello world");
-    fclose(f1);
-
-    secureFileInfo* fileInfo1 = secure_Open_File(filename1, "r", NULL, NULL, NULL);
-    TEST_ASSERT(fileInfo1 != NULL, "secure_Open_File should return a valid pointer");
-    TEST_ASSERT(fileInfo1->isValid, "secure_Open_File should return valid file info");
-
-    fclose(fileInfo1->file);
-
+    secureFileInfo* fileInfo3 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo3 != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo3->isValid, "secure_Open_File should return valid file info");
+    
     // Test when file is closed
-    result = secure_GetPos_File(fileInfo1, &pos);
+    fclose(fileInfo3->file);
+    result = secure_GetPos_File(fileInfo3, &pos);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "secure_GetPos_File should return failure when file is closed");
+    free_Secure_File_Info(&fileInfo3);
 }
 
 static void test_secure_SetPos_File(void) {
@@ -1080,7 +1076,7 @@ void run_secure_file_tests(void) {
     // test_secure_Remove_File();
     test_secure_Delete_File_By_Name();
     test_secure_Flush_File();
-    // test_secure_GetPos_File();
+    test_secure_GetPos_File();
     // test_secure_SetPos_File();
     // test_secure_vfprintf_File();
     // test_secure_fprintf_File();
