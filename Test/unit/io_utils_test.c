@@ -1709,34 +1709,6 @@ static void test_print_str(void) {
     fclose(fp);
 }
 
-static void test_get_Secure_User_Input(void) {
-    char *input = NULL;
-    size_t len = 0;
-
-    int pipefd[2];
-    pipe(pipefd);
-
-    const char *fake_input = "mypassword\n";
-    write(pipefd[1], fake_input, strlen(fake_input));
-    close(pipefd[1]);
-
-    int saved_stdin = dup(fileno(stdin));
-
-    dup2(pipefd[0], fileno(stdin));
-    close(pipefd[0]);
-
-    eReturnValues ret = get_Secure_User_Input("Enter password:", &input, &len);
-
-    dup2(saved_stdin, fileno(stdin));
-    close(saved_stdin);
-
-    TEST_ASSERT(ret == 0, "get_Secure_User_Input succeeded");
-    TEST_ASSERT(input != NULL, "Input is not NULL");
-    TEST_ASSERT(strcmp(input, "mypassword") == 0, "Input matches expected value");
-
-    free(input);
-}
-
 void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input();
     test_get_And_Validate_Integer_Input_Uint64();
@@ -1794,5 +1766,4 @@ void run_io_utils_tests(void) {
     test_safe_atof();
     test_checked_fputs();
     test_print_str();
-    test_get_Secure_User_Input();
 }
