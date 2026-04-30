@@ -421,6 +421,7 @@ static void test_secure_Write_File(void) {
     char buffer[10] = {0};
     fread(buffer, 1, sizeof(buffer), f);
     fclose(f);
+    printf("Buffer read from file: %s\n", buffer);
     TEST_ASSERT(strcmp(buffer, "hello") == 0, "File should contain 'hello'");
 }
 
