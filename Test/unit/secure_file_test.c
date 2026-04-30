@@ -749,36 +749,34 @@ static void test_secure_SetPos_File(void) {
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_SetPos_File should succeed");
     current = ftell(fileInfo->file);
     TEST_ASSERT(current == offset, "File position should be restored to 6");
+    free_Secure_File_Info(&fileInfo);
 
     // Test when pos == NULL
-    result = secure_SetPos_File(fileInfo, NULL);
+    secureFileInfo* fileInfo2 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    result = secure_SetPos_File(fileInfo2, NULL);
     TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_SetPos_File should return invalid parameter error when pos is NULL");
-    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_PARAMETER, "fileInfo error should be set to invalid parameter when pos is NULL");
+    TEST_ASSERT(fileInfo2->error == SEC_FILE_INVALID_PARAMETER, "fileInfo error should be set to invalid parameter when pos is NULL");
+    free_Secure_File_Info(&fileInfo2);
 
     // Test when fileInfo = NULL
     result = secure_SetPos_File(NULL, &pos);
     TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_SetPos_File should return invalid secure file error when fileInfo is NULL");
 
-    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
-    result = secure_SetPos_File(fileInfo, &pos);
+    secureFileInfo* fileInfo3 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    fileInfo3->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    result = secure_SetPos_File(fileInfo3, &pos);
     TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_SetPos_File should return failure closing file error if fileInfo is in that state");
+    free_Secure_File_Info(&fileInfo3);
 
-    secure_Close_File(fileInfo);
-
-    const char* filename1 = "test_secure_setpos1.txt";
-    FILE* f1 = fopen(filename1, "w");
-    fprintf(f1, "hello world");
-    fclose(f1);
-
-    secureFileInfo* fileInfo1 = secure_Open_File(filename1, "r", NULL, NULL, NULL);
-    TEST_ASSERT(fileInfo1 != NULL, "secure_Open_File should return a valid pointer");
-    TEST_ASSERT(fileInfo1->isValid, "secure_Open_File should return valid file info");
-
-    fclose(fileInfo1->file);
+    secureFileInfo* fileInfo4 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo4 != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo4->isValid, "secure_Open_File should return valid file info");
 
     // Test when file is closed
-    result = secure_SetPos_File(fileInfo1, &pos);
+    fclose(fileInfo4->file);
+    result = secure_SetPos_File(fileInfo4, &pos);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "secure_SetPos_File should return failure when file is closed");
+    free_Secure_File_Info(&fileInfo4);
 }
 
 static eSecureFileError test_wrapper_vfprintf(secureFileInfo* fileInfo, const char* fmt, ...) {
@@ -1077,7 +1075,7 @@ void run_secure_file_tests(void) {
     test_secure_Delete_File_By_Name();
     test_secure_Flush_File();
     test_secure_GetPos_File();
-    // test_secure_SetPos_File();
+    test_secure_SetPos_File();
     // test_secure_vfprintf_File();
     // test_secure_fprintf_File();
     // test_os_Directory_Exists();
