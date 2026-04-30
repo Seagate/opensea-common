@@ -1039,7 +1039,7 @@ void run_secure_file_tests(void) {
     test_os_Is_Directory_Secure();
     test_free_File_Attributes();
     test_os_Get_File_Attributes_By_Name();
-    // test_os_Get_File_Attributes_By_File();
+    test_os_Get_File_Attributes_By_File();
     // test_free_Secure_File_Info();
     // test_secure_Open_File();
     // test_secure_Close_File();
