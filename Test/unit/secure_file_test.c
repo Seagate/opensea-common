@@ -181,6 +181,7 @@ static void test_secure_Open_File(void) {
     TEST_ASSERT(fileInfo->fileSize == 5, "File size should be 5 bytes");
     TEST_ASSERT(fileInfo->attributes != NULL, "File attributes should be populated");
     free_File_Attributes(&realAttrs);
+    free_Secure_File_Info(&fileInfo);
 
     // Test for invalid mode
     const char* filename1 = "test_secure_open_invalid_mode.txt";
@@ -189,12 +190,14 @@ static void test_secure_Open_File(void) {
     fclose(f1);
     secureFileInfo* fileInfo1 = secure_Open_File(filename1, "x", extList, NULL, NULL);
     TEST_ASSERT(fileInfo1->error == SEC_FILE_INVALID_MODE, "Should return invalid mode error for unsupported mode");
+    free_Secure_File_Info(&fileInfo1);
 
     const char* filename2 = "test_secure_open_invalid_ext.log";
     FILE* f2 = fopen(filename2, "w");
     fclose(f2);
     secureFileInfo* fileInfo2 = secure_Open_File(filename2, "r", extList, NULL, NULL);
     TEST_ASSERT(fileInfo2 != NULL, "secure_Open_File should return a valid pointer even for invalid extension");
+    free_Secure_File_Info(&fileInfo2);
 
     // Test for invalid extension
     const char* filename3 = "test_secure_open_invalid_ext.abc";
@@ -202,6 +205,7 @@ static void test_secure_Open_File(void) {
     fclose(f3);
     secureFileInfo* fileInfo3 = secure_Open_File(filename3, "r", extList, NULL, NULL);
     TEST_ASSERT(fileInfo3->error == SEC_FILE_INVALID_FILE_EXTENSION, "Should return invalid file extension error for unsupported extension");
+    free_Secure_File_Info(&fileInfo3);
 
     // Test for case-insensitive extension match
     fileExt caseInsensitiveExtList[] = {{"TXT", true}, {NULL, false}};
@@ -210,6 +214,7 @@ static void test_secure_Open_File(void) {
     fclose(f4);
     secureFileInfo* fileInfo4 = secure_Open_File(filename4, "r", caseInsensitiveExtList, NULL, NULL);
     TEST_ASSERT(fileInfo4 != NULL, "secure_Open_File should return a valid pointer for case-insensitive extension match");
+    free_Secure_File_Info(&fileInfo4);
 
     // Test for invalid file attributes
     const char* filename5 = "test_secure_open_invalid_attrs.txt";
@@ -219,6 +224,7 @@ static void test_secure_Open_File(void) {
     invalidAttrs.deviceID = 999; 
     secureFileInfo* fileInfo5 = secure_Open_File(filename5, "r", extList, &invalidAttrs, NULL);
     TEST_ASSERT(fileInfo5->error == SEC_FILE_INVALID_FILE_ATTRIBUTES, "Should return invalid file attributes error when attributes do not match");
+    free_Secure_File_Info(&fileInfo5);
 
     // Test for invalid file unique ID - error while fetching realID as os_Get_File_Unique_Identifying_Information has a bug, not resolved yet.
     // const char* filename6 = "test_secure_open_invalid_unique_id.txt";
@@ -231,10 +237,12 @@ static void test_secure_Open_File(void) {
     // fclose(f6);
     // secureFileInfo* fileInfo6 = secure_Open_File(filename6, "r", extList, NULL, &wrongID);
     // TEST_ASSERT(fileInfo6->error == SEC_FILE_INVALID_FILE_UNIQUE_ID, "Should return invalid file unique ID error when unique ID does not match");
+    // free_Secure_File_Info(&fileInfo6);
 
     // Test when filename is NULL
     secureFileInfo* fileInfoNULL = secure_Open_File(NULL, "r", extList, NULL, NULL);
     TEST_ASSERT(fileInfoNULL->error == SEC_FILE_FAILURE, "Should return failure when filename is NULL");
+    free_Secure_File_Info(&fileInfoNULL);
 }
 
 static void test_secure_Close_File(void) {
