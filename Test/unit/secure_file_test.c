@@ -1074,8 +1074,8 @@ void run_secure_file_tests(void) {
     test_secure_Seek_File();
     test_secure_Rewind_File();
     test_secure_Tell_File();
-    // // test_secure_Remove_File();
-    // test_secure_Delete_File_By_Name();
+    // test_secure_Remove_File();
+    test_secure_Delete_File_By_Name();
     // test_secure_Flush_File();
     // test_secure_GetPos_File();
     // test_secure_SetPos_File();
