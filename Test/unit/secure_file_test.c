@@ -648,12 +648,14 @@ static void test_secure_Flush_File(void) {
 
     flushResult = secure_Flush_File(fileInfo);
     TEST_ASSERT(flushResult == SEC_FILE_SUCCESS, "secure_Flush_File should succeed");
-
-    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
-    flushResult = secure_Flush_File(fileInfo);
-    TEST_ASSERT(flushResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Flush_File should return failure closing file error if fileInfo is in that state");
-
     secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo);
+
+    secureFileInfo* fileInfo2 = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    fileInfo2->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    flushResult = secure_Flush_File(fileInfo2);
+    TEST_ASSERT(flushResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Flush_File should return failure closing file error if fileInfo is in that state");
+    free_Secure_File_Info(&fileInfo2);
 
     // Verify the file was written correctly
     FILE* f = fopen(filename, "r");
@@ -1076,7 +1078,7 @@ void run_secure_file_tests(void) {
     test_secure_Tell_File();
     // test_secure_Remove_File();
     test_secure_Delete_File_By_Name();
-    // test_secure_Flush_File();
+    test_secure_Flush_File();
     // test_secure_GetPos_File();
     // test_secure_SetPos_File();
     // test_secure_vfprintf_File();
