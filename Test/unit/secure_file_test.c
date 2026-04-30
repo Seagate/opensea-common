@@ -1036,33 +1036,34 @@ static void test_create_And_Open_Secure_Log_File(void) {
     // Test when deviceIdentifier is NULL
     eReturnValues result = create_And_Open_Secure_Log_File(NULL, 0, &fileInfo, NAMING_SERIAL_NUMBER_DATE_TIME, NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
     TEST_ASSERT(result == BAD_PARAMETER, "Function should return BAD_PARAMETER when device identifier is NULL");
+    free_Secure_File_Info(&fileInfo);
 
     // Test for insecure path
+    secureFileInfo* fileInfo2 = NULL;
     system("mkdir insecure_dir");
     system("chmod 777 insecure_dir");
-    result = create_And_Open_Secure_Log_File("device123", strlen("device123"), &fileInfo, NAMING_SERIAL_NUMBER_DATE_TIME, "insecure_dir", strlen("insecure_dir"), "logfile", strlen("logfile"), "txt", strlen("txt"));
+    result = create_And_Open_Secure_Log_File("device123", strlen("device123"), &fileInfo2, NAMING_SERIAL_NUMBER_DATE_TIME, "insecure_dir", strlen("insecure_dir"), "logfile", strlen("logfile"), "txt", strlen("txt"));
     TEST_ASSERT(result == INSECURE_PATH, "Function should return INSECURE_PATH when log path is not secure");
     rmdir("insecure_dir");
+    free_Secure_File_Info(&fileInfo2);
 
-    result = create_And_Open_Secure_Log_File("device123", strlen("device123"), &fileInfo, NAMING_SERIAL_NUMBER_DATE_TIME, NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
+    secureFileInfo* fileInfo3 = NULL;
+    result = create_And_Open_Secure_Log_File("device123", strlen("device123"), &fileInfo3, NAMING_SERIAL_NUMBER_DATE_TIME, NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
     TEST_ASSERT(result == SUCCESS, "Function should succeed");
-    TEST_ASSERT(fileInfo != NULL, "fileInfo should be allocated");
-    TEST_ASSERT(fileInfo->isValid, "File info should be valid");
-    TEST_ASSERT(fileInfo->file != NULL, "File pointer should be valid");
-
-    TEST_ASSERT(os_File_Exists(fileInfo->filename), "Generated log file should exist");
-    TEST_ASSERT(strstr(fileInfo->filename, ".txt") != NULL, "File should have .txt extension");
-
-    free_Secure_File_Info(&fileInfo);
+    TEST_ASSERT(fileInfo3 != NULL, "fileInfo should be allocated");
+    TEST_ASSERT(fileInfo3->isValid, "File info should be valid");
+    TEST_ASSERT(fileInfo3->file != NULL, "File pointer should be valid");
+    TEST_ASSERT(os_File_Exists(fileInfo3->filename), "Generated log file should exist");
+    TEST_ASSERT(strstr(fileInfo3->filename, ".txt") != NULL, "File should have .txt extension");
+    free_Secure_File_Info(&fileInfo3);
 
     // Test with pre-created file
     FILE* f = fopen("testfile.bin", "wb");
     fclose(f);
-
-    secureFileInfo* file = NULL;
-
-    result = create_And_Open_Secure_Log_File("testfile", strlen("testfile"), &file, NAMING_SERIAL_NUMBER_ONLY, NULL, 0, NULL, 0, ".bin", 4);
+    secureFileInfo* fileInfo4 = NULL;
+    result = create_And_Open_Secure_Log_File("testfile", strlen("testfile"), &fileInfo4, NAMING_SERIAL_NUMBER_ONLY, NULL, 0, NULL, 0, ".bin", 4);
     TEST_ASSERT(result == FAILURE, "Function should fail when file already exists");
+    free_Secure_File_Info(&fileInfo4);
 }
 
 void run_secure_file_tests(void) {
