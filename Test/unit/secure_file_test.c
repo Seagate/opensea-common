@@ -422,7 +422,6 @@ static void test_secure_Write_File(void) {
     char buffer[10] = {0};
     fread(buffer, 1, sizeof(buffer), f);
     fclose(f);
-    printf("Buffer read from file: %s\n", buffer);
     TEST_ASSERT(strcmp(buffer, "hello") == 0, "File should contain 'hello'");
 }
 
@@ -448,6 +447,7 @@ static void test_secure_Seek_File(void) {
     long pos = 6;
     result = secure_Seek_File(fileInfo, pos, SEEK_SET);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Seek_File should succeed");
+    free_Secure_File_Info(&fileInfo);
 
     // Read the next 5 characters ("world")
     char buffer[10] = {0};
@@ -455,11 +455,11 @@ static void test_secure_Seek_File(void) {
     TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed");
     TEST_ASSERT(strcmp(buffer, "world") == 0, "Buffer should contain 'world'");
 
-    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
-    result = secure_Seek_File(fileInfo, 0, SEEK_SET);
+    secureFileInfo* fileInfo2 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    fileInfo2->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    result = secure_Seek_File(fileInfo2, 0, SEEK_SET);
     TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Seek_File should return failure closing file error if fileInfo is in that state");
-
-    secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo2);
 }
 
 static void test_secure_Rewind_File(void) {
@@ -1076,7 +1076,7 @@ void run_secure_file_tests(void) {
     test_secure_Close_File();
     test_secure_Read_File();
     test_secure_Write_File();
-    // test_secure_Seek_File();
+    test_secure_Seek_File();
     // test_secure_Rewind_File();
     // test_secure_Tell_File();
     // // test_secure_Remove_File();
