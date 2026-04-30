@@ -520,28 +520,22 @@ static void test_secure_Tell_File(void) {
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Seek_File should succeed");
     oscoffset_t currentPos = secure_Tell_File(fileInfo);
     TEST_ASSERT(currentPos == pos, "secure_Tell_File should return the correct file position");
+    free_Secure_File_Info(&fileInfo);
 
-    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
-    tellResult = secure_Tell_File(fileInfo);
-    TEST_ASSERT(tellResult == -1, "secure_Tell_File should return -1 when fileInfo is in failure closing state");
-
-    secure_Close_File(fileInfo);
-
-    const char* filename2 = "test_secure_tell2.txt";
-    FILE* f2 = fopen(filename2, "w");
-    fprintf(f2, "hello world");
-    fclose(f2);
-
-    secureFileInfo* fileInfo2 = secure_Open_File(filename2, "r", NULL, NULL, NULL);
-    TEST_ASSERT(fileInfo2 != NULL, "secure_Open_File should return a valid pointer");
-    TEST_ASSERT(fileInfo2->isValid, "secure_Open_File should return valid file info");
-
-    // Test when FILE pointer is NULL
-    fileInfo2->file = NULL;
+    secureFileInfo* fileInfo2 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    fileInfo2->error = SEC_FILE_FAILURE_CLOSING_FILE;
     tellResult = secure_Tell_File(fileInfo2);
+    TEST_ASSERT(tellResult == -1, "secure_Tell_File should return -1 when fileInfo is in failure closing state");
+    free_Secure_File_Info(&fileInfo2);
+    
+    // Test when FILE pointer is NULL
+    secureFileInfo* fileInfo3 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo3 != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo3->isValid, "secure_Open_File should return valid file info");
+    fileInfo3->file = NULL;
+    tellResult = secure_Tell_File(fileInfo3);
     TEST_ASSERT(tellResult == -1, "secure_Tell_File should return -1 when FILE pointer is NULL");
-
-    secure_Close_File(fileInfo2);
+    free_Secure_File_Info(&fileInfo3);
 }
 
 static void test_secure_Remove_File(void) {
@@ -1079,7 +1073,7 @@ void run_secure_file_tests(void) {
     test_secure_Write_File();
     test_secure_Seek_File();
     test_secure_Rewind_File();
-    // test_secure_Tell_File();
+    test_secure_Tell_File();
     // // test_secure_Remove_File();
     // test_secure_Delete_File_By_Name();
     // test_secure_Flush_File();
