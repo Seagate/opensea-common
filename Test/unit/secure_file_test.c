@@ -843,21 +843,8 @@ static void test_secure_fprintf_File(void) {
 
     eSecureFileError result = secure_fprintf_File(fileInfo, "Hello %s!", "world");
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fprintf_File should succeed");
-
-    // Test when format = NULL
-    result = secure_fprintf_File(fileInfo, NULL);
-    TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_fprintf_File should return invalid parameter error when format is NULL");
-    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_PARAMETER, "fileInfo error should be set to invalid parameter when format is NULL");
-
-    // Test when fileInfo = NULL
-    result = secure_fprintf_File(NULL, "This should fail");
-    TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_fprintf_File should return invalid secure file error when fileInfo is NULL");
-
-    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
-    result = secure_fprintf_File(fileInfo, "This should fail");
-    TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_fprintf_File should return failure closing file error if fileInfo is in that state");
-
     secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo);
 
     // Verify the file was written correctly
     FILE* f = fopen(filename, "r");
@@ -865,6 +852,23 @@ static void test_secure_fprintf_File(void) {
     fread(buffer, 1, sizeof(buffer), f);
     fclose(f);
     TEST_ASSERT(strcmp(buffer, "Hello world!") == 0, "File should contain 'Hello world!'");
+
+    // Test when format = NULL
+    secureFileInfo* fileInfo2 = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    result = secure_fprintf_File(fileInfo2, NULL);
+    TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_fprintf_File should return invalid parameter error when format is NULL");
+    TEST_ASSERT(fileInfo2->error == SEC_FILE_INVALID_PARAMETER, "fileInfo error should be set to invalid parameter when format is NULL");
+    free_Secure_File_Info(&fileInfo2);
+
+    // Test when fileInfo = NULL
+    result = secure_fprintf_File(NULL, "This should fail");
+    TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_fprintf_File should return invalid secure file error when fileInfo is NULL");
+
+    secureFileInfo* fileInfo3 = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    fileInfo3->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    result = secure_fprintf_File(fileInfo3, "This should fail");
+    TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_fprintf_File should return failure closing file error if fileInfo is in that state");
+    free_Secure_File_Info(&fileInfo3);
 }
 
 static void test_os_Directory_Exists(void) {
@@ -1082,7 +1086,7 @@ void run_secure_file_tests(void) {
     test_secure_GetPos_File();
     test_secure_SetPos_File();
     test_secure_vfprintf_File();
-    // test_secure_fprintf_File();
+    test_secure_fprintf_File();
     // test_os_Directory_Exists();
     // test_os_File_Exists();
     // test_os_Create_Directory();
