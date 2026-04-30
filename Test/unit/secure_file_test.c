@@ -286,42 +286,54 @@ static void test_secure_Read_File(void) {
     free_Secure_File_Info(&fileInfo);
 
     // Test when buffer = NULL
-    readResult = secure_Read_File(fileInfo, NULL, sizeof(buffer), 1, 5, NULL);
+    secureFileInfo* fileInfo2 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    readResult = secure_Read_File(fileInfo2, NULL, sizeof(buffer), 1, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_INVALID_PARAMETER, "Should return invalid parameter error when buffer is NULL");
-    TEST_ASSERT(fileInfo->error == SEC_FILE_INVALID_PARAMETER, "fileInfo error should be set to invalid parameter when buffer is NULL");
+    TEST_ASSERT(fileInfo2->error == SEC_FILE_INVALID_PARAMETER, "fileInfo error should be set to invalid parameter when buffer is NULL");
+    free_Secure_File_Info(&fileInfo2);
 
     // Test when buffersize < elementsize * count
     char smallBuffer[2] = {0};
-    readResult = secure_Read_File(fileInfo, smallBuffer, sizeof(smallBuffer), 1, 5, NULL);
+    secureFileInfo* fileInfo3 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    readResult = secure_Read_File(fileInfo3, smallBuffer, sizeof(smallBuffer), 1, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_BUFFER_TOO_SMALL, "Should return buffer too small error when buffersize is insufficient");
-    TEST_ASSERT(fileInfo->error == SEC_FILE_BUFFER_TOO_SMALL, "fileInfo error should be set to buffer too small when buffersize is insufficient");
+    TEST_ASSERT(fileInfo3->error == SEC_FILE_BUFFER_TOO_SMALL, "fileInfo error should be set to buffer too small when buffersize is insufficient");
+    free_Secure_File_Info(&fileInfo3);
 
     // Test when numberread is provided
     size_t numberRead = 0;
     secure_Seek_File(fileInfo, 0, SEEK_SET);
-    readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 5, &numberRead);
+    secureFileInfo* fileInfo4 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    readResult = secure_Read_File(fileInfo4, buffer, sizeof(buffer), 1, 5, &numberRead);
     TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed when numberread is provided");
     TEST_ASSERT(numberRead == 5, "numberread should be set to the number of elements read");
+    free_Secure_File_Info(&fileInfo4);
 
     // Test when count is 0
-    readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 0, NULL);
+    secureFileInfo* fileInfo5 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    readResult = secure_Read_File(fileInfo5, buffer, sizeof(buffer), 1, 0, NULL);
     TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed when count is 0");
+    free_Secure_File_Info(&fileInfo5);
 
     // Test when elementsize is 0
-    readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 0, 5, NULL);
+    secureFileInfo* fileInfo6 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    readResult = secure_Read_File(fileInfo6, buffer, sizeof(buffer), 0, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed when elementsize is 0");
+    free_Secure_File_Info(&fileInfo6);
 
     // Test when readResult is less than count (partial read)
     numberRead = 0;
     secure_Seek_File(fileInfo, 0, SEEK_SET);
-    readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 6, &numberRead);
+    secureFileInfo* fileInfo7 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    readResult = secure_Read_File(fileInfo7, buffer, sizeof(buffer), 1, 6, &numberRead);
     TEST_ASSERT(readResult == SEC_FILE_END_OF_FILE_REACHED, "secure_Read_File should return end of file error when reading past the end of the file");
+    free_Secure_File_Info(&fileInfo7);
 
     fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
-    readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 5, NULL);
+    secureFileInfo* fileInfo8 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    readResult = secure_Read_File(fileInfo8, buffer, sizeof(buffer), 1, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Read_File should return failure closing file error if fileInfo is in that state");
-
-    secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo8);
 
     // Test for an empty file
     const char* emptyFilename = "test_secure_read_empty.txt";
@@ -330,13 +342,13 @@ static void test_secure_Read_File(void) {
     secureFileInfo* emptyFileInfo = secure_Open_File(emptyFilename, "r", NULL, NULL, NULL);
     readResult = secure_Read_File(emptyFileInfo, buffer, sizeof(buffer), 1, 5, &numberRead);
     TEST_ASSERT(readResult == SEC_FILE_READ_WRITE_ERROR, "secure_Read_File should return read/write error when reading from an empty file");
-    secure_Close_File(emptyFileInfo);
+    free_Secure_File_Info(&emptyFileInfo);
 
     // Test when reading from a write-only file
     secureFileInfo* writeOnlyInfo = secure_Open_File(filename, "w", NULL, NULL, NULL);
     readResult = secure_Read_File(writeOnlyInfo, buffer, sizeof(buffer), 1, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_READ_WRITE_ERROR, "secure_Read_File should return read/write error when reading from a write-only file");
-    secure_Close_File(writeOnlyInfo);
+    free_Secure_File_Info(&writeOnlyInfo);
 
     // Test when fileInfo = NULL
     readResult = secure_Read_File(NULL, buffer, sizeof(buffer), 1, 5, NULL);
