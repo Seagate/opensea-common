@@ -807,6 +807,7 @@ static void test_secure_vfprintf_File(void) {
     char buffer[20] = {0};
     fread(buffer, 1, sizeof(buffer), f);
     fclose(f);
+    printf("Buffer contents: '%s'\n", buffer);
     TEST_ASSERT(strcmp(buffer, "Hello world!") == 0, "File should contain 'Hello world!'");
 
     free_Secure_File_Info(&fileInfo);
