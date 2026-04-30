@@ -490,13 +490,14 @@ static void test_secure_Rewind_File(void) {
     eSecureFileError readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed");
     TEST_ASSERT(strcmp(buffer, "hello") == 0, "Buffer should contain 'hello'");
+    free_Secure_File_Info(&fileInfo);
 
     // Test when file is in failure closing state
-    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
-    result = secure_Rewind_File(fileInfo);
+    secureFileInfo* fileInfo2 = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    fileInfo2->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    result = secure_Rewind_File(fileInfo2);
     TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Rewind_File should return failure closing file error if file is in that state");
-
-    secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo2);
 }
 
 static void test_secure_Tell_File(void) {
@@ -1077,7 +1078,7 @@ void run_secure_file_tests(void) {
     test_secure_Read_File();
     test_secure_Write_File();
     test_secure_Seek_File();
-    // test_secure_Rewind_File();
+    test_secure_Rewind_File();
     // test_secure_Tell_File();
     // // test_secure_Remove_File();
     // test_secure_Delete_File_By_Name();
