@@ -414,6 +414,7 @@ static void test_secure_Write_File(void) {
     secureFileInfo* writeFileInfo = secure_Open_File(filename2, "w", NULL, NULL, NULL);
     writeResult = secure_Write_File(writeFileInfo, (void*)data, strlen(data), 1, strlen(data), NULL);
     TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed");
+    secure_Close_File(writeFileInfo);
     free_Secure_File_Info(&writeFileInfo);
 
     // Verify the file was written correctly
