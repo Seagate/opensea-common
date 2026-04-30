@@ -13,10 +13,24 @@ expect {
     -re "Enter password.*" {
         send "mypassword\r"
     }
+    eof {
+        # Program exited early, do nothing
+    }
     timeout {
-        # fallback when prompt is buffered
+        puts "WARNING: Prompt not seen, sending input anyway"
         send "mypassword\r"
     }
 }
 
-expect eof
+expect {
+    eof {}
+    timeout {
+        puts "ERROR: Program did not exit"
+        exit 1
+    }
+}
+
+catch wait result
+set exit_status [lindex $result 3]
+
+exit $exit_status
