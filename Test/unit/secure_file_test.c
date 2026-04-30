@@ -1053,7 +1053,7 @@ static void test_create_And_Open_Secure_Log_File(void) {
     TEST_ASSERT(os_File_Exists(fileInfo->filename), "Generated log file should exist");
     TEST_ASSERT(strstr(fileInfo->filename, ".txt") != NULL, "File should have .txt extension");
 
-    secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo);
 
     // Test with pre-created file
     FILE* f = fopen("testfile.bin", "wb");
@@ -1098,5 +1098,5 @@ void run_secure_file_tests(void) {
     test_exact_Compare_SIDS_And_DACL_Strings();
     #endif
     test_generate_Log_Name();
-    // test_create_And_Open_Secure_Log_File();
+    test_create_And_Open_Secure_Log_File();
 }
