@@ -369,45 +369,52 @@ static void test_secure_Write_File(void) {
     // Test when buffer = NULL
     writeResult = secure_Write_File(fileInfo, NULL, strlen(data), 1, strlen(data), NULL);
     TEST_ASSERT(writeResult == SEC_FILE_INVALID_PARAMETER, "secure_Write_File should return invalid parameter error when buffer is NULL");
+    free_Secure_File_Info(&fileInfo);
 
     // Test when buffersize < elementsize * count
-    writeResult = secure_Write_File(fileInfo, (void*)data, 2, 1, strlen(data), NULL);
+    secureFileInfo* fileInfo2 = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    writeResult = secure_Write_File(fileInfo2, (void*)data, 2, 1, strlen(data), NULL);
     TEST_ASSERT(writeResult == SEC_FILE_BUFFER_TOO_SMALL, "secure_Write_File should return buffer too small error when buffersize is insufficient");
+    free_Secure_File_Info(&fileInfo2);
 
     // Test when numberwritten is provided
     size_t numberWritten = 0;
-    writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 1, strlen(data), &numberWritten);
+    secureFileInfo* fileInfo3 = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    writeResult = secure_Write_File(fileInfo3, (void*)data, strlen(data), 1, strlen(data), &numberWritten);
     TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed when numberwritten is provided");
     TEST_ASSERT(numberWritten == strlen(data), "numberwritten should be set to the number of elements written");
+    free_Secure_File_Info(&fileInfo3);
 
     // Test when count is 0
-    writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 1, 0, NULL);
+    secureFileInfo* fileInfo4 = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    writeResult = secure_Write_File(fileInfo4, (void*)data, strlen(data), 1, 0, NULL);
     TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed when count is 0");
+    free_Secure_File_Info(&fileInfo4);
 
     // Test when elementsize is 0
-    writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 0, strlen(data), NULL);
+    secureFileInfo* fileInfo5 = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    writeResult = secure_Write_File(fileInfo5, (void*)data, strlen(data), 0, strlen(data), NULL);
     TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed when elementsize is 0");
+    free_Secure_File_Info(&fileInfo5);
 
-    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
-    writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 1, strlen(data), NULL);
+    secureFileInfo* fileInfo6 = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    fileInfo6->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    writeResult = secure_Write_File(fileInfo6, (void*)data, strlen(data), 1, strlen(data), NULL);
     TEST_ASSERT(writeResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Write_File should return failure closing file error if fileInfo is in that state");
-
-    secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo6);
 
     // Test for writing to a read-only file
     secureFileInfo* readOnlyInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
     writeResult = secure_Write_File(readOnlyInfo, (void*)data, strlen(data), 1, strlen(data), NULL);
     TEST_ASSERT(writeResult == SEC_FILE_READ_WRITE_ERROR, "secure_Write_File should return read/write error when writing to a read-only file");
-    secure_Close_File(readOnlyInfo);
+    free_Secure_File_Info(&readOnlyInfo);
 
     // Test for writing to a file and then reading it back to verify the contents
     const char* filename2 = "test_secure_write2.txt";
-    fileInfo = secure_Open_File(filename2, "w", NULL, NULL, NULL);
-
-    writeResult = secure_Write_File(fileInfo, (void*)data, strlen(data), 1, strlen(data), NULL);
+    secureFileInfo* writeFileInfo = secure_Open_File(filename2, "w", NULL, NULL, NULL);
+    writeResult = secure_Write_File(writeFileInfo, (void*)data, strlen(data), 1, strlen(data), NULL);
     TEST_ASSERT(writeResult == SEC_FILE_SUCCESS, "secure_Write_File should succeed");
-
-    secure_Close_File(fileInfo);
+    free_Secure_File_Info(&writeFileInfo);
 
     // Verify the file was written correctly
     FILE* f = fopen(filename2, "r");
@@ -1066,7 +1073,7 @@ void run_secure_file_tests(void) {
     test_secure_Open_File();
     test_secure_Close_File();
     test_secure_Read_File();
-    // test_secure_Write_File();
+    test_secure_Write_File();
     // test_secure_Seek_File();
     // test_secure_Rewind_File();
     // test_secure_Tell_File();
