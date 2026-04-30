@@ -792,7 +792,6 @@ static eSecureFileError test_wrapper_vfprintf(secureFileInfo* fileInfo, const ch
 static void test_secure_vfprintf_File(void) {
     const char* filename = "test_secure_vfprintf.txt";
     FILE* f = fopen(filename, "w");
-    fprintf(f, "hello");
     fclose(f);
 
     secureFileInfo* fileInfo = secure_Open_File(filename, "w", NULL, NULL, NULL);
@@ -801,16 +800,15 @@ static void test_secure_vfprintf_File(void) {
 
     eSecureFileError result = test_wrapper_vfprintf(fileInfo, "Hello %s!", "world");
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_vfprintf_File should succeed");
+    secure_Close_File(fileInfo);
+    free_Secure_File_Info(&fileInfo);
 
     // Verify the file was written correctly
     f = fopen(filename, "r");
     char buffer[20] = {0};
     fread(buffer, 1, sizeof(buffer), f);
     fclose(f);
-    printf("Buffer contents: '%s'\n", buffer);
     TEST_ASSERT(strcmp(buffer, "Hello world!") == 0, "File should contain 'Hello world!'");
-
-    free_Secure_File_Info(&fileInfo);
 
    // Test for incomplete format
    secureFileInfo* fileInfo2 = secure_Open_File(filename, "w", NULL, NULL, NULL);
