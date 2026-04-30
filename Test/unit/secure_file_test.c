@@ -648,6 +648,14 @@ static void test_secure_Flush_File(void) {
 
     flushResult = secure_Flush_File(fileInfo);
     TEST_ASSERT(flushResult == SEC_FILE_SUCCESS, "secure_Flush_File should succeed");
+
+    // Verify the file was written correctly
+    FILE* f = fopen(filename, "r");
+    char buffer[10] = {0};
+    fread(buffer, 1, sizeof(buffer), f);
+    fclose(f);
+    TEST_ASSERT(strcmp(buffer, "hello") == 0, "File should contain 'hello'");
+
     secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 
@@ -656,13 +664,6 @@ static void test_secure_Flush_File(void) {
     flushResult = secure_Flush_File(fileInfo2);
     TEST_ASSERT(flushResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Flush_File should return failure closing file error if fileInfo is in that state");
     free_Secure_File_Info(&fileInfo2);
-
-    // Verify the file was written correctly
-    FILE* f = fopen(filename, "r");
-    char buffer[10] = {0};
-    fread(buffer, 1, sizeof(buffer), f);
-    fclose(f);
-    TEST_ASSERT(strcmp(buffer, "hello") == 0, "File should contain 'hello'");
 }
 
 static void test_secure_GetPos_File(void) {
