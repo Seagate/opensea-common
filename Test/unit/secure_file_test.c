@@ -447,13 +447,13 @@ static void test_secure_Seek_File(void) {
     long pos = 6;
     result = secure_Seek_File(fileInfo, pos, SEEK_SET);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Seek_File should succeed");
-    free_Secure_File_Info(&fileInfo);
 
     // Read the next 5 characters ("world")
     char buffer[10] = {0};
     eSecureFileError readResult = secure_Read_File(fileInfo, buffer, sizeof(buffer), 1, 5, NULL);
     TEST_ASSERT(readResult == SEC_FILE_SUCCESS, "secure_Read_File should succeed");
     TEST_ASSERT(strcmp(buffer, "world") == 0, "Buffer should contain 'world'");
+    free_Secure_File_Info(&fileInfo);
 
     secureFileInfo* fileInfo2 = secure_Open_File(filename, "r", NULL, NULL, NULL);
     fileInfo2->error = SEC_FILE_FAILURE_CLOSING_FILE;
