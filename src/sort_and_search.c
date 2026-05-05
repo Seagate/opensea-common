@@ -22,14 +22,15 @@
 #include <stdlib.h>
 
 // regular qsort without context, but added checks for qsort_s
-errno_t safe_qsort_impl(void*       ptr,
-                        rsize_t     count,
-                        rsize_t     size,
-                        comparefn   compare,
-                        const char* file,
-                        const char* function,
-                        int         line,
-                        const char* expression)
+M_PARAM_RW(1)
+errno_t safe_qsort_impl(void* M_NONNULL        ptr,
+                        rsize_t                count,
+                        rsize_t                size,
+                        comparefn M_NONNULL    compare,
+                        const char* M_NULLABLE file,
+                        const char* M_NULLABLE function,
+                        int                    line,
+                        const char* M_NULLABLE expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -77,15 +78,17 @@ errno_t safe_qsort_impl(void*       ptr,
 }
 
 // regular bsearch without context, but added checks for bsearch_s
-void* safe_bsearch_impl(const void* key,
-                        const void* ptr,
-                        rsize_t     count,
-                        rsize_t     size,
-                        comparefn   compare,
-                        const char* file,
-                        const char* function,
-                        int         line,
-                        const char* expression)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+void* M_NULLABLE safe_bsearch_impl(const void* M_NONNULL  key,
+                                   const void* M_NONNULL  ptr,
+                                   rsize_t                count,
+                                   rsize_t                size,
+                                   comparefn M_NONNULL    compare,
+                                   const char* M_NULLABLE file,
+                                   const char* M_NULLABLE function,
+                                   int                    line,
+                                   const char* M_NULLABLE expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;

@@ -27,7 +27,7 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
-static int lin_file_filter(const struct dirent* entry, const char* stringMatch)
+static int lin_file_filter(const struct dirent* M_NONNULL entry, const char* M_NONNULL stringMatch)
 {
     int    match          = 0;
     size_t filenameLength = safe_strlen(entry->d_name) + safe_strlen("/etc/") + 1;
@@ -63,14 +63,14 @@ static int lin_file_filter(const struct dirent* entry, const char* stringMatch)
     return match;
 }
 
-static int release_file_filter(const struct dirent* entry)
+static int release_file_filter(const struct dirent* M_NONNULL entry)
 {
     // looks like almost all linux specific
     // releases put it as -release
     return lin_file_filter(entry, "-release");
 }
 
-static int version_file_filter(const struct dirent* entry)
+static int version_file_filter(const struct dirent* M_NONNULL entry)
 {
     // most, but not all do a _version, but some do a -, so this
     // should work for both
@@ -85,7 +85,7 @@ static M_INLINE void close_lin_release_file(FILE* release)
     M_STATIC_CAST(void, fclose(release));
 }
 
-static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
+static bool get_Linux_Info_From_OS_Release_File(char* M_NONNULL operatingSystemName)
 {
     bool gotLinuxInfo = false;
     if (operatingSystemName != M_NULLPTR)
@@ -119,8 +119,8 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
                     off_t releaseSize = releasestat.st_size;
                     if (releaseSize > 0)
                     {
-                        char* releaseMemory =
-                            M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, releaseSize) + SIZE_T_C(1), sizeof(char)));
+                        char* releaseMemory = M_REINTERPRET_CAST(
+                            char*, safe_calloc(C_CAST(size_t, releaseSize) + SIZE_T_C(1), sizeof(char)));
                         if (fread(releaseMemory, sizeof(char), C_CAST(size_t, releaseSize), release) ==
                                 C_CAST(size_t, releaseSize) &&
                             !ferror(release))
@@ -157,7 +157,7 @@ static bool get_Linux_Info_From_OS_Release_File(char* operatingSystemName)
 // since it is heap allocated, it must be free'd by the caller
 // since this is an internal static function, not need for separate function to
 // call free.
-static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
+static char* M_NULLABLE read_Linux_etc_File_For_OS_Info(char* M_NONNULL dirent_entry_name)
 {
     char* etcFileMem = M_NULLPTR;
     if (dirent_entry_name != M_NULLPTR)
@@ -181,7 +181,8 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
                     off_t releaseSize = direntfilestat.st_size;
                     if (releaseSize > 0)
                     {
-                        etcFileMem = M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, releaseSize) + SIZE_T_C(1), sizeof(char)));
+                        etcFileMem = M_REINTERPRET_CAST(
+                            char*, safe_calloc(C_CAST(size_t, releaseSize) + SIZE_T_C(1), sizeof(char)));
                         if (etcFileMem != M_NULLPTR)
                         {
                             if (fread(etcFileMem, sizeof(char), C_CAST(size_t, releaseSize), release) !=
@@ -204,7 +205,7 @@ static char* read_Linux_etc_File_For_OS_Info(char* dirent_entry_name)
     return etcFileMem;
 }
 
-static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSystemName)
+static bool get_Linux_Info_From_Distribution_Specific_Files(char* M_NONNULL operatingSystemName)
 {
     bool gotLinuxInfo = false;
     if (operatingSystemName != M_NULLPTR)
@@ -319,7 +320,7 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* operatingSyste
     return gotLinuxInfo;
 }
 
-static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
+static bool get_Linux_Info_From_ETC_Issue(char* M_NONNULL operatingSystemName)
 {
     bool gotLinuxInfo = false;
     if (operatingSystemName != M_NULLPTR)
@@ -338,7 +339,8 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
                 off_t issueSize = issuestat.st_size;
                 if (issueSize > 0)
                 {
-                    char* issueMemory = M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, issueSize) + SIZE_T_C(1), sizeof(char)));
+                    char* issueMemory =
+                        M_REINTERPRET_CAST(char*, safe_calloc(C_CAST(size_t, issueSize) + SIZE_T_C(1), sizeof(char)));
                     if (issueMemory != M_NULLPTR)
                     {
                         if (fread(issueMemory, sizeof(char), C_CAST(size_t, issueSize), issue) ==
@@ -374,11 +376,19 @@ static bool get_Linux_Info_From_ETC_Issue(char* operatingSystemName)
 //       first version number found to fill \param v2 = second version number
 //       found to fill \param v3 = third version number found to fill \param v4
 //       = fourth version number found to fill
-static bool get_Version_From_Uname_Str(const char* verStr,
-                                       const char* prefix /*optional*/,
-                                       const char* validVerSeperators,
-                                       uint16_t*   versions,
-                                       uint16_t    versionCount)
+M_PARAM_RO(1)
+M_NULL_TERM_STRING(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+M_PARAM_RO(3)
+M_NULL_TERM_STRING(3)
+M_PARAM_RW_SIZE(4, 5)
+static bool get_Version_From_Uname_Str(const char* M_NONNULL  verStr,
+                                       const char* M_NULLABLE prefix /*optional*/,
+                                       const char* M_NONNULL  validVerSeperators,
+                                       uint16_t* M_NONNULL    versions,
+                                       uint16_t               versionCount)
+    M_DIAG_ERROR(versionCount == 0, "versionCount must be non-zero")
 {
     if (verStr && validVerSeperators && versions && versionCount > 0)
     {
@@ -490,9 +500,9 @@ enum ePOSIXVersionFieldCounts
     ESXI_VERSION_FIELDS             = 3,
 };
 
-static eReturnValues get_Linux_Ver_And_Name(ptrOSVersionNumber versionNumber,
-                                            char*              operatingSystemName,
-                                            struct utsname*    unixUname)
+static eReturnValues get_Linux_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                            char* M_NULLABLE             operatingSystemName,
+                                            struct utsname* M_NONNULL    unixUname)
 {
     eReturnValues      ret              = SUCCESS;
     bool               linuxOSNameFound = false;
@@ -550,9 +560,9 @@ static eReturnValues get_Linux_Ver_And_Name(ptrOSVersionNumber versionNumber,
     return ret;
 }
 
-static eReturnValues get_FreeBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
-                                              char*              operatingSystemName,
-                                              struct utsname*    unixUname)
+static eReturnValues get_FreeBSD_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                              char* M_NULLABLE             operatingSystemName,
+                                              struct utsname* M_NONNULL    unixUname)
 {
     eReturnValues ret = SUCCESS;
     DECLARE_ZERO_INIT_ARRAY(uint16_t, list, FREEBSD_VERSION_FIELDS);
@@ -584,9 +594,9 @@ static eReturnValues get_FreeBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
     return ret;
 }
 
-static eReturnValues get_SunOS_Ver_And_Name(ptrOSVersionNumber versionNumber,
-                                            char*              operatingSystemName,
-                                            struct utsname*    unixUname)
+static eReturnValues get_SunOS_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                            char* M_NULLABLE             operatingSystemName,
+                                            struct utsname* M_NONNULL    unixUname)
 {
     eReturnValues ret = SUCCESS;
     DECLARE_ZERO_INIT_ARRAY(uint16_t, list, SUNOS_VERSION_FIELDS);
@@ -621,9 +631,9 @@ static eReturnValues get_SunOS_Ver_And_Name(ptrOSVersionNumber versionNumber,
     return ret;
 }
 
-static eReturnValues get_Darwin_Ver_And_Name(ptrOSVersionNumber versionNumber,
-                                             char*              operatingSystemName,
-                                             struct utsname*    unixUname)
+static eReturnValues get_Darwin_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                             char* M_NULLABLE             operatingSystemName,
+                                             struct utsname* M_NONNULL    unixUname)
 {
     eReturnValues ret = SUCCESS;
     DECLARE_ZERO_INIT_ARRAY(uint16_t, list, DARWIN_VERSION_FIELDS);
@@ -685,9 +695,9 @@ static eReturnValues get_Darwin_Ver_And_Name(ptrOSVersionNumber versionNumber,
     return ret;
 }
 
-static eReturnValues get_AIX_Ver_And_Name(ptrOSVersionNumber versionNumber,
-                                          char*              operatingSystemName,
-                                          struct utsname*    unixUname)
+static eReturnValues get_AIX_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                          char* M_NULLABLE             operatingSystemName,
+                                          struct utsname* M_NONNULL    unixUname)
 {
     eReturnValues ret                     = SUCCESS;
     unsigned long temp                    = 0UL;
@@ -709,9 +719,9 @@ static eReturnValues get_AIX_Ver_And_Name(ptrOSVersionNumber versionNumber,
     return ret;
 }
 
-static eReturnValues get_Dragonfly_Ver_And_Name(ptrOSVersionNumber versionNumber,
-                                                char*              operatingSystemName,
-                                                struct utsname*    unixUname)
+static eReturnValues get_Dragonfly_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                                char* M_NULLABLE             operatingSystemName,
+                                                struct utsname* M_NONNULL    unixUname)
 {
     eReturnValues ret = SUCCESS;
     DECLARE_ZERO_INIT_ARRAY(uint16_t, list, DRAGONFLYBSD_VERSION_FIELDS);
@@ -738,9 +748,9 @@ static eReturnValues get_Dragonfly_Ver_And_Name(ptrOSVersionNumber versionNumber
     return ret;
 }
 
-static eReturnValues get_OpenBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
-                                              char*              operatingSystemName,
-                                              struct utsname*    unixUname)
+static eReturnValues get_OpenBSD_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                              char* M_NULLABLE             operatingSystemName,
+                                              struct utsname* M_NONNULL    unixUname)
 {
     eReturnValues ret = SUCCESS;
     DECLARE_ZERO_INIT_ARRAY(uint16_t, list, OPENBSD_VERSION_FIELDS);
@@ -767,9 +777,9 @@ static eReturnValues get_OpenBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
     return ret;
 }
 
-static eReturnValues get_NetBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
-                                             char*              operatingSystemName,
-                                             struct utsname*    unixUname)
+static eReturnValues get_NetBSD_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                             char* M_NULLABLE             operatingSystemName,
+                                             struct utsname* M_NONNULL    unixUname)
 {
     eReturnValues ret = SUCCESS;
     DECLARE_ZERO_INIT_ARRAY(uint16_t, list, NETBSD_VERSION_FIELDS);
@@ -795,9 +805,9 @@ static eReturnValues get_NetBSD_Ver_And_Name(ptrOSVersionNumber versionNumber,
     return ret;
 }
 
-static eReturnValues get_OSF1_Ver_And_Name(ptrOSVersionNumber versionNumber,
-                                           char*              operatingSystemName,
-                                           struct utsname*    unixUname)
+static eReturnValues get_OSF1_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                           char* M_NULLABLE             operatingSystemName,
+                                           struct utsname* M_NONNULL    unixUname)
 {
     eReturnValues ret = SUCCESS;
     DECLARE_ZERO_INIT_ARRAY(uint16_t, list, OSF1_VERSION_FIELDS);
@@ -822,9 +832,9 @@ static eReturnValues get_OSF1_Ver_And_Name(ptrOSVersionNumber versionNumber,
     return ret;
 }
 
-static eReturnValues get_HPUX_Ver_And_Name(ptrOSVersionNumber versionNumber,
-                                           char*              operatingSystemName,
-                                           struct utsname*    unixUname)
+static eReturnValues get_HPUX_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                           char* M_NULLABLE             operatingSystemName,
+                                           struct utsname* M_NONNULL    unixUname)
 {
     eReturnValues ret = SUCCESS;
     DECLARE_ZERO_INIT_ARRAY(uint16_t, list, HPUX_VERSION_FIELDS);
@@ -851,9 +861,9 @@ static eReturnValues get_HPUX_Ver_And_Name(ptrOSVersionNumber versionNumber,
     return ret;
 }
 
-static eReturnValues get_VMKernel_Ver_And_Name(ptrOSVersionNumber versionNumber,
-                                               char*              operatingSystemName,
-                                               struct utsname*    unixUname)
+static eReturnValues get_VMKernel_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                               char* M_NULLABLE             operatingSystemName,
+                                               struct utsname* M_NONNULL    unixUname)
 {
     eReturnValues ret = SUCCESS;
     DECLARE_ZERO_INIT_ARRAY(uint16_t, list, ESXI_VERSION_FIELDS);
@@ -886,7 +896,8 @@ static eReturnValues get_VMKernel_Ver_And_Name(ptrOSVersionNumber versionNumber,
 // https://www.ibm.com/docs/en/zos/2.4.0?topic=functions-uname-display-current-operating-system-name
 //   and
 //   https://www.ibm.com/docs/en/zos/2.4.0?topic=functions-osname-get-true-operating-system-name
-eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char* operatingSystemName)
+eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                                    char* M_NULLABLE             operatingSystemName)
 {
     eReturnValues ret = SUCCESS;
     // check what is filled in by the uname call in the utsname struct (BUT
@@ -967,7 +978,7 @@ bool is_Running_Elevated(void)
 }
 
 #if defined(ENABLE_READ_USERNAME)
-static size_t get_Sys_Username_Max_Length(void)
+M_CONST_FUNC static M_INLINE size_t get_Sys_Username_Max_Length(void) M_UNSEQUENCED
 {
 #    if defined(POSIX_2001)
     // get this in case the system is configured differently
@@ -982,7 +993,7 @@ static size_t get_Sys_Username_Max_Length(void)
 // user's name for you. NOTE: This is static since it will probably only be used
 // here...we may want to  enable this for use elsewhere if we want to print
 // fancy warnings with the user's name
-static bool get_User_Name_From_ID(uid_t userID, char** userName)
+static bool get_User_Name_From_ID(uid_t userID, char* M_NONNULL* M_NULLABLE userName)
 {
     bool success = false;
     if (userName != M_NULLPTR)
@@ -1084,7 +1095,7 @@ static bool get_User_Name_From_ID(uid_t userID, char** userName)
     return success;
 }
 // Gets the user name for who is running the process
-eReturnValues get_Current_User_Name(char** userName)
+M_PARAM_WO(1) eReturnValues get_Current_User_Name(char* M_NONNULL* M_NULLABLE userName)
 {
     eReturnValues ret = SUCCESS;
     if (userName != M_NULLPTR)

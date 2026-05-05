@@ -672,8 +672,8 @@ M_NORETURN M_INLINE void unreachable_func(void)
 //! \param formatargpos The position of the format string argument.
 //! \param varargpos The position of the variadic arguments.
 //!
-//! \note Update this macro as errors are found to ensure compatibility with different compilers and standards.
-//! \author TJE
+//! \note set varargpos to 0 if there is no ... parameter. For example, a function that takes a va_list instead of ...
+//! would have varargpos set to 0 since the variadic arguments are not directly passed to the function. \author TJE
 
 //! \def FUNC_ATTR_SCANF
 //! \brief Marks functions that use scanf-style formatting.
@@ -687,8 +687,8 @@ M_NORETURN M_INLINE void unreachable_func(void)
 //! \param formatargpos The position of the format string argument.
 //! \param varargpos The position of the variadic arguments.
 //!
-//! \note Update this macro as errors are found to ensure compatibility with different compilers and standards.
-//! \author TJE
+//! \note set varargpos to 0 if there is no ... parameter. For example, a function that takes a va_list instead of ...
+//! would have varargpos set to 0 since the variadic arguments are not directly passed to the function. \author TJE
 //! \note Only use with scanf, not scanf_s type functions!
 
 //! \def FUNC_ATTR_SCANF_S
@@ -703,8 +703,8 @@ M_NORETURN M_INLINE void unreachable_func(void)
 //! \param formatargpos The position of the format string argument.
 //! \param varargpos The position of the variadic arguments.
 //!
-//! \note Update this macro as errors are found to ensure compatibility with different compilers and standards.
-//! \author TJE
+//! \note set varargpos to 0 if there is no ... parameter. For example, a function that takes a va_list instead of ...
+//! would have varargpos set to 0 since the variadic arguments are not directly passed to the function. \author TJE
 //! \note Only use with scanf_s, not scanf type functions!
 #if !defined(DISABLE_ATTRIBUTES)
 #    if defined(DETECT_STD_ATTR_CHECK)
@@ -1926,7 +1926,83 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #endif
 
 //! \def M_UNSEQUENCED
-//! \brief indicates that a function is stateless, effectless, idempotent and independent
+//! \brief Indicates that a function is stateless, effectless, idempotent and independent (C23 [[unsequenced]]).
+//! \details A function qualifies for M_UNSEQUENCED if it meets ALL of the following criteria:
+//!
+//! **Step-by-Step Evaluation:**
+//!
+//! 1. **No side effects on global/static state**
+//!    - Does NOT read or modify global variables
+//!    - Does NOT read or modify static variables
+//!    - Does NOT call functions that have side effects
+//!    - Does NOT perform I/O operations (read/write files, sockets, etc.)
+//!    - Does NOT modify memory outside the function's parameters
+//!
+//! 2. **Stateless (no hidden state)**
+//!    - Function behavior does not depend on any external state
+//!    - Same inputs ALWAYS produce same behavior across different program states
+//!    - No thread-local storage access
+//!    - No volatile memory access
+//!
+//! 3. **Effectless (no observable side effects)**
+//!    - Function calls have no side effects
+//!    - Function does not modify any memory reachable through output parameters
+//!    - Function does not affect exception/signal handling
+//!    - Function does not execute timing-dependent operations
+//!
+//! 4. **Idempotent (calling again produces same results)**
+//!    - The function always returns the same result for the same input
+//!    - Multiple invocations in sequence produce no different outcome
+//!    - No internal counter or state tracking
+//!
+//! 5. **Independent (no ordering requirements)**
+//!    - Compiler can call this function in any order with respect to other operations
+//!    - Compiler can reorder calls to this function without affecting program correctness
+//!    - Compiler can eliminate redundant calls
+//!    - Function does not create ordering dependencies
+//!
+//! **Strictness Hierarchy:**
+//! ```
+//! Most Restrictive                              Least Restrictive
+//! M_CONST_FUNC <-- M_PURE_FUNC <-- M_REPRODUCIBLE <-- M_UNSEQUENCED
+//!     |                 |                  |                  |
+//! No global read   Can read globals  Can read globals  Can read globals
+//! No func calls    Can call funcs    Can call funcs    Can call funcs
+//! Param only       Param + state     State idempotent  Stateless
+//! ```
+//! (M_UNSEQUENCED is the LEAST restrictive of the four)
+//!
+//! **Decision Tree:**
+//! ```
+//! Does function read ANY global or static variables?
+//! [YES] -> Cannot use M_UNSEQUENCED (consider M_REPRODUCIBLE)
+//! [NO]
+//!   |
+//!   v Does function call ANY functions?
+//!      [YES] -> Cannot use M_UNSEQUENCED
+//!      [NO]
+//!        |
+//!        v Does function perform ANY I/O operations?
+//!           [YES] -> Cannot use M_UNSEQUENCED
+//!           [NO]
+//!             |
+//!             v Does function have ANY side effects?
+//!                [YES] -> Cannot use M_UNSEQUENCED
+//!                [NO]
+//!                  |
+//!                  v QUALIFIED for M_UNSEQUENCED (check if M_CONST_FUNC qualifies)
+//! ```
+//!
+//! **Examples that QUALIFY:**
+//! - `sizeof(some_type)` - compile-time constant
+//! - Pure mathematical functions like `abs(x)` with no globals
+//!
+//! **Examples that DO NOT qualify:**
+//! - Functions reading global counters or timestamps
+//! - Functions with I/O operations
+//! - Functions modifying output parameters via pointers
+//! - Functions with any side effects whatsoever
+//!
 //! \see https://en.cppreference.com/w/c/language/attributes/reproducible.html
 #if !defined(DISABLE_ATTRIBUTES)
 #    if defined(DETECT_STD_ATTR_CHECK)
@@ -1952,7 +2028,75 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #endif
 
 //! \def M_REPRODUCIBLE
-//! \brief Indicates that a function is effectless and idempotent
+//! \brief Indicates that a function is effectless and idempotent (C23 [[reproducible]]).
+//! \details A function qualifies for M_REPRODUCIBLE if it meets ALL of the following criteria:
+//!
+//! **Step-by-Step Evaluation:**
+//!
+//! 1. **Effectless (no observable side effects)**
+//!    - Function calls have no side effects
+//!    - Does NOT modify memory outside function parameters
+//!    - Does NOT modify global/static variables
+//!    - Does NOT perform I/O operations
+//!    - Does NOT call functions with side effects
+//!    - May READ global/static variables (unlike M_UNSEQUENCED)
+//!
+//! 2. **Idempotent (calling again produces same results)**
+//!    - For a given input and program state, same output is produced
+//!    - Multiple invocations produce no different outcome
+//!    - No internal counter or state modification
+//!    - Can read timing-independent global state
+//!
+//! 3. **No observable timing differences**
+//!    - Execution time should be stable/deterministic
+//!    - No time-dependent logic that affects behavior
+//!    - No variable-time algorithms where timing reveals secrets
+//!
+//! **Strictness Hierarchy:**
+//! ```
+//! Most Restrictive                              Least Restrictive
+//! M_CONST_FUNC <-- M_PURE_FUNC <-- M_REPRODUCIBLE <-- M_UNSEQUENCED
+//!     |                 |                  |                  |
+//! No global read   Can read globals  Can read globals  Can read globals
+//! No func calls    Can call funcs    Can call funcs    Can call funcs
+//! Param only       Param + state     State idempotent  Stateless
+//! ```
+//! (M_REPRODUCIBLE is weaker than M_PURE_FUNC, stronger than M_UNSEQUENCED)
+//!
+//! **Decision Tree:**
+//! ```
+//! Does function modify any state?
+//! [YES] -> Cannot use M_REPRODUCIBLE (consider M_UNSEQUENCED if no globals)
+//! [NO]
+//!   |
+//!   v Does function perform I/O?
+//!      [YES] -> Cannot use M_REPRODUCIBLE
+//!      [NO]
+//!        |
+//!        v Does function call functions with side effects?
+//!           [YES] -> Cannot use M_REPRODUCIBLE
+//!           [NO]
+//!             |
+//!             v For same program state, same input always produces same output?
+//!                [NO] -> Cannot use M_REPRODUCIBLE
+//!                [YES] -> QUALIFIED for M_REPRODUCIBLE
+//! ```
+//!
+//! **Key Difference from M_UNSEQUENCED:**
+//! - M_REPRODUCIBLE allows reading global/static variables
+//! - M_UNSEQUENCED forbids all external state access
+//! - M_REPRODUCIBLE is a weaker guarantee
+//!
+//! **Examples that QUALIFY:**
+//! - `get_System_Clock()` - reads system time (global state, but idempotent)
+//! - `check_License_Key(key)` - reads license database (global), always same output for key
+//!
+//! **Examples that DO NOT qualify:**
+//! - Functions that increment counters
+//! - Functions with I/O operations
+//! - Functions modifying static/global state
+//! - Functions with non-deterministic behavior
+//!
 //! \see https://en.cppreference.com/w/c/language/attributes/reproducible.html
 #if !defined(DISABLE_ATTRIBUTES)
 #    if defined(DETECT_STD_ATTR_CHECK)
@@ -1978,20 +2122,126 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #endif
 
 //! \def M_PURE_FUNC
-//! \brief Marks a function as a pure function (no side effects, return value depends only on parameters).
-//! \note Similar to M_REPRODUCIBLE. Pure also requires finiteness.
-//! \note takes priority over M_REPRODUCIBLE
+//! \brief Marks a function as a pure function - no side effects, return value depends only on parameters (GNU
+//! __attribute__((pure))).
+//! \details A function qualifies for M_PURE_FUNC if it meets ALL of the following criteria:
+//!
+//! **Step-by-Step Evaluation:**
+//!
+//! 1. **No memory modification (side effects)**
+//!    - Does NOT modify global variables
+//!    - Does NOT modify static variables
+//!    - Does NOT modify memory via output parameters (pointers)
+//!    - Does NOT perform I/O operations
+//!    - Does NOT call functions with side effects
+//!
+//! 2. **Return value depends ONLY on input parameters**
+//!    - Function may READ global/static variables (like M_REPRODUCIBLE)
+//!    - Same parameters ALWAYS produce same return value
+//!    - No dependence on execution order or call count
+//!    - May read global state but behavior determined only by parameters + that state
+//!
+//! 3. **Finiteness requirement**
+//!    - Function must terminate (no infinite loops)
+//!    - Function must not block indefinitely
+//!    - Function must complete in bounded time
+//!    - No deadlocks or resource exhaustion
+//!
+//! **Strictness Hierarchy:**
+//! ```
+//! Most Restrictive                              Least Restrictive
+//! M_CONST_FUNC <-- M_PURE_FUNC <-- M_REPRODUCIBLE <-- M_UNSEQUENCED
+//!     |                 |                  |                  |
+//! No global read   Can read globals  Can read globals  Can read globals
+//! No func calls    Can call funcs    Can call funcs    Can call funcs
+//! Param only       Param + state     State idempotent  Stateless
+//! ```
+//! (M_PURE_FUNC is stronger than M_REPRODUCIBLE, weaker than M_CONST_FUNC)
+//!
+//! **Comparison with Other Attributes:**
+//! ```
+//! M_CONST_FUNC:
+//!   - Most restrictive
+//!   - Cannot read ANY global/static variables
+//!   - Return value depends ONLY on parameter values
+//!   - May not call other functions (even pure ones)
+//!
+//! M_PURE_FUNC:
+//!   - Can read global/static variables
+//!   - Can call other functions (including I/O in some contexts)
+//!   - Return value depends on parameters + readable global state
+//!   - Weaker than M_CONST_FUNC, stronger than M_REPRODUCIBLE
+//!
+//! M_REPRODUCIBLE:
+//!   - Weakest guarantee
+//!   - Function is idempotent and effectless
+//!   - No side effects but may read globals
+//!   - Does NOT require return value dependence on parameters
+//! ```
+//!
+//! **Decision Tree:**
+//! ```
+//! Does function modify ANY memory?
+//! [YES] -> Cannot use M_PURE_FUNC (try M_REPRODUCIBLE)
+//! [NO]
+//!   |
+//!   v Does function call functions with side effects?
+//!      [YES] -> Cannot use M_PURE_FUNC
+//!      [NO]
+//!        |
+//!        v Does it terminate in bounded time?
+//!           [NO] -> Cannot use M_PURE_FUNC
+//!           [YES]
+//!             |
+//!             v For given parameters + current global state, same output always?
+//!                [NO] -> Cannot use M_PURE_FUNC
+//!                [YES] -> QUALIFIED for M_PURE_FUNC
+//! ```
+//!
+//! **Examples that QUALIFY:**
+//! - `strlen(str)` - reads parameter string only
+//! - `abs(x)` - mathematical function
+//! - `log_level_enabled(level)` - reads global config, pure function
+//!
+//! **Examples that DO NOT qualify:**
+//! - `malloc(size)` - modifies heap (side effect)
+//! - `get_next_id()` - increments counter (side effect)
+//! - `printf(fmt, ...)` - performs I/O (side effect)
+//! - Functions that cannot prove they terminate
+//!
+//! **Incompatibilities and Conflicts:**
+//!
+//! M_PURE_FUNC CANNOT be used with:
+//! - Functions that modify ANY memory (globals, statics, or via output parameters)
+//! - Functions that call other functions with side effects
+//! - M_FUNC_ATTR_MALLOC (memory allocation combined with function calls may violate purity)
+//! - Functions with unbounded or infinite loops
+//! - Functions that perform I/O operations
+//! - Functions that modify volatile memory or hardware registers
+//! - Functions that call set_Constraint_Handler() or other global state modifiers
+//!
+//! **Real-World Exclusions:**
+//! - `get_strerror(error)`: Calls set_Constraint_Handler() which modifies global constraint handler state
+//! - `get_Decimal_From_4_byte_Float(floatVal, *decimalValue)`: Modifies output parameter (side effect)
+//! - Any function with output parameters that are modified
+//!
+//! \note Similar to M_REPRODUCIBLE but with finiteness guarantee
+//! \note Takes priority over M_REPRODUCIBLE when both conditions are met
+//! \see https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-pure
 #if !defined(DISABLE_ATTRIBUTES)
 #    if defined(DETECT_STD_ATTR_CHECK)
 #        if DETECT_STD_ATTR_QUAL(clang::pure)
 #            define M_PURE_FUNC [[clang::pure]]
+#            define HAVE_PURE_FUNC
 #        elif DETECT_STD_ATTR_QUAL(gnu::pure)
 #            define M_PURE_FUNC [[gnu::pure]]
+#            define HAVE_PURE_FUNC
 #        endif
 #    endif
 #    if !defined(M_PURE_FUNC)
 #        if DETECT_GNU_ATTR(pure)
 #            define M_PURE_FUNC __attribute__((pure))
+#            define HAVE_PURE_FUNC
 #        endif
 #    endif
 #endif
@@ -2000,19 +2250,115 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #endif
 
 //! \def M_CONST_FUNC
-//! \brief Marks a function as a const function (no side effects, return value depends only on parameters and global
-//! variables). \note similar to M_UNSEQUENCED, but requires finiteness. \note takes priority over M_UNSEQUENCED
+//! \brief Marks a function as a const function - no side effects, return value depends ONLY on parameters (GNU
+//! __attribute__((const))).
+//! \details A function qualifies for M_CONST_FUNC if it meets ALL of the following criteria:
+//!
+//! **Step-by-Step Evaluation:**
+//!
+//! 1. **Strictest: No memory access to global/static state**
+//!    - Does NOT read global variables
+//!    - Does NOT read static variables
+//!    - Does NOT read volatile memory
+//!    - Does NOT access hardware registers
+//!    - Only accesses are to function parameters and local stack
+//!
+//! 2. **No side effects whatsoever**
+//!    - Does NOT modify global variables
+//!    - Does NOT modify static variables
+//!    - Does NOT modify memory via output parameters (pointers)
+//!    - Does NOT perform I/O operations
+//!    - Does NOT call functions (even other const functions may read globals)
+//!
+//! 3. **Return value depends ONLY on parameter VALUES**
+//!    - Given identical parameter values, ALWAYS produces identical return value
+//!    - No dependency on:
+//!      - Global/static state
+//!      - Program state
+//!      - Execution history
+//!      - Call count or order
+//!      - Time or timing
+//!
+//! 4. **Finiteness requirement**
+//!    - Function must terminate in bounded time
+//!    - No infinite loops under any input
+//!    - No blocking operations
+//!    - No resource exhaustion possibilities
+//!
+//! **Strictness Hierarchy:**
+//! ```
+//! Most Restrictive                              Least Restrictive
+//! M_CONST_FUNC <-- M_PURE_FUNC <-- M_REPRODUCIBLE <-- M_UNSEQUENCED
+//!     |                 |                  |                  |
+//! No global read   Can read globals  Can read globals  Can read globals
+//! No func calls    Can call funcs    Can call funcs    Can call funcs
+//! Param only       Param + state     State idempotent  Stateless
+//! ```
+//! (M_CONST_FUNC is the MOST restrictive of the four)
+//!
+//! **Decision Tree (use in order - try most restrictive first):**
+//! ```
+//! Step 1: Check for ANY memory modification
+//! Does function modify ANY memory?
+//! [YES] -> Cannot use M_CONST_FUNC (skip to M_PURE_FUNC evaluation)
+//! [NO]
+//!   |
+//!   v Step 2: Check for ANY external state access
+//!      Does function read/write global or static variables?
+//!      [YES] -> Cannot use M_CONST_FUNC (skip to M_PURE_FUNC evaluation)
+//!      [NO]
+//!        |
+//!        v Step 3: Check for ANY function calls
+//!           Does function call any functions (except inline/etc)?
+//!           [YES] -> Cannot use M_CONST_FUNC (skip to M_PURE_FUNC evaluation)
+//!           [NO]
+//!             |
+//!             v Step 4: Check termination
+//!                Does function always terminate in bounded time?
+//!                [NO] -> Cannot use M_CONST_FUNC (skip to M_PURE_FUNC evaluation)
+//!                [YES]
+//!                  |
+//!                  v Step 5: Check parameter-dependence
+//!                     For ANY two calls with identical parameters, identical return value?
+//!                     [NO] -> Cannot use M_CONST_FUNC (skip to M_PURE_FUNC evaluation)
+//!                     [YES] -> QUALIFIED for M_CONST_FUNC [OK]
+//! ```
+//!
+//! **Incompatibilities and Conflicts:**
+//!
+//! M_CONST_FUNC CANNOT be used with:
+//! - Functions returning `void` (const attribute does not apply to void return types)
+//! - M_FUNC_ATTR_MALLOC (const functions allocate no memory, malloc function allocates memory - conflict)
+//! - Any function marked with volatile qualifiers or memory modification attributes
+//!
+//! **Examples that QUALIFY:**
+//! - `int double_value(int x) { return x * 2; }` - pure math
+//! - `size_t get_version_constant(void)` - returns compile-time constant
+//!
+//! **Examples that DO NOT qualify:**
+//! - `printf("%d", x)` - performs I/O
+//! - `strlen(str)` - likely calls function or reads memory in complex way
+//! - Any function that reads global state
+//! - Any function that calls other functions
+//!
+//! \note Most restrictive guarantee - enables aggressive compiler optimizations
+//! \note Similar to M_UNSEQUENCED but requires finiteness
+//! \note Takes priority over all other purity attributes when all conditions are met
+//! \see https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-const
 #if !defined(DISABLE_ATTRIBUTES)
 #    if defined(DETECT_STD_ATTR_CHECK) && !defined(REAL_MSVC)
 #        if DETECT_STD_ATTR_QUAL(clang::const)
 #            define M_CONST_FUNC [[clang::const]]
+#            define HAVE_CONST_FUNC
 #        elif DETECT_STD_ATTR_QUAL(gnu::const)
 #            define M_CONST_FUNC [[gnu::const]]
+#            define HAVE_CONST_FUNC
 #        endif
 #    endif
 #    if !defined(M_CONST_FUNC)
 #        if DETECT_GNU_ATTR(const)
 #            define M_CONST_FUNC __attribute__((const))
+#            define HAVE_CONST_FUNC
 #        endif
 #    endif
 #endif

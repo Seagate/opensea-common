@@ -111,6 +111,8 @@ M_RETURNS_NONNULL constraint_handler_func int_set_constraint_handler(constraint_
     return old;
 }
 
+M_PARAM_RO(1)
+M_NULL_TERM_STRING(1)
 void invoke_Constraint_Handler(const char* M_RESTRICT M_NONNULL msg, void* M_RESTRICT M_NULLABLE ptr, errno_t error)
 {
     constraint_handler_func handler = installedhandler;

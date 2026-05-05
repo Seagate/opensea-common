@@ -340,7 +340,14 @@ extern "C"
     //! For example, uint64_t to size_t on a 32bit system may return SIZE_MAX and this can be used to check it.
     //! \param[in] val The value to check
     //! \return true means equivalent to \a SIZE_MAX, false means not \a SIZE_MAX
-    bool is_size_t_max(size_t val);
+    M_CONST_FUNC bool is_size_t_max(size_t val) M_UNSEQUENCED;
+
+    //! \def ARRAY_128_TO_DOUBLE_SIZE
+    //! \brief The size of the array needed to convert a 128 bit value to a double. Since uint128_t is not a standard
+    //! available type, but double is. Double can be used to store a very large number. IEEE 754 floating point can
+    //! store a number much larger than a 128 bit integer. This is the size of the array needed to hold 128 bits (16
+    //! bytes) for conversion to a double.
+#define ARRAY_128_TO_DOUBLE_SIZE 16
 
     //! \fn double convert_128bit_to_double(const uint8_t* pData)
     //! \brief Converts a 16 byte array to a double
@@ -348,7 +355,8 @@ extern "C"
     //! very large number. IEEE 754 floating point can store a number much larger than a 128 bit integer.
     //! \param[in] pData pointer to the 16 byte array to use for conversion to a double
     //! \return 128bit value as a double
-    M_PARAM_RO(1) double convert_128bit_to_double(const uint8_t* M_NONNULL pData);
+    M_CONST_FUNC M_PARAM_RO(1) double convert_128bit_to_double(
+        const uint8_t pData[M_NONNULL_ARRAY ARRAY_128_TO_DOUBLE_SIZE]) M_UNSEQUENCED;
 
     //! \fn void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* decimalValue)
     //! \brief This function converts 4 Byte Representation of a Floating Point Number to a double

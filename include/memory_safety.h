@@ -1142,7 +1142,7 @@ extern "C"
     //! \fn size_t get_System_Pagesize(void)
     //! \brief Gets the memory page size from a system for the current CPU (often 4096B)
     //! \return Pagesize of system. Returns 4096 as default safe value if cannot be determined.
-    size_t get_System_Pagesize(void);
+    M_CONST_FUNC M_NODISCARD size_t get_System_Pagesize(void) M_UNSEQUENCED;
 
     //! \fn M_INLINE void free_page_aligned(void* ptr)
     //! \brief convenience function around free_aligned.
@@ -1790,7 +1790,7 @@ extern "C"
     //! may mean that the pointer is 8 byte aligned but also 16 byte aligned.
     //! if using this to determine if memory alignment is correct, do get_memalignment(ptr) >= alignment
     M_PARAM_RO(1)
-    static M_INLINE size_t get_memalignment(const void* M_NULLABLE ptr)
+    M_CONST_FUNC static M_INLINE size_t get_memalignment(const void* M_NULLABLE ptr) M_UNSEQUENCED
         M_DIAG_WARN(ptr == M_NULLPTR, "ptr is NULL. Possible usage error")
     {
         return M_REINTERPRET_CAST(uintptr_t, ptr) & (~M_REINTERPRET_CAST(uintptr_t, ptr) + 1);

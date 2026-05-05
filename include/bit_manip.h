@@ -52,7 +52,7 @@ extern "C"
     //!
     //! \param[in] value 64bit value to get the lower 32bits from
     //! \return lower 32bits of the input 64bit value
-    static M_INLINE uint32_t get_DWord0(uint64_t value)
+    M_CONST_FUNC static M_INLINE uint32_t get_DWord0(uint64_t value) M_UNSEQUENCED
     {
         return M_STATIC_CAST(uint32_t, value& UINT64_C(0x00000000FFFFFFFF));
     }
@@ -72,7 +72,7 @@ extern "C"
     //!
     //! \param[in] value 64bit value to get the upper 32bits from
     //! \return upper 32bits of the input 64bit value
-    static M_INLINE uint32_t get_DWord1(uint64_t value)
+    M_CONST_FUNC static M_INLINE uint32_t get_DWord1(uint64_t value) M_UNSEQUENCED
     {
         return M_STATIC_CAST(uint32_t, (value & UINT64_C(0xFFFFFFFF00000000)) >> 32);
     }
@@ -106,7 +106,7 @@ extern "C"
     //! \brief Extracts the lowest 16 bits from a 64-bit integer and casts it to uint16_t.
     //! \param value The 64-bit integer from which to extract the lowest 16 bits.
     //! \return uint16_t for lowest 16 bits
-    static M_INLINE uint16_t get_Word0_uint64(uint64_t value)
+    M_CONST_FUNC static M_INLINE uint16_t get_Word0_uint64(uint64_t value) M_UNSEQUENCED
     {
         return M_STATIC_CAST(uint16_t, (value & UINT64_C(0x000000000000FFFF)));
     }
@@ -115,7 +115,7 @@ extern "C"
     //! \brief Extracts the lowest 16 bits from a 32-bit integer and casts it to uint16_t.
     //! \param value The 32-bit integer from which to extract the lowest 16 bits.
     //! \return uint16_t for lowest 16 bits
-    static M_INLINE uint16_t get_Word0_uint32(uint32_t value)
+    M_CONST_FUNC static M_INLINE uint16_t get_Word0_uint32(uint32_t value) M_UNSEQUENCED
     {
         return M_STATIC_CAST(uint16_t, (value & UINT32_C(0x0000FFFF)));
     }
@@ -131,7 +131,7 @@ extern "C"
     //! \brief Extracts the second lowest 16 bits from a 64-bit integer and casts it to uint16_t.
     //! \param value The 64-bit integer from which to extract the lowest 16 bits.
     //! \return uint16_t for second lowest 16 bits
-    static M_INLINE uint16_t get_Word1_uint64(uint64_t value)
+    M_CONST_FUNC static M_INLINE uint16_t get_Word1_uint64(uint64_t value) M_UNSEQUENCED
     {
         return M_STATIC_CAST(uint16_t, (value & UINT64_C(0x00000000FFFF0000)) >> 16);
     }
@@ -140,7 +140,7 @@ extern "C"
     //! \brief Extracts the highest 16 bits from a 32-bit integer and casts it to uint16_t.
     //! \param value The 32-bit integer from which to extract the highest 16 bits.
     //! \return uint16_t for highest 16 bits
-    static M_INLINE uint16_t get_Word1_uint32(uint32_t value)
+    M_CONST_FUNC static M_INLINE uint16_t get_Word1_uint32(uint32_t value) M_UNSEQUENCED
     {
         return M_STATIC_CAST(uint16_t, (value & UINT32_C(0xFFFF0000)) >> 16);
     }
@@ -158,7 +158,7 @@ extern "C"
     //! This macro extracts the second highest 16 bits from a 64-bit integer and casts it to uint16_t.
     //! \param value The 64-bit integer from which to extract the second highest 16 bits.
     //! \return uint16_t for second highest 16 bits
-    static M_INLINE uint16_t get_Word2_uint64(uint64_t value)
+    M_CONST_FUNC static M_INLINE uint16_t get_Word2_uint64(uint64_t value) M_UNSEQUENCED
     {
         return M_STATIC_CAST(uint16_t, (value & UINT64_C(0x0000FFFF00000000)) >> 32);
     }
@@ -176,7 +176,7 @@ extern "C"
     //! This macro extracts the highest 16 bits from a 64-bit integer and casts it to uint16_t.
     //! \param value The 64-bit integer from which to extract the highest 16 bits.
     //! \return uint16_t of the highest 16 bits.
-    static M_INLINE uint16_t get_Word3_uint64(uint64_t value)
+    M_CONST_FUNC static M_INLINE uint16_t get_Word3_uint64(uint64_t value) M_UNSEQUENCED
     {
         return M_STATIC_CAST(uint16_t, (value & UINT64_C(0xFFFF000000000000)) >> 48);
     }
@@ -491,7 +491,7 @@ extern "C"
     //! \param[in] upperNibble upper 4 bits
     //! \param[in] lowerNibble lower 4 bits
     //! \return byte
-    static M_INLINE uint8_t nibbles_To_Byte(uint8_t upperNibble, uint8_t lowerNibble)
+    M_CONST_FUNC static M_INLINE uint8_t nibbles_To_Byte(uint8_t upperNibble, uint8_t lowerNibble) M_UNSEQUENCED
     {
         return M_STATIC_CAST(uint8_t, (((upperNibble)&M_STATIC_CAST(uint8_t, 0x0F)) << 4) |
                                           (((lowerNibble)&M_STATIC_CAST(uint8_t, 0x0F)) << 0));
@@ -514,7 +514,7 @@ extern "C"
     //! \param[in] msb most significant byte
     //! \param[in] lsb least significant byte
     //! \return word from combined values
-    static M_INLINE uint16_t bytes_To_Uint16(uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE uint16_t bytes_To_Uint16(uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         return M_STATIC_CAST(uint16_t, (M_STATIC_CAST(uint16_t, msb) << 8) | (M_STATIC_CAST(uint16_t, lsb) << 0));
     }
@@ -537,7 +537,8 @@ extern "C"
     //! \param[in] byte1 next byte (bits 15:8)
     //! \param[in] lsb least significant byte (bits 7:0)
     //! \return dword from combined values
-    static M_INLINE uint32_t bytes_To_Uint32(uint8_t msb, uint8_t byte2, uint8_t byte1, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE uint32_t bytes_To_Uint32(uint8_t msb, uint8_t byte2, uint8_t byte1, uint8_t lsb)
+        M_UNSEQUENCED
     {
         return (M_STATIC_CAST(uint32_t, msb) << 24) | (M_STATIC_CAST(uint32_t, byte2) << 16) |
                (M_STATIC_CAST(uint32_t, byte1) << 8) | (M_STATIC_CAST(uint32_t, lsb) << 0);
@@ -569,14 +570,14 @@ extern "C"
     //! \param[in] byte1 (bits 15:8)
     //! \param[in] lsb least significant byte (bits 7:0)
     //! \return qword from combined values
-    static M_INLINE uint64_t bytes_To_Uint64(uint8_t msb,
-                                             uint8_t byte6,
-                                             uint8_t byte5,
-                                             uint8_t byte4,
-                                             uint8_t byte3,
-                                             uint8_t byte2,
-                                             uint8_t byte1,
-                                             uint8_t lsb)
+    M_CONST_FUNC static M_INLINE uint64_t bytes_To_Uint64(uint8_t msb,
+                                                          uint8_t byte6,
+                                                          uint8_t byte5,
+                                                          uint8_t byte4,
+                                                          uint8_t byte3,
+                                                          uint8_t byte2,
+                                                          uint8_t byte1,
+                                                          uint8_t lsb) M_UNSEQUENCED
     {
         return (M_STATIC_CAST(uint64_t, msb) << 56) | (M_STATIC_CAST(uint64_t, byte6) << 48) |
                (M_STATIC_CAST(uint64_t, byte5) << 40) | (M_STATIC_CAST(uint64_t, byte4) << 32) |
@@ -607,7 +608,7 @@ extern "C"
     //! \param[in] msw most significant word
     //! \param[in] lsw least significant word
     //! \return dword from combined values
-    static M_INLINE uint32_t words_To_Uint32(uint16_t msw, uint16_t lsw)
+    M_CONST_FUNC static M_INLINE uint32_t words_To_Uint32(uint16_t msw, uint16_t lsw) M_UNSEQUENCED
     {
         return (M_STATIC_CAST(uint32_t, msw) << 16) | (M_STATIC_CAST(uint32_t, lsw) << 0);
     }
@@ -631,7 +632,8 @@ extern "C"
     //! \param[in] word1 next word (bits 31:16)
     //! \param[in] lsw least significant word (bits 15:0)
     //! \return qword from combined values
-    static M_INLINE uint64_t words_To_Uint64(uint16_t msw, uint16_t word2, uint16_t word1, uint16_t lsw)
+    M_CONST_FUNC static M_INLINE uint64_t words_To_Uint64(uint16_t msw, uint16_t word2, uint16_t word1, uint16_t lsw)
+        M_UNSEQUENCED
     {
         return (M_STATIC_CAST(uint64_t, msw) << 48) | (M_STATIC_CAST(uint64_t, word2) << 32) |
                (M_STATIC_CAST(uint64_t, word1) << 16) | (M_STATIC_CAST(uint64_t, lsw) << 0);
@@ -658,7 +660,7 @@ extern "C"
     //! \param[in] msdw most significant dword (bits 63:32)
     //! \param[in] lsdw least significant dword (bits 31:0)
     //! \return qword from combined values
-    static M_INLINE uint64_t dwords_To_Uint64(uint32_t msdw, uint32_t lsdw)
+    M_CONST_FUNC static M_INLINE uint64_t dwords_To_Uint64(uint32_t msdw, uint32_t lsdw) M_UNSEQUENCED
     {
         return (M_STATIC_CAST(uint64_t, msdw) << 32) | (M_STATIC_CAST(uint64_t, lsdw) << 0);
     }
@@ -710,7 +712,7 @@ extern "C"
     //!
     //! \param[in] genint genericint_t structure to validate
     //! \return true = valid, false = invalid
-    static M_INLINE bool is_generic_int_valid(genericint_t genint)
+    M_CONST_FUNC static M_INLINE bool is_generic_int_valid(genericint_t genint) M_UNSEQUENCED
     {
         bool good = false;
         switch (genint.sizeoftype)
@@ -769,7 +771,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint8_t get_bit_range_uint8(uint8_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE uint8_t get_bit_range_uint8(uint8_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -789,7 +791,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint16_t get_bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE uint16_t get_bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -809,7 +811,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint8_t get_8bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE uint8_t get_8bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -829,7 +831,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint32_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint32_t get_bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE uint32_t get_bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -849,7 +851,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint8_t get_8bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE uint8_t get_8bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -869,7 +871,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint16_t get_16bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE uint16_t get_16bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -889,7 +891,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint64_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint64_t get_bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE uint64_t get_bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.issigned   = false;
@@ -908,7 +910,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint8_t get_8bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE uint8_t get_8bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.issigned   = false;
@@ -927,7 +929,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint16_t get_16bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE uint16_t get_16bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.issigned   = false;
@@ -946,7 +948,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint32_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint32_t get_32bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE uint32_t get_32bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.issigned   = false;
@@ -965,7 +967,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int8_t get_bit_range_int8(int8_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE int8_t get_bit_range_int8(int8_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -985,7 +987,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int16_t get_bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE int16_t get_bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -1005,7 +1007,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int8_t get_8bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE int8_t get_8bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -1025,7 +1027,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int32_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int32_t get_bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE int32_t get_bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -1045,7 +1047,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int8_t get_8bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE int8_t get_8bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -1065,7 +1067,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int16_t get_16bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE int16_t get_16bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -1085,7 +1087,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint64_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int64_t get_bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE int64_t get_bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.issigned   = true;
@@ -1104,7 +1106,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int8_t get_8bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE int8_t get_8bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.issigned   = true;
@@ -1123,7 +1125,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int16_t get_16bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE int16_t get_16bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.issigned   = true;
@@ -1142,7 +1144,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int32_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int32_t get_32bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
+    M_CONST_FUNC static M_INLINE int32_t get_32bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
     {
         genericint_t genint;
         genint.issigned   = true;
@@ -1549,7 +1551,7 @@ extern "C"
     //! \param[in] val Original value to set a bit to 1 in.
     //! \param[in] bitNum The bit number to set to 1. Value values are 0 - 7
     //! \return returns \a val with the specified bit set to 1
-    static M_INLINE uint8_t set_uint8_bit(uint8_t val, uint8_t bitNum)
+    M_CONST_FUNC static M_INLINE uint8_t set_uint8_bit(uint8_t val, uint8_t bitNum) M_UNSEQUENCED
     {
         return M_STATIC_CAST(uint8_t, val | M_STATIC_CAST(uint8_t, UINT8_C(1) << bitNum));
     }
@@ -1560,7 +1562,7 @@ extern "C"
     //! \param[in] val Original value to set a bit to 1 in.
     //! \param[in] bitNum The bit number to set to 1. Value values are 0 - 15
     //! \return returns \a val with the specified bit set to 1
-    static M_INLINE uint16_t set_uint16_bit(uint16_t val, uint16_t bitNum)
+    M_CONST_FUNC static M_INLINE uint16_t set_uint16_bit(uint16_t val, uint16_t bitNum) M_UNSEQUENCED
     {
         return M_STATIC_CAST(uint16_t, val | M_STATIC_CAST(uint16_t, UINT16_C(1) << bitNum));
     }
@@ -1571,7 +1573,7 @@ extern "C"
     //! \param[in] val Original value to set a bit to 1 in.
     //! \param[in] bitNum The bit number to set to 1. Value values are 0 - 31
     //! \return returns \a val with the specified bit set to 1
-    static M_INLINE uint32_t set_uint32_bit(uint32_t val, uint32_t bitNum)
+    M_CONST_FUNC static M_INLINE uint32_t set_uint32_bit(uint32_t val, uint32_t bitNum) M_UNSEQUENCED
     {
         return val | M_STATIC_CAST(uint32_t, UINT32_C(1) << bitNum);
     }
@@ -1582,7 +1584,7 @@ extern "C"
     //! \param[in] val Original value to set a bit to 1 in.
     //! \param[in] bitNum The bit number to set to 1. Value values are 0 - 63
     //! \return returns \a val with the specified bit set to 1
-    static M_INLINE uint64_t set_uint64_bit(uint64_t val, uint64_t bitNum)
+    M_CONST_FUNC static M_INLINE uint64_t set_uint64_bit(uint64_t val, uint64_t bitNum) M_UNSEQUENCED
     {
         return val | M_STATIC_CAST(uint64_t, UINT64_C(1) << bitNum);
     }
@@ -1593,7 +1595,7 @@ extern "C"
     //! \param[in] val Original value to clear a bit to 0 in.
     //! \param[in] bitNum The bit number to clear to 0. Value values are 0 - 7
     //! \return returns \a val with the specified bit cleared to 0
-    static M_INLINE uint8_t clear_uint8_bit(uint8_t val, uint8_t bitNum)
+    M_CONST_FUNC static M_INLINE uint8_t clear_uint8_bit(uint8_t val, uint8_t bitNum) M_UNSEQUENCED
     {
         return M_STATIC_CAST(uint8_t, val& M_STATIC_CAST(uint8_t, ~(UINT8_C(1) << bitNum)));
     }
@@ -1604,7 +1606,7 @@ extern "C"
     //! \param[in] val Original value to clear a bit to 0 in.
     //! \param[in] bitNum The bit number to clear to 0. Value values are 0 - 15
     //! \return returns \a val with the specified cleared set to 0
-    static M_INLINE uint16_t clear_uint16_bit(uint16_t val, uint16_t bitNum)
+    M_CONST_FUNC static M_INLINE uint16_t clear_uint16_bit(uint16_t val, uint16_t bitNum) M_UNSEQUENCED
     {
         return M_STATIC_CAST(uint16_t, val& M_STATIC_CAST(uint16_t, ~(UINT16_C(1) << bitNum)));
     }
@@ -1615,7 +1617,7 @@ extern "C"
     //! \param[in] val Original value to clear a bit to 0 in.
     //! \param[in] bitNum The bit number to clear to 0. Value values are 0 - 31
     //! \return returns \a val with the specified cleared set to 0
-    static M_INLINE uint32_t clear_uint32_bit(uint32_t val, uint32_t bitNum)
+    M_CONST_FUNC static M_INLINE uint32_t clear_uint32_bit(uint32_t val, uint32_t bitNum) M_UNSEQUENCED
     {
         return val & M_STATIC_CAST(uint32_t, ~(UINT32_C(1) << bitNum));
     }
@@ -1626,7 +1628,7 @@ extern "C"
     //! \param[in] val Original value to clear a bit to 0 in.
     //! \param[in] bitNum The bit number to clear to 0. Value values are 0 - 63
     //! \return returns \a val with the specified cleared set to 0
-    static M_INLINE uint64_t clear_uint64_bit(uint64_t val, uint64_t bitNum)
+    M_CONST_FUNC static M_INLINE uint64_t clear_uint64_bit(uint64_t val, uint64_t bitNum) M_UNSEQUENCED
     {
         return val & M_STATIC_CAST(uint64_t, ~(UINT64_C(1) << bitNum));
     }
@@ -1887,7 +1889,7 @@ extern "C"
     //! \brief swaps words within a dword and returns the value
     //!
     //! \param[in] dword dword to swap words
-    static M_INLINE uint32_t w_swap_32(uint32_t dword)
+    M_CONST_FUNC static M_INLINE uint32_t w_swap_32(uint32_t dword) M_UNSEQUENCED
     {
         return ((dword & UINT32_C(0x0000FFFF)) << 16) | ((dword & UINT32_C(0xFFFF0000)) >> 16);
     }
@@ -2273,7 +2275,7 @@ extern "C"
     //! \brief counts the number of consecutive ​0​ bits, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return number of leading zeros in \a value
-    static M_INLINE unsigned int count_leading_zeros_uc(unsigned char value)
+    M_CONST_FUNC static M_INLINE unsigned int count_leading_zeros_uc(unsigned char value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_LEADING_ZEROS)
         return __builtin_stdc_leading_zeros(value);
@@ -2301,7 +2303,7 @@ extern "C"
     //! \brief counts the number of consecutive ​0​ bits, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return number of leading zeros in \a value
-    static M_INLINE unsigned int count_leading_zeros_us(unsigned short value)
+    M_CONST_FUNC static M_INLINE unsigned int count_leading_zeros_us(unsigned short value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_LEADING_ZEROS)
         return __builtin_stdc_leading_zeros(value);
@@ -2329,7 +2331,7 @@ extern "C"
     //! \brief counts the number of consecutive ​0​ bits, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return number of leading zeros in \a value
-    static M_INLINE unsigned int count_leading_zeros_ui(unsigned int value)
+    M_CONST_FUNC static M_INLINE unsigned int count_leading_zeros_ui(unsigned int value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_LEADING_ZEROS)
         return __builtin_stdc_leading_zeros(value);
@@ -2356,7 +2358,7 @@ extern "C"
     //! \brief counts the number of consecutive ​0​ bits, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return number of leading zeros in \a value
-    static M_INLINE unsigned int count_leading_zeros_ul(unsigned long value)
+    M_CONST_FUNC static M_INLINE unsigned int count_leading_zeros_ul(unsigned long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_LEADING_ZEROS)
         return __builtin_stdc_leading_zeros(value);
@@ -2383,7 +2385,7 @@ extern "C"
     //! \brief counts the number of consecutive ​0​ bits, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return number of leading zeros in \a value
-    static M_INLINE unsigned int count_leading_zeros_ull(unsigned long long value)
+    M_CONST_FUNC static M_INLINE unsigned int count_leading_zeros_ull(unsigned long long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_LEADING_ZEROS)
         return __builtin_stdc_leading_zeros(value);
@@ -2430,7 +2432,7 @@ extern "C"
     //! \brief counts the number of consecutive 1 bits, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return number of leading ones in \a value
-    static M_INLINE unsigned int count_leading_ones_uc(unsigned char value)
+    M_CONST_FUNC static M_INLINE unsigned int count_leading_ones_uc(unsigned char value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_LEADING_ONES)
         return __builtin_stdc_leading_ones(value);
@@ -2445,7 +2447,7 @@ extern "C"
     //! \brief counts the number of consecutive 1 bits, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return number of leading ones in \a value
-    static M_INLINE unsigned int count_leading_ones_us(unsigned short value)
+    M_CONST_FUNC static M_INLINE unsigned int count_leading_ones_us(unsigned short value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_LEADING_ONES)
         return __builtin_stdc_leading_ones(value);
@@ -2460,7 +2462,7 @@ extern "C"
     //! \brief counts the number of consecutive 1 bits, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return number of leading ones in \a value
-    static M_INLINE unsigned int count_leading_ones_ui(unsigned int value)
+    M_CONST_FUNC static M_INLINE unsigned int count_leading_ones_ui(unsigned int value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_LEADING_ONES)
         return __builtin_stdc_leading_ones(value);
@@ -2475,7 +2477,7 @@ extern "C"
     //! \brief counts the number of consecutive 1 bits, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return number of leading ones in \a value
-    static M_INLINE unsigned int count_leading_ones_ul(unsigned long value)
+    M_CONST_FUNC static M_INLINE unsigned int count_leading_ones_ul(unsigned long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_LEADING_ONES)
         return __builtin_stdc_leading_ones(value);
@@ -2490,7 +2492,7 @@ extern "C"
     //! \brief counts the number of consecutive 1 bits, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return number of leading ones in \a value
-    static M_INLINE unsigned int count_leading_ones_ull(unsigned long long value)
+    M_CONST_FUNC static M_INLINE unsigned int count_leading_ones_ull(unsigned long long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_LEADING_ONES)
         return __builtin_stdc_leading_ones(value);
@@ -2524,7 +2526,7 @@ extern "C"
     //! \brief counts the number of consecutive ​0 bits, starting from the least significant bit
     //! \param[in] value the value to assess
     //! \return number of trailing zeroes in \a value
-    static M_INLINE unsigned int count_trailing_zeros_uc(unsigned char value)
+    M_CONST_FUNC static M_INLINE unsigned int count_trailing_zeros_uc(unsigned char value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_TRAILING_ZEROS)
         return __builtin_stdc_trailing_zeros(value);
@@ -2554,7 +2556,7 @@ extern "C"
     //! \brief counts the number of consecutive ​0 bits, starting from the least significant bit
     //! \param[in] value the value to assess
     //! \return number of trailing zeroes in \a value
-    static M_INLINE unsigned int count_trailing_zeros_us(unsigned short value)
+    M_CONST_FUNC static M_INLINE unsigned int count_trailing_zeros_us(unsigned short value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_TRAILING_ZEROS)
         return __builtin_stdc_trailing_zeros(value);
@@ -2584,7 +2586,7 @@ extern "C"
     //! \brief counts the number of consecutive ​0 bits, starting from the least significant bit
     //! \param[in] value the value to assess
     //! \return number of trailing zeroes in \a value
-    static M_INLINE unsigned int count_trailing_zeros_ui(unsigned int value)
+    M_CONST_FUNC static M_INLINE unsigned int count_trailing_zeros_ui(unsigned int value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_TRAILING_ZEROS)
         return __builtin_stdc_trailing_zeros(value);
@@ -2614,7 +2616,7 @@ extern "C"
     //! \brief counts the number of consecutive ​0 bits, starting from the least significant bit
     //! \param[in] value the value to assess
     //! \return number of trailing zeroes in \a value
-    static M_INLINE unsigned int count_trailing_zeros_ul(unsigned long value)
+    M_CONST_FUNC static M_INLINE unsigned int count_trailing_zeros_ul(unsigned long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_TRAILING_ZEROS)
         return __builtin_stdc_trailing_zeros(value);
@@ -2644,7 +2646,7 @@ extern "C"
     //! \brief counts the number of consecutive ​0 bits, starting from the least significant bit
     //! \param[in] value the value to assess
     //! \return number of trailing zeroes in \a value
-    static M_INLINE unsigned int count_trailing_zeros_ull(unsigned long long value)
+    M_CONST_FUNC static M_INLINE unsigned int count_trailing_zeros_ull(unsigned long long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_TRAILING_ZEROS)
         return __builtin_stdc_trailing_zeros(value);
@@ -2693,7 +2695,7 @@ extern "C"
     //! \brief counts the number of consecutive 1 bits, starting from the least significant bit
     //! \param[in] value the value to assess
     //! \return number of trailing ones in \a value
-    static M_INLINE unsigned int count_trailing_ones_uc(unsigned char value)
+    M_CONST_FUNC static M_INLINE unsigned int count_trailing_ones_uc(unsigned char value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_TRAILING_ONES)
         return __builtin_stdc_trailing_ones(value);
@@ -2708,7 +2710,7 @@ extern "C"
     //! \brief counts the number of consecutive 1 bits, starting from the least significant bit
     //! \param[in] value the value to assess
     //! \return number of trailing ones in \a value
-    static M_INLINE unsigned int count_trailing_ones_us(unsigned short value)
+    M_CONST_FUNC static M_INLINE unsigned int count_trailing_ones_us(unsigned short value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_TRAILING_ONES)
         return __builtin_stdc_trailing_ones(value);
@@ -2723,7 +2725,7 @@ extern "C"
     //! \brief counts the number of consecutive 1 bits, starting from the least significant bit
     //! \param[in] value the value to assess
     //! \return number of trailing ones in \a value
-    static M_INLINE unsigned int count_trailing_ones_ui(unsigned int value)
+    M_CONST_FUNC static M_INLINE unsigned int count_trailing_ones_ui(unsigned int value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_TRAILING_ONES)
         return __builtin_stdc_trailing_ones(value);
@@ -2738,7 +2740,7 @@ extern "C"
     //! \brief counts the number of consecutive 1 bits, starting from the least significant bit
     //! \param[in] value the value to assess
     //! \return number of trailing ones in \a value
-    static M_INLINE unsigned int count_trailing_ones_ul(unsigned long value)
+    M_CONST_FUNC static M_INLINE unsigned int count_trailing_ones_ul(unsigned long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_TRAILING_ONES)
         return __builtin_stdc_trailing_ones(value);
@@ -2753,7 +2755,7 @@ extern "C"
     //! \brief counts the number of consecutive 1 bits, starting from the least significant bit
     //! \param[in] value the value to assess
     //! \return number of trailing ones in \a value
-    static M_INLINE unsigned int count_trailing_ones_ull(unsigned long long value)
+    M_CONST_FUNC static M_INLINE unsigned int count_trailing_ones_ull(unsigned long long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_TRAILING_ONES)
         return __builtin_stdc_trailing_ones(value);
@@ -2787,7 +2789,7 @@ extern "C"
     //! \brief finds the first position of 1 bit, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return the position of the first bit set to one in \a value
-    static M_INLINE unsigned int first_leading_one_uc(unsigned char value)
+    M_CONST_FUNC static M_INLINE unsigned int first_leading_one_uc(unsigned char value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE)
         return __builtin_stdc_first_leading_one(value);
@@ -2815,7 +2817,7 @@ extern "C"
     //! \brief finds the first position of 1 bit, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return the position of the first bit set to one in \a value
-    static M_INLINE unsigned int first_leading_one_us(unsigned short value)
+    M_CONST_FUNC static M_INLINE unsigned int first_leading_one_us(unsigned short value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE)
         return __builtin_stdc_first_leading_one(value);
@@ -2843,7 +2845,7 @@ extern "C"
     //! \brief finds the first position of 1 bit, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return the position of the first bit set to one in \a value
-    static M_INLINE unsigned int first_leading_one_ui(unsigned int value)
+    M_CONST_FUNC static M_INLINE unsigned int first_leading_one_ui(unsigned int value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE)
         return __builtin_stdc_first_leading_one(value);
@@ -2871,7 +2873,7 @@ extern "C"
     //! \brief finds the first position of 1 bit, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return the position of the first bit set to one in \a value
-    static M_INLINE unsigned int first_leading_one_ul(unsigned long value)
+    M_CONST_FUNC static M_INLINE unsigned int first_leading_one_ul(unsigned long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE)
         return __builtin_stdc_first_leading_one(value);
@@ -2899,7 +2901,7 @@ extern "C"
     //! \brief finds the first position of 1 bit, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return the position of the first bit set to one in \a value
-    static M_INLINE unsigned int first_leading_one_ull(unsigned long long value)
+    M_CONST_FUNC static M_INLINE unsigned int first_leading_one_ull(unsigned long long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ONE)
         return __builtin_stdc_first_leading_one(value);
@@ -2946,7 +2948,7 @@ extern "C"
     //! \brief finds the first position of 0 bit, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return the position of the highest bit set to one in \a value
-    static M_INLINE unsigned int first_leading_zero_uc(unsigned char value)
+    M_CONST_FUNC static M_INLINE unsigned int first_leading_zero_uc(unsigned char value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
         return __builtin_stdc_first_leading_zero(value);
@@ -2961,7 +2963,7 @@ extern "C"
     //! \brief finds the first position of 0 bit, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return the position of the highest bit set to one in \a value
-    static M_INLINE unsigned int first_leading_zero_us(unsigned short value)
+    M_CONST_FUNC static M_INLINE unsigned int first_leading_zero_us(unsigned short value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
         return __builtin_stdc_first_leading_zero(value);
@@ -2976,7 +2978,7 @@ extern "C"
     //! \brief finds the first position of 0 bit, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return the position of the highest bit set to one in \a value
-    static M_INLINE unsigned int first_leading_zero_ui(unsigned int value)
+    M_CONST_FUNC static M_INLINE unsigned int first_leading_zero_ui(unsigned int value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
         return __builtin_stdc_first_leading_zero(value);
@@ -2991,7 +2993,7 @@ extern "C"
     //! \brief finds the first position of 0 bit, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return the position of the highest bit set to one in \a value
-    static M_INLINE unsigned int first_leading_zero_ul(unsigned long value)
+    M_CONST_FUNC static M_INLINE unsigned int first_leading_zero_ul(unsigned long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
         return __builtin_stdc_first_leading_zero(value);
@@ -3006,7 +3008,7 @@ extern "C"
     //! \brief finds the first position of 0 bit, starting from the most significant bit
     //! \param[in] value the value to assess
     //! \return the position of the highest bit set to one in \a value
-    static M_INLINE unsigned int first_leading_zero_ull(unsigned long long value)
+    M_CONST_FUNC static M_INLINE unsigned int first_leading_zero_ull(unsigned long long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_FIRST_LEADING_ZERO)
         return __builtin_stdc_first_leading_zero(value);
@@ -3040,7 +3042,7 @@ extern "C"
     //! \brief counts the number of 1 bits in an unsigned integer
     //! \param[in] value the value to assess
     //! \return the number of bits set to 1 in \a value
-    static M_INLINE unsigned int count_ones_uc(unsigned char value)
+    M_CONST_FUNC static M_INLINE unsigned int count_ones_uc(unsigned char value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_COUNT_ONES)
         return __builtin_stdc_count_ones(value);
@@ -3060,7 +3062,7 @@ extern "C"
     //! \brief counts the number of 1 bits in an unsigned integer
     //! \param[in] value the value to assess
     //! \return the number of bits set to 1 in \a value
-    static M_INLINE unsigned int count_ones_us(unsigned short value)
+    M_CONST_FUNC static M_INLINE unsigned int count_ones_us(unsigned short value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_COUNT_ONES)
         return __builtin_stdc_count_ones(value);
@@ -3081,7 +3083,7 @@ extern "C"
     //! \brief counts the number of 1 bits in an unsigned integer
     //! \param[in] value the value to assess
     //! \return the number of bits set to 1 in \a value
-    static M_INLINE unsigned int count_ones_ui(unsigned int value)
+    M_CONST_FUNC static M_INLINE unsigned int count_ones_ui(unsigned int value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_COUNT_ONES)
         return __builtin_stdc_count_ones(value);
@@ -3103,7 +3105,7 @@ extern "C"
     //! \brief counts the number of 1 bits in an unsigned integer
     //! \param[in] value the value to assess
     //! \return the number of bits set to 1 in \a value
-    static M_INLINE unsigned int count_ones_ul(unsigned long value)
+    M_CONST_FUNC static M_INLINE unsigned int count_ones_ul(unsigned long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_COUNT_ONES)
         return __builtin_stdc_count_ones(value);
@@ -3135,7 +3137,7 @@ extern "C"
     //! \brief counts the number of 1 bits in an unsigned integer
     //! \param[in] value the value to assess
     //! \return the number of bits set to 1 in \a value
-    static M_INLINE unsigned int count_ones_ull(unsigned long long value)
+    M_CONST_FUNC static M_INLINE unsigned int count_ones_ull(unsigned long long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_COUNT_ONES)
         return __builtin_stdc_count_ones(value);
@@ -3177,7 +3179,7 @@ extern "C"
     //! \brief counts the number of ​0​ bits in an unsigned integer
     //! \param[in] value the value to assess
     //! \return the number of bits set to 0 in \a value
-    static M_INLINE unsigned int count_zeros_uc(unsigned char value)
+    M_CONST_FUNC static M_INLINE unsigned int count_zeros_uc(unsigned char value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_COUNT_ZEROS)
         return __builtin_stdc_count_zeros(value);
@@ -3192,7 +3194,7 @@ extern "C"
     //! \brief counts the number of ​0​ bits in an unsigned integer
     //! \param[in] value the value to assess
     //! \return the number of bits set to 0 in \a value
-    static M_INLINE unsigned int count_zeros_us(unsigned short value)
+    M_CONST_FUNC static M_INLINE unsigned int count_zeros_us(unsigned short value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_COUNT_ZEROS)
         return __builtin_stdc_count_zeros(value);
@@ -3207,7 +3209,7 @@ extern "C"
     //! \brief counts the number of ​0​ bits in an unsigned integer
     //! \param[in] value the value to assess
     //! \return the number of bits set to 0 in \a value
-    static M_INLINE unsigned int count_zeros_ui(unsigned int value)
+    M_CONST_FUNC static M_INLINE unsigned int count_zeros_ui(unsigned int value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_COUNT_ZEROS)
         return __builtin_stdc_count_zeros(value);
@@ -3222,7 +3224,7 @@ extern "C"
     //! \brief counts the number of ​0​ bits in an unsigned integer
     //! \param[in] value the value to assess
     //! \return the number of bits set to 0 in \a value
-    static M_INLINE unsigned int count_zeros_ul(unsigned long value)
+    M_CONST_FUNC static M_INLINE unsigned int count_zeros_ul(unsigned long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_COUNT_ZEROS)
         return __builtin_stdc_count_zeros(value);
@@ -3237,7 +3239,7 @@ extern "C"
     //! \brief counts the number of ​0​ bits in an unsigned integer
     //! \param[in] value the value to assess
     //! \return the number of bits set to 0 in \a value
-    static M_INLINE unsigned int count_zeros_ull(unsigned long long value)
+    M_CONST_FUNC static M_INLINE unsigned int count_zeros_ull(unsigned long long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_COUNT_ZEROS)
         return __builtin_stdc_count_zeros(value);
@@ -3271,7 +3273,7 @@ extern "C"
     //! \brief checks if a number is an integral power of 2 or only one bit is set to 1
     //! \param[in] value the value to assess
     //! \return true when only one bit is set to one, otherwise false
-    static M_INLINE bool has_single_bit_uc(unsigned char value)
+    M_CONST_FUNC static M_INLINE bool has_single_bit_uc(unsigned char value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_HAS_SINGLE_BIT)
         return __builtin_stdc_has_single_bit(value);
@@ -3284,7 +3286,7 @@ extern "C"
     //! \brief checks if a number is an integral power of 2 or only one bit is set to 1
     //! \param[in] value the value to assess
     //! \return true when only one bit is set to one, otherwise false
-    static M_INLINE bool has_single_bit_us(unsigned short value)
+    M_CONST_FUNC static M_INLINE bool has_single_bit_us(unsigned short value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_HAS_SINGLE_BIT)
         return __builtin_stdc_has_single_bit(value);
@@ -3297,7 +3299,7 @@ extern "C"
     //! \brief checks if a number is an integral power of 2 or only one bit is set to 1
     //! \param[in] value the value to assess
     //! \return true when only one bit is set to one, otherwise false
-    static M_INLINE bool has_single_bit_ui(unsigned int value)
+    M_CONST_FUNC static M_INLINE bool has_single_bit_ui(unsigned int value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_HAS_SINGLE_BIT)
         return __builtin_stdc_has_single_bit(value);
@@ -3310,7 +3312,7 @@ extern "C"
     //! \brief checks if a number is an integral power of 2 or only one bit is set to 1
     //! \param[in] value the value to assess
     //! \return true when only one bit is set to one, otherwise false
-    static M_INLINE bool has_single_bit_ul(unsigned long value)
+    M_CONST_FUNC static M_INLINE bool has_single_bit_ul(unsigned long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_HAS_SINGLE_BIT)
         return __builtin_stdc_has_single_bit(value);
@@ -3323,7 +3325,7 @@ extern "C"
     //! \brief checks if a number is an integral power of 2 or only one bit is set to 1
     //! \param[in] value the value to assess
     //! \return true when only one bit is set to one, otherwise false
-    static M_INLINE bool has_single_bit_ull(unsigned long long value)
+    M_CONST_FUNC static M_INLINE bool has_single_bit_ull(unsigned long long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_HAS_SINGLE_BIT)
         return __builtin_stdc_has_single_bit(value);
@@ -3355,7 +3357,7 @@ extern "C"
     //! \brief finds the smallest number of bits needed to represent the given value
     //! \param[in] value the value to assess
     //! \return the number of bits required to represent \a value
-    static M_INLINE unsigned int get_req_bit_width_uc(unsigned char value)
+    M_CONST_FUNC static M_INLINE unsigned int get_req_bit_width_uc(unsigned char value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_WIDTH)
         return __builtin_stdc_bit_width(value);
@@ -3370,7 +3372,7 @@ extern "C"
     //! \brief finds the smallest number of bits needed to represent the given value
     //! \param[in] value the value to assess
     //! \return the number of bits required to represent \a value
-    static M_INLINE unsigned int get_req_bit_width_us(unsigned short value)
+    M_CONST_FUNC static M_INLINE unsigned int get_req_bit_width_us(unsigned short value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_WIDTH)
         return __builtin_stdc_bit_width(value);
@@ -3385,7 +3387,7 @@ extern "C"
     //! \brief finds the smallest number of bits needed to represent the given value
     //! \param[in] value the value to assess
     //! \return the number of bits required to represent \a value
-    static M_INLINE unsigned int get_req_bit_width_ui(unsigned int value)
+    M_CONST_FUNC static M_INLINE unsigned int get_req_bit_width_ui(unsigned int value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_WIDTH)
         return __builtin_stdc_bit_width(value);
@@ -3400,7 +3402,7 @@ extern "C"
     //! \brief finds the smallest number of bits needed to represent the given value
     //! \param[in] value the value to assess
     //! \return the number of bits required to represent \a value
-    static M_INLINE unsigned int get_req_bit_width_ul(unsigned long value)
+    M_CONST_FUNC static M_INLINE unsigned int get_req_bit_width_ul(unsigned long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_WIDTH)
         return __builtin_stdc_bit_width(value);
@@ -3415,7 +3417,7 @@ extern "C"
     //! \brief finds the smallest number of bits needed to represent the given value
     //! \param[in] value the value to assess
     //! \return the number of bits required to represent \a value
-    static M_INLINE unsigned int get_req_bit_width_ull(unsigned long long value)
+    M_CONST_FUNC static M_INLINE unsigned int get_req_bit_width_ull(unsigned long long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_WIDTH)
         return __builtin_stdc_bit_width(value);
@@ -3449,7 +3451,7 @@ extern "C"
     //! \brief finds the largest integral power of two not greater than the given \a value
     //! \param[in] value the value to assess
     //! \return power of two <= \a value
-    static M_INLINE unsigned char bit_floor_uc(unsigned char value)
+    M_CONST_FUNC static M_INLINE unsigned char bit_floor_uc(unsigned char value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_FLOOR)
         return __builtin_stdc_bit_floor(value);
@@ -3464,7 +3466,7 @@ extern "C"
     //! \brief finds the largest integral power of two not greater than the given \a value
     //! \param[in] value the value to assess
     //! \return power of two <= \a value
-    static M_INLINE unsigned short bit_floor_us(unsigned short value)
+    M_CONST_FUNC static M_INLINE unsigned short bit_floor_us(unsigned short value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_FLOOR)
         return __builtin_stdc_bit_floor(value);
@@ -3479,7 +3481,7 @@ extern "C"
     //! \brief finds the largest integral power of two not greater than the given \a value
     //! \param[in] value the value to assess
     //! \return power of two <= \a value
-    static M_INLINE unsigned int bit_floor_ui(unsigned int value)
+    M_CONST_FUNC static M_INLINE unsigned int bit_floor_ui(unsigned int value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_FLOOR)
         return __builtin_stdc_bit_floor(value);
@@ -3494,7 +3496,7 @@ extern "C"
     //! \brief finds the largest integral power of two not greater than the given \a value
     //! \param[in] value the value to assess
     //! \return power of two <= \a value
-    static M_INLINE unsigned long bit_floor_ul(unsigned long value)
+    M_CONST_FUNC static M_INLINE unsigned long bit_floor_ul(unsigned long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_FLOOR)
         return __builtin_stdc_bit_floor(value);
@@ -3509,7 +3511,7 @@ extern "C"
     //! \brief finds the largest integral power of two not greater than the given \a value
     //! \param[in] value the value to assess
     //! \return power of two <= \a value
-    static M_INLINE unsigned long long bit_floor_ull(unsigned long long value)
+    M_CONST_FUNC static M_INLINE unsigned long long bit_floor_ull(unsigned long long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_FLOOR)
         return __builtin_stdc_bit_floor(value);
@@ -3543,7 +3545,7 @@ extern "C"
     //! \brief finds the smallest integral power of two not less than the given \a value
     //! \param[in] value the value to assess
     //! \return power of two >= \a value
-    static M_INLINE unsigned char bit_ceil_uc(unsigned char value)
+    M_CONST_FUNC static M_INLINE unsigned char bit_ceil_uc(unsigned char value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_CEIL)
         return __builtin_stdc_bit_ceil(value);
@@ -3558,7 +3560,7 @@ extern "C"
     //! \brief finds the smallest integral power of two not less than the given \a value
     //! \param[in] value the value to assess
     //! \return power of two >= \a value
-    static M_INLINE unsigned short bit_ceil_us(unsigned short value)
+    M_CONST_FUNC static M_INLINE unsigned short bit_ceil_us(unsigned short value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_CEIL)
         return __builtin_stdc_bit_ceil(value);
@@ -3573,7 +3575,7 @@ extern "C"
     //! \brief finds the smallest integral power of two not less than the given \a value
     //! \param[in] value the value to assess
     //! \return power of two >= \a value
-    static M_INLINE unsigned int bit_ceil_ui(unsigned int value)
+    M_CONST_FUNC static M_INLINE unsigned int bit_ceil_ui(unsigned int value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_CEIL)
         return __builtin_stdc_bit_ceil(value);
@@ -3588,7 +3590,7 @@ extern "C"
     //! \brief finds the smallest integral power of two not less than the given \a value
     //! \param[in] value the value to assess
     //! \return power of two >= \a value
-    static M_INLINE unsigned long bit_ceil_ul(unsigned long value)
+    M_CONST_FUNC static M_INLINE unsigned long bit_ceil_ul(unsigned long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_CEIL)
         return __builtin_stdc_bit_ceil(value);
@@ -3603,7 +3605,7 @@ extern "C"
     //! \brief finds the smallest integral power of two not less than the given \a value
     //! \param[in] value the value to assess
     //! \return power of two >= \a value
-    static M_INLINE unsigned long long bit_ceil_ull(unsigned long long value)
+    M_CONST_FUNC static M_INLINE unsigned long long bit_ceil_ull(unsigned long long value) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_BIT_CEIL)
         return __builtin_stdc_bit_ceil(value);
@@ -3638,7 +3640,7 @@ extern "C"
     //! \param[in] value the value to rotate
     //! \param[in] count number of bit positions to rotate to the left
     //! \return rotated \a value
-    static M_INLINE unsigned char rotate_left_uc(unsigned char value, unsigned int count)
+    M_CONST_FUNC static M_INLINE unsigned char rotate_left_uc(unsigned char value, unsigned int count) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_LEFT)
         return __builtin_stdc_rotate_left(value, count);
@@ -3652,7 +3654,7 @@ extern "C"
     //! \param[in] value the value to rotate
     //! \param[in] count number of bit positions to rotate to the left
     //! \return rotated \a value
-    static M_INLINE unsigned short rotate_left_us(unsigned short value, unsigned int count)
+    M_CONST_FUNC static M_INLINE unsigned short rotate_left_us(unsigned short value, unsigned int count) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_LEFT)
         return __builtin_stdc_rotate_left(value, count);
@@ -3666,7 +3668,7 @@ extern "C"
     //! \param[in] value the value to rotate
     //! \param[in] count number of bit positions to rotate to the left
     //! \return rotated \a value
-    static M_INLINE unsigned int rotate_left_ui(unsigned int value, unsigned int count)
+    M_CONST_FUNC static M_INLINE unsigned int rotate_left_ui(unsigned int value, unsigned int count) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_LEFT)
         return __builtin_stdc_rotate_left(value, count);
@@ -3680,7 +3682,7 @@ extern "C"
     //! \param[in] value the value to rotate
     //! \param[in] count number of bit positions to rotate to the left
     //! \return rotated \a value
-    static M_INLINE unsigned long rotate_left_ul(unsigned long value, unsigned int count)
+    M_CONST_FUNC static M_INLINE unsigned long rotate_left_ul(unsigned long value, unsigned int count) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_LEFT)
         return __builtin_stdc_rotate_left(value, count);
@@ -3694,7 +3696,8 @@ extern "C"
     //! \param[in] value the value to rotate
     //! \param[in] count number of bit positions to rotate to the left
     //! \return rotated \a value
-    static M_INLINE unsigned long long rotate_left_ull(unsigned long long value, unsigned int count)
+    M_CONST_FUNC static M_INLINE unsigned long long rotate_left_ull(unsigned long long value,
+                                                                    unsigned int       count) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_LEFT)
         return __builtin_stdc_rotate_left(value, count);
@@ -3727,7 +3730,7 @@ extern "C"
     //! \param[in] value the value to rotate
     //! \param[in] count number of bit positions to rotate to the right
     //! \return rotated \a value
-    static M_INLINE unsigned char rotate_right_uc(unsigned char value, unsigned int count)
+    M_CONST_FUNC static M_INLINE unsigned char rotate_right_uc(unsigned char value, unsigned int count) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_RIGHT)
         return __builtin_stdc_rotate_right(value, count);
@@ -3741,7 +3744,7 @@ extern "C"
     //! \param[in] value the value to rotate
     //! \param[in] count number of bit positions to rotate to the right
     //! \return rotated \a value
-    static M_INLINE unsigned short rotate_right_us(unsigned short value, unsigned int count)
+    M_CONST_FUNC static M_INLINE unsigned short rotate_right_us(unsigned short value, unsigned int count) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_RIGHT)
         return __builtin_stdc_rotate_right(value, count);
@@ -3755,7 +3758,7 @@ extern "C"
     //! \param[in] value the value to rotate
     //! \param[in] count number of bit positions to rotate to the right
     //! \return rotated \a value
-    static M_INLINE unsigned int rotate_right_ui(unsigned int value, unsigned int count)
+    M_CONST_FUNC static M_INLINE unsigned int rotate_right_ui(unsigned int value, unsigned int count) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_RIGHT)
         return __builtin_stdc_rotate_right(value, count);
@@ -3769,7 +3772,7 @@ extern "C"
     //! \param[in] value the value to rotate
     //! \param[in] count number of bit positions to rotate to the right
     //! \return rotated \a value
-    static M_INLINE unsigned long rotate_right_ul(unsigned long value, unsigned int count)
+    M_CONST_FUNC static M_INLINE unsigned long rotate_right_ul(unsigned long value, unsigned int count) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_RIGHT)
         return __builtin_stdc_rotate_right(value, count);
@@ -3783,7 +3786,8 @@ extern "C"
     //! \param[in] value the value to rotate
     //! \param[in] count number of bit positions to rotate to the right
     //! \return rotated \a value
-    static M_INLINE unsigned long long rotate_right_ull(unsigned long long value, unsigned int count)
+    M_CONST_FUNC static M_INLINE unsigned long long rotate_right_ull(unsigned long long value,
+                                                                     unsigned int       count) M_UNSEQUENCED
     {
 #if defined(HAVE_BUILT_IN_STDC_ROTATE_RIGHT)
         return __builtin_stdc_rotate_right(value, count);

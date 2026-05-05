@@ -291,7 +291,7 @@ extern "C"
     //! after scanning \a n characters
     // M_PARAM_RO_SIZE(1, 2) //Do not use this right now. Need to revisit how we want to do this since
     // doing this causes some weird behavior with builtin obj size and RSIZE_MAX as a backup maximum length-TJE
-    M_INLINE size_t safe_strnlen(const char* string, size_t n)
+    M_INLINE size_t safe_strnlen(const char* M_NULLABLE string, size_t n)
     {
         return safe_strnlen_impl(string, n);
     }
@@ -1413,7 +1413,6 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! \param[in] stringToFind a pointer to the data containing a string that is to be found within \a originalString
     //! \return offset to last occurrence of \a stringToFind in \a originalString. The offset will be from the end of
     //! the string
-
     M_PARAM_RO(1)
     M_PARAM_RO(2)
     size_t find_last_occurrence_in_string(const char* M_NONNULL originalString, const char* M_NONNULL stringToFind);
@@ -1423,7 +1422,6 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! \param[in] originalString pointer to the data containing a string that will be searched
     //! \param[in] stringToFind a pointer to the data containing a string that is to be found within \a originalString
     //! \return offset to first occurrence of \a stringToFind in \a originalString
-
     M_PARAM_RO(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(1)

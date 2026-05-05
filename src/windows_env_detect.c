@@ -27,7 +27,8 @@ RESTORE_WARNING_4255
 #endif
 #include <string.h>
 
-eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char* operatingSystemName)
+eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                                    char* M_NULLABLE             operatingSystemName)
 {
     eReturnValues ret = read_Win_Version(versionNumber);
     if (ret == SUCCESS)
@@ -276,7 +277,7 @@ bool is_Running_Elevated(void)
 // NOTE: Not using Ex version at this time to avoid linking yet another library.
 // This can be added if necessary, or this doesn't do quite what we want it to
 // do. -TJE
-eReturnValues get_Current_User_Name(char** userName)
+M_PARAM_WO(1) eReturnValues get_Current_User_Name(char* M_NONNULL* M_NULLABLE userName)
 {
     eReturnValues ret = SUCCESS;
     if (userName)

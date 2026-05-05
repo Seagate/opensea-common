@@ -21,8 +21,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-eReturnValues fill_Random_Pattern_In_Buffer(uint8_t* ptrData, uint32_t dataLength)
+M_PARAM_WO_SIZE(1, 2)
+eReturnValues fill_Random_Pattern_In_Buffer(uint8_t* M_NONNULL ptrData, uint32_t dataLength)
+    // clang-format off
+    M_DIAG_ERROR(dataLength == 0, "dataLength must be non-zero")
+// clang-format on
 {
+    if (dataLength == UINT32_C(0))
+    {
+        return M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER);
+    }
     size_t localPtrDataLen =
         ((dataLength + sizeof(uint32_t)) - 1) / sizeof(uint32_t); // round up to nearest uint32 amount
     uint32_t* localPtr = M_REINTERPRET_CAST(uint32_t*, safe_calloc(localPtrDataLen, sizeof(uint32_t)));
@@ -42,8 +50,16 @@ eReturnValues fill_Random_Pattern_In_Buffer(uint8_t* ptrData, uint32_t dataLengt
     return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }
 
-eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* ptrData, uint32_t dataLength)
+M_PARAM_WO_SIZE(2, 3)
+eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* M_NONNULL ptrData, uint32_t dataLength)
+    // clang-format off
+    M_DIAG_ERROR(dataLength == 0, "dataLength must be non-zero")
+// clang-format on
 {
+    if (dataLength == UINT32_C(0))
+    {
+        return M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER);
+    }
     size_t localPtrDataLen =
         ((dataLength + sizeof(uint32_t)) - 1) / sizeof(uint32_t); // round up to nearest uint32 amount
     uint32_t* localPtr = M_REINTERPRET_CAST(uint32_t*, safe_calloc(localPtrDataLen, sizeof(uint32_t)));
@@ -62,9 +78,15 @@ eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* ptrData, 
     return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }
 
-eReturnValues fill_Incrementing_Pattern_In_Buffer(uint8_t incrementStartValue, uint8_t* ptrData, uint32_t dataLength)
+M_PARAM_WO_SIZE(2, 3)
+eReturnValues fill_Incrementing_Pattern_In_Buffer(uint8_t            incrementStartValue,
+                                                  uint8_t* M_NONNULL ptrData,
+                                                  uint32_t           dataLength)
+    // clang-format off
+    M_DIAG_ERROR(dataLength == 0, "dataLength must be non-zero")
+// clang-format on
 {
-    if (ptrData == M_NULLPTR)
+    if (ptrData == M_NULLPTR || dataLength == UINT32_C(0))
     {
         return M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER);
     }
@@ -75,12 +97,17 @@ eReturnValues fill_Incrementing_Pattern_In_Buffer(uint8_t incrementStartValue, u
     return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }
 
-eReturnValues fill_ASCII_Pattern_In_Buffer(const char* asciiPattern,
-                                           uint32_t    patternLength,
-                                           uint8_t*    ptrData,
-                                           uint32_t    dataLength)
+M_PARAM_RO_SIZE(1, 2)
+M_PARAM_WO_SIZE(3, 4)
+eReturnValues fill_ASCII_Pattern_In_Buffer(const char* M_NONNULL asciiPattern,
+                                           uint32_t              patternLength,
+                                           uint8_t* M_NONNULL    ptrData,
+                                           uint32_t              dataLength)
+    // clang-format off
+    M_DIAG_ERROR(dataLength == 0, "dataLength must be non-zero")
+// clang-format on
 {
-    if (ptrData == M_NULLPTR || patternLength == 0 || asciiPattern == M_NULLPTR)
+    if (ptrData == M_NULLPTR || patternLength == 0 || asciiPattern == M_NULLPTR || dataLength == UINT32_C(0))
     {
         return M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER);
     }
@@ -91,10 +118,16 @@ eReturnValues fill_ASCII_Pattern_In_Buffer(const char* asciiPattern,
     return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }
 
-eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t* inPattern,
-                                                      uint32_t inpatternLength,
-                                                      uint8_t* ptrData,
-                                                      uint32_t dataLength)
+M_PARAM_RO_SIZE(1, 2)
+M_PARAM_WO_SIZE(3, 4)
+eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t* M_NONNULL inPattern,
+                                                      uint32_t           inpatternLength,
+                                                      uint8_t* M_NONNULL ptrData,
+                                                      uint32_t           dataLength)
+    // clang-format off
+    M_DIAG_ERROR(dataLength == 0, "dataLength must be non-zero")
+    M_DIAG_ERROR(inpatternLength == 0, "inpatternLength must be non-zero")
+// clang-format on
 {
     if (ptrData == M_NULLPTR || inpatternLength == 0 || inPattern == M_NULLPTR || dataLength == 0)
     {

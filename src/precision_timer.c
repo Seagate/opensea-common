@@ -23,7 +23,8 @@
 DISABLE_WARNING_4255
 #    include <windows.h>
 RESTORE_WARNING_4255
-void start_Timer(seatimer_t* timer)
+
+M_PARAM_WO(1) void start_Timer(seatimer_t* M_NONNULL timer)
 {
     if (timer != M_NULLPTR)
     {
@@ -40,7 +41,7 @@ void start_Timer(seatimer_t* timer)
     }
 }
 
-void stop_Timer(seatimer_t* timer)
+M_PARAM_WO(1) void stop_Timer(seatimer_t* M_NONNULL timer)
 {
     if (timer != M_NULLPTR)
     {
@@ -57,7 +58,7 @@ void stop_Timer(seatimer_t* timer)
     }
 }
 
-uint64_t get_Nano_Seconds(seatimer_t timer)
+M_NODISCARD M_CONST_FUNC uint64_t get_Nano_Seconds(seatimer_t timer) M_UNSEQUENCED
 {
     LARGE_INTEGER frequency;                                 // clock ticks per second
     uint64_t      ticksPerNanosecond = UINT64_C(1000000000); // start with a count of nanoseconds per second
@@ -96,7 +97,7 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
 // (this will be affected just like gettimeofday function) other clocks that may
 // work: CLOCK_TAI (linux),  CLOCK_MONOTONIC_RAW  (linux), CLOCK_BOOTTIME
 // (linux) https://www.man7.org/linux/man-pages/man3/clock_gettime.3.html
-void start_Timer(seatimer_t* timer)
+M_PARAM_WO(1) void start_Timer(seatimer_t* M_NONNULL timer)
 {
     if (timer != M_NULLPTR)
     {
@@ -122,7 +123,7 @@ void start_Timer(seatimer_t* timer)
     }
 }
 
-void stop_Timer(seatimer_t* timer)
+M_PARAM_WO(1) void stop_Timer(seatimer_t* M_NONNULL timer)
 {
     if (timer != M_NULLPTR)
     {
@@ -148,24 +149,28 @@ void stop_Timer(seatimer_t* timer)
     }
 }
 
-uint64_t get_Nano_Seconds(seatimer_t timer)
+M_NODISCARD M_CONST_FUNC uint64_t get_Nano_Seconds(seatimer_t timer) M_UNSEQUENCED
 {
     return timer.timerStop - timer.timerStart;
 }
 #endif // platform check
 
-double get_Micro_Seconds(seatimer_t timer)
+#define NANOSECONDS_PER_MICROSECOND 1000.0
+#define NANOSECONDS_PER_MILLISECOND 1000000.0
+#define NANOSECONDS_PER_SECOND      1000000000.0
+
+M_NODISCARD M_CONST_FUNC double get_Micro_Seconds(seatimer_t timer) M_UNSEQUENCED
 {
     uint64_t nanoseconds = get_Nano_Seconds(timer);
-    return (C_CAST(double, nanoseconds) / 1000.00);
+    return (C_CAST(double, nanoseconds) / NANOSECONDS_PER_MICROSECOND);
 }
 
-double get_Milli_Seconds(seatimer_t timer)
+M_NODISCARD M_CONST_FUNC double get_Milli_Seconds(seatimer_t timer) M_UNSEQUENCED
 {
-    return (get_Micro_Seconds(timer) / 1000.00);
+    return (get_Nano_Seconds(timer) / NANOSECONDS_PER_MILLISECOND);
 }
 
-double get_Seconds(seatimer_t timer)
+M_NODISCARD M_CONST_FUNC double get_Seconds(seatimer_t timer) M_UNSEQUENCED
 {
-    return (get_Milli_Seconds(timer) / 1000.00);
+    return (get_Nano_Seconds(timer) / NANOSECONDS_PER_SECOND);
 }

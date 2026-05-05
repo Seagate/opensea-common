@@ -41,7 +41,7 @@ RESTORE_WARNING_4255
 //       Using RtlGetVersion from ntdll.dll instead
 typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(POSVERSIONINFOEXW);
 
-eReturnValues read_Win_Version(ptrOSVersionNumber versionNumber)
+M_PARAM_WO(1) eReturnValues read_Win_Version(ptrOSVersionNumber M_NONNULL versionNumber)
 {
     eReturnValues ret                  = M_ACCESS_ENUM(eReturnValues, SUCCESS);
     static DWORD  winMajor             = DWORD_C(0);

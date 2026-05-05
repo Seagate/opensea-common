@@ -37,7 +37,7 @@
 #endif // UEFI_C_SOURCE
 
 #if defined(UEFI_C_SOURCE)
-eReturnValues get_Simple_Text_Output_Protocol_Ptr(void** pOutput)
+eReturnValues get_Simple_Text_Output_Protocol_Ptr(void* M_NULLABLE* M_NONNULL pOutput)
 {
     eReturnValues ret        = SUCCESS;
     EFI_STATUS    uefiStatus = EFI_SUCCESS;
@@ -70,7 +70,7 @@ eReturnValues get_Simple_Text_Output_Protocol_Ptr(void** pOutput)
     return ret;
 }
 
-void close_Simple_Text_Output_Protocol_Ptr(void** pOutput)
+void close_Simple_Text_Output_Protocol_Ptr(void* M_NULLABLE* M_NONNULL pOutput)
 {
     EFI_STATUS  uefiStatus = EFI_SUCCESS;
     EFI_HANDLE* handle     = M_NULLPTR;
@@ -100,7 +100,7 @@ void close_Simple_Text_Output_Protocol_Ptr(void** pOutput)
     }
 }
 
-static int32_t get_Default_Console_Colors()
+static int32_t get_Default_Console_Colors(void)
 {
     static int32_t defaultAttributes = INT32_MAX;
     if (defaultAttributes == INT32_MAX)
@@ -435,7 +435,13 @@ static bool set_Input_Console_Mode(DWORD mode)
     return M_ToBool(SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), mode));
 }
 
-eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen)
+M_NULL_TERM_STRING(1)
+M_PARAM_RO(1)
+M_PARAM_RW(2)
+M_PARAM_RW(3)
+eReturnValues get_Secure_User_Input(const char* M_NONNULL       prompt,
+                                    char* M_NONNULL* M_NULLABLE userInput,
+                                    size_t* M_NONNULL           inputDataLen)
 {
     eReturnValues ret            = M_ACCESS_ENUM(eReturnValues, SUCCESS);
     DWORD         defaultConMode = get_Input_Console_Default_Mode();
@@ -449,7 +455,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         ssize_t inputRes = getline(userInput, inputDataLen, stdin);
         if (inputRes <= 0)
         {
-            ret = M_ACCESS_ENUM(eReturnValues, FAILURE);
+            ret           = M_ACCESS_ENUM(eReturnValues, FAILURE);
             *inputDataLen = 0;
             safe_free(userInput);
         }
@@ -669,7 +675,8 @@ typedef struct sconsoleColorCap
 
 // Future var we might need is whether the reset to defaults (39m & 49m) work or
 // if the complete reset is needed (0m)
-static void get_Console_Color_Capabilities(ptrConsoleColorCap colorCapabilities)
+M_PARAM_WO(1)
+static void get_Console_Color_Capabilities(ptrConsoleColorCap M_NONNULL colorCapabilities)
 {
     if (colorCapabilities != M_NULLPTR)
     {
@@ -1060,7 +1067,13 @@ static M_INLINE void fclose_term(FILE* term)
 //   a terminal).
 // So if necessary, for "compatibility" this could be implemented without echo,
 // but avoiding that for now-TJE
-eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen)
+M_NULL_TERM_STRING(1)
+M_PARAM_RO(1)
+M_PARAM_RW(2)
+M_PARAM_RW(3)
+eReturnValues get_Secure_User_Input(const char* M_NONNULL       prompt,
+                                    char* M_NONNULL* M_NULLABLE userInput,
+                                    size_t* M_NONNULL           inputDataLen)
 {
     eReturnValues ret = SUCCESS;
 #    if defined(POSIX_2001) && defined(_POSIX_JOB_CONTROL) // https://linux.die.net/man/7/posixoptions
@@ -1105,7 +1118,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     // now read the input with getline
     if (inputRes <= 0)
     {
-        ret = FAILURE;
+        ret           = FAILURE;
         *inputDataLen = 0;
         safe_free(userInput);
     }
@@ -1215,7 +1228,8 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
 }
 #endif
 
-static M_INLINE bool is_Allowed_Datasize_Unit(const char* unit)
+M_PARAM_RO(1)
+static M_INLINE bool is_Allowed_Datasize_Unit(const char* M_NONNULL unit)
 {
     bool allowed = false;
     // allowed units must match exactly at the end of the string!
@@ -1229,7 +1243,8 @@ static M_INLINE bool is_Allowed_Datasize_Unit(const char* unit)
     return allowed;
 }
 
-static M_INLINE bool is_Allowed_Sector_Size_Unit(const char* unit)
+M_PARAM_RO(1)
+static M_INLINE bool is_Allowed_Sector_Size_Unit(const char* M_NONNULL unit)
 {
     bool allowed = false;
     // l is used by some utilities to indicate a count is in
@@ -1243,7 +1258,8 @@ static M_INLINE bool is_Allowed_Sector_Size_Unit(const char* unit)
     return allowed;
 }
 
-static M_INLINE bool is_Allowed_Time_Unit(const char* unit)
+M_PARAM_RO(1)
+static M_INLINE bool is_Allowed_Time_Unit(const char* M_NONNULL unit)
 {
     bool allowed = false;
     if (strcasecmp(unit, "ns") == 0    // nanoseconds
@@ -1260,7 +1276,8 @@ static M_INLINE bool is_Allowed_Time_Unit(const char* unit)
     return allowed;
 }
 
-static M_INLINE bool is_Allowed_Power_Unit(const char* unit)
+M_PARAM_RO(1)
+static M_INLINE bool is_Allowed_Power_Unit(const char* M_NONNULL unit)
 {
     bool allowed = false;
     if (strcasecmp(unit, "w") == 0     // watts
@@ -1273,7 +1290,8 @@ static M_INLINE bool is_Allowed_Power_Unit(const char* unit)
     return allowed;
 }
 
-static M_INLINE bool is_Allowed_Volts_Unit(const char* unit)
+M_PARAM_RO(1)
+static M_INLINE bool is_Allowed_Volts_Unit(const char* M_NONNULL unit)
 {
     bool allowed = false;
     if (strcasecmp(unit, "v") == 0     // volts
@@ -1286,7 +1304,8 @@ static M_INLINE bool is_Allowed_Volts_Unit(const char* unit)
     return allowed;
 }
 
-static M_INLINE bool is_Allowed_Amps_Unit(const char* unit)
+M_PARAM_RO(1)
+static M_INLINE bool is_Allowed_Amps_Unit(const char* M_NONNULL unit)
 {
     bool allowed = false;
     if (strcasecmp(unit, "a") == 0     // amps
@@ -1299,7 +1318,8 @@ static M_INLINE bool is_Allowed_Amps_Unit(const char* unit)
     return allowed;
 }
 
-static M_INLINE bool is_Allowed_Temperature_Unit(const char* unit)
+M_PARAM_RO(1)
+static M_INLINE bool is_Allowed_Temperature_Unit(const char* M_NONNULL unit)
 {
     bool allowed = false;
     if (strcasecmp(unit, "c") == 0    // celsius
@@ -1318,7 +1338,8 @@ static M_INLINE bool is_Allowed_Temperature_Unit(const char* unit)
 // so this matched to KB This allows for the utilities calling
 // this to multiply the output integer into a value that makes
 // sense
-static bool is_Allowed_Unit_For_Get_And_Validate_Input(const char* unit, eAllowedUnitInput unittype)
+M_PARAM_RO(1)
+static bool is_Allowed_Unit_For_Get_And_Validate_Input(const char* M_NULLABLE unit, eAllowedUnitInput unittype)
 {
     bool allowed = false;
     if (unit != M_NULLPTR)
@@ -1374,7 +1395,8 @@ typedef enum integerInputStrTypeEnum
 
 typedef eintegerInputStrType eintergetInputStrType; // Misspelled
 
-static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str, eAllowedUnitInput unittype)
+M_PARAM_RO(1)
+static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* M_NONNULL str, eAllowedUnitInput unittype)
 {
     eintergetInputStrType type = INT_INPUT_DECIMAL;
 
@@ -1443,10 +1465,11 @@ static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str, eAllow
     return type;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToConvert,
-                                                    char**              unit,
-                                                    eAllowedUnitInput   unittype,
-                                                    unsigned long long* outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_ULL(const char* M_NONNULL         strToConvert,
+                                                          char* M_NULLABLE* M_NULLABLE  unit,
+                                                          eAllowedUnitInput             unittype,
+                                                          unsigned long long* M_NONNULL outputInteger)
 {
     bool result = false;
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
@@ -1473,10 +1496,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToCon
     return result;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConvert,
-                                                   char**            unit,
-                                                   eAllowedUnitInput unittype,
-                                                   unsigned long*    outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_UL(const char* M_NONNULL        strToConvert,
+                                                         char* M_NULLABLE* M_NULLABLE unit,
+                                                         eAllowedUnitInput            unittype,
+                                                         unsigned long* M_NONNULL     outputInteger)
 {
     bool result = false;
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
@@ -1503,10 +1527,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConver
     return result;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_UI(const char*       strToConvert,
-                                                   char**            unit,
-                                                   eAllowedUnitInput unittype,
-                                                   unsigned int*     outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_UI(const char* M_NONNULL        strToConvert,
+                                                         char* M_NULLABLE* M_NULLABLE unit,
+                                                         eAllowedUnitInput            unittype,
+                                                         unsigned int* M_NONNULL      outputInteger)
 {
     unsigned long temp = 0UL;
     bool          ret  = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
@@ -1528,10 +1553,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UI(const char*       strToConver
     return ret;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_US(const char*       strToConvert,
-                                                   char**            unit,
-                                                   eAllowedUnitInput unittype,
-                                                   unsigned short*   outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_US(const char* M_NONNULL        strToConvert,
+                                                         char* M_NULLABLE* M_NULLABLE unit,
+                                                         eAllowedUnitInput            unittype,
+                                                         unsigned short* M_NONNULL    outputInteger)
 {
     unsigned long temp = 0UL;
     bool          ret  = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
@@ -1553,10 +1579,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_US(const char*       strToConver
     return ret;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_UC(const char*       strToConvert,
-                                                   char**            unit,
-                                                   eAllowedUnitInput unittype,
-                                                   unsigned char*    outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_UC(const char* M_NONNULL        strToConvert,
+                                                         char* M_NULLABLE* M_NULLABLE unit,
+                                                         eAllowedUnitInput            unittype,
+                                                         unsigned char* M_NONNULL     outputInteger)
 {
     unsigned long temp = 0UL;
     bool          ret  = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
@@ -1578,10 +1605,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UC(const char*       strToConver
     return ret;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char*       strToConvert,
-                                                   char**            unit,
-                                                   eAllowedUnitInput unittype,
-                                                   long long*        outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_LL(const char* M_NONNULL        strToConvert,
+                                                         char* M_NULLABLE* M_NULLABLE unit,
+                                                         eAllowedUnitInput            unittype,
+                                                         long long* M_NONNULL         outputInteger)
 {
     bool result = false;
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
@@ -1608,10 +1636,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char*       strToConver
     return result;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert,
-                                                  char**            unit,
-                                                  eAllowedUnitInput unittype,
-                                                  long*             outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_L(const char* M_NONNULL        strToConvert,
+                                                        char* M_NULLABLE* M_NULLABLE unit,
+                                                        eAllowedUnitInput            unittype,
+                                                        long* M_NONNULL              outputInteger)
 {
     bool result = false;
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
@@ -1638,10 +1667,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert
     return result;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_I(const char*       strToConvert,
-                                                  char**            unit,
-                                                  eAllowedUnitInput unittype,
-                                                  int*              outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_I(const char* M_NONNULL        strToConvert,
+                                                        char* M_NULLABLE* M_NULLABLE unit,
+                                                        eAllowedUnitInput            unittype,
+                                                        int* M_NONNULL               outputInteger)
 {
     long temp = 0L;
     bool ret  = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
@@ -1669,10 +1699,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_I(const char*       strToConvert
     return ret;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_S(const char*       strToConvert,
-                                                  char**            unit,
-                                                  eAllowedUnitInput unittype,
-                                                  short*            outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_S(const char* M_NONNULL        strToConvert,
+                                                        char* M_NULLABLE* M_NULLABLE unit,
+                                                        eAllowedUnitInput            unittype,
+                                                        short* M_NONNULL             outputInteger)
 {
     long temp = 0L;
     bool ret  = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
@@ -1700,10 +1731,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_S(const char*       strToConvert
     return ret;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_C(const char*       strToConvert,
-                                                  char**            unit,
-                                                  eAllowedUnitInput unittype,
-                                                  char*             outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_C(const char* M_NONNULL        strToConvert,
+                                                        char* M_NULLABLE* M_NULLABLE unit,
+                                                        eAllowedUnitInput            unittype,
+                                                        char* M_NONNULL              outputInteger)
 {
     long temp = 0L;
     bool ret  = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
@@ -1731,10 +1763,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_C(const char*       strToConvert
     return ret;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Uint64(const char*       strToConvert,
-                                                       char**            unit,
-                                                       eAllowedUnitInput unittype,
-                                                       uint64_t*         outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Uint64(const char* M_NONNULL        strToConvert,
+                                                             char* M_NULLABLE* M_NULLABLE unit,
+                                                             eAllowedUnitInput            unittype,
+                                                             uint64_t* M_NONNULL          outputInteger)
 {
 #if defined(USING_C11) && defined(get_Valid_Integer_Input)
     // let the generic selection macro do this
@@ -1770,10 +1803,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint64(const char*       strToCo
 #endif
 }
 
-M_NODISCARD bool get_And_Validate_Float_Input(const char*       strToConvert,
-                                              char**            unit,
-                                              eAllowedUnitInput unittype,
-                                              float*            outputFloat)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Float_Input(const char* M_NONNULL        strToConvert,
+                                                    char* M_NULLABLE* M_NULLABLE unit,
+                                                    eAllowedUnitInput            unittype,
+                                                    float* M_NONNULL             outputFloat)
 {
     bool result = false;
     if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
@@ -1792,10 +1826,11 @@ M_NODISCARD bool get_And_Validate_Float_Input(const char*       strToConvert,
     return result;
 }
 
-M_NODISCARD bool get_And_Validate_Double_Input(const char*       strToConvert,
-                                               char**            unit,
-                                               eAllowedUnitInput unittype,
-                                               double*           outputFloat)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Double_Input(const char* M_NONNULL        strToConvert,
+                                                     char* M_NULLABLE* M_NULLABLE unit,
+                                                     eAllowedUnitInput            unittype,
+                                                     double* M_NONNULL            outputFloat)
 {
     bool result = false;
     if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
@@ -1814,10 +1849,11 @@ M_NODISCARD bool get_And_Validate_Double_Input(const char*       strToConvert,
     return result;
 }
 
-M_NODISCARD bool get_And_Validate_LDouble_Input(const char*       strToConvert,
-                                                char**            unit,
-                                                eAllowedUnitInput unittype,
-                                                long double*      outputFloat)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_LDouble_Input(const char* M_NONNULL        strToConvert,
+                                                      char* M_NULLABLE* M_NULLABLE unit,
+                                                      eAllowedUnitInput            unittype,
+                                                      long double* M_NONNULL       outputFloat)
 {
     bool result = false;
     if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
@@ -1838,16 +1874,21 @@ M_NODISCARD bool get_And_Validate_LDouble_Input(const char*       strToConvert,
 
 // NOTE: This function is deprecated as you should use the one that matches your
 // integer type instead for best error handling.
-M_DEPRECATED bool get_And_Validate_Integer_Input(const char* strToConvert, uint64_t* outputInteger)
+M_DEPRECATED_REASON("use the bit width specific versions instead!")
+M_PARAM_RO(1)
+M_NULL_TERM_STRING(1)
+M_PARAM_RW(2)
+M_NODISCARD bool get_And_Validate_Integer_Input(const char* M_NONNULL strToConvert, uint64_t* M_NONNULL outputInteger)
 {
     return get_And_Validate_Integer_Input_Uint64(strToConvert, M_NULLPTR,
                                                  M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE), outputInteger);
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Uint32(const char*       strToConvert,
-                                                       char**            unit,
-                                                       eAllowedUnitInput unittype,
-                                                       uint32_t*         outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Uint32(const char* M_NONNULL        strToConvert,
+                                                             char* M_NULLABLE* M_NULLABLE unit,
+                                                             eAllowedUnitInput            unittype,
+                                                             uint32_t* M_NONNULL          outputInteger)
 {
 #if defined(USING_C11) && defined(get_Valid_Integer_Input)
     // let the generic selection macro do this
@@ -1869,10 +1910,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint32(const char*       strToCo
 #endif
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Uint16(const char*       strToConvert,
-                                                       char**            unit,
-                                                       eAllowedUnitInput unittype,
-                                                       uint16_t*         outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Uint16(const char* M_NONNULL        strToConvert,
+                                                             char* M_NULLABLE* M_NULLABLE unit,
+                                                             eAllowedUnitInput            unittype,
+                                                             uint16_t* M_NONNULL          outputInteger)
 {
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
@@ -1897,10 +1939,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint16(const char*       strToCo
     }
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Uint8(const char*       strToConvert,
-                                                      char**            unit,
-                                                      eAllowedUnitInput unittype,
-                                                      uint8_t*          outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Uint8(const char* M_NONNULL        strToConvert,
+                                                            char* M_NULLABLE* M_NULLABLE unit,
+                                                            eAllowedUnitInput            unittype,
+                                                            uint8_t* M_NONNULL           outputInteger)
 {
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
@@ -1925,10 +1968,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint8(const char*       strToCon
     }
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Int64(const char*       strToConvert,
-                                                      char**            unit,
-                                                      eAllowedUnitInput unittype,
-                                                      int64_t*          outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Int64(const char* M_NONNULL        strToConvert,
+                                                            char* M_NULLABLE* M_NULLABLE unit,
+                                                            eAllowedUnitInput            unittype,
+                                                            int64_t* M_NONNULL           outputInteger)
 {
 #if defined(USING_C11) && defined(get_Valid_Integer_Input)
     // let the generic selection macro do this
@@ -1982,10 +2026,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int64(const char*       strToCon
 #endif
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Int32(const char*       strToConvert,
-                                                      char**            unit,
-                                                      eAllowedUnitInput unittype,
-                                                      int32_t*          outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Int32(const char* M_NONNULL        strToConvert,
+                                                            char* M_NULLABLE* M_NULLABLE unit,
+                                                            eAllowedUnitInput            unittype,
+                                                            int32_t* M_NONNULL           outputInteger)
 {
 #if defined(USING_C11) && defined(get_Valid_Integer_Input)
     // let the generic selection macro do this
@@ -2016,10 +2061,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int32(const char*       strToCon
 #endif
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Int16(const char*       strToConvert,
-                                                      char**            unit,
-                                                      eAllowedUnitInput unittype,
-                                                      int16_t*          outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Int16(const char* M_NONNULL        strToConvert,
+                                                            char* M_NULLABLE* M_NULLABLE unit,
+                                                            eAllowedUnitInput            unittype,
+                                                            int16_t* M_NONNULL           outputInteger)
 {
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
@@ -2043,10 +2089,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int16(const char*       strToCon
     }
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Int8(const char*       strToConvert,
-                                                     char**            unit,
-                                                     eAllowedUnitInput unittype,
-                                                     int8_t*           outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Int8(const char* M_NONNULL        strToConvert,
+                                                           char* M_NULLABLE* M_NULLABLE unit,
+                                                           eAllowedUnitInput            unittype,
+                                                           int8_t* M_NONNULL            outputInteger)
 {
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
@@ -2074,7 +2121,13 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int8(const char*       strToConv
 // getdelim and getline are not available, so define them ourselves for our own
 // use
 
-ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream)
+M_PARAM_RW(1)
+M_PARAM_RW(2)
+M_PARAM_RO(4)
+ssize_t getdelim(char* M_NONNULL* M_RESTRICT M_NULLABLE lineptr,
+                 size_t* M_RESTRICT M_NONNULL           n,
+                 int                                    delimiter,
+                 FILE* M_NONNULL                        stream)
 {
     char* currentptr = M_NULLPTR;
     char* endptr     = M_NULLPTR;
@@ -2159,7 +2212,9 @@ ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter,
     } while (1);
 }
 
-ssize_t getline(char** lineptr, size_t* n, FILE* stream)
+M_PARAM_RW(1)
+M_PARAM_RW(2)
+M_PARAM_RO(3) ssize_t getline(char* M_NONNULL* M_NULLABLE lineptr, size_t* M_NONNULL n, FILE* M_NONNULL stream)
 {
     return getdelim(lineptr, n, '\n', stream);
 }
@@ -2169,7 +2224,9 @@ ssize_t getline(char** lineptr, size_t* n, FILE* stream)
 #if !defined(__STDC_ALLOC_LIB__) && !defined(_GNU_SOURCE) && !IS_FREEBSD_VERSION(2, 2, 0) &&                           \
     !(defined(__OpenBSD__) && defined(OpenBSD2_3)) && !defined(HAVE_VASPRINTF)
 
-M_NODISCARD FUNC_ATTR_PRINTF(2, 3) int asprintf(char** M_RESTRICT strp, const char* M_RESTRICT fmt, ...)
+M_NODISCARD M_PARAM_RW(1) M_PARAM_RO(2) FUNC_ATTR_PRINTF(2, 3) int asprintf(char* M_NONNULL* M_RESTRICT M_NULLABLE strp,
+                                                                            const char* M_RESTRICT M_NONNULL       fmt,
+                                                                            ...)
 {
     // call vasprintf
     va_list args;
@@ -2179,7 +2236,10 @@ M_NODISCARD FUNC_ATTR_PRINTF(2, 3) int asprintf(char** M_RESTRICT strp, const ch
     return result;
 }
 
-M_NODISCARD FUNC_ATTR_PRINTF(2, 0) int vasprintf(char** M_RESTRICT strp, const char* M_RESTRICT fmt, va_list arg)
+M_NODISCARD M_PARAM_RW(1) M_PARAM_RO(2)
+    FUNC_ATTR_PRINTF(2, 0) int vasprintf(char* M_NONNULL* M_RESTRICT M_NULLABLE strp,
+                                         const char* M_RESTRICT M_NONNULL       fmt,
+                                         va_list                                arg)
 {
     va_list copyarg;
 #    if defined(va_copy)
@@ -2224,7 +2284,12 @@ M_NODISCARD FUNC_ATTR_PRINTF(2, 0) int vasprintf(char** M_RESTRICT strp, const c
 #endif // asprintf, vasprintf
 
 #if defined(_MSC_VER) && _MSC_VER <= MSVC_2013 && defined _WIN32
-int snprintf(char* buffer, size_t bufsz, const char* format, ...)
+M_NONNULL_IF_NONZERO_PARAM(1, 2)
+M_NULL_TERM_STRING(3)
+M_PARAM_RW(1)
+M_PARAM_RO(3)
+FUNC_ATTR_PRINTF(3, 4)
+int snprintf(char* M_NULLABLE buffer, size_t bufsz, const char* M_RESTRICT M_NONNULL format, ...)
 {
     int     charCount = -1;
     va_list args;
@@ -2272,7 +2337,12 @@ int snprintf(char* buffer, size_t bufsz, const char* format, ...)
     return charCount;
 }
 
-int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
+M_NONNULL_IF_NONZERO_PARAM(1, 2)
+M_NULL_TERM_STRING(3)
+M_PARAM_RW(1)
+M_PARAM_RO(3)
+FUNC_ATTR_PRINTF(3, 0)
+int vsnprintf(char* M_NULLABLE buffer, size_t bufsz, const char* M_RESTRICT M_NONNULL format, va_list args)
 {
     int     charCount = -1;
     va_list countargs;
@@ -2313,10 +2383,11 @@ int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
             charCount = _vscprintf(format, countargs); // gets the count of the number of args
         }
     }
-    return charcount;
+    return charCount;
 }
 #endif // defined (_MSC_VER) && _MSC_VER <= MSVC_2013 && defined _WIN32
 
+M_PARAM_WO(2)
 M_NODISCARD bool get_eReturnValues_To_String(eReturnValues ret, char string[M_NONNULL_ARRAY RETURN_VALUE_MAX_STR_LEN])
 {
     errno_t error = EINVAL; // start with this as safe_strcpy *should* return success
@@ -2485,7 +2556,13 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
 #define CHARS_PER_BUF_VAL       (3)
 // This creates the output for a SINGLE line with optional printable characters and returns it.
 // The pointer to the buffer and remaining length should be passed into this function!
-static char* create_data_line_output(char* line, const uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
+
+M_PARAM_RO_SIZE(2, 3)
+M_NONNULL_PARAM_LIST(1, 2)
+static char* M_NONNULL create_data_line_output(char                     line[M_NONNULL_ARRAY DATA_LINE_BUFFER_LENGTH],
+                                               const uint8_t* M_NONNULL dataBuffer,
+                                               const uint32_t           bufferLen,
+                                               const bool               showPrint)
 {
     safe_memset(line, DATA_LINE_BUFFER_LENGTH, ' ', DATA_LINE_BUFFER_LENGTH - 1);
     line[DATA_LINE_BUFFER_LENGTH - 1] = '\0';
@@ -2512,7 +2589,13 @@ static char* create_data_line_output(char* line, const uint8_t* dataBuffer, uint
     return line;
 }
 
-static void internal_Print_Data_Buffer(const uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset)
+M_NONNULL_IF_NONZERO_SIZE(1, 2)
+M_PARAM_RO(5)
+static void internal_Print_Data_Buffer(const uint8_t* M_NONNULL dataBuffer,
+                                       const uint32_t           bufferLen,
+                                       const bool               showPrint,
+                                       const bool               showOffset,
+                                       FILE* M_NONNULL    outputStream)
 {
     uint32_t    printIter    = UINT32_C(0);
     uint32_t    offset       = UINT32_C(0);
@@ -2548,7 +2631,7 @@ static void internal_Print_Data_Buffer(const uint8_t* dataBuffer, uint32_t buffe
         }
         // we print out 2 (0x) + printf formatting width + 2 (spaces) then the
         // offsets
-        int fputsret = fputs(spacePad, stdout);
+        int fputsret = fputs(spacePad, outputStream);
         if (fputsret == EOF)
         {
             perror("Error writing space padding to screen for internal_Print_Data_Buffer");
@@ -2558,52 +2641,52 @@ static void internal_Print_Data_Buffer(const uint8_t* dataBuffer, uint32_t buffe
         case 0:
             break;
         case 1:
-            fputsret = fputs("0", stdout);
+            fputsret = fputs("0", outputStream);
             break;
         case 2:
-            fputsret = fputs("0  1", stdout);
+            fputsret = fputs("0  1", outputStream);
             break;
         case 3:
-            fputsret = fputs("0  1  2", stdout);
+            fputsret = fputs("0  1  2", outputStream);
             break;
         case 4:
-            fputsret = fputs("0  1  2  3", stdout);
+            fputsret = fputs("0  1  2  3", outputStream);
             break;
         case 5:
-            fputsret = fputs("0  1  2  3  4", stdout);
+            fputsret = fputs("0  1  2  3  4", outputStream);
             break;
         case 6:
-            fputsret = fputs("0  1  2  3  4  5", stdout);
+            fputsret = fputs("0  1  2  3  4  5", outputStream);
             break;
         case 7:
-            fputsret = fputs("0  1  2  3  4  5  6", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6", outputStream);
             break;
         case 8:
-            fputsret = fputs("0  1  2  3  4  5  6  7", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7", outputStream);
             break;
         case 9:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8", outputStream);
             break;
         case 0xA:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8  9", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9", outputStream);
             break;
         case 0xB:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A", outputStream);
             break;
         case 0xC:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B", outputStream);
             break;
         case 0xD:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C", outputStream);
             break;
         case 0xE:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D", outputStream);
             break;
         case 0xF:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D  E", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D  E", outputStream);
             break;
         default:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F", outputStream);
             break;
         }
         if (fputsret == EOF)
@@ -2632,7 +2715,7 @@ static void internal_Print_Data_Buffer(const uint8_t* dataBuffer, uint32_t buffe
         }
         else
         {
-            if (fputs("\n  ", stdout) == EOF)
+            if (fputs("\n  ", outputStream) == EOF)
             {
                 perror("Error writing newline and space padding in internal_Print_Data_Buffer");
             }
@@ -2641,32 +2724,49 @@ static void internal_Print_Data_Buffer(const uint8_t* dataBuffer, uint32_t buffe
         {
             buffLenModifier = buffLen;
         }
-        if (fputs(create_data_line_output(line, &dataBuffer[offset], buffLenModifier, showPrint), stdout) == EOF)
+        if (fputs(create_data_line_output(line, &dataBuffer[offset], buffLenModifier, showPrint), outputStream) == EOF)
         {
             perror("Error writing hex output in internal_Print_Data_Buffer");
         }
     }
 
-    M_STATIC_CAST(void, fputs("\n\n", stdout)); // Not checking for EOF because this is not worth it at this point
+    M_STATIC_CAST(void, fputs("\n\n", outputStream)); // Not checking for EOF because this is not worth it at this point
 }
 
-void print_Data_Buffer(const uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
+M_NONNULL_IF_NONZERO_PARAM(1, 2)
+M_PARAM_RO_SIZE(1, 2)
+void print_Data_Buffer(const uint8_t* M_NULLABLE dataBuffer, uint32_t bufferLen, bool showPrint)
 {
-    internal_Print_Data_Buffer(dataBuffer, bufferLen, showPrint, true);
+    internal_Print_Data_Buffer(dataBuffer, bufferLen, showPrint, true, stdout);
 }
 
-void print_Pipe_Data(const uint8_t* dataBuffer, uint32_t bufferLen)
+M_NONNULL_IF_NONZERO_PARAM(1, 2)
+M_PARAM_RO_SIZE(1, 2) void print_Pipe_Data(const uint8_t* M_NULLABLE dataBuffer, uint32_t bufferLen)
 {
-    internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false);
+    internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false, stdout);
 }
 
-errno_t safe_fopen_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
-                        const char* M_RESTRICT       filename,
-                        const char* M_RESTRICT       mode,
-                        const char*                  file,
-                        const char*                  function,
-                        int                          line,
-                        const char*                  expression)
+M_NONNULL_IF_NONZERO_PARAM(2, 3)
+M_PARAM_RO_SIZE(2,3)
+M_PARAM_RO(1)
+void write_Data_Buffer(FILE* M_NONNULL outputStream,const uint8_t* M_NULLABLE dataBuffer, uint32_t bufferLen, bool showPrint)
+{
+    internal_Print_Data_Buffer(dataBuffer, bufferLen, showPrint, true, outputStream);
+}
+
+
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_PARAM_RO(3)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(2)
+errno_t safe_fopen_impl(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE streamptr,
+                        const char* M_RESTRICT M_NONNULL                  filename,
+                        const char* M_RESTRICT M_NONNULL                  mode,
+                        const char* M_NULLABLE                            file,
+                        const char* M_NULLABLE                            function,
+                        int                                               line,
+                        const char* M_NULLABLE                            expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -2717,14 +2817,20 @@ errno_t safe_fopen_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
     return error;
 }
 
-errno_t safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
-                          const char* M_RESTRICT       filename,
-                          const char* M_RESTRICT       mode,
-                          FILE* M_RESTRICT             stream,
-                          const char*                  file,
-                          const char*                  function,
-                          int                          line,
-                          const char*                  expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_PARAM_RO(3)
+M_PARAM_RW(4)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(2)
+errno_t safe_freopen_impl(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE newstreamptr,
+                          const char* M_RESTRICT M_NONNULL                  filename,
+                          const char* M_RESTRICT M_NONNULL                  mode,
+                          FILE* M_RESTRICT M_NONNULL                        stream,
+                          const char* M_NULLABLE                            file,
+                          const char* M_NULLABLE                            function,
+                          int                                               line,
+                          const char* M_NULLABLE                            expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -2779,12 +2885,13 @@ errno_t safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
 //       It is commented out as it makes a LOT more sense to use safe_tmpfile call instead and because
 //       calling tmpnam generates warnings about being insecure to use.-TJE
 #if defined(WANT_SAFE_TMPNAM)
-errno_t safe_tmpnam_impl(char*       filename_s,
-                         rsize_t     maxsize,
-                         const char* file,
-                         const char* function,
-                         int         line,
-                         const char* expression)
+M_PARAM_RW_SIZE(1, 2)
+errno_t safe_tmpnam_impl(char* M_NONNULL        filename_s,
+                         rsize_t                maxsize,
+                         const char* M_NULLABLE file,
+                         const char* M_NULLABLE function,
+                         int                    line,
+                         const char* M_NULLABLE expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -2854,11 +2961,12 @@ errno_t safe_tmpnam_impl(char*       filename_s,
 }
 #endif // WANT_SAFE_TMPNAM
 
-errno_t safe_tmpfile_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
-                          const char*                  file,
-                          const char*                  function,
-                          int                          line,
-                          const char*                  expression)
+M_PARAM_RW(1)
+errno_t safe_tmpfile_impl(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE streamptr,
+                          const char* M_NULLABLE                            file,
+                          const char* M_NULLABLE                            function,
+                          int                                               line,
+                          const char* M_NULLABLE                            expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -2893,7 +3001,13 @@ errno_t safe_tmpfile_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
     return error;
 }
 
-char* safe_gets_impl(char* str, rsize_t n, const char* file, const char* function, int line, const char* expression)
+M_PARAM_RW_SIZE(1, 2)
+char* M_NULLABLE safe_gets_impl(char* M_NONNULL        str,
+                                rsize_t                n,
+                                const char* M_NULLABLE file,
+                                const char* M_NULLABLE function,
+                                int                    line,
+                                const char* M_NULLABLE expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -2999,14 +3113,17 @@ char* safe_gets_impl(char* str, rsize_t n, const char* file, const char* functio
     }
 }
 
-errno_t safe_strtol_impl(long*                  value,
-                         const char* M_RESTRICT str,
-                         char** M_RESTRICT      endp,
-                         int                    base,
-                         const char*            file,
-                         const char*            function,
-                         int                    line,
-                         const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+errno_t safe_strtol_impl(long* M_NONNULL                         value,
+                         const char* M_RESTRICT M_NONNULL        str,
+                         char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                         int                                     base,
+                         const char* M_NULLABLE                  file,
+                         const char* M_NULLABLE                  function,
+                         int                                     line,
+                         const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3055,14 +3172,17 @@ errno_t safe_strtol_impl(long*                  value,
     return error;
 }
 
-errno_t safe_strtoll_impl(long long*             value,
-                          const char* M_RESTRICT str,
-                          char** M_RESTRICT      endp,
-                          int                    base,
-                          const char*            file,
-                          const char*            function,
-                          int                    line,
-                          const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+errno_t safe_strtoll_impl(long long* M_NONNULL                    value,
+                          const char* M_RESTRICT M_NONNULL        str,
+                          char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                          int                                     base,
+                          const char* M_NULLABLE                  file,
+                          const char* M_NULLABLE                  function,
+                          int                                     line,
+                          const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3111,14 +3231,17 @@ errno_t safe_strtoll_impl(long long*             value,
     return error;
 }
 
-errno_t safe_strtoul_impl(unsigned long*         value,
-                          const char* M_RESTRICT str,
-                          char** M_RESTRICT      endp,
-                          int                    base,
-                          const char*            file,
-                          const char*            function,
-                          int                    line,
-                          const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+errno_t safe_strtoul_impl(unsigned long* M_NONNULL                value,
+                          const char* M_RESTRICT M_NONNULL        str,
+                          char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                          int                                     base,
+                          const char* M_NULLABLE                  file,
+                          const char* M_NULLABLE                  function,
+                          int                                     line,
+                          const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3166,14 +3289,17 @@ errno_t safe_strtoul_impl(unsigned long*         value,
     return error;
 }
 
-errno_t safe_strtoull_impl(unsigned long long*    value,
-                           const char* M_RESTRICT str,
-                           char** M_RESTRICT      endp,
-                           int                    base,
-                           const char*            file,
-                           const char*            function,
-                           int                    line,
-                           const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+errno_t safe_strtoull_impl(unsigned long long* M_NONNULL           value,
+                           const char* M_RESTRICT M_NONNULL        str,
+                           char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                           int                                     base,
+                           const char* M_NULLABLE                  file,
+                           const char* M_NULLABLE                  function,
+                           int                                     line,
+                           const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3221,14 +3347,17 @@ errno_t safe_strtoull_impl(unsigned long long*    value,
     return error;
 }
 
-errno_t safe_strtoimax_impl(intmax_t*              value,
-                            const char* M_RESTRICT str,
-                            char** M_RESTRICT      endp,
-                            int                    base,
-                            const char*            file,
-                            const char*            function,
-                            int                    line,
-                            const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+errno_t safe_strtoimax_impl(intmax_t* M_NONNULL                     value,
+                            const char* M_RESTRICT M_NONNULL        str,
+                            char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                            int                                     base,
+                            const char* M_NULLABLE                  file,
+                            const char* M_NULLABLE                  function,
+                            int                                     line,
+                            const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3277,14 +3406,17 @@ errno_t safe_strtoimax_impl(intmax_t*              value,
     return error;
 }
 
-errno_t safe_strtoumax_impl(uintmax_t*             value,
-                            const char* M_RESTRICT str,
-                            char** M_RESTRICT      endp,
-                            int                    base,
-                            const char*            file,
-                            const char*            function,
-                            int                    line,
-                            const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+errno_t safe_strtoumax_impl(uintmax_t* M_NONNULL                    value,
+                            const char* M_RESTRICT M_NONNULL        str,
+                            char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                            int                                     base,
+                            const char* M_NULLABLE                  file,
+                            const char* M_NULLABLE                  function,
+                            int                                     line,
+                            const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3332,13 +3464,16 @@ errno_t safe_strtoumax_impl(uintmax_t*             value,
     return error;
 }
 
-errno_t safe_strtof_impl(float*                 value,
-                         const char* M_RESTRICT str,
-                         char** M_RESTRICT      endp,
-                         const char*            file,
-                         const char*            function,
-                         int                    line,
-                         const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+errno_t safe_strtof_impl(float* M_NONNULL                        value,
+                         const char* M_RESTRICT M_NONNULL        str,
+                         char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                         const char* M_NULLABLE                  file,
+                         const char* M_NULLABLE                  function,
+                         int                                     line,
+                         const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3385,13 +3520,16 @@ errno_t safe_strtof_impl(float*                 value,
     return error;
 }
 
-errno_t safe_strtod_impl(double*                value,
-                         const char* M_RESTRICT str,
-                         char** M_RESTRICT      endp,
-                         const char*            file,
-                         const char*            function,
-                         int                    line,
-                         const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+errno_t safe_strtod_impl(double* M_NONNULL                       value,
+                         const char* M_RESTRICT M_NONNULL        str,
+                         char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                         const char* M_NULLABLE                  file,
+                         const char* M_NULLABLE                  function,
+                         int                                     line,
+                         const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3438,13 +3576,16 @@ errno_t safe_strtod_impl(double*                value,
     return error;
 }
 
-errno_t safe_strtold_impl(long double*           value,
-                          const char* M_RESTRICT str,
-                          char** M_RESTRICT      endp,
-                          const char*            file,
-                          const char*            function,
-                          int                    line,
-                          const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+errno_t safe_strtold_impl(long double* M_NONNULL                  value,
+                          const char* M_RESTRICT M_NONNULL        str,
+                          char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                          const char* M_NULLABLE                  file,
+                          const char* M_NULLABLE                  function,
+                          int                                     line,
+                          const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3491,12 +3632,15 @@ errno_t safe_strtold_impl(long double*           value,
     return error;
 }
 
-errno_t safe_atoi_impl(int*                   value,
-                       const char* M_RESTRICT str,
-                       const char*            file,
-                       const char*            function,
-                       int                    line,
-                       const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+errno_t safe_atoi_impl(int* M_NONNULL                   value,
+                       const char* M_RESTRICT M_NONNULL str,
+                       const char* M_NULLABLE           file,
+                       const char* M_NULLABLE           function,
+                       int                              line,
+                       const char* M_NULLABLE           expression)
 {
     if (value == M_NULLPTR)
     {
@@ -3527,12 +3671,15 @@ errno_t safe_atoi_impl(int*                   value,
     return error;
 }
 
-errno_t safe_atol_impl(long*                  value,
-                       const char* M_RESTRICT str,
-                       const char*            file,
-                       const char*            function,
-                       int                    line,
-                       const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+errno_t safe_atol_impl(long* M_NONNULL                  value,
+                       const char* M_RESTRICT M_NONNULL str,
+                       const char* M_NULLABLE           file,
+                       const char* M_NULLABLE           function,
+                       int                              line,
+                       const char* M_NULLABLE           expression)
 {
     char*   endp  = M_NULLPTR;
     errno_t error = safe_strtol_impl(value, str, &endp, BASE_10_DECIMAL, file, function, line, expression);
@@ -3545,12 +3692,15 @@ errno_t safe_atol_impl(long*                  value,
     return error;
 }
 
-errno_t safe_atoll_impl(long long*             value,
-                        const char* M_RESTRICT str,
-                        const char*            file,
-                        const char*            function,
-                        int                    line,
-                        const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+errno_t safe_atoll_impl(long long* M_NONNULL             value,
+                        const char* M_RESTRICT M_NONNULL str,
+                        const char* M_NULLABLE           file,
+                        const char* M_NULLABLE           function,
+                        int                              line,
+                        const char* M_NULLABLE           expression)
 {
     char*   endp  = M_NULLPTR;
     errno_t error = safe_strtoll_impl(value, str, &endp, BASE_10_DECIMAL, file, function, line, expression);
@@ -3563,12 +3713,15 @@ errno_t safe_atoll_impl(long long*             value,
     return error;
 }
 
-errno_t safe_atof_impl(double*                value,
-                       const char* M_RESTRICT str,
-                       const char*            file,
-                       const char*            function,
-                       int                    line,
-                       const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+errno_t safe_atof_impl(double* M_NONNULL                value,
+                       const char* M_RESTRICT M_NONNULL str,
+                       const char* M_NULLABLE           file,
+                       const char* M_NULLABLE           function,
+                       int                              line,
+                       const char* M_NULLABLE           expression)
 {
     char*   endp  = M_NULLPTR;
     errno_t error = safe_strtod_impl(value, str, &endp, file, function, line, expression);
@@ -3581,14 +3734,19 @@ errno_t safe_atof_impl(double*                value,
     return error;
 }
 
-int impl_vsnprintf_err_handle(const char* file,
-                              const char* function,
-                              int         line,
-                              const char* expression,
-                              char*       buf,
-                              size_t      bufsize,
-                              const char* format,
-                              va_list     args)
+M_NONNULL_IF_NONZERO_PARAM(5, 6)
+M_NULL_TERM_STRING(7)
+M_PARAM_WO_SIZE(5, 6)
+M_PARAM_RO(7)
+FUNC_ATTR_PRINTF(7, 0)
+int impl_vsnprintf_err_handle(const char* M_NULLABLE file,
+                              const char* M_NULLABLE function,
+                              int                    line,
+                              const char* M_NULLABLE expression,
+                              char* M_NULLABLE       buf,
+                              size_t                 bufsize,
+                              const char* M_NONNULL  format,
+                              va_list                args)
 {
     int               n = 0;
     constraintEnvInfo envInfo;
@@ -3645,13 +3803,18 @@ int impl_vsnprintf_err_handle(const char* file,
     return n;
 }
 
-int impl_snprintf_err_handle(const char* file,
-                             const char* function,
-                             int         line,
-                             const char* expression,
-                             char*       buf,
-                             size_t      bufsize,
-                             const char* format,
+M_NONNULL_IF_NONZERO_PARAM(5, 6)
+M_NULL_TERM_STRING(7)
+M_PARAM_WO_SIZE(5, 6)
+M_PARAM_RO(7)
+FUNC_ATTR_PRINTF(7, 8)
+int impl_snprintf_err_handle(const char* M_NULLABLE file,
+                             const char* M_NULLABLE function,
+                             int                    line,
+                             const char* M_NULLABLE expression,
+                             char* M_NULLABLE       buf,
+                             size_t                 bufsize,
+                             const char* M_NONNULL  format,
                              ...)
 {
     int               n = 0;
@@ -3709,7 +3872,8 @@ int impl_snprintf_err_handle(const char* file,
     return n;
 }
 
-errno_t checked_fputs(const char* nofmt, FILE* out)
+M_NULL_TERM_STRING(1)
+M_PARAM_RO(1) M_PARAM_RW(2) errno_t checked_fputs(const char* M_NONNULL nofmt, FILE* M_NONNULL out)
 {
     if (nofmt == M_NULLPTR || out == M_NULLPTR)
     {

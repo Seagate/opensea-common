@@ -24,7 +24,8 @@
 //! \param[in] msb most significant bit value
 //! \param[in] lsb least  significant bit value
 //! \return returns range between msb and lsb
-static M_INLINE size_t get_Bytes_Abs_Range(size_t msb, size_t lsb)
+M_CONST_FUNC
+static M_INLINE size_t get_Bytes_Abs_Range(size_t msb, size_t lsb) M_UNSEQUENCED
 {
     if (msb > lsb)
     {
@@ -36,7 +37,11 @@ static M_INLINE size_t get_Bytes_Abs_Range(size_t msb, size_t lsb)
     }
 }
 
-bool get_Bytes_To_64(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t* out)
+M_NODISCARD bool get_Bytes_To_64(const uint8_t* M_NULLABLE dataPtrBeginning,
+                                 size_t                    fullDataLen,
+                                 size_t                    msb,
+                                 size_t                    lsb,
+                                 uint64_t* M_NONNULL       out)
 {
     if (dataPtrBeginning == M_NULLPTR || out == M_NULLPTR || msb > fullDataLen || lsb > fullDataLen ||
         get_Bytes_Abs_Range(msb, lsb) > sizeof(uint64_t))
@@ -70,7 +75,11 @@ bool get_Bytes_To_64(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t
     return true;
 }
 
-bool get_Bytes_To_32(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint32_t* out)
+M_NODISCARD bool get_Bytes_To_32(const uint8_t* M_NULLABLE dataPtrBeginning,
+                                 size_t                    fullDataLen,
+                                 size_t                    msb,
+                                 size_t                    lsb,
+                                 uint32_t* M_NONNULL       out)
 {
     if (out && get_Bytes_Abs_Range(msb, lsb) <= sizeof(uint32_t))
     {
@@ -88,7 +97,11 @@ bool get_Bytes_To_32(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t
     }
 }
 
-bool get_Bytes_To_16(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint16_t* out)
+M_NODISCARD bool get_Bytes_To_16(const uint8_t* M_NULLABLE dataPtrBeginning,
+                                 size_t                    fullDataLen,
+                                 size_t                    msb,
+                                 size_t                    lsb,
+                                 uint16_t* M_NONNULL       out)
 {
     if (out && get_Bytes_Abs_Range(msb, lsb) <= sizeof(uint16_t))
     {

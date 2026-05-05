@@ -423,7 +423,7 @@ size_t ulonglong_to_sizet(unsigned long long val)
 #endif
 }
 
-bool is_size_t_max(size_t val)
+M_CONST_FUNC bool is_size_t_max(size_t val) M_UNSEQUENCED
 {
     if (val == SIZE_MAX)
     {
@@ -435,7 +435,7 @@ bool is_size_t_max(size_t val)
     }
 }
 
-void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* decimalValue)
+M_PARAM_WO(2) void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* M_NONNULL decimalValue)
 {
     int32_t exponent = M_STATIC_CAST(int32_t, get_8bit_range_uint32(floatValue, 30, 23)) - INT32_C(127);
     double  sign =
@@ -453,14 +453,26 @@ void get_Decimal_From_4_byte_Float(uint32_t floatValue, double* decimalValue)
     *decimalValue = sign * pow(2.0, exponent) * mantisa;
 }
 
-double convert_128bit_to_double(const uint8_t* pData)
+//! \def MAX_128_TO_DOUBLE_OFFSET
+//! \brief The maximum offset for the array when converting 128 bit to double. Since the array is 16 bytes, the max
+//! offset is 15.
+#define MAX_128_TO_DOUBLE_OFFSET (ARRAY_128_TO_DOUBLE_SIZE - 1)
+
+//! \def INT128_TO_DOUBLE_MULTIPLIER
+//! \brief The multiplier used in the conversion of a 128 bit integer to a double.
+//! \details since each byte can represent a value from 0 to 255, the multiplier is 256. This is used in the
+//! convert_128bit_to_double function to calculate the value of each byte in the array when converting to a double.
+#define INT128_TO_DOUBLE_MULTIPLIER (256.0)
+
+M_CONST_FUNC M_PARAM_RO(1) double convert_128bit_to_double(
+    const uint8_t pData[M_NONNULL_ARRAY ARRAY_128_TO_DOUBLE_SIZE]) M_UNSEQUENCED
 {
     double result = 0.0;
     int    i      = 0;
-    for (i = 0; i < 16; i++)
+    for (i = 0; i < ARRAY_128_TO_DOUBLE_SIZE; i++)
     {
-        result *= 256.0;
-        result += pData[15 - i];
+        result *= INT128_TO_DOUBLE_MULTIPLIER;
+        result += pData[MAX_128_TO_DOUBLE_OFFSET - i];
     }
     return result;
 }

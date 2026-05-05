@@ -198,9 +198,21 @@ extern "C"
 //! - \a count or \a size is > RSIZE_MAX
 //!
 //! - \a key or \a ptr or \a compare is a null pointer (unless count is zero)
-#    define safe_bsearch(key, ptr, count, size, compare)                                                               \
-        safe_bsearch_impl(key, ptr, count, size, compare, __FILE__, __func__, __LINE__,                                \
-                          "safe_bsearch(" #key ", " #ptr ", " #count ", " #size ", " #compare ")")
+
+#    if defined(HAVE_C11_GENERIC_SELECTION)
+#        define safe_bsearch(key, ptr, count, size, compare)                                                           \
+            _Generic((ptr),                                                                                            \
+                const void*: M_STATIC_CAST(const void*, safe_bsearch_impl(key, ptr, count, size, compare, __FILE__,    \
+                                                                          __func__, __LINE__,                          \
+                                                                          "safe_bsearch(" #key ", " #ptr ", " #count   \
+                                                                          ", " #size ", " #compare ")")),              \
+                void*: safe_bsearch_impl(key, ptr, count, size, compare, __FILE__, __func__, __LINE__,                 \
+                                         "safe_bsearch(" #key ", " #ptr ", " #count ", " #size ", " #compare ")"))
+#    else
+#        define safe_bsearch(key, ptr, count, size, compare)                                                           \
+            safe_bsearch_impl(key, ptr, count, size, compare, __FILE__, __func__, __LINE__,                            \
+                              "safe_bsearch(" #key ", " #ptr ", " #count ", " #size ", " #compare ")")
+#    endif // C11 generic selection support
 #endif
 
 #if defined(DEV_ENVIRONMENT)
@@ -258,10 +270,23 @@ extern "C"
 //! - \a count or \a size is > RSIZE_MAX
 //!
 //! - \a key or \a ptr or \a compare is a null pointer (unless count is zero)
-#    define safe_bsearch_context(key, ptr, count, size, compare, context)                                              \
-        safe_bsearch_context_impl(key, ptr, count, size, compare, context, __FILE__, __func__, __LINE__,               \
-                                  "safe_bsearch_context(" #key ", " #ptr ", " #count ", " #size ", " #compare          \
-                                  ", " #context ")")
+#    if defined(HAVE_C11_GENERIC_SELECTION)
+#        define safe_bsearch_context(key, ptr, count, size, compare)                                                   \
+            _Generic((ptr),                                                                                            \
+                const void*: M_STATIC_CAST(const void*,                                                                \
+                                           safe_bsearch_context_impl(key, ptr, count, size, compare, __FILE__,         \
+                                                                     __func__, __LINE__,                               \
+                                                                     "safe_bsearch_context(" #key ", " #ptr            \
+                                                                     ", " #count ", " #size ", " #compare ")")),       \
+                void*: safe_bsearch_context_impl(key, ptr, count, size, compare, __FILE__, __func__, __LINE__,         \
+                                                 "safe_bsearch_context(" #key ", " #ptr ", " #count ", " #size         \
+                                                 ", " #compare ")"))
+#    else
+#        define safe_bsearch_context(key, ptr, count, size, compare, context)                                          \
+            safe_bsearch_context_impl(key, ptr, count, size, compare, context, __FILE__, __func__, __LINE__,           \
+                                      "safe_bsearch_context(" #key ", " #ptr ", " #count ", " #size ", " #compare      \
+                                      ", " #context ")")
+#    endif // C11 generic selection support
 #endif
 
 #if defined(DEV_ENVIRONMENT)

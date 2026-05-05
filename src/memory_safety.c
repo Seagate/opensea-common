@@ -35,7 +35,7 @@ RESTORE_WARNING_4255
 #    include <unistd.h>
 #endif
 
-size_t get_System_Pagesize(void)
+M_CONST_FUNC M_NODISCARD size_t get_System_Pagesize(void) M_UNSEQUENCED
 {
 #if defined(UEFI_C_SOURCE)
     return SIZE_T_C(4096); // This is not the processor page size, just the pagesize
@@ -69,7 +69,11 @@ size_t get_System_Pagesize(void)
 //! \param[in] alignment     The required alignment (must be a power of 2)
 //! \param[in] original_ptr  The original pointer from malloc() to store for deallocation
 //! \return The aligned pointer to return to the caller, or NULL if malloc_ptr was NULL
-M_PARAM_WO(1) M_PARAM_RO(3) M_ATTR_UNUSED static M_INLINE void* store_aligned_original_ptr(void* M_NULLABLE malloc_ptr, size_t alignment, const void* M_NONNULL original_ptr)
+M_PARAM_WO(1)
+M_PARAM_RO(3)
+M_ATTR_UNUSED static M_INLINE void* store_aligned_original_ptr(void* M_NULLABLE      malloc_ptr,
+                                                               size_t                alignment,
+                                                               const void* M_NONNULL original_ptr)
 {
     if (malloc_ptr == M_NULLPTR)
     {
@@ -78,16 +82,16 @@ M_PARAM_WO(1) M_PARAM_RO(3) M_ATTR_UNUSED static M_INLINE void* store_aligned_or
 
     // Offset to make room for storing the original pointer metadata
     const size_t requiredExtraBytes = sizeof(size_t);
-    uintptr_t alignedAddr = C_CAST(uintptr_t, malloc_ptr) + requiredExtraBytes;
+    uintptr_t    alignedAddr        = C_CAST(uintptr_t, malloc_ptr) + requiredExtraBytes;
 
     // Calculate alignment offset to reach the next alignment boundary
     size_t alignmentOffset = alignment - (alignedAddr % alignment);
     alignedAddr += alignmentOffset;
 
     // Store the original pointer at the metadata location (just before the aligned pointer)
-    void* metaPtr = C_CAST(void*, alignedAddr - requiredExtraBytes);
+    void*   metaPtr           = C_CAST(void*, alignedAddr - requiredExtraBytes);
     size_t* savedLocationData = C_CAST(size_t*, metaPtr);
-    *savedLocationData = C_CAST(size_t, original_ptr);
+    *savedLocationData        = C_CAST(size_t, original_ptr);
 
     return C_CAST(void*, alignedAddr);
 }
@@ -108,7 +112,7 @@ M_PARAM_RO(1) M_ATTR_UNUSED static M_INLINE void* retrieve_aligned_original_ptr(
     // Find the starting address from the original allocation
     uintptr_t alignedAddr = C_CAST(uintptr_t, aligned_ptr);
     alignedAddr -= sizeof(size_t);
-    void* metaPtr = C_CAST(void*, alignedAddr);
+    void* metaPtr  = C_CAST(void*, alignedAddr);
     void* original = C_CAST(void*, *(C_CAST(size_t*, metaPtr)));
     return original;
 }
@@ -127,35 +131,35 @@ M_PARAM_RO(1) M_ATTR_UNUSED static M_INLINE void* retrieve_aligned_original_ptr(
 // Platform-specific aligned memory allocation strategies
 // These flags define which allocation/deallocation functions are available
 // based on compiler, OS, and feature support.
-// Note: Intel's compiler has _mm_malloc and _mm_free but these are just wrappers the same as our own. No need to keep those
-// right now since we are otherwise detecting and using the proper APIs on the platforms we do support.
+// Note: Intel's compiler has _mm_malloc and _mm_free but these are just wrappers the same as our own. No need to keep
+// those right now since we are otherwise detecting and using the proper APIs on the platforms we do support.
 #if !defined(UEFI_C_SOURCE)
 
-    // C11 standard aligned_alloc + free support
-    #if defined(USING_C11) && !defined(__MINGW32__) && !defined(_MSC_VER) && \
+// C11 standard aligned_alloc + free support
+#    if defined(USING_C11) && !defined(__MINGW32__) && !defined(_MSC_VER) &&                                           \
         (!defined(THIS_IS_GLIBC) || IS_GLIBC_VERSION(2, 16))
-    #    define USE_C11_ALIGNED
-    #endif // C11 aligned_alloc support
+#        define USE_C11_ALIGNED
+#    endif // C11 aligned_alloc support
 
-    // POSIX posix_memalign + free support
-    #if (defined(POSIX_2001) && defined(_POSIX_ADVISORY_INFO)) || defined(VMK_CROSS_COMP)
-    #    define USE_POSIX_ALIGNED
-    #endif // POSIX memalign support
+// POSIX posix_memalign + free support
+#    if (defined(POSIX_2001) && defined(_POSIX_ADVISORY_INFO)) || defined(VMK_CROSS_COMP)
+#        define USE_POSIX_ALIGNED
+#    endif // POSIX memalign support
 
-    // MinGW32 __mingw_aligned_malloc + __mingw_aligned_free support
-    #if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
-    #    define USE_MINGW_ALIGNED
-    #endif // MinGW32 aligned support
+// MinGW32 __mingw_aligned_malloc + __mingw_aligned_free support
+#    if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+#        define USE_MINGW_ALIGNED
+#    endif // MinGW32 aligned support
 
-    // MSVC _aligned_malloc + _aligned_free support (also for MinGW64)
-    #if IS_MSVC_VERSION(MSVC_2005) || defined(__MINGW64_VERSION_MAJOR)
-    #    define USE_MSVC_ALIGNED
-    #endif // MSVC aligned support
+// MSVC _aligned_malloc + _aligned_free support (also for MinGW64)
+#    if IS_MSVC_VERSION(MSVC_2005) || defined(__MINGW64_VERSION_MAJOR)
+#        define USE_MSVC_ALIGNED
+#    endif // MSVC aligned support
 
-    // Linux/Sun memalign + free support
-    #if defined(__linux__) || defined(_sun)
-    #    define USE_MEMALIGN
-    #endif // Linux/Sun memalign support
+// Linux/Sun memalign + free support
+#    if defined(__linux__) || defined(_sun)
+#        define USE_MEMALIGN
+#    endif // Linux/Sun memalign support
 
 #endif // !UEFI_C_SOURCE
 
@@ -206,8 +210,8 @@ M_PARAM_RO(1) M_ATTR_UNUSED static M_INLINE void* retrieve_aligned_original_ptr(
 #    endif
 #endif // MSVC allocation/free pairing
 
-M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_DEALLOC(free_aligned, 1) M_ALLOC_ALIGN(2)
-    M_MALLOC_SIZE(1) void* malloc_aligned(size_t size, size_t alignment)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_DEALLOC(free_aligned, 1) M_ALLOC_ALIGN(2) M_MALLOC_SIZE(1) void* M_NULLABLE
+    malloc_aligned(size_t size, size_t alignment)
 {
 #if defined(USE_C11_ALIGNED)
     // C11 added an aligned alloc function we can use
@@ -243,20 +247,20 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_DEALLOC(free_aligned, 1) M_ALLOC_ALIGN(2)
     void* temp = M_NULLPTR;
     if (size && has_single_bit(alignment))
     {
-        size_t requiredExtraBytes = sizeof(size_t);
-        const size_t totalAllocation = size + alignment + requiredExtraBytes;
-        temp = malloc(totalAllocation);
+        size_t       requiredExtraBytes = sizeof(size_t);
+        const size_t totalAllocation    = size + alignment + requiredExtraBytes;
+        temp                            = malloc(totalAllocation);
         if (temp != M_NULLPTR)
         {
             const void* originalLocation = temp;
-            temp = store_aligned_original_ptr(temp, alignment, originalLocation);
+            temp                         = store_aligned_original_ptr(temp, alignment, originalLocation);
         }
     }
     return temp;
 #endif // Platform-specific aligned allocation
 }
 
-M_PARAM_WO(1) void free_aligned(void* ptr)
+M_PARAM_WO(1) void free_aligned(void* M_NULLABLE ptr)
 {
 #if defined(USE_STD_FREE)
     // Standard free() for C11, POSIX, or Linux/Sun memalign
@@ -271,12 +275,12 @@ M_PARAM_WO(1) void free_aligned(void* ptr)
     // Generic fallback: retrieve original pointer and free it
     // retrieve_aligned_original_ptr handles NULL input safely (returns NULL)
     void* original = retrieve_aligned_original_ptr(ptr);
-    free(original);  // free(NULL) is safe per C standard
+    free(original); // free(NULL) is safe per C standard
 #endif // Platform-specific aligned deallocation
 }
 
-M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(3) M_CALLOC_SIZE(1, 2)
-    M_ALLOC_DEALLOC(free_aligned, 1) void* calloc_aligned(size_t num, size_t size, size_t alignment)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(3) M_CALLOC_SIZE(1, 2) M_ALLOC_DEALLOC(free_aligned, 1) void* M_NULLABLE
+    calloc_aligned(size_t num, size_t size, size_t alignment)
 {
     // call malloc aligned and memset
     void*  zeroedMem = M_NULLPTR;
@@ -291,11 +295,12 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(3) M_CALLOC_SIZE(1, 2)
     }
     return zeroedMem;
 }
+
 M_NODISCARD
 M_PARAM_RW_SIZE(1, 2)
 M_ALLOC_ALIGN(4)
 M_MALLOC_SIZE(3)
-void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t alignment)
+void* M_NULLABLE realloc_aligned(void* M_NULLABLE alignedPtr, size_t originalSize, size_t size, size_t alignment)
 {
     void* temp = M_NULLPTR;
     if (size == SIZE_T_C(0))
@@ -320,7 +325,7 @@ void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t
     return temp;
 }
 
-M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* malloc_page_aligned(size_t size)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* M_NULLABLE malloc_page_aligned(size_t size)
 {
     size_t pageSize = get_System_Pagesize();
     if (pageSize > SIZE_T_C(0))
@@ -333,7 +338,7 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* malloc_page_aligned(size_t
     }
 }
 
-M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* calloc_page_aligned(size_t num, size_t size)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* M_NULLABLE calloc_page_aligned(size_t num, size_t size)
 {
     size_t pageSize = get_System_Pagesize();
     if (pageSize > SIZE_T_C(0))
@@ -345,9 +350,11 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* calloc_page_aligned(siz
         return M_NULLPTR;
     }
 }
+
 M_NODISCARD
 M_PARAM_RW_SIZE(1, 2)
-M_MALLOC_SIZE(3) void* realloc_page_aligned(void* alignedPtr, size_t originalSize, size_t size)
+M_MALLOC_SIZE(3)
+void* M_NULLABLE realloc_page_aligned(void* M_NULLABLE alignedPtr, size_t originalSize, size_t size)
 {
     size_t pageSize = get_System_Pagesize();
     if (pageSize > SIZE_T_C(0))
@@ -360,7 +367,7 @@ M_MALLOC_SIZE(3) void* realloc_page_aligned(void* alignedPtr, size_t originalSiz
     }
 }
 
-M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* ptrData, size_t lengthBytes)
+M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* M_NONNULL ptrData, size_t lengthBytes)
 {
     if (ptrData != M_NULLPTR && lengthBytes > SIZE_T_C(0))
     {
@@ -378,7 +385,8 @@ M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* ptrData, size_t lengthBytes)
     return false;
 }
 
-M_PARAM_WO_SIZE(1, 2) void* explicit_zeroes(void* dest, size_t count)
+M_PARAM_WO_SIZE(1, 2)
+void* M_NULLABLE explicit_zeroes(void* M_NONNULL dest, size_t count)
 {
     if (dest != M_NULLPTR && count > SIZE_T_C(0))
     {
@@ -437,14 +445,21 @@ M_PARAM_WO_SIZE(1, 2) void* explicit_zeroes(void* dest, size_t count)
     }
 }
 
-errno_t safe_memset_impl(void*       dest,
-                         rsize_t     destsz,
-                         int         ch,
-                         rsize_t     count,
-                         const char* file,
-                         const char* function,
-                         int         line,
-                         const char* expression)
+M_PARAM_WO_SIZE(1, 2)
+errno_t safe_memset_impl(void* M_NONNULL        dest,
+                         rsize_t                destsz,
+                         int                    ch,
+                         rsize_t                count,
+                         const char* M_NULLABLE file,
+                         const char* M_NULLABLE function,
+                         int                    line,
+                         const char* M_NULLABLE expression)
+    // clang-format off
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
+// clang-format on
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -561,8 +576,15 @@ errno_t safe_memset_impl(void*       dest,
 
 // malloc in standards leaves malloc'ing size 0 as a undefined behavior.
 // this version will always return a null pointer if the size is zero
-M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(
-    1) void* safe_malloc_impl(size_t size, const char* file, const char* function, int line, const char* expression)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* M_NULLABLE safe_malloc_impl(size_t                 size,
+                                                                                  const char* M_NULLABLE file,
+                                                                                  const char* M_NULLABLE function,
+                                                                                  int                    line,
+                                                                                  const char* M_NULLABLE expression)
+    // clang-format off
+        M_DIAG_ERROR(size == 0, "safe_malloc of size zero is not allowed")
+        M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+// clang-format on
 {
     constraintEnvInfo envInfo;
     if (size == SIZE_T_C(0))
@@ -581,12 +603,18 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(
 // avoiding undefined behavior allocing zero size and avoiding alloc'ing less
 // memory due to an overflow If alloc'ing zero or alloc would overflow size_t
 // from count * size, then return a null pointer
-M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* safe_calloc_impl(size_t      count,
-                                                                          size_t      size,
-                                                                          const char* file,
-                                                                          const char* function,
-                                                                          int         line,
-                                                                          const char* expression)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* M_NULLABLE safe_calloc_impl(size_t                 count,
+                                                                                     size_t                 size,
+                                                                                     const char* M_NULLABLE file,
+                                                                                     const char* M_NULLABLE function,
+                                                                                     int                    line,
+                                                                                     const char* M_NULLABLE expression)
+    // clang-format off
+        M_DIAG_ERROR(size == 0, "safe_calloc with count of zero is not allowed")
+        M_DIAG_ERROR(size == 0, "safe_calloc with size of zero is not allowed")
+        M_DIAG_ERROR(count > (SIZE_MAX / size), "safe_calloc size * count overflows")
+        M_DIAG_WARN((count * size) > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+// clang-format on
 {
     constraintEnvInfo envInfo;
     if (count == SIZE_T_C(0))
@@ -621,7 +649,7 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* safe_calloc_impl(size_t
 
 // if passed a null pointer, behaves as safe_Malloc
 // if size is zero, will perform free and return NULL ptr
-M_NODISCARD M_PARAM_RW(1) M_MALLOC_SIZE(2) void* safe_realloc(void* block, size_t size)
+M_NODISCARD M_PARAM_RW(1) M_MALLOC_SIZE(2) void* M_NULLABLE safe_realloc(void* M_NULLABLE block, size_t size)
 {
     if (block == M_NULLPTR)
     {
@@ -654,7 +682,11 @@ M_NODISCARD M_PARAM_RW(1) M_MALLOC_SIZE(2) void* safe_realloc(void* block, size_
 // if size is zero, will perform free and return NULL ptr
 // if realloc fails, free's original block
 // free's original block if realloc fails
-M_NODISCARD M_PARAM_RW(1) M_MALLOC_SIZE(2) void* safe_reallocf(void** block, size_t size)
+M_NODISCARD M_PARAM_RW(1) M_MALLOC_SIZE(2) void* M_NULLABLE
+    safe_reallocf(void* M_NULLABLE* M_NULLABLE block, size_t size)
+    // clang-format off
+        M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+// clang-format on
 {
     if (block == M_NULLPTR)
     {
@@ -720,12 +752,18 @@ static size_t aligned_Size_Round_Up(size_t size, size_t alignment)
 
 // malloc in standards leaves malloc'ing size 0 as a undefined behavior.
 // this version will always return a null pointer if the size is zero
-M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) M_ALLOC_ALIGN(2) void* safe_malloc_aligned_impl(size_t      size,
-                                                                                                size_t      alignment,
-                                                                                                const char* file,
-                                                                                                const char* function,
-                                                                                                int         line,
-                                                                                                const char* expression)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) M_ALLOC_ALIGN(2) void* M_NULLABLE
+    safe_malloc_aligned_impl(size_t                 size,
+                             size_t                 alignment,
+                             const char* M_NULLABLE file,
+                             const char* M_NULLABLE function,
+                             int                    line,
+                             const char* M_NULLABLE expression)
+    // clang-format off
+        M_DIAG_ERROR(size == 0, "safe_malloc_aligned of size zero is not allowed")
+        M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+        M_DIAG_WARN(alignment == 0 || (alignment & (alignment - 1)) != 0, "alignment should be a non-zero power of two")
+// clang-format on
 {
     constraintEnvInfo envInfo;
     if (size == SIZE_T_C(0))
@@ -747,14 +785,14 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) M_ALLOC_ALIGN(2) void* safe_mall
 // avoiding undefined behavior allocing zero size and avoiding alloc'ing less
 // memory due to an overflow If alloc'ing zero or alloc would overflow size_t
 // from count * size, then return a null pointer
-M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2)
-    M_ALLOC_ALIGN(3) void* safe_calloc_aligned_impl(size_t      count,
-                                                    size_t      size,
-                                                    size_t      alignment,
-                                                    const char* file,
-                                                    const char* function,
-                                                    int         line,
-                                                    const char* expression)
+M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) M_ALLOC_ALIGN(3) void* M_NULLABLE
+    safe_calloc_aligned_impl(size_t                 count,
+                             size_t                 size,
+                             size_t                 alignment,
+                             const char* M_NULLABLE file,
+                             const char* M_NULLABLE function,
+                             int                    line,
+                             const char* M_NULLABLE expression)
 {
     constraintEnvInfo envInfo;
     if (count == SIZE_T_C(0))
@@ -802,7 +840,11 @@ M_NODISCARD
 M_PARAM_RW_SIZE(1, 2)
 M_ALLOC_ALIGN(4)
 M_MALLOC_SIZE(3)
-void* safe_realloc_aligned(void* block, size_t originalSize, size_t size, size_t alignment)
+void* M_NULLABLE safe_realloc_aligned(void* M_NULLABLE block, size_t originalSize, size_t size, size_t alignment)
+    // clang-format off
+    M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+    M_DIAG_ERROR(alignment == 0 || (alignment & (alignment - 1)) != 0, "alignment must be a non-zero power of 2")
+// clang-format on
 {
     if (block == M_NULLPTR)
     {
@@ -841,7 +883,12 @@ M_NODISCARD
 M_PARAM_RW(1)
 M_ALLOC_ALIGN(4)
 M_MALLOC_SIZE(3)
-void* safe_reallocf_aligned(void** block, size_t originalSize, size_t size, size_t alignment)
+void* M_NULLABLE
+safe_reallocf_aligned(void* M_NULLABLE* M_NULLABLE block, size_t originalSize, size_t size, size_t alignment)
+    // clang-format off
+    M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+    M_DIAG_ERROR(alignment == 0 || (alignment & (alignment - 1)) != 0, "alignment must be a non-zero power of 2")
+// clang-format on
 {
     if (block == M_NULLPTR)
     {
@@ -873,7 +920,12 @@ void* safe_reallocf_aligned(void** block, size_t originalSize, size_t size, size
 
 // malloc in standards leaves malloc'ing size 0 as a undefined behavior.
 // this version will always return a null pointer if the size is zero
-M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* safe_malloc_page_aligned(size_t size)
+M_NODISCARD
+M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* M_NULLABLE safe_malloc_page_aligned(size_t size)
+    // clang-format off
+    M_DIAG_ERROR(size == 0, "size must be non-zero")
+    M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+// clang-format on
 {
     return safe_malloc_aligned(size, get_System_Pagesize());
 }
@@ -881,15 +933,22 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_MALLOC_SIZE(1) void* safe_malloc_page_aligned(s
 // avoiding undefined behavior allocing zero size and avoiding alloc'ing less
 // memory due to an overflow If alloc'ing zero or alloc would overflow size_t
 // from count * size, then return a null pointer
-M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* safe_calloc_page_aligned(size_t count, size_t size)
+M_NODISCARD
+M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) void* M_NULLABLE safe_calloc_page_aligned(size_t count, size_t size)
+    // clang-format off
+    M_DIAG_ERROR(count == 0 || size == 0, "count and size must be non-zero")
+    M_DIAG_WARN((count != 0 && size > RSIZE_MAX / count), "allocating more than RSIZE_MAX bytes may fail")
+// clang-format on
 {
     return safe_calloc_aligned(count, size, get_System_Pagesize());
 }
 
 // if passed a null pointer, behaves as safe_Malloc
 // if size is zero, will perform free and return NULL ptr
-M_NODISCARD M_PARAM_RW_SIZE(1, 2)
-    M_MALLOC_SIZE(3) void* safe_realloc_page_aligned(void* block, size_t originalSize, size_t size)
+M_NODISCARD
+M_PARAM_RW_SIZE(1, 2)
+M_MALLOC_SIZE(3)
+void* M_NULLABLE safe_realloc_page_aligned(void* M_NULLABLE block, size_t originalSize, size_t size)
 {
     return safe_realloc_aligned(block, originalSize, size, get_System_Pagesize());
 }
@@ -901,21 +960,34 @@ M_NODISCARD M_PARAM_RW_SIZE(1, 2)
 // free's original block if realloc fails
 M_NODISCARD
 M_PARAM_RW(1)
-M_MALLOC_SIZE(3) void* safe_reallocf_page_aligned(void** block, size_t originalSize, size_t size)
+M_MALLOC_SIZE(3)
+void* M_NULLABLE safe_reallocf_page_aligned(void* M_NULLABLE* M_NULLABLE block, size_t originalSize, size_t size)
+    // clang-format off
+    M_DIAG_WARN(size > RSIZE_MAX, "allocating more than RSIZE_MAX bytes may fail")
+// clang-format on
 {
     return safe_reallocf_aligned(block, originalSize, size, get_System_Pagesize());
 }
 
 // Calls memmove_s if available, otherwise performs all checks that memmove_s
 // does before calling memmove
-errno_t safe_memmove_impl(void*       dest,
-                          rsize_t     destsz,
-                          const void* src,
-                          rsize_t     count,
-                          const char* file,
-                          const char* function,
-                          int         line,
-                          const char* expression)
+M_PARAM_WO_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 4)
+errno_t safe_memmove_impl(void* M_NONNULL        dest,
+                          rsize_t                destsz,
+                          const void* M_NONNULL  src,
+                          rsize_t                count,
+                          const char* M_NULLABLE file,
+                          const char* M_NULLABLE function,
+                          int                    line,
+                          const char* M_NULLABLE expression)
+    // clang-format off
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
+// clang-format on
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -987,14 +1059,27 @@ errno_t safe_memmove_impl(void*       dest,
 
 // calls memcpy_s if available, otherwise performs all checks that memcpy_s does
 // before calling memcpy
-errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
-                         rsize_t                destsz,
-                         const void* M_RESTRICT src,
-                         rsize_t                count,
-                         const char*            file,
-                         const char*            function,
-                         int                    line,
-                         const char*            expression)
+M_PARAM_WO_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 4)
+errno_t safe_memcpy_impl(void* M_RESTRICT M_NONNULL       dest,
+                         rsize_t                          destsz,
+                         const void* M_RESTRICT M_NONNULL src,
+                         rsize_t                          count,
+                         const char* M_NULLABLE           file,
+                         const char* M_NULLABLE           function,
+                         int                              line,
+                         const char* M_NULLABLE           expression)
+    // clang-format off
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
+        M_DIAG_ERROR(M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), "source and destination regions overlap. Use safe_memmove instead.")
+#if defined(ALLOW_NO_OVERLAP_SUGGESTIONS)
+        M_DIAG_WARN(!M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count) && dest != src, "No overlap detected; consider safe_memcpy_no_overlap for better performance.")
+#endif
+// clang-format on
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -1071,15 +1156,28 @@ errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
     }
 }
 
-errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
-                          rsize_t                destsz,
-                          const void* M_RESTRICT src,
-                          int                    c,
-                          rsize_t                count,
-                          const char*            file,
-                          const char*            function,
-                          int                    line,
-                          const char*            expression)
+M_PARAM_WO_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 5)
+errno_t safe_memccpy_impl(void* M_RESTRICT M_NONNULL       dest,
+                          rsize_t                          destsz,
+                          const void* M_RESTRICT M_NONNULL src,
+                          int                              c,
+                          rsize_t                          count,
+                          const char* M_NULLABLE           file,
+                          const char* M_NULLABLE           function,
+                          int                              line,
+                          const char* M_NULLABLE           expression)
+    // clang-format off
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
+        M_DIAG_ERROR(M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), "source and destination regions overlap. Use safe_memcmove instead.")
+#if defined(ALLOW_NO_OVERLAP_SUGGESTIONS)
+        M_DIAG_WARN(!M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count) && dest != src, "No overlap detected; consider safe_memccpy_no_overlap for better performance.")
+#endif
+// clang-format on
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -1157,15 +1255,24 @@ errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
 }
 
 // allows overlapping ranges
-errno_t safe_memcmove_impl(void* M_RESTRICT       dest,
-                           rsize_t                destsz,
-                           const void* M_RESTRICT src,
-                           int                    c,
-                           rsize_t                count,
-                           const char*            file,
-                           const char*            function,
-                           int                    line,
-                           const char*            expression)
+M_PARAM_WO_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 5)
+errno_t safe_memcmove_impl(void* M_RESTRICT M_NONNULL       dest,
+                           rsize_t                          destsz,
+                           const void* M_RESTRICT M_NONNULL src,
+                           int                              c,
+                           rsize_t                          count,
+                           const char* M_NULLABLE           file,
+                           const char* M_NULLABLE           function,
+                           int                              line,
+                           const char* M_NULLABLE           expression)
+    // clang-format off
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
+// clang-format on
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;

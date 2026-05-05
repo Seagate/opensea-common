@@ -44,7 +44,7 @@ time_t CURRENT_TIME = M_STATIC_CAST(time_t, 0);
 char CURRENT_TIME_STRING[CURRENT_TIME_STRING_LENGTH] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-M_STATIC_ASSERT(SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING) >= 26, current_time_string_length_too_short);
+M_STATIC_ASSERT(SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING) >= TIME_STRING_LENGTH, current_time_string_length_too_short);
 
 #if !defined(ALLOW_32BIT_TIME_T)
 // cannot support 32bit time_t properly!
@@ -274,7 +274,7 @@ static M_INLINE int struct_tm_to_struct_timespec(struct timespec* ts, int base)
     return res;
 }
 
-int timespec_get(struct timespec* ts, int base)
+int timespec_get(struct timespec* M_NONNULL ts, int base)
 {
     int res = 0;
     if (base != TIME_UTC)
@@ -327,7 +327,8 @@ int timespec_get(struct timespec* ts, int base)
 #define C_STRUCT_TM_MONTH_FEB    1
 #define C_STRUCT_TM_MONTH_DEC    11
 
-struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, struct tm* time)
+M_PARAM_WO(2)
+struct tm* milliseconds_Since_Unix_Epoch_To_Struct_TM(uint64_t milliseconds, struct tm* M_NONNULL time)
 {
     if (time != M_NULLPTR)
     {
@@ -411,12 +412,17 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
     return msSinceJan1970;
 }
 
-void convert_Seconds_To_Displayable_Time_Double(double    secondsToConvert,
-                                                uint8_t*  years,
-                                                uint16_t* days,
-                                                uint8_t*  hours,
-                                                uint8_t*  minutes,
-                                                uint8_t*  seconds)
+M_PARAM_WO(2)
+M_PARAM_WO(3)
+M_PARAM_WO(4)
+M_PARAM_WO(5)
+M_PARAM_WO(6)
+void convert_Seconds_To_Displayable_Time_Double(double              secondsToConvert,
+                                                uint8_t*            years,
+                                                uint16_t*           days,
+                                                uint8_t* M_NULLABLE hours,
+                                                uint8_t*            minutes,
+                                                uint8_t*            seconds)
 {
     double tempCalcValue = secondsToConvert;
     // get seconds up to a maximum of 60
@@ -450,12 +456,17 @@ void convert_Seconds_To_Displayable_Time_Double(double    secondsToConvert,
     }
 }
 
-void convert_Seconds_To_Displayable_Time(uint64_t  secondsToConvert,
-                                         uint8_t*  years,
-                                         uint16_t* days,
-                                         uint8_t*  hours,
-                                         uint8_t*  minutes,
-                                         uint8_t*  seconds)
+M_PARAM_WO(2)
+M_PARAM_WO(3)
+M_PARAM_WO(4)
+M_PARAM_WO(5)
+M_PARAM_WO(6)
+void convert_Seconds_To_Displayable_Time(uint64_t            secondsToConvert,
+                                         uint8_t* M_NULLABLE years,
+                                         uint16_t*           days,
+                                         uint8_t* M_NULLABLE hours,
+                                         uint8_t*            minutes,
+                                         uint8_t*            seconds)
 {
     uint64_t tempCalcValue = secondsToConvert;
     // get seconds up to a maximum of 60
@@ -489,11 +500,16 @@ void convert_Seconds_To_Displayable_Time(uint64_t  secondsToConvert,
     }
 }
 
-void print_Time_To_Screen(const uint8_t*  years,
-                          const uint16_t* days,
-                          const uint8_t*  hours,
-                          const uint8_t*  minutes,
-                          const uint8_t*  seconds)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_PARAM_RO(3)
+M_PARAM_RO(4)
+M_PARAM_RO(5)
+void print_Time_To_Screen(const uint8_t*            years,
+                          const uint16_t*           days,
+                          const uint8_t*            hours,
+                          const uint8_t* M_NULLABLE minutes,
+                          const uint8_t*            seconds)
 {
     if (years && *years > 0)
     {
@@ -547,12 +563,14 @@ void print_Time_To_Screen(const uint8_t*  years,
 // posix definitions or C standard versions,
 // or possible compiler specific definitions depending on what is available.
 
-struct tm* impl_safe_gmtime(const time_t* M_RESTRICT timer,
-                            struct tm* M_RESTRICT    buf,
-                            const char*              file,
-                            const char*              function,
-                            int                      line,
-                            const char*              expression)
+M_PARAM_RO(1)
+M_PARAM_RW(2)
+struct tm* M_NULLABLE impl_safe_gmtime(const time_t* M_RESTRICT M_NONNULL timer,
+                                       struct tm* M_RESTRICT M_NONNULL    buf,
+                                       const char* M_NULLABLE             file,
+                                       const char* M_NULLABLE             function,
+                                       int                                line,
+                                       const char* M_NULLABLE             expression)
 {
     constraintEnvInfo envInfo;
     if (timer == M_NULLPTR)
@@ -596,12 +614,14 @@ struct tm* impl_safe_gmtime(const time_t* M_RESTRICT timer,
     return buf;
 }
 
-struct tm* impl_safe_localtime(const time_t* M_RESTRICT timer,
-                               struct tm* M_RESTRICT    buf,
-                               const char*              file,
-                               const char*              function,
-                               int                      line,
-                               const char*              expression)
+M_PARAM_RO(1)
+M_PARAM_RW(2)
+struct tm* M_NULLABLE impl_safe_localtime(const time_t* M_RESTRICT M_NONNULL timer,
+                                          struct tm* M_RESTRICT M_NONNULL    buf,
+                                          const char* M_NULLABLE             file,
+                                          const char* M_NULLABLE             function,
+                                          int                                line,
+                                          const char* M_NULLABLE             expression)
 {
     constraintEnvInfo envInfo;
     if (timer == M_NULLPTR)
@@ -790,14 +810,16 @@ static M_INLINE errno_t posix_strftime_l_for_asctime(char* buf, rsize_t bufsz, c
 }
 #endif // defined(POSIX_2008) || defined(USING_SUS4) || defined(HAVE_XLOCALE_SUPPORT)
 
-errno_t impl_safe_asctime(char*            buf,
-                          rsize_t          bufsz,
-                          const struct tm* time_ptr,
-                          bool             ctime,
-                          const char*      file,
-                          const char*      function,
-                          int              line,
-                          const char*      expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO(3)
+errno_t impl_safe_asctime(char* M_NONNULL            buf,
+                          rsize_t                    bufsz,
+                          const struct tm* M_NONNULL time_ptr,
+                          bool                       ctime,
+                          const char* M_NULLABLE     file,
+                          const char* M_NULLABLE     function,
+                          int                        line,
+                          const char* M_NULLABLE     expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -946,13 +968,15 @@ errno_t impl_safe_asctime(char*            buf,
     return error;
 }
 
-errno_t impl_safe_ctime(char*         buf,
-                        rsize_t       bufsz,
-                        const time_t* timer,
-                        const char*   file,
-                        const char*   function,
-                        int           line,
-                        const char*   expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO(3)
+errno_t impl_safe_ctime(char* M_NONNULL         buf,
+                        rsize_t                 bufsz,
+                        const time_t* M_NONNULL timer,
+                        const char* M_NULLABLE  file,
+                        const char* M_NULLABLE  function,
+                        int                     line,
+                        const char* M_NULLABLE  expression)
 {
     errno_t error;
     if (timer == M_NULLPTR)
@@ -973,7 +997,7 @@ errno_t impl_safe_ctime(char*         buf,
     return error;
 }
 
-time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
+M_CONST_FUNC time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture) M_UNSEQUENCED
 {
     uint16_t  days    = UINT16_C(0);
     uint8_t   years   = UINT8_C(0);

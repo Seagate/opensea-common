@@ -45,7 +45,8 @@ extern "C"
     M_PARAM_RO(1)
     M_NULL_TERM_STRING(1)
     M_PARAM_RW(2)
-    bool get_And_Validate_Integer_Input(const char* M_NONNULL strToConvert, uint64_t* M_NONNULL outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input(const char* M_NONNULL strToConvert,
+                                                    uint64_t* M_NONNULL   outputInteger);
 
     //! \enum eAllowedUnitInput
     //! \brief Enum specifying which units are allowed at the end of the user's input.
@@ -586,6 +587,7 @@ extern "C"
     M_NULL_TERM_STRING(3)
     M_PARAM_RW(1)
     M_PARAM_RO(3)
+    FUNC_ATTR_PRINTF(3, 4)
     int snprintf(char* M_NULLABLE buffer, size_t bufsz, const char* M_RESTRICT M_NONNULL format, ...);
 
     //! \fn int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
@@ -603,6 +605,7 @@ extern "C"
     M_NULL_TERM_STRING(3)
     M_PARAM_RW(1)
     M_PARAM_RO(3)
+    FUNC_ATTR_PRINTF(3, 0)
     int vsnprintf(char* M_NULLABLE buffer, size_t bufsz, const char* M_RESTRICT M_NONNULL format, va_list args);
 
 #endif
@@ -615,9 +618,17 @@ extern "C"
                              "snprintf_err_handle(" #buf ", " #bufsize ", " #format ", va args)", buf, bufsize,        \
                              format, ##__VA_ARGS__)
 
+//! \def vsnprintf_err_handle(buf, bufsize, format, args)
+//! \brief macro wrapper for the implementation of vsnprintf_err_handle
+//! This wrapper passes in file, function, line, expression to the real implementation function
+#define vsnprintf_err_handle(buf, bufsize, format, args)                                                               \
+    impl_vsnprintf_err_handle(__FILE__, __func__, __LINE__,                                                            \
+                              "vsnprintf_err_handle(" #buf ", " #bufsize ", " #format ", " #args ")", buf, bufsize,    \
+                              format, args)
+
     //! \fn int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formatargs)
     //! \brief Checks for the same conditions as printf_s in C11 annex K.
-    //! \details Ensures that there are no newline characters (\n) and that no NULL pointers are passed for strings.
+    //! \details Ensures that there are no %n formatters and that no NULL pointers are passed for strings.
     //! \param[in] format The format string.
     //! \param[in] formatargs The list of arguments for the format string.
     //! \return An integer indicating the result of the verification.
@@ -735,6 +746,21 @@ extern "C"
     M_NONNULL_IF_NONZERO_PARAM(1, 2)
     M_PARAM_RO_SIZE(1, 2) void print_Pipe_Data(const uint8_t* M_NULLABLE dataBuffer, uint32_t bufferLen);
 
+    //! \fn void write_Data_Buffer(FILE* M_NONNULL outputStream,const uint8_t* M_NULLABLE dataBuffer, uint32_t bufferLen, bool showPrint)
+    //! \brief Prints out a data buffer to the specified FILE* stream.
+    //!
+    //! This function prints out a data buffer to the specified stream. If showPrint is set to true, printable characters will be
+    //! shown on the side of the hex output for the buffer. Non-printable characters will be represented as dots.
+    //!
+    //! \param[in] dataBuffer A pointer to the data buffer you want to print out.
+    //! \param[in] bufferLen The length that you want to print out. This can be the length of the buffer, or anything
+    //! less than that. \param[in] showPrint Set to true to show printable characters on the side of the hex output for
+    //! the buffer. Non-printable characters will be represented as dots.
+    M_NONNULL_IF_NONZERO_PARAM(2, 3)
+    M_PARAM_RO_SIZE(2, 3)
+    M_PARAM_RO(1)
+    void write_Data_Buffer(FILE* M_NONNULL outputStream, const uint8_t* M_NULLABLE dataBuffer, uint32_t bufferLen, bool showPrint);
+
     //! \def RETURN_VALUE_MAX_STR_LEN
     //! \brief The maximum string length for human-readable eReturnValues.
     #define RETURN_VALUE_MAX_STR_LEN (64)
@@ -746,7 +772,8 @@ extern "C"
     //! \param[out] string Buffer to store the human-readable string. Must be at least RETURN_VALUE_MAX_STR_LEN in size.
     //! \return true if the conversion was successful, false if the return value is unknown.
     M_PARAM_WO(2)
-    M_NODISCARD bool get_eReturnValues_To_String(eReturnValues ret, char string[M_NONNULL_ARRAY RETURN_VALUE_MAX_STR_LEN]);
+    M_NODISCARD bool get_eReturnValues_To_String(eReturnValues ret,
+                                                 char          string[M_NONNULL_ARRAY RETURN_VALUE_MAX_STR_LEN]);
 
     //! \fn void print_Return_Enum(const char* funcName, eReturnValues ret)
     //! \brief Prints humanized eReturnValue for a given return value.

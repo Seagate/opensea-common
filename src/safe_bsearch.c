@@ -80,16 +80,18 @@
  * look at item 3.
  */
 
-void* safe_bsearch_context_impl(const void*  key,
-                                const void*  ptr,
-                                rsize_t      count,
-                                rsize_t      size,
-                                ctxcomparefn compare,
-                                void*        context,
-                                const char*  file,
-                                const char*  function,
-                                int          line,
-                                const char*  expression)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+void* M_NULLABLE safe_bsearch_context_impl(const void* M_NONNULL  key,
+                                           const void* M_NONNULL  ptr,
+                                           rsize_t                count,
+                                           rsize_t                size,
+                                           ctxcomparefn M_NONNULL compare,
+                                           void* M_NULLABLE       context,
+                                           const char* M_NULLABLE file,
+                                           const char* M_NULLABLE function,
+                                           int                    line,
+                                           const char* M_NULLABLE expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;

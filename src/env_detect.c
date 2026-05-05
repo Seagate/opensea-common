@@ -169,7 +169,8 @@ void print_OS_Type(eOSType osType)
     }
 }
 
-void print_OS_Version(ptrOSVersionNumber versionNumber)
+M_PARAM_RO(1)
+void print_OS_Version(const ptrOSVersionNumber M_NONNULL versionNumber)
 {
     // format is something similar to major.minor.rev
     switch (versionNumber->osVersioningIdentifier)
@@ -245,7 +246,7 @@ void print_OS_Version(ptrOSVersionNumber versionNumber)
     }
 }
 
-eArchitecture get_Compiled_Architecture(void)
+eArchitecture get_Compiled_Architecture(void) M_UNSEQUENCED
 {
 // NOTE: Removed compiler checks since some reuse the same definitions for the
 // same CPU type in order to simplify this code more - TJE
@@ -349,7 +350,7 @@ static eEndianness calculate_Endianness(void)
 
 // MDE_CPU_EBC should always calculate the endianness for EFI byte code since we
 // do not know the exact endianness through other means
-eEndianness get_Compiled_Endianness(void)
+eEndianness get_Compiled_Endianness(void) M_UNSEQUENCED
 {
 #if defined(ENV_BIG_ENDIAN)
     return OPENSEA_BIG_ENDIAN;
@@ -360,7 +361,9 @@ eEndianness get_Compiled_Endianness(void)
 #endif
 }
 
-eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion compilerVersionInfo)
+M_PARAM_WO(1)
+M_PARAM_WO(2)
+eReturnValues get_Compiler_Info(eCompiler* M_NONNULL compilerUsed, ptrCompilerVersion M_NONNULL compilerVersionInfo)
 {
     eReturnValues ret = SUCCESS; // should always return this unless we don't
                                  // find a compiler we support.
@@ -510,7 +513,7 @@ void print_Compiler(eCompiler compilerUsed)
     }
 }
 
-void print_Compiler_Version_Info(const ptrCompilerVersion compilerVersionInfo)
+M_PARAM_RO(1) void print_Compiler_Version_Info(const ptrCompilerVersion M_NONNULL compilerVersionInfo)
 {
     printf("%" PRIu16 ".%" PRIu16 ".%" PRIu16 "", compilerVersionInfo->major, compilerVersionInfo->minor,
            compilerVersionInfo->patch);

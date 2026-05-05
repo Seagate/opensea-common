@@ -25,7 +25,8 @@
 #include <Uefi/UefiBaseType.h> //for EFI_STATUS definitions
 
 #define UEFI_FW_VENDOR_STR_LEN 80
-eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNumber, char* operatingSystemName)
+eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
+                                                    char* M_NULLABLE             operatingSystemName)
 {
     // get the UEFI version information and return it.
     // Also, set the operating system name to "UEFI" or "EFI" (If old enough
@@ -60,7 +61,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber versionNu
     return SUCCESS;
 }
 
-bool is_Running_Elevated()
+bool is_Running_Elevated(void)
 {
     return true; // In UEFI, there is no concept of admin or sudo. The getuid
                  // function always returns zero, and the geteuid function isn't
@@ -69,7 +70,7 @@ bool is_Running_Elevated()
 }
 
 #if defined(ENABLE_READ_USERNAME)
-eReturnValues get_Current_User_Name(char** userName)
+M_PARAM_WO(1) eReturnValues get_Current_User_Name(char* M_NONNULL* M_NULLABLE userName)
 {
     eReturnValues ret = SUCCESS;
     if (userName != M_NULLPTR)

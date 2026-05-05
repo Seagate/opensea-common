@@ -59,7 +59,7 @@ extern "C"
     //! the application was compiled for.
     //!
     //! \return eArchitecture value representing the compiled architecture.
-    eArchitecture get_Compiled_Architecture(void);
+    M_CONST_FUNC eArchitecture get_Compiled_Architecture(void) M_UNSEQUENCED;
 
     //! \brief Prints the architecture in human-readable form.
     //!
@@ -91,7 +91,7 @@ extern "C"
     //! More information: https://sourceforge.net/p/predef/wiki/Endianness/
     //!
     //! \return eEndianness value representing the endianness of the system.
-    eEndianness get_Compiled_Endianness(void);
+    M_CONST_FUNC eEndianness get_Compiled_Endianness(void) M_UNSEQUENCED;
 
     //! \brief Prints out the endianness in human-readable form.
     //!
@@ -332,7 +332,8 @@ extern "C"
     //! OS (typically #.#.#).
     //!
     //! \param[in] versionNumber Pointer to the OSVersionNumber structure with version information to print.
-    void print_OS_Version(ptrOSVersionNumber M_NONNULL versionNumber);
+    M_PARAM_RO(1)
+    void print_OS_Version(const ptrOSVersionNumber M_NONNULL versionNumber);
 
     //! \enum eCompiler
     //! \brief Enum representing different compilers.
@@ -384,7 +385,7 @@ extern "C"
     //! This will be filled with version information upon successful completion.
     //! \return SUCCESS on successful completion, otherwise a failure code.
     M_PARAM_WO(1)
-    M_PARAM_WO(1)
+    M_PARAM_WO(2)
     eReturnValues get_Compiler_Info(eCompiler* M_NONNULL         compilerUsed,
                                     ptrCompilerVersion M_NONNULL compilerVersionInfo);
 

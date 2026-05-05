@@ -72,7 +72,7 @@ static M_INLINE void safe_free_reparse_data_buf(REPARSE_DATA_BUFFER** reparse)
     safe_free_core(M_REINTERPRET_CAST(void**, reparse));
 }
 
-int64_t os_Get_File_Size(FILE* filePtr)
+int64_t os_Get_File_Size(FILE* M_NONNULL filePtr)
 {
     if (filePtr != M_NULLPTR)
     {
@@ -263,7 +263,7 @@ static bool win_Get_File_Security_Info_By_File(FILE* file, fileAttributes* attrs
     return success;
 }
 
-M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoCheck)
+M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* M_NONNULL filetoCheck)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64  st;
@@ -296,7 +296,7 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoChe
     return attrs;
 }
 
-M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
+M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* M_NONNULL file)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64  st;
@@ -329,7 +329,7 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
     return attrs;
 }
 
-M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* file)
+M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* M_NONNULL file)
 {
     if (file != M_NULLPTR)
     {
@@ -1233,7 +1233,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     return secure;
 }
 
-M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath, char** outputError)
+M_NODISCARD bool os_Is_Directory_Secure(const char* M_NONNULL fullpath, char** outputError)
 {
     // This was implemented as close as possible to
     // https://wiki.sei.cmu.edu/confluence/display/c/FIO15-C.+Ensure+that+file+operations+are+performed+in+a+secure+directory
@@ -1241,7 +1241,7 @@ M_NODISCARD bool os_Is_Directory_Secure(const char* fullpath, char** outputError
     return internal_OS_Is_Directory_Secure(fullpath, num_symlinks, outputError);
 }
 
-bool os_Directory_Exists(const char* pathToCheck)
+bool os_Directory_Exists(const char* M_NONNULL pathToCheck)
 {
     WIN32_FILE_ATTRIBUTE_DATA fileAttributes;
     safe_memset(&fileAttributes, sizeof(WIN32_FILE_ATTRIBUTE_DATA), 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
@@ -1262,7 +1262,7 @@ bool os_Directory_Exists(const char* pathToCheck)
     }
 }
 
-eReturnValues os_Create_Directory(const char* filePath)
+M_PARAM_RO(1) eReturnValues os_Create_Directory(const char* M_NONNULL filePath)
 {
     BOOL   returnValue    = FALSE;
     size_t filePathLength = (safe_strlen(filePath) + 1) * sizeof(TCHAR);
@@ -1296,12 +1296,12 @@ eReturnValues os_Create_Directory(const char* filePath)
 //  We will need owner/group IDs that match the current user
 //  DACL that makes sense to use for the user.
 //  Ignoring SACL for now since that serves a different purpose at this time.
-eReturnValues os_Create_Secure_Directory(const char* filePath)
+M_PARAM_RO(1) eReturnValues os_Create_Secure_Directory(const char* M_NONNULL filePath)
 {
     return os_Create_Directory(filePath);
 }
 
-bool os_File_Exists(const char* filetoCheck)
+bool os_File_Exists(const char* M_NONNULL filetoCheck)
 {
     WIN32_FILE_ATTRIBUTE_DATA fileAttributes;
     safe_memset(&fileAttributes, sizeof(WIN32_FILE_ATTRIBUTE_DATA), 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
@@ -1322,7 +1322,9 @@ bool os_File_Exists(const char* filetoCheck)
     }
 }
 
-eReturnValues get_Full_Path(const char* pathAndFile, char fullPath[M_NONNULL_ARRAY OPENSEA_PATH_MAX])
+M_PARAM_RO(1)
+M_PARAM_WO(2)
+eReturnValues get_Full_Path(const char* M_NONNULL pathAndFile, char fullPath[M_NONNULL_ARRAY OPENSEA_PATH_MAX])
 {
     if (pathAndFile == M_NULLPTR || fullPath == M_NULLPTR)
     {
@@ -1415,7 +1417,7 @@ static bool CompareAces(PACL pAcl1, PACL pAcl2)
 // This function is meant to be called after reading and converting SIDs and
 // DACL to a string. So if a caller wants to do it based off file name alone, or
 // file name and FILE *handle comparison, they can read those, then call this.
-bool exact_Compare_SIDS_And_DACL_Strings(const char* sidsAndDACLstr1, const char* sidsAndDACLstr2)
+bool exact_Compare_SIDS_And_DACL_Strings(const char* M_NONNULL sidsAndDACLstr1, const char* M_NONNULL sidsAndDACLstr2)
 {
     bool match = false;
     // This function is not just doing strcmp because that will not work.

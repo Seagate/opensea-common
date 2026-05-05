@@ -72,7 +72,7 @@
  * Qsort routine from Bentley & McIlroy's "Engineering a Sort Function".
  */
 
-static M_INLINE void swapfunc(char* a, char* b, size_t es)
+static M_INLINE void swapfunc(char* M_NONNULL a, char* M_NONNULL b, size_t es)
 {
     char t = 0;
     do
@@ -87,7 +87,11 @@ static M_INLINE void swapfunc(char* a, char* b, size_t es)
     if ((n) > 0)                                                                                                       \
     swapfunc(a, b, n)
 
-static M_INLINE char* med3(char* a, char* b, char* c, ctxcomparefn cmp, void* thunk)
+static M_INLINE char* med3(char* M_NONNULL        a,
+                           char* M_NONNULL        b,
+                           char* M_NONNULL        c,
+                           ctxcomparefn M_NONNULL cmp,
+                           void* M_NULLABLE       thunk)
 {
     return cmp(a, b, thunk) < 0 ? (cmp(b, c, thunk) < 0 ? b : (cmp(a, c, thunk) < 0 ? c : a))
                                 : (cmp(b, c, thunk) > 0 ? b : (cmp(a, c, thunk) < 0 ? a : c));
@@ -96,15 +100,16 @@ static M_INLINE char* med3(char* a, char* b, char* c, ctxcomparefn cmp, void* th
 // NOLINTBEGIN(readability-function-cognitive-complexity)
 // Disabling clang-tidy check since this code comes from another author and I do not need to
 // attempt to refactor this - TJE
-errno_t safe_qsort_context_impl(void*        ptr,
-                                rsize_t      count,
-                                rsize_t      size,
-                                ctxcomparefn compare,
-                                void*        context,
-                                const char*  file,
-                                const char*  function,
-                                int          line,
-                                const char*  expression)
+M_PARAM_RW(1)
+errno_t safe_qsort_context_impl(void* M_NONNULL        ptr,
+                                rsize_t                count,
+                                rsize_t                size,
+                                ctxcomparefn M_NONNULL compare,
+                                void* M_NULLABLE       context,
+                                const char* M_NULLABLE file,
+                                const char* M_NULLABLE function,
+                                int                    line,
+                                const char* M_NULLABLE expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;

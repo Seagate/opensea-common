@@ -346,13 +346,16 @@ int safe_ispunct(int c)
     }
 }
 
-errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
-                         rsize_t                destsz,
-                         const char* M_RESTRICT src,
-                         const char*            file,
-                         const char*            function,
-                         int                    line,
-                         const char*            expression)
+M_PARAM_WO_SIZE(1, 2)
+M_PARAM_RO(3)
+M_NULL_TERM_STRING(3)
+errno_t safe_strcpy_impl(char* M_RESTRICT M_NONNULL       dest,
+                         rsize_t                          destsz,
+                         const char* M_RESTRICT M_NONNULL src,
+                         const char* M_NULLABLE           file,
+                         const char* M_NULLABLE           function,
+                         int                              line,
+                         const char* M_NULLABLE           expression)
 {
     errno_t           error  = 0;
     size_t            srclen = safe_strnlen(src, RSIZE_MAX);
@@ -426,13 +429,16 @@ errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
     }
 }
 
-errno_t safe_strmove_impl(char*       dest,
-                          rsize_t     destsz,
-                          const char* src,
-                          const char* file,
-                          const char* function,
-                          int         line,
-                          const char* expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO(3)
+M_NULL_TERM_STRING(3)
+errno_t safe_strmove_impl(char* M_NONNULL        dest,
+                          rsize_t                destsz,
+                          const char* M_NONNULL  src,
+                          const char* M_NULLABLE file,
+                          const char* M_NULLABLE function,
+                          int                    line,
+                          const char* M_NULLABLE expression)
 {
     size_t            srclen = safe_strnlen(src, RSIZE_MAX);
     constraintEnvInfo envInfo;
@@ -491,14 +497,16 @@ errno_t safe_strmove_impl(char*       dest,
     }
 }
 
-errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
-                          rsize_t                destsz,
-                          const char* M_RESTRICT src,
-                          rsize_t                count,
-                          const char*            file,
-                          const char*            function,
-                          int                    line,
-                          const char*            expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 4)
+errno_t safe_strncpy_impl(char* M_RESTRICT M_NONNULL       dest,
+                          rsize_t                          destsz,
+                          const char* M_RESTRICT M_NONNULL src,
+                          rsize_t                          count,
+                          const char* M_NULLABLE           file,
+                          const char* M_NULLABLE           function,
+                          int                              line,
+                          const char* M_NULLABLE           expression)
 {
     errno_t           error  = 0;
     size_t            srclen = safe_strnlen(src, count);
@@ -588,14 +596,16 @@ errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
     }
 }
 
-errno_t safe_strnmove_impl(char*       dest,
-                           rsize_t     destsz,
-                           const char* src,
-                           rsize_t     count,
-                           const char* file,
-                           const char* function,
-                           int         line,
-                           const char* expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 4)
+errno_t safe_strnmove_impl(char* M_NONNULL        dest,
+                           rsize_t                destsz,
+                           const char* M_NONNULL  src,
+                           rsize_t                count,
+                           const char* M_NULLABLE file,
+                           const char* M_NULLABLE function,
+                           int                    line,
+                           const char* M_NULLABLE expression)
 {
     errno_t           error  = 0;
     size_t            srclen = safe_strnlen(src, count);
@@ -670,13 +680,17 @@ errno_t safe_strnmove_impl(char*       dest,
     }
 }
 
-errno_t safe_strcat_impl(char* M_RESTRICT       dest,
-                         rsize_t                destsz,
-                         const char* M_RESTRICT src,
-                         const char*            file,
-                         const char*            function,
-                         int                    line,
-                         const char*            expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO(3)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(3)
+errno_t safe_strcat_impl(char* M_RESTRICT M_NONNULL       dest,
+                         rsize_t                          destsz,
+                         const char* M_RESTRICT M_NONNULL src,
+                         const char* M_NULLABLE           file,
+                         const char* M_NULLABLE           function,
+                         int                              line,
+                         const char* M_NULLABLE           expression)
 {
     errno_t           error    = 0;
     size_t            srclen   = safe_strnlen(src, RSIZE_MAX);
@@ -761,14 +775,17 @@ errno_t safe_strcat_impl(char* M_RESTRICT       dest,
     }
 }
 
-errno_t safe_strncat_impl(char* M_RESTRICT       dest,
-                          rsize_t                destsz,
-                          const char* M_RESTRICT src,
-                          rsize_t                count,
-                          const char*            file,
-                          const char*            function,
-                          int                    line,
-                          const char*            expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 4)
+M_NULL_TERM_STRING(1)
+errno_t safe_strncat_impl(char* M_RESTRICT M_NONNULL       dest,
+                          rsize_t                          destsz,
+                          const char* M_RESTRICT M_NONNULL src,
+                          rsize_t                          count,
+                          const char* M_NULLABLE           file,
+                          const char* M_NULLABLE           function,
+                          int                              line,
+                          const char* M_NULLABLE           expression)
 {
     errno_t           error    = 0;
     size_t            srclen   = safe_strnlen(src, destsz);
@@ -870,13 +887,17 @@ errno_t safe_strncat_impl(char* M_RESTRICT       dest,
     }
 }
 
-errno_t safe_strcatmove_impl(char*       dest,
-                             rsize_t     destsz,
-                             const char* src,
-                             const char* file,
-                             const char* function,
-                             int         line,
-                             const char* expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO(3)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(3)
+errno_t safe_strcatmove_impl(char* M_NONNULL        dest,
+                             rsize_t                destsz,
+                             const char* M_NONNULL  src,
+                             const char* M_NULLABLE file,
+                             const char* M_NULLABLE function,
+                             int                    line,
+                             const char* M_NULLABLE expression)
 {
     errno_t           error    = 0;
     size_t            srclen   = safe_strnlen(src, RSIZE_MAX);
@@ -947,14 +968,17 @@ errno_t safe_strcatmove_impl(char*       dest,
     }
 }
 
-errno_t safe_strncatmove_impl(char*       dest,
-                              rsize_t     destsz,
-                              const char* src,
-                              rsize_t     count,
-                              const char* file,
-                              const char* function,
-                              int         line,
-                              const char* expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 4)
+M_NULL_TERM_STRING(1)
+errno_t safe_strncatmove_impl(char* M_NONNULL        dest,
+                              rsize_t                destsz,
+                              const char* M_NONNULL  src,
+                              rsize_t                count,
+                              const char* M_NULLABLE file,
+                              const char* M_NULLABLE function,
+                              int                    line,
+                              const char* M_NULLABLE expression)
 {
     errno_t           error    = 0;
     size_t            srclen   = safe_strnlen(src, destsz);
@@ -1042,7 +1066,7 @@ errno_t safe_strncatmove_impl(char*       dest,
     }
 }
 
-size_t safe_strnlen_impl(const char* string, size_t n)
+size_t safe_strnlen_impl(const char* M_NULLABLE string, size_t n)
 {
 #if defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
     // Does not invoke constraint handler of it's own so we can use this here - TJE
@@ -1076,13 +1100,12 @@ size_t safe_strnlen_impl(const char* string, size_t n)
 }
 
 #if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
-M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size)
+M_FUNC_ATTR_MALLOC char* strndup(const char* M_NONNULL src, size_t size)
 {
-    void * nullpos = memchr(src, '\0', size);
-    size_t length = nullpos != M_NULLPTR
-                        ? C_CAST(size_t, C_CAST(uintptr_t, nullpos) - C_CAST(uintptr_t, src))
-                        : SIZE_T_C(0);
-    char*  dupstr = M_REINTERPRET_CAST(char*, malloc(length + 1));
+    void*  nullpos = memchr(src, '\0', size);
+    size_t length =
+        nullpos != M_NULLPTR ? C_CAST(size_t, C_CAST(uintptr_t, nullpos) - C_CAST(uintptr_t, src)) : SIZE_T_C(0);
+    char* dupstr = M_REINTERPRET_CAST(char*, malloc(length + 1));
     if (dupstr == M_NULLPTR)
     {
         return M_NULLPTR;
@@ -1093,12 +1116,15 @@ M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size)
 }
 #endif // checks for strndup
 
-errno_t safe_strdup_impl(char**      dup,
-                         const char* src,
-                         const char* file,
-                         const char* function,
-                         int         line,
-                         const char* expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+errno_t safe_strdup_impl(char* M_NONNULL* M_NULLABLE dup,
+                         const char* M_NONNULL       src,
+                         const char* M_NULLABLE      file,
+                         const char* M_NULLABLE      function,
+                         int                         line,
+                         const char* M_NULLABLE      expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -1154,13 +1180,15 @@ errno_t safe_strdup_impl(char**      dup,
     return error;
 }
 
-errno_t safe_strndup_impl(char**      dup,
-                          const char* src,
-                          rsize_t     size,
-                          const char* file,
-                          const char* function,
-                          int         line,
-                          const char* expression)
+M_PARAM_RW(1)
+M_PARAM_RO_SIZE(2, 3)
+errno_t safe_strndup_impl(char* M_NONNULL* M_NULLABLE dup,
+                          const char* M_NONNULL       src,
+                          rsize_t                     size,
+                          const char* M_NULLABLE      file,
+                          const char* M_NULLABLE      function,
+                          int                         line,
+                          const char* M_NULLABLE      expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -1216,7 +1244,8 @@ errno_t safe_strndup_impl(char**      dup,
     return error;
 }
 
-void byte_Swap_String_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void byte_Swap_String_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     if (stringlen > SIZE_T_C(1)) // Check if the string has more than one character
     {
@@ -1231,24 +1260,25 @@ void byte_Swap_String_Len(char* stringToChange, size_t stringlen)
 }
 
 // use this to swap the bytes in a string...useful for ATA strings
-void byte_Swap_String(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void byte_Swap_String(char* M_NONNULL stringToChange)
 {
     byte_Swap_String_Len(stringToChange, safe_strlen(stringToChange));
 }
 
-void remove_Whitespace_Left(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void remove_Whitespace_Left(char* M_NONNULL stringToChange)
 {
     // Previous code basically did the exact same thing but handled control characters.
     // Updated remove_Leading_Whitespace_Len to also remove control characters and work the same way.
     remove_Leading_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
-void remove_Trailing_Whitespace(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void remove_Trailing_Whitespace(char* M_NONNULL stringToChange)
 {
     remove_Trailing_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
-void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void remove_Trailing_Whitespace_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
@@ -1279,12 +1309,13 @@ void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
     safe_memset(&stringToChange[end], memsetlen, 0, memsetlen);
 }
 
-void remove_Leading_Whitespace(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void remove_Leading_Whitespace(char* M_NONNULL stringToChange)
 {
     remove_Leading_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
-void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void remove_Leading_Whitespace_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
@@ -1305,12 +1336,13 @@ void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
     }
 }
 
-void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void remove_Leading_And_Trailing_Whitespace(char* M_NONNULL stringToChange)
 {
     remove_Leading_And_Trailing_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
-void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void remove_Leading_And_Trailing_Whitespace_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
@@ -1364,17 +1396,18 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
     }
 }
 
-void remove_Leading_And_Trailing_Control_Char(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void remove_Leading_And_Trailing_Control_Char(char* M_NONNULL stringToChange)
 {
     remove_Leading_And_Trailing_Control_Char_Len(stringToChange, safe_strlen(stringToChange));
 }
 
-void remove_Leading_And_Trailing_Control_Char_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void remove_Leading_And_Trailing_Control_Char_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     remove_Leading_And_Trailing_Whitespace_Len(stringToChange, stringlen);
 }
 
-void convert_String_To_Upper_Case(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void convert_String_To_Upper_Case(char* M_NONNULL stringToChange)
 {
     if (stringToChange == M_NULLPTR)
     {
@@ -1386,7 +1419,8 @@ void convert_String_To_Upper_Case(char* stringToChange)
     }
 }
 
-void convert_String_To_Upper_Case_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void convert_String_To_Upper_Case_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     if (stringToChange == M_NULLPTR)
     {
@@ -1398,7 +1432,7 @@ void convert_String_To_Upper_Case_Len(char* stringToChange, size_t stringlen)
     }
 }
 
-void convert_String_To_Lower_Case(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void convert_String_To_Lower_Case(char* M_NONNULL stringToChange)
 {
     if (stringToChange == M_NULLPTR)
     {
@@ -1410,7 +1444,8 @@ void convert_String_To_Lower_Case(char* stringToChange)
     }
 }
 
-void convert_String_To_Lower_Case_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void convert_String_To_Lower_Case_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     if (stringToChange == M_NULLPTR)
     {
@@ -1422,7 +1457,7 @@ void convert_String_To_Lower_Case_Len(char* stringToChange, size_t stringlen)
     }
 }
 
-void convert_String_To_Inverse_Case(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void convert_String_To_Inverse_Case(char* M_NONNULL stringToChange)
 {
     if (stringToChange == M_NULLPTR)
     {
@@ -1441,7 +1476,8 @@ void convert_String_To_Inverse_Case(char* stringToChange)
     }
 }
 
-void convert_String_To_Inverse_Case_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void convert_String_To_Inverse_Case_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     if (stringToChange == M_NULLPTR)
     {
@@ -1460,7 +1496,9 @@ void convert_String_To_Inverse_Case_Len(char* stringToChange, size_t stringlen)
     }
 }
 
-size_t find_last_occurrence_in_string(const char* originalString, const char* stringToFind)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+size_t find_last_occurrence_in_string(const char* M_NONNULL originalString, const char* M_NONNULL stringToFind)
 {
     if (originalString == M_NULLPTR || stringToFind == M_NULLPTR)
     {
@@ -1483,7 +1521,11 @@ size_t find_last_occurrence_in_string(const char* originalString, const char* st
     return (last_occurrence != SIZE_MAX) ? last_occurrence : safe_strlen(originalString);
 }
 
-size_t find_first_occurrence_in_string(const char* originalString, const char* stringToFind)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(2)
+size_t find_first_occurrence_in_string(const char* M_NONNULL originalString, const char* M_NONNULL stringToFind)
 {
     if (originalString == M_NULLPTR || stringToFind == M_NULLPTR)
     {
@@ -1494,7 +1536,9 @@ size_t find_first_occurrence_in_string(const char* originalString, const char* s
                                         : SIZE_MAX;
 }
 
-static M_INLINE bool wildcard_match_internal(const char* pattern, const char* data, bool caseInsensitive)
+static M_INLINE bool wildcard_match_internal(const char* M_NULLABLE pattern,
+                                             const char* M_NULLABLE data,
+                                             bool                   caseInsensitive)
 {
     if (pattern == M_NULLPTR || data == M_NULLPTR)
     {
@@ -1516,19 +1560,27 @@ static M_INLINE bool wildcard_match_internal(const char* pattern, const char* da
     return false;
 }
 
-bool wildcard_case_match(const char* pattern, const char* data)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(2) bool wildcard_case_match(const char* M_NONNULL pattern, const char* M_NONNULL data)
 {
     return wildcard_match_internal(pattern, data, true);
 }
 
-bool wildcard_match(const char* pattern, const char* data)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(2) bool wildcard_match(const char* M_NONNULL pattern, const char* M_NONNULL data)
 {
     return wildcard_match_internal(pattern, data, false);
 }
 
 // Note: Tried M_FORCEINLINE but no performance difference observed
 M_NONNULL_PARAM_LIST(1, 2, 3)
-static M_INLINE long string_version_compare_parse_number(const char** p, int* leading_zeros, size_t* digit_count)
+static M_INLINE long string_version_compare_parse_number(const char* M_NONNULL* M_NONNULL p,
+                                                         int* M_NONNULL                   leading_zeros,
+                                                         size_t* M_NONNULL                digit_count)
 {
     long val       = 0L;
     *leading_zeros = 0;
@@ -1552,7 +1604,11 @@ static M_INLINE long string_version_compare_parse_number(const char** p, int* le
     return val;
 }
 
-int string_version_compare(const char* string1, const char* string2)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(2)
+int string_version_compare(const char* M_NONNULL string1, const char* M_NONNULL string2)
 {
     while (*string1 && *string2)
     {
