@@ -199,7 +199,7 @@ extern "C"
 //!
 //! - \a key or \a ptr or \a compare is a null pointer (unless count is zero)
 
-#    if defined(HAVE_C11_GENERIC_SELECTION)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #        define safe_bsearch(key, ptr, count, size, compare)                                                           \
             _Generic((ptr),                                                                                            \
                 const void*: M_STATIC_CAST(const void*, safe_bsearch_impl(key, ptr, count, size, compare, __FILE__,    \
@@ -270,7 +270,7 @@ extern "C"
 //! - \a count or \a size is > RSIZE_MAX
 //!
 //! - \a key or \a ptr or \a compare is a null pointer (unless count is zero)
-#    if defined(HAVE_C11_GENERIC_SELECTION)
+#    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
 #        define safe_bsearch_context(key, ptr, count, size, compare)                                                   \
             _Generic((ptr),                                                                                            \
                 const void*: M_STATIC_CAST(const void*,                                                                \
