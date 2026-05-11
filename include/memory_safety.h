@@ -542,7 +542,7 @@ extern "C"
     //! \param[in] lengthBytes size in bytes of \a ptrData to check if equal to zero
     //! \return true = memory is filled with zeros. false = memory has nonzero
     //! values in it.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* ptrData, size_t lengthBytes);
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* M_NULLABLE ptrData, size_t lengthBytes);
 
     //! \fn bool is_Buffer_All_ByteValue(const void* ptrData, size_t lengthBytes, uint8_t byteValue)
     //! \brief   checks if a memory block is set to a specific byte value. Useful to detect all F's or all 0's for example.
@@ -552,7 +552,7 @@ extern "C"
     //! \param[in] byteValue the byte value to check all bytes in the buffer against
     //! \return true = memory is filled with the byte value. false = memory has non-matching
     //! values in it.
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Buffer_All_ByteValue(const void* ptrData, size_t lengthBytes, uint8_t byteValue);
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Buffer_All_ByteValue(const void* M_NULLABLE ptrData, size_t lengthBytes, uint8_t byteValue);
 
 #if defined(DEV_ENVIRONMENT)
     //! \fn errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
