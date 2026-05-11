@@ -542,6 +542,7 @@ extern "C"
     //! \param[in] lengthBytes size in bytes of \a ptrData to check if equal to zero
     //! \return true = memory is filled with zeros. false = memory has nonzero
     //! values in it.
+    M_NONNULL_IF_NONZERO_SIZE(1, 2)
     M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* M_NULLABLE ptrData, size_t lengthBytes);
 
     //! \fn bool is_Buffer_All_ByteValue(const void* ptrData, size_t lengthBytes, uint8_t byteValue)
@@ -552,6 +553,7 @@ extern "C"
     //! \param[in] byteValue the byte value to check all bytes in the buffer against
     //! \return true = memory is filled with the byte value. false = memory has non-matching
     //! values in it.
+    M_NONNULL_IF_NONZERO_SIZE(1, 2)
     M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Buffer_All_ByteValue(const void* M_NULLABLE ptrData, size_t lengthBytes, uint8_t byteValue);
 
 #if defined(DEV_ENVIRONMENT)
