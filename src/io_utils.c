@@ -462,16 +462,20 @@ eReturnValues get_Secure_User_Input(const char* M_NONNULL       prompt,
         }
         else
         {
-            // remove newline from the end...convert to a null.
-            if ((*userInput)[*inputDataLen - 1] == '\n')
-            {
-                (*userInput)[*inputDataLen - 1] = '\0';
-                *inputDataLen -= 1;
-            }
             if (inputDataLen != M_NULLPTR)
             {
                 *inputDataLen = inputReadLen;
             }
+            // remove newline from the end...convert to a null.
+            if ((*userInput)[inputReadLen - 1] == '\n')
+            {
+                (*userInput)[inputReadLen - 1] = '\0';
+                if (inputDataLen != M_NULLPTR)
+                {
+                    *inputDataLen -= 1;
+                }
+            }
+
         }
     }
     else
