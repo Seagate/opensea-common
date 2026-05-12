@@ -1629,9 +1629,9 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #endif // DISABLE_ATTRIBUTES
 
 //! \def M_SIZED_BY_OR_NULL(member)
-//! \brief Used to mark a pointer parameter in a structure that is counted by another member to track its size or that it is a
-//! NULL pointer. Using this helps better track out of bounds accesses to these arrays. Unlike M_COUNTED_BY_OR_NULL,
-//! this is for size specified in bytes rather than number of elements.
+//! \brief Used to mark a pointer parameter in a structure that is counted by another member to track its size or that
+//! it is a NULL pointer. Using this helps better track out of bounds accesses to these arrays. Unlike
+//! M_COUNTED_BY_OR_NULL, this is for size specified in bytes rather than number of elements.
 //! \param member The parameter name that counts the number of elements in the array
 //! \see https://clang.llvm.org/docs/AttributeReference.html#counted-by-counted-by-or-null-sized-by-sized-by-or-null
 #if !defined(DISABLE_ATTRIBUTES)

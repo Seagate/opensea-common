@@ -47,6 +47,7 @@ typedef enum eLworkModeEnum
 M_PARAM_RO(1)
 M_PARAM_RO(2)
 M_PARAM_RW(3)
+M_NODISCARD
 static void* M_NULLABLE safe_lwork(const void* M_NONNULL  key,
                                    const void* M_NONNULL  base,
                                    rsize_t* M_NONNULL     nelp,
@@ -61,6 +62,7 @@ static void* M_NULLABLE safe_lwork(const void* M_NONNULL  key,
 M_PARAM_RO(1)
 M_PARAM_RW(2)
 M_PARAM_RW(3)
+M_NODISCARD
 void* M_NULLABLE safe_lsearch_impl(const void* M_NONNULL  key,
                                    void* M_NONNULL        base,
                                    rsize_t* M_NONNULL     nelp,
@@ -77,6 +79,7 @@ void* M_NULLABLE safe_lsearch_impl(const void* M_NONNULL  key,
 M_PARAM_RO(1)
 M_PARAM_RO(2)
 M_PARAM_RW(3)
+M_NODISCARD
 void* M_NULLABLE safe_lfind_impl(const void* M_NONNULL  key,
                                  const void* M_NONNULL  base,
                                  rsize_t* M_NONNULL     nelp,
@@ -92,6 +95,7 @@ void* M_NULLABLE safe_lfind_impl(const void* M_NONNULL  key,
 M_PARAM_RO(1)
 M_PARAM_RO(2)
 M_PARAM_RW(3)
+M_NODISCARD
 static void* M_NULLABLE safe_lwork(const void* M_NONNULL  key,
                                    const void* M_NONNULL  base,
                                    rsize_t* M_NONNULL     nelp,
@@ -240,7 +244,24 @@ static void* M_NULLABLE safe_lwork(const void* M_NONNULL  key,
          * lsearch() adds the key to the end of the table and increments
          * the number of elements.
          */
-        safe_memcpy(endp, width, key, width);
+        errno_t copyerr = safe_memcpy(endp, width, key, width);
+        if (copyerr != 0)
+        {
+            if (addelem == LWORK_MODE_FIND)
+            {
+                invoke_Constraint_Handler("safe_lfind: memcpy failed",
+                                          set_Env_Info(&envInfo, file, function, expression, line), copyerr);
+                errno = copyerr;
+                return M_NULLPTR;
+            }
+            else
+            {
+                invoke_Constraint_Handler("safe_lsearch: memcpy failed",
+                                          set_Env_Info(&envInfo, file, function, expression, line), copyerr);
+                errno = copyerr;
+                return M_NULLPTR;
+            }
+        }
         ++*nelp;
 
         return (endp);
@@ -253,6 +274,7 @@ static void* M_NULLABLE safe_lwork(const void* M_NONNULL  key,
 M_PARAM_RO(1)
 M_PARAM_RO(2)
 M_PARAM_RW(3)
+M_NODISCARD
 static void* M_NULLABLE safe_lwork_context(const void* M_NONNULL  key,
                                            const void* M_NONNULL  base,
                                            rsize_t* M_NONNULL     nelp,
@@ -268,6 +290,7 @@ static void* M_NULLABLE safe_lwork_context(const void* M_NONNULL  key,
 M_PARAM_RO(1)
 M_PARAM_RW(2)
 M_PARAM_RW(3)
+M_NODISCARD
 void* M_NULLABLE safe_lsearch_context_impl(const void* M_NONNULL  key,
                                            void* M_NONNULL        base,
                                            rsize_t* M_NONNULL     nelp,
@@ -286,6 +309,7 @@ void* M_NULLABLE safe_lsearch_context_impl(const void* M_NONNULL  key,
 M_PARAM_RO(1)
 M_PARAM_RO(2)
 M_PARAM_RW(3)
+M_NODISCARD
 void* M_NULLABLE safe_lfind_context_impl(const void* M_NONNULL  key,
                                          const void* M_NONNULL  base,
                                          rsize_t* M_NONNULL     nelp,
@@ -304,6 +328,7 @@ void* M_NULLABLE safe_lfind_context_impl(const void* M_NONNULL  key,
 M_PARAM_RO(1)
 M_PARAM_RO(2)
 M_PARAM_RW(3)
+M_NODISCARD
 static void* M_NULLABLE safe_lwork_context(const void* M_NONNULL  key,
                                            const void* M_NONNULL  base,
                                            rsize_t* M_NONNULL     nelp,
@@ -453,7 +478,12 @@ static void* M_NULLABLE safe_lwork_context(const void* M_NONNULL  key,
          * lsearch() adds the key to the end of the table and increments
          * the number of elements.
          */
-        safe_memcpy(endp, width, key, width);
+        if (0 != safe_memcpy(endp, width, key, width))
+        {
+            errno = error;
+            return (
+                ep); // TODO: consider whether to return null here instead since the element wasn't successfully added
+        }
         ++*nelp;
 
         return (endp);

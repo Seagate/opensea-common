@@ -33,7 +33,6 @@ extern "C"
     //! \param[in] error The error number to print.
     void print_Errno_To_Screen(errno_t error);
 
-
 #if defined(UEFI_C_SOURCE)
     //! \brief returns an allocated buffer with translation of the EFI_STATUS value
     //!
@@ -49,19 +48,19 @@ extern "C"
     //! \param[in] efiStatus The EFI status code to print.
     void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus);
 #elif defined(_WIN32)
-    //! \brief returns an allocated buffer with translation of the Windows error code
-    //!
-    //! \param[in] windowsError The Windows error code to translate
-    //! \return M_NULLPTR if memory cannot be allocated or error cannot be translated. Pointer to string successful.
-    //! Memory should be free'd with free/safe_free
-    M_FUNC_ATTR_MALLOC char* M_NULLABLE get_windows_error_str(winsyserror_t windowsError);
+//! \brief returns an allocated buffer with translation of the Windows error code
+//!
+//! \param[in] windowsError The Windows error code to translate
+//! \return M_NULLPTR if memory cannot be allocated or error cannot be translated. Pointer to string successful.
+//! Memory should be free'd with free/safe_free
+M_FUNC_ATTR_MALLOC char* M_NULLABLE get_windows_error_str(winsyserror_t windowsError);
 
-    //! \brief Prints the Windows error code and its meaning to the screen.
-    //!
-    //! This function prints the Windows error code and its meaning to the screen, followed by a newline character.
-    //!
-    //! \param[in] windowsError The Windows error code to print.
-    void print_Windows_Error_To_Screen(winsyserror_t windowsError);
+//! \brief Prints the Windows error code and its meaning to the screen.
+//!
+//! This function prints the Windows error code and its meaning to the screen, followed by a newline character.
+//!
+//! \param[in] windowsError The Windows error code to print.
+void print_Windows_Error_To_Screen(winsyserror_t windowsError);
 #endif
 
 #if defined(__cplusplus)

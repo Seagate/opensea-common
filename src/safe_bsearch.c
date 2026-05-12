@@ -82,6 +82,7 @@
 
 M_PARAM_RO(1)
 M_PARAM_RO(2)
+M_NODISCARD
 void* M_NULLABLE safe_bsearch_context_impl(const void* M_NONNULL  key,
                                            const void* M_NONNULL  ptr,
                                            rsize_t                count,

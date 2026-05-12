@@ -30,7 +30,8 @@ RESTORE_WARNING_4255
 eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber M_NONNULL versionNumber,
                                                     char* M_NULLABLE             operatingSystemName)
 {
-    eReturnValues ret = read_Win_Version(versionNumber);
+    errno_t       error = 0;
+    eReturnValues ret   = read_Win_Version(versionNumber);
     if (ret == SUCCESS)
     {
         // Now that we know whether or not it's a server version and have gotten
@@ -50,29 +51,29 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber M_NONNULL
                         switch (versionNumber->versionType.windowsVersion.buildNumber)
                         {
                         case 14393:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2016");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2016");
                             break;
                         case 17763:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2019");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2019");
                             break;
                         case 18362:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 1903");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 1903");
                             break;
                         case 18363:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 1909");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 1909");
                             break;
                         case 19041:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 2004");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 2004");
                             break;
                         case 19042:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 20H2");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server, version 20H2");
                             break;
                         case 20348:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2022");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2022");
                             break;
                         default:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE,
-                                                "Unknown Windows Server Version");
+                            error =
+                                safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows Server Version");
                             break;
                         }
                     }
@@ -81,58 +82,58 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber M_NONNULL
                         switch (versionNumber->versionType.windowsVersion.buildNumber)
                         {
                         case 10240:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1507");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1507");
                             break;
                         case 10586:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1511");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1511");
                             break;
                         case 14393:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1607");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1607");
                             break;
                         case 15063:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1703");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1703");
                             break;
                         case 16299:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1709");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1709");
                             break;
                         case 17134:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1803");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1803");
                             break;
                         case 17763:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1809");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1809");
                             break;
                         case 18362:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1903");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1903");
                             break;
                         case 18363:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1909");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 1909");
                             break;
                         case 19041:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 2004");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 2004");
                             break;
                         case 19042:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 20H2");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 20H2");
                             break;
                         case 19043:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 21H1");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 21H1");
                             break;
                         case 19044:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 21H2");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 21H2");
                             break;
                         case 19045:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 22H2");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 10, version 22H2");
                             break;
                         case 22000:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 11, version 21H2");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 11, version 21H2");
                             break;
                         case 22621:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 11, version 22H2");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 11, version 22H2");
                             break;
                         case 22631:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 11, version 23H2");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 11, version 23H2");
                             break;
                         default:
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows 10/11 version");
+                            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows 10/11 version");
                             break;
                         }
                     }
@@ -140,11 +141,11 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber M_NONNULL
                 default:
                     if (isWindowsServer)
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows Server Version");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows Server Version");
                     }
                     else
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows Version");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows Version");
                     }
                     break;
                 }
@@ -155,51 +156,51 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber M_NONNULL
                 case 3:
                     if (isWindowsServer)
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2012 R2");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2012 R2");
                     }
                     else
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 8.1");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 8.1");
                     }
                     break;
                 case 2:
                     if (isWindowsServer)
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2012");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2012");
                     }
                     else
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 8");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 8");
                     }
                     break;
                 case 1:
                     if (isWindowsServer)
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2008 R2");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2008 R2");
                     }
                     else
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 7");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 7");
                     }
                     break;
                 case 0:
                     if (isWindowsServer)
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2008");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2008");
                     }
                     else
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Vista");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Vista");
                     }
                     break;
                 default:
                     if (isWindowsServer)
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2012 R2 or higher");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2012 R2 or higher");
                     }
                     else
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 8.1 or higher");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 8.1 or higher");
                     }
                     break;
                 }
@@ -210,38 +211,43 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber M_NONNULL
                 case 2:
                     if (isWindowsServer)
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2003");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2003");
                     }
                     else
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows XP 64-Bit Edition");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows XP 64-Bit Edition");
                     }
                     break;
                 case 1:
-                    snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows XP");
+                    error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows XP");
                     break;
                 case 0:
-                    snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows 2000");
+                    error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows 2000");
                     break;
                 default:
                     if (isWindowsServer)
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2003 or higher");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Windows Server 2003 or higher");
                     }
                     else
                     {
-                        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "XP or higher");
+                        error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "XP or higher");
                     }
                     break;
                 }
                 break;
             default:
-                snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows OS");
+                error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Windows OS");
                 break;
             }
-            if (isWindowsPE)
+            if (error == 0 && isWindowsPE)
             {
-                safe_strcat(operatingSystemName, OS_NAME_SIZE, " (PE)");
+                error = safe_strcat(operatingSystemName, OS_NAME_SIZE, " (PE)");
+            }
+            if (error != 0)
+            {
+                perror("Error setting Windows version name to output buffer\n");
+                ret = MEMORY_FAILURE;
             }
         }
     }

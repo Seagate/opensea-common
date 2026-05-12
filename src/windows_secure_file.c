@@ -118,7 +118,11 @@ static bool win_File_Attributes_By_Name(const char* filename, LPWIN32_FILE_ATTRI
             return false;
         }
         CONST TCHAR* localPathToCheck = &localPathToCheckBuf[0];
-        _stprintf_s(localPathToCheckBuf, pathCheckLength, TEXT("%hs"), filename);
+        if (0 > _stprintf_s(localPathToCheckBuf, pathCheckLength, TEXT("%hs"), filename))
+        {
+            safe_free_tchar(&localPathToCheckBuf);
+            return false;
+        }
 
         BOOL gotAttributes = GetFileAttributesEx(localPathToCheck, GetFileExInfoStandard, attributes);
         if (MSFT_BOOL_TRUE(gotAttributes))
@@ -192,8 +196,11 @@ static bool win_Get_File_Security_Info_By_Name(const char* filename, fileAttribu
                 if (attrs->winSecurityDescriptor)
                 {
                     attrs->securityDescriptorStringLength = tempLen;
-                    safe_memcpy(attrs->winSecurityDescriptor, attrs->securityDescriptorStringLength, temp, tempLen);
-                    success = true;
+                    if (0 ==
+                        safe_memcpy(attrs->winSecurityDescriptor, attrs->securityDescriptorStringLength, temp, tempLen))
+                    {
+                        success = true;
+                    }
                 }
                 SecureZeroMemory(temp, tempLen);
                 LocalFree(temp);
@@ -248,8 +255,11 @@ static bool win_Get_File_Security_Info_By_File(FILE* file, fileAttributes* attrs
                 if (attrs->winSecurityDescriptor)
                 {
                     attrs->securityDescriptorStringLength = tempLen;
-                    safe_memcpy(attrs->winSecurityDescriptor, attrs->securityDescriptorStringLength, temp, tempLen);
-                    success = true;
+                    if (0 ==
+                        safe_memcpy(attrs->winSecurityDescriptor, attrs->securityDescriptorStringLength, temp, tempLen))
+                    {
+                        success = true;
+                    }
                 }
                 SecureZeroMemory(temp, attrs->securityDescriptorStringLength);
                 LocalFree(temp);
@@ -267,14 +277,14 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* M_NONNULL
 {
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64  st;
-    safe_memset(&st, sizeof(struct _stat64), 0, sizeof(struct _stat64));
+    M_INITIALIZE_STRUCTURE(&st, sizeof(struct _stat64));
     if (filetoCheck != M_NULLPTR && _stat64(filetoCheck, &st) == 0)
     {
         attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
         if (attrs != M_NULLPTR)
         {
             WIN32_FILE_ATTRIBUTE_DATA winAttributes;
-            safe_memset(&winAttributes, sizeof(WIN32_FILE_ATTRIBUTE_DATA), 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
+            M_INITIALIZE_STRUCTURE(&winAttributes, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
             attrs->deviceID             = st.st_dev;
             attrs->inode                = st.st_ino;
             attrs->filemode             = st.st_mode;
@@ -300,14 +310,14 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* M_NONNULL file)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct _stat64  st;
-    safe_memset(&st, sizeof(struct _stat64), 0, sizeof(struct _stat64));
+    M_INITIALIZE_STRUCTURE(&st, sizeof(struct _stat64));
     if (file != M_NULLPTR && _fstat64(_fileno(file), &st) == 0)
     {
         attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
         if (attrs != M_NULLPTR)
         {
             BY_HANDLE_FILE_INFORMATION winAttributes;
-            safe_memset(&winAttributes, sizeof(BY_HANDLE_FILE_INFORMATION), 0, sizeof(BY_HANDLE_FILE_INFORMATION));
+            M_INITIALIZE_STRUCTURE(&winAttributes, sizeof(BY_HANDLE_FILE_INFORMATION));
             attrs->deviceID             = st.st_dev;
             attrs->inode                = st.st_ino;
             attrs->filemode             = st.st_mode;
@@ -327,6 +337,11 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* M_NONNULL file)
         }
     }
     return attrs;
+}
+
+static void safe_free_file_unique_id_info(fileUniqueIDInfo** fileId)
+{
+    safe_free_core(M_REINTERPRET_CAST(void**, fileId));
 }
 
 M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* M_NONNULL file)
@@ -354,7 +369,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* M
             // try to get ex file info, then if it fails (shouldn't happen) then
             // fall back to old method to get this
             FILE_ID_INFO winfileid;
-            safe_memset(&winfileid, sizeof(FILE_ID_INFO), 0, sizeof(FILE_ID_INFO));
+            M_INITIALIZE_STRUCTURE(&winfileid, sizeof(FILE_ID_INFO));
             if (MSFT_BOOL_TRUE(GetFileInformationByHandleEx(msftHandle, FileIdInfo, &winfileid, sizeof(FILE_ID_INFO))))
             {
                 // full 128bit identifier available
@@ -363,24 +378,33 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* M
                 if (fileId != M_NULLPTR)
                 {
                     fileId->volsn = winfileid.VolumeSerialNumber;
-                    safe_memcpy(&fileId->fileid[0], FILE_UNIQUE_ID_ARR_MAX, &winfileid.FileId.Identifier[0],
-                                FILE_UNIQUE_ID_ARR_MAX);
+                    if (0 != safe_memcpy(&fileId->fileid[0], FILE_UNIQUE_ID_ARR_MAX, &winfileid.FileId.Identifier[0],
+                                         FILE_UNIQUE_ID_ARR_MAX))
+                    {
+                        safe_free_file_unique_id_info(&fileId);
+                        return M_NULLPTR;
+                    }
                 }
                 return fileId;
             }
         }
 #endif // Windows vista API
         BY_HANDLE_FILE_INFORMATION winfileinfo;
-        safe_memset(&winfileinfo, sizeof(BY_HANDLE_FILE_INFORMATION), 0, sizeof(BY_HANDLE_FILE_INFORMATION));
+        M_INITIALIZE_STRUCTURE(&winfileinfo, sizeof(BY_HANDLE_FILE_INFORMATION));
         if (MSFT_BOOL_TRUE(GetFileInformationByHandle(msftHandle, &winfileinfo)))
         {
             fileUniqueIDInfo* fileId = M_REINTERPRET_CAST(fileUniqueIDInfo*, safe_calloc(1, sizeof(fileUniqueIDInfo)));
             if (fileId != M_NULLPTR)
             {
                 fileId->volsn = winfileinfo.dwVolumeSerialNumber;
-                safe_memcpy(&fileId->fileid[0], FILE_UNIQUE_ID_ARR_MAX, &winfileinfo.nFileIndexHigh, sizeof(DWORD));
-                safe_memcpy(&fileId->fileid[sizeof(DWORD)], FILE_UNIQUE_ID_ARR_MAX - sizeof(DWORD),
-                            &winfileinfo.nFileIndexLow, sizeof(DWORD));
+                if (0 != safe_memcpy(&fileId->fileid[0], FILE_UNIQUE_ID_ARR_MAX, &winfileinfo.nFileIndexHigh,
+                                     sizeof(DWORD)) ||
+                    0 != safe_memcpy(&fileId->fileid[sizeof(DWORD)], FILE_UNIQUE_ID_ARR_MAX - sizeof(DWORD),
+                                     &winfileinfo.nFileIndexLow, sizeof(DWORD)))
+                {
+                    safe_free_file_unique_id_info(&fileId);
+                    return M_NULLPTR;
+                }
             }
             return fileId;
         }
@@ -404,14 +428,18 @@ static char* get_Current_User_SID(void)
         PTOKEN_USER pUser = M_REINTERPRET_CAST(PTOKEN_USER, safe_malloc(dwSize));
         if (pUser != M_NULLPTR)
         {
-            safe_memset(pUser, dwSize, 0, dwSize);
+            explicit_zeroes(pUser, dwSize);
             if (GetTokenInformation(hToken, TokenUser, pUser, dwSize, &dwSize))
             {
                 LPSTR pSidString = M_NULLPTR;
                 if (ConvertSidToStringSidA(pUser->User.Sid, &pSidString))
                 {
                     // dup'ing this because want to use std malloc/free's instead of LocalFree
-                    safe_strdup(&sidAsString, pSidString);
+                    if (0 != safe_strdup(&sidAsString, pSidString))
+                    {
+                        sidAsString = M_NULLPTR;
+                        perror("Failed to duplicate SID string");
+                    }
                     LocalFree(pSidString);
                 }
             }
@@ -518,8 +546,13 @@ static bool get_System_Volume(char* winSysVol, size_t winSysVolLen)
     static DECLARE_ZERO_INIT_ARRAY(char, windowsSystemVolume, MAX_PATH);
     if (validsystemvol && safe_strnlen(windowsSystemVolume, MAX_PATH) > 0)
     {
-        safe_memset(winSysVol, winSysVolLen, 0, winSysVolLen);
-        safe_strcat(winSysVol, winSysVolLen, windowsSystemVolume);
+        if (safe_memset(winSysVol, winSysVolLen, 0, winSysVolLen) == 0)
+        {
+            if (safe_strcat(winSysVol, winSysVolLen, windowsSystemVolume) == 0)
+            {
+                // Successfully set the system volume
+            }
+        }
     }
     else
     {
@@ -528,7 +561,11 @@ static bool get_System_Volume(char* winSysVol, size_t winSysVolLen)
             // This function failed so try reading this environment variable
             // instead
             char* systemDrive = M_NULLPTR;
-            safe_memset(windowsSystemVolume, MAX_PATH, 0, MAX_PATH);
+            if (safe_memset(windowsSystemVolume, MAX_PATH, 0, MAX_PATH) != 0)
+            {
+                safe_free(&systemDrive);
+                return false;
+            }
             if (ENV_VAR_SUCCESS != get_Environment_Variable("SystemDrive", &systemDrive))
             {
 #if defined(_DEBUG)
@@ -537,10 +574,21 @@ static bool get_System_Volume(char* winSysVol, size_t winSysVolLen)
             }
             else
             {
-                safe_strcat(windowsSystemVolume, MAX_PATH, systemDrive);
-                if (M_NULLPTR == strchr(windowsSystemVolume, '\\'))
+                if (safe_strcat(windowsSystemVolume, MAX_PATH, systemDrive) == 0)
                 {
-                    safe_strcat(windowsSystemVolume, MAX_PATH, "\\");
+                    if (M_NULLPTR == strchr(windowsSystemVolume, '\\'))
+                    {
+                        if (0 != safe_strcat(windowsSystemVolume, MAX_PATH, "\\"))
+                        {
+                            safe_free(&systemDrive);
+                            return false;
+                        }
+                    }
+                }
+                else
+                {
+                    safe_free(&systemDrive);
+                    return false;
                 }
             }
             safe_free(&systemDrive);
@@ -558,9 +606,14 @@ static bool get_System_Volume(char* winSysVol, size_t winSysVolLen)
                 // know to properly validate other permissions.
                 *(slashPointer + 1) = '\0';
             }
-            validsystemvol = true;
-            safe_memset(winSysVol, winSysVolLen, 0, winSysVolLen);
-            safe_strcat(winSysVol, winSysVolLen, windowsSystemVolume);
+            if (safe_memset(winSysVol, winSysVolLen, 0, winSysVolLen) == 0)
+            {
+                if (safe_strcat(winSysVol, winSysVolLen, windowsSystemVolume) == 0)
+                {
+                    // Successfully set the system volume
+                    validsystemvol = true;
+                }
+            }
         }
     }
     return validsystemvol;
@@ -769,11 +822,11 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                     // for simplicity. Can reduce memory by shortening, but this
                     // is fine for now on this limited list.
                     DECLARE_ZERO_INIT_ARRAY(char, usersdir, MAX_PATH);
-                    safe_strcat(usersdir, MAX_PATH, windowsSystemVolume);
-                    safe_strcat(usersdir, MAX_PATH,
-                                "Users"); // no trailing slash as the paths passed in
-                                          // are not completed with a slash
-                    if (strcmp(dirptr, usersdir) == 0)
+                    errno_t userdirError      = safe_strcat(usersdir, MAX_PATH, windowsSystemVolume);
+                    errno_t userdirErrorUsers = safe_strcat(usersdir, MAX_PATH,
+                                                            "Users"); // no trailing slash as the paths passed in
+                                                                      // are not completed with a slash
+                    if (userdirError == 0 && userdirErrorUsers == 0 && strcmp(dirptr, usersdir) == 0)
                     {
                         allowUsersAndAuthenticatedUsers = true; // S-1-5-11 and S-1-5-32-545
                         allowEveryoneGroup              = true; // S-1-1-0
@@ -1043,8 +1096,18 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
             dirptr        = M_REINTERPRET_CAST(char*, safe_calloc(newlen, sizeof(char)));
             if (dirptr != M_NULLPTR)
             {
-                safe_memcpy(dirptr, newlen, dirs[i], newlen - 2);
-                safe_strcat(dirptr, newlen, "\\");
+                if (0 != safe_memcpy(dirptr, newlen, dirs[i], newlen - 2))
+                {
+                    secure = false;
+                    perror("Failed memcpy while traversing directory tree\n");
+                    break;
+                }
+                if (0 != safe_strcat(dirptr, newlen, "\\"))
+                {
+                    secure = false;
+                    perror("Failed strcat while traversing directory tree\n");
+                    break;
+                }
                 appendedTrailingSlash = true;
             }
             else
@@ -1094,8 +1157,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 if (reparseData != M_NULLPTR)
                 {
                     DWORD bytesRead = DWORD_C(0);
-                    safe_memset(reparseData, sizeof(REPARSE_DATA_BUFFER) + MAX_PATH, 0,
-                                sizeof(REPARSE_DATA_BUFFER) + MAX_PATH);
+                    explicit_zeroes(reparseData, sizeof(REPARSE_DATA_BUFFER) + MAX_PATH);
                     if (DeviceIoControl(link, FSCTL_GET_REPARSE_POINT, M_NULLPTR, 0, &reparseData, sizeof(reparseData),
                                         &bytesRead, M_NULLPTR))
                     {
@@ -1244,7 +1306,7 @@ M_NODISCARD bool os_Is_Directory_Secure(const char* M_NONNULL fullpath, char** o
 bool os_Directory_Exists(const char* M_NONNULL pathToCheck)
 {
     WIN32_FILE_ATTRIBUTE_DATA fileAttributes;
-    safe_memset(&fileAttributes, sizeof(WIN32_FILE_ATTRIBUTE_DATA), 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
+    M_INITIALIZE_STRUCTURE(&fileAttributes, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
     if (win_File_Attributes_By_Name(pathToCheck, &fileAttributes))
     {
         if (fileAttributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
@@ -1304,7 +1366,7 @@ M_PARAM_RO(1) eReturnValues os_Create_Secure_Directory(const char* M_NONNULL fil
 bool os_File_Exists(const char* M_NONNULL filetoCheck)
 {
     WIN32_FILE_ATTRIBUTE_DATA fileAttributes;
-    safe_memset(&fileAttributes, sizeof(WIN32_FILE_ATTRIBUTE_DATA), 0, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
+    M_INITIALIZE_STRUCTURE(&fileAttributes, sizeof(WIN32_FILE_ATTRIBUTE_DATA));
     if (win_File_Attributes_By_Name(filetoCheck, &fileAttributes))
     {
         if (!(fileAttributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
@@ -1338,7 +1400,12 @@ eReturnValues get_Full_Path(const char* M_NONNULL pathAndFile, char fullPath[M_N
         return FAILURE;
     }
     CONST TCHAR* localpathAndFile = &localpathAndFileBuf[0];
-    _stprintf_s(localpathAndFileBuf, localPathAndFileLength, TEXT("%hs"), pathAndFile);
+    if (0 > _stprintf_s(localpathAndFileBuf, localPathAndFileLength, TEXT("%hs"), pathAndFile))
+    {
+        perror("Error formatting path and file string before looking up full pathname.");
+        safe_free_tchar(&localpathAndFileBuf);
+        return MEMORY_FAILURE;
+    }
     DWORD result = GetFullPathName(localpathAndFile, OPENSEA_PATH_MAX, fullPathOutput, M_NULLPTR);
     if (result == 0 || result > OPENSEA_PATH_MAX)
     {
@@ -1352,20 +1419,23 @@ eReturnValues get_Full_Path(const char* M_NONNULL pathAndFile, char fullPath[M_N
     //       that compiler.-TJE Microsoft also has a S extension for strings to
     //       specify single char with wprintf and wide char for printf that may
     //       also be used as needed-TJE
-    snprintf_err_handle(fullPath, OPENSEA_PATH_MAX, "%ls", fullPathOutput);
+    if (0 > snprintf_err_handle(fullPath, OPENSEA_PATH_MAX, "%ls", fullPathOutput))
 #else
 #    if defined(_MSC_VER)
     // Microsoft uses hs but this is not standard and using %s is the standard
-    snprintf_err_handle(fullPath, OPENSEA_PATH_MAX, "%hs", fullPathOutput);
+    if (0 > snprintf_err_handle(fullPath, OPENSEA_PATH_MAX, "%hs", fullPathOutput))
 #    else
-    snprintf_err_handle(fullPath, OPENSEA_PATH_MAX, "%s", fullPathOutput);
+    if (0 != safe_strcpy(fullPath, OPENSEA_PATH_MAX, fullPathOutput))
 #    endif
 #endif
+    {
+        perror("Error copying full path output in Windows secure path");
+    }
     // Check if this file even exists to make this more like the behavior of the
     // POSIX realpath function.
     if (!os_File_Exists(fullPath) && !os_Directory_Exists(fullPath))
     {
-        safe_memset(fullPath, OPENSEA_PATH_MAX, 0, OPENSEA_PATH_MAX);
+        explicit_zeroes(fullPath, OPENSEA_PATH_MAX);
         safe_free_tchar(&localpathAndFileBuf);
         return FAILURE;
     }

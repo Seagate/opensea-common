@@ -184,8 +184,8 @@ void print_Errno_To_Screen(errno_t error)
 
 M_FUNC_ATTR_MALLOC char* M_NULLABLE get_efistatus_str(EFI_STATUS efiStatus)
 {
-    errno_t errorCode = 0;
-    char * efiStatusString = M_NULLPTR;
+    errno_t errorCode       = 0;
+    char*   efiStatusString = M_NULLPTR;
     switch (efiStatus)
     {
     case EFI_SUCCESS:
@@ -323,7 +323,7 @@ M_FUNC_ATTR_MALLOC char* M_NULLABLE get_efistatus_str(EFI_STATUS efiStatus)
 #    define PRI_UINTN "d"
 void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus)
 {
-    char*efiStatusString = get_efistatus_str(efiStatus);
+    char* efiStatusString = get_efistatus_str(efiStatus);
     if (efiStatusString != M_NULLPTR)
     {
         printf("%" PRI_UINTN " - %s\n", efiStatus, efiStatusString);
@@ -351,19 +351,19 @@ M_FUNC_ATTR_MALLOC char* M_NULLABLE get_windows_error_str(winsyserror_t windowsE
     if (windowsErrorString != M_NULLPTR)
     {
         size_t errorStrLen = lstrlen(windowsErrorString) + SIZE_T_C(1);
-        char* errorString = M_REINTERPRET_CAST(char*, safe_calloc(errorStrLen, sizeof(char)));
+        char*  errorString = M_REINTERPRET_CAST(char*, safe_calloc(errorStrLen, sizeof(char)));
         if (errorString != M_NULLPTR)
         {
             // This call is to allow the Windows API to translate this from wide to char as needed.
             // I could not find a straight forward ifdef/tchar function for this so this is the best I have - TJE
             int result = 0;
-            #if defined (UNICODE)
+#    if defined(UNICODE)
             // Uppercase S means a Wide character string in this case
             result = sprintf_s(errorString, errorStrLen, "%S", windowsErrorString);
-            #else
+#    else
             // Lowercase s means a "regular" single-byte or multibyte string in this case.
             result = sprintf_s(errorString, errorStrLen, "%s", windowsErrorString);
-            #endif
+#    endif
             LocalFree(windowsErrorString);
             if (result > 0)
             {
@@ -390,7 +390,7 @@ M_FUNC_ATTR_MALLOC char* M_NULLABLE get_windows_error_str(winsyserror_t windowsE
 
 void print_Windows_Error_To_Screen(winsyserror_t windowsError)
 {
-    char *windowsErrorString = get_windows_error_str(windowsError);
+    char* windowsErrorString = get_windows_error_str(windowsError);
     if (windowsErrorString != M_NULLPTR)
     {
         printf("%lu - %s\n", windowsError, windowsErrorString);

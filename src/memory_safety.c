@@ -51,7 +51,7 @@ M_CONST_FUNC M_NODISCARD size_t get_System_Pagesize(void) M_UNSEQUENCED
     return int_to_sizet(getpagesize());
 #elif defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
     SYSTEM_INFO winSysInfo;
-    safe_memset(&winSysInfo, sizeof(SYSTEM_INFO), 0, sizeof(SYSTEM_INFO));
+    M_INITIALIZE_STRUCTURE(&winSysInfo, sizeof(SYSTEM_INFO));
     GetSystemInfo(&winSysInfo);
     return ulong_to_sizet(winSysInfo.dwPageSize);
 #else
@@ -290,7 +290,9 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(3) M_CALLOC_SIZE(1, 2) M_ALLOC_DEAL
         zeroedMem = malloc_aligned(numSize, alignment);
         if (zeroedMem != M_NULLPTR)
         {
-            safe_memset(zeroedMem, numSize, 0, numSize);
+            M_IGNORE_SAFE_ERRNO_CALL(safe_memset(zeroedMem, numSize, 0, numSize),
+                                     "Memory successfully allocated and is being zeroed to exactly the same size. This "
+                                     "should never fail or be incorrect");
         }
     }
     return zeroedMem;
@@ -313,7 +315,9 @@ void* M_NULLABLE realloc_aligned(void* M_NULLABLE alignedPtr, size_t originalSiz
         temp = malloc_aligned(size, alignment);
         if (alignedPtr && originalSize > SIZE_T_C(0) && temp)
         {
-            safe_memcpy(temp, size, alignedPtr, originalSize);
+            M_IGNORE_SAFE_ERRNO_CALL(
+                safe_memcpy(temp, size, alignedPtr, originalSize),
+                "Memory successfully reallocated and copied. This should never fail or be incorrect");
         }
         if (alignedPtr && temp)
         {
@@ -392,16 +396,6 @@ void* M_NULLABLE explicit_zeroes(void* M_NONNULL dest, size_t count)
     {
 #if defined(HAVE_MEMSET_EXPLICIT)
         return memset_explicit(dest, 0, count);
-#elif defined(HAVE_C11_ANNEX_K)
-        // use memset_s since it cannot be optimized out
-        if (0 == memset_s(dest, count, 0, count))
-        {
-            return dest;
-        }
-        else
-        {
-            return M_NULLPTR;
-        }
 #elif (defined(_WIN32) && defined(_MSC_VER)) || defined(HAVE_MSFT_SECURE_ZERO_MEMORY) ||                               \
     defined(HAVE_MSFT_SECURE_ZERO_MEMORY2)
 #    if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                                  \
@@ -434,9 +428,25 @@ void* M_NULLABLE explicit_zeroes(void* M_NONNULL dest, size_t count)
         //       manual. Not sure what version to use, so letting meson detect
         //       and set the HAVE_...macros
         return explicit_memset(dest, 0, count);
+#elif defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
+        // use memset_s since it cannot be optimized out
+        if (0 == memset_s(dest, count, 0, count))
+        {
+            return dest;
+        }
+        else
+        {
+            return M_NULLPTR;
+        }
 #else
-        safe_memset(dest, count, 0, count);
-        return dest;
+        if (0 == safe_memset(dest, count, 0, count))
+        {
+            return dest;
+        }
+        else
+        {
+            return M_NULLPTR;
+        }
 #endif
     }
     else
@@ -446,6 +456,7 @@ void* M_NULLABLE explicit_zeroes(void* M_NONNULL dest, size_t count)
 }
 
 M_PARAM_WO_SIZE(1, 2)
+CONSTRAINT_NO_DISCARD
 errno_t safe_memset_impl(void* M_NONNULL        dest,
                          rsize_t                destsz,
                          int                    ch,
@@ -828,7 +839,9 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2) M_ALLOC_ALIGN(3) void* M_NULL
         zeroedMem        = safe_malloc_aligned(numSize, alignment);
         if (zeroedMem != M_NULLPTR)
         {
-            safe_memset(zeroedMem, numSize, 0, numSize);
+            M_IGNORE_SAFE_ERRNO_CALL(safe_memset(zeroedMem, numSize, 0, numSize),
+                                     "Memory successfully allocated and is being zeroed to exactly the same size. This "
+                                     "should never fail or be incorrect");
         }
         return zeroedMem;
     }
@@ -973,6 +986,7 @@ void* M_NULLABLE safe_reallocf_page_aligned(void* M_NULLABLE* M_NULLABLE block, 
 // does before calling memmove
 M_PARAM_WO_SIZE(1, 2)
 M_PARAM_RO_SIZE(3, 4)
+CONSTRAINT_NO_DISCARD
 errno_t safe_memmove_impl(void* M_NONNULL        dest,
                           rsize_t                destsz,
                           const void* M_NONNULL  src,
@@ -1030,7 +1044,9 @@ errno_t safe_memmove_impl(void* M_NONNULL        dest,
         // is done
         if (destsz <= RSIZE_MAX)
         {
-            safe_memset(dest, destsz, 0, destsz);
+            M_IGNORE_SAFE_ERRNO_CALL(
+                safe_memset(dest, destsz, 0, destsz),
+                "Memory successfully zeroed after all other bounds are properly checked per C11 annex K.");
         }
         errno = error;
         return error;
@@ -1061,6 +1077,7 @@ errno_t safe_memmove_impl(void* M_NONNULL        dest,
 // before calling memcpy
 M_PARAM_WO_SIZE(1, 2)
 M_PARAM_RO_SIZE(3, 4)
+CONSTRAINT_NO_DISCARD
 errno_t safe_memcpy_impl(void* M_RESTRICT M_NONNULL       dest,
                          rsize_t                          destsz,
                          const void* M_RESTRICT M_NONNULL src,
@@ -1129,7 +1146,8 @@ errno_t safe_memcpy_impl(void* M_RESTRICT M_NONNULL       dest,
         // is done
         if (destsz <= RSIZE_MAX)
         {
-            safe_memset(dest, destsz, 0, destsz);
+            M_IGNORE_SAFE_ERRNO_CALL(safe_memset(dest, destsz, 0, destsz),
+                                     "Bounds checks already completed. Zeroing memory per C11 annex K.");
         }
         errno = error;
         return error;
@@ -1158,6 +1176,7 @@ errno_t safe_memcpy_impl(void* M_RESTRICT M_NONNULL       dest,
 
 M_PARAM_WO_SIZE(1, 2)
 M_PARAM_RO_SIZE(3, 5)
+CONSTRAINT_NO_DISCARD
 errno_t safe_memccpy_impl(void* M_RESTRICT M_NONNULL       dest,
                           rsize_t                          destsz,
                           const void* M_RESTRICT M_NONNULL src,
@@ -1228,7 +1247,8 @@ errno_t safe_memccpy_impl(void* M_RESTRICT M_NONNULL       dest,
         // is done
         if (destsz <= RSIZE_MAX)
         {
-            safe_memset(dest, destsz, 0, destsz);
+            M_IGNORE_SAFE_ERRNO_CALL(safe_memset(dest, destsz, 0, destsz),
+                                     "Bounds already checked, memory successfully zeroed per C11 annex K.");
         }
         errno = error;
         return error;
@@ -1257,6 +1277,7 @@ errno_t safe_memccpy_impl(void* M_RESTRICT M_NONNULL       dest,
 // allows overlapping ranges
 M_PARAM_WO_SIZE(1, 2)
 M_PARAM_RO_SIZE(3, 5)
+CONSTRAINT_NO_DISCARD
 errno_t safe_memcmove_impl(void* M_RESTRICT M_NONNULL       dest,
                            rsize_t                          destsz,
                            const void* M_RESTRICT M_NONNULL src,
@@ -1323,7 +1344,9 @@ errno_t safe_memcmove_impl(void* M_RESTRICT M_NONNULL       dest,
         // is done
         if (destsz < RSIZE_MAX)
         {
-            safe_memset(dest, destsz, 0, destsz);
+            M_IGNORE_SAFE_ERRNO_CALL(
+                safe_memset(dest, destsz, 0, destsz),
+                "Memory successfully zeroed after all other bounds are properly checked per C11 annex K.");
         }
         errno = error;
         return error;

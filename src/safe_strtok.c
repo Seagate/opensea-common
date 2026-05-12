@@ -76,6 +76,7 @@ M_PARAM_RO(3)
 M_PARAM_RW(4)
 M_NULL_TERM_STRING(1)
 M_NULL_TERM_STRING(3)
+M_NODISCARD
 char* M_NULLABLE safe_strtok_impl(char* M_RESTRICT M_NULLABLE            str,
                                   rsize_t* M_RESTRICT M_NONNULL          strmax,
                                   const char* M_RESTRICT M_NONNULL       delim,

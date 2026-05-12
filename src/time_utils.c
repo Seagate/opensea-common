@@ -69,19 +69,21 @@ bool get_current_timestamp(void)
     if (strcmp(CURRENT_TIME_STRING, "") == 0 || strcmp(CURRENT_TIME_STRING, "CAL_TIME_NOT_AVAILABLE") == 0)
     {
         struct tm logTime;
-        safe_memset(&logTime, sizeof(struct tm), 0, sizeof(struct tm));
+        M_INITIALIZE_STRUCTURE(&logTime, sizeof(struct tm));
         CURRENT_TIME = time(M_NULLPTR);
+        M_IGNORE_SAFE_ERRNO_CALL(safe_memset(CURRENT_TIME_STRING, SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING), 0,
+                                             SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING)),
+                                 "Bounds are equivalent, memory successfully zeroed.");
         if (CURRENT_TIME == TIME_T_ERROR)
         {
-            safe_memset(CURRENT_TIME_STRING, SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING), 0,
-                        SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING));
             retStatus = false;
-            snprintf_err_handle(CURRENT_TIME_STRING, CURRENT_TIME_STRING_LENGTH, "CAL_TIME_NOT_AVAILABLE");
+            M_IGNORE_SAFE_INT_CALL(
+                snprintf_err_handle(CURRENT_TIME_STRING, CURRENT_TIME_STRING_LENGTH, "CAL_TIME_NOT_AVAILABLE"),
+                "Error string always fits in buffer");
+            ;
         }
         else
         {
-            safe_memset(CURRENT_TIME_STRING, SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING), 0,
-                        SIZE_OF_STACK_ARRAY(CURRENT_TIME_STRING));
             retStatus = M_ToBool(strftime(CURRENT_TIME_STRING, CURRENT_TIME_STRING_LENGTH, "%Y%m%dT%H%M%S",
                                           get_Localtime(&CURRENT_TIME, &logTime)) > 0);
         }
@@ -102,11 +104,11 @@ static M_INLINE int win_filetime_to_struct_timespec(struct timespec* ts, int bas
     SYSTEMTIME     epoch;
     ULARGE_INTEGER nowAsInt;
     ULARGE_INTEGER epochAsInt;
-    safe_memset(&ftnow, sizeof(FILETIME), 0, sizeof(FILETIME));
-    safe_memset(&epochfile, sizeof(FILETIME), 0, sizeof(FILETIME));
-    safe_memset(&epoch, sizeof(SYSTEMTIME), 0, sizeof(SYSTEMTIME));
-    safe_memset(&nowAsInt, sizeof(ULARGE_INTEGER), 0, sizeof(ULARGE_INTEGER));
-    safe_memset(&epochAsInt, sizeof(ULARGE_INTEGER), 0, sizeof(ULARGE_INTEGER));
+    M_INITIALIZE_STRUCTURE(&ftnow, sizeof(FILETIME));
+    M_INITIALIZE_STRUCTURE(&epochfile, sizeof(FILETIME));
+    M_INITIALIZE_STRUCTURE(&epoch, sizeof(SYSTEMTIME));
+    M_INITIALIZE_STRUCTURE(&nowAsInt, sizeof(ULARGE_INTEGER));
+    M_INITIALIZE_STRUCTURE(&epochAsInt, sizeof(ULARGE_INTEGER));
     epoch.wYear      = WORD_C(1970);
     epoch.wMonth     = WORD_C(1);
     epoch.wSecond    = WORD_C(0); // MSFT says to set to first second.
@@ -188,7 +190,7 @@ static M_INLINE int struct_tm_to_struct_timespec(struct timespec* ts, int base)
     {
         return UINT64_C(0);
     }
-    safe_memset(&nowstruct, sizeof(struct tm), 0, sizeof(struct tm));
+    M_INITIALIZE_STRUCTURE(&nowstruct, sizeof(struct tm));
     get_UTCtime(&currentTime, &nowstruct);
     uint64_t currentyear = (M_STATIC_CAST(uint64_t, nowstruct.tm_year) + UINT64_C(1900));
     if (currentyear >= UINT64_C(1970))
@@ -306,7 +308,7 @@ int timespec_get(struct timespec* M_NONNULL ts, int base)
     // https://man.freebsd.org/cgi/man.cgi?query=ftime&sektion=3&n=1
     // https://www.ibm.com/docs/en/zos/2.4.0?topic=functions-ftime-ftime64-set-date-time
     struct timeval timenow;
-    safe_memset(&timenow, sizeof(struct timeval), 0, sizeof(struct timeval));
+    M_INITIALIZE_STRUCTURE(&timenow, sizeof(struct timeval));
     if (0 == gettimeofday(&timenow, M_NULLPTR))
     {
         ts->tv_sec  = timenow.tv_sec;
@@ -399,7 +401,7 @@ uint64_t get_Milliseconds_Since_Unix_Epoch(void)
     uint64_t msSinceJan1970 = UINT64_C(0);
     // Check for C11's standardized API call.
     struct timespec now;
-    safe_memset(&now, sizeof(struct timespec), 0, sizeof(struct timespec));
+    M_INITIALIZE_STRUCTURE(&now, sizeof(struct timespec));
     if (TIME_UTC == timespec_get(&now, TIME_UTC))
     {
         // NOTE: Technically this is a time since the system's epoch as C
@@ -723,7 +725,8 @@ static M_INLINE errno_t standardized_strftime_for_asctime(char* buf, rsize_t buf
     {
         // This means the array was too small...which shouldn't happen...but
         // in case it does, zero out the memory
-        safe_memset(buf, bufsz, 0, bufsz);
+        M_IGNORE_SAFE_ERRNO_CALL(safe_memset(buf, bufsz, 0, bufsz),
+                                 "Bounds are equivalent, memory successfully zeroed.");
         error = EINVAL;
         errno = error;
     }
@@ -765,7 +768,8 @@ static M_INLINE errno_t msft_strftime_l_for_asctime(char* buf, rsize_t bufsz, co
         {
             // This means the array was too small...which shouldn't happen...but
             // in case it does, zero out the memory
-            safe_memset(buf, bufsz, 0, bufsz);
+            M_IGNORE_SAFE_ERRNO_CALL(safe_memset(buf, bufsz, 0, bufsz),
+                                     "Bounds are equivalent, memory successfully zeroed.");
             error = EINVAL;
             errno = error;
         }
@@ -800,7 +804,8 @@ static M_INLINE errno_t posix_strftime_l_for_asctime(char* buf, rsize_t bufsz, c
         {
             // This means the array was too small...which shouldn't happen...but
             // in case it does, zero out the memory
-            safe_memset(buf, bufsz, 0, bufsz);
+            M_IGNORE_SAFE_ERRNO_CALL(safe_memset(buf, bufsz, 0, bufsz),
+                                     "Bounds are equivalent, memory successfully zeroed.");
             error = EINVAL;
             errno = error;
         }
@@ -937,12 +942,14 @@ errno_t impl_safe_asctime(char* M_NONNULL            buf,
     {
         // Perform the conversion
         // start with a known zeroed buffer
-        safe_memset(buf, bufsz, 0, bufsz);
+        M_IGNORE_SAFE_ERRNO_CALL(safe_memset(buf, bufsz, 0, bufsz),
+                                 "Bounds are equivalent, memory successfully zeroed.");
 #if defined(HAVE_MSFT_SECURE_LIB) || defined(HAVE_C11_ANNEX_K)
         if (0 != asctime_s(buf, bufsz, time_ptr))
         {
             // error
-            safe_memset(buf, bufsz, 0, bufsz);
+            M_IGNORE_SAFE_ERRNO_CALL(safe_memset(buf, bufsz, 0, bufsz),
+                                     "Bounds are equivalent, memory successfully zeroed.");
             error = EINVAL;
             errno = error;
             return error;
@@ -991,7 +998,7 @@ errno_t impl_safe_ctime(char* M_NONNULL         buf,
     else
     {
         struct tm cTimeBuf;
-        safe_memset(&cTimeBuf, sizeof(struct tm), 0, sizeof(struct tm));
+        M_INITIALIZE_STRUCTURE(&cTimeBuf, sizeof(struct tm));
         error = impl_safe_asctime(buf, bufsz, get_Localtime(timer, &cTimeBuf), true, file, function, line, expression);
     }
     return error;
@@ -1006,8 +1013,11 @@ M_CONST_FUNC time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsI
     uint8_t   minutes = UINT8_C(0);
     uint8_t   seconds = UINT8_C(0);
     struct tm futureTime;
-    safe_memset(&futureTime, sizeof(struct tm), 0, sizeof(struct tm));
-    get_Localtime(C_CAST(const time_t*, &inputTime), &futureTime);
+    M_INITIALIZE_STRUCTURE(&futureTime, sizeof(struct tm));
+    if (M_NULLPTR == get_Localtime(C_CAST(const time_t*, &inputTime), &futureTime))
+    {
+        return TIME_T_ERROR;
+    }
     // first break the input time into seperate units
     convert_Seconds_To_Displayable_Time(secondsInTheFuture, &years, &days, &hours, &minutes, &seconds);
     // now start setting the future time struct and checking when incrementing

@@ -780,6 +780,15 @@ typedef int32_t intptr_t;
 #endif
 
 #if !defined(USING_CPP98)
+
+#    if defined(USING_C99)
+    /* Forward declaration so C99 fallback can call into explicit_zeroes().
+     * The implementation lives in memory_safety.c and is available via memory_safety.h.
+     */
+    M_PARAM_WO_SIZE(1, 2)
+    void* explicit_zeroes(void* dest, size_t count);
+#    endif
+
 //! \def DECLARE_CHAR_INIT_ARRAY
 //! \brief Declares and char-initializes an array.
 //!
@@ -830,29 +839,12 @@ typedef int32_t intptr_t;
 #        define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) type_name array_name[size] = {}
 #    else
 #        if defined(USING_C99)
-    static M_INLINE void zero_init_array(void* array, size_t element_size, size_t element_count)
-    {
-#            if defined(HAVE_MEMSET_EXPLICIT)
-        memset_explicit(array, 0, element_size * element_count);
-#            elif defined(HAVE_C11_ANNEX_K) || defined(HAVE_MEMSET_S)
-        memset_s(array, element_size * element_count, 0, element_size * element_count);
-#            elif (defined(_WIN32) && defined(_MSC_VER)) || defined(HAVE_MSFT_SECURE_ZERO_MEMORY) ||                   \
-                defined(HAVE_MSFT_SECURE_ZERO_MEMORY2)
-#                if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                      \
-                    (defined(HAVE_MSFT_SECURE_ZERO_MEMORY2) ||                                                         \
-                     (defined(WIN_API_TARGET_VERSION) && WIN_API_TARGET_VERSION >= WIN_API_TARGET_WIN11_26100))
-        SecureZeroMemory2(array, element_size * element_count);
-#                else
-        SecureZeroMemory(array, element_size * element_count);
-#                endif
-#            else
-        memset(array, 0, element_size * element_count);
-#            endif
-    }
-
+/* C99 fallback: declare array then zero it using explicit_zeroes (preferred).
+ * Note: this is not a compile-time constant initializer and is intended for block-scope use.
+ */
 #            define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)                                               \
                 type_name array_name[size];                                                                            \
-                zero_init_array(array_name, sizeof(type_name), size)
+                explicit_zeroes(array_name, (sizeof(type_name) * (size)))
 #        else
 #            define DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size) type_name array_name[size] = {0}
 #        endif
@@ -867,23 +859,8 @@ typedef int32_t intptr_t;
 //! \param array_name The name of the array.
 //! \param size The size of the array.
 //! \param align The requested alignment to use with alignas()
-#    if IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0)
-#        define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                    \
-            M_ALIGNAS(align) type_name array_name[size] = {[0 ...((size) - 1)] = 0}
-#    elif defined(USING_C23)
-#        define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                    \
-            M_ALIGNAS(align) type_name array_name[size] = {}
-#    else
-#        if defined(USING_C99)
-#            define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                \
-                M_ALIGNAS(align) type_name array_name[size];                                                           \
-                zero_init_array(array_name, sizeof(type_name), size)
-#        else
-#            define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                \
-                M_ALIGNAS(align) type_name array_name[size] = {0}
-#        endif
-#    endif
-
+#    define DECLARE_ALIGNED_ZERO_INIT_ARRAY(type_name, array_name, size, align)                                        \
+        M_ALIGNAS(align) DECLARE_ZERO_INIT_ARRAY(type_name, array_name, size)
 #endif
 
 //! \def M_STATIC_ASSERT

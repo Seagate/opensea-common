@@ -101,6 +101,7 @@ static M_INLINE char* med3(char* M_NONNULL        a,
 // Disabling clang-tidy check since this code comes from another author and I do not need to
 // attempt to refactor this - TJE
 M_PARAM_RW(1)
+CONSTRAINT_NO_DISCARD
 errno_t safe_qsort_context_impl(void* M_NONNULL        ptr,
                                 rsize_t                count,
                                 rsize_t                size,

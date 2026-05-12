@@ -42,22 +42,21 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber M_NONNULL
     AsciiSPrintUnicodeFormat(firmwareVendorASCII, UEFI_FW_VENDOR_STR_LEN, L"%s", gST->FirmwareVendor);
     if (safe_strlen(firmwareVendorASCII) == 0)
     {
-        snprintf_err_handle(firmwareVendorASCII, UEFI_FW_VENDOR_STR_LEN, "Unknown Firmware Vendor");
+        if (snprintf_err_handle(firmwareVendorASCII, UEFI_FW_VENDOR_STR_LEN, "Unknown Firmware Vendor") < 0)
+        {
+            perror("Error: UEFI Firmware vendor unknown and truncated");
+        }
     }
-    // NOLINTBEGIN(bugprone-branch-clone)
-    // Turning off clang-tidy check for this branch. It's detected as the same,
-    // but the string UEFI vs EFI is different which is helpful in this case-TJE
-    if (versionNumber->versionType.uefiVersion.majorVersion >= 2)
+    const char* efiTypeStr = "UEFI";
+    if (versionNumber->versionType.uefiVersion.majorVersion < 2)
     {
-        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "UEFI - %s - 0x%08" PRIX32, firmwareVendorASCII,
-                            gST->FirmwareRevision);
+        efiTypeStr = "EFI";
     }
-    else
+    if (snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "%s - %s - 0x%08" PRIX32, efiTypeStr,
+                            firmwareVendorASCII, gST->FirmwareRevision) < 0)
     {
-        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "EFI - %s - 0x%08" PRIX32, firmwareVendorASCII,
-                            gST->FirmwareRevision);
+        perror("Error: EFI operating system name truncated");
     }
-    // NOLINTEND(bugprone-branch-clone)
     return SUCCESS;
 }
 
@@ -81,7 +80,8 @@ M_PARAM_WO(1) eReturnValues get_Current_User_Name(char* M_NONNULL* M_NULLABLE us
         *userName = M_REINTERPRET_CAST(char*, safe_calloc(UEFI_USER_NAME_LENGTH, sizeof(char)));
         if (*userName)
         {
-            snprintf_err_handle(*userName, UEFI_USER_NAME_LENGTH, "efi");
+            M_IGNORE_SAFE_INT_CALL(snprintf_err_handle(*userName, UEFI_USER_NAME_LENGTH, "efi"),
+                                   "EFI Username always fits in buffer size\n");
         }
         else
         {

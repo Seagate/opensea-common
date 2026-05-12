@@ -23,6 +23,7 @@
 
 // regular qsort without context, but added checks for qsort_s
 M_PARAM_RW(1)
+CONSTRAINT_NO_DISCARD
 errno_t safe_qsort_impl(void* M_NONNULL        ptr,
                         rsize_t                count,
                         rsize_t                size,
@@ -80,6 +81,7 @@ errno_t safe_qsort_impl(void* M_NONNULL        ptr,
 // regular bsearch without context, but added checks for bsearch_s
 M_PARAM_RO(1)
 M_PARAM_RO(2)
+CONSTRAINT_NO_DISCARD
 void* M_NULLABLE safe_bsearch_impl(const void* M_NONNULL  key,
                                    const void* M_NONNULL  ptr,
                                    rsize_t                count,

@@ -43,9 +43,13 @@ eReturnValues fill_Random_Pattern_In_Buffer(uint8_t* M_NONNULL ptrData, uint32_t
     {
         localPtr[iter] = xorshiftplus32();
     }
-    safe_memcpy(ptrData, dataLength, localPtr,
-                dataLength); // copy only the length of the original pointer since we
-                             // may have overallocated and rounded up earlier.
+    if (0 != safe_memcpy(ptrData, dataLength, localPtr,
+                         dataLength)) // copy only the length of the original pointer since we
+                                      // may have overallocated and rounded up earlier.
+    {
+        safe_free(&localPtr);
+        return M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE);
+    }
     safe_free(&localPtr);
     return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }
@@ -71,9 +75,13 @@ eReturnValues fill_Hex_Pattern_In_Buffer(uint32_t hexPattern, uint8_t* M_NONNULL
     {
         localPtr[iter] = hexPattern;
     }
-    safe_memcpy(ptrData, dataLength, localPtr,
-                dataLength); // copy only the length of the original pointer since we
-                             // may have overallocated and rounded up earlier.
+    if (0 != safe_memcpy(ptrData, dataLength, localPtr,
+                         dataLength)) // copy only the length of the original pointer since we
+                                      // may have overallocated and rounded up earlier.
+    {
+        safe_free(&localPtr);
+        return M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE);
+    }
     safe_free(&localPtr);
     return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }
@@ -113,7 +121,10 @@ eReturnValues fill_ASCII_Pattern_In_Buffer(const char* M_NONNULL asciiPattern,
     }
     for (uint32_t iter = UINT32_C(0); iter < dataLength; iter += patternLength)
     {
-        safe_memcpy(&ptrData[iter], dataLength - iter, asciiPattern, M_Min(patternLength, dataLength - iter));
+        if (0 != safe_memcpy(&ptrData[iter], dataLength - iter, asciiPattern, M_Min(patternLength, dataLength - iter)))
+        {
+            return M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE);
+        }
     }
     return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }
@@ -135,7 +146,10 @@ eReturnValues fill_Pattern_Buffer_Into_Another_Buffer(uint8_t* M_NONNULL inPatte
     }
     for (uint32_t iter = UINT32_C(0); iter < dataLength; iter += inpatternLength)
     {
-        safe_memcpy(&ptrData[iter], dataLength - iter, inPattern, M_Min(inpatternLength, dataLength - iter));
+        if (0 != safe_memcpy(&ptrData[iter], dataLength - iter, inPattern, M_Min(inpatternLength, dataLength - iter)))
+        {
+            return M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE);
+        }
     }
     return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }

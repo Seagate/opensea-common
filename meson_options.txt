@@ -94,3 +94,15 @@ option(
                 'Clang\'s diagnose_if attribute must be supported for this to work.' +
                 'This may not be able to detect all cases of non-overlap, so it should be used as a hint rather than a guarantee.'
 )
+
+option('constraint-handler',
+        type: 'combo',
+        choices : ['abort', 'ignore', 'warn', 'abortnd'],
+        value : 'abort',
+        description : 'Defines the behavior of the constraint handler when a runtime-constraint ' +
+        'violation occurs. The default is to abort the program, but you can choose to ignore the ' +
+        'violation or print a warning message instead. When set to ignore or warn, the nodiscard ' +
+        'attribute is applied to all functions that can invoke the constraint handler, which will cause ' +
+        'a compiler warning if the return value of such a function is not checked. The abortnd' +
+        'option keeps the abort handler in place, but allows setting the nodiscard attribute to assist' +
+        'developers in identifying and fixing constraint violations without immediately terminating the program.')

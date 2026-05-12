@@ -35,7 +35,11 @@ static int lin_file_filter(const struct dirent* M_NONNULL entry, const char* M_N
     if (filename != M_NULLPTR)
     {
         struct stat s;
-        snprintf_err_handle(filename, filenameLength, "/etc/%s", entry->d_name);
+        if (0 > snprintf_err_handle(filename, filenameLength, "/etc/%s", entry->d_name))
+        {
+            safe_free(&filename);
+            return match;
+        }
         if (stat(filename, &s) == 0)
         {
             if (S_ISREG(s.st_mode)) // must be a file. TODO: are links ok? I
@@ -102,18 +106,28 @@ static bool get_Linux_Info_From_OS_Release_File(char* M_NONNULL operatingSystemN
             if (etcRelease)
             {
                 fileerror = safe_fopen(&release, "/etc/os-release", "r");
-                snprintf_err_handle(releasefile, RELEASE_FILE_NAME_LENGTH, "/etc/os-release");
+                if (0 != safe_strcpy(releasefile, RELEASE_FILE_NAME_LENGTH, "/etc/os-release"))
+                    M_UNLIKELY
+                    {
+                        perror("Error copying name of linux os-release file before opening\n");
+                        return gotLinuxInfo;
+                    }
             }
             else
             {
                 fileerror = safe_fopen(&release, "/usr/lib/os-release", "r");
-                snprintf_err_handle(releasefile, RELEASE_FILE_NAME_LENGTH, "/usr/lib/os-release");
+                if (0 != safe_strcpy(releasefile, RELEASE_FILE_NAME_LENGTH, "/usr/lib/os-release"))
+                    M_UNLIKELY
+                    {
+                        perror("Error copying name of linux os-release file before opening\n");
+                        return gotLinuxInfo;
+                    }
             }
             if (fileerror == 0 && release)
             {
                 int         releasefileno = fileno(release);
                 struct stat releasestat;
-                safe_memset(&releasestat, sizeof(struct stat), 0, sizeof(struct stat));
+                M_INITIALIZE_STRUCTURE(&releasestat, sizeof(struct stat));
                 if (releasefileno >= 0 && 0 == fstat(releasefileno, &releasestat))
                 {
                     off_t releaseSize = releasestat.st_size;
@@ -134,10 +148,14 @@ static bool get_Linux_Info_From_OS_Release_File(char* M_NONNULL operatingSystemN
                                 if (strncmp(tok, "PRETTY_NAME=", safe_strlen("PRETTY_NAME=")) == 0)
                                 {
                                     gotLinuxInfo = true;
-                                    snprintf_err_handle(
-                                        &operatingSystemName[0], OS_NAME_SIZE, "%.*s",
-                                        C_CAST(int, safe_strlen(tok) - 1 - safe_strlen("PRETTY_NAME=\"")),
-                                        tok + safe_strlen("PRETTY_NAME=\""));
+                                    if (0 > snprintf_err_handle(
+                                                &operatingSystemName[0], OS_NAME_SIZE, "%.*s",
+                                                C_CAST(int, safe_strlen(tok) - 1 - safe_strlen("PRETTY_NAME=\"")),
+                                                tok + safe_strlen("PRETTY_NAME=\"")))
+                                    {
+                                        gotLinuxInfo = false;
+                                        print_error_format("Error formatting Linux OS name from release file");
+                                    }
                                     break;
                                 }
                                 tok = safe_String_Token(M_NULLPTR, &releaselen, "\n", &saveptr);
@@ -168,13 +186,19 @@ static char* M_NULLABLE read_Linux_etc_File_For_OS_Info(char* M_NONNULL dirent_e
         errno_t fileopenerr    = 0;
         if (fileName != M_NULLPTR)
         {
-            snprintf_err_handle(fileName, fileNameLength, "/etc/%s", dirent_entry_name);
+            if (0 > snprintf_err_handle(fileName, fileNameLength, "/etc/%s", dirent_entry_name))
+                M_UNLIKELY
+                {
+                    print_error_format("Error formatting /etc/%s to local buffer before opening", dirent_entry_name);
+                    safe_free(&fileName);
+                    return etcFileMem;
+                }
             fileopenerr = safe_fopen(&release, fileName, "r");
             if (fileopenerr == 0 && release)
             {
                 int         releaseFileno = fileno(release);
                 struct stat direntfilestat;
-                safe_memset(&direntfilestat, sizeof(struct stat), 0, sizeof(struct stat));
+                M_INITIALIZE_STRUCTURE(&direntfilestat, sizeof(struct stat));
                 if (releaseFileno >= 0 && 0 == fstat(releaseFileno, &direntfilestat))
                 {
                     // read it
@@ -240,8 +264,13 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* M_NONNULL oper
                         gotLinuxInfo = true;
                         if (operatingSystemName != M_NULLPTR)
                         {
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "%.*s",
-                                                C_CAST(int, safe_strlen(releaseFile)), releaseFile);
+                            if (0 > snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "%.*s",
+                                                        C_CAST(int, safe_strlen(releaseFile)), releaseFile))
+                            {
+                                gotLinuxInfo = false;
+                                print_error_format("Error formatting Linux OS name from release file: %s",
+                                                   osrelease[releaseIter]->d_name);
+                            }
                         }
                         safe_free(&releaseFile);
                     }
@@ -263,8 +292,13 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* M_NONNULL oper
                 gotLinuxInfo = true;
                 if (operatingSystemName != M_NULLPTR)
                 {
-                    snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "%.*s",
-                                        C_CAST(int, safe_strlen(versionFile)), versionFile);
+                    if (0 > snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "%.*s",
+                                                C_CAST(int, safe_strlen(versionFile)), versionFile))
+                    {
+                        gotLinuxInfo = false;
+                        print_error_format("Error formatting Linux OS name from version file: %s",
+                                           osversion[0]->d_name);
+                    }
                 }
                 safe_free(&versionFile);
             }
@@ -283,8 +317,13 @@ static bool get_Linux_Info_From_Distribution_Specific_Files(char* M_NONNULL oper
                 gotLinuxInfo = true;
                 if (operatingSystemName != M_NULLPTR)
                 {
-                    snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "%.*s",
-                                        C_CAST(int, safe_strlen(lsbreleaseFile)), lsbreleaseFile);
+                    if (0 > snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "%.*s",
+                                                C_CAST(int, safe_strlen(lsbreleaseFile)), lsbreleaseFile))
+                    {
+                        gotLinuxInfo = false;
+                        print_error_format("Error formatting Linux OS name from lsb-release file: %s",
+                                           osrelease[lsbReleaseOffset]->d_name);
+                    }
                 }
                 safe_free(&lsbreleaseFile);
             }
@@ -332,7 +371,7 @@ static bool get_Linux_Info_From_ETC_Issue(char* M_NONNULL operatingSystemName)
         {
             int         issueFileno = fileno(issue);
             struct stat issuestat;
-            safe_memset(&issuestat, sizeof(struct stat), 0, sizeof(struct stat));
+            M_INITIALIZE_STRUCTURE(&issuestat, sizeof(struct stat));
             if (issueFileno >= 0 && 0 == fstat(issueFileno, &issuestat))
             {
                 // read it
@@ -348,8 +387,12 @@ static bool get_Linux_Info_From_ETC_Issue(char* M_NONNULL operatingSystemName)
                             !ferror(issue))
                         {
                             gotLinuxInfo = true;
-                            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "%.*s", C_CAST(int, issueSize),
-                                                issueMemory);
+                            if (0 > snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "%.*s",
+                                                        C_CAST(int, issueSize), issueMemory))
+                            {
+                                gotLinuxInfo = false;
+                                print_error_format("Error formatting Linux OS name from /etc/issue file");
+                            }
                         }
                         safe_free(&issueMemory);
                     }
@@ -555,7 +598,10 @@ static eReturnValues get_Linux_Ver_And_Name(ptrOSVersionNumber M_NONNULL version
     // if we couldn't find a name, set unknown linux os
     if (!linuxOSNameFound && operatingSystemName)
     {
-        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Linux OS");
+        if (0 != safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Linux OS"))
+        {
+            perror("Error copying Linux version string");
+        }
     }
     return ret;
 }
@@ -582,13 +628,19 @@ static eReturnValues get_FreeBSD_Ver_And_Name(ptrOSVersionNumber M_NONNULL versi
     {
         if (ret != FAILURE)
         {
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "FreeBSD %" PRIu16 ".%" PRIu16 "",
-                                versionNumber->versionType.freeBSDVersion.majorVersion,
-                                versionNumber->versionType.freeBSDVersion.minorVersion);
+            if (0 > snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "FreeBSD %" PRIu16 ".%" PRIu16 "",
+                                        versionNumber->versionType.freeBSDVersion.majorVersion,
+                                        versionNumber->versionType.freeBSDVersion.minorVersion))
+            {
+                perror("Error formatting FreeBSD version string");
+            }
         }
         else
         {
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Unknown FreeBSD OS Version");
+            if (0 != safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Unknown FreeBSD OS Version"))
+            {
+                perror("Error copying FreeBSD version string");
+            }
         }
     }
     return ret;
@@ -615,7 +667,10 @@ static eReturnValues get_SunOS_Ver_And_Name(ptrOSVersionNumber M_NONNULL version
     // set OS name as Solaris "unixUname.version" for the OS Name
     if (operatingSystemName != M_NULLPTR)
     {
-        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Solaris %s", unixUname->version);
+        if (0 > snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Solaris %s", unixUname->version))
+        {
+            perror("Error copying Solaris version string");
+        }
     }
     // The Solaris Version/name is stored in version
     if (safe_strlen(unixUname->version) > 0 && safe_isdigit(unixUname->version[0]))
@@ -652,44 +707,49 @@ static eReturnValues get_Darwin_Ver_And_Name(ptrOSVersionNumber M_NONNULL versio
     // https://en.wikipedia.org/wiki/Darwin_(operating_system)
     if (operatingSystemName != M_NULLPTR)
     {
+        errno_t error = 0;
         switch (versionNumber->versionType.macOSVersion.majorVersion)
         {
         case 5: // puma
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.1 Puma");
+            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.1 Puma");
             break;
         case 6: // jaguar
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.2 Jaguar");
+            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.2 Jaguar");
             break;
         case 7: // panther
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.3 Panther");
+            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.3 Panther");
             break;
         case 8: // tiger
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.4 Tiger");
+            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.4 Tiger");
             break;
         case 9: // leopard
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.5 Leopard");
+            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.5 Leopard");
             break;
         case 10: // snow leopard
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.6 Snow Leopard");
+            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.6 Snow Leopard");
             break;
         case 11: // lion
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.7 Lion");
+            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Mac OS X 10.7 Lion");
             break;
         case 12: // Mountain Lion
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.8 Mountain Lion");
+            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.8 Mountain Lion");
             break;
         case 13: // mavericks
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.9 Mavericks");
+            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.9 Mavericks");
             break;
         case 14: // Yosemite
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.10 Yosemite");
+            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.10 Yosemite");
             break;
         case 15: // el capitan
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.11 El Capitan");
+            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "OS X 10.11 El Capitan");
             break;
         default:
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Mac OS X Version");
+            error = safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Mac OS X Version");
             break;
+        }
+        if (error != 0)
+        {
+            perror("Error copying Mac OS X version string");
         }
     }
     return ret;
@@ -712,9 +772,12 @@ static eReturnValues get_AIX_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionNu
     }
     if (operatingSystemName != M_NULLPTR)
     {
-        snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "AIX %" PRIu16 ".%" PRIu16 "",
-                            versionNumber->versionType.aixVersion.majorVersion,
-                            versionNumber->versionType.aixVersion.minorVersion);
+        if (0 > snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "AIX %" PRIu16 ".%" PRIu16 "",
+                                    versionNumber->versionType.aixVersion.majorVersion,
+                                    versionNumber->versionType.aixVersion.minorVersion))
+        {
+            perror("Error formatting AIX version string");
+        }
     }
     return ret;
 }
@@ -732,9 +795,12 @@ static eReturnValues get_Dragonfly_Ver_And_Name(ptrOSVersionNumber M_NONNULL ver
         versionNumber->versionType.dragonflyVersion.minorVersion = list[1];
         if (operatingSystemName != M_NULLPTR)
         {
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Dragonfly BSD %" PRIu16 ".%" PRIu16 "",
-                                versionNumber->versionType.dragonflyVersion.majorVersion,
-                                versionNumber->versionType.dragonflyVersion.minorVersion);
+            if (0 > snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Dragonfly BSD %" PRIu16 ".%" PRIu16 "",
+                                        versionNumber->versionType.dragonflyVersion.majorVersion,
+                                        versionNumber->versionType.dragonflyVersion.minorVersion))
+            {
+                perror("Error formatting Dragonfly BSD version string");
+            }
         }
     }
     else
@@ -742,7 +808,10 @@ static eReturnValues get_Dragonfly_Ver_And_Name(ptrOSVersionNumber M_NONNULL ver
         ret = FAILURE;
         if (operatingSystemName != M_NULLPTR)
         {
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Dragonfly BSD Version");
+            if (0 != safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Dragonfly BSD Version"))
+            {
+                perror("Error copying Unknown Dragonfly BSD version string");
+            }
         }
     }
     return ret;
@@ -761,9 +830,12 @@ static eReturnValues get_OpenBSD_Ver_And_Name(ptrOSVersionNumber M_NONNULL versi
         versionNumber->versionType.openBSDVersion.minorVersion = list[1];
         if (operatingSystemName != M_NULLPTR)
         {
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "OpenBSD %" PRIu16 ".%" PRIu16 "",
-                                versionNumber->versionType.openBSDVersion.majorVersion,
-                                versionNumber->versionType.openBSDVersion.minorVersion);
+            if (0 > snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "OpenBSD %" PRIu16 ".%" PRIu16 "",
+                                        versionNumber->versionType.openBSDVersion.majorVersion,
+                                        versionNumber->versionType.openBSDVersion.minorVersion))
+            {
+                perror("Error formatting OpenBSD version string");
+            }
         }
     }
     else
@@ -771,7 +843,10 @@ static eReturnValues get_OpenBSD_Ver_And_Name(ptrOSVersionNumber M_NONNULL versi
         ret = FAILURE;
         if (operatingSystemName != M_NULLPTR)
         {
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Unknown OpenBSD Version");
+            if (0 != safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Unknown OpenBSD Version"))
+            {
+                perror("Error copying Unknown OpenBSD version string");
+            }
         }
     }
     return ret;
@@ -791,7 +866,10 @@ static eReturnValues get_NetBSD_Ver_And_Name(ptrOSVersionNumber M_NONNULL versio
         versionNumber->versionType.netBSDVersion.revision     = list[2];
         if (operatingSystemName != M_NULLPTR)
         {
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "NetBSD %s", unixUname->release);
+            if (0 > snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "NetBSD %s", unixUname->release))
+            {
+                perror("Error formatting NetBSD version string");
+            }
         }
     }
     else
@@ -799,7 +877,10 @@ static eReturnValues get_NetBSD_Ver_And_Name(ptrOSVersionNumber M_NONNULL versio
         ret = FAILURE;
         if (operatingSystemName != M_NULLPTR)
         {
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Unknown NetBSD Version");
+            if (0 != safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Unknown NetBSD Version"))
+            {
+                perror("Error copying Unknown NetBSD version string");
+            }
         }
     }
     return ret;
@@ -818,7 +899,10 @@ static eReturnValues get_OSF1_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionN
         versionNumber->versionType.tru64Version.minorVersion = list[1];
         if (operatingSystemName != M_NULLPTR)
         {
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Tru64 %s", unixUname->release);
+            if (0 > snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Tru64 %s", unixUname->release))
+            {
+                perror("Error formatting Tru64 version string");
+            }
         }
     }
     else
@@ -826,7 +910,10 @@ static eReturnValues get_OSF1_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionN
         ret = FAILURE;
         if (operatingSystemName != M_NULLPTR)
         {
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Tru64 Version");
+            if (0 != safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Unknown Tru64 Version"))
+            {
+                perror("Error copying Unknown Tru64 version string");
+            }
         }
     }
     return ret;
@@ -845,9 +932,12 @@ static eReturnValues get_HPUX_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionN
         versionNumber->versionType.hpuxVersion.minorVersion = list[1];
         if (operatingSystemName != M_NULLPTR)
         {
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "HP-UX %" PRIu16 ".%" PRIu16 "",
-                                versionNumber->versionType.hpuxVersion.majorVersion,
-                                versionNumber->versionType.hpuxVersion.minorVersion);
+            if (0 > snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "HP-UX %" PRIu16 ".%" PRIu16 "",
+                                        versionNumber->versionType.hpuxVersion.majorVersion,
+                                        versionNumber->versionType.hpuxVersion.minorVersion))
+            {
+                perror("Error formatting HP-UX version string");
+            }
         }
     }
     else
@@ -855,7 +945,10 @@ static eReturnValues get_HPUX_Ver_And_Name(ptrOSVersionNumber M_NONNULL versionN
         ret = FAILURE;
         if (operatingSystemName != M_NULLPTR)
         {
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Unknown HP-UX Version");
+            if (0 != safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Unknown HP-UX Version"))
+            {
+                perror("Error copying Unknown HP-UX version string");
+            }
         }
     }
     return ret;
@@ -875,7 +968,10 @@ static eReturnValues get_VMKernel_Ver_And_Name(ptrOSVersionNumber M_NONNULL vers
         versionNumber->versionType.esxiVersion.revision     = list[2];
         if (operatingSystemName != M_NULLPTR)
         {
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "ESXi %s", unixUname->release);
+            if (0 > snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "ESXi %s", unixUname->release))
+            {
+                perror("Error formatting ESXi version string");
+            }
         }
     }
     else
@@ -883,7 +979,10 @@ static eReturnValues get_VMKernel_Ver_And_Name(ptrOSVersionNumber M_NONNULL vers
         ret = FAILURE;
         if (operatingSystemName != M_NULLPTR)
         {
-            snprintf_err_handle(&operatingSystemName[0], OS_NAME_SIZE, "Unknown ESXi Version");
+            if (0 != safe_strcpy(&operatingSystemName[0], OS_NAME_SIZE, "Unknown ESXi Version"))
+            {
+                perror("Error copying Unknown ESXi version string");
+            }
         }
     }
     return ret;
@@ -903,7 +1002,7 @@ eReturnValues get_Operating_System_Version_And_Name(ptrOSVersionNumber M_NONNULL
     // check what is filled in by the uname call in the utsname struct (BUT
     // DON"T CHECK THE DOMAIN NAME since that is GNU specific)
     struct utsname unixUname;
-    safe_memset(&unixUname, sizeof(struct utsname), 0, sizeof(struct utsname));
+    M_INITIALIZE_STRUCTURE(&unixUname, sizeof(struct utsname));
     if (0 == uname(&unixUname))
     {
         if (strcasecmp("Linux", unixUname.sysname) == 0) // some OSs like Android or ESX may fall into here, so this
@@ -1054,8 +1153,14 @@ static bool get_User_Name_From_ID(uid_t userID, char* M_NONNULL* M_NULLABLE user
                         *userName = M_REINTERPRET_CAST(char*, safe_calloc(userNameLength, sizeof(char)));
                         if (*userName)
                         {
-                            snprintf_err_handle(*userName, userNameLength, "%s", userInfo->pw_name);
-                            success = true;
+                            if (0 == safe_strcpy(*userName, userNameLength, userInfo->pw_name))
+                            {
+                                success = true;
+                            }
+                            else
+                            {
+                                perror("Error copying found username. Likely truncation");
+                            }
                         }
                     }
                 }
@@ -1077,8 +1182,14 @@ static bool get_User_Name_From_ID(uid_t userID, char* M_NONNULL* M_NULLABLE user
                     *userName = M_REINTERPRET_CAST(char*, safe_calloc(userNameLength, sizeof(char)));
                     if (*userName)
                     {
-                        snprintf_err_handle(*userName, userNameLength, "%s", userInfo->pw_name);
-                        success = true;
+                        if (0 == safe_strcpy(*userName, userNameLength, userInfo->pw_name))
+                        {
+                            success = true;
+                        }
+                        else
+                        {
+                            perror("Error copying found username. Likely truncation");
+                        }
                     }
                 }
             }
