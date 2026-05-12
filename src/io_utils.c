@@ -268,7 +268,7 @@ static uint16_t get_Console_Default_Color(void)
     if (defaultConsoleAttributes == UINT16_MAX)
     {
         CONSOLE_SCREEN_BUFFER_INFO defaultInfo;
-        safe_memset(&defaultInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO), 0, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
+        M_INITIALIZE_STRUCTURE(&defaultInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
         if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &defaultInfo))
         {
             defaultConsoleAttributes = defaultInfo.wAttributes;
@@ -286,7 +286,7 @@ static uint16_t get_Console_Current_Color(void)
 {
     uint16_t                   currentConsoleAttributes = UINT16_MAX;
     CONSOLE_SCREEN_BUFFER_INFO currentInfo;
-    safe_memset(&currentInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO), 0, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
+    M_INITIALIZE_STRUCTURE(&currentInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
     if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &currentInfo))
     {
         currentConsoleAttributes = currentInfo.wAttributes;
@@ -492,8 +492,9 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     // disable echoing typed characters so that
     if (set_Input_Console_Mode(conMode))
     {
-        ssize_t inputRes = getline(userInput, inputDataLen, stdin);
-        if (inputRes <= 0)
+        rsize_t inputAllocLen = RSIZE_T_C(0);
+        rsize_t inputReadLen  = RSIZE_T_C(0);
+        if (0 != safe_getline(userInput, &inputAllocLen, &inputReadLen, stdin) || *userInput == M_NULLPTR)
         {
             ret = M_ACCESS_ENUM(eReturnValues, FAILURE);
             *inputDataLen = 0;
@@ -501,12 +502,15 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         }
         else
         {
-            *inputDataLen = C_CAST(size_t, inputRes);
             // remove newline from the end...convert to a null.
             if ((*userInput)[*inputDataLen - 1] == '\n')
             {
                 (*userInput)[*inputDataLen - 1] = '\0';
                 *inputDataLen -= 1;
+            }
+            if (inputDataLen != M_NULLPTR)
+            {
+                *inputDataLen = inputReadLen;
             }
         }
     }
@@ -592,7 +596,7 @@ static eKnownTERM get_Term_From_Env_TERM(bool* M_NONNULL haveCompleteMatch)
             // more limited, but this may be ok since we are not using rgb
             // format. Only 16 different colors-TJE
             OSVersionNumber linVer;
-            safe_memset(&linVer, sizeof(OSVersionNumber), 0, sizeof(OSVersionNumber));
+            M_INITIALIZE_STRUCTURE(&linVer, sizeof(OSVersionNumber));
             if (SUCCESS == get_Operating_System_Version_And_Name(&linVer, M_NULLPTR))
             {
                 if (linVer.versionType.linuxVersion.majorVersion >= 4 ||
@@ -720,7 +724,7 @@ static void get_Console_Color_Capabilities(ptrConsoleColorCap colorCapabilities)
     if (colorCapabilities != M_NULLPTR)
     {
         eKnownTERM term = get_Terminal_Type();
-        safe_memset(colorCapabilities, sizeof(consoleColorCap), 0, sizeof(consoleColorCap));
+        M_INITIALIZE_STRUCTURE(colorCapabilities, sizeof(consoleColorCap));
         switch (term)
         {
         case TERM_LINUX_256COLOR:
@@ -1114,8 +1118,8 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     struct termios currentterm;
     FILE*          term   = M_NULLPTR;
     bool           devtty = true;
-    safe_memset(&defaultterm, sizeof(struct termios), 0, sizeof(struct termios));
-    safe_memset(&currentterm, sizeof(struct termios), 0, sizeof(struct termios));
+    M_INITIALIZE_STRUCTURE(&defaultterm, sizeof(struct termios));
+    M_INITIALIZE_STRUCTURE(&currentterm, sizeof(struct termios));
     errno_t openresult = safe_fopen(&term, "/dev/tty", "r"); // use /dev/tty instead of stdin to get the
                                                              // terminal controlling the process.
     if (openresult != 0 || !term)
@@ -1132,7 +1136,9 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         }
         return FAILURE;
     }
-    safe_memcpy(&currentterm, sizeof(struct termios), &defaultterm, sizeof(struct termios));
+    M_IGNORE_SAFE_ERRNO_CALL(safe_memcpy(&currentterm, sizeof(struct termios), &defaultterm, sizeof(struct termios)),
+                             "Destination and source structures are the same size and type, so this is just a copy and "
+                             "should not cause any issues");
     // print the prompt
     printf("%s", prompt);
     flush_stdout();
@@ -1149,7 +1155,9 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     }
     ssize_t inputRes = getline(userInput, inputDataLen, term);
     // now read the input with getline
-    if (inputRes <= 0)
+    rsize_t inputAllocLen = RSIZE_T_C(0);
+    rsize_t inputReadLen  = RSIZE_T_C(0);
+    if (0 != safe_getline(userInput, &inputAllocLen, &inputReadLen, term) || *userInput == M_NULLPTR)
     {
         ret = FAILURE;
         *inputDataLen = 0;
@@ -1163,6 +1171,10 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         {
             (*userInput)[*inputDataLen - 1] = '\0';
             *inputDataLen -= 1;
+        }
+        if (inputDataLen != M_NULLPTR)
+        {
+            *inputDataLen = inputReadLen;
         }
     }
     // restore echo/default flags
@@ -1265,10 +1277,10 @@ static M_INLINE bool is_Allowed_Datasize_Unit(const char* unit)
 {
     bool allowed = false;
     // allowed units must match exactly at the end of the string!
-    if (strcasecmp(unit, "B") == 0 || strcasecmp(unit, "KB") == 0 || strcasecmp(unit, "KiB") == 0 || strcasecmp(unit, "MB") == 0 ||
-        strcasecmp(unit, "MiB") == 0 || strcasecmp(unit, "GB") == 0 || strcasecmp(unit, "GiB") == 0 || strcasecmp(unit, "TB") == 0 ||
-        strcasecmp(unit, "TiB") == 0 || strcasecmp(unit, "BLOCKS") == 0 || strcasecmp(unit, "SECTORS") == 0 ||
-        strcasecmp(unit, "") == 0)
+    if (strcasecmp(unit, "B") == 0 || strcasecmp(unit, "KB") == 0 || strcasecmp(unit, "KiB") == 0 ||
+        strcasecmp(unit, "MB") == 0 || strcasecmp(unit, "MiB") == 0 || strcasecmp(unit, "GB") == 0 ||
+        strcasecmp(unit, "GiB") == 0 || strcasecmp(unit, "TB") == 0 || strcasecmp(unit, "TiB") == 0 ||
+        strcasecmp(unit, "BLOCKS") == 0 || strcasecmp(unit, "SECTORS") == 0 || strcasecmp(unit, "") == 0)
     {
         allowed = true;
     }
@@ -1454,8 +1466,8 @@ static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str, eAllow
     // Original logic for ALLOW_UNIT_NONE: hex (0x prefix or h suffix) is allowed
     if (str != M_NULLPTR)
     {
-        const char* temp = str;
-        size_t     templen = safe_strlen(str);
+        const char* temp    = str;
+        size_t      templen = safe_strlen(str);
         // check for 0x at the beginning for hex.
         if (strstr(str, "0x") == str || strstr(str, "0X") == str)
         {
@@ -2212,6 +2224,184 @@ ssize_t getline(char** lineptr, size_t* n, FILE* stream)
 
 #endif //__STDC_ALLOC_LIB__
 
+errno_t safe_getdelim_impl(char** M_RESTRICT   lineptr,
+                           rsize_t* M_RESTRICT lineptrAllocedSize,
+                           rsize_t* M_RESTRICT charsRead,
+                           int                 delimiter,
+                           FILE*               stream,
+                           const char*         functionName,
+                           const char*         fileName,
+                           int                 lineNumber,
+                           const char*         expression)
+{
+    errno_t           error = 0;
+    constraintEnvInfo envInfo;
+    char*             currentptr = M_NULLPTR;
+    char*             endptr     = M_NULLPTR;
+    if (lineptr == M_NULLPTR)
+    {
+        error = EINVAL;
+        set_Env_Info(&envInfo, fileName, functionName, expression, lineNumber);
+        invoke_Constraint_Handler("safe_getdelim_impl: lineptr = NULL", &envInfo, error);
+        errno = error;
+        return error;
+    }
+    if (lineptrAllocedSize == M_NULLPTR)
+    {
+        error = EINVAL;
+        set_Env_Info(&envInfo, fileName, functionName, expression, lineNumber);
+        invoke_Constraint_Handler("safe_getdelim_impl: lineptrAllocedSize = NULL", &envInfo, error);
+        errno = error;
+        return error;
+    }
+    if (charsRead == M_NULLPTR)
+    {
+        error = EINVAL;
+        set_Env_Info(&envInfo, fileName, functionName, expression, lineNumber);
+        invoke_Constraint_Handler("safe_getdelim_impl: charsRead = NULL", &envInfo, error);
+        errno = error;
+        return error;
+    }
+    if (stream == M_NULLPTR)
+    {
+        error = EINVAL;
+        set_Env_Info(&envInfo, fileName, functionName, expression, lineNumber);
+        invoke_Constraint_Handler("safe_getdelim_impl: stream = NULL", &envInfo, error);
+        errno = error;
+        return error;
+    }
+    if (*lineptrAllocedSize > RSIZE_MAX)
+    {
+        error = EINVAL;
+        set_Env_Info(&envInfo, fileName, functionName, expression, lineNumber);
+        invoke_Constraint_Handler("safe_getdelim_impl: *lineptrAllocedSize exceeds RSIZE_MAX", &envInfo, error);
+        errno = error;
+        return error;
+    }
+    if (*lineptr == M_NULLPTR || *lineptrAllocedSize == SIZE_T_C(0))
+    {
+        *lineptrAllocedSize = get_System_Pagesize();
+        *lineptr            = M_REINTERPRET_CAST(char*, safe_calloc(*lineptrAllocedSize, sizeof(char)));
+        if (M_NULLPTR == *lineptr)
+        {
+            error = ENOMEM;
+            set_Env_Info(&envInfo, fileName, functionName, expression, lineNumber);
+            invoke_Constraint_Handler("safe_getdelim_impl: failed to allocate initial buffer", &envInfo, error);
+            errno = error;
+            return error;
+        }
+    }
+    currentptr = *lineptr;
+    endptr     = *lineptr + *lineptrAllocedSize;
+    // read using fgetc until delimiter is encountered in the stream or end of
+    // the stream is reached or until RSIZE_T characters read at maximum.
+    size_t charsReadCount = SIZE_T_C(0);
+    do
+    {
+        int c = fgetc(stream);
+        if (c == EOF)
+        {
+            // hit end of the stream.
+            if (feof(stream))
+            {
+                size_t numchars = C_CAST(size_t, C_CAST(uintptr_t, currentptr) - C_CAST(uintptr_t, *lineptr));
+                if (numchars > SIZE_T_C(0))
+                {
+                    // read all the characters in the stream to the end.
+                    // set M_NULLPTR terminator and return how many chars were
+                    // written
+                    currentptr += 1;
+                    *currentptr = '\0';
+                    *charsRead  = C_CAST(rsize_t, numchars);
+                    return error; // no error
+                }
+            }
+            // errno value???
+            error = EINVAL;
+            set_Env_Info(&envInfo, fileName, functionName, expression, lineNumber);
+            invoke_Constraint_Handler("safe_getdelim_impl: error reading from stream", &envInfo, error);
+            errno = error;
+            return error;
+        }
+        ++charsReadCount;
+        // add to the stream
+        *currentptr = C_CAST(char, c); // This cast is necessary to stop a warning. C is
+                                       // an int so that EOF can be defined.
+        currentptr += 1;
+        // check if we got the delimiter
+        if (c == delimiter)
+        {
+            *currentptr = '\0';
+            // calculate how may characters were read and return that value
+            *charsRead = C_CAST(rsize_t, C_CAST(uintptr_t, currentptr) - C_CAST(uintptr_t, *lineptr));
+            return error;
+        }
+        // check if writing next two characters will overflow the buffer (next
+        // char + null terminator if needed)
+        if (C_CAST(uintptr_t, currentptr) + SIZE_T_C(2) >= C_CAST(uintptr_t, endptr))
+        {
+            // reallocate. Simple method is to increase the current buffer size by system page size
+            // the "normal" getline doubles each time, but we don't need to exhaust memory
+            // This may reallocate more on LARGE files, but this should be reasonable and safe
+            char*  temp     = M_NULLPTR;
+            size_t newsize  = *lineptrAllocedSize + get_System_Pagesize();
+            size_t numchars = C_CAST(size_t, C_CAST(uintptr_t, currentptr) - C_CAST(uintptr_t, *lineptr));
+            if (newsize > RSIZE_MAX)
+            {
+                error = EOVERFLOW;
+                set_Env_Info(&envInfo, fileName, functionName, expression, lineNumber);
+                invoke_Constraint_Handler("safe_getdelim_impl: new buffer size exceeds RSIZE_MAX", &envInfo, error);
+                errno = error;
+                return error;
+            }
+            temp = M_REINTERPRET_CAST(char*, safe_reallocf(C_CAST(void**, lineptr), newsize));
+            if (temp == M_NULLPTR)
+            {
+                error = ENOMEM;
+                set_Env_Info(&envInfo, fileName, functionName, expression, lineNumber);
+                invoke_Constraint_Handler("safe_getdelim_impl: failed to reallocate buffer", &envInfo, error);
+                errno = error;
+                return error;
+            }
+            error = safe_memset(temp + *lineptrAllocedSize, newsize - *lineptrAllocedSize, 0,
+                                newsize - *lineptrAllocedSize);
+            if (error != 0)
+                M_UNLIKELY
+                {
+                    set_Env_Info(&envInfo, fileName, functionName, expression, lineNumber);
+                    invoke_Constraint_Handler(
+                        "safe_getdelim_impl: failed to initialize new buffer memory after realloc", &envInfo, error);
+                    errno = error;
+                    return error;
+                }
+            *lineptr            = temp;
+            *lineptrAllocedSize = newsize;
+            currentptr          = *lineptr + numchars;
+            endptr              = *lineptr + *lineptrAllocedSize;
+        }
+    } while (charsReadCount < RSIZE_MAX);
+    // If we exit the loop because we read RSIZE_MAX characters, then we should fail since we don't want to allow
+    // reading more than RSIZE_MAX characters.
+    error = EOVERFLOW;
+    set_Env_Info(&envInfo, fileName, functionName, expression, lineNumber);
+    invoke_Constraint_Handler("safe_getdelim_impl: number of characters read exceeds RSIZE_MAX", &envInfo, error);
+    errno = error;
+    return error;
+}
+
+errno_t safe_getline_impl(char**      lineptr,
+                          size_t*     lineptrAllocedSize,
+                          rsize_t*    charsRead,
+                          FILE*       stream,
+                          const char* functionName,
+                          const char* fileName,
+                          int         lineNumber,
+                          const char* expression)
+{
+    return safe_getdelim_impl(lineptr, lineptrAllocedSize, charsRead, '\n', stream, functionName, fileName, lineNumber,
+                              expression);
+}
+
 #if !defined(__STDC_ALLOC_LIB__) && !defined(_GNU_SOURCE) && !IS_FREEBSD_VERSION(2, 2, 0) &&                           \
     !(defined(__OpenBSD__) && defined(OpenBSD2_3)) && !defined(HAVE_VASPRINTF)
 
@@ -2510,7 +2700,8 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
 // The pointer to the buffer and remaining length should be passed into this function!
 static char* create_data_line_output(char* line, const uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
 {
-    safe_memset(line, DATA_LINE_BUFFER_LENGTH, ' ', DATA_LINE_BUFFER_LENGTH - 1);
+    M_IGNORE_SAFE_ERRNO_CALL(safe_memset(line, DATA_LINE_BUFFER_LENGTH, ' ', DATA_LINE_BUFFER_LENGTH - 1),
+                             "Memset to space padding except null so never goes out of bounds");
     line[DATA_LINE_BUFFER_LENGTH - 1] = '\0';
     const char hexDigits[]            = "0123456789ABCDEF";
     for (uint32_t bufferIter = UINT32_C(0), hexLineIter = UINT32_C(0), printLineIter = PRINTABLE_DATA_OFFSET;
@@ -2535,7 +2726,13 @@ static char* create_data_line_output(char* line, const uint8_t* dataBuffer, uint
     return line;
 }
 
-static void internal_Print_Data_Buffer(const uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint, bool showOffset)
+M_NONNULL_IF_NONZERO_SIZE(1, 2)
+M_PARAM_RO(5)
+static void internal_Print_Data_Buffer(const uint8_t* M_NONNULL dataBuffer,
+                                       const uint32_t           bufferLen,
+                                       const bool               showPrint,
+                                       const bool               showOffset,
+                                       FILE* M_NONNULL          outputStream)
 {
     uint32_t    printIter    = UINT32_C(0);
     uint32_t    offset       = UINT32_C(0);
@@ -2683,13 +2880,30 @@ void print_Pipe_Data(const uint8_t* dataBuffer, uint32_t bufferLen)
     internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false);
 }
 
-errno_t safe_fopen_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
-                        const char* M_RESTRICT       filename,
-                        const char* M_RESTRICT       mode,
-                        const char*                  file,
-                        const char*                  function,
-                        int                          line,
-                        const char*                  expression)
+M_NONNULL_IF_NONZERO_PARAM(2, 3)
+M_PARAM_RO_SIZE(2, 3)
+M_PARAM_RO(1)
+void write_Data_Buffer(FILE* M_NONNULL           outputStream,
+                       const uint8_t* M_NULLABLE dataBuffer,
+                       uint32_t                  bufferLen,
+                       bool                      showPrint)
+{
+    internal_Print_Data_Buffer(dataBuffer, bufferLen, showPrint, true, outputStream);
+}
+
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_PARAM_RO(3)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_fopen_impl(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE streamptr,
+                        const char* M_RESTRICT M_NONNULL                  filename,
+                        const char* M_RESTRICT M_NONNULL                  mode,
+                        const char* M_NULLABLE                            file,
+                        const char* M_NULLABLE                            function,
+                        int                                               line,
+                        const char* M_NULLABLE                            expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -2740,14 +2954,21 @@ errno_t safe_fopen_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
     return error;
 }
 
-errno_t safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
-                          const char* M_RESTRICT       filename,
-                          const char* M_RESTRICT       mode,
-                          FILE* M_RESTRICT             stream,
-                          const char*                  file,
-                          const char*                  function,
-                          int                          line,
-                          const char*                  expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_PARAM_RO(3)
+M_PARAM_RW(4)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_freopen_impl(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE newstreamptr,
+                          const char* M_RESTRICT M_NONNULL                  filename,
+                          const char* M_RESTRICT M_NONNULL                  mode,
+                          FILE* M_RESTRICT M_NONNULL                        stream,
+                          const char* M_NULLABLE                            file,
+                          const char* M_NULLABLE                            function,
+                          int                                               line,
+                          const char* M_NULLABLE                            expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -2802,12 +3023,14 @@ errno_t safe_freopen_impl(FILE* M_RESTRICT* M_RESTRICT newstreamptr,
 //       It is commented out as it makes a LOT more sense to use safe_tmpfile call instead and because
 //       calling tmpnam generates warnings about being insecure to use.-TJE
 #if defined(WANT_SAFE_TMPNAM)
-errno_t safe_tmpnam_impl(char*       filename_s,
-                         rsize_t     maxsize,
-                         const char* file,
-                         const char* function,
-                         int         line,
-                         const char* expression)
+M_PARAM_RW_SIZE(1, 2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_tmpnam_impl(char* M_NONNULL        filename_s,
+                         rsize_t                maxsize,
+                         const char* M_NULLABLE file,
+                         const char* M_NULLABLE function,
+                         int                    line,
+                         const char* M_NULLABLE expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -2877,11 +3100,13 @@ errno_t safe_tmpnam_impl(char*       filename_s,
 }
 #endif // WANT_SAFE_TMPNAM
 
-errno_t safe_tmpfile_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
-                          const char*                  file,
-                          const char*                  function,
-                          int                          line,
-                          const char*                  expression)
+M_PARAM_RW(1)
+CONSTRAINT_NO_DISCARD
+errno_t safe_tmpfile_impl(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE streamptr,
+                          const char* M_NULLABLE                            file,
+                          const char* M_NULLABLE                            function,
+                          int                                               line,
+                          const char* M_NULLABLE                            expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -2916,7 +3141,14 @@ errno_t safe_tmpfile_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
     return error;
 }
 
-char* safe_gets_impl(char* str, rsize_t n, const char* file, const char* function, int line, const char* expression)
+CONSTRAINT_NO_DISCARD
+M_PARAM_RW_SIZE(1, 2)
+char* M_NULLABLE safe_gets_impl(char* M_NONNULL        str,
+                                rsize_t                n,
+                                const char* M_NULLABLE file,
+                                const char* M_NULLABLE function,
+                                int                    line,
+                                const char* M_NULLABLE expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3022,14 +3254,18 @@ char* safe_gets_impl(char* str, rsize_t n, const char* file, const char* functio
     }
 }
 
-errno_t safe_strtol_impl(long*                  value,
-                         const char* M_RESTRICT str,
-                         char** M_RESTRICT      endp,
-                         int                    base,
-                         const char*            file,
-                         const char*            function,
-                         int                    line,
-                         const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_strtol_impl(long* M_NONNULL                         value,
+                         const char* M_RESTRICT M_NONNULL        str,
+                         char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                         int                                     base,
+                         const char* M_NULLABLE                  file,
+                         const char* M_NULLABLE                  function,
+                         int                                     line,
+                         const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3078,14 +3314,18 @@ errno_t safe_strtol_impl(long*                  value,
     return error;
 }
 
-errno_t safe_strtoll_impl(long long*             value,
-                          const char* M_RESTRICT str,
-                          char** M_RESTRICT      endp,
-                          int                    base,
-                          const char*            file,
-                          const char*            function,
-                          int                    line,
-                          const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_strtoll_impl(long long* M_NONNULL                    value,
+                          const char* M_RESTRICT M_NONNULL        str,
+                          char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                          int                                     base,
+                          const char* M_NULLABLE                  file,
+                          const char* M_NULLABLE                  function,
+                          int                                     line,
+                          const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3134,14 +3374,18 @@ errno_t safe_strtoll_impl(long long*             value,
     return error;
 }
 
-errno_t safe_strtoul_impl(unsigned long*         value,
-                          const char* M_RESTRICT str,
-                          char** M_RESTRICT      endp,
-                          int                    base,
-                          const char*            file,
-                          const char*            function,
-                          int                    line,
-                          const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_strtoul_impl(unsigned long* M_NONNULL                value,
+                          const char* M_RESTRICT M_NONNULL        str,
+                          char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                          int                                     base,
+                          const char* M_NULLABLE                  file,
+                          const char* M_NULLABLE                  function,
+                          int                                     line,
+                          const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3189,14 +3433,18 @@ errno_t safe_strtoul_impl(unsigned long*         value,
     return error;
 }
 
-errno_t safe_strtoull_impl(unsigned long long*    value,
-                           const char* M_RESTRICT str,
-                           char** M_RESTRICT      endp,
-                           int                    base,
-                           const char*            file,
-                           const char*            function,
-                           int                    line,
-                           const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_strtoull_impl(unsigned long long* M_NONNULL           value,
+                           const char* M_RESTRICT M_NONNULL        str,
+                           char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                           int                                     base,
+                           const char* M_NULLABLE                  file,
+                           const char* M_NULLABLE                  function,
+                           int                                     line,
+                           const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3244,14 +3492,18 @@ errno_t safe_strtoull_impl(unsigned long long*    value,
     return error;
 }
 
-errno_t safe_strtoimax_impl(intmax_t*              value,
-                            const char* M_RESTRICT str,
-                            char** M_RESTRICT      endp,
-                            int                    base,
-                            const char*            file,
-                            const char*            function,
-                            int                    line,
-                            const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_strtoimax_impl(intmax_t* M_NONNULL                     value,
+                            const char* M_RESTRICT M_NONNULL        str,
+                            char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                            int                                     base,
+                            const char* M_NULLABLE                  file,
+                            const char* M_NULLABLE                  function,
+                            int                                     line,
+                            const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3300,14 +3552,18 @@ errno_t safe_strtoimax_impl(intmax_t*              value,
     return error;
 }
 
-errno_t safe_strtoumax_impl(uintmax_t*             value,
-                            const char* M_RESTRICT str,
-                            char** M_RESTRICT      endp,
-                            int                    base,
-                            const char*            file,
-                            const char*            function,
-                            int                    line,
-                            const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_strtoumax_impl(uintmax_t* M_NONNULL                    value,
+                            const char* M_RESTRICT M_NONNULL        str,
+                            char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                            int                                     base,
+                            const char* M_NULLABLE                  file,
+                            const char* M_NULLABLE                  function,
+                            int                                     line,
+                            const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3355,13 +3611,17 @@ errno_t safe_strtoumax_impl(uintmax_t*             value,
     return error;
 }
 
-errno_t safe_strtof_impl(float*                 value,
-                         const char* M_RESTRICT str,
-                         char** M_RESTRICT      endp,
-                         const char*            file,
-                         const char*            function,
-                         int                    line,
-                         const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_strtof_impl(float* M_NONNULL                        value,
+                         const char* M_RESTRICT M_NONNULL        str,
+                         char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                         const char* M_NULLABLE                  file,
+                         const char* M_NULLABLE                  function,
+                         int                                     line,
+                         const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3408,13 +3668,17 @@ errno_t safe_strtof_impl(float*                 value,
     return error;
 }
 
-errno_t safe_strtod_impl(double*                value,
-                         const char* M_RESTRICT str,
-                         char** M_RESTRICT      endp,
-                         const char*            file,
-                         const char*            function,
-                         int                    line,
-                         const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_strtod_impl(double* M_NONNULL                       value,
+                         const char* M_RESTRICT M_NONNULL        str,
+                         char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                         const char* M_NULLABLE                  file,
+                         const char* M_NULLABLE                  function,
+                         int                                     line,
+                         const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3461,13 +3725,17 @@ errno_t safe_strtod_impl(double*                value,
     return error;
 }
 
-errno_t safe_strtold_impl(long double*           value,
-                          const char* M_RESTRICT str,
-                          char** M_RESTRICT      endp,
-                          const char*            file,
-                          const char*            function,
-                          int                    line,
-                          const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_strtold_impl(long double* M_NONNULL                  value,
+                          const char* M_RESTRICT M_NONNULL        str,
+                          char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                          const char* M_NULLABLE                  file,
+                          const char* M_NULLABLE                  function,
+                          int                                     line,
+                          const char* M_NULLABLE                  expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -3514,12 +3782,16 @@ errno_t safe_strtold_impl(long double*           value,
     return error;
 }
 
-errno_t safe_atoi_impl(int*                   value,
-                       const char* M_RESTRICT str,
-                       const char*            file,
-                       const char*            function,
-                       int                    line,
-                       const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_atoi_impl(int* M_NONNULL                   value,
+                       const char* M_RESTRICT M_NONNULL str,
+                       const char* M_NULLABLE           file,
+                       const char* M_NULLABLE           function,
+                       int                              line,
+                       const char* M_NULLABLE           expression)
 {
     if (value == M_NULLPTR)
     {
@@ -3550,12 +3822,16 @@ errno_t safe_atoi_impl(int*                   value,
     return error;
 }
 
-errno_t safe_atol_impl(long*                  value,
-                       const char* M_RESTRICT str,
-                       const char*            file,
-                       const char*            function,
-                       int                    line,
-                       const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_atol_impl(long* M_NONNULL                  value,
+                       const char* M_RESTRICT M_NONNULL str,
+                       const char* M_NULLABLE           file,
+                       const char* M_NULLABLE           function,
+                       int                              line,
+                       const char* M_NULLABLE           expression)
 {
     char*   endp  = M_NULLPTR;
     errno_t error = safe_strtol_impl(value, str, &endp, BASE_10_DECIMAL, file, function, line, expression);
@@ -3568,12 +3844,16 @@ errno_t safe_atol_impl(long*                  value,
     return error;
 }
 
-errno_t safe_atoll_impl(long long*             value,
-                        const char* M_RESTRICT str,
-                        const char*            file,
-                        const char*            function,
-                        int                    line,
-                        const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_atoll_impl(long long* M_NONNULL             value,
+                        const char* M_RESTRICT M_NONNULL str,
+                        const char* M_NULLABLE           file,
+                        const char* M_NULLABLE           function,
+                        int                              line,
+                        const char* M_NULLABLE           expression)
 {
     char*   endp  = M_NULLPTR;
     errno_t error = safe_strtoll_impl(value, str, &endp, BASE_10_DECIMAL, file, function, line, expression);
@@ -3586,12 +3866,16 @@ errno_t safe_atoll_impl(long long*             value,
     return error;
 }
 
-errno_t safe_atof_impl(double*                value,
-                       const char* M_RESTRICT str,
-                       const char*            file,
-                       const char*            function,
-                       int                    line,
-                       const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_atof_impl(double* M_NONNULL                value,
+                       const char* M_RESTRICT M_NONNULL str,
+                       const char* M_NULLABLE           file,
+                       const char* M_NULLABLE           function,
+                       int                              line,
+                       const char* M_NULLABLE           expression)
 {
     char*   endp  = M_NULLPTR;
     errno_t error = safe_strtod_impl(value, str, &endp, file, function, line, expression);
@@ -3604,13 +3888,89 @@ errno_t safe_atof_impl(double*                value,
     return error;
 }
 
-int impl_snprintf_err_handle(const char* file,
-                             const char* function,
-                             int         line,
-                             const char* expression,
-                             char*       buf,
-                             size_t      bufsize,
-                             const char* format,
+M_NONNULL_IF_NONZERO_PARAM(5, 6)
+M_NULL_TERM_STRING(7)
+M_PARAM_WO_SIZE(5, 6)
+M_PARAM_RO(7)
+FUNC_ATTR_PRINTF(7, 0)
+CONSTRAINT_NO_DISCARD
+int impl_vsnprintf_err_handle(const char* M_NULLABLE file,
+                              const char* M_NULLABLE function,
+                              int                    line,
+                              const char* M_NULLABLE expression,
+                              char* M_NULLABLE       buf,
+                              size_t                 bufsize,
+                              const char* M_NONNULL  format,
+                              va_list                args)
+{
+    int               n = 0;
+    constraintEnvInfo envInfo;
+    if (buf == M_NULLPTR && bufsize != 0)
+    {
+        errno = EINVAL;
+        invoke_Constraint_Handler("vsnprintf_error_handler_macro: buf is NULL and bufsize != 0",
+                                  set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
+        return -1;
+    }
+    else if (format == M_NULLPTR)
+    {
+        if (buf != M_NULLPTR && bufsize > 0)
+        {
+            buf[0] = 0;
+        }
+        errno = EINVAL;
+        invoke_Constraint_Handler("vsnprintf_error_handler_macro: format is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
+        return -1;
+    }
+    // Disabling this warning in GCC and Clang for now. It only seems to show in Windows at the moment-TJE
+    DISABLE_WARNING_FORMAT_NONLITERAL
+    // NOLINTBEGIN(clang-analyzer-valist.Uninitialized,clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    // - false positive
+    va_list args_copy;
+    va_copy(args_copy, args);
+    n = vsnprintf(buf, bufsize, format, args_copy);
+    va_end(args_copy);
+    // NOLINTEND(clang-analyzer-valist.Uninitialized,clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    // - false positive
+    RESTORE_WARNING_FORMAT_NONLITERAL
+
+    if (n < 0)
+    {
+        if (buf != M_NULLPTR && bufsize > 0)
+        {
+            buf[bufsize - 1] = 0;
+        }
+        errno = EINVAL;
+        invoke_Constraint_Handler("vsnprintf_error_handler_macro: Encoding error occurred",
+                                  set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
+    }
+    else if ((buf != M_NULLPTR && bufsize != 0 && int_to_sizet(n) >= bufsize))
+    {
+        if (buf != M_NULLPTR && bufsize > 0)
+        {
+            buf[bufsize - 1] = 0;
+        }
+        errno = ERANGE;
+        invoke_Constraint_Handler("vsnprintf_error_handler_macro: output was truncated",
+                                  set_Env_Info(&envInfo, file, function, expression, line), ERANGE);
+    }
+    return n;
+}
+
+M_NONNULL_IF_NONZERO_PARAM(5, 6)
+M_NULL_TERM_STRING(7)
+M_PARAM_WO_SIZE(5, 6)
+M_PARAM_RO(7)
+FUNC_ATTR_PRINTF(7, 8)
+CONSTRAINT_NO_DISCARD
+int impl_snprintf_err_handle(const char* M_NULLABLE file,
+                             const char* M_NULLABLE function,
+                             int                    line,
+                             const char* M_NULLABLE expression,
+                             char* M_NULLABLE       buf,
+                             size_t                 bufsize,
+                             const char* M_NONNULL  format,
                              ...)
 {
     int               n = 0;
@@ -3679,5 +4039,339 @@ errno_t checked_fputs(const char* nofmt, FILE* out)
         safe_free(&errmsg);
         return error;
     }
+    return 0;
+}
+
+errno_t get_And_Validate_Celsius_Input_int16(const char* input_str, int16_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    int16_t tempValue = 0;
+    char*   unit      = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Int16(input_str, &unit, ALLOW_UNIT_TEMPERATURE, &tempValue);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    // Convert to Celsius based on unit specified
+    int16_t celsius_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        errno = 0;
+        if (strcasecmp(unit, "F") == 0)
+        {
+            celsius_value = fahrenheit_To_celsius(&tempValue);
+        }
+        else if (strcasecmp(unit, "K") == 0)
+        {
+            celsius_value = kelvin_To_Celsius(&tempValue);
+        }
+        // If 'C' or any other valid unit, tempValue is already in Celsius
+
+        if (errno != 0)
+        {
+            *outputValue = 0;
+            return errno;
+        }
+    }
+
+    *outputValue = celsius_value;
+    return 0;
+}
+
+errno_t get_And_Validate_Milliwatt_Input_uint32(const char* input_str, uint32_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t mw_value = 0;
+    char*    unit     = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_POWER, &mw_value);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "W") == 0)
+        {
+            mw_value *= UINT64_C(1000); // W to mW
+            if (mw_value > UINT32_MAX)
+            {
+                *outputValue = 0;
+                return ERANGE;
+            }
+        }
+        // If 'mW' or other valid unit, tempValue is already in mW
+    }
+
+    *outputValue = C_CAST(uint32_t, mw_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Byte_Input_uint64(const char* input_str, uint64_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t tempValue = 0;
+    char*    unit      = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_DATASIZE, &tempValue);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint64_t byte_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "KB") == 0)
+        {
+            byte_value *= UINT64_C(1000);
+        }
+        else if (strcasecmp(unit, "KiB") == 0)
+        {
+            byte_value *= UINT64_C(1024);
+        }
+        else if (strcasecmp(unit, "MB") == 0)
+        {
+            byte_value *= UINT64_C(1000000);
+        }
+        else if (strcasecmp(unit, "MiB") == 0)
+        {
+            byte_value *= UINT64_C(1048576);
+        }
+        else if (strcasecmp(unit, "GB") == 0)
+        {
+            byte_value *= UINT64_C(1000000000);
+        }
+        else if (strcasecmp(unit, "GiB") == 0)
+        {
+            byte_value *= UINT64_C(1073741824);
+        }
+        else if (strcasecmp(unit, "TB") == 0)
+        {
+            byte_value *= UINT64_C(1000000000000);
+        }
+        else if (strcasecmp(unit, "TiB") == 0)
+        {
+            byte_value *= UINT64_C(1099511627776);
+        }
+        // If 'B' or other valid unit, tempValue is already in bytes
+
+        if (byte_value < tempValue) // Overflow check
+        {
+            *outputValue = 0;
+            return EOVERFLOW;
+        }
+    }
+
+    *outputValue = byte_value;
+    return 0;
+}
+
+errno_t get_And_Validate_Millisecond_Input_uint32(const char* input_str, uint32_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t tempValue = 0;
+    char*    unit      = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_TIME, &tempValue);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint64_t ms_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "s") == 0)
+        {
+            ms_value *= UINT64_C(1000); // seconds to ms
+        }
+        else if (strcasecmp(unit, "m") == 0)
+        {
+            ms_value *= UINT64_C(60000); // minutes to ms
+        }
+        else if (strcasecmp(unit, "h") == 0)
+        {
+            ms_value *= UINT64_C(3600000); // hours to ms
+        }
+        // If 'ms' or other valid unit, tempValue is already in ms
+
+        if (ms_value > UINT32_MAX)
+        {
+            *outputValue = 0;
+            return EOVERFLOW;
+        }
+    }
+
+    *outputValue = C_CAST(uint32_t, ms_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Volt_Input_uint16(const char* input_str, uint16_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint32_t tempValue = 0;
+    char*    unit      = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint32(input_str, &unit, ALLOW_UNIT_VOLTS, &tempValue);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint32_t v_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "mV") == 0)
+        {
+            v_value /= UINT32_C(1000); // mV to V
+        }
+        // If 'V' or other valid unit, tempValue is already in V
+    }
+
+    if (v_value > UINT16_MAX)
+    {
+        *outputValue = 0;
+        return EOVERFLOW;
+    }
+
+    *outputValue = C_CAST(uint16_t, v_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Millivolt_Input_uint32(const char* input_str, uint32_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t tempValue = 0;
+    char*    unit      = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_VOLTS, &tempValue);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint64_t mv_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "V") == 0)
+        {
+            mv_value *= UINT64_C(1000); // V to mV
+            if (mv_value > UINT32_MAX)
+            {
+                *outputValue = 0;
+                return EOVERFLOW;
+            }
+        }
+        // If 'mV' or other valid unit, tempValue is already in mV
+    }
+
+    *outputValue = C_CAST(uint32_t, mv_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Amp_Input_uint16(const char* input_str, uint16_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint32_t tempValue = 0;
+    char*    unit      = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint32(input_str, &unit, ALLOW_UNIT_AMPS, &tempValue);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint32_t a_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "mA") == 0)
+        {
+            a_value /= UINT32_C(1000); // mA to A
+        }
+        // If 'A' or other valid unit, tempValue is already in A
+    }
+
+    if (a_value > UINT16_MAX)
+    {
+        *outputValue = 0;
+        return EOVERFLOW;
+    }
+
+    *outputValue = C_CAST(uint16_t, a_value);
+    return 0;
+}
+
+errno_t get_And_Validate_Milliamp_Input_uint32(const char* input_str, uint32_t* outputValue)
+{
+    if (outputValue == M_NULLPTR)
+    {
+        return EINVAL;
+    }
+
+    uint64_t tempValue = 0;
+    char*    unit      = M_NULLPTR;
+
+    bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_AMPS, &tempValue);
+    if (!ret)
+    {
+        *outputValue = 0;
+        return EINVAL;
+    }
+
+    uint64_t ma_value = tempValue;
+    if (unit != M_NULLPTR)
+    {
+        if (strcasecmp(unit, "A") == 0)
+        {
+            ma_value *= UINT64_C(1000); // A to mA
+            if (ma_value > UINT32_MAX)
+            {
+                *outputValue = 0;
+                return EOVERFLOW;
+            }
+        }
+        // If 'mA' or other valid unit, tempValue is already in mA
+    }
+
+    *outputValue = C_CAST(uint32_t, ma_value);
     return 0;
 }

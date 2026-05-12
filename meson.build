@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (c) 2021-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
-project('opensea-common', 'c', license: 'MPL-2.0', version: '6.1.0', default_options: ['warning_level=2', 'default_library=static'])
+project('opensea-common', 'c', license: 'MPL-2.0', version: '6.1.0', meson_version: '>=0.55.0', default_options: ['warning_level=2', 'default_library=static'])
 
 c = meson.get_compiler('c')
 
@@ -11,16 +11,10 @@ if not (target_machine.system() == 'sunos') and c.get_id().contains('gcc')
     if c.version().version_compare('<5.0')
         # 4.7.4+ has C11 support, but c89 is the default standard so we need to change it.
         if c.has_argument('-std=gnu11')
-            c_std = 'gnu11'
-            if meson.version().version_compare('<1.0.0')
-                add_project_arguments('-std=gnu11', language: 'c')
-            endif
+            add_project_arguments('-std=gnu11', language: 'c')
         elif c.has_argument('-std=gnu99')
             # Add this argument to the list since C99 is a minimum required C compiler standard
-            c_std = 'gnu99'
-            if meson.version().version_compare('<1.0.0')
-                add_project_arguments('-std=gnu99', language: 'c')
-            endif
+            add_project_arguments('-std=gnu99', language: 'c')
         else
             error('C99/GNU99 standard is required but was not able to be set!')
         endif
@@ -261,8 +255,11 @@ elif c.get_id().contains('msvc')
         warning_flags += '/QIntel-jcc-erratum'
     endif
 
+    # If this MSVC version supports /std:c17, force C17 mode. MSVC defaults to a
+    # pre-C99 dialect without this flag, which means _Generic and other C11/C17
+    # features are unavailable even though the compiler supports them.
     if c.has_argument('/std:c17')
-        c_std = 'c17'
+        warning_flags += '/std:c17'
     endif
 
     linker_flags += [
@@ -311,6 +308,16 @@ endif
 
 if get_option('allow-no-overlap-suggestions').enabled()
     global_cpp_args += ['-DALLOW_NO_OVERLAP_SUGGESTIONS']
+endif
+
+if get_option('constraint-handler') == 'abort'
+    # no flags necessary since this is default
+elif get_option('constraint-handler') == 'abortnd'
+    global_cpp_args += ['-DDEFAULT_CONSTRAINT_HANDLER_ABORTND']
+elif get_option('constraint-handler') == 'ignore'
+    global_cpp_args += ['-DDEFAULT_CONSTRAINT_HANDLER_IGNORE']
+elif get_option('constraint-handler') == 'warn'
+    global_cpp_args += ['-DDEFAULT_CONSTRAINT_HANDLER_WARN']
 endif
 
 src_files = [

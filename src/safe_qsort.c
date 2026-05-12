@@ -96,15 +96,17 @@ static M_INLINE char* med3(char* a, char* b, char* c, ctxcomparefn cmp, void* th
 // NOLINTBEGIN(readability-function-cognitive-complexity)
 // Disabling clang-tidy check since this code comes from another author and I do not need to
 // attempt to refactor this - TJE
-errno_t safe_qsort_context_impl(void*        ptr,
-                                rsize_t      count,
-                                rsize_t      size,
-                                ctxcomparefn compare,
-                                void*        context,
-                                const char*  file,
-                                const char*  function,
-                                int          line,
-                                const char*  expression)
+M_PARAM_RW(1)
+CONSTRAINT_NO_DISCARD
+errno_t safe_qsort_context_impl(void* M_NONNULL        ptr,
+                                rsize_t                count,
+                                rsize_t                size,
+                                ctxcomparefn M_NONNULL compare,
+                                void* M_NULLABLE       context,
+                                const char* M_NULLABLE file,
+                                const char* M_NULLABLE function,
+                                int                    line,
+                                const char* M_NULLABLE expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;

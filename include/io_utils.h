@@ -502,7 +502,8 @@ extern "C"
     //! Returns -1 on failure or when end of file is reached.
     M_PARAM_RW(1)
     M_PARAM_RW(2)
-    M_PARAM_RO(3) ssize_t getline(char* M_NONNULL* M_NULLABLE lineptr, size_t* M_NONNULL n, FILE* M_NONNULL stream);
+    M_PARAM_RO(3)
+    M_NODISCARD ssize_t getline(char* M_NONNULL* M_NULLABLE lineptr, size_t* M_NONNULL n, FILE* M_NONNULL stream);
 
     //! \fn ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream)
     //! \brief Reads a line from a stream, stopping at a specified delimiter.
@@ -522,11 +523,40 @@ extern "C"
     M_PARAM_RW(1)
     M_PARAM_RW(2)
     M_PARAM_RO(4)
-    ssize_t getdelim(char* M_NONNULL* M_RESTRICT M_NULLABLE lineptr,
-                     size_t* M_RESTRICT M_NONNULL           n,
-                     int                                    delimiter,
-                     FILE* M_NONNULL                        stream);
+    M_NODISCARD ssize_t getdelim(char* M_NONNULL* M_RESTRICT M_NULLABLE lineptr,
+                                 size_t* M_RESTRICT M_NONNULL           n,
+                                 int                                    delimiter,
+                                 FILE* M_NONNULL                        stream);
 #endif //!__STDC_ALLOC_LIB__ && (POSIX < 2008)
+
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_getdelim(char** M_RESTRICT   lineptr,
+                                   rsize_t* M_RESTRICT lineptrAllocedSize,
+                                   rsize_t* M_RESTRICT charsRead,
+                                   int                 delimiter,
+                                   FILE*               stream)
+    {
+        return safe_getdelim_impl(lineptr, lineptrAllocedSize, charsRead, delimiter, stream, __func__, __FILE__,
+                                  __LINE__, "safe_getdelim(lineptr, lineptrAllocedSize, charsRead, delimiter, stream)");
+    }
+#else
+#    define safe_getdelim(lineptr, lineptrAllocedSize, charsRead, delimiter, stream)                                   \
+        safe_getdelim_impl(lineptr, lineptrAllocedSize, charsRead, delimiter, stream, __func__, __FILE__, __LINE__,    \
+                           "safe_getdelim(" #lineptr ", " #lineptrAllocedSize ", " #charsRead ", " #delimiter          \
+                           ", " #stream ")")
+#endif
+
+#if defined(DEV_ENVIRONMENT)
+    M_INLINE errno_t safe_getline(char** lineptr, size_t* lineptrAllocedSize, rsize_t* charsRead, FILE* stream)
+    {
+        return safe_getline_impl(lineptr, lineptrAllocedSize, charsRead, stream, __func__, __FILE__, __LINE__,
+                                 "safe_getline(lineptr, lineptrAllocedSize, charsRead, stream)");
+    }
+#else
+#    define safe_getline(lineptr, lineptrAllocedSize, charsRead, stream)                                               \
+        safe_getline_impl(lineptr, lineptrAllocedSize, charsRead, stream, __func__, __FILE__, __LINE__,                \
+                          "safe_getline(" #lineptr ", " #lineptrAllocedSize ", " #charsRead ", " #stream ")")
+#endif
 
 // Defining asprintf and vasprintf for all systems that do not have these
 // already. asprintf and vasprintf were in GNU C library, added in FreeBSD 2.2,
@@ -544,10 +574,8 @@ extern "C"
     //! \param[in] fmt The format string.
     //! \param[in] ... Additional arguments specifying data to format.
     //! \return The number of characters printed (excluding the null terminator), or -1 if an error occurs.
-    M_NODISCARD M_PARAM_RW(1) M_PARAM_RO(2)
-        FUNC_ATTR_PRINTF(2, 3) int asprintf(char* M_NONNULL* M_RESTRICT M_NULLABLE strp,
-                                            const char* M_RESTRICT M_NONNULL       fmt,
-                                            ...);
+    M_NODISCARD M_PARAM_RW(1) M_PARAM_RO(2) FUNC_ATTR_PRINTF(2, 3) M_NODISCARD
+        int asprintf(char* M_NONNULL* M_RESTRICT M_NULLABLE strp, const char* M_RESTRICT M_NONNULL fmt, ...);
 
     //! \fn int vasprintf(char** M_RESTRICT strp, const char* M_RESTRICT fmt, va_list arg)
     //! \brief Allocates a formatted string using a va_list.
@@ -559,10 +587,8 @@ extern "C"
     //! \param[in] fmt The format string.
     //! \param[in] arg A va_list specifying data to format.
     //! \return The number of characters printed (excluding the null terminator), or -1 if an error occurs.
-    M_NODISCARD M_PARAM_RW(1) M_PARAM_RO(2)
-        FUNC_ATTR_PRINTF(2, 0) int vasprintf(char* M_NONNULL* M_RESTRICT M_NULLABLE strp,
-                                             const char* M_RESTRICT M_NONNULL       fmt,
-                                             va_list                                arg);
+    M_NODISCARD M_PARAM_RW(1) M_PARAM_RO(2) FUNC_ATTR_PRINTF(2, 0) M_NODISCARD
+        int vasprintf(char* M_NONNULL* M_RESTRICT M_NULLABLE strp, const char* M_RESTRICT M_NONNULL fmt, va_list arg);
 
 #endif // asprintf, vasprintf
 
@@ -585,7 +611,8 @@ extern "C"
     M_NULL_TERM_STRING(3)
     M_PARAM_RW(1)
     M_PARAM_RO(3)
-    int snprintf(char* M_NULLABLE buffer, size_t bufsz, const char* M_RESTRICT M_NONNULL format, ...);
+    FUNC_ATTR_PRINTF(3, 4)
+    M_NODISCARD int snprintf(char* M_NULLABLE buffer, size_t bufsz, const char* M_RESTRICT M_NONNULL format, ...);
 
     //! \fn int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
     //! \brief Writes formatted data to a string using a va_list.
@@ -602,7 +629,11 @@ extern "C"
     M_NULL_TERM_STRING(3)
     M_PARAM_RW(1)
     M_PARAM_RO(3)
-    int vsnprintf(char* M_NULLABLE buffer, size_t bufsz, const char* M_RESTRICT M_NONNULL format, va_list args);
+    FUNC_ATTR_PRINTF(3, 0)
+    M_NODISCARD int vsnprintf(char* M_NULLABLE                 buffer,
+                              size_t                           bufsz,
+                              const char* M_RESTRICT M_NONNULL format,
+                              va_list                          args);
 
 #endif
 
@@ -642,6 +673,7 @@ extern "C"
     M_PARAM_RO(1)
     M_PARAM_RW(2)
     M_PARAM_RW(3)
+    M_NODISCARD
     eReturnValues get_Secure_User_Input(const char* M_NONNULL       prompt,
                                         char* M_NONNULL* M_NULLABLE userInput,
                                         size_t* M_NONNULL           inputDataLen);
@@ -734,6 +766,40 @@ extern "C"
     M_NONNULL_IF_NONZERO_PARAM(1, 2)
     M_PARAM_RO_SIZE(1, 2) void print_Pipe_Data(const uint8_t* M_NULLABLE dataBuffer, uint32_t bufferLen);
 
+    //! \fn void write_Data_Buffer(FILE* M_NONNULL outputStream,const uint8_t* M_NULLABLE dataBuffer, uint32_t
+    //! bufferLen, bool showPrint)
+    //! \brief Prints out a data buffer to the specified FILE* stream.
+    //!
+    //! This function prints out a data buffer to the specified stream. If showPrint is set to true, printable
+    //! characters will be shown on the side of the hex output for the buffer. Non-printable characters will be
+    //! represented as dots.
+    //!
+    //! \param[in] dataBuffer A pointer to the data buffer you want to print out.
+    //! \param[in] bufferLen The length that you want to print out. This can be the length of the buffer, or anything
+    //! less than that. \param[in] showPrint Set to true to show printable characters on the side of the hex output for
+    //! the buffer. Non-printable characters will be represented as dots.
+    M_NONNULL_IF_NONZERO_PARAM(2, 3)
+    M_PARAM_RO_SIZE(2, 3)
+    M_PARAM_RO(1)
+    void write_Data_Buffer(FILE* M_NONNULL           outputStream,
+                           const uint8_t* M_NULLABLE dataBuffer,
+                           uint32_t                  bufferLen,
+                           bool                      showPrint);
+
+//! \def RETURN_VALUE_MAX_STR_LEN
+//! \brief The maximum string length for human-readable eReturnValues.
+#define RETURN_VALUE_MAX_STR_LEN (64)
+
+    //! \fn bool get_eReturnValues_To_String(eReturnValues ret, char string[M_NONNULL_ARRAY RETURN_VALUE_MAX_STR_LEN])
+    //! \brief Converts an eReturnValue to a human-readable string.
+    //!
+    //! \param[in] ret Value to humanize.
+    //! \param[out] string Buffer to store the human-readable string. Must be at least RETURN_VALUE_MAX_STR_LEN in size.
+    //! \return true if the conversion was successful, false if the return value is unknown.
+    M_PARAM_WO(2)
+    M_NODISCARD bool get_eReturnValues_To_String(eReturnValues ret,
+                                                 char          string[M_NONNULL_ARRAY RETURN_VALUE_MAX_STR_LEN]);
+
     //! \fn void print_Return_Enum(const char* funcName, eReturnValues ret)
     //! \brief Prints humanized eReturnValue for a given return value.
     //!
@@ -779,9 +845,9 @@ extern "C"
     //! - \a filename is a null pointer
     //!
     //! - \a mode is a null pointer
-    M_INLINE errno_t safe_fopen(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE streamptr,
-                                const char* M_RESTRICT M_NONNULL                  filename,
-                                const char* M_RESTRICT M_NONNULL                  mode)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_fopen(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE streamptr,
+                                                      const char* M_RESTRICT M_NONNULL                  filename,
+                                                      const char* M_RESTRICT M_NONNULL                  mode)
     {
         return safe_fopen_impl(streamptr, filename, mode, __FILE__, __func__, __LINE__,
                                "safe_fopen(streamptr, filename, mode)");
@@ -833,10 +899,10 @@ extern "C"
     //! - \a mode is a null pointer
     //!
     //! - \a stream is a null pointer
-    M_INLINE errno_t safe_freopen(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE newstreamptr,
-                                  const char* M_RESTRICT                            filename,
-                                  const char* M_RESTRICT                            mode,
-                                  FILE* M_RESTRICT M_NONNULL                        stream)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_freopen(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE newstreamptr,
+                                                        const char* M_RESTRICT                            filename,
+                                                        const char* M_RESTRICT                            mode,
+                                                        FILE* M_RESTRICT M_NONNULL                        stream)
     {
         return safe_freopen_impl(newstreamptr, filename, mode, stream, __FILE__, __func__, __LINE__,
                                  "safe_freopen(streamptr, filename, mode, stream)");
@@ -895,7 +961,7 @@ extern "C"
     //! - \a maxsize is greater than \a RSIZE_MAX
     //!
     //! - \a maxsize is less than the required size for the temporary file name
-    M_INLINE errno_t safe_tmpnam(char* M_NONNULL filename_s, rsize_t maxsize)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_tmpnam(char* M_NONNULL filename_s, rsize_t maxsize)
     {
         return safe_tmpnam_impl(filename_s, maxsize, __FILE__, __func__, __LINE__, "safe_tmpnam(filename_s, maxsize)");
     }
@@ -936,7 +1002,7 @@ extern "C"
     //! \note The following errors are detected at runtime and call the currently installed constraint handler function:
     //!
     //! - \a streamptr is a null pointer
-    M_INLINE errno_t safe_tmpfile(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE streamptr)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_tmpfile(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE streamptr)
     {
         return safe_tmpfile_impl(streamptr, __FILE__, __func__, __LINE__, "safe_tmpfile(streamptr)");
     }
@@ -976,7 +1042,7 @@ extern "C"
     //! - \a n is greater than \a RSIZE_MAX
     //!
     //! - \a n is zero
-    M_INLINE char* safe_gets(char* M_NONNULL str, rsize_t n)
+    M_NODISCARD M_INLINE char* safe_gets(char* M_NONNULL str, rsize_t n)
     {
         return safe_gets_impl(str, n, __FILE__, __func__, __LINE__, "safe_gets(streamptr)");
     }
@@ -1035,10 +1101,10 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - \a base is greater than 36
-    M_INLINE errno_t safe_strtol(long* M_NONNULL                         value,
-                                 const char* M_RESTRICT M_NONNULL        str,
-                                 char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                                 int                                     base)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_strtol(long* M_NONNULL                         value,
+                                                       const char* M_RESTRICT M_NONNULL        str,
+                                                       char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                       int                                     base)
     {
         return safe_strtol_impl(value, str, endp, base, __FILE__, __func__, __LINE__,
                                 "safe_strtol(value, str, endp, base)");
@@ -1089,10 +1155,10 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - \a base is greater than 36
-    M_INLINE errno_t safe_strtoll(long long* M_NONNULL                    value,
-                                  const char* M_RESTRICT M_NONNULL        str,
-                                  char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                                  int                                     base)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_strtoll(long long* M_NONNULL                    value,
+                                                        const char* M_RESTRICT M_NONNULL        str,
+                                                        char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                        int                                     base)
     {
         return safe_strtoll_impl(value, str, endp, base, __FILE__, __func__, __LINE__,
                                  "safe_strtoll(value, str, endp, base)");
@@ -1143,10 +1209,10 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - \a base is greater than 36
-    M_INLINE errno_t safe_strtoul(unsigned long* M_NONNULL                value,
-                                  const char* M_RESTRICT M_NONNULL        str,
-                                  char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                                  int                                     base)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_strtoul(unsigned long* M_NONNULL                value,
+                                                        const char* M_RESTRICT M_NONNULL        str,
+                                                        char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                        int                                     base)
     {
         return safe_strtoul_impl(value, str, endp, base, __FILE__, __func__, __LINE__,
                                  "safe_strtoul(value, str, endp, base)");
@@ -1197,10 +1263,10 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - \a base is greater than 36
-    M_INLINE errno_t safe_strtoull(unsigned long long* M_NONNULL           value,
-                                   const char* M_RESTRICT M_NONNULL        str,
-                                   char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                                   int                                     base)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_strtoull(unsigned long long* M_NONNULL           value,
+                                                         const char* M_RESTRICT M_NONNULL        str,
+                                                         char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                         int                                     base)
     {
         return safe_strtoull_impl(value, str, endp, base, __FILE__, __func__, __LINE__,
                                   "safe_strtoull(value, str, endp, base)");
@@ -1251,10 +1317,10 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - \a base is greater than 36
-    M_INLINE errno_t safe_strtoimax(intmax_t* M_NONNULL                     value,
-                                    const char* M_RESTRICT M_NONNULL        str,
-                                    char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                                    int                                     base)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_strtoimax(intmax_t* M_NONNULL                     value,
+                                                          const char* M_RESTRICT M_NONNULL        str,
+                                                          char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                          int                                     base)
     {
         return safe_strtoimax_impl(value, str, endp, base, __FILE__, __func__, __LINE__,
                                    "safe_strtoimax(value, str, endp, base)");
@@ -1305,10 +1371,10 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - \a base is greater than 36
-    M_INLINE errno_t safe_strtoumax(uintmax_t* M_NONNULL                    value,
-                                    const char* M_RESTRICT M_NONNULL        str,
-                                    char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                                    int                                     base)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_strtoumax(uintmax_t* M_NONNULL                    value,
+                                                          const char* M_RESTRICT M_NONNULL        str,
+                                                          char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                          int                                     base)
     {
         return safe_strtoumax_impl(value, str, endp, base, __FILE__, __func__, __LINE__,
                                    "safe_strtoumax(value, str, endp, base)");
@@ -1355,9 +1421,9 @@ extern "C"
     //! - \a value is a null pointer
     //!
     //! - \a str is a null pointer
-    M_INLINE errno_t safe_strtof(float* M_NONNULL                        value,
-                                 const char* M_RESTRICT M_NONNULL        str,
-                                 char* M_NULLABLE* M_RESTRICT M_NULLABLE endp)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_strtof(float* M_NONNULL                        value,
+                                                       const char* M_RESTRICT M_NONNULL        str,
+                                                       char* M_NULLABLE* M_RESTRICT M_NULLABLE endp)
     {
         return safe_strtof_impl(value, str, endp, __FILE__, __func__, __LINE__, "safe_strtof(value, str, endp)");
     }
@@ -1399,9 +1465,9 @@ extern "C"
     //! - \a value is a null pointer
     //!
     //! - \a str is a null pointer
-    M_INLINE errno_t safe_strtod(double* M_NONNULL                       value,
-                                 const char* M_RESTRICT M_NONNULL        str,
-                                 char* M_NULLABLE* M_RESTRICT M_NULLABLE endp)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_strtod(double* M_NONNULL                       value,
+                                                       const char* M_RESTRICT M_NONNULL        str,
+                                                       char* M_NULLABLE* M_RESTRICT M_NULLABLE endp)
     {
         return safe_strtod_impl(value, str, endp, __FILE__, __func__, __LINE__, "safe_strtod(value, str, endp)");
     }
@@ -1443,9 +1509,9 @@ extern "C"
     //! - \a value is a null pointer
     //!
     //! - \a str is a null pointer
-    M_INLINE errno_t safe_strtold(long double* M_NONNULL                  value,
-                                  const char* M_RESTRICT M_NONNULL        str,
-                                  char* M_NULLABLE* M_RESTRICT M_NULLABLE endp)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_strtold(long double* M_NONNULL                  value,
+                                                        const char* M_RESTRICT M_NONNULL        str,
+                                                        char* M_NULLABLE* M_RESTRICT M_NULLABLE endp)
     {
         return safe_strtold_impl(value, str, endp, __FILE__, __func__, __LINE__, "safe_strtold(value, str, endp)");
     }
@@ -1491,7 +1557,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - There is text still present after performing the conversion
-    M_INLINE errno_t safe_atoi(int* M_NONNULL value, const char* M_RESTRICT M_NONNULL str)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_atoi(int* M_NONNULL value, const char* M_RESTRICT M_NONNULL str)
     {
         return safe_atoi_impl(value, str, __FILE__, __func__, __LINE__, "safe_atoi(value, str)");
     }
@@ -1538,7 +1604,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - There is text still present after performing the conversion
-    M_INLINE errno_t safe_atol(long* M_NONNULL value, const char* M_RESTRICT M_NONNULL str)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_atol(long* M_NONNULL value, const char* M_RESTRICT M_NONNULL str)
     {
         return safe_atol_impl(value, str, __FILE__, __func__, __LINE__, "safe_atol(value, str)");
     }
@@ -1585,7 +1651,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - There is text still present after performing the conversion
-    M_INLINE errno_t safe_atoll(long long* M_NONNULL value, const char* M_RESTRICT M_NONNULL str)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_atoll(long long* M_NONNULL value, const char* M_RESTRICT M_NONNULL str)
     {
         return safe_atoll_impl(value, str, __FILE__, __func__, __LINE__, "safe_atoll(value, str)");
     }
@@ -1632,7 +1698,7 @@ extern "C"
     //! - \a str is a null pointer
     //!
     //! - There is text still present after performing the conversion
-    M_INLINE errno_t safe_atof(double* M_NONNULL value, const char* M_RESTRICT M_NONNULL str)
+    CONSTRAINT_NO_DISCARD M_INLINE errno_t safe_atof(double* M_NONNULL value, const char* M_RESTRICT M_NONNULL str)
     {
         return safe_atof_impl(value, str, __FILE__, __func__, __LINE__, "safe_atof(value, str)");
     }
@@ -1680,6 +1746,82 @@ extern "C"
     {
         return checked_fputs(nofmt, stdout);
     }
+
+    M_NULL_TERM_STRING(1)
+    M_PARAM_RO(1) FUNC_ATTR_PRINTF(1, 2) static M_INLINE void print_error_format(const char* M_NONNULL formatstr, ...)
+    {
+        va_list args;
+        va_start(args, formatstr);
+        DISABLE_WARNING_FORMAT_NONLITERAL
+        int n = vfprintf(stderr, formatstr, args);
+        RESTORE_WARNING_FORMAT_NONLITERAL
+        va_end(args);
+        M_STATIC_CAST(void, n);
+    }
+
+    //! \fn errno_t get_And_Validate_Celsius_Input_int16(const char* input_str, int16_t* outputValue)
+    //! \brief Converts temperature input (any unit) to Celsius as int16_t
+    //! \param[in] input_str The input string with temperature value and optional unit
+    //! \param[out] outputValue Pointer to store the temperature in Celsius
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2) errno_t
+        get_And_Validate_Celsius_Input_int16(const char* M_NONNULL input_str, int16_t* M_NONNULL outputValue);
+
+    //! \fn errno_t get_And_Validate_Milliwatt_Input_uint32(const char* input_str, uint32_t* outputValue)
+    //! \brief Converts power input (any unit) to milliwatts as uint32_t
+    //! \param[in] input_str The input string with power value and optional unit
+    //! \param[out] outputValue Pointer to store the power in milliwatts
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2) errno_t
+        get_And_Validate_Milliwatt_Input_uint32(const char* M_NONNULL input_str, uint32_t* M_NONNULL outputValue);
+
+    //! \fn errno_t get_And_Validate_Byte_Input_uint64(const char* input_str, uint64_t* outputValue)
+    //! \brief Converts data size input (any unit) to bytes as uint64_t
+    //! \param[in] input_str The input string with data size value and optional unit
+    //! \param[out] outputValue Pointer to store the data size in bytes
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2) errno_t
+        get_And_Validate_Byte_Input_uint64(const char* M_NONNULL input_str, uint64_t* M_NONNULL outputValue);
+
+    //! \fn errno_t get_And_Validate_Millisecond_Input_uint32(const char* input_str, uint32_t* outputValue)
+    //! \brief Converts time input (any unit) to milliseconds as uint32_t
+    //! \param[in] input_str The input string with time value and optional unit
+    //! \param[out] outputValue Pointer to store the time in milliseconds
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2) errno_t
+        get_And_Validate_Millisecond_Input_uint32(const char* M_NONNULL input_str, uint32_t* M_NONNULL outputValue);
+
+    //! \fn errno_t get_And_Validate_Volt_Input_uint16(const char* input_str, uint16_t* outputValue)
+    //! \brief Converts voltage input (any unit) to volts as uint16_t
+    //! \param[in] input_str The input string with voltage value and optional unit
+    //! \param[out] outputValue Pointer to store the voltage in volts
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2) errno_t
+        get_And_Validate_Volt_Input_uint16(const char* M_NONNULL input_str, uint16_t* M_NONNULL outputValue);
+
+    //! \fn errno_t get_And_Validate_Millivolt_Input_uint32(const char* input_str, uint32_t* outputValue)
+    //! \brief Converts voltage input (any unit) to millivolts as uint32_t
+    //! \param[in] input_str The input string with voltage value and optional unit
+    //! \param[out] outputValue Pointer to store the voltage in millivolts
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2) errno_t
+        get_And_Validate_Millivolt_Input_uint32(const char* M_NONNULL input_str, uint32_t* M_NONNULL outputValue);
+
+    //! \fn errno_t get_And_Validate_Amp_Input_uint16(const char* input_str, uint16_t* outputValue)
+    //! \brief Converts current input (any unit) to amps as uint16_t
+    //! \param[in] input_str The input string with current value and optional unit
+    //! \param[out] outputValue Pointer to store the current in amps
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2) errno_t
+        get_And_Validate_Amp_Input_uint16(const char* M_NONNULL input_str, uint16_t* M_NONNULL outputValue);
+
+    //! \fn errno_t get_And_Validate_Milliamp_Input_uint32(const char* input_str, uint32_t* outputValue)
+    //! \brief Converts current input (any unit) to milliamps as uint32_t
+    //! \param[in] input_str The input string with current value and optional unit
+    //! \param[out] outputValue Pointer to store the current in milliamps
+    //! \return 0 on success, EINVAL on invalid input/unit, ERANGE on overflow
+    M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_RW(2) errno_t
+        get_And_Validate_Milliamp_Input_uint32(const char* M_NONNULL input_str, uint32_t* M_NONNULL outputValue);
 
 #if defined(__cplusplus)
 }

@@ -44,53 +44,68 @@ typedef enum eLworkModeEnum
     LWORK_MODE_FIND   = 0
 } eLworkMode;
 
-static void* safe_lwork(const void* key,
-                        const void* base,
-                        rsize_t*    nelp,
-                        rsize_t     width,
-                        comparefn   compar,
-                        eLworkMode  addelem,
-                        const char* file,
-                        const char* function,
-                        int         line,
-                        const char* expression);
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_PARAM_RW(3)
+M_NODISCARD
+static void* M_NULLABLE safe_lwork(const void* M_NONNULL  key,
+                                   const void* M_NONNULL  base,
+                                   rsize_t* M_NONNULL     nelp,
+                                   rsize_t                width,
+                                   comparefn M_NONNULL    compar,
+                                   eLworkMode             addelem,
+                                   const char* M_NULLABLE file,
+                                   const char* M_NULLABLE function,
+                                   int                    line,
+                                   const char* M_NULLABLE expression);
 
-void* safe_lsearch_impl(const void* key,
-                        void*       base,
-                        rsize_t*    nelp,
-                        rsize_t     width,
-                        comparefn   compar,
-                        const char* file,
-                        const char* function,
-                        int         line,
-                        const char* expression)
+M_PARAM_RO(1)
+M_PARAM_RW(2)
+M_PARAM_RW(3)
+M_NODISCARD
+void* M_NULLABLE safe_lsearch_impl(const void* M_NONNULL  key,
+                                   void* M_NONNULL        base,
+                                   rsize_t* M_NONNULL     nelp,
+                                   rsize_t                width,
+                                   comparefn M_NONNULL    compar,
+                                   const char* M_NULLABLE file,
+                                   const char* M_NULLABLE function,
+                                   int                    line,
+                                   const char* M_NULLABLE expression)
 {
     return (safe_lwork(key, base, nelp, width, compar, LWORK_MODE_SEARCH, file, function, line, expression));
 }
 
-void* safe_lfind_impl(const void* key,
-                      const void* base,
-                      rsize_t*    nelp,
-                      rsize_t     width,
-                      comparefn   compar,
-                      const char* file,
-                      const char* function,
-                      int         line,
-                      const char* expression)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_PARAM_RW(3)
+M_NODISCARD
+void* M_NULLABLE safe_lfind_impl(const void* M_NONNULL  key,
+                                 const void* M_NONNULL  base,
+                                 rsize_t* M_NONNULL     nelp,
+                                 rsize_t                width,
+                                 comparefn M_NONNULL    compar,
+                                 const char* M_NULLABLE file,
+                                 const char* M_NULLABLE function,
+                                 int                    line,
+                                 const char* M_NULLABLE expression)
 {
     return (safe_lwork(key, base, nelp, width, compar, LWORK_MODE_FIND, file, function, line, expression));
 }
-
-static void* safe_lwork(const void* key,
-                        const void* base,
-                        rsize_t*    nelp,
-                        rsize_t     width,
-                        comparefn   compar,
-                        eLworkMode  addelem,
-                        const char* file,
-                        const char* function,
-                        int         line,
-                        const char* expression)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_PARAM_RW(3)
+M_NODISCARD
+static void* M_NULLABLE safe_lwork(const void* M_NONNULL  key,
+                                   const void* M_NONNULL  base,
+                                   rsize_t* M_NONNULL     nelp,
+                                   rsize_t                width,
+                                   comparefn M_NONNULL    compar,
+                                   eLworkMode             addelem,
+                                   const char* M_NULLABLE file,
+                                   const char* M_NULLABLE function,
+                                   int                    line,
+                                   const char* M_NULLABLE expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -229,7 +244,24 @@ static void* safe_lwork(const void* key,
          * lsearch() adds the key to the end of the table and increments
          * the number of elements.
          */
-        safe_memcpy(endp, width, key, width);
+        errno_t copyerr = safe_memcpy(endp, width, key, width);
+        if (copyerr != 0)
+        {
+            if (addelem == LWORK_MODE_FIND)
+            {
+                invoke_Constraint_Handler("safe_lfind: memcpy failed",
+                                          set_Env_Info(&envInfo, file, function, expression, line), copyerr);
+                errno = copyerr;
+                return M_NULLPTR;
+            }
+            else
+            {
+                invoke_Constraint_Handler("safe_lsearch: memcpy failed",
+                                          set_Env_Info(&envInfo, file, function, expression, line), copyerr);
+                errno = copyerr;
+                return M_NULLPTR;
+            }
+        }
         ++*nelp;
 
         return (endp);
@@ -239,60 +271,75 @@ static void* safe_lwork(const void* key,
 // following versions are written by Seagate technology to allow compare
 // function to provide context The modification is simply to provide a context
 // pointer to the functions to pass to the context function
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_PARAM_RW(3)
+M_NODISCARD
+static void* M_NULLABLE safe_lwork_context(const void* M_NONNULL  key,
+                                           const void* M_NONNULL  base,
+                                           rsize_t* M_NONNULL     nelp,
+                                           rsize_t                width,
+                                           ctxcomparefn M_NONNULL compar,
+                                           void* M_NULLABLE       context,
+                                           eLworkMode             addelem,
+                                           const char* M_NULLABLE file,
+                                           const char* M_NULLABLE function,
+                                           int                    line,
+                                           const char* M_NULLABLE expression);
 
-static void* safe_lwork_context(const void*  key,
-                                const void*  base,
-                                rsize_t*     nelp,
-                                rsize_t      width,
-                                ctxcomparefn compar,
-                                void*        context,
-                                eLworkMode   addelem,
-                                const char*  file,
-                                const char*  function,
-                                int          line,
-                                const char*  expression);
-
-void* safe_lsearch_context_impl(const void*  key,
-                                void*        base,
-                                rsize_t*     nelp,
-                                rsize_t      width,
-                                ctxcomparefn compar,
-                                void*        context,
-                                const char*  file,
-                                const char*  function,
-                                int          line,
-                                const char*  expression)
+M_PARAM_RO(1)
+M_PARAM_RW(2)
+M_PARAM_RW(3)
+M_NODISCARD
+void* M_NULLABLE safe_lsearch_context_impl(const void* M_NONNULL  key,
+                                           void* M_NONNULL        base,
+                                           rsize_t* M_NONNULL     nelp,
+                                           rsize_t                width,
+                                           ctxcomparefn M_NONNULL compar,
+                                           void* M_NULLABLE       context,
+                                           const char* M_NULLABLE file,
+                                           const char* M_NULLABLE function,
+                                           int                    line,
+                                           const char* M_NULLABLE expression)
 {
     return (safe_lwork_context(key, base, nelp, width, compar, context, LWORK_MODE_SEARCH, file, function, line,
                                expression));
 }
 
-void* safe_lfind_context_impl(const void*  key,
-                              const void*  base,
-                              rsize_t*     nelp,
-                              rsize_t      width,
-                              ctxcomparefn compar,
-                              void*        context,
-                              const char*  file,
-                              const char*  function,
-                              int          line,
-                              const char*  expression)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_PARAM_RW(3)
+M_NODISCARD
+void* M_NULLABLE safe_lfind_context_impl(const void* M_NONNULL  key,
+                                         const void* M_NONNULL  base,
+                                         rsize_t* M_NONNULL     nelp,
+                                         rsize_t                width,
+                                         ctxcomparefn M_NONNULL compar,
+                                         void* M_NULLABLE       context,
+                                         const char* M_NULLABLE file,
+                                         const char* M_NULLABLE function,
+                                         int                    line,
+                                         const char* M_NULLABLE expression)
 {
     return (
         safe_lwork_context(key, base, nelp, width, compar, context, LWORK_MODE_FIND, file, function, line, expression));
 }
 
-static void* safe_lwork_context(const void*  key,
-                                const void*  base,
-                                rsize_t*     nelp,
-                                rsize_t      width,
-                                ctxcomparefn compar,
-                                void*        context,
-                                eLworkMode   addelem,
-                                const char*  file,
-                                const char*  function,
-                                int          line,
-                                const char*  expression)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_PARAM_RW(3)
+M_NODISCARD
+static void* M_NULLABLE safe_lwork_context(const void* M_NONNULL  key,
+                                           const void* M_NONNULL  base,
+                                           rsize_t* M_NONNULL     nelp,
+                                           rsize_t                width,
+                                           ctxcomparefn M_NONNULL compar,
+                                           void* M_NULLABLE       context,
+                                           eLworkMode             addelem,
+                                           const char* M_NULLABLE file,
+                                           const char* M_NULLABLE function,
+                                           int                    line,
+                                           const char* M_NULLABLE expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -431,7 +478,12 @@ static void* safe_lwork_context(const void*  key,
          * lsearch() adds the key to the end of the table and increments
          * the number of elements.
          */
-        safe_memcpy(endp, width, key, width);
+        if (0 != safe_memcpy(endp, width, key, width))
+        {
+            errno = error;
+            return (
+                ep); // TODO: consider whether to return null here instead since the element wasn't successfully added
+        }
         ++*nelp;
 
         return (endp);

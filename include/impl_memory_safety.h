@@ -17,6 +17,7 @@
 
 #include "code_attributes.h"
 #include "common_types.h"
+#include "constraint_handling.h"
 #include "type_conversion.h"
 
 #if defined(__cplusplus)
@@ -80,14 +81,14 @@ extern "C"
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
     M_PARAM_WO_SIZE(1, 2)
-    errno_t safe_memset_impl(void* M_NONNULL        dest,
-                             rsize_t                destsz,
-                             int                    ch,
-                             rsize_t                count,
-                             const char* M_NULLABLE file,
-                             const char* M_NULLABLE function,
-                             int                    line,
-                             const char* M_NULLABLE expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_memset_impl(void* M_NONNULL        dest,
+                                                   rsize_t                destsz,
+                                                   int                    ch,
+                                                   rsize_t                count,
+                                                   const char* M_NULLABLE file,
+                                                   const char* M_NULLABLE function,
+                                                   int                    line,
+                                                   const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
         M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
@@ -127,14 +128,14 @@ extern "C"
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
     M_PARAM_WO_SIZE(1, 2)
     M_PARAM_RO_SIZE(3, 4)
-    errno_t safe_memmove_impl(void* M_NONNULL        dest,
-                              rsize_t                destsz,
-                              const void* M_NONNULL  src,
-                              rsize_t                count,
-                              const char* M_NULLABLE file,
-                              const char* M_NULLABLE function,
-                              int                    line,
-                              const char* M_NULLABLE expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_memmove_impl(void* M_NONNULL        dest,
+                                                    rsize_t                destsz,
+                                                    const void* M_NONNULL  src,
+                                                    rsize_t                count,
+                                                    const char* M_NULLABLE file,
+                                                    const char* M_NULLABLE function,
+                                                    int                    line,
+                                                    const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
         M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
@@ -177,14 +178,14 @@ extern "C"
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
     M_PARAM_WO_SIZE(1, 2)
     M_PARAM_RO_SIZE(3, 4)
-    errno_t safe_memcpy_impl(void* M_RESTRICT M_NONNULL       dest,
-                             rsize_t                          destsz,
-                             const void* M_RESTRICT M_NONNULL src,
-                             rsize_t                          count,
-                             const char* M_NULLABLE           file,
-                             const char* M_NULLABLE           function,
-                             int                              line,
-                             const char* M_NULLABLE           expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_memcpy_impl(void* M_RESTRICT M_NONNULL       dest,
+                                                   rsize_t                          destsz,
+                                                   const void* M_RESTRICT M_NONNULL src,
+                                                   rsize_t                          count,
+                                                   const char* M_NULLABLE           file,
+                                                   const char* M_NULLABLE           function,
+                                                   int                              line,
+                                                   const char* M_NULLABLE           expression)
         // clang-format off
         M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
         M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
@@ -232,15 +233,15 @@ extern "C"
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
     M_PARAM_WO_SIZE(1, 2)
     M_PARAM_RO_SIZE(3, 5)
-    errno_t safe_memccpy_impl(void* M_RESTRICT M_NONNULL       dest,
-                              rsize_t                          destsz,
-                              const void* M_RESTRICT M_NONNULL src,
-                              int                              c,
-                              rsize_t                          count,
-                              const char* M_NULLABLE           file,
-                              const char* M_NULLABLE           function,
-                              int                              line,
-                              const char* M_NULLABLE           expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_memccpy_impl(void* M_RESTRICT M_NONNULL       dest,
+                                                    rsize_t                          destsz,
+                                                    const void* M_RESTRICT M_NONNULL src,
+                                                    int                              c,
+                                                    rsize_t                          count,
+                                                    const char* M_NULLABLE           file,
+                                                    const char* M_NULLABLE           function,
+                                                    int                              line,
+                                                    const char* M_NULLABLE           expression)
         // clang-format off
         M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
         M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
@@ -286,15 +287,15 @@ extern "C"
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
     M_PARAM_WO_SIZE(1, 2)
     M_PARAM_RO_SIZE(3, 5)
-    errno_t safe_memcmove_impl(void* M_RESTRICT M_NONNULL       dest,
-                               rsize_t                          destsz,
-                               const void* M_RESTRICT M_NONNULL src,
-                               int                              c,
-                               rsize_t                          count,
-                               const char* M_NULLABLE           file,
-                               const char* M_NULLABLE           function,
-                               int                              line,
-                               const char* M_NULLABLE           expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_memcmove_impl(void* M_RESTRICT M_NONNULL       dest,
+                                                     rsize_t                          destsz,
+                                                     const void* M_RESTRICT M_NONNULL src,
+                                                     int                              c,
+                                                     rsize_t                          count,
+                                                     const char* M_NULLABLE           file,
+                                                     const char* M_NULLABLE           function,
+                                                     int                              line,
+                                                     const char* M_NULLABLE           expression)
         // clang-format off
         M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
         M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")

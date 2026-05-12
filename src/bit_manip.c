@@ -315,7 +315,7 @@ static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
                                             uint8_t              lsb)
 {
     genericint_t out;
-    safe_memset(&out, sizeof(genericint_t), 0, sizeof(genericint_t));
+    M_INITIALIZE_STRUCTURE(&out, sizeof(genericint_t));
     if (msb > GENERIC_INT_8BIT_MAX || lsb > GENERIC_INT_8BIT_MAX)
     {
         errno = ERANGE;
@@ -348,7 +348,7 @@ static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
 static M_INLINE genericint_t gen_16bit_range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
 {
     genericint_t out;
-    safe_memset(&out, sizeof(genericint_t), 0, sizeof(genericint_t));
+    M_INITIALIZE_STRUCTURE(&out, sizeof(out));
     if (msb > GENERIC_INT_16BIT_MAX || lsb > GENERIC_INT_16BIT_MAX)
     {
         errno = ERANGE;
@@ -394,7 +394,7 @@ static M_INLINE genericint_t gen_16bit_range(genericint_t input, size_t outputsi
 static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
 {
     genericint_t out;
-    safe_memset(&out, sizeof(genericint_t), 0, sizeof(genericint_t));
+    M_INITIALIZE_STRUCTURE(&out, sizeof(out));
     if (msb > GENERIC_INT_32BIT_MAX || lsb > GENERIC_INT_32BIT_MAX)
     {
         errno = ERANGE;
@@ -451,7 +451,7 @@ static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsi
 static M_INLINE genericint_t gen_64bit_range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
 {
     genericint_t out;
-    safe_memset(&out, sizeof(genericint_t), 0, sizeof(genericint_t));
+    M_INITIALIZE_STRUCTURE(&out, sizeof(out));
     if (msb > GENERIC_INT_64BIT_MAX || lsb > GENERIC_INT_64BIT_MAX)
     {
         errno = ERANGE;
@@ -511,7 +511,7 @@ static M_INLINE genericint_t gen_64bit_range(genericint_t input, size_t outputsi
 genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_t msb, uint8_t lsb)
 {
     genericint_t out;
-    safe_memset(&out, sizeof(genericint_t), 0, sizeof(genericint_t));
+    M_INITIALIZE_STRUCTURE(&out, sizeof(out));
     errno = 0; // clear out any errors first
     if (!is_generic_int_valid(input))
     {

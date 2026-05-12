@@ -280,14 +280,17 @@ int safe_ispunct(int c)
         return 0;
     }
 }
- 
-errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
-                         rsize_t                destsz,
-                         const char* M_RESTRICT src,
-                         const char*            file,
-                         const char*            function,
-                         int                    line,
-                         const char*            expression)
+
+M_PARAM_WO_SIZE(1, 2)
+M_PARAM_RO(3)
+M_NULL_TERM_STRING(3)
+CONSTRAINT_NO_DISCARD errno_t safe_strcpy_impl(char* M_RESTRICT M_NONNULL       dest,
+                                               rsize_t                          destsz,
+                                               const char* M_RESTRICT M_NONNULL src,
+                                               const char* M_NULLABLE           file,
+                                               const char* M_NULLABLE           function,
+                                               int                              line,
+                                               const char* M_NULLABLE           expression)
 {
     errno_t           error  = 0;
     size_t            srclen = safe_strnlen(src, RSIZE_MAX);
@@ -361,17 +364,20 @@ errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
     }
 }
 
-errno_t safe_strmove_impl(char*       dest,
-                          rsize_t     destsz,
-                          const char* src,
-                          const char* file,
-                          const char* function,
-                          int         line,
-                          const char* expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO(3)
+M_NULL_TERM_STRING(3)
+CONSTRAINT_NO_DISCARD errno_t safe_strmove_impl(char* M_NONNULL        dest,
+                                                rsize_t                destsz,
+                                                const char* M_NONNULL  src,
+                                                const char* M_NULLABLE file,
+                                                const char* M_NULLABLE function,
+                                                int                    line,
+                                                const char* M_NULLABLE expression)
 {
     size_t            srclen = safe_strnlen(src, RSIZE_MAX);
     constraintEnvInfo envInfo;
-    errno_t           error  = 0;
+    errno_t           error = 0;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -426,14 +432,16 @@ errno_t safe_strmove_impl(char*       dest,
     }
 }
 
-errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
-                          rsize_t                destsz,
-                          const char* M_RESTRICT src,
-                          rsize_t                count,
-                          const char*            file,
-                          const char*            function,
-                          int                    line,
-                          const char*            expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 4)
+CONSTRAINT_NO_DISCARD errno_t safe_strncpy_impl(char* M_RESTRICT M_NONNULL       dest,
+                                                rsize_t                          destsz,
+                                                const char* M_RESTRICT M_NONNULL src,
+                                                rsize_t                          count,
+                                                const char* M_NULLABLE           file,
+                                                const char* M_NULLABLE           function,
+                                                int                              line,
+                                                const char* M_NULLABLE           expression)
 {
     errno_t           error  = 0;
     size_t            srclen = safe_strnlen(src, count);
@@ -523,14 +531,16 @@ errno_t safe_strncpy_impl(char* M_RESTRICT       dest,
     }
 }
 
-errno_t safe_strnmove_impl(char*       dest,
-                           rsize_t     destsz,
-                           const char* src,
-                           rsize_t     count,
-                           const char* file,
-                           const char* function,
-                           int         line,
-                           const char* expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 4)
+CONSTRAINT_NO_DISCARD errno_t safe_strnmove_impl(char* M_NONNULL        dest,
+                                                 rsize_t                destsz,
+                                                 const char* M_NONNULL  src,
+                                                 rsize_t                count,
+                                                 const char* M_NULLABLE file,
+                                                 const char* M_NULLABLE function,
+                                                 int                    line,
+                                                 const char* M_NULLABLE expression)
 {
     errno_t           error  = 0;
     size_t            srclen = safe_strnlen(src, count);
@@ -605,13 +615,17 @@ errno_t safe_strnmove_impl(char*       dest,
     }
 }
 
-errno_t safe_strcat_impl(char* M_RESTRICT       dest,
-                         rsize_t                destsz,
-                         const char* M_RESTRICT src,
-                         const char*            file,
-                         const char*            function,
-                         int                    line,
-                         const char*            expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO(3)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(3)
+CONSTRAINT_NO_DISCARD errno_t safe_strcat_impl(char* M_RESTRICT M_NONNULL       dest,
+                                               rsize_t                          destsz,
+                                               const char* M_RESTRICT M_NONNULL src,
+                                               const char* M_NULLABLE           file,
+                                               const char* M_NULLABLE           function,
+                                               int                              line,
+                                               const char* M_NULLABLE           expression)
 {
     errno_t           error    = 0;
     size_t            srclen   = safe_strnlen(src, RSIZE_MAX);
@@ -696,14 +710,17 @@ errno_t safe_strcat_impl(char* M_RESTRICT       dest,
     }
 }
 
-errno_t safe_strncat_impl(char* M_RESTRICT       dest,
-                          rsize_t                destsz,
-                          const char* M_RESTRICT src,
-                          rsize_t                count,
-                          const char*            file,
-                          const char*            function,
-                          int                    line,
-                          const char*            expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 4)
+M_NULL_TERM_STRING(1)
+CONSTRAINT_NO_DISCARD errno_t safe_strncat_impl(char* M_RESTRICT M_NONNULL       dest,
+                                                rsize_t                          destsz,
+                                                const char* M_RESTRICT M_NONNULL src,
+                                                rsize_t                          count,
+                                                const char* M_NULLABLE           file,
+                                                const char* M_NULLABLE           function,
+                                                int                              line,
+                                                const char* M_NULLABLE           expression)
 {
     errno_t           error    = 0;
     size_t            srclen   = safe_strnlen(src, destsz);
@@ -805,13 +822,17 @@ errno_t safe_strncat_impl(char* M_RESTRICT       dest,
     }
 }
 
-errno_t safe_strcatmove_impl(char*       dest,
-                             rsize_t     destsz,
-                             const char* src,
-                             const char* file,
-                             const char* function,
-                             int         line,
-                             const char* expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO(3)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(3)
+CONSTRAINT_NO_DISCARD errno_t safe_strcatmove_impl(char* M_NONNULL        dest,
+                                                   rsize_t                destsz,
+                                                   const char* M_NONNULL  src,
+                                                   const char* M_NULLABLE file,
+                                                   const char* M_NULLABLE function,
+                                                   int                    line,
+                                                   const char* M_NULLABLE expression)
 {
     errno_t           error    = 0;
     size_t            srclen   = safe_strnlen(src, RSIZE_MAX);
@@ -882,14 +903,17 @@ errno_t safe_strcatmove_impl(char*       dest,
     }
 }
 
-errno_t safe_strncatmove_impl(char*       dest,
-                              rsize_t     destsz,
-                              const char* src,
-                              rsize_t     count,
-                              const char* file,
-                              const char* function,
-                              int         line,
-                              const char* expression)
+M_PARAM_RW_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 4)
+M_NULL_TERM_STRING(1)
+CONSTRAINT_NO_DISCARD errno_t safe_strncatmove_impl(char* M_NONNULL        dest,
+                                                    rsize_t                destsz,
+                                                    const char* M_NONNULL  src,
+                                                    rsize_t                count,
+                                                    const char* M_NULLABLE file,
+                                                    const char* M_NULLABLE function,
+                                                    int                    line,
+                                                    const char* M_NULLABLE expression)
 {
     errno_t           error    = 0;
     size_t            srclen   = safe_strnlen(src, destsz);
@@ -977,7 +1001,7 @@ errno_t safe_strncatmove_impl(char*       dest,
     }
 }
 
-size_t safe_strnlen_impl(const char* string, size_t n)
+M_NODISCARD size_t safe_strnlen_impl(const char* M_NULLABLE string, size_t n)
 {
 #if defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
     // Does not invoke constraint handler of it's own so we can use this here - TJE
@@ -1028,12 +1052,15 @@ M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size)
 }
 #endif // checks for strndup
 
-errno_t safe_strdup_impl(char**      dup,
-                         const char* src,
-                         const char* file,
-                         const char* function,
-                         int         line,
-                         const char* expression)
+M_PARAM_RW(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(2)
+CONSTRAINT_NO_DISCARD errno_t safe_strdup_impl(char* M_NONNULL* M_NULLABLE dup,
+                                               const char* M_NONNULL       src,
+                                               const char* M_NULLABLE      file,
+                                               const char* M_NULLABLE      function,
+                                               int                         line,
+                                               const char* M_NULLABLE      expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -1076,7 +1103,8 @@ errno_t safe_strdup_impl(char**      dup,
         *dup = M_REINTERPRET_CAST(char*, safe_calloc(srclen + RSIZE_T_C(1), sizeof(char)));
         if (*dup != M_NULLPTR)
         {
-            safe_memcpy(*dup, srclen + RSIZE_T_C(1), src, srclen);
+            // NOTE: This should just pass without a problem
+            error          = safe_memcpy(*dup, srclen + RSIZE_T_C(1), src, srclen);
             (*dup)[srclen] = '\0';
         }
         else
@@ -1089,13 +1117,15 @@ errno_t safe_strdup_impl(char**      dup,
     return error;
 }
 
-errno_t safe_strndup_impl(char**      dup,
-                          const char* src,
-                          rsize_t     size,
-                          const char* file,
-                          const char* function,
-                          int         line,
-                          const char* expression)
+M_PARAM_RW(1)
+M_PARAM_RO_SIZE(2, 3)
+CONSTRAINT_NO_DISCARD errno_t safe_strndup_impl(char* M_NONNULL* M_NULLABLE dup,
+                                                const char* M_NONNULL       src,
+                                                rsize_t                     size,
+                                                const char* M_NULLABLE      file,
+                                                const char* M_NULLABLE      function,
+                                                int                         line,
+                                                const char* M_NULLABLE      expression)
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -1137,7 +1167,8 @@ errno_t safe_strndup_impl(char**      dup,
         *dup = M_REINTERPRET_CAST(char*, safe_calloc(size + RSIZE_T_C(1), sizeof(char)));
         if (*dup != M_NULLPTR)
         {
-            safe_memcpy(*dup, size + 1, src, size);
+            // NOTE: This should pass without any errors
+            error        = safe_memcpy(*dup, size + RSIZE_T_C(1), src, size);
             (*dup)[size] = '\0';
         }
         else
@@ -1211,7 +1242,9 @@ void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
     }
 
     size_t memsetlen = stringlen - end;
-    safe_memset(&stringToChange[end], memsetlen, 0, memsetlen);
+    M_IGNORE_SAFE_ERRNO_CALL(
+        safe_memset(&stringToChange[end], memsetlen, 0, memsetlen),
+        "Calculated memset length will never overflow when stringlen provided to this function is accurate");
 }
 
 void remove_Leading_Whitespace(char* stringToChange)
@@ -1234,13 +1267,19 @@ void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
 
     if (iter > SIZE_T_C(0))
     {
-        safe_memmove(stringToChange, stringlen, &stringToChange[iter], stringlen - iter);
-        safe_memset(&stringToChange[stringlen - iter], stringlen - iter, 0,
-                    iter); // Null-terminate the shifted string
+        if (0 != safe_memmove(stringToChange, stringlen, &stringToChange[iter], stringlen - iter))
+        {
+            return;
+        }
+        if (0 != safe_memset(&stringToChange[stringlen - iter], stringlen - iter, 0,
+                             iter)) // Null-terminate the shifted string
+        {
+            return;
+        }
     }
 }
 
-void remove_Leading_And_Trailing_Whitespace(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void remove_Leading_And_Trailing_Whitespace(char* M_NONNULL stringToChange)
 {
     remove_Leading_And_Trailing_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
@@ -1280,7 +1319,10 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
     // If there's leading whitespace, shift the string to the start
     if (start > SIZE_T_C(0) && newlen > 0)
     {
-        safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen);
+        if (0 != safe_memmove(stringToChange, stringlen, &stringToChange[start], newlen))
+        {
+            return;
+        }
     }
 
     if (newlen == stringlen && start == 0)
@@ -1295,7 +1337,9 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
         // left after the memmove. This is not strictly necessary, but it is safer and does not have a significant
         // performance impact in most cases.
         size_t memsetlen = stringlen - newlen;
-        safe_memset(&stringToChange[newlen], memsetlen, 0, memsetlen);
+        M_IGNORE_SAFE_ERRNO_CALL(
+            safe_memset(&stringToChange[newlen], memsetlen, 0, memsetlen),
+            "Calculated memset length will never overflow when stringlen provided to this function is accurate");
     }
 }
 

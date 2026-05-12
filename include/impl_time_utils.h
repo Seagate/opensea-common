@@ -17,6 +17,7 @@
 
 #include "code_attributes.h"
 #include "common_types.h"
+#include "constraint_handling.h"
 
 #include <time.h>
 
@@ -66,6 +67,7 @@ extern "C"
     //! - \a buf is a null pointer
     M_PARAM_RO(1)
     M_PARAM_RW(2)
+    CONSTRAINT_NO_DISCARD
     struct tm* M_NULLABLE impl_safe_gmtime(const time_t* M_RESTRICT M_NONNULL timer,
                                            struct tm* M_RESTRICT M_NONNULL    buf,
                                            const char* M_NULLABLE             file,
@@ -103,6 +105,7 @@ extern "C"
     //! - \a buf is a null pointer
     M_PARAM_RO(1)
     M_PARAM_RW(2)
+    CONSTRAINT_NO_DISCARD
     struct tm* M_NULLABLE impl_safe_localtime(const time_t* M_RESTRICT M_NONNULL timer,
                                               struct tm* M_RESTRICT M_NONNULL    buf,
                                               const char* M_NULLABLE             file,
@@ -149,14 +152,14 @@ extern "C"
     //! - member of \a time_ptr is out of normal range
     M_PARAM_RW_SIZE(1, 2)
     M_PARAM_RO(3)
-    errno_t impl_safe_asctime(char* M_NONNULL            buf,
-                              rsize_t                    bufsz,
-                              const struct tm* M_NONNULL time_ptr,
-                              bool                       ctime,
-                              const char* M_NULLABLE     file,
-                              const char* M_NULLABLE     function,
-                              int                        line,
-                              const char* M_NULLABLE     expression)
+    CONSTRAINT_NO_DISCARD errno_t impl_safe_asctime(char* M_NONNULL            buf,
+                                                    rsize_t                    bufsz,
+                                                    const struct tm* M_NONNULL time_ptr,
+                                                    bool                       ctime,
+                                                    const char* M_NULLABLE     file,
+                                                    const char* M_NULLABLE     function,
+                                                    int                        line,
+                                                    const char* M_NULLABLE     expression)
         // clang-format off
         M_DIAG_ERROR(M_IS_NULL_TIME_STR(buf), "buf is NULL")
         M_DIAG_ERROR(M_IS_NULL_CONST_STRUCT_TM(time_ptr), "time_ptr is NULL")
@@ -215,13 +218,13 @@ extern "C"
     //! - \a bufsz > RSIZE_MAX
     M_PARAM_RW_SIZE(1, 2)
     M_PARAM_RO(3)
-    errno_t impl_safe_ctime(char* M_NONNULL         buf,
-                            rsize_t                 bufsz,
-                            const time_t* M_NONNULL timer,
-                            const char* M_NULLABLE  file,
-                            const char* M_NULLABLE  function,
-                            int                     line,
-                            const char* M_NULLABLE  expression)
+    CONSTRAINT_NO_DISCARD errno_t impl_safe_ctime(char* M_NONNULL         buf,
+                                                  rsize_t                 bufsz,
+                                                  const time_t* M_NONNULL timer,
+                                                  const char* M_NULLABLE  file,
+                                                  const char* M_NULLABLE  function,
+                                                  int                     line,
+                                                  const char* M_NULLABLE  expression)
         // clang-format off
         M_DIAG_ERROR(M_IS_NULL_TIME_STR(buf), "buf is NULL")
         M_DIAG_ERROR(M_IS_NULL_TIMET(timer), "timer is NULL")

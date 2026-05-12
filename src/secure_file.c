@@ -45,10 +45,15 @@ eReturnValues replace_File_Name_In_Path(char fullPath[M_NONNULL_ARRAY OPENSEA_PA
     ptrLen = safe_strlen(ptr);
     // now that we have a valid pointer, set all the remaining characters to
     // null, then set the new file name in place.
-    safe_memset(ptr, ptrLen + 1, 0,
-                ptrLen); // destsz has + 1 for null terminator not included in strlen.
+    if (0 != safe_memset(ptr, ptrLen + 1, 0, ptrLen))
+    {
+        return M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE);
+    }
     fullLength = (OPENSEA_PATH_MAX - safe_strlen(fullPath));
-    snprintf_err_handle(ptr, fullLength, "%s", newFileName);
+    if (0 != safe_strcpy(ptr, fullLength, newFileName))
+    {
+        return M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE);
+    }
     return M_ACCESS_ENUM(eReturnValues, SUCCESS);
 }
 
@@ -387,7 +392,19 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
         {
             // append the filename to the end on fileInfo->fullpath
             // first add a trailing slash since one will not be present
-            safe_strcat(M_CONST_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, SYSTEM_PATH_SEPARATOR_STR);
+            if (0 != safe_strcat(M_CONST_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, SYSTEM_PATH_SEPARATOR_STR))
+            {
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PATH);
+                set_Secure_File_error_message(
+                    M_CONST_CAST(char**, &fileInfo->errorString),
+                    "Failed setting up path for security verification - only file name provided");
+                safe_free(&intFileName);
+                if (duplicatedModeForInternalUse)
+                {
+                    safe_free(&internalmode);
+                }
+                return fileInfo;
+            }
             if (strchr(filename, '/') // always check for forwards slash since
                                       // Windows can accept this
 #if defined(_WIN32)
@@ -414,11 +431,35 @@ M_NODISCARD secureFileInfo* secure_Open_File(const char*       filename,
                     lastsep = lastwinsep;
                 }
 #endif //_WIN32
-                safe_strcat(M_CONST_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, lastsep + 1);
+                if (0 != safe_strcat(M_CONST_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, lastsep + 1))
+                {
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PATH);
+                    set_Secure_File_error_message(
+                        M_CONST_CAST(char**, &fileInfo->errorString),
+                        "Failed setting up path for security verification - path + file name provided");
+                    safe_free(&intFileName);
+                    if (duplicatedModeForInternalUse)
+                    {
+                        safe_free(&internalmode);
+                    }
+                    return fileInfo;
+                }
             }
             else
             {
-                safe_strcat(M_CONST_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, filename);
+                if (0 != safe_strcat(M_CONST_CAST(char*, fileInfo->fullpath), OPENSEA_PATH_MAX, filename))
+                {
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PATH);
+                    set_Secure_File_error_message(
+                        M_CONST_CAST(char**, &fileInfo->errorString),
+                        "Failed setting up path for security verification - only file name provided");
+                    safe_free(&intFileName);
+                    if (duplicatedModeForInternalUse)
+                    {
+                        safe_free(&internalmode);
+                    }
+                    return fileInfo;
+                }
             }
         }
         else
@@ -1116,6 +1157,12 @@ M_NODISCARD eSecureFileError secure_Remove_File(secureFileInfo* fileInfo)
                 fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Failed to remove file");
             }
+            else
+            {
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                              "File removed successfully");
+            }
         }
         return fileInfo->error;
     }
@@ -1397,19 +1444,28 @@ M_FUNC_ATTR_MALLOC char* generate_Log_Name(
     }
     if (logPath != M_NULLPTR && logPathLen > 0)
     {
-        snprintf_err_handle(path, OPENSEA_PATH_MAX, "%s", logPath);
+        if (0 != safe_strcpy(path, OPENSEA_PATH_MAX, logPath))
+        {
+            return M_NULLPTR;
+        }
         // if there is no path separator at the end of this string, then we need
         // to append one before using this path below
         if (path[safe_strnlen(path, OPENSEA_PATH_MAX) - 1] != SYSTEM_PATH_SEPARATOR)
         {
-            safe_strcat(path, OPENSEA_PATH_MAX, SYSTEM_PATH_SEPARATOR_STR);
+            if (0 != safe_strcat(path, OPENSEA_PATH_MAX, SYSTEM_PATH_SEPARATOR_STR))
+            {
+                return M_NULLPTR;
+            }
         }
     }
     else
     {
         // set to relative current working directory ./ or .\\ in Windows. This
         // will be expanded by secure file to a full path
-        snprintf_err_handle(path, OPENSEA_PATH_MAX, ".%c", SYSTEM_PATH_SEPARATOR);
+        if (0 > snprintf_err_handle(path, OPENSEA_PATH_MAX, ".%c", SYSTEM_PATH_SEPARATOR))
+        {
+            return M_NULLPTR;
+        }
     }
     if (logExt != M_NULLPTR && logExtLen > SIZE_T_C(0))
     {

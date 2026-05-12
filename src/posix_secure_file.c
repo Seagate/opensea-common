@@ -38,7 +38,7 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* filetoChe
 {
     fileAttributes* attrs = M_NULLPTR;
     struct stat     st;
-    safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
+    M_INITIALIZE_STRUCTURE(&st, sizeof(struct stat));
     if (filetoCheck != M_NULLPTR && stat(filetoCheck, &st) == 0)
     {
         attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
@@ -74,7 +74,7 @@ M_NODISCARD fileAttributes* os_Get_File_Attributes_By_File(FILE* file)
 {
     fileAttributes* attrs = M_NULLPTR;
     struct stat     st;
-    safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
+    M_INITIALIZE_STRUCTURE(&st, sizeof(struct stat));
     if (file != M_NULLPTR && fstat(fileno(file), &st) == 0)
     {
         attrs = M_REINTERPRET_CAST(fileAttributes*, safe_calloc(1, sizeof(fileAttributes)));
@@ -113,8 +113,8 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* f
     M_USE_UNUSED(file);
 #else
     struct stat st;
-    safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
-    if (file != M_NULLPTR && fstat(fileno(file), &st))
+    M_INITIALIZE_STRUCTURE(&st, sizeof(struct stat));
+    if (file != M_NULLPTR && fstat(fileno(file), &st) == 0)
     {
         // device ID and inode
         uniqueID = M_REINTERPRET_CAST(fileUniqueIDInfo*, safe_calloc(1, sizeof(fileUniqueIDInfo)));
@@ -192,7 +192,7 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 #endif
     errno_t error = 0;
 
-    safe_memset(&buf, sizeof(struct stat), 0, sizeof(struct stat));
+    M_INITIALIZE_STRUCTURE(&buf, sizeof(struct stat));
 
     if (!fullpath || fullpath[0] != '/')
     {
@@ -543,7 +543,7 @@ bool os_File_Exists(const char* filetoCheck)
 int64_t os_Get_File_Size(FILE* filePtr)
 {
     struct stat st;
-    safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
+    M_INITIALIZE_STRUCTURE(&st, sizeof(struct stat));
     if (0 == fstat(fileno(filePtr), &st))
     {
         return st.st_size;

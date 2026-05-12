@@ -38,6 +38,33 @@ extern "C"
 #    define RESTORE_WARNING_4146
 #endif //_MSVC && !clang workaround for min/max macros
 
+//! \def DISABLE_WARNING_CONVERSION_DATA_LOSS
+//! \brief Disables warnings about possible loss of data in implicit conversions.
+//! \details This warning can be excessively noisy even when using proper C11 generic selection.
+//! - MSVC: Disables warnings 4242, 4243, 4244, 4267 (conversion type narrowing)
+//! - Clang: Disables -Wconversion (implicit conversion that may alter value)
+//! - GCC: Disables -Wconversion (implicit conversion that may alter value)
+//! Used to suppress false positives from generic macros where branch selection ensures type safety.
+
+//! \def RESTORE_WARNING_CONVERSION_DATA_LOSS
+//! \brief Restores warnings about possible loss of data in implicit conversions.
+#if IS_CLANG_VERSION(3, 0)
+#    define DISABLE_WARNING_CONVERSION_DATA_LOSS                                                                       \
+        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wconversion\"")
+#    define RESTORE_WARNING_CONVERSION_DATA_LOSS _Pragma("clang diagnostic pop")
+#elif IS_GCC_VERSION(4, 3)
+#    define DISABLE_WARNING_CONVERSION_DATA_LOSS                                                                       \
+        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wconversion\"")
+#    define RESTORE_WARNING_CONVERSION_DATA_LOSS _Pragma("GCC diagnostic pop")
+#elif IS_MSVC_VERSION(MSVC_2005)
+#    define DISABLE_WARNING_CONVERSION_DATA_LOSS                                                                       \
+        MSVC_PRAGMA(warning(push)) MSVC_PRAGMA(warning(disable : 4242 4243 4244 4267))
+#    define RESTORE_WARNING_CONVERSION_DATA_LOSS MSVC_PRAGMA(warning(pop))
+#else
+#    define DISABLE_WARNING_CONVERSION_DATA_LOSS
+#    define RESTORE_WARNING_CONVERSION_DATA_LOSS
+#endif // Disable conversion data loss warnings across compilers
+
 //! \def DISABLE_WARNING_SIGN_CONVERSION
 //! \brief Disables warning about sign conversion
 

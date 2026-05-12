@@ -366,7 +366,7 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
                                  // find a compiler we support.
     // make sure we set unknown and clear out version info before we continue.
     *compilerUsed = OPENSEA_COMPILER_UNKNOWN;
-    safe_memset(compilerVersionInfo, sizeof(compilerVersion), 0, sizeof(compilerVersion));
+    M_INITIALIZE_STRUCTURE(compilerVersionInfo, sizeof(compilerVersion));
     // Time to start checking predefined compiler macros
 #if defined _MSC_VER
     // Microsoft Visual C/C++ compiler (code is written to use the _MSC_FULL_VER
@@ -375,16 +375,52 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     *compilerUsed = OPENSEA_COMPILER_MICROSOFT_VISUAL_C_CPP;
 #    define MS_VERSION_STRING_LENGTH 10
     DECLARE_ZERO_INIT_ARRAY(char, msVersion, MS_VERSION_STRING_LENGTH);
-    snprintf_err_handle(msVersion, MS_VERSION_STRING_LENGTH, "%u", _MSC_FULL_VER);
-    DECLARE_ZERO_INIT_ARRAY(char, msMajor, 3);
-    DECLARE_ZERO_INIT_ARRAY(char, msMinor, 3);
-    DECLARE_ZERO_INIT_ARRAY(char, msPatch, 6);
-    snprintf_err_handle(msMajor, 3, "%.2s", &msVersion[0]);
-    snprintf_err_handle(msMinor, 3, "%.2s", &msVersion[2]);
-    snprintf_err_handle(msPatch, 6, "%.5s", &msVersion[4]);
-    compilerVersionInfo->major = C_CAST(uint16_t, strtoul(msMajor, M_NULLPTR, BASE_10_DECIMAL));
-    compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(msMinor, M_NULLPTR, BASE_10_DECIMAL));
-    compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(msPatch, M_NULLPTR, BASE_10_DECIMAL));
+    if (snprintf_err_handle(msVersion, MS_VERSION_STRING_LENGTH, "%u", _MSC_FULL_VER) >= 0)
+    {
+        DECLARE_ZERO_INIT_ARRAY(char, msMajor, 3);
+        DECLARE_ZERO_INIT_ARRAY(char, msMinor, 3);
+        DECLARE_ZERO_INIT_ARRAY(char, msPatch, 6);
+        if (snprintf_err_handle(msMajor, 3, "%.2s", &msVersion[0]) >= 0)
+        {
+            unsigned long temp = 0;
+            if (0 == safe_strtoul(&temp, msMajor, M_NULLPTR, BASE_10_DECIMAL))
+            {
+                compilerVersionInfo->major = C_CAST(uint16_t, temp);
+            }
+            else
+            {
+                ret = MEMORY_FAILURE;
+            }
+        }
+        if (snprintf_err_handle(msMinor, 3, "%.2s", &msVersion[2]) >= 0)
+        {
+            unsigned long temp = 0;
+            if (0 == safe_strtoul(&temp, msMinor, M_NULLPTR, BASE_10_DECIMAL))
+            {
+                compilerVersionInfo->minor = C_CAST(uint16_t, temp);
+            }
+            else
+            {
+                ret = MEMORY_FAILURE;
+            }
+        }
+        if (snprintf_err_handle(msPatch, 6, "%.5s", &msVersion[4]) >= 0)
+        {
+            unsigned long temp = 0;
+            if (0 == safe_strtoul(&temp, msPatch, M_NULLPTR, BASE_10_DECIMAL))
+            {
+                compilerVersionInfo->patch = C_CAST(uint16_t, temp);
+            }
+            else
+            {
+                ret = MEMORY_FAILURE;
+            }
+        }
+    }
+    else
+    {
+        ret = MEMORY_FAILURE;
+    }
 #elif defined __MINGW64__
     *compilerUsed              = OPENSEA_COMPILER_MINGW;
     compilerVersionInfo->major = __MINGW64_VERSION_MAJOR;
@@ -405,20 +441,60 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     *compilerUsed = OPENSEA_COMPILER_HP_A_CPP;
 #    define HP_ACC_VERSION_STRING_LENGTH 7
     DECLARE_ZERO_INIT_ARRAY(char, hpVersion, HP_ACC_VERSION_STRING_LENGTH);
+    if (0 >
 #    if defined __HP_cc
-    snprintf_err_handle(hpVersion, HP_ACC_VERSION_STRING_LENGTH, "%u", __HP_cc);
+        snprintf_err_handle(hpVersion, HP_ACC_VERSION_STRING_LENGTH, "%u", __HP_cc)
 #    else
-    snprintf_err_handle(hpVersion, HP_ACC_VERSION_STRING_LENGTH, "%u", __HP_aCC);
+        snprintf_err_handle(hpVersion, HP_ACC_VERSION_STRING_LENGTH, "%u", __HP_aCC)
 #    endif
-    DECLARE_ZERO_INIT_ARRAY(char, hpMajor, 3);
-    DECLARE_ZERO_INIT_ARRAY(char, hpMinor, 3);
-    DECLARE_ZERO_INIT_ARRAY(char, hpPatch, 3);
-    snprintf_err_handle(hpMajor, 3, "%.2s", &hpVersion[0]);
-    snprintf_err_handle(hpMinor, 3, "%.2s", &hpVersion[2]);
-    snprintf_err_handle(hpPatch, 3, "%.2s", &hpVersion[4]);
-    compilerVersionInfo->major = C_CAST(uint16_t, strtoul(hpMajor, M_NULLPTR, BASE_10_DECIMAL));
-    compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(hpMinor, M_NULLPTR, BASE_10_DECIMAL));
-    compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(hpPatch, M_NULLPTR, BASE_10_DECIMAL));
+    )
+    {
+        ret = MEMORY_FAILURE;
+    }
+    else
+    {
+        DECLARE_ZERO_INIT_ARRAY(char, hpMajor, 3);
+        DECLARE_ZERO_INIT_ARRAY(char, hpMinor, 3);
+        DECLARE_ZERO_INIT_ARRAY(char, hpPatch, 3);
+        if (snprintf_err_handle(hpMajor, 3, "%.2s", &hpVersion[0]) >= 0)
+        {
+            unsigned long temp = 0;
+            if (0 == safe_strtoul(&temp, hpMajor, M_NULLPTR, BASE_10_DECIMAL))
+            {
+                compilerVersionInfo->major = C_CAST(uint16_t, temp);
+            }
+            else
+            {
+                ret = MEMORY_FAILURE;
+            }
+        }
+
+        if (snprintf_err_handle(hpMinor, 3, "%.2s", &hpVersion[2]) >= 0)
+        {
+            unsigned long temp = 0;
+            if (0 == safe_strtoul(&temp, hpMinor, M_NULLPTR, BASE_10_DECIMAL))
+            {
+                compilerVersionInfo->minor = C_CAST(uint16_t, temp);
+            }
+            else
+            {
+                ret = MEMORY_FAILURE;
+            }
+        }
+
+        if (snprintf_err_handle(hpPatch, 3, "%.2s", &hpVersion[4]) >= 0)
+        {
+            unsigned long temp = 0;
+            if (0 == safe_strtoul(&temp, hpPatch, M_NULLPTR, BASE_10_DECIMAL))
+            {
+                compilerVersionInfo->patch = C_CAST(uint16_t, temp);
+            }
+            else
+            {
+                ret = MEMORY_FAILURE;
+            }
+        }
+    }
 #elif defined __IBMC__ || defined __IBMCPP__
     // untested
     // detect if it's xl or lx for system z
@@ -438,16 +514,52 @@ eReturnValues get_Compiler_Info(eCompiler* compilerUsed, ptrCompilerVersion comp
     *compilerUsed = OPENSEA_COMPILER_INTEL_C_CPP;
 #    define INTEL_VERSION_STRING_MAX_LENGTH 4;
     DECLARE_ZERO_INIT_ARRAY(char, intelVersion, 4);
-    snprintf_err_handle(intelVersion, INTEL_VERSION_STRING_MAX_LENGTH, "%u", __INTEL_COMPILER);
-    DECLARE_ZERO_INIT_ARRAY(char, intelMajor, 2);
-    DECLARE_ZERO_INIT_ARRAY(char, intelMinor, 2);
-    DECLARE_ZERO_INIT_ARRAY(char, intelPatch, 2);
-    snprintf_err_handle(intelMajor, 2, "%.1s", &intelVersion[0]);
-    snprintf_err_handle(intelMinor, 2, "%.1s", &intelVersion[1]);
-    snprintf_err_handle(intelPatch, 2, "%.1s", &intelVersion[2]);
-    compilerVersionInfo->major = C_CAST(uint16_t, strtoul(intelMajor, M_NULLPTR, BASE_0_AUTO));
-    compilerVersionInfo->minor = C_CAST(uint16_t, strtoul(intelMinor, M_NULLPTR, BASE_0_AUTO));
-    compilerVersionInfo->patch = C_CAST(uint16_t, strtoul(intelPatch, M_NULLPTR, BASE_0_AUTO));
+    if (snprintf_err_handle(intelVersion, INTEL_VERSION_STRING_MAX_LENGTH, "%u", __INTEL_COMPILER) >= 0)
+    {
+        DECLARE_ZERO_INIT_ARRAY(char, intelMajor, 2);
+        DECLARE_ZERO_INIT_ARRAY(char, intelMinor, 2);
+        DECLARE_ZERO_INIT_ARRAY(char, intelPatch, 2);
+        if (snprintf_err_handle(intelMajor, 2, "%.1s", &intelVersion[0]) >= 0)
+        {
+            unsigned long temp = 0;
+            if (0 == safe_strtoul(&temp, intelMajor, M_NULLPTR, BASE_0_AUTO))
+            {
+                compilerVersionInfo->major = C_CAST(uint16_t, temp);
+            }
+            else
+            {
+                ret = MEMORY_FAILURE;
+            }
+        }
+        if (snprintf_err_handle(intelMinor, 2, "%.1s", &intelVersion[1]) >= 0)
+        {
+            unsigned long temp = 0;
+            if (0 == safe_strtoul(&temp, intelMinor, M_NULLPTR, BASE_0_AUTO))
+            {
+                compilerVersionInfo->minor = C_CAST(uint16_t, temp);
+            }
+            else
+            {
+                ret = MEMORY_FAILURE;
+            }
+        }
+        if (snprintf_err_handle(intelPatch, 2, "%.1s", &intelVersion[2]) >= 0)
+        {
+            unsigned long temp = 0;
+            if (0 == safe_strtoul(&temp, intelPatch, M_NULLPTR, BASE_0_AUTO))
+            {
+                compilerVersionInfo->patch = C_CAST(uint16_t, temp);
+            }
+            else
+            {
+                ret = MEMORY_FAILURE;
+            }
+        }
+    }
+    else
+    {
+        ret = MEMORY_FAILURE;
+    }
 #elif defined __SUNPRO_C || defined __SUNPRO_CC
     // untested
     // code below is written for versions 5.10 and later. (latest release as of

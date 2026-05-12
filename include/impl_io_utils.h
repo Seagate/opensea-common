@@ -19,6 +19,7 @@
 
 #include "code_attributes.h"
 #include "common_types.h"
+#include "constraint_handling.h"
 #include "type_conversion.h"
 
 #include <stdio.h>
@@ -54,33 +55,36 @@ extern "C"
     M_ATTR_UNUSED constexpr float*              nullfloat       = M_NULLPTR;
     M_ATTR_UNUSED constexpr double*             nulldouble      = M_NULLPTR;
     M_ATTR_UNUSED constexpr long double*        nullldouble     = M_NULLPTR;
-#    define M_NULL_STREAM_CHECK(ptr)        ((ptr) == nullstreamptr)
-#    define M_NULL_IO_CHAR_CHECK(ptr)       ((ptr) == nulliochar)
-#    define M_NULL_IO_CONST_CHAR_CHECK(ptr) ((ptr) == nullioconstchar)
-#    define M_NULL_IO_INT_CHECK(ptr)        ((ptr) == nullint)
-#    define M_NULL_IO_LONG_CHECK(ptr)       ((ptr) == nulllong)
-#    define M_NULL_IO_LONGLONG_CHECK(ptr)   ((ptr) == nulllonglong)
-#    define M_NULL_IO_ULONG_CHECK(ptr)      ((ptr) == nullulong)
-#    define M_NULL_IO_ULONGLONG_CHECK(ptr)  ((ptr) == nullulonglong)
-#    define M_NULL_IO_INTMAX_CHECK(ptr)     ((ptr) == nullintmax)
-#    define M_NULL_IO_UINTMAX_CHECK(ptr)    ((ptr) == nulluintmax)
-#    define M_NULL_IO_FLOAT_CHECK(ptr)      ((ptr) == nullfloat)
-#    define M_NULL_IO_DOUBLE_CHECK(ptr)     ((ptr) == nulldouble)
-#    define M_NULL_IO_LDOUBLE_CHECK(ptr)    ((ptr) == nullldouble)
+    M_ATTR_UNUSED constexpr rsize_t*            nullrsizet      = M_NULLPTR;
+#    define M_NULL_STREAM_CHECK(ptr)         ((ptr) == nullstreamptr)
+#    define M_NULL_IO_CHAR_CHECK(ptr)        ((ptr) == nulliochar)
+#    define M_NULL_IO_CONST_CHAR_CHECK(ptr)  ((ptr) == nullioconstchar)
+#    define M_NULL_IO_INT_CHECK(ptr)         ((ptr) == nullint)
+#    define M_NULL_IO_LONG_CHECK(ptr)        ((ptr) == nulllong)
+#    define M_NULL_IO_LONGLONG_CHECK(ptr)    ((ptr) == nulllonglong)
+#    define M_NULL_IO_ULONG_CHECK(ptr)       ((ptr) == nullulong)
+#    define M_NULL_IO_ULONGLONG_CHECK(ptr)   ((ptr) == nullulonglong)
+#    define M_NULL_IO_INTMAX_CHECK(ptr)      ((ptr) == nullintmax)
+#    define M_NULL_IO_UINTMAX_CHECK(ptr)     ((ptr) == nulluintmax)
+#    define M_NULL_IO_FLOAT_CHECK(ptr)       ((ptr) == nullfloat)
+#    define M_NULL_IO_DOUBLE_CHECK(ptr)      ((ptr) == nulldouble)
+#    define M_NULL_IO_LDOUBLE_CHECK(ptr)     ((ptr) == nullldouble)
+#    define M_NULL_IO_RSIZE_T_PTR_CHECK(ptr) ((ptr) == nullrsizet)
 #else
-#    define M_NULL_STREAM_CHECK(ptr)        (!(ptr))
-#    define M_NULL_IO_CHAR_CHECK(ptr)       (!(ptr))
-#    define M_NULL_IO_CONST_CHAR_CHECK(ptr) (!(ptr))
-#    define M_NULL_IO_INT_CHECK(ptr)        (!(ptr))
-#    define M_NULL_IO_LONG_CHECK(ptr)       (!(ptr))
-#    define M_NULL_IO_LONGLONG_CHECK(ptr)   (!(ptr))
-#    define M_NULL_IO_ULONG_CHECK(ptr)      (!(ptr))
-#    define M_NULL_IO_ULONGLONG_CHECK(ptr)  (!(ptr))
-#    define M_NULL_IO_INTMAX_CHECK(ptr)     (!(ptr))
-#    define M_NULL_IO_UINTMAX_CHECK(ptr)    (!(ptr))
-#    define M_NULL_IO_FLOAT_CHECK(ptr)      (!(ptr))
-#    define M_NULL_IO_DOUBLE_CHECK(ptr)     (!(ptr))
-#    define M_NULL_IO_LDOUBLE_CHECK(ptr)    (!(ptr))
+#    define M_NULL_STREAM_CHECK(ptr)         (!(ptr))
+#    define M_NULL_IO_CHAR_CHECK(ptr)        (!(ptr))
+#    define M_NULL_IO_CONST_CHAR_CHECK(ptr)  (!(ptr))
+#    define M_NULL_IO_INT_CHECK(ptr)         (!(ptr))
+#    define M_NULL_IO_LONG_CHECK(ptr)        (!(ptr))
+#    define M_NULL_IO_LONGLONG_CHECK(ptr)    (!(ptr))
+#    define M_NULL_IO_ULONG_CHECK(ptr)       (!(ptr))
+#    define M_NULL_IO_ULONGLONG_CHECK(ptr)   (!(ptr))
+#    define M_NULL_IO_INTMAX_CHECK(ptr)      (!(ptr))
+#    define M_NULL_IO_UINTMAX_CHECK(ptr)     (!(ptr))
+#    define M_NULL_IO_FLOAT_CHECK(ptr)       (!(ptr))
+#    define M_NULL_IO_DOUBLE_CHECK(ptr)      (!(ptr))
+#    define M_NULL_IO_LDOUBLE_CHECK(ptr)     (!(ptr))
+#    define M_NULL_IO_RSIZE_T_PTR_CHECK(ptr) (!(ptr))
 #endif
 
     //! \fn errno_t safe_fopen_impl(FILE* M_RESTRICT* M_RESTRICT streamptr,
@@ -114,13 +118,13 @@ extern "C"
     M_PARAM_RO(3)
     M_NULL_TERM_STRING(1)
     M_NULL_TERM_STRING(2)
-    errno_t safe_fopen_impl(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE streamptr,
-                            const char* M_RESTRICT M_NONNULL                  filename,
-                            const char* M_RESTRICT M_NONNULL                  mode,
-                            const char* M_NULLABLE                            file,
-                            const char* M_NULLABLE                            function,
-                            int                                               line,
-                            const char* M_NULLABLE                            expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_fopen_impl(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE streamptr,
+                                                  const char* M_RESTRICT M_NONNULL                  filename,
+                                                  const char* M_RESTRICT M_NONNULL                  mode,
+                                                  const char* M_NULLABLE                            file,
+                                                  const char* M_NULLABLE                            function,
+                                                  int                                               line,
+                                                  const char* M_NULLABLE                            expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_OUTSTREAM_CHECK(streamptr), "streamptr is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(filename), "filename is NULL")
@@ -162,14 +166,14 @@ extern "C"
     M_PARAM_RW(4)
     M_NULL_TERM_STRING(1)
     M_NULL_TERM_STRING(2)
-    errno_t safe_freopen_impl(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE newstreamptr,
-                              const char* M_RESTRICT M_NONNULL                  filename,
-                              const char* M_RESTRICT M_NONNULL                  mode,
-                              FILE* M_RESTRICT M_NONNULL                        stream,
-                              const char* M_NULLABLE                            file,
-                              const char* M_NULLABLE                            function,
-                              int                                               line,
-                              const char* M_NULLABLE                            expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_freopen_impl(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE newstreamptr,
+                                                    const char* M_RESTRICT M_NONNULL                  filename,
+                                                    const char* M_RESTRICT M_NONNULL                  mode,
+                                                    FILE* M_RESTRICT M_NONNULL                        stream,
+                                                    const char* M_NULLABLE                            file,
+                                                    const char* M_NULLABLE                            function,
+                                                    int                                               line,
+                                                    const char* M_NULLABLE                            expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_OUTSTREAM_CHECK(newstreamptr), "newstreamptr is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(filename), "filename is NULL")
@@ -213,12 +217,12 @@ extern "C"
     //!
     //! - \a maxsize is less than the generated file name string
     M_PARAM_RW_SIZE(1, 2)
-    errno_t safe_tmpnam_impl(char* M_NONNULL        filename_s,
-                             rsize_t                maxsize,
-                             const char* M_NULLABLE file,
-                             const char* M_NULLABLE function,
-                             int                    line,
-                             const char*            M_NULLABLE)
+    CONSTRAINT_NO_DISCARD errno_t safe_tmpnam_impl(char* M_NONNULL        filename_s,
+                                                   rsize_t                maxsize,
+                                                   const char* M_NULLABLE file,
+                                                   const char* M_NULLABLE function,
+                                                   int                    line,
+                                                   const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_CHAR_CHECK(filename_s), "filename_s is NULL")
         M_DIAG_ERROR(maxsize > RSIZE_MAX, "maxsize > RSIZE_MAX")
@@ -246,11 +250,11 @@ extern "C"
     //!
     //! - \a streamptr is a null pointer
     M_PARAM_RW(1)
-    errno_t safe_tmpfile_impl(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE streamptr,
-                              const char* M_NULLABLE                            file,
-                              const char* M_NULLABLE                            function,
-                              int                                               line,
-                              const char* M_NULLABLE                            expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_tmpfile_impl(FILE* M_RESTRICT M_NONNULL* M_RESTRICT M_NULLABLE streamptr,
+                                                    const char* M_NULLABLE                            file,
+                                                    const char* M_NULLABLE                            function,
+                                                    int                                               line,
+                                                    const char* M_NULLABLE                            expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_OUTSTREAM_CHECK(streamptr), "streamptr is NULL")
         // clang-format on
@@ -283,12 +287,12 @@ extern "C"
     //!
     //! - endline or eof not encountered after storing `n - 1` characters to the buffer
     M_PARAM_RW_SIZE(1, 2)
-    char* M_NULLABLE safe_gets_impl(char* M_NONNULL        str,
-                                    rsize_t                n,
-                                    const char* M_NULLABLE file,
-                                    const char* M_NULLABLE function,
-                                    int                    line,
-                                    const char* M_NULLABLE expression)
+    M_NODISCARD char* M_NULLABLE safe_gets_impl(char* M_NONNULL        str,
+                                                rsize_t                n,
+                                                const char* M_NULLABLE file,
+                                                const char* M_NULLABLE function,
+                                                int                    line,
+                                                const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_CHAR_CHECK(str), "str is NULL")
         M_DIAG_ERROR(n == 0, "n is zero")
@@ -327,14 +331,14 @@ extern "C"
     M_PARAM_RW(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(2)
-    errno_t safe_strtol_impl(long* M_NONNULL                         value,
-                             const char* M_RESTRICT M_NONNULL        str,
-                             char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                             int                                     base,
-                             const char* M_NULLABLE                  file,
-                             const char* M_NULLABLE                  function,
-                             int                                     line,
-                             const char* M_NULLABLE                  expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_strtol_impl(long* M_NONNULL                         value,
+                                                   const char* M_RESTRICT M_NONNULL        str,
+                                                   char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                   int                                     base,
+                                                   const char* M_NULLABLE                  file,
+                                                   const char* M_NULLABLE                  function,
+                                                   int                                     line,
+                                                   const char* M_NULLABLE                  expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_LONG_CHECK(value), "value is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
@@ -374,14 +378,14 @@ extern "C"
     M_PARAM_RW(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(2)
-    errno_t safe_strtoll_impl(long long* M_NONNULL                    value,
-                              const char* M_RESTRICT M_NONNULL        str,
-                              char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                              int                                     base,
-                              const char* M_NULLABLE                  file,
-                              const char* M_NULLABLE                  function,
-                              int                                     line,
-                              const char* M_NULLABLE                  expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_strtoll_impl(long long* M_NONNULL                    value,
+                                                    const char* M_RESTRICT M_NONNULL        str,
+                                                    char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                    int                                     base,
+                                                    const char* M_NULLABLE                  file,
+                                                    const char* M_NULLABLE                  function,
+                                                    int                                     line,
+                                                    const char* M_NULLABLE                  expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_LONGLONG_CHECK(value), "value is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
@@ -421,14 +425,14 @@ extern "C"
     M_PARAM_RW(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(2)
-    errno_t safe_strtoul_impl(unsigned long* M_NONNULL                value,
-                              const char* M_RESTRICT M_NONNULL        str,
-                              char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                              int                                     base,
-                              const char* M_NULLABLE                  file,
-                              const char* M_NULLABLE                  function,
-                              int                                     line,
-                              const char* M_NULLABLE                  expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_strtoul_impl(unsigned long* M_NONNULL                value,
+                                                    const char* M_RESTRICT M_NONNULL        str,
+                                                    char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                    int                                     base,
+                                                    const char* M_NULLABLE                  file,
+                                                    const char* M_NULLABLE                  function,
+                                                    int                                     line,
+                                                    const char* M_NULLABLE                  expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_ULONG_CHECK(value), "value is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
@@ -468,14 +472,14 @@ extern "C"
     M_PARAM_RW(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(2)
-    errno_t safe_strtoull_impl(unsigned long long* M_NONNULL           value,
-                               const char* M_RESTRICT M_NONNULL        str,
-                               char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                               int                                     base,
-                               const char* M_NULLABLE                  file,
-                               const char* M_NULLABLE                  function,
-                               int                                     line,
-                               const char* M_NULLABLE                  expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_strtoull_impl(unsigned long long* M_NONNULL           value,
+                                                     const char* M_RESTRICT M_NONNULL        str,
+                                                     char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                     int                                     base,
+                                                     const char* M_NULLABLE                  file,
+                                                     const char* M_NULLABLE                  function,
+                                                     int                                     line,
+                                                     const char* M_NULLABLE                  expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_ULONGLONG_CHECK(value), "value is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
@@ -515,14 +519,14 @@ extern "C"
     M_PARAM_RW(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(2)
-    errno_t safe_strtoimax_impl(intmax_t* M_NONNULL                     value,
-                                const char* M_RESTRICT M_NONNULL        str,
-                                char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                                int                                     base,
-                                const char* M_NULLABLE                  file,
-                                const char* M_NULLABLE                  function,
-                                int                                     line,
-                                const char* M_NULLABLE                  expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_strtoimax_impl(intmax_t* M_NONNULL                     value,
+                                                      const char* M_RESTRICT M_NONNULL        str,
+                                                      char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                      int                                     base,
+                                                      const char* M_NULLABLE                  file,
+                                                      const char* M_NULLABLE                  function,
+                                                      int                                     line,
+                                                      const char* M_NULLABLE                  expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_INTMAX_CHECK(value), "value is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
@@ -562,14 +566,14 @@ extern "C"
     M_PARAM_RW(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(2)
-    errno_t safe_strtoumax_impl(uintmax_t* M_NONNULL                    value,
-                                const char* M_RESTRICT M_NONNULL        str,
-                                char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                                int                                     base,
-                                const char* M_NULLABLE                  file,
-                                const char* M_NULLABLE                  function,
-                                int                                     line,
-                                const char* M_NULLABLE                  expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_strtoumax_impl(uintmax_t* M_NONNULL                    value,
+                                                      const char* M_RESTRICT M_NONNULL        str,
+                                                      char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                      int                                     base,
+                                                      const char* M_NULLABLE                  file,
+                                                      const char* M_NULLABLE                  function,
+                                                      int                                     line,
+                                                      const char* M_NULLABLE                  expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_UINTMAX_CHECK(value), "value is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
@@ -604,13 +608,13 @@ extern "C"
     M_PARAM_RW(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(2)
-    errno_t safe_strtof_impl(float* M_NONNULL                        value,
-                             const char* M_RESTRICT M_NONNULL        str,
-                             char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                             const char* M_NULLABLE                  file,
-                             const char* M_NULLABLE                  function,
-                             int                                     line,
-                             const char* M_NULLABLE                  expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_strtof_impl(float* M_NONNULL                        value,
+                                                   const char* M_RESTRICT M_NONNULL        str,
+                                                   char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                   const char* M_NULLABLE                  file,
+                                                   const char* M_NULLABLE                  function,
+                                                   int                                     line,
+                                                   const char* M_NULLABLE                  expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_FLOAT_CHECK(value), "value is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
@@ -644,13 +648,13 @@ extern "C"
     M_PARAM_RW(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(2)
-    errno_t safe_strtod_impl(double* M_NONNULL                       value,
-                             const char* M_RESTRICT M_NONNULL        str,
-                             char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                             const char* M_NULLABLE                  file,
-                             const char* M_NULLABLE                  function,
-                             int                                     line,
-                             const char* M_NULLABLE                  expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_strtod_impl(double* M_NONNULL                       value,
+                                                   const char* M_RESTRICT M_NONNULL        str,
+                                                   char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                   const char* M_NULLABLE                  file,
+                                                   const char* M_NULLABLE                  function,
+                                                   int                                     line,
+                                                   const char* M_NULLABLE                  expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_DOUBLE_CHECK(value), "value is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
@@ -685,13 +689,13 @@ extern "C"
     M_PARAM_RW(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(2)
-    errno_t safe_strtold_impl(long double* M_NONNULL                  value,
-                              const char* M_RESTRICT M_NONNULL        str,
-                              char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
-                              const char* M_NULLABLE                  file,
-                              const char* M_NULLABLE                  function,
-                              int                                     line,
-                              const char* M_NULLABLE                  expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_strtold_impl(long double* M_NONNULL                  value,
+                                                    const char* M_RESTRICT M_NONNULL        str,
+                                                    char* M_NULLABLE* M_RESTRICT M_NULLABLE endp,
+                                                    const char* M_NULLABLE                  file,
+                                                    const char* M_NULLABLE                  function,
+                                                    int                                     line,
+                                                    const char* M_NULLABLE                  expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_LDOUBLE_CHECK(value), "value is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
@@ -728,12 +732,12 @@ extern "C"
     M_PARAM_RW(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(2)
-    errno_t safe_atoi_impl(int* M_NONNULL                   value,
-                           const char* M_RESTRICT M_NONNULL str,
-                           const char* M_NULLABLE           file,
-                           const char* M_NULLABLE           function,
-                           int                              line,
-                           const char* M_NULLABLE           expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_atoi_impl(int* M_NONNULL                   value,
+                                                 const char* M_RESTRICT M_NONNULL str,
+                                                 const char* M_NULLABLE           file,
+                                                 const char* M_NULLABLE           function,
+                                                 int                              line,
+                                                 const char* M_NULLABLE           expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_INT_CHECK(value), "value is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
@@ -770,12 +774,12 @@ extern "C"
     M_PARAM_RW(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(2)
-    errno_t safe_atol_impl(long* M_NONNULL                  value,
-                           const char* M_RESTRICT M_NONNULL str,
-                           const char* M_NULLABLE           file,
-                           const char* M_NULLABLE           function,
-                           int                              line,
-                           const char* M_NULLABLE           expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_atol_impl(long* M_NONNULL                  value,
+                                                 const char* M_RESTRICT M_NONNULL str,
+                                                 const char* M_NULLABLE           file,
+                                                 const char* M_NULLABLE           function,
+                                                 int                              line,
+                                                 const char* M_NULLABLE           expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_LONG_CHECK(value), "value is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
@@ -812,12 +816,12 @@ extern "C"
     M_PARAM_RW(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(2)
-    errno_t safe_atoll_impl(long long* M_NONNULL             value,
-                            const char* M_RESTRICT M_NONNULL str,
-                            const char* M_NULLABLE           file,
-                            const char* M_NULLABLE           function,
-                            int                              line,
-                            const char* M_NULLABLE           expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_atoll_impl(long long* M_NONNULL             value,
+                                                  const char* M_RESTRICT M_NONNULL str,
+                                                  const char* M_NULLABLE           file,
+                                                  const char* M_NULLABLE           function,
+                                                  int                              line,
+                                                  const char* M_NULLABLE           expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_LONGLONG_CHECK(value), "value is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
@@ -854,12 +858,12 @@ extern "C"
     M_PARAM_RW(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(2)
-    errno_t safe_atof_impl(double* M_NONNULL                value,
-                           const char* M_RESTRICT M_NONNULL str,
-                           const char* M_NULLABLE           file,
-                           const char* M_NULLABLE           function,
-                           int                              line,
-                           const char* M_NULLABLE           expression)
+    CONSTRAINT_NO_DISCARD errno_t safe_atof_impl(double* M_NONNULL                value,
+                                                 const char* M_RESTRICT M_NONNULL str,
+                                                 const char* M_NULLABLE           file,
+                                                 const char* M_NULLABLE           function,
+                                                 int                              line,
+                                                 const char* M_NULLABLE           expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_IO_DOUBLE_CHECK(value), "value is NULL")
         M_DIAG_ERROR(M_NULL_IO_CONST_CHAR_CHECK(str), "str is NULL")
@@ -895,6 +899,7 @@ extern "C"
     M_PARAM_RW(5)
     M_PARAM_RO(7)
     FUNC_ATTR_PRINTF(7, 8)
+    CONSTRAINT_NO_DISCARD
     int impl_snprintf_err_handle(const char* M_NULLABLE file,
                                  const char* M_NULLABLE function,
                                  int                    line,
@@ -938,6 +943,7 @@ extern "C"
     M_PARAM_RW(5)
     M_PARAM_RO(7)
     FUNC_ATTR_PRINTF(7, 0)
+    CONSTRAINT_NO_DISCARD
     int impl_vsnprintf_err_handle(const char* M_NULLABLE file,
                                   const char* M_NULLABLE function,
                                   int         line,
@@ -951,6 +957,154 @@ extern "C"
         M_DIAG_ERROR(!M_NULL_IO_CHAR_CHECK(buf) && (bufsize == 0 || bufsize > RSIZE_MAX), "bufsize is out of range (1-RSIZE_MAX allowed)")
         // clang-format on
                                   ;
+
+    //! \fn errno_t safe_getdelim_impl(char** M_RESTRICT M_NULLABLE lineptr, rsize_t* M_RESTRICT M_NONNULL
+    //! lineptrAllocedSize, rsize_t* M_RESTRICT M_NONNULL charsRead, int delimiter, FILE* M_NONNULL stream, const char*
+    //! M_NULLABLE functionName, const char* M_NULLABLE fileName, int lineNumber, const char* M_NULLABLE expression)
+    //! \brief A safe implementation of getdelim that performs bounds checking and calls the constraint handler on
+    //! error. This safe version is also limited to RSIZE_MAX memory and bytes read. Memory allocated/reallocated in
+    //! this function is always initialized to zero.
+    //! \param[out] lineptr Pointer to the buffer that will be set to the line read from the file. This buffer is
+    //! allocated by this function and should be freed by the caller when it is no longer needed.
+    //! \param[out] lineptrAllocedSize Pointer to the size of the buffer pointed to by lineptr. This is set to the size
+    //! of the buffer allocated by this function.
+    //! \param[out] charsRead Pointer to the number of characters read, not including the null terminator.
+    //! \param[in] delimiter The delimiter to read until.
+    //! \param[in] stream The file stream to read from.
+    //! \param[in] functionName The function name where this function is called.
+    //! \param[in] fileName The source file name where this function is called.
+    //! \param[in] lineNumber The line number where this function is called.
+    //! \param[in] expression The expression being evaluated.
+    //! \return An error code indicating success or failure.
+    //! \note The following errors are detected at runtime and call the installed constraint handler:
+    //!
+    //! - \a lineptr is a null pointer
+    //!
+    //! - \a lineptrAllocedSize is a null pointer
+    //!
+    //! - \a charsRead is a null pointer
+    //!
+    //! - \a stream is a null pointer or not open for reading
+    //!
+    //! - If an error occurs while reading from the file
+    //!
+    //! - If charsRead is greater than RSIZE_MAX after reading from the file
+    //!
+    //! - If allocated memory attempts to allocate more than RSIZE_MAX bytes while reading
+    M_PARAM_RW(1)
+    M_PARAM_RW(2)
+    M_PARAM_RW(3)
+    M_PARAM_RO(5)
+    CONSTRAINT_NO_DISCARD errno_t safe_getdelim_impl(char* M_NONNULL* M_RESTRICT M_NULLABLE lineptr,
+                                                     rsize_t* M_RESTRICT M_NONNULL          lineptrAllocedSize,
+                                                     rsize_t* M_RESTRICT M_NONNULL          charsRead,
+                                                     int                                    delimiter,
+                                                     FILE* M_NONNULL                        stream,
+                                                     const char* M_NULLABLE                 functionName,
+                                                     const char* M_NULLABLE                 fileName,
+                                                     int                                    lineNumber,
+                                                     const char* M_NULLABLE                 expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_CHAR_CHECK(lineptr), "lineptr is NULL")
+        M_DIAG_ERROR(M_NULL_IO_RSIZE_T_PTR_CHECK(lineptrAllocedSize), "lineptrAllocedSize is NULL")
+        M_DIAG_ERROR(M_NULL_IO_RSIZE_T_PTR_CHECK(charsRead), "charsRead is NULL")
+        M_DIAG_ERROR(M_NULL_STREAM_CHECK(stream), "stream is NULL or not open for reading")
+        // clang-format on
+        ;
+
+    M_PARAM_RW(1)
+    M_PARAM_RW(2)
+    M_PARAM_RW(3)
+    M_PARAM_RO(4)
+    CONSTRAINT_NO_DISCARD errno_t safe_getline_impl(char* M_NONNULL* M_RESTRICT M_NULLABLE lineptr,
+                                                    rsize_t* M_RESTRICT M_NONNULL          lineptrAllocedSize,
+                                                    rsize_t* M_RESTRICT M_NONNULL          charsRead,
+                                                    FILE* M_NONNULL                        stream,
+                                                    const char* M_NULLABLE                 functionName,
+                                                    const char* M_NULLABLE                 fileName,
+                                                    int                                    lineNumber,
+                                                    const char* M_NULLABLE                 expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_CHAR_CHECK(lineptr), "lineptr is NULL")
+        M_DIAG_ERROR(M_NULL_IO_RSIZE_T_PTR_CHECK(lineptrAllocedSize), "lineptrAllocedSize is NULL")
+        M_DIAG_ERROR(M_NULL_IO_RSIZE_T_PTR_CHECK(charsRead), "charsRead is NULL")
+        M_DIAG_ERROR(M_NULL_STREAM_CHECK(stream), "stream is NULL or not open for reading")
+        // clang-format on
+        ;
+
+    //! \fn errno_t safe_getdelim_impl(char** M_RESTRICT M_NULLABLE lineptr, rsize_t* M_RESTRICT M_NONNULL
+    //! lineptrAllocedSize, rsize_t* M_RESTRICT M_NONNULL charsRead, int delimiter, FILE* M_NONNULL stream, const char*
+    //! M_NULLABLE functionName, const char* M_NULLABLE fileName, int lineNumber, const char* M_NULLABLE expression)
+    //! \brief A safe implementation of getdelim that performs bounds checking and calls the constraint handler on
+    //! error. This safe version is also limited to RSIZE_MAX memory and bytes read. Memory allocated/reallocated in
+    //! this function is always initialized to zero.
+    //! \param[out] lineptr Pointer to the buffer that will be set to the line read from the file. This buffer is
+    //! allocated by this function and should be freed by the caller when it is no longer needed.
+    //! \param[out] lineptrAllocedSize Pointer to the size of the buffer pointed to by lineptr. This is set to the size
+    //! of the buffer allocated by this function.
+    //! \param[out] charsRead Pointer to the number of characters read, not including the null terminator.
+    //! \param[in] delimiter The delimiter to read until.
+    //! \param[in] stream The file stream to read from.
+    //! \param[in] functionName The function name where this function is called.
+    //! \param[in] fileName The source file name where this function is called.
+    //! \param[in] lineNumber The line number where this function is called.
+    //! \param[in] expression The expression being evaluated.
+    //! \return An error code indicating success or failure.
+    //! \note The following errors are detected at runtime and call the installed constraint handler:
+    //!
+    //! - \a lineptr is a null pointer
+    //!
+    //! - \a lineptrAllocedSize is a null pointer
+    //!
+    //! - \a charsRead is a null pointer
+    //!
+    //! - \a stream is a null pointer or not open for reading
+    //!
+    //! - If an error occurs while reading from the file
+    //!
+    //! - If charsRead is greater than RSIZE_MAX after reading from the file
+    //!
+    //! - If allocated memory attempts to allocate more than RSIZE_MAX bytes while reading
+    M_PARAM_RW(1)
+    M_PARAM_RW(2)
+    M_PARAM_RW(3)
+    M_PARAM_RO(5)
+    CONSTRAINT_NO_DISCARD errno_t safe_getdelim_impl(char* M_NONNULL* M_RESTRICT M_NULLABLE lineptr,
+                                                     rsize_t* M_RESTRICT M_NONNULL          lineptrAllocedSize,
+                                                     rsize_t* M_RESTRICT M_NONNULL          charsRead,
+                                                     int                                    delimiter,
+                                                     FILE* M_NONNULL                        stream,
+                                                     const char* M_NULLABLE                 functionName,
+                                                     const char* M_NULLABLE                 fileName,
+                                                     int                                    lineNumber,
+                                                     const char* M_NULLABLE                 expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_CHAR_CHECK(lineptr), "lineptr is NULL")
+        M_DIAG_ERROR(M_NULL_IO_RSIZE_T_PTR_CHECK(lineptrAllocedSize), "lineptrAllocedSize is NULL")
+        M_DIAG_ERROR(M_NULL_IO_RSIZE_T_PTR_CHECK(charsRead), "charsRead is NULL")
+        M_DIAG_ERROR(M_NULL_STREAM_CHECK(stream), "stream is NULL or not open for reading")
+        // clang-format on
+        ;
+
+    M_PARAM_RW(1)
+    M_PARAM_RW(2)
+    M_PARAM_RW(3)
+    M_PARAM_RO(4)
+    CONSTRAINT_NO_DISCARD errno_t safe_getline_impl(char* M_NONNULL* M_RESTRICT M_NULLABLE lineptr,
+                                                    rsize_t* M_RESTRICT M_NONNULL          lineptrAllocedSize,
+                                                    rsize_t* M_RESTRICT M_NONNULL          charsRead,
+                                                    FILE* M_NONNULL                        stream,
+                                                    const char* M_NULLABLE                 functionName,
+                                                    const char* M_NULLABLE                 fileName,
+                                                    int                                    lineNumber,
+                                                    const char* M_NULLABLE                 expression)
+        // clang-format off
+        M_DIAG_ERROR(M_NULL_IO_CHAR_CHECK(lineptr), "lineptr is NULL")
+        M_DIAG_ERROR(M_NULL_IO_RSIZE_T_PTR_CHECK(lineptrAllocedSize), "lineptrAllocedSize is NULL")
+        M_DIAG_ERROR(M_NULL_IO_RSIZE_T_PTR_CHECK(charsRead), "charsRead is NULL")
+        M_DIAG_ERROR(M_NULL_STREAM_CHECK(stream), "stream is NULL or not open for reading")
+        // clang-format on
+        ;
 
 #if defined(__cplusplus)
 }

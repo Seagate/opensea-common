@@ -185,6 +185,8 @@ void print_Errno_To_Screen(errno_t error)
 #    define PRI_UINTN "d"
 void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus)
 {
+    errno_t errorCode       = 0;
+    char*   efiStatusString = M_NULLPTR;
     switch (efiStatus)
     {
     case EFI_SUCCESS:
@@ -308,6 +310,30 @@ void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus)
         printf("%" PRI_UINTN " - Unknown EFI Status value\n", efiStatus);
         break;
     }
+    if (errorCode == 0)
+    {
+        return M_NULLPTR;
+    }
+    else
+    {
+        return efiStatusString;
+    }
+}
+
+// Use %d to print this out or the output look really strange
+#    define PRI_UINTN "d"
+void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus)
+{
+    char* efiStatusString = get_efistatus_str(efiStatus);
+    if (efiStatusString != M_NULLPTR)
+    {
+        printf("%" PRI_UINTN " - %s\n", efiStatus, efiStatusString);
+        safe_free(&efiStatusString);
+    }
+    else
+    {
+        printf("%" PRI_UINTN " - <Unable to convert EFI_STATUS to string>\n", efiStatus);
+    }
 }
 
 #elif defined(_WIN32)
@@ -322,9 +348,57 @@ void print_Windows_Error_To_Screen(winsyserror_t windowsError)
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                   M_NULLPTR, windowsError, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
                   C_CAST(LPTSTR, &windowsErrorString), 0, M_NULLPTR);
-    // This cast is necessary to tell the Windows API to allocate the string,
-    // but it is necessary. Without it, this will not work.
-    _tprintf_s(TEXT("%lu - %s\n"), windowsError, windowsErrorString);
-    LocalFree(windowsErrorString);
+    if (windowsErrorString != M_NULLPTR)
+    {
+        size_t errorStrLen = lstrlen(windowsErrorString) + SIZE_T_C(1);
+        char*  errorString = M_REINTERPRET_CAST(char*, safe_calloc(errorStrLen, sizeof(char)));
+        if (errorString != M_NULLPTR)
+        {
+            // This call is to allow the Windows API to translate this from wide to char as needed.
+            // I could not find a straight forward ifdef/tchar function for this so this is the best I have - TJE
+            int result = 0;
+#    if defined(UNICODE)
+            // Uppercase S means a Wide character string in this case
+            result = sprintf_s(errorString, errorStrLen, "%S", windowsErrorString);
+#    else
+            // Lowercase s means a "regular" single-byte or multibyte string in this case.
+            result = sprintf_s(errorString, errorStrLen, "%s", windowsErrorString);
+#    endif
+            LocalFree(windowsErrorString);
+            if (result > 0)
+            {
+                return errorString;
+            }
+            else
+            {
+                // Conversion failed, free the allocated string and return null
+                safe_free(&errorString);
+                return M_NULLPTR;
+            }
+        }
+        else
+        {
+            LocalFree(windowsErrorString);
+            return M_NULLPTR;
+        }
+    }
+    else
+    {
+        return M_NULLPTR;
+    }
+}
+
+void print_Windows_Error_To_Screen(winsyserror_t windowsError)
+{
+    char* windowsErrorString = get_windows_error_str(windowsError);
+    if (windowsErrorString != M_NULLPTR)
+    {
+        printf("%lu - %s\n", windowsError, windowsErrorString);
+        safe_free(&windowsErrorString);
+    }
+    else
+    {
+        printf("%lu - <Unable to convert Windows error code to string>\n", windowsError);
+    }
 }
 #endif

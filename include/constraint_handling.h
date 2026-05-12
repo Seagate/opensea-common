@@ -21,6 +21,19 @@ extern "C"
 {
 #endif
 
+    //! \def CONSTRAINT_NO_DISCARD
+    //! \brief This macro conditionally sets the NO_DISCARD for constraint handler functions.
+    //! This is NOT active for abort handler, but is active for warn and ignore handlers to encourage users to check the
+    //! return value when using those handlers since this is the proper way to handle returns for each of these handler
+    //! types for best security.
+
+#if defined(DEFAULT_CONSTRAINT_HANDLER_IGNORE) || defined(DEFAULT_CONSTRAINT_HANDLER_WARN) ||                          \
+    defined(DEFAULT_CONSTRAINT_HANDLER_ABORTND)
+#    define CONSTRAINT_NO_DISCARD M_NODISCARD
+#else
+#    define CONSTRAINT_NO_DISCARD /* not implemented on abort handler */
+#endif
+
     //! \enum eConstraintHandler
     //! \brief Defines constraint handler types.
     //!
@@ -29,11 +42,29 @@ extern "C"
     //! \sa set_Constraint_Handler
     typedef enum eConstraintHandlerEnum
     {
-        ERR_ABORT,               /*!< Outputs error information to stderr then calls abort() */
-        ERR_DEFAULT = ERR_ABORT, /*!< Default constraint handler. Same as the abort handler*/
-        ERR_WARN,                /*!< Outputs error information to stderr and allows execution to continue */
-        ERR_IGNORE               /*!< Does not output any information or abort. Allows execution to continue */
+        ERR_ABORT, /*!< Outputs error information to stderr then calls abort() */
+        ERR_WARN,  /*!< Outputs error information to stderr and allows execution to continue */
+        ERR_IGNORE /*!< Does not output any information or abort. Allows execution to continue */
     } eConstraintHandler;
+
+//! \def ERR_DEFAULT
+//! \brief Defines the default constraint handler to use if none is set by the user.
+//! \details This is set based on compile time flags to allow the user to choose their default handler. If no flags are
+//! set, the default is ERR_ABORT. To set the default handler, define one of the following macros at compile time:
+//! - DEFAULT_CONSTRAINT_HANDLER_WARN: sets default to ERR_WARN
+//! - DEFAULT_CONSTRAINT_HANDLER_IGNORE: sets default to ERR_IGNORE
+//! - DEFAULT_CONSTRAINT_HANDLER_ABORTND: sets default to ERR_ABORT as normal, but also enabled the M_NODISCARD
+//! attribute on all constraint handler functions which can be used to find and fix violations.
+//! If both of these macros are defined, DEFAULT_CONSTRAINT_HANDLER_IGNORE will take precedence and set the default to
+//! ERR_IGNORE. This is to allow the user to choose the most permissive default handler if they have conflicting flags.
+//! If neither of these macros are defined, the default will be ERR_ABORT to ensure the most secure default behavior.
+#if defined(DEFAULT_CONSTRAINT_HANDLER_IGNORE)
+#    define ERR_DEFAULT ERR_IGNORE
+#elif defined(DEFAULT_CONSTRAINT_HANDLER_WARN)
+#    define ERR_DEFAULT ERR_WARN
+#else
+#    define ERR_DEFAULT ERR_ABORT
+#endif
 
     //! \def CONSTRAINT_HANDLER_ENV_INFO_VERSION
     //! \brief Defines a version number to be used in the constraintEnvInfo struct

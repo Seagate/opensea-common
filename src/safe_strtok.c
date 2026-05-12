@@ -70,14 +70,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-char* safe_strtok_impl(char* M_RESTRICT       str,
-                       rsize_t* M_RESTRICT    strmax,
-                       const char* M_RESTRICT delim,
-                       char** M_RESTRICT      saveptr,
-                       const char*            file,
-                       const char*            function,
-                       int                    line,
-                       const char*            expression)
+M_PARAM_RW(1)
+M_PARAM_RW(2)
+M_PARAM_RO(3)
+M_PARAM_RW(4)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(3)
+M_NODISCARD
+char* M_NULLABLE safe_strtok_impl(char* M_RESTRICT M_NULLABLE            str,
+                                  rsize_t* M_RESTRICT M_NONNULL          strmax,
+                                  const char* M_RESTRICT M_NONNULL       delim,
+                                  char* M_NONNULL* M_RESTRICT M_NULLABLE saveptr,
+                                  const char* M_NULLABLE                 file,
+                                  const char* M_NULLABLE                 function,
+                                  int                                    line,
+                                  const char* M_NULLABLE                 expression)
 {
     char*             spanp = M_NULLPTR;
     char*             tok   = M_NULLPTR;

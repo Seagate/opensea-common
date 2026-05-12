@@ -45,7 +45,7 @@ void stop_Timer(seatimer_t* timer)
     if (timer != M_NULLPTR)
     {
         LARGE_INTEGER tempLargeInt;
-        safe_memset(&tempLargeInt, sizeof(LARGE_INTEGER), 0, sizeof(LARGE_INTEGER));
+        M_INITIALIZE_STRUCTURE(&tempLargeInt, sizeof(LARGE_INTEGER));
         if (MSFT_BOOL_TRUE(QueryPerformanceCounter(&tempLargeInt))) // according to MSDN this will always return
                                                                     // success on XP and later systems
         {
@@ -63,7 +63,7 @@ uint64_t get_Nano_Seconds(seatimer_t timer)
     uint64_t      ticksPerNanosecond = UINT64_C(1000000000); // start with a count of nanoseconds per second
     uint64_t      seconds            = UINT64_C(0);
     uint64_t      nanoSeconds        = UINT64_C(0);
-    safe_memset(&frequency, sizeof(LARGE_INTEGER), 0, sizeof(LARGE_INTEGER));
+    M_INITIALIZE_STRUCTURE(&frequency, sizeof(LARGE_INTEGER));
     if (MSFT_BOOL_TRUE(QueryPerformanceFrequency(&frequency)))
     {
         if (frequency.QuadPart > LONGLONG_C(0)) // no equals since this is used in division
@@ -102,7 +102,7 @@ void start_Timer(seatimer_t* timer)
     {
         struct timespec startTimespec;
         int             ret = 0;
-        safe_memset(&startTimespec, sizeof(struct timespec), 0, sizeof(struct timespec));
+        M_INITIALIZE_STRUCTURE(&startTimespec, sizeof(struct timespec));
 #    if !defined(UEFI_C_SOURCE) && defined(POSIX_1993) && defined(_POSIX_TIMERS) && defined _POSIX_MONOTONIC_CLOCK
         ret = clock_gettime(CLOCK_MONOTONIC, &startTimespec);
 #    else // this function is older and more likely available if we don't have
@@ -128,7 +128,7 @@ void stop_Timer(seatimer_t* timer)
     {
         struct timespec stopTimespec;
         int             ret = 0;
-        safe_memset(&stopTimespec, sizeof(struct timespec), 0, sizeof(struct timespec));
+        M_INITIALIZE_STRUCTURE(&stopTimespec, sizeof(struct timespec));
 #    if !defined(UEFI_C_SOURCE) && defined(POSIX_1993) && defined(_POSIX_TIMERS) && defined _POSIX_MONOTONIC_CLOCK
         ret = clock_gettime(CLOCK_MONOTONIC, &stopTimespec);
 #    else // this function is older and more likely available if we don't have

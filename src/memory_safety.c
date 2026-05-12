@@ -51,7 +51,7 @@ size_t get_System_Pagesize(void)
     return int_to_sizet(getpagesize());
 #elif defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
     SYSTEM_INFO winSysInfo;
-    safe_memset(&winSysInfo, sizeof(SYSTEM_INFO), 0, sizeof(SYSTEM_INFO));
+    M_INITIALIZE_STRUCTURE(&winSysInfo, sizeof(SYSTEM_INFO));
     GetSystemInfo(&winSysInfo);
     return ulong_to_sizet(winSysInfo.dwPageSize);
 #else
@@ -197,7 +197,9 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_ALIGN(3) M_CALLOC_SIZE(1, 2)
         zeroedMem = malloc_aligned(numSize, alignment);
         if (zeroedMem != M_NULLPTR)
         {
-            safe_memset(zeroedMem, numSize, 0, numSize);
+            M_IGNORE_SAFE_ERRNO_CALL(safe_memset(zeroedMem, numSize, 0, numSize),
+                                     "Memory successfully allocated and is being zeroed to exactly the same size. This "
+                                     "should never fail or be incorrect");
         }
     }
     return zeroedMem;
@@ -219,7 +221,9 @@ void* realloc_aligned(void* alignedPtr, size_t originalSize, size_t size, size_t
         temp = malloc_aligned(size, alignment);
         if (alignedPtr && originalSize > SIZE_T_C(0) && temp)
         {
-            safe_memcpy(temp, size, alignedPtr, originalSize);
+            M_IGNORE_SAFE_ERRNO_CALL(
+                safe_memcpy(temp, size, alignedPtr, originalSize),
+                "Memory successfully reallocated and copied. This should never fail or be incorrect");
         }
         if (alignedPtr && temp)
         {
@@ -295,16 +299,6 @@ M_PARAM_WO_SIZE(1, 2) void* explicit_zeroes(void* dest, size_t count)
     {
 #if defined(HAVE_MEMSET_EXPLICIT)
         return memset_explicit(dest, 0, count);
-#elif defined(HAVE_C11_ANNEX_K)
-        // use memset_s since it cannot be optimized out
-        if (0 == memset_s(dest, count, 0, count))
-        {
-            return dest;
-        }
-        else
-        {
-            return M_NULLPTR;
-        }
 #elif (defined(_WIN32) && defined(_MSC_VER)) || defined(HAVE_MSFT_SECURE_ZERO_MEMORY) ||                               \
     defined(HAVE_MSFT_SECURE_ZERO_MEMORY2)
 #    if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                                  \
@@ -337,9 +331,25 @@ M_PARAM_WO_SIZE(1, 2) void* explicit_zeroes(void* dest, size_t count)
         //       manual. Not sure what version to use, so letting meson detect
         //       and set the HAVE_...macros
         return explicit_memset(dest, 0, count);
+#elif defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
+        // use memset_s since it cannot be optimized out
+        if (0 == memset_s(dest, count, 0, count))
+        {
+            return dest;
+        }
+        else
+        {
+            return M_NULLPTR;
+        }
 #else
-        safe_memset(dest, count, 0, count);
-        return dest;
+        if (0 == safe_memset(dest, count, 0, count))
+        {
+            return dest;
+        }
+        else
+        {
+            return M_NULLPTR;
+        }
 #endif
     }
     else
@@ -348,14 +358,22 @@ M_PARAM_WO_SIZE(1, 2) void* explicit_zeroes(void* dest, size_t count)
     }
 }
 
-errno_t safe_memset_impl(void*       dest,
-                         rsize_t     destsz,
-                         int         ch,
-                         rsize_t     count,
-                         const char* file,
-                         const char* function,
-                         int         line,
-                         const char* expression)
+M_PARAM_WO_SIZE(1, 2)
+CONSTRAINT_NO_DISCARD
+errno_t safe_memset_impl(void* M_NONNULL        dest,
+                         rsize_t                destsz,
+                         int                    ch,
+                         rsize_t                count,
+                         const char* M_NULLABLE file,
+                         const char* M_NULLABLE function,
+                         int                    line,
+                         const char* M_NULLABLE expression)
+    // clang-format off
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
+// clang-format on
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -698,7 +716,9 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_CALLOC_SIZE(1, 2)
         zeroedMem        = safe_malloc_aligned(numSize, alignment);
         if (zeroedMem != M_NULLPTR)
         {
-            safe_memset(zeroedMem, numSize, 0, numSize);
+            M_IGNORE_SAFE_ERRNO_CALL(safe_memset(zeroedMem, numSize, 0, numSize),
+                                     "Memory successfully allocated and is being zeroed to exactly the same size. This "
+                                     "should never fail or be incorrect");
         }
         return zeroedMem;
     }
@@ -816,14 +836,24 @@ M_MALLOC_SIZE(3) void* safe_reallocf_page_aligned(void** block, size_t originalS
 
 // Calls memmove_s if available, otherwise performs all checks that memmove_s
 // does before calling memmove
-errno_t safe_memmove_impl(void*       dest,
-                          rsize_t     destsz,
-                          const void* src,
-                          rsize_t     count,
-                          const char* file,
-                          const char* function,
-                          int         line,
-                          const char* expression)
+M_PARAM_WO_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 4)
+CONSTRAINT_NO_DISCARD
+errno_t safe_memmove_impl(void* M_NONNULL        dest,
+                          rsize_t                destsz,
+                          const void* M_NONNULL  src,
+                          rsize_t                count,
+                          const char* M_NULLABLE file,
+                          const char* M_NULLABLE function,
+                          int                    line,
+                          const char* M_NULLABLE expression)
+    // clang-format off
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
+// clang-format on
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -866,7 +896,9 @@ errno_t safe_memmove_impl(void*       dest,
         // is done
         if (destsz <= RSIZE_MAX)
         {
-            safe_memset(dest, destsz, 0, destsz);
+            M_IGNORE_SAFE_ERRNO_CALL(
+                safe_memset(dest, destsz, 0, destsz),
+                "Memory successfully zeroed after all other bounds are properly checked per C11 annex K.");
         }
         errno = error;
         return error;
@@ -895,14 +927,28 @@ errno_t safe_memmove_impl(void*       dest,
 
 // calls memcpy_s if available, otherwise performs all checks that memcpy_s does
 // before calling memcpy
-errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
-                         rsize_t                destsz,
-                         const void* M_RESTRICT src,
-                         rsize_t                count,
-                         const char*            file,
-                         const char*            function,
-                         int                    line,
-                         const char*            expression)
+M_PARAM_WO_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 4)
+CONSTRAINT_NO_DISCARD
+errno_t safe_memcpy_impl(void* M_RESTRICT M_NONNULL       dest,
+                         rsize_t                          destsz,
+                         const void* M_RESTRICT M_NONNULL src,
+                         rsize_t                          count,
+                         const char* M_NULLABLE           file,
+                         const char* M_NULLABLE           function,
+                         int                              line,
+                         const char* M_NULLABLE           expression)
+    // clang-format off
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
+        M_DIAG_ERROR(M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), "source and destination regions overlap. Use safe_memmove instead.")
+#if defined(ALLOW_NO_OVERLAP_SUGGESTIONS)
+        M_DIAG_WARN(!M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count) && dest != src, "No overlap detected; consider safe_memcpy_no_overlap for better performance.")
+#endif
+// clang-format on
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -952,7 +998,8 @@ errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
         // is done
         if (destsz <= RSIZE_MAX)
         {
-            safe_memset(dest, destsz, 0, destsz);
+            M_IGNORE_SAFE_ERRNO_CALL(safe_memset(dest, destsz, 0, destsz),
+                                     "Bounds checks already completed. Zeroing memory per C11 annex K.");
         }
         errno = error;
         return error;
@@ -979,15 +1026,29 @@ errno_t safe_memcpy_impl(void* M_RESTRICT       dest,
     }
 }
 
-errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
-                          rsize_t                destsz,
-                          const void* M_RESTRICT src,
-                          int                    c,
-                          rsize_t                count,
-                          const char*            file,
-                          const char*            function,
-                          int                    line,
-                          const char*            expression)
+M_PARAM_WO_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 5)
+CONSTRAINT_NO_DISCARD
+errno_t safe_memccpy_impl(void* M_RESTRICT M_NONNULL       dest,
+                          rsize_t                          destsz,
+                          const void* M_RESTRICT M_NONNULL src,
+                          int                              c,
+                          rsize_t                          count,
+                          const char* M_NULLABLE           file,
+                          const char* M_NULLABLE           function,
+                          int                              line,
+                          const char* M_NULLABLE           expression)
+    // clang-format off
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
+        M_DIAG_ERROR(M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count), "source and destination regions overlap. Use safe_memcmove instead.")
+#if defined(ALLOW_NO_OVERLAP_SUGGESTIONS)
+        M_DIAG_WARN(!M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count) && dest != src, "No overlap detected; consider safe_memccpy_no_overlap for better performance.")
+#endif
+// clang-format on
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -1038,7 +1099,8 @@ errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
         // is done
         if (destsz <= RSIZE_MAX)
         {
-            safe_memset(dest, destsz, 0, destsz);
+            M_IGNORE_SAFE_ERRNO_CALL(safe_memset(dest, destsz, 0, destsz),
+                                     "Bounds already checked, memory successfully zeroed per C11 annex K.");
         }
         errno = error;
         return error;
@@ -1065,15 +1127,25 @@ errno_t safe_memccpy_impl(void* M_RESTRICT       dest,
 }
 
 // allows overlapping ranges
-errno_t safe_memcmove_impl(void* M_RESTRICT       dest,
-                           rsize_t                destsz,
-                           const void* M_RESTRICT src,
-                           int                    c,
-                           rsize_t                count,
-                           const char*            file,
-                           const char*            function,
-                           int                    line,
-                           const char*            expression)
+M_PARAM_WO_SIZE(1, 2)
+M_PARAM_RO_SIZE(3, 5)
+CONSTRAINT_NO_DISCARD
+errno_t safe_memcmove_impl(void* M_RESTRICT M_NONNULL       dest,
+                           rsize_t                          destsz,
+                           const void* M_RESTRICT M_NONNULL src,
+                           int                              c,
+                           rsize_t                          count,
+                           const char* M_NULLABLE           file,
+                           const char* M_NULLABLE           function,
+                           int                              line,
+                           const char* M_NULLABLE           expression)
+    // clang-format off
+        M_DIAG_ERROR(dest == M_NULLPTR, "dest is a null pointer")
+        M_DIAG_ERROR(src == M_NULLPTR, "src is a null pointer")
+        M_DIAG_ERROR(destsz > RSIZE_MAX, "destsz > RSIZE_MAX")
+        M_DIAG_ERROR(count > RSIZE_MAX, "count > RSIZE_MAX")
+        M_DIAG_ERROR(count > destsz, "count > destsz")
+// clang-format on
 {
     errno_t           error = 0;
     constraintEnvInfo envInfo;
@@ -1124,7 +1196,9 @@ errno_t safe_memcmove_impl(void* M_RESTRICT       dest,
         // is done
         if (destsz < RSIZE_MAX)
         {
-            safe_memset(dest, destsz, 0, destsz);
+            M_IGNORE_SAFE_ERRNO_CALL(
+                safe_memset(dest, destsz, 0, destsz),
+                "Memory successfully zeroed after all other bounds are properly checked per C11 annex K.");
         }
         errno = error;
         return error;
