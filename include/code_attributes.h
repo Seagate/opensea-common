@@ -1840,6 +1840,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 //! \def M_FLAG_ENUM
 //! \brief Marks an enumeration as a flag enumeration for better type safety and warnings.
 //! \see https://clang.llvm.org/docs/AttributeReference.html#flag-enum
+//! \example enum M_FLAG_ENUM example_flags { FLAG_A = 1 << 0, FLAG_B = 1 << 1, FLAG_C = 1 << 2 };
 #if !defined(DISABLE_ATTRIBUTES)
 #    if defined(DETECT_STD_ATTR_CHECK)
 #        if DETECT_STD_ATTR_QUAL(clang::flag_enum)
@@ -1856,18 +1857,20 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #endif
 
 #if !defined(M_FLAG_ENUM)
-#    define M_FLAG_ENUM /* This enum is a flag enumeration */
+#    define M_FLAG_ENUM /* This enum is a flag enumeration. Values within it can be OR'd together safely. */
 #endif
 
 //! \def M_CLOSED_ENUM
 //! \brief Marks an enumeration as a closed enumeration to prevent implicit conversions.
 //! \see https://clang.llvm.org/docs/AttributeReference.html#closed-enum
 //! \note This can be combined with M_FLAG_ENUM to create a closed flag enumeration.
+//! \example enum M_CLOSED_ENUM example_enum { VALUE1, VALUE2, VALUE3 };
 
 //! \def M_OPEN_ENUM
 //! \brief Marks an enumeration as an open enumeration to allow implicit conversions.
 //! \see https://clang.llvm.org/docs/AttributeReference.html#open-enum
 //! \note This can be combined with M_FLAG_ENUM to create an open flag enumeration.
+//! \example enum M_OPEN_ENUM example_enum { VALUE1, VALUE2, VALUE3 };
 #if !defined(DISABLE_ATTRIBUTES)
 #    if defined(DETECT_STD_ATTR_CHECK)
 #        if DETECT_STD_ATTR_QUAL(clang::enum_extensibility)
@@ -1884,6 +1887,15 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #            define M_OPEN_ENUM   __attribute__((enum_extensibility(open)))
 #        endif
 #    endif
+#endif
+
+#if !defined(M_CLOSED_ENUM)
+#    define M_CLOSED_ENUM /* This enum is a closed enumeration and only values within it are allowed */
+#endif
+
+#if !defined(M_OPEN_ENUM)
+#    define M_OPEN_ENUM    /* This enum is an open enumeration and values outside of it are allowed. Useful for fields \
+                              that can expand over time */
 #endif
 
 //! \def M_WARN_IF_NOT_ALIGNED(alignment)
