@@ -33,7 +33,9 @@ int main(void)
     run_type_conversion_tests();
     run_unit_conversion_tests();
     run_precision_timer_and_sleep_tests();
+    #if defined(__linux__)
     run_secure_file_tests();
+    #endif
     
     // Print summary of test results
     print_test_summary();
