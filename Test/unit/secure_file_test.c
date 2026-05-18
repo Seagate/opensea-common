@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 
+#if defined(__linux__)
 static void test_compare_File_Unique_ID(void) {
     fileUniqueIDInfo a = {0}, b = {0};
 
@@ -1096,3 +1097,4 @@ void run_secure_file_tests(void) {
     test_generate_Log_Name();
     test_create_And_Open_Secure_Log_File();
 }
+#endif
