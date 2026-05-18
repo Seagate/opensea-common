@@ -749,6 +749,7 @@ static void test_secure_SetPos_File(void) {
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_SetPos_File should succeed");
     current = ftell(fileInfo->file);
     TEST_ASSERT(current == offset, "File position should be restored to 6");
+    secure_Close_File(fileInfo);
     free_Secure_File_Info(&fileInfo);
 
     // Test when pos == NULL
@@ -756,6 +757,7 @@ static void test_secure_SetPos_File(void) {
     result = secure_SetPos_File(fileInfo2, NULL);
     TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_SetPos_File should return invalid parameter error when pos is NULL");
     TEST_ASSERT(fileInfo2->error == SEC_FILE_INVALID_PARAMETER, "fileInfo error should be set to invalid parameter when pos is NULL");
+    secure_Close_File(fileInfo2);
     free_Secure_File_Info(&fileInfo2);
 
     // Test when fileInfo = NULL
@@ -766,6 +768,7 @@ static void test_secure_SetPos_File(void) {
     fileInfo3->error = SEC_FILE_FAILURE_CLOSING_FILE;
     result = secure_SetPos_File(fileInfo3, &pos);
     TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_SetPos_File should return failure closing file error if fileInfo is in that state");
+    secure_Close_File(fileInfo3);
     free_Secure_File_Info(&fileInfo3);
 
     secureFileInfo* fileInfo4 = secure_Open_File(filename, "r", NULL, NULL, NULL);
@@ -776,7 +779,6 @@ static void test_secure_SetPos_File(void) {
     fclose(fileInfo4->file);
     result = secure_SetPos_File(fileInfo4, &pos);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "secure_SetPos_File should return failure when file is closed");
-    fileInfo4->file = NULL;
     free_Secure_File_Info(&fileInfo4);
 }
 
