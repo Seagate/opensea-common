@@ -771,6 +771,7 @@ static void test_secure_SetPos_File(void) {
     secureFileInfo* fileInfo4 = secure_Open_File(filename, "r", NULL, NULL, NULL);
     TEST_ASSERT(fileInfo4 != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo4->isValid, "secure_Open_File should return valid file info");
+    free_Secure_File_Info(&fileInfo4);
 }
 
 static eSecureFileError test_wrapper_vfprintf(secureFileInfo* fileInfo, const char* fmt, ...) {
