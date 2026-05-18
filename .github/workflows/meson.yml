@@ -71,6 +71,12 @@ jobs:
         ASAN_OPTIONS=allocator_may_return_null=1:detect_leaks=1 \
         meson test -C Meson/Executables --verbose
 
+    - name: Show Meson test log on failure
+      if: failure()
+      shell: pwsh
+      run: |
+        Get-Content Meson/Executables/meson-logs/testlog.txt
+
     - name: Generate coverage (Linux only)
       if: runner.os == 'Linux'
       run: |
