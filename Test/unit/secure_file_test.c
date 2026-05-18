@@ -1063,7 +1063,7 @@ static void test_create_And_Open_Secure_Log_File(void) {
     secureFileInfo* fileInfo4 = NULL;
     result = create_And_Open_Secure_Log_File("testfile", strlen("testfile"), &fileInfo4, NAMING_SERIAL_NUMBER_ONLY, NULL, 0, NULL, 0, ".bin", 4);
     TEST_ASSERT(result == FAILURE, "Function should fail when file already exists");
-    free_Secure_File_Info(&fileInfo4);
+    free_Secure_File_Info(&fileInfo4); 
 }
 
 void run_secure_file_tests(void) {
