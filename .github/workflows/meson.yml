@@ -45,11 +45,20 @@ jobs:
       run: |
         choco install mingw -y
 
-    - name: Configure Meson
+    - name: Configure Meson (Linux)
+      if: runner.os == 'Linux'
       shell: bash
       run: |
         CFLAGS="-fsanitize=address -fno-omit-frame-pointer" \
         LDFLAGS="-fsanitize=address" \
+        meson setup Meson/Executables --buildtype=debug -Db_coverage=true
+
+    - name: Configure Meson (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        export CC=gcc
+        export CXX=g++
         meson setup Meson/Executables --buildtype=debug -Db_coverage=true
 
     - name: Build with Meson
