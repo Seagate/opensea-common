@@ -774,6 +774,7 @@ static void test_secure_SetPos_File(void) {
 
     // Test when file is closed
     fclose(fileInfo4->file);
+    fileInfo4->file = NULL;
     result = secure_SetPos_File(fileInfo4, &pos);
     TEST_ASSERT(result == SEC_FILE_FAILURE, "secure_SetPos_File should return failure when file is closed");
     free_Secure_File_Info(&fileInfo4);
