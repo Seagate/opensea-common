@@ -2138,8 +2138,8 @@ static void test_count_trailing_zeros_ui(void) {
     }
 }
 
-#if defined(_linux_)
 static void test_count_trailing_zeros_ul(void) {
+#if defined(_linux_)
     uint64_t vals[] = {
         0x0000000000000001UL,
         0x0000000000000002UL,
@@ -2213,8 +2213,52 @@ static void test_count_trailing_zeros_ul(void) {
         snprintf(msg, sizeof(msg), "%lu trailing zeros in unsigned long", i);
         TEST_ASSERT_EQ(count_trailing_zeros_ul(vals[i]), i, msg);
     }
-}
+
+#elif defined(_WIN32)
+    unsigned long vals[] = {
+        0x00000001UL,
+        0x00000002UL,
+        0x00000004UL,
+        0x00000008UL,
+        0x00000010UL,
+        0x00000020UL,
+        0x00000040UL,
+        0x00000080UL,
+        0x00000100UL,
+        0x00000200UL,
+        0x00000400UL,
+        0x00000800UL,
+        0x00001000UL,
+        0x00002000UL,
+        0x00004000UL,
+        0x00008000UL,
+        0x00010000UL,
+        0x00020000UL,
+        0x00040000UL,
+        0x00080000UL,
+        0x00100000UL,
+        0x00200000UL,
+        0x00400000UL,
+        0x00800000UL,
+        0x01000000UL,
+        0x02000000UL,
+        0x04000000UL,
+        0x08000000UL,
+        0x10000000UL,
+        0x20000000UL,
+        0x40000000UL,
+        0x80000000UL,
+        0x00000000UL
+    };
+
+    for (unsigned long i = 0; i < 33; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%lu trailing zeros in unsigned long", i);
+        TEST_ASSERT_EQ(count_trailing_zeros_ul(vals[i]), i, msg);
+    }
+
 #endif
+}
 
 static void test_count_trailing_zeros_ull(void) {
     uint64_t vals[] = {
@@ -2374,8 +2418,8 @@ static void test_count_trailing_ones_ui(void) {
     }
 }
 
-#if defined(_linux_)
 static void test_count_trailing_ones_ul(void) {
+#if defined(_linux_)
     uint64_t vals[] = {
         0x0000000000000000UL,
         0x0000000000000001UL,
@@ -2449,8 +2493,52 @@ static void test_count_trailing_ones_ul(void) {
         snprintf(msg, sizeof(msg), "%lu trailing ones in unsigned long", i);
         TEST_ASSERT_EQ(count_trailing_ones_ul(vals[i]), i, msg);
     }
-}
+
+#elif defined(_WIN32)
+    unsigned long vals[] = {
+        0x00000000UL,
+        0x00000001UL,
+        0x00000003UL,
+        0x00000007UL,
+        0x0000000FUL,
+        0x0000001FUL,
+        0x0000003FUL,
+        0x0000007FUL,
+        0x000000FFUL,
+        0x000001FFUL,
+        0x000003FFUL,
+        0x000007FFUL,
+        0x00000FFFUL,
+        0x00001FFFUL,
+        0x00003FFFUL,
+        0x00007FFFUL,
+        0x0000FFFFUL,
+        0x0001FFFFUL,
+        0x0003FFFFUL,
+        0x0007FFFFUL,
+        0x000FFFFFUL,
+        0x001FFFFFUL,
+        0x003FFFFFUL,
+        0x007FFFFFUL,
+        0x00FFFFFFUL,
+        0x01FFFFFFUL,
+        0x03FFFFFFUL,
+        0x07FFFFFFUL,
+        0x0FFFFFFFUL,
+        0x1FFFFFFFUL,
+        0x3FFFFFFFUL,
+        0x7FFFFFFFUL,
+        0xFFFFFFFFUL
+    };
+
+    for (unsigned long i = 0; i < 33; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "%lu trailing ones in unsigned long", i);
+        TEST_ASSERT_EQ(count_trailing_ones_ul(vals[i]), i, msg);
+    }
+
 #endif
+}
 
 static void test_count_trailing_ones_ull(void) {
     uint64_t vals[] = {
@@ -2610,8 +2698,8 @@ static void test_first_leading_one_ui(void) {
     }
 }
 
-#if defined(_linux_)
 static void test_first_leading_one_ul(void) {
+#if defined(_linux_)
     uint64_t vals[] = {
         0x0000000000000001UL,
         0x0000000000000003UL,
@@ -2685,8 +2773,52 @@ static void test_first_leading_one_ul(void) {
         snprintf(msg, sizeof(msg), "First leading 1 on bit position %lu in unsigned long", 64-i);
         TEST_ASSERT_EQ(first_leading_one_ul(vals[i]), 64-i, msg);
     }
-}
+
+#elif defined(_WIN32)
+    unsigned long vals[] = {
+        0x00000001UL,
+        0x00000003UL,
+        0x00000007UL,
+        0x0000000FUL,
+        0x0000001FUL,
+        0x0000003FUL,
+        0x0000007FUL,
+        0x000000FFUL,
+        0x000001FFUL,
+        0x000003FFUL,
+        0x000007FFUL,
+        0x00000FFFUL,
+        0x00001FFFUL,
+        0x00003FFFUL,
+        0x00007FFFUL,
+        0x0000FFFFUL,
+        0x0001FFFFUL,
+        0x0003FFFFUL,
+        0x0007FFFFUL,
+        0x000FFFFFUL,
+        0x001FFFFFUL,
+        0x003FFFFFUL,
+        0x007FFFFFUL,
+        0x00FFFFFFUL,
+        0x01FFFFFFUL,
+        0x03FFFFFFUL,
+        0x07FFFFFFUL,
+        0x0FFFFFFFUL,
+        0x1FFFFFFFUL,
+        0x3FFFFFFFUL,
+        0x7FFFFFFFUL,
+        0xFFFFFFFFUL,
+        0x00000000UL
+    };
+
+    for (unsigned long i = 1; i < 33; i++) {
+        char msg[60];
+        snprintf(msg, sizeof(msg), "First leading 1 on bit position %lu in unsigned long", 32 - i);
+        TEST_ASSERT_EQ(first_leading_one_ul(vals[i]), 32 - i, msg);
+    }
+
 #endif
+}
 
 static void test_first_leading_one_ull(void) {
     uint64_t vals[] = {
@@ -4352,23 +4484,17 @@ void run_bit_manip_tests(void)
     test_count_trailing_zeros_uc();
     test_count_trailing_zeros_us();
     test_count_trailing_zeros_ui();
-    #if defined(_linux_)
     test_count_trailing_zeros_ul();
-    #endif
     test_count_trailing_zeros_ull();
     test_count_trailing_ones_uc();
     test_count_trailing_ones_us();
     test_count_trailing_ones_ui();
-    #if defined(_linux_)
     test_count_trailing_ones_ul();
-    #endif
     test_count_trailing_ones_ull();
     test_first_leading_one_uc();
     test_first_leading_one_us();
     test_first_leading_one_ui();
-    #if defined(_linux_)
     test_first_leading_one_ul();
-    #endif
     test_first_leading_one_ull();
     test_first_leading_zero_uc();
     test_first_leading_zero_us();
