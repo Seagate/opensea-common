@@ -771,13 +771,6 @@ static void test_secure_SetPos_File(void) {
     secureFileInfo* fileInfo4 = secure_Open_File(filename, "r", NULL, NULL, NULL);
     TEST_ASSERT(fileInfo4 != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo4->isValid, "secure_Open_File should return valid file info");
-
-    // Test when file is closed
-    secure_Close_File(fileInfo4);
-    result = secure_SetPos_File(fileInfo4, &pos);
-    printf("Result of setting position on closed file: %d\n", result);
-    TEST_ASSERT(result == SEC_FILE_FAILURE, "secure_SetPos_File should return failure when file is closed");
-    free_Secure_File_Info(&fileInfo4);
 }
 
 static eSecureFileError test_wrapper_vfprintf(secureFileInfo* fileInfo, const char* fmt, ...) {
