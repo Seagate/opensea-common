@@ -10,7 +10,11 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     steps:
     - name: Checkout code
@@ -28,12 +32,21 @@ jobs:
         python -m pip install --upgrade pip
         pip install meson ninja
     
-    - name: Install dependencies
+    # Linux dependencies
+    - name: Install dependencies (Linux)
+      if: runner.os == 'Linux'
       run: |
         sudo apt-get update
         sudo apt-get install -y expect lcov gcc
 
-    - name: Configure Meson with ASan
+    # Windows dependencies
+    - name: Install dependencies (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        choco install mingw -y
+
+    - name: Configure Meson
+      shell: bash
       run: |
         CFLAGS="-fsanitize=address -fno-omit-frame-pointer" \
         LDFLAGS="-fsanitize=address" \
@@ -44,15 +57,18 @@ jobs:
         meson compile -C Meson/Executables
     
     - name: Run test
+      shell: bash
       run: |
         ASAN_OPTIONS=allocator_may_return_null=1:detect_leaks=1 \
         meson test -C Meson/Executables --verbose
 
-    - name: Generate coverage
+    - name: Generate coverage (Linux only)
+      if: runner.os == 'Linux'
       run: |
         ninja -C Meson/Executables coverage
 
     - name: Upload coverage report
+      if: runner.os == 'Linux'
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
