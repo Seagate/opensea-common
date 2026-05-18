@@ -981,6 +981,7 @@ static void test_safe_String_Token(void) {
     TEST_ASSERT_EQ(token, NULL, "No more tokens expected");
 }
 
+#if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
 static void test_strndup(void) {
     const char* str = "Hello, World!";
     char* dup = strndup(str, 5);
@@ -988,6 +989,7 @@ static void test_strndup(void) {
     TEST_ASSERT_EQ(strncmp(dup, str, 5), 0, "First n characters should be correctly duplicated");
     free(dup);
 }
+#endif
 
 static void test_safe_strdup(void) {
     const char* str = "Hello, World!";
@@ -1343,7 +1345,9 @@ void run_string_utils_tests(void) {
     test_safe_strtok();
     test_safe_String_Token();
     test_common_String_Token();
+    #if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
     test_strndup();
+    #endif
     test_safe_strdup();
     test_safe_strndup();
     test_byte_Swap_String();
