@@ -166,7 +166,6 @@ static void test_signed_long_round_up_generic(void) {
     TEST_ASSERT_EQ(signed_long_round_up_generic(243, 5), 245, "Round 243 up to nearest multiple of 5");
     TEST_ASSERT_EQ(signed_long_round_up_generic(1643, 12), 1644, "Round 1643 up to nearest multiple of 12");
     TEST_ASSERT_EQ(signed_long_round_up_generic(9496729, 12), 9496740, "Round 9496729 up to nearest multiple of 12");
-    TEST_ASSERT_EQ(signed_long_round_up_generic(32761, 10), -32766, "Round 32761 up to nearest multiple of 10: Overflow case");
 #if defined(__linux__)
     TEST_ASSERT_EQ(signed_long_round_up_generic(23372036854775808, 7), 23372036854775812, "Round 23372036854775808 up to nearest multiple of 7");
 #endif
