@@ -6,7 +6,7 @@ test_sources = [
     'unit/math_utils_test.c',
     'unit/string_utils_test.c',
     'unit/io_utils_test.c',
-    #'unit/memory_safety_test.c',
+    'unit/memory_safety_test.c',
     #'unit/pattern_utils_test.c',
     #'unit/sort_and_search_test.c',
     #'unit/type_conversion_test.c',
