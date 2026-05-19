@@ -818,6 +818,7 @@ static void test_safe_memcpy_no_overlap(void) {
     TEST_ASSERT(result != 0, "safe_memcpy_no_overlap should return non-zero for overlapping regions");
 }
 
+#if defined(__linux__)
 static void test_safe_memccpy(void) {
     char src[20] = "Hello, World!";
     char dest[20];
@@ -841,9 +842,9 @@ static void test_safe_memccpy(void) {
     TEST_ASSERT(result == errno, "safe_memccpy should return errno when dest is NULL");
 
     // Test when src is NULL - calls abort handler
-    // result = safe_memccpy(dest, sizeof(dest), NULL, 'o', sizeof(src));
-    // TEST_ASSERT(errno == EINVAL, "safe_memccpy should set errno to EINVAL when src is NULL");
-    // TEST_ASSERT(result == errno, "safe_memccpy should return errno when src is NULL");
+    result = safe_memccpy(dest, sizeof(dest), NULL, 'o', sizeof(src));
+    TEST_ASSERT(errno == EINVAL, "safe_memccpy should set errno to EINVAL when src is NULL");
+    TEST_ASSERT(result == errno, "safe_memccpy should return errno when src is NULL");
 
     // Test when destsz > RSIZE_MAX - calls abort handler
     result = safe_memccpy(dest, RSIZE_MAX + 1, src, 'o', sizeof(src));
@@ -861,13 +862,14 @@ static void test_safe_memccpy(void) {
     TEST_ASSERT(result == errno, "safe_memccpy should return errno when count is greater than destsz");
 
     // Test for overlapping regions
-    // char buffer[20] = "Hello, World!";
-    // result = safe_memccpy(buffer + 2, 10, buffer, 'o', 8);
-    // TEST_ASSERT(result == EINVAL, "safe_memccpy should return errno for overlapping regions");
+    char buffer[20] = "Hello, World!";
+    result = safe_memccpy(buffer + 2, 10, buffer, 'o', 8);
+    TEST_ASSERT(result == EINVAL, "safe_memccpy should return errno for overlapping regions");
 
-    // result = safe_memccpy(buffer, 10, buffer + 2, 'o', 8);
-    // TEST_ASSERT(result == EINVAL, "safe_memccpy should return errno for overlapping regions");
+    result = safe_memccpy(buffer, 10, buffer + 2, 'o', 8);
+    TEST_ASSERT(result == EINVAL, "safe_memccpy should return errno for overlapping regions");
 }
+#endif
 
 static void test_safe_memcmove(void) {
     char src[20] = "Hello, World!";
@@ -1010,7 +1012,9 @@ void run_memory_safety_tests(void) {
     test_safe_memmove();
     test_safe_memcpy();
     test_safe_memcpy_no_overlap();
+    #if defined(__linux__)
     test_safe_memccpy();
+    #endif
     test_safe_memcmove();
     test_get_memalignment();
     test_SIZE_OF_STACK_ARRAY();
