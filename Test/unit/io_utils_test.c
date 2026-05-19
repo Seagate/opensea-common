@@ -1666,7 +1666,8 @@ static void test_checked_fputs(void) {
     err = checked_fputs("Hello, World!\n", NULL);
     TEST_ASSERT(err == EINVAL, "checked_fputs returned EINVAL for NULL file pointer");
 
-    // Test write failure
+#ifdef __linux__
+    // Test write failure for linux
     FILE* newfp = fopen("/dev/full", "w");
     TEST_ASSERT(newfp != NULL, "opened /dev/full");
 
@@ -1676,6 +1677,7 @@ static void test_checked_fputs(void) {
     err = checked_fputs("hello", newfp);
     TEST_ASSERT(err != 0, "Expected write failure on /dev/full");
     fclose(newfp);
+#endif
 }
 
 static void test_print_str(void) {
