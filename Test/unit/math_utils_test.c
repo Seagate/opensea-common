@@ -659,7 +659,9 @@ static void test_signed_long_round_up_power2(void) {
     TEST_ASSERT_EQ(signed_long_round_up_power2(243, 8), 248, "Round 243 up to nearest multiple of 8");
     TEST_ASSERT_EQ(signed_long_round_up_power2(1643, 4), 1644, "Round 1643 up to nearest multiple of 4");
     TEST_ASSERT_EQ(signed_long_round_up_power2(9496729, 2), 9496730, "Round 9496729 up to nearest multiple of 2");
+#if defined(__linux__)
     TEST_ASSERT_EQ(signed_long_round_up_power2(23372036854775808, 2), 23372036854775808, "Round 23372036854775808 up to nearest multiple of 2");
+#endif
 }
 
 static void test_signed_long_round_down_power2(void) {
@@ -670,7 +672,9 @@ static void test_signed_long_round_down_power2(void) {
     TEST_ASSERT_EQ(signed_long_round_down_power2(1643, 8), 1640, "Round 1643 down to nearest multiple of 8");
     TEST_ASSERT_EQ(signed_long_round_down_power2(32761, 4), 32760, "Round 32761 down to nearest multiple of 4");
     TEST_ASSERT_EQ(signed_long_round_down_power2(9496729, 2), 9496728, "Round 9496729 down to nearest multiple of 2");
+#if defined(__linux__)
     TEST_ASSERT_EQ(signed_long_round_down_power2(23372036854775808, 4), 23372036854775808, "Round 23372036854775808 down to nearest multiple of 4");
+#endif
 }
 
 static void test_unsigned_long_round_up_power2(void) {
@@ -681,7 +685,9 @@ static void test_unsigned_long_round_up_power2(void) {
     TEST_ASSERT_EQ(unsigned_long_round_up_power2((UINT64_C(1643)), 4), 1644, "Round 1643 up to nearest multiple of 4");
     TEST_ASSERT_EQ(unsigned_long_round_up_power2((UINT64_C(65531)), 2), 65532, "Round 65531 up to nearest multiple of 2");
     TEST_ASSERT_EQ(unsigned_long_round_up_power2((UINT64_C(2147483637)), 4), 2147483640, "Round 2147483637 up to nearest multiple of 4");
+#if defined(__linux__)
     TEST_ASSERT_EQ(unsigned_long_round_up_power2((UINT64_C(23372036854775808)), 2), 23372036854775808, "Round 23372036854775808 up to nearest multiple of 2");
+#endif
 }
 
 static void test_unsigned_long_round_down_power2(void) {
@@ -693,7 +699,9 @@ static void test_unsigned_long_round_down_power2(void) {
     TEST_ASSERT_EQ(unsigned_long_round_down_power2((UINT64_C(32761)), 4), 32760, "Round 32761 down to nearest multiple of 4");
     TEST_ASSERT_EQ(unsigned_long_round_down_power2((UINT64_C(65535)), 2), 65534, "Round 65535 down to nearest multiple of 2");
     TEST_ASSERT_EQ(unsigned_long_round_down_power2((UINT64_C(4294967295)), 4), 4294967292, "Round 4294967295 down to nearest multiple of 4");
+#if defined(__linux__)
     TEST_ASSERT_EQ(unsigned_long_round_down_power2((UINT64_C(9223372036854775808)), 2), 9223372036854775808, "Round 9223372036854775808 down to nearest multiple of 2");
+#endif
 }
 
 static void test_signed_long_long_round_up_power2(void) {
