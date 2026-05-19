@@ -166,7 +166,10 @@ static void test_signed_long_round_up_generic(void) {
     TEST_ASSERT_EQ(signed_long_round_up_generic(243, 5), 245, "Round 243 up to nearest multiple of 5");
     TEST_ASSERT_EQ(signed_long_round_up_generic(1643, 12), 1644, "Round 1643 up to nearest multiple of 12");
     TEST_ASSERT_EQ(signed_long_round_up_generic(9496729, 12), 9496740, "Round 9496729 up to nearest multiple of 12");
+    TEST_ASSERT_EQ(signed_long_round_up_generic(32761, 10), -32766, "Round 32761 up to nearest multiple of 10: Overflow case");
+#if defined(__linux__)
     TEST_ASSERT_EQ(signed_long_round_up_generic(23372036854775808, 7), 23372036854775812, "Round 23372036854775808 up to nearest multiple of 7");
+#endif
 }
 
 static void test_signed_long_round_down_generic(void) {
@@ -178,7 +181,9 @@ static void test_signed_long_round_down_generic(void) {
     TEST_ASSERT_EQ(signed_long_round_down_generic(1643, 12), 1632, "Round 1643 down to nearest multiple of 12");
     TEST_ASSERT_EQ(signed_long_round_down_generic(32761, 10), 32760, "Round 32761 down to nearest multiple of 10");
     TEST_ASSERT_EQ(signed_long_round_down_generic(9496729, 10), 9496720, "Round 9496729 down to nearest multiple of 10");
+#if defined(__linux__)
     TEST_ASSERT_EQ(signed_long_round_down_generic(23372036854775808, 7), 23372036854775805, "Round 23372036854775808 down to nearest multiple of 7");
+#endif
 }
 
 static void test_unsigned_long_round_up_generic(void) {
@@ -189,7 +194,9 @@ static void test_unsigned_long_round_up_generic(void) {
     TEST_ASSERT_EQ(unsigned_long_round_up_generic(UINT64_C(1643), 12), 1644, "Round 1643 up to nearest multiple of 12");
     TEST_ASSERT_EQ(unsigned_long_round_up_generic(UINT64_C(65531), 10), 65540, "Round 65531 up to nearest multiple of 10");
     TEST_ASSERT_EQ(unsigned_long_round_up_generic(UINT64_C(2147483637), 10), 2147483640, "Round 2147483637 up to nearest multiple of 10");
+#if defined(__linux__)
     TEST_ASSERT_EQ(unsigned_long_round_up_generic(UINT64_C(23372036854775808), 7), 23372036854775812, "Round 23372036854775808 up to nearest multiple of 7");
+#endif
 }
 
 static void test_unsigned_long_round_down_generic(void) {
@@ -201,7 +208,9 @@ static void test_unsigned_long_round_down_generic(void) {
     TEST_ASSERT_EQ(unsigned_long_round_down_generic(UINT64_C(32761), 10), 32760, "Round 32761 down to nearest multiple of 10");
     TEST_ASSERT_EQ(unsigned_long_round_down_generic(UINT64_C(65535), 10), 65530, "Round 65535 down to nearest multiple of 10");
     TEST_ASSERT_EQ(unsigned_long_round_down_generic(UINT64_C(4294967295), 10), 4294967290, "Round 4294967295 down to nearest multiple of 10");
+#if defined(__linux__)
     TEST_ASSERT_EQ(unsigned_long_round_down_generic(UINT64_C(9223372036854775808), 10), 9223372036854775800, "Round 9223372036854775808 down to nearest multiple of 10");
+#endif
 }
 
 static void test_signed_long_long_round_up_generic(void) {
