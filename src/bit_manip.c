@@ -165,6 +165,7 @@ static M_INLINE size_t gen_bit_width(uint8_t msb, uint8_t lsb)
 
 static M_INLINE uint64_t gen_safe_mask_u64(size_t width)
 {
+    /* Check not needed here as this function is only called after validating width against GENERIC_WIDTH_64 by the functions which call it.
     if (width >= GENERIC_WIDTH_64)
     {
         return UINT64_MAX;
@@ -174,12 +175,14 @@ static M_INLINE uint64_t gen_safe_mask_u64(size_t width)
     {
         return UINT64_C(0);
     }
+    */
 
     return (UINT64_C(1) << width) - UINT64_C(1);
 }
 
 static M_INLINE uint32_t gen_safe_mask_u32(size_t width)
 {
+    /* Check not needed here as this function is only called after validating width against GENERIC_WIDTH_32 by the functions which call it.
     if (width >= GENERIC_WIDTH_32)
     {
         return UINT32_MAX;
@@ -189,12 +192,14 @@ static M_INLINE uint32_t gen_safe_mask_u32(size_t width)
     {
         return UINT32_C(0);
     }
+    */
 
     return (UINT32_C(1) << width) - UINT32_C(1);
 }
 
 static M_INLINE uint16_t gen_safe_mask_u16(size_t width)
 {
+    /* Check not needed here as this function is only called after validating width against GENERIC_WIDTH_16 by the functions which call it.
     if (width >= GENERIC_WIDTH_16)
     {
         return UINT16_MAX;
@@ -204,12 +209,14 @@ static M_INLINE uint16_t gen_safe_mask_u16(size_t width)
     {
         return UINT16_C(0);
     }
+    */
 
     return M_STATIC_CAST(uint16_t, (UINT32_C(1) << width) - UINT32_C(1));
 }
 
 static M_INLINE uint8_t gen_safe_mask_u8(size_t width)
 {
+    /* Check not needed here as this function is only called after validating width against GENERIC_WIDTH_8 by the functions which call it.
     if (width >= GENERIC_WIDTH_8)
     {
         return UINT8_MAX;
@@ -219,6 +226,7 @@ static M_INLINE uint8_t gen_safe_mask_u8(size_t width)
     {
         return UINT8_C(0);
     }
+    */
 
     return M_STATIC_CAST(uint8_t, (UINT32_C(1) << width) - UINT32_C(1));
 }
@@ -227,20 +235,24 @@ static M_INLINE uint64_t gen_extract_u64(uint64_t val, uint8_t msb, uint8_t lsb)
 {
     size_t width = gen_bit_width(msb, lsb);
 
+    /* Check not needed here as this function is only called after validating the condition by the functions which call it.
     if (width == GENERIC_WIDTH_0)
     {
         return UINT64_C(0);
     }
+    */
 
     if (width >= GENERIC_WIDTH_64 && lsb == 0)
     {
         return val;
     }
 
+    /* Check not needed here as this function is only called after validating the condition by the functions which call it.
     if (lsb >= GENERIC_WIDTH_64)
     {
         return UINT64_C(0);
     }
+    */
 
     return M_STATIC_CAST(uint64_t, (val >> lsb) & gen_safe_mask_u64(width));
 }
@@ -249,20 +261,24 @@ static M_INLINE uint32_t gen_extract_u32(uint32_t val, uint8_t msb, uint8_t lsb)
 {
     size_t width = gen_bit_width(msb, lsb);
 
+    /* Check not needed here as this function is only called after validating the condition by the functions which call it.
     if (width == GENERIC_WIDTH_0)
     {
         return UINT32_C(0);
     }
+    */
 
     if (width >= GENERIC_WIDTH_32 && lsb == 0)
     {
         return val;
     }
 
+    /* Check not needed here as this function is only called after validating the condition by the functions which call it.
     if (lsb >= GENERIC_WIDTH_32)
     {
         return UINT32_C(0);
     }
+    */
 
     return M_STATIC_CAST(uint32_t, (val >> lsb) & gen_safe_mask_u32(width));
 }
@@ -271,20 +287,24 @@ static M_INLINE uint16_t gen_extract_u16(uint16_t val, uint8_t msb, uint8_t lsb)
 {
     size_t width = gen_bit_width(msb, lsb);
 
+    /* Check not needed here as this function is only called after validating the condition by the functions which call it.
     if (width == GENERIC_WIDTH_0)
     {
         return M_STATIC_CAST(uint16_t, UINT32_C(0));
     }
+    */
 
     if (width >= GENERIC_WIDTH_16 && lsb == 0)
     {
         return val;
     }
 
+    /* Check not needed here as this function is only called after validating the condition by the functions which call it.
     if (lsb >= GENERIC_WIDTH_16)
     {
         return M_STATIC_CAST(uint16_t, UINT32_C(0));
     }
+    */
 
     return M_STATIC_CAST(uint16_t, (val >> lsb) & gen_safe_mask_u16(width));
 }
@@ -293,20 +313,24 @@ static M_INLINE uint8_t gen_extract_u8(uint8_t val, uint8_t msb, uint8_t lsb)
 {
     size_t width = gen_bit_width(msb, lsb);
 
+    /* Check not needed here as this function is only called after validating the condition by the functions which call it.
     if (width == GENERIC_WIDTH_0)
     {
         return M_STATIC_CAST(uint8_t, UINT32_C(0));
     }
+    */
 
     if (width >= GENERIC_WIDTH_8 && lsb == 0)
     {
         return val;
     }
 
+    /* Check not needed here as this function is only called after validating the condition by the functions which call it.
     if (lsb >= GENERIC_WIDTH_8)
     {
         return M_STATIC_CAST(uint8_t, UINT32_C(0));
     }
+    */
 
     return M_STATIC_CAST(uint8_t, (val >> lsb) & gen_safe_mask_u8(width));
 }

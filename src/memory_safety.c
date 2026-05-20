@@ -716,7 +716,7 @@ M_NODISCARD M_PARAM_RW(1) M_MALLOC_SIZE(2) void* M_NULLABLE
     else
     {
         void* newblock = realloc(*block, size);
-        if (newblock == M_NULLPTR && size != SIZE_T_C(0))
+        if (newblock == M_NULLPTR)
         {
             free(*block);
             *block = M_NULLPTR;
@@ -876,14 +876,7 @@ void* M_NULLABLE safe_realloc_aligned(void* M_NULLABLE block, size_t originalSiz
         // than a simple return realloc, the purpose of this is to help reduce
         // false positives with SAST tools.
         void* newblock = realloc_aligned(block, originalSize, size, alignment);
-        if (newblock == M_NULLPTR)
-        {
-            return M_NULLPTR;
-        }
-        else
-        {
-            return newblock;
-        }
+        return newblock;
     }
 }
 
@@ -922,7 +915,7 @@ safe_reallocf_aligned(void* M_NULLABLE* M_NULLABLE block, size_t originalSize, s
         alignment      = alignment_Round_Up(alignment);
         size           = aligned_Size_Round_Up(size, alignment);
         void* newblock = realloc_aligned(*block, originalSize, size, alignment);
-        if (newblock == M_NULLPTR && *block && size != SIZE_T_C(0))
+        if (newblock == M_NULLPTR && *block)
         {
             free_aligned(*block);
             *block = M_NULLPTR;
