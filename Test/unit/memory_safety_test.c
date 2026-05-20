@@ -964,10 +964,10 @@ void run_memory_safety_tests(void) {
     test_safe_free_double();
     test_safe_free_longdouble();
     test_safe_free();
-    // #ifdef _WIN32
-    // test_safe_free_tchar();
-    // #endif
-    // test_is_Empty();
+    #ifdef _WIN32
+    test_safe_free_tchar();
+    #endif
+    test_is_Empty();
     // test_safe_memset();
     // test_explicit_zeroes();
     // test_free_aligned();
