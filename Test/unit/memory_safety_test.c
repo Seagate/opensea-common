@@ -952,12 +952,12 @@ void run_memory_safety_tests(void) {
     test_safe_free_schar();
     test_safe_free_uchar();
     test_safe_free_wchar();
-    // test_safe_free_short();
-    // test_safe_free_ushort();
-    // test_safe_free_int();
-    // test_safe_free_uint();
-    // test_safe_free_long();
-    // test_safe_free_ulong();
+    test_safe_free_short();
+    test_safe_free_ushort();
+    test_safe_free_int();
+    test_safe_free_uint();
+    test_safe_free_long();
+    test_safe_free_ulong();
     // test_safe_free_longlong();
     // test_safe_free_ulonglong();
     // test_safe_free_float();
