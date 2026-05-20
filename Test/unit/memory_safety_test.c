@@ -41,21 +41,24 @@ static void test_safe_realloc(void) {
     TEST_ASSERT(ptr != NULL, "safe_malloc should return a non-null pointer for a non-zero size");
 
     // Test that reallocating to a larger size works
-    void* new_ptr = safe_realloc(ptr, 200);
-    TEST_ASSERT(new_ptr != NULL, "safe_realloc should return a non-null pointer when reallocating to a larger size");
-    free(new_ptr);
+    ptr = safe_realloc(ptr, 200);
+    TEST_ASSERT(ptr != NULL, "safe_realloc should return a non-null pointer when reallocating to a larger size");
+
+    // Test for huge size (should fail, original ptr should remain valid)
+    void* failed_ptr = safe_realloc(ptr, SIZE_MAX);
+    TEST_ASSERT(failed_ptr == NULL, "safe_realloc should return NULL when realloc fails");
+
+    free(ptr);
 
     // Test when block is NULL, should behave like safe_malloc
-    new_ptr = safe_realloc(NULL, 100);
+    void* new_ptr = safe_realloc(NULL, 100);
     TEST_ASSERT(new_ptr != NULL, "safe_realloc should return a non-null pointer when the input pointer is NULL");
     free(new_ptr);
 
-    // Test for huge size
-    new_ptr = safe_realloc(ptr, SIZE_MAX);
-    TEST_ASSERT(new_ptr == NULL, "safe_realloc should return NULL when realloc fails");
-
-    // Test that reallocating to zero frees the memory and returns null
+    // Test that reallocating to zero frees memory and returns NULL
     ptr = safe_malloc(100);
+    TEST_ASSERT(ptr != NULL, "safe_malloc should return non-null pointer");
+
     new_ptr = safe_realloc(ptr, 0);
     TEST_ASSERT(new_ptr == NULL, "safe_realloc should return a null pointer when reallocating to zero");
 }
