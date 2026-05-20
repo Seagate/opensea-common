@@ -18,16 +18,19 @@ static void test_safe_calloc(void) {
     free(ptr);
 
     // Test that safe_calloc returns null for a count of zero - invokes constraint handler
+    errno = 0;
     ptr = safe_calloc(0, 20);
     TEST_ASSERT(ptr == NULL, "safe_calloc should return a null pointer for a count of zero");
     TEST_ASSERT(errno == EINVAL, "safe_calloc should set errno to EINVAL when count is zero");
 
     // Test that safe_calloc returns null for a size of zero - invokes constraint handler
+    errno = 0;
     ptr = safe_calloc(10, 0);
     TEST_ASSERT(ptr == NULL, "safe_calloc should return a null pointer for a size of zero");
     TEST_ASSERT(errno == EINVAL, "safe_calloc should set errno to EINVAL when size is zero");
 
     // Test that safe_calloc returns null for a count > (SIZE_MAX / size) - invokes constraint handler
+    errno = 0;
     ptr = safe_calloc(SIZE_MAX, 2);
     TEST_ASSERT(ptr == NULL, "safe_calloc should return a null pointer for a count > (SIZE_MAX / size)");
     TEST_ASSERT(errno == EINVAL, "safe_calloc should set errno to EINVAL when count > (SIZE_MAX / size)");
@@ -945,7 +948,7 @@ static void test_SIZE_OF_STACK_ARRAY(void) {
 void run_memory_safety_tests(void) {
     test_safe_malloc();
     test_safe_calloc();
-    // test_safe_realloc();
+    test_safe_realloc();
     // test_safe_reallocf();
     // test_safe_free_core();
     // test_safe_free_char();
