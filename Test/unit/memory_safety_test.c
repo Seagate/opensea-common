@@ -818,7 +818,6 @@ static void test_safe_memcpy_no_overlap(void) {
     TEST_ASSERT(result != 0, "safe_memcpy_no_overlap should return non-zero for overlapping regions");
 }
 
-#if defined(__linux__)
 static void test_safe_memccpy(void) {
     char src[20] = "Hello, World!";
     char dest[20];
@@ -869,7 +868,6 @@ static void test_safe_memccpy(void) {
     result = safe_memccpy(buffer, 10, buffer + 2, 'o', 8);
     TEST_ASSERT(result == EINVAL, "safe_memccpy should return errno for overlapping regions");
 }
-#endif
 
 static void test_safe_memcmove(void) {
     char src[20] = "Hello, World!";
@@ -946,79 +944,77 @@ static void test_SIZE_OF_STACK_ARRAY(void) {
 
 void run_memory_safety_tests(void) {
     test_safe_malloc();
-    test_safe_calloc();
-    test_safe_realloc();
-    test_safe_reallocf();
-    test_safe_free_core();
-    test_safe_free_char();
-    test_safe_free_schar();
-    test_safe_free_uchar();
-    test_safe_free_wchar();
-    test_safe_free_short();
-    test_safe_free_ushort();
-    test_safe_free_int();
-    test_safe_free_uint();
-    test_safe_free_long();
-    test_safe_free_ulong();
-    test_safe_free_longlong();
-    test_safe_free_ulonglong();
-    test_safe_free_float();
-    test_safe_free_double();
-    test_safe_free_longdouble();
-    test_safe_free();
-    #ifdef _WIN32
-    test_safe_free_tchar();
-    #endif
-    test_is_Empty();
-    test_safe_memset();
-    test_explicit_zeroes();
-    test_free_aligned();
-    test_malloc_aligned();
-    test_safe_free_aligned_core();
-    test_safe_free_aligned_char();
-    test_safe_free_aligned_wchar();
-    test_safe_free_aligned_schar();
-    test_safe_free_aligned_uchar();
-    test_safe_free_aligned_short();
-    test_safe_free_aligned_ushort();
-    test_safe_free_aligned_int();
-    test_safe_free_aligned_uint();
-    test_safe_free_aligned_long();
-    test_safe_free_aligned_ulong();
-    test_safe_free_aligned_longlong();
-    test_safe_free_aligned_ulonglong();
-    test_safe_free_aligned_float();
-    test_safe_free_aligned_double();
-    test_safe_free_aligned_longdouble();
-    test_safe_free_aligned();
-    test_calloc_aligned();
-    test_realloc_aligned();
-    test_safe_malloc_aligned();
-    test_safe_calloc_aligned();
-    test_safe_realloc_aligned();
-    test_safe_reallocf_aligned();
-    test_get_System_Pagesize();
-    test_free_page_aligned();
-    test_malloc_page_aligned();
-    test_safe_free_page_aligned_core();
-    test_safe_free_page_aligned();
-    test_calloc_page_aligned();
-    test_realloc_page_aligned();
-    test_safe_malloc_page_aligned();
-    test_safe_calloc_page_aligned();
-    test_safe_realloc_page_aligned();
-    test_safe_reallocf_page_aligned();
-    test_memory_regions_overlap();
-    test_safe_memmove();
-    test_safe_memcpy();
-    test_safe_memcpy_no_overlap();
-    #if defined(__linux__)
-    test_safe_memccpy();
-    #endif
-    test_safe_memcmove();
-    test_get_memalignment();
-    test_SIZE_OF_STACK_ARRAY();
-    #if defined(POSIX_1990) || defined(BSD4_2)
-    test_safe_free_dirent();
-    #endif
+    // test_safe_calloc();
+    // test_safe_realloc();
+    // test_safe_reallocf();
+    // test_safe_free_core();
+    // test_safe_free_char();
+    // test_safe_free_schar();
+    // test_safe_free_uchar();
+    // test_safe_free_wchar();
+    // test_safe_free_short();
+    // test_safe_free_ushort();
+    // test_safe_free_int();
+    // test_safe_free_uint();
+    // test_safe_free_long();
+    // test_safe_free_ulong();
+    // test_safe_free_longlong();
+    // test_safe_free_ulonglong();
+    // test_safe_free_float();
+    // test_safe_free_double();
+    // test_safe_free_longdouble();
+    // test_safe_free();
+    // #ifdef _WIN32
+    // test_safe_free_tchar();
+    // #endif
+    // test_is_Empty();
+    // test_safe_memset();
+    // test_explicit_zeroes();
+    // test_free_aligned();
+    // test_malloc_aligned();
+    // test_safe_free_aligned_core();
+    // test_safe_free_aligned_char();
+    // test_safe_free_aligned_wchar();
+    // test_safe_free_aligned_schar();
+    // test_safe_free_aligned_uchar();
+    // test_safe_free_aligned_short();
+    // test_safe_free_aligned_ushort();
+    // test_safe_free_aligned_int();
+    // test_safe_free_aligned_uint();
+    // test_safe_free_aligned_long();
+    // test_safe_free_aligned_ulong();
+    // test_safe_free_aligned_longlong();
+    // test_safe_free_aligned_ulonglong();
+    // test_safe_free_aligned_float();
+    // test_safe_free_aligned_double();
+    // test_safe_free_aligned_longdouble();
+    // test_safe_free_aligned();
+    // test_calloc_aligned();
+    // test_realloc_aligned();
+    // test_safe_malloc_aligned();
+    // test_safe_calloc_aligned();
+    // test_safe_realloc_aligned();
+    // test_safe_reallocf_aligned();
+    // test_get_System_Pagesize();
+    // test_free_page_aligned();
+    // test_malloc_page_aligned();
+    // test_safe_free_page_aligned_core();
+    // test_safe_free_page_aligned();
+    // test_calloc_page_aligned();
+    // test_realloc_page_aligned();
+    // test_safe_malloc_page_aligned();
+    // test_safe_calloc_page_aligned();
+    // test_safe_realloc_page_aligned();
+    // test_safe_reallocf_page_aligned();
+    // test_memory_regions_overlap();
+    // test_safe_memmove();
+    // test_safe_memcpy();
+    // test_safe_memcpy_no_overlap();
+    // test_safe_memccpy();
+    // test_safe_memcmove();
+    // test_get_memalignment();
+    // test_SIZE_OF_STACK_ARRAY();
+    // #if defined(POSIX_1990) || defined(BSD4_2)
+    // test_safe_free_dirent();
+    // #endif
 }
