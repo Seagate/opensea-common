@@ -947,7 +947,7 @@ void run_memory_safety_tests(void) {
     test_safe_calloc();
     test_safe_realloc();
     test_safe_reallocf();
-    // test_safe_free_core();
+    test_safe_free_core();
     // test_safe_free_char();
     // test_safe_free_schar();
     // test_safe_free_uchar();
