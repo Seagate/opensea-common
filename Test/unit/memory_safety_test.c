@@ -944,7 +944,7 @@ static void test_SIZE_OF_STACK_ARRAY(void) {
 
 void run_memory_safety_tests(void) {
     test_safe_malloc();
-    // test_safe_calloc();
+    test_safe_calloc();
     // test_safe_realloc();
     // test_safe_reallocf();
     // test_safe_free_core();
