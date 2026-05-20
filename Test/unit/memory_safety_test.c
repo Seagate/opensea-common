@@ -958,12 +958,12 @@ void run_memory_safety_tests(void) {
     test_safe_free_uint();
     test_safe_free_long();
     test_safe_free_ulong();
-    // test_safe_free_longlong();
-    // test_safe_free_ulonglong();
-    // test_safe_free_float();
-    // test_safe_free_double();
-    // test_safe_free_longdouble();
-    // test_safe_free();
+    test_safe_free_longlong();
+    test_safe_free_ulonglong();
+    test_safe_free_float();
+    test_safe_free_double();
+    test_safe_free_longdouble();
+    test_safe_free();
     // #ifdef _WIN32
     // test_safe_free_tchar();
     // #endif
