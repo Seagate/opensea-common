@@ -540,6 +540,8 @@ static void test_safe_realloc_aligned(void) {
     size_t num_elements = 20;
 
     int* ptr = safe_calloc_aligned(num_elements, sizeof(int), 16);
+    TEST_ASSERT(ptr != NULL, "safe_calloc_aligned should return a non-null pointer for non-zero count and size");
+
     for (size_t i = 0; i < num_elements; i++) {
         ptr[i] = (int)i;
     }
@@ -560,7 +562,7 @@ static void test_safe_realloc_aligned(void) {
     new_ptr = safe_realloc_aligned(ptr, sizeof(int) * num_elements, RSIZE_MAX, 16);
     TEST_ASSERT(new_ptr == NULL, "safe_realloc_aligned should return a null pointer when size is large enough to cause overflow");
 
-    safe_free_aligned(ptr);
+    safe_free_aligned(&ptr);
 }
 
 static void test_safe_reallocf_aligned(void) {
