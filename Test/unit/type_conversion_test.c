@@ -546,7 +546,7 @@ static void test_ulong_to_sizet(void) {
     // Test with a negative value
     int negative_val = -5;
     size_t sizet_negative = ulong_to_sizet(negative_val);
-    TEST_ASSERT(sizet_negative == 18446744073709551611, "ulong_to_sizet should convert negative values to positive values");
+    TEST_ASSERT(sizet_negative == (size_t)-5, "ulong_to_sizet should convert negative values to positive values");
 }
 
 static void test_longlong_to_sizet(void) {
