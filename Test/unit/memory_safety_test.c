@@ -665,10 +665,10 @@ static void test_realloc_page_aligned(void) {
     size_t num_elements = 10;
     size_t element_size = sizeof(int);
     int* ptr = calloc_page_aligned(num_elements, element_size);
+    TEST_ASSERT(ptr != NULL, "calloc_page_aligned should return a non-null pointer for non-zero count and size");
     for (size_t i = 0; i < num_elements; i++) {
         ptr[i] = (int)i;
     }
-    TEST_ASSERT(ptr != NULL, "calloc_page_aligned should return a non-null pointer for non-zero count and size");
 
     // Reallocate to a larger size
     size_t new_num_elements = 20;
@@ -1011,8 +1011,8 @@ void run_memory_safety_tests(void) {
     test_malloc_page_aligned();
     test_safe_free_page_aligned_core();
     test_safe_free_page_aligned();
-    // test_calloc_page_aligned();
-    // test_realloc_page_aligned();
+    test_calloc_page_aligned();
+    test_realloc_page_aligned();
     // test_safe_malloc_page_aligned();
     // test_safe_calloc_page_aligned();
     // test_safe_realloc_page_aligned();
