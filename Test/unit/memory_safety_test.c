@@ -619,25 +619,25 @@ static void test_malloc_page_aligned(void) {
 }
 
 static void test_safe_free_page_aligned_core(void) {
-    char* ptr = malloc_aligned(100, 16);
-    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    char* ptr = malloc_page_aligned(100);
+    TEST_ASSERT(ptr != NULL, "malloc_page_aligned should return a non-null pointer for a non-zero size");
     safe_free_page_aligned_core((void**)&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_page_aligned_core should set the pointer to NULL after freeing");
 }
 
 static void test_safe_free_page_aligned(void) {
-    char* ptr = malloc_aligned(100, 16);
-    TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    char* ptr = malloc_page_aligned(100);
+    TEST_ASSERT(ptr != NULL, "malloc_page_aligned should return a non-null pointer for a non-zero size");
     safe_free_page_aligned(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_page_aligned should set the char pointer to NULL after freeing");
 
-    double* ptr2 = malloc_aligned(100, 16);
-    TEST_ASSERT(ptr2 != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    double* ptr2 = malloc_page_aligned(100);
+    TEST_ASSERT(ptr2 != NULL, "malloc_page_aligned should return a non-null pointer for a non-zero size");
     safe_free_page_aligned(&ptr2);  
     TEST_ASSERT(ptr2 == NULL, "safe_free_page_aligned should set the double pointer to NULL after freeing");
 
-    float* ptr3 = malloc_aligned(100, 16);
-    TEST_ASSERT(ptr3 != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
+    float* ptr3 = malloc_page_aligned(100);
+    TEST_ASSERT(ptr3 != NULL, "malloc_page_aligned should return a non-null pointer for a non-zero size");
     safe_free_page_aligned(&ptr3);
     TEST_ASSERT(ptr3 == NULL, "safe_free_page_aligned should set the float pointer to NULL after freeing");
 }
@@ -1008,9 +1008,9 @@ void run_memory_safety_tests(void) {
     test_safe_reallocf_aligned();
     test_get_System_Pagesize();
     test_free_page_aligned();
-    // test_malloc_page_aligned();
-    // test_safe_free_page_aligned_core();
-    // test_safe_free_page_aligned();
+    test_malloc_page_aligned();
+    test_safe_free_page_aligned_core();
+    test_safe_free_page_aligned();
     // test_calloc_page_aligned();
     // test_realloc_page_aligned();
     // test_safe_malloc_page_aligned();
