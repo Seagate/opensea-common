@@ -1001,7 +1001,7 @@ void run_memory_safety_tests(void) {
     test_realloc_aligned();
     test_safe_malloc_aligned();
     test_safe_calloc_aligned();
-    // test_safe_realloc_aligned();
+    test_safe_realloc_aligned();
     // test_safe_reallocf_aligned();
     // test_get_System_Pagesize();
     // test_free_page_aligned();
