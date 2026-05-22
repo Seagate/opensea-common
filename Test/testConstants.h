@@ -131,6 +131,6 @@
 #define NIBBLE1             0xE
 #define MIN_VALUE           (-1)
 #define EPSILON             1e-5
-#define SLEEP_MICROSECONDS  5000000
+#define SLEEP_MICROSECONDS  1000
 
 #endif // TEST_CONSTANTS_H 
