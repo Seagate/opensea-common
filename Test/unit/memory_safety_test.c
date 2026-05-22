@@ -855,26 +855,31 @@ static void test_safe_memccpy(void) {
     TEST_ASSERT(strncmp(dest, src, 3) == 0, "safe_memccpy should copy only the specified count of bytes when the count is less than the position of the specified character");
 
     // Test when dest is NULL - calls abort handler
+    errno = 0;
     result = safe_memccpy(NULL, sizeof(dest), src, 'o', sizeof(src));
     TEST_ASSERT(errno == EINVAL, "safe_memccpy should set errno to EINVAL when dest is NULL");
     TEST_ASSERT(result == errno, "safe_memccpy should return errno when dest is NULL");
 
     // Test when src is NULL - calls abort handler
+    errno = 0;
     result = safe_memccpy(dest, sizeof(dest), NULL, 'o', sizeof(src));
     TEST_ASSERT(errno == EINVAL, "safe_memccpy should set errno to EINVAL when src is NULL");
     TEST_ASSERT(result == errno, "safe_memccpy should return errno when src is NULL");
 
     // Test when destsz > RSIZE_MAX - calls abort handler
+    errno = 0;
     result = safe_memccpy(dest, RSIZE_MAX + 1, src, 'o', sizeof(src));
     TEST_ASSERT(errno == ERANGE, "safe_memccpy should set errno to ERANGE when destsz is greater than RSIZE_MAX");
     TEST_ASSERT(result == errno, "safe_memccpy should return errno when destsz is greater than RSIZE_MAX");
 
     // Test when count > RSIZE_MAX - calls abort handler
+    errno = 0;
     result = safe_memccpy(dest, sizeof(dest), src, 'o', RSIZE_MAX + 1);
     TEST_ASSERT(errno == ERANGE, "safe_memccpy should set errno to ERANGE when count is greater than RSIZE_MAX");
     TEST_ASSERT(result == errno, "safe_memccpy should return errno when count is greater than RSIZE_MAX");
 
     // Test when count > destsz - calls abort handler
+    errno = 0;
     result = safe_memccpy(dest, sizeof(dest), src, 'o', sizeof(dest) + 1);
     TEST_ASSERT(errno == ERANGE, "safe_memccpy should set errno to ERANGE when count is greater than destsz");
     TEST_ASSERT(result == errno, "safe_memccpy should return errno when count is greater than destsz");
