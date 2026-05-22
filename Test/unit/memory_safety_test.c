@@ -911,31 +911,37 @@ static void test_safe_memcmove(void) {
     TEST_ASSERT(strncmp(dest, src, 3) == 0, "safe_memcmove should copy only the specified count of bytes when the count is less than the position of the specified character");
 
     // Test when dest is NULL - calls abort handler
+    errno = 0;
     result = safe_memcmove(NULL, sizeof(dest), src, 'o', sizeof(src));
     TEST_ASSERT(errno == EINVAL, "safe_memcmove should set errno to EINVAL when dest is NULL");
     TEST_ASSERT(result == errno, "safe_memcmove should return errno when dest is NULL");
 
     // Test when src is NULL - calls abort handler
+    errno = 0;
     result = safe_memcmove(dest, sizeof(dest), NULL, 'o', sizeof(src));
     TEST_ASSERT(errno == EINVAL, "safe_memcmove should set errno to EINVAL when src is NULL");
     TEST_ASSERT(result == errno, "safe_memcmove should return errno when src is NULL");
 
     // Test when destsz > RSIZE_MAX - calls abort handler
+    errno = 0;
     result = safe_memcmove(dest, RSIZE_MAX + 1, src, 'o', sizeof(src));
     TEST_ASSERT(errno == ERANGE, "safe_memcmove should set errno to ERANGE when destsz is greater than RSIZE_MAX");
     TEST_ASSERT(result == errno, "safe_memcmove should return errno when destsz is greater than RSIZE_MAX");
 
     // Test when count > RSIZE_MAX - calls abort handler
+    errno = 0;
     result = safe_memcmove(dest, sizeof(dest), src, 'o', RSIZE_MAX + 1);
     TEST_ASSERT(errno == ERANGE, "safe_memcmove should set errno to ERANGE when count is greater than RSIZE_MAX");
     TEST_ASSERT(result == errno, "safe_memcmove should return errno when count is greater than RSIZE_MAX");
 
     // Test when count > destsz - calls abort handler
+    errno = 0;
     result = safe_memcmove(dest, sizeof(dest), src, 'o', sizeof(dest) + 1);
     TEST_ASSERT(errno == ERANGE, "safe_memcmove should set errno to ERANGE when count is greater than destsz");
     TEST_ASSERT(result == errno, "safe_memcmove should return errno when count is greater than destsz");
 
     // Test when src = dest - calls abort handler
+    errno = 0;
     char buffer[20] = "Hello, World!";
     result = safe_memcmove(buffer, sizeof(buffer), buffer, 'o', sizeof(buffer));
     TEST_ASSERT(errno == EINVAL, "safe_memcmove should set errno to EINVAL when src and dest are the same");
@@ -947,7 +953,7 @@ static void test_get_memalignment(void) {
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     size_t alignment = get_memalignment(ptr);
     TEST_ASSERT(alignment > 0, "get_memalignment should return a positive alignment value");
-    free(ptr);
+    safe_free_aligned(&ptr);
 }
 
 static void test_SIZE_OF_STACK_ARRAY(void) {
@@ -1035,8 +1041,8 @@ void run_memory_safety_tests(void) {
     test_safe_memcpy();
     test_safe_memcpy_no_overlap();
     test_safe_memccpy();
-    // test_safe_memcmove();
-    // test_get_memalignment();
+    test_safe_memcmove();
+    test_get_memalignment();
     // test_SIZE_OF_STACK_ARRAY();
     // #if defined(POSIX_1990) || defined(BSD4_2)
     // test_safe_free_dirent();
