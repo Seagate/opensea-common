@@ -491,8 +491,6 @@ static void test_realloc_aligned(void) {
     // Test when size is zero, should free the original block and return null
     new_ptr = realloc_aligned(new_ptr, element_size * new_num_elements, 0, alignment);
     TEST_ASSERT(new_ptr == NULL, "realloc_aligned should return a null pointer when reallocating to zero");
-
-    free_aligned(new_ptr);
 }
 
 static void test_safe_malloc_aligned(void) {
@@ -995,8 +993,8 @@ void run_memory_safety_tests(void) {
     test_safe_free_aligned_double();
     test_safe_free_aligned_longdouble();
     test_safe_free_aligned();
-    // test_calloc_aligned();
-    // test_realloc_aligned();
+    test_calloc_aligned();
+    test_realloc_aligned();
     // test_safe_malloc_aligned();
     // test_safe_calloc_aligned();
     // test_safe_realloc_aligned();
