@@ -132,5 +132,6 @@
 #define MIN_VALUE           (-1)
 #define EPSILON             1e-5
 #define SLEEP_MICROSECONDS  1000
+#define SLEEP_SECONDS       1
 
 #endif // TEST_CONSTANTS_H 

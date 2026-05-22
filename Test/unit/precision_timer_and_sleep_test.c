@@ -42,10 +42,10 @@ static void test_get_Seconds(void) {
     uint32_t threshold = UINT32_MAX / 1000;
     errno_t err = sleepsec(threshold + 1);
     TEST_ASSERT(err == EOVERFLOW, "sleepsec should return EOVERFLOW when sleep time exceeds maximum");
-    sleepsec(SLEEP_MICROSECONDS / 1000000); // Convert microseconds to seconds
+    sleepsec(SLEEP_SECONDS);
     stop_Timer(&timer);
     double elapsedSeconds = get_Seconds(timer);
-    TEST_ASSERT(elapsedSeconds >= (SLEEP_MICROSECONDS / 1000000.0), "Elapsed seconds should be at least the sleep time in seconds");
+    TEST_ASSERT(elapsedSeconds >= SLEEP_SECONDS, "Elapsed seconds should be at least the sleep time in seconds");
 }
 
 void run_precision_timer_and_sleep_tests(void) {
@@ -53,5 +53,5 @@ void run_precision_timer_and_sleep_tests(void) {
     test_get_Nano_Seconds();
     test_get_Micro_Seconds();
     test_get_Milli_Seconds();
-    // test_get_Seconds();
+    test_get_Seconds();
 }
