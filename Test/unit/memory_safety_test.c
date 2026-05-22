@@ -994,7 +994,7 @@ void run_memory_safety_tests(void) {
     test_safe_free_aligned_float();
     test_safe_free_aligned_double();
     test_safe_free_aligned_longdouble();
-    // test_safe_free_aligned();
+    test_safe_free_aligned();
     // test_calloc_aligned();
     // test_realloc_aligned();
     // test_safe_malloc_aligned();
