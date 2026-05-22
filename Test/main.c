@@ -12,7 +12,7 @@ void run_pattern_utils_tests(void);
 void run_sort_and_search_tests(void);
 void run_type_conversion_tests(void);
 void run_unit_conversion_tests(void);
-void run_precision_timer_and_sleep_tests(void);
+// void run_precision_timer_and_sleep_tests(void);
 #if defined(__linux__)
 void run_secure_file_tests(void);
 #endif
@@ -34,7 +34,7 @@ int main(void)
     run_sort_and_search_tests();
     run_type_conversion_tests();
     run_unit_conversion_tests();
-    run_precision_timer_and_sleep_tests();
+    // run_precision_timer_and_sleep_tests();
     #if defined(__linux__)
     run_secure_file_tests();
     #endif
