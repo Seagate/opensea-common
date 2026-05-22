@@ -976,12 +976,12 @@ void run_memory_safety_tests(void) {
     test_is_Empty();
     test_safe_memset();
     test_explicit_zeroes();
-    // test_free_aligned();
-    // test_malloc_aligned();
-    // test_safe_free_aligned_core();
-    // test_safe_free_aligned_char();
-    // test_safe_free_aligned_wchar();
-    // test_safe_free_aligned_schar();
+    test_free_aligned();
+    test_malloc_aligned();
+    test_safe_free_aligned_core();
+    test_safe_free_aligned_char();
+    test_safe_free_aligned_wchar();
+    test_safe_free_aligned_schar();
     // test_safe_free_aligned_uchar();
     // test_safe_free_aligned_short();
     // test_safe_free_aligned_ushort();
