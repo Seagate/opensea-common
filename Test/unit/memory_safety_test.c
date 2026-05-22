@@ -982,12 +982,12 @@ void run_memory_safety_tests(void) {
     test_safe_free_aligned_char();
     test_safe_free_aligned_wchar();
     test_safe_free_aligned_schar();
-    // test_safe_free_aligned_uchar();
-    // test_safe_free_aligned_short();
-    // test_safe_free_aligned_ushort();
-    // test_safe_free_aligned_int();
-    // test_safe_free_aligned_uint();
-    // test_safe_free_aligned_long();
+    test_safe_free_aligned_uchar();
+    test_safe_free_aligned_short();
+    test_safe_free_aligned_ushort();
+    test_safe_free_aligned_int();
+    test_safe_free_aligned_uint();
+    test_safe_free_aligned_long();
     // test_safe_free_aligned_ulong();
     // test_safe_free_aligned_longlong();
     // test_safe_free_aligned_ulonglong();
