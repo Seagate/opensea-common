@@ -694,8 +694,6 @@ static void test_get_Decimal_From_4_byte_Float(void) {
     TEST_ASSERT(result == 3.0, "Should convert float 3.0 correctly");
 }
 
-
-
 void run_type_conversion_tests(void) {
     test_C_CAST();
     test_M_STATIC_CAST();   
