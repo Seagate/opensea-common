@@ -1017,8 +1017,8 @@ void run_memory_safety_tests(void) {
     test_safe_calloc_page_aligned();
     test_safe_realloc_page_aligned();
     test_safe_reallocf_page_aligned();
-    // test_memory_regions_overlap();
-    // test_safe_memmove();
+    test_memory_regions_overlap();
+    test_safe_memmove();
     // test_safe_memcpy();
     // test_safe_memcpy_no_overlap();
     // test_safe_memccpy();
