@@ -270,22 +270,28 @@ static void test_safe_memset(void) {
         TEST_ASSERT(buffer[i] == '3', "safe_memset should set all bytes in the buffer to '3'");
     }
 
+    errno = 0;
+
     // Test when destsz = 0 and count = 0
     TEST_ASSERT(safe_memset(buffer, 0, '3', 0) == 0, "safe_memset should return an error code when destsz is zero");
 
     // Test when dest is NULL
+    errno = 0;
     TEST_ASSERT(safe_memset(NULL, sizeof(buffer), '3', sizeof(buffer)) != 0, "safe_memset should return an error code when dest is NULL");
     TEST_ASSERT(errno == EINVAL, "safe_memset should set errno to EINVAL when dest is NULL");
 
     // Test when destsz > RSIZE_MAX
+    errno = 0;
     TEST_ASSERT(safe_memset(buffer, RSIZE_MAX + 1, '3', sizeof(buffer)) != 0, "safe_memset should return an error code when destsz is greater than RSIZE_MAX");
     TEST_ASSERT(errno == ERANGE, "safe_memset should set errno to ERANGE when destsz is greater than RSIZE_MAX");
 
     // Test when count > RSIZE_MAX
+    errno = 0;
     TEST_ASSERT(safe_memset(buffer, sizeof(buffer), '3', RSIZE_MAX + 1) != 0, "safe_memset should return an error code when count is greater than RSIZE_MAX");
     TEST_ASSERT(errno == ERANGE, "safe_memset should set errno to ERANGE when count is greater than RSIZE_MAX");
 
     // Test when count > destsz
+    errno = 0;
     TEST_ASSERT(safe_memset(buffer, sizeof(buffer), '3', sizeof(buffer) + 1) != 0, "safe_memset should return an error code when count is greater than destsz");
     TEST_ASSERT(errno == ERANGE, "safe_memset should set errno to ERANGE when count is greater than destsz");
 }
@@ -968,7 +974,7 @@ void run_memory_safety_tests(void) {
     test_safe_free_tchar();
     #endif
     test_is_Empty();
-    // test_safe_memset();
+    test_safe_memset();
     // test_explicit_zeroes();
     // test_free_aligned();
     // test_malloc_aligned();
