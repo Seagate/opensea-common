@@ -1013,10 +1013,10 @@ void run_memory_safety_tests(void) {
     test_safe_free_page_aligned();
     test_calloc_page_aligned();
     test_realloc_page_aligned();
-    // test_safe_malloc_page_aligned();
-    // test_safe_calloc_page_aligned();
-    // test_safe_realloc_page_aligned();
-    // test_safe_reallocf_page_aligned();
+    test_safe_malloc_page_aligned();
+    test_safe_calloc_page_aligned();
+    test_safe_realloc_page_aligned();
+    test_safe_reallocf_page_aligned();
     // test_memory_regions_overlap();
     // test_safe_memmove();
     // test_safe_memcpy();
