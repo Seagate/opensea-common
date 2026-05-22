@@ -975,7 +975,7 @@ void run_memory_safety_tests(void) {
     #endif
     test_is_Empty();
     test_safe_memset();
-    // test_explicit_zeroes();
+    test_explicit_zeroes();
     // test_free_aligned();
     // test_malloc_aligned();
     // test_safe_free_aligned_core();
