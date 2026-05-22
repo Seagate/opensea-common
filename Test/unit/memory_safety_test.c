@@ -988,12 +988,12 @@ void run_memory_safety_tests(void) {
     test_safe_free_aligned_int();
     test_safe_free_aligned_uint();
     test_safe_free_aligned_long();
-    // test_safe_free_aligned_ulong();
-    // test_safe_free_aligned_longlong();
-    // test_safe_free_aligned_ulonglong();
-    // test_safe_free_aligned_float();
-    // test_safe_free_aligned_double();
-    // test_safe_free_aligned_longdouble();
+    test_safe_free_aligned_ulong();
+    test_safe_free_aligned_longlong();
+    test_safe_free_aligned_ulonglong();
+    test_safe_free_aligned_float();
+    test_safe_free_aligned_double();
+    test_safe_free_aligned_longdouble();
     // test_safe_free_aligned();
     // test_calloc_aligned();
     // test_realloc_aligned();
