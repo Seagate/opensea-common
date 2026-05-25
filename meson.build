@@ -458,7 +458,6 @@ endif
 genericSelectionTestResult = c.compiles(gernericSelectionTest, name: 'Generic Selection Support', args: genericargs)
 if genericSelectionTestResult == true
     global_cpp_args += ['-DHAVE_C11_GENERIC_SELECTION']
-    add_project_arguments('-DHAVE_C11_GENERIC_SELECTION', language: 'c')
 endif
 
 constexprTest = ' int main (void) { constexpr int i = 50; int j = 0; return j / i; }'
