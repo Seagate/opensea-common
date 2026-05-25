@@ -29,11 +29,11 @@ jobs:
             }
 
           - {
-              name: "Windows MinGW",
+              name: "Windows MSVC",
               os: windows-latest,
-              cc: "gcc",
-              cxx: "g++",
-              meson_opts: "-Db_coverage=true",
+              cc: "cl",
+              cxx: "cl",
+              meson_opts: "-Db_vscrt=static_from_buildtype -Db_coverage=true",
               buildtype: "debug"
             }
 
@@ -60,17 +60,15 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y expect lcov gcc g++
 
-    # Windows dependencies
-    - name: Install dependencies (Windows)
+    - name: Setup MSVC
       if: runner.os == 'Windows'
-      run: |
-        choco install mingw -y
+      uses: ilammy/msvc-dev-cmd@v1
 
     - name: Configure Meson
       shell: bash
       run: |
-        export CC=${{ matrix.config.cc }}
-        export CXX=${{ matrix.config.cxx }}
+        export CC="${{ matrix.config.cc }}"
+        export CXX="${{ matrix.config.cxx }}"
 
         if [ "$RUNNER_OS" = "Linux" ]; then
           export CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
@@ -89,7 +87,10 @@ jobs:
     - name: Run test
       shell: bash
       run: |
-        ASAN_OPTIONS=allocator_may_return_null=1:detect_leaks=1 \
+        if [ "$RUNNER_OS" = "Linux" ]; then
+          export ASAN_OPTIONS=allocator_may_return_null=1:detect_leaks=1
+        fi
+
         meson test -C Meson/Executables --verbose
 
     - name: Show Meson test log on failure
