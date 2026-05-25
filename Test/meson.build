@@ -20,6 +20,7 @@ e = executable(
     'opensea-common-tests',
     test_sources,
     dependencies: [opensea_common_dep],
+    c_args: ['-DHAVE_C11_GENERIC_SELECTION'],
 )
 
 test('opensea-common-unit-tests', e)
