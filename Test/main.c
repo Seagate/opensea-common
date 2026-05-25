@@ -1,5 +1,5 @@
-#include<stdio.h>
-#include<../include/constraint_handling.h>
+#include <stdio.h>
+#include "constraint_handling.h"
 #include "framework/test_framework.h"
 
 // Forward declarations of test functions
