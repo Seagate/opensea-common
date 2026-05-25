@@ -10,11 +10,32 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
 
     strategy:
+      fail-fast: false
+
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        config:
+
+          - {
+              name: "Linux GCC",
+              os: ubuntu-latest,
+              cc: "gcc",
+              cxx: "g++",
+              meson_opts: "-Db_coverage=true",
+              buildtype: "debug"
+            }
+
+          - {
+              name: "Windows MinGW",
+              os: windows-latest,
+              cc: "gcc",
+              cxx: "g++",
+              meson_opts: "-Db_coverage=true",
+              buildtype: "debug"
+            }
 
     steps:
     - name: Checkout code
@@ -37,7 +58,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install -y expect lcov gcc
+        sudo apt-get install -y expect lcov gcc g++
 
     # Windows dependencies
     - name: Install dependencies (Windows)
@@ -45,23 +66,23 @@ jobs:
       run: |
         choco install mingw -y
 
-    - name: Configure Meson (Linux)
-      if: runner.os == 'Linux'
+    - name: Configure Meson
       shell: bash
       run: |
-        CFLAGS="-fsanitize=address -fno-omit-frame-pointer" \
-        LDFLAGS="-fsanitize=address" \
-        meson setup Meson/Executables --buildtype=debug -Db_coverage=true
+        export CC=${{ matrix.config.cc }}
+        export CXX=${{ matrix.config.cxx }}
 
-    - name: Configure Meson (Windows)
-      if: runner.os == 'Windows'
-      shell: bash
-      run: |
-        export CC=gcc
-        export CXX=g++
-        meson setup Meson/Executables --buildtype=debug -Db_coverage=true
+        if [ "$RUNNER_OS" = "Linux" ]; then
+          export CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
+          export LDFLAGS="-fsanitize=address"
+        fi
+
+        meson setup Meson/Executables \
+          --buildtype=${{ matrix.config.buildtype }} \
+          ${{ matrix.config.meson_opts }}
 
     - name: Build with Meson
+      shell: bash
       run: |
         meson compile -C Meson/Executables
     
