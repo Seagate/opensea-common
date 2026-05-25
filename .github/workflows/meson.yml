@@ -64,33 +64,55 @@ jobs:
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
 
-    - name: Configure Meson
+    - name: Configure Meson (Linux)
+      if: runner.os == 'Linux'
       shell: bash
       run: |
         export CC="${{ matrix.config.cc }}"
         export CXX="${{ matrix.config.cxx }}"
 
-        if [ "$RUNNER_OS" = "Linux" ]; then
-          export CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
-          export LDFLAGS="-fsanitize=address"
-        fi
+        export CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
+        export LDFLAGS="-fsanitize=address"
 
         meson setup Meson/Executables \
           --buildtype=${{ matrix.config.buildtype }} \
           ${{ matrix.config.meson_opts }}
 
-    - name: Build with Meson
+    - name: Configure Meson (Windows MSVC)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        $env:CC="${{ matrix.config.cc }}"
+        $env:CXX="${{ matrix.config.cxx }}"
+
+        meson setup Meson/Executables `
+          --buildtype=${{ matrix.config.buildtype }} `
+          ${{ matrix.config.meson_opts }}
+
+    - name: Build with Meson (Linux)
+      if: runner.os == 'Linux'
       shell: bash
       run: |
         meson compile -C Meson/Executables
+
+    - name: Build with Meson (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        meson compile -C Meson/Executables
     
-    - name: Run test
+    - name: Run test (Linux)
+      if: runner.os == 'Linux'
       shell: bash
       run: |
-        if [ "$RUNNER_OS" = "Linux" ]; then
-          export ASAN_OPTIONS=allocator_may_return_null=1:detect_leaks=1
-        fi
+        export ASAN_OPTIONS=allocator_may_return_null=1:detect_leaks=1
 
+        meson test -C Meson/Executables --verbose
+
+    - name: Run test (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
         meson test -C Meson/Executables --verbose
 
     - name: Show Meson test log on failure
