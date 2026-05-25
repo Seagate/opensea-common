@@ -1,7 +1,7 @@
-#include"../framework/test_framework.h"
-#include"../../include/precision_timer.h"
-#include"../../include/sleep.h"
-#include"../testConstants.h"
+#include "test_framework.h"
+#include "precision_timer.h"
+#include "sleep.h"
+#include "testConstants.h"
 
 DECLARE_SEATIMER(timer);
 

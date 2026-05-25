@@ -1,6 +1,6 @@
-#include"../framework/test_framework.h"
-#include"../../include/secure_file.h"
-#include"../testConstants.h"
+#include "test_framework.h"
+#include "secure_file.h"
+#include "testConstants.h"
 #include <sys/stat.h>
 #include <stdlib.h>
 

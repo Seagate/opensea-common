@@ -1,7 +1,7 @@
-#include"../framework/test_framework.h"
-#include"../../include/math_utils.h"
+#include "test_framework.h"
+#include "math_utils.h"
 #include <math.h>
-#include"../testConstants.h"
+#include "testConstants.h"
 
 static void test_M_Min(void) {
     TEST_ASSERT_EQ(M_Min(INT_MIN, INT_MAX), INT_MIN, "M_Min of INT_MIN and INT_MAX");

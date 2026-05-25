@@ -1,7 +1,7 @@
-#include "../framework/test_framework.h"
-#include "../../include/bit_manip.h"
+#include "test_framework.h"
+#include "bit_manip.h"
 #include <math.h>
-#include "../testConstants.h"
+#include "testConstants.h"
 
 static void test_get_DWord0(void) {
     TEST_ASSERT_EQ(get_DWord0(SERIAL_NUM), LOWER4BYTE, "get lower 32 bits of uint64_t");

@@ -1,6 +1,6 @@
-#include"../framework/test_framework.h"
-#include"../../include/sort_and_search.h"
-#include"../testConstants.h"
+#include "test_framework.h"
+#include "sort_and_search.h"
+#include "testConstants.h"
 #include <string.h>
 #include <ctype.h>
 

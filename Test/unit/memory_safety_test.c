@@ -1,6 +1,6 @@
-#include"../framework/test_framework.h"
-#include"../../include/io_utils.h"
-#include"../testConstants.h"
+#include "test_framework.h"
+#include "io_utils.h"
+#include "testConstants.h"
 
 static void test_safe_malloc(void) {
     void* ptr = safe_malloc(100);

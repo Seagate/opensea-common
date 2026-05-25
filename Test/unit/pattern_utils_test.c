@@ -1,6 +1,6 @@
-#include"../framework/test_framework.h"
-#include"../../include/pattern_utils.h"
-#include"../testConstants.h"
+#include "test_framework.h"
+#include "pattern_utils.h"
+#include "testConstants.h"
 
 static void test_fill_Random_Pattern_In_Buffer(void) {
     // Test with valid parameters

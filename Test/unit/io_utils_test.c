@@ -1,7 +1,7 @@
-#include"../framework/test_framework.h"
-#include"../../include/io_utils.h"
-#include"../../include/pattern_utils.h"
-#include"../testConstants.h"
+#include "test_framework.h"
+#include "io_utils.h"
+#include "pattern_utils.h"
+#include "testConstants.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>

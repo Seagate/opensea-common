@@ -1,7 +1,7 @@
-#include"../framework/test_framework.h"
-#include"../../include/string_utils.h"
-#include"../testConstants.h"
-#include"../../include/memory_safety.h"
+#include "test_framework.h"
+#include "string_utils.h"
+#include "testConstants.h"
+#include "memory_safety.h"
 
 static void test_strcasecmp(void) {
     TEST_ASSERT_EQ(strcasecmp("Test", "test"), 0, "Case insensitive strings are equal");

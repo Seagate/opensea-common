@@ -550,7 +550,7 @@ endif
 
 m_dep = c.find_library('m', required: false)
 
-incdir = include_directories('include')
+incdir = include_directories('include', 'Test', 'Test/framework',)
 
 opensea_common_lib = static_library(
     'opensea-common',
