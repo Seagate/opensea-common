@@ -29,6 +29,15 @@ jobs:
             }
 
           - {
+              name: "Windows MinGW",
+              os: windows-latest,
+              cc: "gcc",
+              cxx: "g++",
+              meson_opts: "-Db_coverage=true",
+              buildtype: "debug"
+            }
+
+          - {
               name: "Windows MSVC",
               os: windows-latest,
               cc: "cl",
@@ -60,6 +69,13 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y expect lcov gcc g++
 
+    # Windows dependencies
+    - name: Install dependencies (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        choco install mingw -y
+
     - name: Setup MSVC
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
@@ -78,7 +94,7 @@ jobs:
           --buildtype=${{ matrix.config.buildtype }} \
           ${{ matrix.config.meson_opts }}
 
-    - name: Configure Meson (Windows MSVC)
+    - name: Configure Meson (Windows)
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
