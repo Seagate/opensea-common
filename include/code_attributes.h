@@ -1071,7 +1071,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 //! \note Can be used to check for M_NULLPTR for void* only like myvoidptr == M_NULLPTR
 //! \note To check for other types of null pointers, such as a string, do either (!strptr) or in C23
 //! constexpr const char* nullstr = M_NULLPTR; strptr == nullstr
-#if !defined(DISABLE_ATTRIBUTES)
+#if !defined(DISABLE_ATTRIBUTES) && !defined(NO_DIAGNOSE_IF_ATTR)
 #    if defined(DETECT_STD_ATTR_CHECK)
 #        if DETECT_STD_ATTR_QUAL(clang::diagnose_if)
 #            define M_DIAGNOSE_IF(condition, message, level) [[clang::diagnose_if((condition), message, level)]]
@@ -1090,7 +1090,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #endif
 
 #if !defined(M_DIAGNOSE_IF)
-#    define M_DIAGNOSE_IF(condition, message, level /*DIAGNOSE_IF_NOT_SUPPORTED*/)
+#    define M_DIAGNOSE_IF(condition, message, level) /* DIAGNOSE_IF_NOT_SUPPORTED */
 #endif
 
 //! \def M_DIAG_WARNING(condition, message)
