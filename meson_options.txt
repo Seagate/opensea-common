@@ -106,3 +106,13 @@ option('constraint-handler',
         'a compiler warning if the return value of such a function is not checked. The abortnd' +
         'option keeps the abort handler in place, but allows setting the nodiscard attribute to assist' +
         'developers in identifying and fixing constraint violations without immediately terminating the program.')
+
+option(
+  'diagnose-if-attr',
+  type : 'feature',
+  value : 'enabled',
+  description : 'The clang diagnose_if attribute allows defining custom diagnostics to catch common error' +
+                'conditions using a function at compile time. Disabling this option prevents this from triggering' +
+                'an error or a warning condition and allow compiling past these checks.' +
+                'This can be useful to disable for testing purposes, but it is recommended this is left enabled.'
+)

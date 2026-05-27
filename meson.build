@@ -320,6 +320,10 @@ elif get_option('constraint-handler') == 'warn'
     global_cpp_args += ['-DDEFAULT_CONSTRAINT_HANDLER_WARN']
 endif
 
+if get_option('diagnose-if-attr').disabled()
+    global_cpp_args += ['-DNO_DIAGNOSE_IF_ATTR']
+endif
+
 src_files = [
     'src/bit_manip.c',
     'src/constraint_handling.c',
