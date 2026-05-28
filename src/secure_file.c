@@ -1604,7 +1604,7 @@ eReturnValues create_And_Open_Secure_Log_File(const char* M_NONNULL             
     *file = secure_Open_File(logGeneratedName, "wxb", M_NULLPTR, M_NULLPTR, M_NULLPTR);
     // Step 4: return error code depending on what happened from attempting to
     // do all of these steps
-    if (file == M_NULLPTR)
+    if (*file == M_NULLPTR)
     {
         result = M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE);
     }
