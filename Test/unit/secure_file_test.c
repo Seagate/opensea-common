@@ -1,6 +1,7 @@
 #include "test_framework.h"
 #include "secure_file.h"
 #include "testConstants.h"
+#include "memory_safety.h"
 #include <sys/stat.h>
 #include <stdlib.h>
 
