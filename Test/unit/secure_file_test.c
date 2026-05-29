@@ -554,7 +554,7 @@ static void test_secure_Remove_File(void) {
     TEST_ASSERT(!os_File_Exists(filename), "File should be removed");
 
     secure_Close_File(fileInfo);
-    safe_free(&fileInfo);
+    free_Secure_File_Info(&fileInfo);
 }
 
 static void test_secure_Delete_File_By_Name(void) {
