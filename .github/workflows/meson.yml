@@ -37,23 +37,23 @@ jobs:
           #   buildtype: "debug"
           # }
 
-          - {
-              name: "Windows MinGW",
-              os: windows-latest,
-              cc: "gcc",
-              cxx: "g++",
-              meson_opts: "-Db_coverage=true -Dc_std=c23",
-              buildtype: "debug"
-            }
-
           # - {
-          #     name: "Windows MSVC",
+          #     name: "Windows MinGW",
           #     os: windows-latest,
-          #     cc: "cl",
-          #     cxx: "cl",
-          #     meson_opts: "-Db_vscrt=static_from_buildtype -Db_coverage=true",
+          #     cc: "gcc",
+          #     cxx: "g++",
+          #     meson_opts: "-Db_coverage=true -Dc_std=c23",
           #     buildtype: "debug"
           #   }
+
+          - {
+              name: "Windows MSVC",
+              os: windows-latest,
+              cc: "cl",
+              cxx: "cl",
+              meson_opts: "-Db_vscrt=static_from_buildtype -Db_coverage=true",
+              buildtype: "debug"
+            }
 
     steps:
     - name: Checkout code
@@ -85,9 +85,9 @@ jobs:
       run: |
         choco install mingw -y
 
-    # - name: Setup MSVC
-    #   if: runner.os == 'Windows'
-    #   uses: ilammy/msvc-dev-cmd@v1
+    - name: Setup MSVC
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
 
     - name: Configure Meson (Linux)
       if: runner.os == 'Linux'
