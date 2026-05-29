@@ -471,6 +471,10 @@ if constexprTestResult == true
     global_cpp_args += ['-DHAVE_CONSTEXPR']
 endif
 
+if c.has_type('nullptr_t', prefix: '#include <stddef.h>')
+    global_cpp_args += ['-DHAVE_NULLPTR_T']
+endif
+
 
 # Test support for __has_c_attribute for namespaced attribtues (compiler unique)
 # Some compilers do not support this properly and throw errors about using the : symbol
