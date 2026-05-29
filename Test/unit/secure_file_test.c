@@ -227,18 +227,17 @@ static void test_secure_Open_File(void) {
     TEST_ASSERT(fileInfo5->error == SEC_FILE_INVALID_FILE_ATTRIBUTES, "Should return invalid file attributes error when attributes do not match");
     free_Secure_File_Info(&fileInfo5);
 
-    // Test for invalid file unique ID - error while fetching realID as os_Get_File_Unique_Identifying_Information has a bug, not resolved yet.
-    // const char* filename6 = "test_secure_open_invalid_unique_id.txt";
-    // FILE* f6 = fopen(filename6, "w");
-    // TEST_ASSERT(f6 != NULL, "File created successfully");
-    // fileUniqueIDInfo* realID = os_Get_File_Unique_Identifying_Information(f6);
-    // TEST_ASSERT(realID != NULL, "Real unique ID retrieved successfully");
-    // fileUniqueIDInfo wrongID = *realID;
-    // wrongID.inode += 1;
-    // fclose(f6);
-    // secureFileInfo* fileInfo6 = secure_Open_File(filename6, "r", extList, NULL, &wrongID);
-    // TEST_ASSERT(fileInfo6->error == SEC_FILE_INVALID_FILE_UNIQUE_ID, "Should return invalid file unique ID error when unique ID does not match");
-    // free_Secure_File_Info(&fileInfo6);
+    const char* filename6 = "test_secure_open_invalid_unique_id.txt";
+    FILE* f6 = fopen(filename6, "w");
+    TEST_ASSERT(f6 != NULL, "File created successfully");
+    fileUniqueIDInfo* realID = os_Get_File_Unique_Identifying_Information(f6);
+    TEST_ASSERT(realID != NULL, "Real unique ID retrieved successfully");
+    fileUniqueIDInfo wrongID = *realID;
+    wrongID.inode += 1;
+    fclose(f6);
+    secureFileInfo* fileInfo6 = secure_Open_File(filename6, "r", extList, NULL, &wrongID);
+    TEST_ASSERT(fileInfo6->error == SEC_FILE_INVALID_FILE_UNIQUE_ID, "Should return invalid file unique ID error when unique ID does not match");
+    free_Secure_File_Info(&fileInfo6);
 
     // Test when filename is NULL
     secureFileInfo* fileInfoNULL = secure_Open_File(NULL, "r", extList, NULL, NULL);
