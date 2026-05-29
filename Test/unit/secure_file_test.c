@@ -238,7 +238,7 @@ static void test_secure_Open_File(void) {
     fclose(f6);
     secureFileInfo* fileInfo6 = secure_Open_File(filename6, "r", extList, NULL, &wrongID);
     TEST_ASSERT(fileInfo6->error == SEC_FILE_INVALID_FILE_UNIQUE_ID, "Should return invalid file unique ID error when unique ID does not match");
-    safe_free(&realID);
+    safe_free((void**)&realID);
     free_Secure_File_Info(&fileInfo6);
 
     // Test when filename is NULL
