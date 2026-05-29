@@ -552,6 +552,8 @@ static void test_secure_Remove_File(void) {
     eSecureFileError result = secure_Remove_File(fileInfo);
     TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Remove_File should succeed");
     TEST_ASSERT(!os_File_Exists(filename), "File should be removed");
+    
+    secure_Close_File(fileInfo);
 }
 
 static void test_secure_Delete_File_By_Name(void) {
