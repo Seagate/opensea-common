@@ -42,7 +42,7 @@ jobs:
               os: windows-latest,
               cc: "gcc",
               cxx: "g++",
-              meson_opts: "-Db_coverage=true",
+              meson_opts: "-Db_coverage=true -Dc_std=c23",
               buildtype: "debug"
             }
 
