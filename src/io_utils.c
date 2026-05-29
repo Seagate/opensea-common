@@ -21,6 +21,7 @@
 #include "memory_safety.h"
 #include "string_utils.h"
 #include "type_conversion.h"
+#include "unit_conversion.h"
 #include "warning_ctl.h"
 #include <ctype.h>
 #include <math.h>   //HUGE_VALF, HUGE_VAL, HUGE_VALL
@@ -2872,12 +2873,12 @@ static void internal_Print_Data_Buffer(const uint8_t* M_NONNULL dataBuffer,
 
 void print_Data_Buffer(const uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
 {
-    internal_Print_Data_Buffer(dataBuffer, bufferLen, showPrint, true);
+    internal_Print_Data_Buffer(dataBuffer, bufferLen, showPrint, true, stdout);
 }
 
 void print_Pipe_Data(const uint8_t* dataBuffer, uint32_t bufferLen)
 {
-    internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false);
+    internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false, stdout);
 }
 
 M_NONNULL_IF_NONZERO_PARAM(2, 3)
