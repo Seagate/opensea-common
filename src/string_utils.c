@@ -436,7 +436,7 @@ errno_t safe_strmove_impl(char*       dest,
 {
     size_t            srclen = safe_strnlen(src, RSIZE_MAX);
     constraintEnvInfo envInfo;
-    errno_t           error  = 0;
+    errno_t           error = 0;
     if (dest == M_NULLPTR)
     {
         error = EINVAL;
@@ -1078,11 +1078,10 @@ size_t safe_strnlen_impl(const char* string, size_t n)
 #if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
 M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size)
 {
-    void * nullpos = memchr(src, '\0', size);
-    size_t length = nullpos != M_NULLPTR
-                        ? C_CAST(size_t, C_CAST(uintptr_t, nullpos) - C_CAST(uintptr_t, src))
-                        : SIZE_T_C(0);
-    char*  dupstr = M_REINTERPRET_CAST(char*, malloc(length + 1));
+    void*  nullpos = memchr(src, '\0', size);
+    size_t length =
+        nullpos != M_NULLPTR ? C_CAST(size_t, C_CAST(uintptr_t, nullpos) - C_CAST(uintptr_t, src)) : SIZE_T_C(0);
+    char* dupstr = M_REINTERPRET_CAST(char*, malloc(length + 1));
     if (dupstr == M_NULLPTR)
     {
         return M_NULLPTR;

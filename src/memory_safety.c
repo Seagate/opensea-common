@@ -69,7 +69,9 @@ size_t get_System_Pagesize(void)
 //! \param[in] alignment     The required alignment (must be a power of 2)
 //! \param[in] original_ptr  The original pointer from malloc() to store for deallocation
 //! \return The aligned pointer to return to the caller, or NULL if malloc_ptr was NULL
-M_PARAM_WO(1) M_PARAM_RO(3) M_ATTR_UNUSED static M_INLINE void* store_aligned_original_ptr(void* M_NULLABLE malloc_ptr, size_t alignment, const void* M_NONNULL original_ptr)
+M_PARAM_WO(1)
+M_PARAM_RO(3) M_ATTR_UNUSED static M_INLINE
+    void* store_aligned_original_ptr(void* M_NULLABLE malloc_ptr, size_t alignment, const void* M_NONNULL original_ptr)
 {
     if (malloc_ptr == M_NULLPTR)
     {
@@ -78,16 +80,16 @@ M_PARAM_WO(1) M_PARAM_RO(3) M_ATTR_UNUSED static M_INLINE void* store_aligned_or
 
     // Offset to make room for storing the original pointer metadata
     const size_t requiredExtraBytes = sizeof(size_t);
-    uintptr_t alignedAddr = C_CAST(uintptr_t, malloc_ptr) + requiredExtraBytes;
+    uintptr_t    alignedAddr        = C_CAST(uintptr_t, malloc_ptr) + requiredExtraBytes;
 
     // Calculate alignment offset to reach the next alignment boundary
     size_t alignmentOffset = alignment - (alignedAddr % alignment);
     alignedAddr += alignmentOffset;
 
     // Store the original pointer at the metadata location (just before the aligned pointer)
-    void* metaPtr = C_CAST(void*, alignedAddr - requiredExtraBytes);
+    void*   metaPtr           = C_CAST(void*, alignedAddr - requiredExtraBytes);
     size_t* savedLocationData = C_CAST(size_t*, metaPtr);
-    *savedLocationData = C_CAST(size_t, original_ptr);
+    *savedLocationData        = C_CAST(size_t, original_ptr);
 
     return C_CAST(void*, alignedAddr);
 }
@@ -108,7 +110,7 @@ M_PARAM_RO(1) M_ATTR_UNUSED static M_INLINE void* retrieve_aligned_original_ptr(
     // Find the starting address from the original allocation
     uintptr_t alignedAddr = C_CAST(uintptr_t, aligned_ptr);
     alignedAddr -= sizeof(size_t);
-    void* metaPtr = C_CAST(void*, alignedAddr);
+    void* metaPtr  = C_CAST(void*, alignedAddr);
     void* original = C_CAST(void*, *(C_CAST(size_t*, metaPtr)));
     return original;
 }
@@ -127,35 +129,35 @@ M_PARAM_RO(1) M_ATTR_UNUSED static M_INLINE void* retrieve_aligned_original_ptr(
 // Platform-specific aligned memory allocation strategies
 // These flags define which allocation/deallocation functions are available
 // based on compiler, OS, and feature support.
-// Note: Intel's compiler has _mm_malloc and _mm_free but these are just wrappers the same as our own. No need to keep those
-// right now since we are otherwise detecting and using the proper APIs on the platforms we do support.
+// Note: Intel's compiler has _mm_malloc and _mm_free but these are just wrappers the same as our own. No need to keep
+// those right now since we are otherwise detecting and using the proper APIs on the platforms we do support.
 #if !defined(UEFI_C_SOURCE)
 
-    // C11 standard aligned_alloc + free support
-    #if defined(USING_C11) && !defined(__MINGW32__) && !defined(_MSC_VER) && \
+// C11 standard aligned_alloc + free support
+#    if defined(USING_C11) && !defined(__MINGW32__) && !defined(_MSC_VER) &&                                           \
         (!defined(THIS_IS_GLIBC) || IS_GLIBC_VERSION(2, 16))
-    #    define USE_C11_ALIGNED
-    #endif // C11 aligned_alloc support
+#        define USE_C11_ALIGNED
+#    endif // C11 aligned_alloc support
 
-    // POSIX posix_memalign + free support
-    #if (defined(POSIX_2001) && defined(_POSIX_ADVISORY_INFO)) || defined(VMK_CROSS_COMP)
-    #    define USE_POSIX_ALIGNED
-    #endif // POSIX memalign support
+// POSIX posix_memalign + free support
+#    if (defined(POSIX_2001) && defined(_POSIX_ADVISORY_INFO)) || defined(VMK_CROSS_COMP)
+#        define USE_POSIX_ALIGNED
+#    endif // POSIX memalign support
 
-    // MinGW32 __mingw_aligned_malloc + __mingw_aligned_free support
-    #if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
-    #    define USE_MINGW_ALIGNED
-    #endif // MinGW32 aligned support
+// MinGW32 __mingw_aligned_malloc + __mingw_aligned_free support
+#    if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+#        define USE_MINGW_ALIGNED
+#    endif // MinGW32 aligned support
 
-    // MSVC _aligned_malloc + _aligned_free support (also for MinGW64)
-    #if IS_MSVC_VERSION(MSVC_2005) || defined(__MINGW64_VERSION_MAJOR)
-    #    define USE_MSVC_ALIGNED
-    #endif // MSVC aligned support
+// MSVC _aligned_malloc + _aligned_free support (also for MinGW64)
+#    if IS_MSVC_VERSION(MSVC_2005) || defined(__MINGW64_VERSION_MAJOR)
+#        define USE_MSVC_ALIGNED
+#    endif // MSVC aligned support
 
-    // Linux/Sun memalign + free support
-    #if defined(__linux__) || defined(_sun)
-    #    define USE_MEMALIGN
-    #endif // Linux/Sun memalign support
+// Linux/Sun memalign + free support
+#    if defined(__linux__) || defined(_sun)
+#        define USE_MEMALIGN
+#    endif // Linux/Sun memalign support
 
 #endif // !UEFI_C_SOURCE
 
@@ -243,13 +245,13 @@ M_NODISCARD M_FUNC_ATTR_MALLOC M_ALLOC_DEALLOC(free_aligned, 1) M_ALLOC_ALIGN(2)
     void* temp = M_NULLPTR;
     if (size && has_single_bit(alignment))
     {
-        size_t requiredExtraBytes = sizeof(size_t);
-        const size_t totalAllocation = size + alignment + requiredExtraBytes;
-        temp = malloc(totalAllocation);
+        size_t       requiredExtraBytes = sizeof(size_t);
+        const size_t totalAllocation    = size + alignment + requiredExtraBytes;
+        temp                            = malloc(totalAllocation);
         if (temp != M_NULLPTR)
         {
             const void* originalLocation = temp;
-            temp = store_aligned_original_ptr(temp, alignment, originalLocation);
+            temp                         = store_aligned_original_ptr(temp, alignment, originalLocation);
         }
     }
     return temp;
@@ -271,7 +273,7 @@ M_PARAM_WO(1) void free_aligned(void* ptr)
     // Generic fallback: retrieve original pointer and free it
     // retrieve_aligned_original_ptr handles NULL input safely (returns NULL)
     void* original = retrieve_aligned_original_ptr(ptr);
-    free(original);  // free(NULL) is safe per C standard
+    free(original); // free(NULL) is safe per C standard
 #endif // Platform-specific aligned deallocation
 }
 
@@ -360,14 +362,15 @@ M_MALLOC_SIZE(3) void* realloc_page_aligned(void* alignedPtr, size_t originalSiz
     }
 }
 
-M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Buffer_All_ByteValue(const void* ptrData, size_t lengthBytes, uint8_t byteValue)
+M_NONNULL_PARAM_LIST(1)
+M_PARAM_RO_SIZE(1, 2) bool is_Buffer_All_ByteValue(const void* ptrData, size_t lengthBytes, uint8_t byteValue)
 {
     DISABLE_NONNULL_COMPARE
     if (ptrData != M_NULLPTR && lengthBytes > SIZE_T_C(0))
     {
-        const uint_fast8_t* byteptr     = C_CAST(const uint_fast8_t*, ptrData);
+        const uint_fast8_t* byteptr = C_CAST(const uint_fast8_t*, ptrData);
         for (size_t iter = SIZE_T_C(0), iterEnd = lengthBytes - SIZE_T_C(1); iter < lengthBytes && iterEnd >= iter;
-                ++iter, --iterEnd)
+             ++iter, --iterEnd)
         {
             if (byteptr[iter] != byteValue || byteptr[iterEnd] != byteValue)
             {

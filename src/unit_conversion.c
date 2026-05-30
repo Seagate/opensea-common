@@ -25,7 +25,7 @@ typedef enum eMUnitTypes
     UNIT_TYPE_EXA,
     UNIT_TYPE_ZETTA,
     UNIT_TYPE_YOTTA
-}eMUnitTypes;
+} eMUnitTypes;
 
 typedef enum eCUnitTypes
 {
@@ -43,7 +43,7 @@ typedef enum eCUnitTypes
 eReturnValues metric_Unit_Convert(double* M_NONNULL byteValue, char* M_NONNULL* M_NONNULL metricUnit)
 {
     eReturnValues ret         = SUCCESS;
-    eMUnitTypes       unitCounter = UNIT_TYPE_BYTE;
+    eMUnitTypes   unitCounter = UNIT_TYPE_BYTE;
 
     if (byteValue == M_NULLPTR || metricUnit == M_NULLPTR || *metricUnit == M_NULLPTR)
     {
@@ -91,7 +91,7 @@ eReturnValues metric_Unit_Convert(double* M_NONNULL byteValue, char* M_NONNULL* 
 eReturnValues capacity_Unit_Convert(double* M_NONNULL byteValue, char* M_NONNULL* M_NONNULL capacityUnit)
 {
     eReturnValues ret         = SUCCESS;
-    eCUnitTypes       unitCounter = UNIT_TYPE_BIBYTE;
+    eCUnitTypes   unitCounter = UNIT_TYPE_BIBYTE;
 
     if (byteValue == M_NULLPTR || capacityUnit == M_NULLPTR || *capacityUnit == M_NULLPTR)
     {
@@ -144,14 +144,15 @@ eReturnValues capacity_Unit_Convert(double* M_NONNULL byteValue, char* M_NONNULL
 
 //! \def CELSIUS_FAHRENHEIT_CONVERSION_CONSTANT
 //! \brief The constant value used to convert between Celsius and Fahrenheit. This is defined as the
-//!        freezing point of water in Fahrenheit, which is 32. We use 32 as an integer constant for conversion to avoid using floating point math in our conversions
+//!        freezing point of water in Fahrenheit, which is 32. We use 32 as an integer constant for conversion to avoid
+//!        using floating point math in our conversions
 #define CELSIUS_FAHRENHEIT_CONVERSION_CONSTANT (32)
 
-#define CELSIUS_ABS_ZERO (-273)
+#define CELSIUS_ABS_ZERO                       (-273)
 
-#define FAHRENHEIT_ABS_ZERO (-459)
+#define FAHRENHEIT_ABS_ZERO                    (-459)
 
-#define KELVIN_ABS_ZERO (0)
+#define KELVIN_ABS_ZERO                        (0)
 
 // formula is C * (9/5) + 32. To scale better for int math we use
 //            ((C * 9) / 5) + 32
@@ -165,9 +166,8 @@ int16_t celsius_To_Fahrenheit(const int16_t* M_NONNULL celsius)
     // rewrote order of operations to be better for integer math.
     // formula is C * (9/5) + 32. To scale better for int math we use
     //            ((C * 9) / 5) + 32
-    int16_t fahrenheit =
-        ((*celsius * INT16_C(9)) / INT16_C(5)); // NOLINT(bugprone-narrowing-conversions)
-    int16_t remainder = ((*celsius * INT16_C(9)) % INT16_C(5));
+    int16_t fahrenheit = ((*celsius * INT16_C(9)) / INT16_C(5)); // NOLINT(bugprone-narrowing-conversions)
+    int16_t remainder  = ((*celsius * INT16_C(9)) % INT16_C(5));
     // if the remainder is greater than or equal to half of the divisor, round up the result
     if (remainder >= INT16_C(3) && fahrenheit >= 0)
     {
@@ -180,7 +180,8 @@ int16_t celsius_To_Fahrenheit(const int16_t* M_NONNULL celsius)
     return fahrenheit + CELSIUS_FAHRENHEIT_CONVERSION_CONSTANT;
 }
 
-// formula is (F - 32) / (9/5). equivalent to (F - 32) * (5/9). To scale better for int math we use and avoid doubles/floats.
+// formula is (F - 32) / (9/5). equivalent to (F - 32) * (5/9). To scale better for int math we use and avoid
+// doubles/floats.
 int16_t fahrenheit_To_celsius(const int16_t* M_NONNULL fahrenheit)
 {
     if (*fahrenheit < FAHRENHEIT_ABS_ZERO)
@@ -188,7 +189,8 @@ int16_t fahrenheit_To_celsius(const int16_t* M_NONNULL fahrenheit)
         errno = ERANGE;
         return INT16_C(0);
     }
-    int16_t celsius = ((*fahrenheit - CELSIUS_FAHRENHEIT_CONVERSION_CONSTANT) * INT16_C(5)) / INT16_C(9); // NOLINT(bugprone-narrowing-conversions)
+    int16_t celsius = ((*fahrenheit - CELSIUS_FAHRENHEIT_CONVERSION_CONSTANT) * INT16_C(5)) /
+                      INT16_C(9); // NOLINT(bugprone-narrowing-conversions)
     int16_t remainder = ((*fahrenheit - CELSIUS_FAHRENHEIT_CONVERSION_CONSTANT) * INT16_C(5)) % INT16_C(9);
     // if the remainder is greater than or equal to half of the divisor, round up the result
     if (remainder >= INT16_C(5) / 2 && celsius >= 0)
@@ -220,7 +222,8 @@ int16_t fahrenheit_To_Kelvin(const int16_t* M_NONNULL fahrenheit)
         errno = ERANGE;
         return KELVIN_ABS_ZERO;
     }
-    int16_t kelvin = fahrenheit_To_celsius(fahrenheit) + CELSIUS_KELVIN_CONVERSION_CONSTANT; // NOLINT(bugprone-narrowing-conversions)
+    int16_t kelvin = fahrenheit_To_celsius(fahrenheit) +
+                     CELSIUS_KELVIN_CONVERSION_CONSTANT; // NOLINT(bugprone-narrowing-conversions)
     return kelvin;
 }
 
@@ -242,9 +245,9 @@ int16_t kelvin_To_Fahrenheit(const int16_t* M_NONNULL kelvin)
         errno = ERANGE;
         return FAHRENHEIT_ABS_ZERO;
     }
-    int16_t celsius = kelvin_To_Celsius(kelvin);
-    int16_t fahrenheit =
-        ((celsius * INT16_C(9)) / INT16_C(5)) + CELSIUS_FAHRENHEIT_CONVERSION_CONSTANT; // NOLINT(bugprone-narrowing-conversions)
+    int16_t celsius    = kelvin_To_Celsius(kelvin);
+    int16_t fahrenheit = ((celsius * INT16_C(9)) / INT16_C(5)) +
+                         CELSIUS_FAHRENHEIT_CONVERSION_CONSTANT; // NOLINT(bugprone-narrowing-conversions)
     int16_t remainder = ((celsius * INT16_C(9)) % INT16_C(5));
     // if the remainder is greater than or equal to half of the divisor, round up the result
     if (remainder >= INT16_C(3) && fahrenheit >= 0)

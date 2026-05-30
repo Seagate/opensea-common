@@ -43,8 +43,8 @@ bool get_Bytes_To_64(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t
     {
         return false;
     }
-    *out = UINT64_C(0);// clear to zero before filling in the bytes
-    if (lsb <= msb) // allowing equals for single bytes
+    *out = UINT64_C(0); // clear to zero before filling in the bytes
+    if (lsb <= msb)     // allowing equals for single bytes
     {
         for (size_t iter = msb, counter = 0; counter < fullDataLen && counter < SIZE_MAX && iter >= lsb;
              --iter, ++counter)

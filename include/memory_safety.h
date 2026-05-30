@@ -546,7 +546,8 @@ extern "C"
     M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* M_NULLABLE ptrData, size_t lengthBytes);
 
     //! \fn bool is_Buffer_All_ByteValue(const void* ptrData, size_t lengthBytes, uint8_t byteValue)
-    //! \brief   checks if a memory block is set to a specific byte value. Useful to detect all F's or all 0's for example.
+    //! \brief   checks if a memory block is set to a specific byte value. Useful to detect all F's or all 0's for
+    //! example.
     //
     //! \param[in] ptrData pointer to a memory block to check if all bytes are the same value
     //! \param[in] lengthBytes size in bytes of \a ptrData to check if all bytes are the same value
@@ -554,7 +555,10 @@ extern "C"
     //! \return true = memory is filled with the byte value. false = memory has non-matching
     //! values in it.
     M_NONNULL_IF_NONZERO_SIZE(1, 2)
-    M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Buffer_All_ByteValue(const void* M_NULLABLE ptrData, size_t lengthBytes, uint8_t byteValue);
+    M_NONNULL_PARAM_LIST(1)
+    M_PARAM_RO_SIZE(1, 2) bool is_Buffer_All_ByteValue(const void* M_NULLABLE ptrData,
+                                                       size_t                 lengthBytes,
+                                                       uint8_t                byteValue);
 
 #if defined(DEV_ENVIRONMENT)
     //! \fn errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
@@ -1445,8 +1449,8 @@ extern "C"
                           "safe_memmove(" #dest ", " #destsz ", " #src ", " #count ")")
 #endif
 
-#if defined (MEMCPY_IS_MEMCPY_NOT_MEMMOVE)
-#if defined(DEV_ENVIRONMENT)
+#if defined(MEMCPY_IS_MEMCPY_NOT_MEMMOVE)
+#    if defined(DEV_ENVIRONMENT)
     //! \fn errno_t safe_memcpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t count)
     //! \brief Copies a block of memory with bounds checking.
     //!
@@ -1459,8 +1463,9 @@ extern "C"
     //! \param[in] count Number of bytes to copy.
     //! \return Zero on success, or an error code on failure.
     //!
-    //! \note When MEMCPY_IS_MEMCPY_NOT_MEMMOVE this behaves as memcpy (overlapping buffers is an error) instead of memmove
-    //! and does not allow overlapping buffers. When this is not defined, this behaves as memmove and allows overlapping buffers.
+    //! \note When MEMCPY_IS_MEMCPY_NOT_MEMMOVE this behaves as memcpy (overlapping buffers is an error) instead of
+    //! memmove and does not allow overlapping buffers. When this is not defined, this behaves as memmove and allows
+    //! overlapping buffers.
     //!
     //! \note The following errors are detected at runtime and call the installed constraint handler:
     //!
@@ -1484,7 +1489,7 @@ extern "C"
         return safe_memcpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
                                 "safe_memcpy(dest, destsz, src, count)");
     }
-#else
+#    else
 //! \def safe_memcpy(dest, destsz, src, count)
 //! \brief Copies a block of memory with bounds checking.
 //!
@@ -1498,7 +1503,8 @@ extern "C"
 //! \return Zero on success, or an error code on failure.
 //!
 //! \note When MEMCPY_IS_MEMCPY_NOT_MEMMOVE this behaves as memcpy (overlapping buffers is an error) instead of memmove
-//! and does not allow overlapping buffers. When this is not defined, this behaves as memmove and allows overlapping buffers.
+//! and does not allow overlapping buffers. When this is not defined, this behaves as memmove and allows overlapping
+//! buffers.
 //!
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
@@ -1514,49 +1520,13 @@ extern "C"
 //!
 //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
 //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-#    define safe_memcpy(dest, destsz, src, count)                                                                      \
-        safe_memcpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                       \
-                         "safe_memcpy(" #dest ", " #destsz ", " #src ", " #count ")")
-#endif
+#        define safe_memcpy(dest, destsz, src, count)                                                                  \
+            safe_memcpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                   \
+                             "safe_memcpy(" #dest ", " #destsz ", " #src ", " #count ")")
+#    endif
 #else
-#if defined(DEV_ENVIRONMENT)
-    //! \fn errno_t safe_memcpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t count)
-    //! \brief Copies a block of memory with bounds checking.
-    //!
-    //! This function copies \a count bytes from the block of memory pointed to by \a src to the block of memory pointed
-    //! to by \a dest, with bounds checking as specified in C11 annex K.
-    //!
-    //! \param[out] dest Pointer to the destination block of memory.
-    //! \param[in] destsz Size of the destination buffer.
-    //! \param[in] src Pointer to the source block of memory.
-    //! \param[in] count Number of bytes to copy.
-    //! \return Zero on success, or an error code on failure.
-    //!
-    //! \note When MEMCPY_IS_MEMCPY_NOT_MEMMOVE this behaves as memcpy (overlapping buffers is an error) instead of memmove
-    //! and does not allow overlapping buffers. When this is not defined, this behaves as memmove and allows overlapping buffers.
-    //!
-    //! \note The following errors are detected at runtime and call the installed constraint handler:
-    //!
-    //! - \a dest is a null pointer
-    //!
-    //! - \a src is a null pointer
-    //!
-    //! - \a destsz or \a count is greater than \a RSIZE_MAX
-    //!
-    //! - \a count is greater than \a destsz (buffer overflow would occur)
-    //!
-    //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
-    //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    M_INLINE M_PARAM_WO_SIZE(1, 2) M_PARAM_RO_SIZE(3, 4) errno_t safe_memcpy(void* M_NONNULL       dest,
-                                                                             rsize_t                          destsz,
-                                                                             const void* M_NONNULL src,
-                                                                             rsize_t                          count)
-    {
-        return safe_memmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
-                                "safe_memcpy(dest, destsz, src, count)");
-    }
-#else
-//! \def safe_memcpy(dest, destsz, src, count)
+#    if defined(DEV_ENVIRONMENT)
+//! \fn errno_t safe_memcpy(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t count)
 //! \brief Copies a block of memory with bounds checking.
 //!
 //! This function copies \a count bytes from the block of memory pointed to by \a src to the block of memory pointed
@@ -1569,7 +1539,8 @@ extern "C"
 //! \return Zero on success, or an error code on failure.
 //!
 //! \note When MEMCPY_IS_MEMCPY_NOT_MEMMOVE this behaves as memcpy (overlapping buffers is an error) instead of memmove
-//! and does not allow overlapping buffers. When this is not defined, this behaves as memmove and allows overlapping buffers.
+//! and does not allow overlapping buffers. When this is not defined, this behaves as memmove and allows overlapping
+//! buffers.
 //!
 //! \note The following errors are detected at runtime and call the installed constraint handler:
 //!
@@ -1583,14 +1554,50 @@ extern "C"
 //!
 //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
 //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-#    define safe_memcpy(dest, destsz, src, count)                                                                      \
-        safe_memmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                       \
-                         "safe_memcpy(" #dest ", " #destsz ", " #src ", " #count ")")
-#endif
+M_INLINE M_PARAM_WO_SIZE(1, 2) M_PARAM_RO_SIZE(3, 4) errno_t
+    safe_memcpy(void* M_NONNULL dest, rsize_t destsz, const void* M_NONNULL src, rsize_t count)
+{
+    return safe_memmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
+                             "safe_memcpy(dest, destsz, src, count)");
+}
+#    else
+//! \def safe_memcpy(dest, destsz, src, count)
+//! \brief Copies a block of memory with bounds checking.
+//!
+//! This function copies \a count bytes from the block of memory pointed to by \a src to the block of memory pointed
+//! to by \a dest, with bounds checking as specified in C11 annex K.
+//!
+//! \param[out] dest Pointer to the destination block of memory.
+//! \param[in] destsz Size of the destination buffer.
+//! \param[in] src Pointer to the source block of memory.
+//! \param[in] count Number of bytes to copy.
+//! \return Zero on success, or an error code on failure.
+//!
+//! \note When MEMCPY_IS_MEMCPY_NOT_MEMMOVE this behaves as memcpy (overlapping buffers is an error) instead of memmove
+//! and does not allow overlapping buffers. When this is not defined, this behaves as memmove and allows overlapping
+//! buffers.
+//!
+//! \note The following errors are detected at runtime and call the installed constraint handler:
+//!
+//! - \a dest is a null pointer
+//!
+//! - \a src is a null pointer
+//!
+//! - \a destsz or \a count is greater than \a RSIZE_MAX
+//!
+//! - \a count is greater than \a destsz (buffer overflow would occur)
+//!
+//! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
+//! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
+#        define safe_memcpy(dest, destsz, src, count)                                                                  \
+            safe_memmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                  \
+                              "safe_memcpy(" #dest ", " #destsz ", " #src ", " #count ")")
+#    endif
 #endif // MEMCPY_IS_MEMCPY_NOT_MEMMOVE
 
 #if defined(DEV_ENVIRONMENT)
-    //! \fn errno_t safe_memcpy_no_overlap(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t count)
+    //! \fn errno_t safe_memcpy_no_overlap(void* M_RESTRICT dest, rsize_t destsz, const void* M_RESTRICT src, rsize_t
+    //! count)
     //! \brief Copies a block of memory with bounds checking.
     //!
     //! This function copies \a count bytes from the block of memory pointed to by \a src to the block of memory pointed
@@ -1616,10 +1623,11 @@ extern "C"
     //!
     //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
     //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-    M_INLINE M_PARAM_WO_SIZE(1, 2) M_PARAM_RO_SIZE(3, 4) errno_t safe_memcpy_no_overlap(void* M_RESTRICT M_NONNULL       dest,
-                                                                             rsize_t                          destsz,
-                                                                             const void* M_RESTRICT M_NONNULL src,
-                                                                             rsize_t                          count)
+    M_INLINE M_PARAM_WO_SIZE(1, 2) M_PARAM_RO_SIZE(3, 4) errno_t
+        safe_memcpy_no_overlap(void* M_RESTRICT M_NONNULL       dest,
+                               rsize_t                          destsz,
+                               const void* M_RESTRICT M_NONNULL src,
+                               rsize_t                          count)
     {
         return safe_memcpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
                                 "safe_memcpy_no_overlap(dest, destsz, src, count)");
@@ -1651,7 +1659,7 @@ extern "C"
 //!
 //! The behavior is undefined if the size of the character array pointed to by \a dest < \a count <= \a destsz; in
 //! other words, an erroneous value of \a destsz does not expose the impending buffer overflow.
-#    define safe_memcpy_no_overlap(dest, destsz, src, count)                                                                      \
+#    define safe_memcpy_no_overlap(dest, destsz, src, count)                                                           \
         safe_memcpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                       \
                          "safe_memcpy_no_overlap(" #dest ", " #destsz ", " #src ", " #count ")")
 #endif

@@ -1148,7 +1148,8 @@ M_NODISCARD M_PARAM_RW(1) eSecureFileError secure_Remove_File(secureFileInfo* M_
             else
             {
                 fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
-                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "File removed successfully");
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                              "File removed successfully");
             }
         }
         return fileInfo->error;
