@@ -335,9 +335,8 @@ void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus)
         printf("%" PRI_UINTN " - <Unable to convert EFI_STATUS to string>\n", efiStatus);
     }
 }
-#endif
 
-// #elif defined(_WIN32)
+#elif defined(_WIN32)
 // void print_Windows_Error_To_Screen(winsyserror_t windowsError)
 // {
 //     LPTSTR windowsErrorString = M_NULLPTR;
