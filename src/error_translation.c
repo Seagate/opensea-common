@@ -335,58 +335,59 @@ void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus)
         printf("%" PRI_UINTN " - <Unable to convert EFI_STATUS to string>\n", efiStatus);
     }
 }
+#endif
 
-#elif defined(_WIN32)
-char* print_Windows_Error_To_Screen(winsyserror_t windowsError)
-{
-    LPTSTR windowsErrorString = M_NULLPTR;
-    // Originally used: MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT)
-    // switched to MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US) to keep output
-    // consistent with all other verbose output.-TJE I would love to remove the
-    // cast, but I cannot figure out how to do it and keep out the warnings from
-    // MSVC - TJE
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                  M_NULLPTR, windowsError, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
-                  C_CAST(LPTSTR, &windowsErrorString), 0, M_NULLPTR);
-    if (windowsErrorString != M_NULLPTR)
-    {
-        size_t errorStrLen = lstrlen(windowsErrorString) + SIZE_T_C(1);
-        char*  errorString = M_REINTERPRET_CAST(char*, safe_calloc(errorStrLen, sizeof(char)));
-        if (errorString != M_NULLPTR)
-        {
-            // This call is to allow the Windows API to translate this from wide to char as needed.
-            // I could not find a straight forward ifdef/tchar function for this so this is the best I have - TJE
-            int result = 0;
-#    if defined(UNICODE)
-            // Uppercase S means a Wide character string in this case
-            result = sprintf_s(errorString, errorStrLen, "%S", windowsErrorString);
-#    else
-            // Lowercase s means a "regular" single-byte or multibyte string in this case.
-            result = sprintf_s(errorString, errorStrLen, "%s", windowsErrorString);
-#    endif
-            LocalFree(windowsErrorString);
-            if (result > 0)
-            {
-                return errorString;
-            }
-            else
-            {
-                // Conversion failed, free the allocated string and return null
-                safe_free(&errorString);
-                return M_NULLPTR;
-            }
-        }
-        else
-        {
-            LocalFree(windowsErrorString);
-            return M_NULLPTR;
-        }
-    }
-    else
-    {
-        return M_NULLPTR;
-    }
-}
+// #elif defined(_WIN32)
+// void print_Windows_Error_To_Screen(winsyserror_t windowsError)
+// {
+//     LPTSTR windowsErrorString = M_NULLPTR;
+//     // Originally used: MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT)
+//     // switched to MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US) to keep output
+//     // consistent with all other verbose output.-TJE I would love to remove the
+//     // cast, but I cannot figure out how to do it and keep out the warnings from
+//     // MSVC - TJE
+//     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+//                   M_NULLPTR, windowsError, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+//                   C_CAST(LPTSTR, &windowsErrorString), 0, M_NULLPTR);
+//     if (windowsErrorString != M_NULLPTR)
+//     {
+//         size_t errorStrLen = lstrlen(windowsErrorString) + SIZE_T_C(1);
+//         char*  errorString = M_REINTERPRET_CAST(char*, safe_calloc(errorStrLen, sizeof(char)));
+//         if (errorString != M_NULLPTR)
+//         {
+//             // This call is to allow the Windows API to translate this from wide to char as needed.
+//             // I could not find a straight forward ifdef/tchar function for this so this is the best I have - TJE
+//             int result = 0;
+// #    if defined(UNICODE)
+//             // Uppercase S means a Wide character string in this case
+//             result = sprintf_s(errorString, errorStrLen, "%S", windowsErrorString);
+// #    else
+//             // Lowercase s means a "regular" single-byte or multibyte string in this case.
+//             result = sprintf_s(errorString, errorStrLen, "%s", windowsErrorString);
+// #    endif
+//             LocalFree(windowsErrorString);
+//             if (result > 0)
+//             {
+//                 return errorString;
+//             }
+//             else
+//             {
+//                 // Conversion failed, free the allocated string and return null
+//                 safe_free(&errorString);
+//                 return M_NULLPTR;
+//             }
+//         }
+//         else
+//         {
+//             LocalFree(windowsErrorString);
+//             return M_NULLPTR;
+//         }
+//     }
+//     else
+//     {
+//         return M_NULLPTR;
+//     }
+// }
 
 void print_Windows_Error_To_Screen(winsyserror_t windowsError)
 {
