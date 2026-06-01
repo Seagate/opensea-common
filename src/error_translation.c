@@ -337,7 +337,7 @@ void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus)
 }
 
 #elif defined(_WIN32)
-void print_Windows_Error_To_Screen(winsyserror_t windowsError)
+char* print_Windows_Error_To_Screen(winsyserror_t windowsError)
 {
     LPTSTR windowsErrorString = M_NULLPTR;
     // Originally used: MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT)
