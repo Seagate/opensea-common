@@ -28,12 +28,21 @@ jobs:
               buildtype: "debug"
             }
 
+          # - {
+          #   name: "Linux Clang",
+          #   os: ubuntu-latest,
+          #   cc: "clang",
+          #   cxx: "clang++",
+          #   meson_opts: "-Db_coverage=true",
+          #   buildtype: "debug"
+          # }
+
           - {
-            name: "Linux Clang",
-            os: ubuntu-latest,
-            cc: "clang",
-            cxx: "clang++",
-            meson_opts: "-Db_coverage=true",
+            name: "Windows Clang-CL",
+            os: windows-latest,
+            cc: "clang-cl",
+            cxx: "clang-cl",
+            meson_opts: "-Db_vscrt=static_from_buildtype -Db_coverage=true",
             buildtype: "debug"
           }
 
