@@ -1000,7 +1000,7 @@ static void test_generate_Log_Name(void) {
     TEST_ASSERT(logName != NULL, "generate_Log_Name should return a valid pointer");
     TEST_ASSERT(strstr(logName, "device123") != NULL, "Log name should contain the device identifier");
     free(logName);
-  
+
     // Naming convention = NAMING_BYUSER
     logName = generate_Log_Name(NAMING_BYUSER, "device123", strlen("device123"), NULL, 0, "logfile", strlen("logfile"), "txt", strlen("txt"));
     TEST_ASSERT(logName != NULL, "generate_Log_Name should return a valid pointer");
