@@ -1742,7 +1742,7 @@ void run_io_utils_tests(void) {
     test_get_And_Validate_Double_Input();
     test_get_And_Validate_LDouble_Input();
     test_get_Valid_Integer_Input();
-    // test_getline();
+    test_getline();
     // test_getdelim();
     // test_asprintf();
     // test_vasprintf();
