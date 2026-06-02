@@ -1775,5 +1775,5 @@ void run_io_utils_tests(void) {
     // test_safe_atof();
     // test_checked_fputs();
     // test_print_str();
-    println("Running io_utils tests!");
+    printf("Running io_utils tests!\n");
 }
