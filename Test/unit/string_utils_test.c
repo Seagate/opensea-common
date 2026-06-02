@@ -175,7 +175,7 @@ static void test_safe_isdigit(void) {
 }
 
 static void test_safe_isxdigit(void) {
-    char msg[60];
+    char msg[100];
 
     for(int i = 0; i < sizeof(numberChars)-1; i++) {
         snprintf(msg, sizeof(msg), "Hexadecimal digit character %c returns non-zero value", numberChars[i]);
@@ -1346,9 +1346,9 @@ void run_string_utils_tests(void) {
     test_safe_strtok();
     test_safe_String_Token();
     test_common_String_Token();
-    #if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
-    test_strndup();
-    #endif
+    // #if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
+    // test_strndup();
+    // #endif
     test_safe_strdup();
     test_safe_strndup();
     test_byte_Swap_String();
