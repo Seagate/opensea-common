@@ -1676,6 +1676,7 @@ M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
         eintergetInputStrType strType = get_Input_Str_Type(strToConvert, unittype);
+        printf("Debug: strType=%d\n", strType);
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
