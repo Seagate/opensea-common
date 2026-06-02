@@ -1725,9 +1725,9 @@ void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input_Uint16();
     test_get_And_Validate_Integer_Input_Uint8();
     test_get_And_Validate_Integer_Input_Int64();
-    // test_get_And_Validate_Integer_Input_Int32();
-    // test_get_And_Validate_Integer_Input_Int16();
-    // test_get_And_Validate_Integer_Input_Int8();
+    test_get_And_Validate_Integer_Input_Int32();
+    test_get_And_Validate_Integer_Input_Int16();
+    test_get_And_Validate_Integer_Input_Int8();
     // test_get_And_Validate_Integer_Input_ULL();
     // test_get_And_Validate_Integer_Input_UL();
     // test_get_And_Validate_Integer_Input_UI();
