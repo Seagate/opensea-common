@@ -174,7 +174,7 @@ static void test_get_And_Validate_Integer_Input_UL(void) {
     TEST_ASSERT(!get_And_Validate_Integer_Input_UL("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_UL("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_UL("0xFF", NULL, ALLOW_UNIT_VOLTS, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_UL("123mw", NULL, ALLOW_UNIT_POWER, &outputInteger), "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UL("123mw", NULL, ALLOW_UNIT_POWER, &outputInteger), "Converted string to integer successfully");
 }
 
 static void test_get_And_Validate_Integer_Input_UI(void) {
@@ -222,7 +222,7 @@ static void test_get_And_Validate_Integer_Input_LL(void) {
     TEST_ASSERT(!get_And_Validate_Integer_Input_LL("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_LL("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_LL("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_LL("50f", NULL, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_LL("50f", NULL, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
 }
 
 static void test_get_And_Validate_Integer_Input_L(void) {
@@ -235,7 +235,7 @@ static void test_get_And_Validate_Integer_Input_L(void) {
     TEST_ASSERT(!get_And_Validate_Integer_Input_L("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_L("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
     TEST_ASSERT(!get_And_Validate_Integer_Input_L("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_L("50f", NULL, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_L("50f", NULL, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
 }
 
 static void test_get_And_Validate_Integer_Input_I(void) {
