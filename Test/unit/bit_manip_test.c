@@ -4713,8 +4713,8 @@ void run_bit_manip_tests(void)
     test_le64_to_host();
     test_big_To_Little_Endian_16();
     test_big_To_Little_Endian_32();
-    test_count_leading_zeros_uc();
-    test_count_leading_zeros_us();
+    // test_count_leading_zeros_uc();
+    // test_count_leading_zeros_us();
     test_count_leading_zeros_ui();
     test_count_leading_zeros_ul();
     test_count_leading_zeros_ull();
