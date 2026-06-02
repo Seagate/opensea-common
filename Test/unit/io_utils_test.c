@@ -1728,11 +1728,11 @@ void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input_Int32();
     test_get_And_Validate_Integer_Input_Int16();
     test_get_And_Validate_Integer_Input_Int8();
-    // test_get_And_Validate_Integer_Input_ULL();
-    // test_get_And_Validate_Integer_Input_UL();
-    // test_get_And_Validate_Integer_Input_UI();
-    // test_get_And_Validate_Integer_Input_US();
-    // test_get_And_Validate_Integer_Input_UC();
+    test_get_And_Validate_Integer_Input_ULL();
+    test_get_And_Validate_Integer_Input_UL();
+    test_get_And_Validate_Integer_Input_UI();
+    test_get_And_Validate_Integer_Input_US();
+    test_get_And_Validate_Integer_Input_UC();
     // test_get_And_Validate_Integer_Input_LL();
     // test_get_And_Validate_Integer_Input_L();
     // test_get_And_Validate_Integer_Input_I();
