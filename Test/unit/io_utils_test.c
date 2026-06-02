@@ -1745,7 +1745,7 @@ void run_io_utils_tests(void) {
     test_getline();
     test_getdelim();
     test_asprintf();
-    // test_vasprintf();
+    test_vasprintf();
     // test_snprintf();
     // test_vsnprintf();
     // // test_snprintf_err_handle(); needs to be commented
