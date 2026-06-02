@@ -986,6 +986,7 @@ static void test_strndup(void) {
     const char* str = "Hello, World!";
     char* dup = strndup(str, 5);
     TEST_ASSERT_NEQ(dup, NULL, "strndup should return a non-NULL pointer");
+    printf("Duplicated string: '%s'\n", dup);
     TEST_ASSERT_EQ(strncmp(dup, str, 5), 0, "First n characters should be correctly duplicated");
     free(dup);
 }
