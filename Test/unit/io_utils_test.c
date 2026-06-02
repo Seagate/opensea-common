@@ -1720,7 +1720,7 @@ void run_io_utils_tests(void) {
     #ifndef _WIN32
     test_get_And_Validate_Integer_Input();
     #endif
-    // test_get_And_Validate_Integer_Input_Uint64();
+    test_get_And_Validate_Integer_Input_Uint64();
     // test_get_And_Validate_Integer_Input_Uint32();
     // test_get_And_Validate_Integer_Input_Uint16();
     // test_get_And_Validate_Integer_Input_Uint8();
