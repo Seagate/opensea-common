@@ -1747,7 +1747,7 @@ void run_io_utils_tests(void) {
     test_asprintf();
     test_vasprintf();
     test_snprintf();
-    // test_vsnprintf();
+    test_vsnprintf();
     // // test_snprintf_err_handle(); needs to be commented
     // test_verify_Format_String_And_Args();
     // // test_set_Console_Colors(); Skip for now as it is complicated to test
