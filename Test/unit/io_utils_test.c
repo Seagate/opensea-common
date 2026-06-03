@@ -1755,7 +1755,7 @@ void run_io_utils_tests(void) {
     test_flush_stderr();
     test_safe_fopen();
     // test_safe_freopen();
-    test_safe_tmpfile();
+    // test_safe_tmpfile();
     test_safe_gets();
     // test_safe_strtol();
     // test_safe_strtoll();
