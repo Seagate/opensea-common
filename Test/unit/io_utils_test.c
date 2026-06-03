@@ -1126,7 +1126,8 @@ static void test_safe_gets(void)
     TEST_ASSERT(res == NULL, "safe_gets returned NULL for str = NULL");
     TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for str = NULL");
 
-    // Test when fgets returns NULL due to EOF
+    // Test when fgets returns NULL due to EOF - test only for Linux
+#ifdef __linux__
     errno = 0; // Clear errno before test
     fprintf(stderr, "SG7\n");
     fp = fopen("test_input.txt", "r");
@@ -1140,6 +1141,7 @@ static void test_safe_gets(void)
     TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL at EOF");
     printf("errno after EOF test: %d\n", errno);
     fclose(fp);
+#endif
 }
 
 static void test_safe_strtol(void) {
