@@ -1037,13 +1037,13 @@ static void test_safe_freopen(void)
     FILE *invalidfile = tmpfile();
     TEST_ASSERT(invalidfile != NULL, "temp file opened");
 
-    printf("before freopen: %p\n", (void *)invalidfile);
+    printf(stderr, "before freopen to invalid path: %p\n", (void *)invalidfile);
 
     err = safe_freopen(&invalidfile, "/invalid_path/test_safe_freopen.txt", "w", invalidfile);
 
-    printf("after freopen: %p err=%d errno=%d\n",
-       (void *)invalidfile, err, errno);
-
+    printf(stderr, "after freopen to invalid path: %p err=%d errno=%d\n",
+           (void *)invalidfile, err, errno);
+    
     TEST_ASSERT(err != 0, "safe_freopen returned error for invalid filename");
 
     if (invalidfile != NULL)
