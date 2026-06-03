@@ -996,11 +996,14 @@ static void test_safe_freopen(void)
     TEST_ASSERT(err == 0, "safe_freopen returned success");
     TEST_ASSERT(file != NULL, "safe_freopen redirected stdout successfully");
 
-    printf("Testing safe_freopen.\n");
+    printf("Before freopen\n");
     fflush(stdout);
 
-    dup2(saved_stdout, fileno(stdout));
+    int rc = dup2(saved_stdout, fileno(stdout));
+    fprintf(stderr, "dup2 rc=%d errno=%d\n", rc, errno);
+
     close(saved_stdout);
+    fprintf(stderr, "after close\n");
 
     fflush(stdout);
 
@@ -1036,10 +1039,13 @@ static void test_safe_freopen(void)
     // Test with invalid filename
     FILE *invalidfile = fopen("temp.txt", "w");
     TEST_ASSERT(invalidfile != NULL, "temp file opened");
-    fclose(invalidfile);
 
     err = safe_freopen(&invalidfile, "/invalid_path/test_safe_freopen.txt", "w", invalidfile);
     TEST_ASSERT(err != 0, "safe_freopen returned error for invalid filename");
+
+    if(invalidfile) {
+        fclose(invalidfile);
+    }
 }
 
 static void test_safe_tmpfile(void) {
