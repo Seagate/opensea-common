@@ -1120,12 +1120,14 @@ static void test_safe_gets(void)
     // TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for n > INT_MAX");
 
     // Test for str = NULL
+    errno = 0; // Clear errno before test
     fprintf(stderr, "SG6\n");
     res = safe_gets(NULL, sizeof(buffer));
     TEST_ASSERT(res == NULL, "safe_gets returned NULL for str = NULL");
     TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for str = NULL");
 
     // Test when fgets returns NULL due to EOF
+    errno = 0; // Clear errno before test
     fprintf(stderr, "SG7\n");
     fp = fopen("test_input.txt", "r");
     TEST_ASSERT(fp != NULL, "input file opened for EOF test");
