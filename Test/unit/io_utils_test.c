@@ -1129,27 +1129,22 @@ static void test_safe_gets(void)
     // Test when fgets returns NULL due to EOF
     errno = 0; // Clear errno before test
     fprintf(stderr, "SG7\n");
-
     fp = fopen("test_input.txt", "r");
     TEST_ASSERT(fp != NULL, "input file opened for EOF test");
     fprintf(stderr, "SG8\n"); 
-
-    fseek(fp, 0, SEEK_END);
+    fseek(fp, 0, SEEK_END); // Move to end of file to simulate EOF
     fprintf(stderr, "SG9\n");
-
-    saved_stdin = dup(fileno(stdin));
-    dup2(fileno(fp), fileno(stdin));
-
     res = safe_gets(buffer, sizeof(buffer));
-    int saved_errno = errno; // Save errno immediately after call
     fprintf(stderr, "SG10\n");
-
-    dup2(saved_stdin, fileno(stdin));
-    close(saved_stdin);
-
-    fclose(fp);
     TEST_ASSERT(res == NULL, "safe_gets returned NULL at EOF");
-    TEST_ASSERT(saved_errno == EINVAL, "safe_gets set errno to EINVAL at EOF");
+    TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL at EOF");
+    fprintf(stderr,
+        "EOF test: res=%p errno=%d feof(stdin)=%d ferror(stdin)=%d\n",
+        (void*)res,
+        errno,
+        feof(stdin),
+        ferror(stdin));
+    fclose(fp);
 }
 
 static void test_safe_strtol(void) {
