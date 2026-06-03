@@ -1034,7 +1034,7 @@ static void test_safe_freopen(void)
     TEST_ASSERT(err == errno, "safe_freopen returned the correct error code for NULL mode");
 
     // Test with invalid filename
-    FILE *invalidfile = fopen("temp.txt", "w");
+    FILE *invalidfile = tmpfile();
     TEST_ASSERT(invalidfile != NULL, "temp file opened");
 
     err = safe_freopen(&invalidfile, "/invalid_path/test_safe_freopen.txt", "w", invalidfile);
