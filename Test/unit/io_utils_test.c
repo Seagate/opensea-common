@@ -1113,11 +1113,18 @@ static void test_safe_gets(void)
     TEST_ASSERT(res == NULL, "safe_gets returned NULL for n = 0");
     TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for n = 0");
 
+#if defined(HAVE_MSFT_SECURE_LIB)
+    // Test for n > RSIZE_MAX
+    res = safe_gets(buffer, (size_t)RSIZE_MAX + 1);
+    TEST_ASSERT(res == NULL, "safe_gets returned NULL for n > RSIZE_MAX");
+    TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for n > RSIZE_MAX");
+#else
     // Test for n > INT_MAX
-    // fprintf(stderr, "SG5\n");
-    // res = safe_gets(buffer, (size_t)INT_MAX + 1);
-    // TEST_ASSERT(res == NULL, "safe_gets returned NULL for n > INT_MAX");
-    // TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for n > INT_MAX");
+    fprintf(stderr, "SG5\n");
+    res = safe_gets(buffer, (size_t)INT_MAX + 1);
+    TEST_ASSERT(res == NULL, "safe_gets returned NULL for n > INT_MAX");
+    TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for n > INT_MAX");
+#endif
 
     // Test for str = NULL
     errno = 0; // Clear errno before test
