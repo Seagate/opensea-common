@@ -1090,9 +1090,7 @@ static void test_safe_gets(void)
 
     dup2(fileno(fp), fileno(stdin));
 
-    fprintf(stderr, "SG1\n");
     char *res = safe_gets(buffer, sizeof(buffer));
-    fprintf(stderr, "SG2 res=%p\n", (void*)res);
 
     dup2(saved_stdin, fileno(stdin));
     close(saved_stdin);
@@ -1104,11 +1102,9 @@ static void test_safe_gets(void)
                 "safe_gets read correct string");
 
     // Test for n = 1
-    fprintf(stderr, "SG3\n");
     res = safe_gets(buffer, 1);
 
     // Test for n = 0
-    fprintf(stderr, "SG4\n");
     res = safe_gets(buffer, 0);
     TEST_ASSERT(res == NULL, "safe_gets returned NULL for n = 0");
     TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for n = 0");
@@ -1120,7 +1116,6 @@ static void test_safe_gets(void)
     TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for n > RSIZE_MAX");
 #else
     // Test for n > INT_MAX
-    fprintf(stderr, "SG5\n");
     res = safe_gets(buffer, (size_t)INT_MAX + 1);
     TEST_ASSERT(res == NULL, "safe_gets returned NULL for n > INT_MAX");
     TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for n > INT_MAX");
@@ -1128,7 +1123,6 @@ static void test_safe_gets(void)
 
     // Test for str = NULL
     errno = 0; // Clear errno before test
-    fprintf(stderr, "SG6\n");
     res = safe_gets(NULL, sizeof(buffer));
     TEST_ASSERT(res == NULL, "safe_gets returned NULL for str = NULL");
     TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for str = NULL");
@@ -1136,17 +1130,12 @@ static void test_safe_gets(void)
     // Test when fgets returns NULL due to EOF - test only for Linux
 #ifdef __linux__
     errno = 0; // Clear errno before test
-    fprintf(stderr, "SG7\n");
     fp = fopen("test_input.txt", "r");
     TEST_ASSERT(fp != NULL, "input file opened for EOF test");
-    fprintf(stderr, "SG8\n"); 
     fseek(fp, 0, SEEK_END); // Move to end of file to simulate EOF
-    fprintf(stderr, "SG9\n");
     res = safe_gets(buffer, sizeof(buffer));
-    fprintf(stderr, "SG10\n");
     TEST_ASSERT(res == NULL, "safe_gets returned NULL at EOF");
     TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL at EOF");
-    printf("errno after EOF test: %d\n", errno);
     fclose(fp);
 #endif
 }
