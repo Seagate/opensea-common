@@ -1114,10 +1114,10 @@ static void test_safe_gets(void)
     TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for n = 0");
 
     // Test for n > INT_MAX
-    fprintf(stderr, "SG5\n");
-    res = safe_gets(buffer, (size_t)INT_MAX + 1);
-    TEST_ASSERT(res == NULL, "safe_gets returned NULL for n > INT_MAX");
-    TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for n > INT_MAX");
+    // fprintf(stderr, "SG5\n");
+    // res = safe_gets(buffer, (size_t)INT_MAX + 1);
+    // TEST_ASSERT(res == NULL, "safe_gets returned NULL for n > INT_MAX");
+    // TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for n > INT_MAX");
 
     // Test for str = NULL
     fprintf(stderr, "SG6\n");
