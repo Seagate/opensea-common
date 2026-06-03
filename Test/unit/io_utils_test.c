@@ -987,25 +987,19 @@ static void test_safe_freopen(void)
 {
     printf("Testing safe_freopen. This should not be captured in the file.\n");
 
-    FILE *file = NULL;
+    FILE *stream = fopen("temp.txt", "w");
+    TEST_ASSERT(stream != NULL, "temp file opened");
 
-    int saved_stdout = dup(fileno(stdout));
+    FILE *newStream = NULL;
 
-    errno_t err = safe_freopen(&file, "test_safe_freopen.txt", "w", stdout);
+    errno_t err = safe_freopen(&newStream, "test_safe_freopen.txt", "w", stream);
 
-    TEST_ASSERT(err == 0, "safe_freopen returned success");
-    TEST_ASSERT(file != NULL, "safe_freopen redirected stdout successfully");
+    TEST_ASSERT(err == 0, "safe_freopen succeeded");
 
-    printf("Before freopen\n");
-    fflush(stdout);
+    fprintf(newStream, "Testing safe_freopen.\n");
+    fflush(newStream);
 
-    int rc = dup2(saved_stdout, fileno(stdout));
-    fprintf(stderr, "dup2 rc=%d errno=%d\n", rc, errno);
-
-    close(saved_stdout);
-    fprintf(stderr, "after close\n");
-
-    fflush(stdout);
+    fclose(newStream);
 
     char buffer[256] = {0};
     FILE *readFile = fopen("test_safe_freopen.txt", "r");
@@ -1027,12 +1021,12 @@ static void test_safe_freopen(void)
     TEST_ASSERT(err == errno, "safe_freopen returned the correct error code for NULL newstreamptr");
 
     // Test when stream == M_NULLPTR
-    err = safe_freopen(&file, "test_safe_freopen.txt", "w", NULL);
+    err = safe_freopen(&newStream, "test_safe_freopen.txt", "w", NULL);
     TEST_ASSERT(errno == EINVAL, "safe_freopen returned EINVAL for NULL stream");
     TEST_ASSERT(err == errno, "safe_freopen returned the correct error code for NULL stream");
 
     // Test when mode == M_NULLPTR
-    err = safe_freopen(&file, "test_safe_freopen.txt", NULL, stdout);
+    err = safe_freopen(&newStream, "test_safe_freopen.txt", NULL, stdout);
     TEST_ASSERT(errno == EINVAL, "safe_freopen returned EINVAL for NULL mode");
     TEST_ASSERT(err == errno, "safe_freopen returned the correct error code for NULL mode");
 
