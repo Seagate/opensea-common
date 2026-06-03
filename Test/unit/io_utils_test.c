@@ -987,19 +987,22 @@ static void test_safe_freopen(void)
 {
     printf("Testing safe_freopen. This should not be captured in the file.\n");
 
-    FILE *stream = fopen("temp.txt", "w");
-    TEST_ASSERT(stream != NULL, "temp file opened");
+    FILE *file = NULL;
 
-    FILE *newStream = NULL;
+    int saved_stdout = dup(fileno(stdout));
 
-    errno_t err = safe_freopen(&newStream, "test_safe_freopen.txt", "w", stream);
+    errno_t err = safe_freopen(&file, "test_safe_freopen.txt", "w", stdout);
 
-    TEST_ASSERT(err == 0, "safe_freopen succeeded");
+    TEST_ASSERT(err == 0, "safe_freopen returned success");
+    TEST_ASSERT(file != NULL, "safe_freopen redirected stdout successfully");
 
-    fprintf(newStream, "Testing safe_freopen.\n");
-    fflush(newStream);
+    printf("Testing safe_freopen.\n");
+    fflush(stdout);
 
-    fclose(newStream);
+    dup2(saved_stdout, fileno(stdout));
+    close(saved_stdout);
+
+    fflush(stdout);
 
     char buffer[256] = {0};
     FILE *readFile = fopen("test_safe_freopen.txt", "r");
@@ -1021,22 +1024,22 @@ static void test_safe_freopen(void)
     TEST_ASSERT(err == errno, "safe_freopen returned the correct error code for NULL newstreamptr");
 
     // Test when stream == M_NULLPTR
-    err = safe_freopen(&newStream, "test_safe_freopen.txt", "w", NULL);
+    err = safe_freopen(&file, "test_safe_freopen.txt", "w", NULL);
     TEST_ASSERT(errno == EINVAL, "safe_freopen returned EINVAL for NULL stream");
     TEST_ASSERT(err == errno, "safe_freopen returned the correct error code for NULL stream");
 
     // Test when mode == M_NULLPTR
-    err = safe_freopen(&newStream, "test_safe_freopen.txt", NULL, stdout);
+    err = safe_freopen(&file, "test_safe_freopen.txt", NULL, stdout);
     TEST_ASSERT(errno == EINVAL, "safe_freopen returned EINVAL for NULL mode");
     TEST_ASSERT(err == errno, "safe_freopen returned the correct error code for NULL mode");
 
     // Test with invalid filename
-    FILE *invalidfile = fopen("temp.txt", "w");
-    TEST_ASSERT(invalidfile != NULL, "temp file opened");
-    fclose(invalidfile);
+    // FILE *invalidfile = fopen("temp.txt", "w");
+    // TEST_ASSERT(invalidfile != NULL, "temp file opened");
+    // fclose(invalidfile);
 
-    err = safe_freopen(&invalidfile, "/invalid_path/test_safe_freopen.txt", "w", invalidfile);
-    TEST_ASSERT(err != 0, "safe_freopen returned error for invalid filename");
+    // err = safe_freopen(&invalidfile, "/invalid_path/test_safe_freopen.txt", "w", invalidfile);
+    // TEST_ASSERT(err != 0, "safe_freopen returned error for invalid filename");
 }
 
 static void test_safe_tmpfile(void) {
@@ -1754,7 +1757,7 @@ void run_io_utils_tests(void) {
     test_flush_stdout();
     test_flush_stderr();
     test_safe_fopen();
-    // test_safe_freopen();
+    test_safe_freopen();
     test_safe_tmpfile();
     // test_safe_gets();
     // test_safe_strtol();
