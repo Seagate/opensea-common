@@ -1135,6 +1135,12 @@ static void test_safe_gets(void)
     fseek(fp, 0, SEEK_END); // Move to end of file to simulate EOF
     fprintf(stderr, "SG9\n");
     res = safe_gets(buffer, sizeof(buffer));
+    fprintf(stderr,
+        "EOF test: res=%p errno=%d feof(stdin)=%d ferror(stdin)=%d\n",
+        (void*)res,
+        errno,
+        feof(stdin),
+        ferror(stdin));
     fprintf(stderr, "SG10\n");
     TEST_ASSERT(res == NULL, "safe_gets returned NULL at EOF");
     TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL at EOF");
