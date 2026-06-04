@@ -1792,5 +1792,5 @@ void run_io_utils_tests(void) {
     test_safe_atoll();
     test_safe_atof();
     test_checked_fputs();
-    // test_print_str();
+    test_print_str();
 }
