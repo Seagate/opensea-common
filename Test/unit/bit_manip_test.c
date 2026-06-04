@@ -1581,7 +1581,7 @@ static void test_count_leading_zeros_ui(void) {
 }
 
 static void test_count_leading_zeros_ul(void) {
-#if defined(UINT_WIDTH)
+#if defined(__linux__)
     uint64_t vals[] = {
         0x8000000000000000UL,
         0x4000000000000000UL,
@@ -1861,7 +1861,7 @@ static void test_count_leading_ones_ui(void) {
 }
 
 static void test_count_leading_ones_ul(void) {
-#if defined(UINT_WIDTH)
+#if defined(__linux__)
     uint64_t vals[] = {
         0x0000000000000000UL,
     	0x8000000000000000UL,
@@ -2140,7 +2140,7 @@ static void test_count_trailing_zeros_ui(void) {
 }
 
 static void test_count_trailing_zeros_ul(void) {
-#if defined(UINT_WIDTH)
+#if defined(__linux__)
     uint64_t vals[] = {
         0x0000000000000001UL,
         0x0000000000000002UL,
@@ -2420,7 +2420,7 @@ static void test_count_trailing_ones_ui(void) {
 }
 
 static void test_count_trailing_ones_ul(void) {
-#if defined(UINT_WIDTH)
+#if defined(__linux__)
     uint64_t vals[] = {
         0x0000000000000000UL,
         0x0000000000000001UL,
@@ -2700,7 +2700,7 @@ static void test_first_leading_one_ui(void) {
 }
 
 static void test_first_leading_one_ul(void) {
-#if defined(UINT_WIDTH)
+#if defined(__linux__)
     uint64_t vals[] = {
         0x0000000000000001UL,
         0x0000000000000003UL,
@@ -2978,7 +2978,7 @@ static void test_first_leading_zero_ui(void) {
 }
 
 static void test_first_leading_zero_ul(void) {
-#if defined(UINT_WIDTH)
+#if defined(__linux__)
     uint64_t vals[64] = {
         0x7FFFFFFFFFFFFFFFUL,
         0xBFFFFFFFFFFFFFFFUL,
@@ -3254,7 +3254,7 @@ static void test_count_ones_ui(void) {
 }
 
 static void test_count_ones_ul(void) {
-    #if defined(UINT_WIDTH)
+#if defined(__linux__)
     uint64_t vals[] = {
         0x0000000000000000UL,
     	0x8000000000000000UL,
@@ -3533,7 +3533,7 @@ static void test_count_zeros_ui(void) {
 }
 
 static void test_count_zeros_ul(void) {
-#if defined(UINT_WIDTH)
+#if defined(__linux__)
     uint64_t vals[] = {
         0x0000000000000000UL,
     	0x8000000000000000UL,
@@ -3843,7 +3843,7 @@ static void test_get_req_bit_width_ui(void) {
 }
 
 static void test_get_req_bit_width_ul(void) {
-#if defined(UINT_WIDTH)
+#if defined(__linux__)
     uint64_t vals[] = {
         0x8000000000000000UL,
         0x4000000000000000UL,
@@ -4125,7 +4125,7 @@ static void test_bit_floor_ui(void) {
 }
 
 static void test_bit_floor_ul(void) {
-#if defined(UINT_WIDTH)
+#if defined(__linux__)
     uint64_t vals[] = {
         0x8000000000000000UL,
         0x4000000000000000UL,
@@ -4408,7 +4408,7 @@ static void test_rotate_left_ui(void) {
 }
 
 static void test_rotate_left_ul(void) {
-#if defined(UINT_WIDTH)
+#if defined(__linux__)
     TEST_ASSERT_EQ(rotate_left_ul(0x9A7F3C5D82B1E6A4UL, 0), 0x9A7F3C5D82B1E6A4UL, "Shift the value left by 0 bits");
     TEST_ASSERT_EQ(rotate_left_ul(0x9A7F3C5D82B1E6A4UL, 3), 0xD3F9E2EC158F3524UL, "Shift the value left by 3 bits");
     TEST_ASSERT_EQ(rotate_left_ul(0x9A7F3C5D82B1E6A4UL, 8), 0x7F3C5D82B1E6A49AUL, "Shift the value left by 8 bits");
@@ -4468,7 +4468,7 @@ static void test_rotate_right_ui(void) {
 }
 
 static void test_rotate_right_ul(void) {
-#if defined(UINT_WIDTH)
+#if defined(__linux__)
     TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 0), 0x9A7F3C5D82B1E6A4UL, "Shift the value right by 0 bits");
     TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 3), 0x934FE78BB0563CD4UL, "Shift the value right by 3 bits");
     TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 8), 0xA49A7F3C5D82B1E6UL, "Shift the value right by 8 bits");
