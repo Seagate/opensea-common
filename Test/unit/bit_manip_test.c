@@ -1581,7 +1581,7 @@ static void test_count_leading_zeros_ui(void) {
 }
 
 static void test_count_leading_zeros_ul(void) {
-#if defined(__linux__)
+#if defined(LP64_DATA_MODEL)
     uint64_t vals[] = {
         0x8000000000000000UL,
         0x4000000000000000UL,
@@ -1656,7 +1656,7 @@ static void test_count_leading_zeros_ul(void) {
         TEST_ASSERT_EQ(count_leading_zeros_ul(vals[i]), i, msg);
     }
 
-#elif defined(ULONG_WIDTH)
+#else
     unsigned long vals[] = {
         0x80000000UL,
         0x40000000UL,
@@ -1861,7 +1861,7 @@ static void test_count_leading_ones_ui(void) {
 }
 
 static void test_count_leading_ones_ul(void) {
-#if defined(__linux__)
+#if defined(LP64_DATA_MODEL)
     uint64_t vals[] = {
         0x0000000000000000UL,
     	0x8000000000000000UL,
@@ -1935,7 +1935,7 @@ static void test_count_leading_ones_ul(void) {
         snprintf(msg, sizeof(msg), "%lu leading ones in unsigned long", i);
         TEST_ASSERT_EQ(count_leading_ones_ul(vals[i]), i, msg);
     }
-#elif defined(ULONG_WIDTH)
+#else
     unsigned long vals[] = {
         0x00000000UL,
         0x80000000UL,
@@ -2140,7 +2140,7 @@ static void test_count_trailing_zeros_ui(void) {
 }
 
 static void test_count_trailing_zeros_ul(void) {
-#if defined(__linux__)
+#if defined(LP64_DATA_MODEL)
     uint64_t vals[] = {
         0x0000000000000001UL,
         0x0000000000000002UL,
@@ -2215,7 +2215,7 @@ static void test_count_trailing_zeros_ul(void) {
         TEST_ASSERT_EQ(count_trailing_zeros_ul(vals[i]), i, msg);
     }
 
-#elif defined(ULONG_WIDTH)
+#else
     unsigned long vals[] = {
         0x00000001UL,
         0x00000002UL,
@@ -2420,7 +2420,7 @@ static void test_count_trailing_ones_ui(void) {
 }
 
 static void test_count_trailing_ones_ul(void) {
-#if defined(__linux__)
+#if defined(LP64_DATA_MODEL)
     uint64_t vals[] = {
         0x0000000000000000UL,
         0x0000000000000001UL,
@@ -2495,7 +2495,7 @@ static void test_count_trailing_ones_ul(void) {
         TEST_ASSERT_EQ(count_trailing_ones_ul(vals[i]), i, msg);
     }
 
-#elif defined(ULONG_WIDTH)
+#else
     unsigned long vals[] = {
         0x00000000UL,
         0x00000001UL,
@@ -2700,7 +2700,7 @@ static void test_first_leading_one_ui(void) {
 }
 
 static void test_first_leading_one_ul(void) {
-#if defined(__linux__)
+#if defined(LP64_DATA_MODEL)
     uint64_t vals[] = {
         0x0000000000000001UL,
         0x0000000000000003UL,
@@ -2775,7 +2775,7 @@ static void test_first_leading_one_ul(void) {
         TEST_ASSERT_EQ(first_leading_one_ul(vals[i]), 64-i, msg);
     }
 
-#elif defined(ULONG_WIDTH)
+#else
     unsigned long vals[] = {
         0x00000001UL,
         0x00000003UL,
@@ -2978,7 +2978,7 @@ static void test_first_leading_zero_ui(void) {
 }
 
 static void test_first_leading_zero_ul(void) {
-#if defined(__linux__)
+#if defined(LP64_DATA_MODEL)
     uint64_t vals[64] = {
         0x7FFFFFFFFFFFFFFFUL,
         0xBFFFFFFFFFFFFFFFUL,
@@ -3051,7 +3051,7 @@ static void test_first_leading_zero_ul(void) {
         snprintf(msg, sizeof(msg), "First leading 0 on bit position %lu in unsigned long", i+1);
         TEST_ASSERT_EQ(first_leading_zero_ul(vals[i]), i+1, msg);
     }
-#elif defined(ULONG_WIDTH) 
+#else
     unsigned long vals[32] = {
         0x7FFFFFFFUL,
         0xBFFFFFFFUL,
@@ -3254,7 +3254,7 @@ static void test_count_ones_ui(void) {
 }
 
 static void test_count_ones_ul(void) {
-#if defined(__linux__)
+#if defined(LP64_DATA_MODEL)
     uint64_t vals[] = {
         0x0000000000000000UL,
     	0x8000000000000000UL,
@@ -3328,7 +3328,7 @@ static void test_count_ones_ul(void) {
         snprintf(msg, sizeof(msg), "%lu ones in unsigned long", i);
         TEST_ASSERT_EQ(count_ones_ul(vals[i]), i, msg);
     }
-#elif defined(ULONG_WIDTH) 
+#else
     unsigned long vals[] = {
         0x00000000UL,
         0x80000000UL,
@@ -3533,7 +3533,7 @@ static void test_count_zeros_ui(void) {
 }
 
 static void test_count_zeros_ul(void) {
-#if defined(__linux__)
+#if defined(LP64_DATA_MODEL)
     uint64_t vals[] = {
         0x0000000000000000UL,
     	0x8000000000000000UL,
@@ -3608,7 +3608,7 @@ static void test_count_zeros_ul(void) {
         TEST_ASSERT_EQ(count_zeros_ul(vals[i]), 64-i, msg);
     }
 
-#elif defined(ULONG_WIDTH) 
+#else
     unsigned long vals[] = {
         0x00000000UL,
         0x80000000UL,
@@ -3843,7 +3843,7 @@ static void test_get_req_bit_width_ui(void) {
 }
 
 static void test_get_req_bit_width_ul(void) {
-#if defined(__linux__)
+#if defined(LP64_DATA_MODEL)
     uint64_t vals[] = {
         0x8000000000000000UL,
         0x4000000000000000UL,
@@ -3918,7 +3918,7 @@ static void test_get_req_bit_width_ul(void) {
         TEST_ASSERT_EQ(get_req_bit_width_ul(vals[i]), 64-i, msg);
     }
 
-#elif defined(ULONG_WIDTH)
+#else
     unsigned long vals[] = {
         0x80000000UL,
         0x40000000UL,
@@ -4125,7 +4125,7 @@ static void test_bit_floor_ui(void) {
 }
 
 static void test_bit_floor_ul(void) {
-#if defined(__linux__)
+#if defined(LP64_DATA_MODEL)
     uint64_t vals[] = {
         0x8000000000000000UL,
         0x4000000000000000UL,
@@ -4200,7 +4200,7 @@ static void test_bit_floor_ul(void) {
         TEST_ASSERT_EQ(bit_floor_ul(vals[i]), 1UL << (63-i), msg);
     }
 
-#elif defined(ULONG_WIDTH)
+#else
     unsigned long vals[] = {
         0x80000000UL,
         0x40000000UL,
@@ -4408,7 +4408,7 @@ static void test_rotate_left_ui(void) {
 }
 
 static void test_rotate_left_ul(void) {
-#if defined(__linux__)
+#if defined(LP64_DATA_MODEL)
     TEST_ASSERT_EQ(rotate_left_ul(0x9A7F3C5D82B1E6A4UL, 0), 0x9A7F3C5D82B1E6A4UL, "Shift the value left by 0 bits");
     TEST_ASSERT_EQ(rotate_left_ul(0x9A7F3C5D82B1E6A4UL, 3), 0xD3F9E2EC158F3524UL, "Shift the value left by 3 bits");
     TEST_ASSERT_EQ(rotate_left_ul(0x9A7F3C5D82B1E6A4UL, 8), 0x7F3C5D82B1E6A49AUL, "Shift the value left by 8 bits");
@@ -4419,7 +4419,7 @@ static void test_rotate_left_ul(void) {
     TEST_ASSERT_EQ(rotate_left_ul(0x9A7F3C5D82B1E6A4UL, 46), 0x79A9269FCF1760ACUL, "Shift the value left by 46 bits");
     TEST_ASSERT_EQ(rotate_left_ul(0x9A7F3C5D82B1E6A4UL, 64), 0x9A7F3C5D82B1E6A4UL, "Shift the value left by 64 bits");
 
-#elif defined(ULONG_WIDTH)
+#else
     TEST_ASSERT_EQ(rotate_left_ul(0x82B1E6A4UL, 0),  0x82B1E6A4UL, "Shift the value left by 0 bits");
     TEST_ASSERT_EQ(rotate_left_ul(0x82B1E6A4UL, 3),  0x158F3524UL, "Shift the value left by 3 bits");
     TEST_ASSERT_EQ(rotate_left_ul(0x82B1E6A4UL, 8),  0xB1E6A482UL, "Shift the value left by 8 bits");
@@ -4468,7 +4468,7 @@ static void test_rotate_right_ui(void) {
 }
 
 static void test_rotate_right_ul(void) {
-#if defined(__linux__)
+#if defined(LP64_DATA_MODEL)
     TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 0), 0x9A7F3C5D82B1E6A4UL, "Shift the value right by 0 bits");
     TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 3), 0x934FE78BB0563CD4UL, "Shift the value right by 3 bits");
     TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 8), 0xA49A7F3C5D82B1E6UL, "Shift the value right by 8 bits");
@@ -4479,7 +4479,7 @@ static void test_rotate_right_ul(void) {
     TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 46), 0xF1760AC79A9269FCUL, "Shift the value right by 46 bits");
     TEST_ASSERT_EQ(rotate_right_ul(0x9A7F3C5D82B1E6A4UL, 64), 0x9A7F3C5D82B1E6A4UL, "Shift the value right by 64 bits");
 
-#elif defined(ULONG_WIDTH)
+#else
     TEST_ASSERT_EQ(rotate_right_ul(0x82B1E6A4UL, 0),  0x82B1E6A4UL, "Shift the value right by 0 bits");
     TEST_ASSERT_EQ(rotate_right_ul(0x82B1E6A4UL, 3),  0x90563CD4UL, "Shift the value right by 3 bits");
     TEST_ASSERT_EQ(rotate_right_ul(0x82B1E6A4UL, 8),  0xA482B1E6UL, "Shift the value right by 8 bits");
