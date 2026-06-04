@@ -1785,7 +1785,7 @@ void run_io_utils_tests(void) {
     test_safe_strtoimax();
     test_safe_strtoumax();
     test_safe_strtof();
-    // test_safe_strtod();
+    test_safe_strtod();
     // test_safe_strtold();
     // test_safe_atoi();
     // test_safe_atol();
