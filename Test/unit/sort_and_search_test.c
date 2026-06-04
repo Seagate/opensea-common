@@ -267,6 +267,6 @@ void run_sort_and_search_tests(void) {
     test_safe_bsearch_context();
     test_safe_lsearch();
     test_safe_lsearch_context();
-    // test_safe_lfind();
+    test_safe_lfind();
     // test_safe_lfind_context();
 }
