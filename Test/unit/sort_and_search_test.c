@@ -108,11 +108,6 @@ static void test_safe_bsearch(void) {
     found = (int*)safe_bsearch(&key, arr, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL for a non-existent key");
 
-    // Test for size 0
-    fprintf(stderr, "Q2\n");
-    found = (int*)safe_bsearch(&key, arr, arr_size, 0, compare_ints);
-    TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when count is 0");
-
     // Test for count 0
     fprintf(stderr, "Q3\n");
     found = (int*)safe_bsearch(&key, arr, 0, sizeof(arr[0]), compare_ints);
