@@ -98,53 +98,43 @@ static void test_safe_bsearch(void) {
     int arr[] = {1, 2, 5, 5, 6, 9};
     size_t arr_size = sizeof(arr) / sizeof(arr[0]);
     int key = 5;
-    fprintf(stderr, "Q1\n");
     int* found = (int*)safe_bsearch(&key, arr, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found != NULL && *found == key, "safe_bsearch finds the key in the array");
 
     // Test searching for a non-existent key
     key = 10;
-    fprintf(stderr, "Q2\n");
     found = (int*)safe_bsearch(&key, arr, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL for a non-existent key");
 
     // Test for count 0
-    fprintf(stderr, "Q3\n");
     found = (int*)safe_bsearch(&key, arr, 0, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when count is 0");
 
     // Test when ptr = NULL - calls abort handler
-    fprintf(stderr, "Q4\n");
     found = (int*)safe_bsearch(&key, NULL, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when ptr is NULL");
     TEST_ASSERT(errno == EINVAL, "safe_bsearch returns EINVAL when ptr is NULL");
 
     // Test when compare = NULL - calls abort handler
-    fprintf(stderr, "Q5\n");
     found = safe_bsearch(&key, arr, arr_size, sizeof(arr[0]), NULL);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when compare is NULL");
     TEST_ASSERT(errno == EINVAL, "safe_bsearch returns EINVAL when compare is NULL");
 
 
     // Test when key = NULL - calls abort handler
-    fprintf(stderr, "Q6\n");
     found = safe_bsearch(NULL, arr, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when key is NULL");
     TEST_ASSERT(errno == EINVAL, "safe_bsearch returns EINVAL when key is NULL");
 
     // Test when count > RSIZE_MAX - calls abort handler
-    fprintf(stderr, "Q7\n");
     found = safe_bsearch(&key, arr, RSIZE_MAX + 1, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when count is greater than RSIZE_MAX");
     TEST_ASSERT(errno == ERANGE, "safe_bsearch returns ERANGE when count is greater than RSIZE_MAX");
 
     // Test when size > RSIZE_MAX - calls abort handler
-    fprintf(stderr, "Q8\n");
     found = safe_bsearch(&key, arr, arr_size, RSIZE_MAX + 1, compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when size is greater than RSIZE_MAX");
     TEST_ASSERT(errno == ERANGE, "safe_bsearch returns ERANGE when size is greater than RSIZE_MAX");
-
-    fprintf(stderr, "Q9\n");
 }
 
 typedef struct {
@@ -274,7 +264,7 @@ void run_sort_and_search_tests(void) {
     test_safe_qsort();
     test_safe_qsort_context();
     test_safe_bsearch();
-    // test_safe_bsearch_context();
+    test_safe_bsearch_context();
     // test_safe_lsearch();
     // test_safe_lsearch_context();
     // test_safe_lfind();
