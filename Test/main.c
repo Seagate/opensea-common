@@ -10,7 +10,7 @@ void run_io_utils_tests(void);
 void run_memory_safety_tests(void);
 void run_pattern_utils_tests(void);
 void run_sort_and_search_tests(void);
-// void run_type_conversion_tests(void);
+void run_type_conversion_tests(void);
 // void run_unit_conversion_tests(void);
 // void run_precision_timer_and_sleep_tests(void);
 // #if defined(__linux__)
@@ -32,7 +32,7 @@ int main(void)
     run_memory_safety_tests();
     run_pattern_utils_tests();
     run_sort_and_search_tests();
-    // run_type_conversion_tests();
+    run_type_conversion_tests();
     // run_unit_conversion_tests();
     // run_precision_timer_and_sleep_tests();
     // #if defined(__linux__)
