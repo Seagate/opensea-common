@@ -275,7 +275,7 @@ static void test_safe_lfind_context(void) {
 
 void run_sort_and_search_tests(void) {
     test_safe_qsort();
-    // test_safe_qsort_context();
+    test_safe_qsort_context();
     // test_safe_bsearch();
     // test_safe_bsearch_context();
     // test_safe_lsearch();
