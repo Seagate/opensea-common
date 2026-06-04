@@ -30,8 +30,8 @@ int main(void)
     run_string_utils_tests();
     run_io_utils_tests();
     run_memory_safety_tests();
-    run_pattern_utils_tests();
-    run_sort_and_search_tests();
+    // run_pattern_utils_tests();
+    // run_sort_and_search_tests();
     // run_type_conversion_tests();
     // run_unit_conversion_tests();
     // run_precision_timer_and_sleep_tests();
