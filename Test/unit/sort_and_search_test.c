@@ -27,37 +27,47 @@ static int compare_chars(const void* a, const void* b)
 static void test_safe_qsort(void) {
     int arr[] = {5, 2, 9, 1, 5, 6}; 
     size_t arr_size = sizeof(arr) / sizeof(arr[0]);
+    fprintf(stderr, "Q1\n");
     errno_t result = safe_qsort(arr, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(result == 0, "safe_qsort correctly sorts the array");
 
     char char_arr[] = {'z', 'a', 'q', 'b', 'm', 'a'};
     size_t char_arr_size = sizeof(char_arr) / sizeof(char_arr[0]);
+    fprintf(stderr, "Q2\n");
     result = safe_qsort(char_arr, char_arr_size, sizeof(char_arr[0]), compare_chars);
     TEST_ASSERT(result == 0, "safe_qsort correctly sorts the character array");
 
     // Test for size 0
+    fprintf(stderr, "Q3\n");
     result = safe_qsort(arr, arr_size, 0, compare_ints);
     TEST_ASSERT(result == 0, "safe_qsort returns 0 when size is 0");
 
     // Test for count 0
+    fprintf(stderr, "Q4\n");
     result = safe_qsort(arr, 0, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(result == 0, "safe_qsort returns 0 when count is 0");
 
     // Test when ptr = NULL - calls abort handler
+    fprintf(stderr, "Q5\n");
     result = safe_qsort(NULL, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(result == EINVAL, "safe_qsort returns EINVAL when ptr is NULL");
 
     // Test when compare = NULL - calls abort handler
+    fprintf(stderr, "Q6\n");
     result = safe_qsort(arr, arr_size, sizeof(arr[0]), NULL);
     TEST_ASSERT(result == EINVAL, "safe_qsort returns EINVAL when compare is NULL");
 
     // Test when count > RSIZE_MAX - calls abort handler
+    fprintf(stderr, "Q7\n");
     result = safe_qsort(arr, RSIZE_MAX + 1, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(result == ERANGE, "safe_qsort returns ERANGE when count is greater than RSIZE_MAX");
 
     // Test when size > RSIZE_MAX - calls abort handler
+    fprintf(stderr, "Q8\n");
     result = safe_qsort(arr, arr_size, RSIZE_MAX + 1, compare_ints);
     TEST_ASSERT(result == ERANGE, "safe_qsort returns ERANGE when size is greater than RSIZE_MAX");
+
+    fprintf(stderr, "Q9\n");
 }
 
 typedef struct {
