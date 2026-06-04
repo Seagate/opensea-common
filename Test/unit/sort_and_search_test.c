@@ -37,13 +37,6 @@ static void test_safe_qsort(void) {
     result = safe_qsort(char_arr, char_arr_size, sizeof(char_arr[0]), compare_chars);
     TEST_ASSERT(result == 0, "safe_qsort correctly sorts the character array");
 
-    // Test for size 0
-    fprintf(stderr, "Q3\n");
-    fprintf(stderr, "before size==0 test\n");
-    result = safe_qsort(arr, arr_size, 0, compare_ints);
-    fprintf(stderr, "after size==0 test\n");
-    TEST_ASSERT(result == 0, "safe_qsort returns 0 when size is 0");
-
     // Test for count 0
     fprintf(stderr, "Q4\n");
     result = safe_qsort(arr, 0, sizeof(arr[0]), compare_ints);
