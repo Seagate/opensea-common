@@ -10,7 +10,7 @@ test_sources = [
     'unit/pattern_utils_test.c',
     'unit/sort_and_search_test.c',
     'unit/type_conversion_test.c',
-    #'unit/unit_conversion_test.c',
+    'unit/unit_conversion_test.c',
     #'unit/precision_timer_and_sleep_test.c',
     #'unit/secure_file_test.c',
     'main.c',
