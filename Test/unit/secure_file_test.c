@@ -931,13 +931,13 @@ static void test_get_Full_Path(void) {
 }
 
 static void test_replace_File_Name_In_Path(void) {
-    const char* filename = "test_replace_filename.txt";
+    char filename[] = "test_replace_filename.txt";
     FILE* f = fopen(filename, "w");
     fprintf(f, "hello");
     fclose(f);
 
     // When fullpath is invalid, replace_File_Name_In_Path should fail
-    eReturnValues result = replace_File_Name_In_Path("testfile.txt", "newfile.txt");
+    eReturnValues result = replace_File_Name_In_Path(filename, "newfile.txt");
     TEST_ASSERT(result == FAILURE, "replace_File_Name_In_Path should fail with invalid fullpath");
 
     char fullpath[260] = {0};
@@ -946,10 +946,9 @@ static void test_replace_File_Name_In_Path(void) {
     result = get_Full_Path(abs_path, fullpath);
     TEST_ASSERT(result == SUCCESS, "get_Full_Path should succeed");
 
-    char newPath[260] = {0};
     result = replace_File_Name_In_Path(fullpath, "newfile.txt");
     TEST_ASSERT(result == SUCCESS, "replace_File_Name_In_Path should succeed");
-    TEST_ASSERT(strstr(fullpath, "newfile.txt") != NULL, "New path should contain the new filename");
+    TEST_ASSERT(strstr(fullpath, "newfile.txt") != NULL, "The path should contain the new filename");
 
     free(abs_path);
     remove(filename);
