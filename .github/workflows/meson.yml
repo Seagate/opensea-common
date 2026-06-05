@@ -94,6 +94,13 @@ jobs:
       run: |
         choco install mingw -y
 
+    - name: Show compiler versions (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        gcc --version
+        g++ --version
+
     - name: Setup MSVC
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
