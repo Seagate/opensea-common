@@ -37,23 +37,23 @@ jobs:
             buildtype: "debug"
           }
 
-          - {
-            name: "Windows Clang-CL",
-            os: windows-latest,
-            cc: "clang-cl",
-            cxx: "clang-cl",
-            meson_opts: "-Db_vscrt=static_from_buildtype -Db_coverage=true -Ddiagnose-if-attr=disabled",
-            buildtype: "debug"
-          }
-
           # - {
-          #     name: "Windows MinGW",
-          #     os: windows-latest,
-          #     cc: "gcc",
-          #     cxx: "g++",
-          #     meson_opts: "-Db_coverage=true -Dc_std=c23",
-          #     buildtype: "debug"
-          #   }
+          #   name: "Windows Clang-CL",
+          #   os: windows-latest,
+          #   cc: "clang-cl",
+          #   cxx: "clang-cl",
+          #   meson_opts: "-Db_vscrt=static_from_buildtype -Db_coverage=true -Ddiagnose-if-attr=disabled",
+          #   buildtype: "debug"
+          # }
+
+          - {
+              name: "Windows MinGW",
+              os: windows-latest,
+              cc: "gcc",
+              cxx: "g++",
+              meson_opts: "-Db_coverage=true -Dc_std=c23",
+              buildtype: "debug"
+            }
 
           - {
               name: "Windows MSVC",
