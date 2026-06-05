@@ -94,15 +94,6 @@ jobs:
       run: |
         choco install mingw -y
 
-    - name: Show compiler versions (MinGW)
-      if: matrix.config.name == 'Windows MinGW'
-      shell: pwsh
-      run: |
-        gcc --version
-        g++ --version
-        where.exe gcc
-        where.exe g++
-
     - name: Setup MSVC
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
@@ -132,12 +123,6 @@ jobs:
           --buildtype=${{ matrix.config.buildtype }} `
           ${{ matrix.config.meson_opts }}
 
-    - name: Show Meson configuration log (MinGW)
-      if: always() && matrix.config.name == 'Windows MinGW'
-      shell: pwsh
-      run: |
-        Get-Content Meson/Executables/meson-logs/meson-log.txt
-
     - name: Build with Meson (Linux)
       if: runner.os == 'Linux'
       shell: bash
@@ -164,19 +149,11 @@ jobs:
       run: |
         meson test -C Meson/Executables --verbose
 
-    # - name: Show Meson test log on failure
-    #   if: failure()
-    #   shell: pwsh
-    #   run: |
-    #     Get-Content Meson/Executables/meson-logs/testlog.txt
-
-    - name: Show Meson test log (MinGW)
-      if: always() && matrix.config.name == 'Windows MinGW'
+    - name: Show Meson test log on failure
+      if: failure()
       shell: pwsh
       run: |
-        if (Test-Path "Meson/Executables/meson-logs/testlog.txt") {
-          Get-Content Meson/Executables/meson-logs/testlog.txt
-        }
+        Get-Content Meson/Executables/meson-logs/testlog.txt
 
     - name: Generate coverage (Linux only)
       if: runner.os == 'Linux'
