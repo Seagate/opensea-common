@@ -7,6 +7,9 @@ c = meson.get_compiler('c')
 global_cpp_args = []
 deps = []
 
+# Work around for pre-GCC5 to use a newer standard to compile.
+# This generates a warning over using build-in c_std option, but
+# we live with that for now since we support older meson versions presently.
 if not (target_machine.system() == 'sunos') and c.get_id().contains('gcc')
     if c.version().version_compare('<5.0')
         # 4.7.4+ has C11 support, but c89 is the default standard so we need to change it.
@@ -21,6 +24,7 @@ if not (target_machine.system() == 'sunos') and c.get_id().contains('gcc')
     endif
 endif
 
+genericargs = []
 warning_flags = []
 linker_flags = []  #additional linker flags to add per-compiler for hardening.
 
@@ -255,11 +259,18 @@ elif c.get_id().contains('msvc')
         warning_flags += '/QIntel-jcc-erratum'
     endif
 
-    # If this MSVC version supports /std:c17, force C17 mode. MSVC defaults to a
-    # pre-C99 dialect without this flag, which means _Generic and other C11/C17
-    # features are unavailable even though the compiler supports them.
-    if c.has_argument('/std:c17')
+    # MSVC defaults to old MSVC C compatibility which is mostly C89 with some newer C99/C11-ish support
+    # Since we support older meson versions, we deal with this causing a warning over using the default_options to
+    # set the C standard for the project.
+    if  c.has_argument('/std:clatest')
+        genericargs += '/std:clatest'
+        warning_flags += '/std:clatest'
+    elif  c.has_argument('/std:c17')
+        genericargs += '/std:c17'
         warning_flags += '/std:c17'
+    elif  c.has_argument('/std:c11')
+        genericargs += '/std:c11'
+        warning_flags += '/std:c11'
     endif
 
     linker_flags += [
@@ -462,10 +473,7 @@ gernericSelectionTest = '''
                           return 0;
                       }
                   '''
-genericargs = []
-if c.get_id().contains('msvc') and c.has_argument('/std:c17')
-    genericargs += '/std:c17'
-endif
+
 genericSelectionTestResult = c.compiles(gernericSelectionTest, name: 'Generic Selection Support', args: genericargs)
 if genericSelectionTestResult == true
     global_cpp_args += ['-DHAVE_C11_GENERIC_SELECTION']
@@ -475,6 +483,10 @@ constexprTest = ' int main (void) { constexpr int i = 50; int j = 0; return j / 
 constexprTestResult = c.compiles(constexprTest, name: 'Constexpr Support')
 if constexprTestResult == true
     global_cpp_args += ['-DHAVE_CONSTEXPR']
+endif
+
+if c.has_type('nullptr_t', prefix: '#include <stddef.h>')
+    global_cpp_args += ['-DHAVE_NULLPTR_T']
 endif
 
 

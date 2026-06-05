@@ -371,22 +371,30 @@ void* M_NULLABLE realloc_page_aligned(void* M_NULLABLE alignedPtr, size_t origin
     }
 }
 
-M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* M_NONNULL ptrData, size_t lengthBytes)
+M_NONNULL_PARAM_LIST(1)
+M_PARAM_RO_SIZE(1, 2) bool is_Buffer_All_ByteValue(const void* ptrData, size_t lengthBytes, uint8_t byteValue)
 {
+    DISABLE_NONNULL_COMPARE
     if (ptrData != M_NULLPTR && lengthBytes > SIZE_T_C(0))
     {
-        const uint8_t* byteptr = C_CAST(const uint8_t*, ptrData);
+        const uint_fast8_t* byteptr = C_CAST(const uint_fast8_t*, ptrData);
         for (size_t iter = SIZE_T_C(0), iterEnd = lengthBytes - SIZE_T_C(1); iter < lengthBytes && iterEnd >= iter;
              ++iter, --iterEnd)
         {
-            if (byteptr[iter] != UINT8_C(0) || byteptr[iterEnd] != UINT8_C(0))
+            if (byteptr[iter] != byteValue || byteptr[iterEnd] != byteValue)
             {
                 return false;
             }
         }
         return true;
     }
+    RESTORE_NONNULL_COMPARE
     return false;
+}
+
+M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* ptrData, size_t lengthBytes)
+{
+    return is_Buffer_All_ByteValue(ptrData, lengthBytes, 0);
 }
 
 M_PARAM_WO_SIZE(1, 2)
