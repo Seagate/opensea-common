@@ -584,7 +584,14 @@ typedef int32_t intptr_t;
 #if defined(USING_CPP98)
 // NOTE: This is declared at the bottom of the file outside of the extern "C" to avoid warnings/errors.
 #else // C
-#    if defined(USING_C23)
+#    if defined(USING_C23) && defined(_MSC_VER) && !defined(__clang__)
+#        if defined(HAVE_NULLPTR_T)
+#            define HAVE_NULLPTR
+#        endif
+#    elif defined(USING_C23)
+#        define HAVE_NULLPTR
+#    endif
+#    if defined(HAVE_NULLPTR)
 #        define M_NULLPTR nullptr
 #    elif defined(HAS_IS_IDENTIFIER) && !__is_identifier(__nullptr)
 #        define M_NULLPTR __nullptr
