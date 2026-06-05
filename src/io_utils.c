@@ -449,7 +449,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         ssize_t inputRes = getline(userInput, inputDataLen, stdin);
         if (inputRes <= 0)
         {
-            ret = M_ACCESS_ENUM(eReturnValues, FAILURE);
+            ret           = M_ACCESS_ENUM(eReturnValues, FAILURE);
             *inputDataLen = 0;
             safe_free(userInput);
         }
@@ -1105,7 +1105,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     // now read the input with getline
     if (inputRes <= 0)
     {
-        ret = FAILURE;
+        ret           = FAILURE;
         *inputDataLen = 0;
         safe_free(userInput);
     }
@@ -1219,10 +1219,10 @@ static M_INLINE bool is_Allowed_Datasize_Unit(const char* unit)
 {
     bool allowed = false;
     // allowed units must match exactly at the end of the string!
-    if (strcasecmp(unit, "B") == 0 || strcasecmp(unit, "KB") == 0 || strcasecmp(unit, "KiB") == 0 || strcasecmp(unit, "MB") == 0 ||
-        strcasecmp(unit, "MiB") == 0 || strcasecmp(unit, "GB") == 0 || strcasecmp(unit, "GiB") == 0 || strcasecmp(unit, "TB") == 0 ||
-        strcasecmp(unit, "TiB") == 0 || strcasecmp(unit, "BLOCKS") == 0 || strcasecmp(unit, "SECTORS") == 0 ||
-        strcasecmp(unit, "") == 0)
+    if (strcasecmp(unit, "B") == 0 || strcasecmp(unit, "KB") == 0 || strcasecmp(unit, "KiB") == 0 ||
+        strcasecmp(unit, "MB") == 0 || strcasecmp(unit, "MiB") == 0 || strcasecmp(unit, "GB") == 0 ||
+        strcasecmp(unit, "GiB") == 0 || strcasecmp(unit, "TB") == 0 || strcasecmp(unit, "TiB") == 0 ||
+        strcasecmp(unit, "BLOCKS") == 0 || strcasecmp(unit, "SECTORS") == 0 || strcasecmp(unit, "") == 0)
     {
         allowed = true;
     }
@@ -1408,8 +1408,8 @@ static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str, eAllow
     // Original logic for ALLOW_UNIT_NONE: hex (0x prefix or h suffix) is allowed
     if (str != M_NULLPTR)
     {
-        const char* temp = str;
-        size_t     templen = safe_strlen(str);
+        const char* temp    = str;
+        size_t      templen = safe_strlen(str);
         // check for 0x at the beginning for hex.
         if (strstr(str, "0x") == str || strstr(str, "0X") == str)
         {
@@ -3742,7 +3742,7 @@ errno_t get_And_Validate_Celsius_Input_int16(const char* input_str, int16_t* out
     }
 
     int16_t tempValue = 0;
-    char *unit = M_NULLPTR;
+    char*   unit      = M_NULLPTR;
 
     bool ret = get_And_Validate_Integer_Input_Int16(input_str, &unit, ALLOW_UNIT_TEMPERATURE, &tempValue);
     if (!ret)
@@ -3785,7 +3785,7 @@ errno_t get_And_Validate_Milliwatt_Input_uint32(const char* input_str, uint32_t*
     }
 
     uint64_t mw_value = 0;
-    char *unit = M_NULLPTR;
+    char*    unit     = M_NULLPTR;
 
     bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_POWER, &mw_value);
     if (!ret)
@@ -3798,7 +3798,7 @@ errno_t get_And_Validate_Milliwatt_Input_uint32(const char* input_str, uint32_t*
     {
         if (strcasecmp(unit, "W") == 0)
         {
-            mw_value *= UINT64_C(1000);  // W to mW
+            mw_value *= UINT64_C(1000); // W to mW
             if (mw_value > UINT32_MAX)
             {
                 *outputValue = 0;
@@ -3820,7 +3820,7 @@ errno_t get_And_Validate_Byte_Input_uint64(const char* input_str, uint64_t* outp
     }
 
     uint64_t tempValue = 0;
-    char *unit = M_NULLPTR;
+    char*    unit      = M_NULLPTR;
 
     bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_DATASIZE, &tempValue);
     if (!ret)
@@ -3866,7 +3866,7 @@ errno_t get_And_Validate_Byte_Input_uint64(const char* input_str, uint64_t* outp
         }
         // If 'B' or other valid unit, tempValue is already in bytes
 
-        if (byte_value < tempValue)  // Overflow check
+        if (byte_value < tempValue) // Overflow check
         {
             *outputValue = 0;
             return EOVERFLOW;
@@ -3885,7 +3885,7 @@ errno_t get_And_Validate_Millisecond_Input_uint32(const char* input_str, uint32_
     }
 
     uint64_t tempValue = 0;
-    char *unit = M_NULLPTR;
+    char*    unit      = M_NULLPTR;
 
     bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_TIME, &tempValue);
     if (!ret)
@@ -3899,15 +3899,15 @@ errno_t get_And_Validate_Millisecond_Input_uint32(const char* input_str, uint32_
     {
         if (strcasecmp(unit, "s") == 0)
         {
-            ms_value *= UINT64_C(1000);  // seconds to ms
+            ms_value *= UINT64_C(1000); // seconds to ms
         }
         else if (strcasecmp(unit, "m") == 0)
         {
-            ms_value *= UINT64_C(60000);  // minutes to ms
+            ms_value *= UINT64_C(60000); // minutes to ms
         }
         else if (strcasecmp(unit, "h") == 0)
         {
-            ms_value *= UINT64_C(3600000);  // hours to ms
+            ms_value *= UINT64_C(3600000); // hours to ms
         }
         // If 'ms' or other valid unit, tempValue is already in ms
 
@@ -3930,7 +3930,7 @@ errno_t get_And_Validate_Volt_Input_uint16(const char* input_str, uint16_t* outp
     }
 
     uint32_t tempValue = 0;
-    char *unit = M_NULLPTR;
+    char*    unit      = M_NULLPTR;
 
     bool ret = get_And_Validate_Integer_Input_Uint32(input_str, &unit, ALLOW_UNIT_VOLTS, &tempValue);
     if (!ret)
@@ -3944,7 +3944,7 @@ errno_t get_And_Validate_Volt_Input_uint16(const char* input_str, uint16_t* outp
     {
         if (strcasecmp(unit, "mV") == 0)
         {
-            v_value /= UINT32_C(1000);  // mV to V
+            v_value /= UINT32_C(1000); // mV to V
         }
         // If 'V' or other valid unit, tempValue is already in V
     }
@@ -3967,7 +3967,7 @@ errno_t get_And_Validate_Millivolt_Input_uint32(const char* input_str, uint32_t*
     }
 
     uint64_t tempValue = 0;
-    char *unit = M_NULLPTR;
+    char*    unit      = M_NULLPTR;
 
     bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_VOLTS, &tempValue);
     if (!ret)
@@ -3981,7 +3981,7 @@ errno_t get_And_Validate_Millivolt_Input_uint32(const char* input_str, uint32_t*
     {
         if (strcasecmp(unit, "V") == 0)
         {
-            mv_value *= UINT64_C(1000);  // V to mV
+            mv_value *= UINT64_C(1000); // V to mV
             if (mv_value > UINT32_MAX)
             {
                 *outputValue = 0;
@@ -4003,7 +4003,7 @@ errno_t get_And_Validate_Amp_Input_uint16(const char* input_str, uint16_t* outpu
     }
 
     uint32_t tempValue = 0;
-    char *unit = M_NULLPTR;
+    char*    unit      = M_NULLPTR;
 
     bool ret = get_And_Validate_Integer_Input_Uint32(input_str, &unit, ALLOW_UNIT_AMPS, &tempValue);
     if (!ret)
@@ -4017,7 +4017,7 @@ errno_t get_And_Validate_Amp_Input_uint16(const char* input_str, uint16_t* outpu
     {
         if (strcasecmp(unit, "mA") == 0)
         {
-            a_value /= UINT32_C(1000);  // mA to A
+            a_value /= UINT32_C(1000); // mA to A
         }
         // If 'A' or other valid unit, tempValue is already in A
     }
@@ -4040,7 +4040,7 @@ errno_t get_And_Validate_Milliamp_Input_uint32(const char* input_str, uint32_t* 
     }
 
     uint64_t tempValue = 0;
-    char *unit = M_NULLPTR;
+    char*    unit      = M_NULLPTR;
 
     bool ret = get_And_Validate_Integer_Input_Uint64(input_str, &unit, ALLOW_UNIT_AMPS, &tempValue);
     if (!ret)
@@ -4054,7 +4054,7 @@ errno_t get_And_Validate_Milliamp_Input_uint32(const char* input_str, uint32_t* 
     {
         if (strcasecmp(unit, "A") == 0)
         {
-            ma_value *= UINT64_C(1000);  // A to mA
+            ma_value *= UINT64_C(1000); // A to mA
             if (ma_value > UINT32_MAX)
             {
                 *outputValue = 0;

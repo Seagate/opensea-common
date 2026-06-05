@@ -49,7 +49,7 @@ extern "C"
     //! \example
     //! M_DIAG_ERROR(M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, count),
     //!              "source and destination regions overlap")
-#define M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(ptr1, size1, ptr2, size2) \
+#define M_MEMORY_REGIONS_OVERLAP_COMPILE_TIME(ptr1, size1, ptr2, size2)                                                \
     (((ptr1) < (ptr2) + (size2)) && ((ptr2) < (ptr1) + (size1)))
 
     //! \fn errno_t safe_memset_impl(void* dest, rsize_t destsz, int ch, rsize_t count, const char* file, const char*

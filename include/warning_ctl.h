@@ -57,7 +57,8 @@ extern "C"
         _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wconversion\"")
 #    define RESTORE_WARNING_CONVERSION_DATA_LOSS _Pragma("GCC diagnostic pop")
 #elif IS_MSVC_VERSION(MSVC_2005)
-#    define DISABLE_WARNING_CONVERSION_DATA_LOSS MSVC_PRAGMA(warning(push)) MSVC_PRAGMA(warning(disable : 4242 4243 4244 4267))
+#    define DISABLE_WARNING_CONVERSION_DATA_LOSS                                                                       \
+        MSVC_PRAGMA(warning(push)) MSVC_PRAGMA(warning(disable : 4242 4243 4244 4267))
 #    define RESTORE_WARNING_CONVERSION_DATA_LOSS MSVC_PRAGMA(warning(pop))
 #else
 #    define DISABLE_WARNING_CONVERSION_DATA_LOSS

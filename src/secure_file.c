@@ -1148,7 +1148,8 @@ M_NODISCARD M_PARAM_RW(1) eSecureFileError secure_Remove_File(secureFileInfo* M_
             else
             {
                 fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
-                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "File removed successfully");
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                              "File removed successfully");
             }
         }
         return fileInfo->error;
@@ -1604,7 +1605,7 @@ eReturnValues create_And_Open_Secure_Log_File(const char* M_NONNULL             
     *file = secure_Open_File(logGeneratedName, "wxb", M_NULLPTR, M_NULLPTR, M_NULLPTR);
     // Step 4: return error code depending on what happened from attempting to
     // do all of these steps
-    if (file == M_NULLPTR)
+    if (*file == M_NULLPTR)
     {
         result = M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE);
     }

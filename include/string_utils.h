@@ -42,7 +42,8 @@ extern "C"
 //!   - Overlapping source and destination buffers are allowed and handled safely
 //!
 //! This flag follows the same pattern as MEMCPY_IS_MEMCPY_NOT_MEMMOVE for memory functions.
-//! See also: safe_strcpy_no_overlap, safe_strcat_no_overlap, safe_strncat_no_overlap, safe_strncpy_no_overlap for explicit variants.
+//! See also: safe_strcpy_no_overlap, safe_strcat_no_overlap, safe_strncat_no_overlap, safe_strncpy_no_overlap for
+//! explicit variants.
 // #define STRCPY_IS_STRCPY_NOT_STRMOVE
 
 //! \def ALLOW_NO_OVERLAP_SUGGESTIONS
@@ -363,17 +364,17 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! - \a destsz is less than or equal to safe_strnlen(src, destsz); truncation would occur
     //!
     //! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between the source and destination strings.
-#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
+#    if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
     M_INLINE errno_t safe_strcpy(char* M_RESTRICT M_NONNULL dest, rsize_t destsz, const char* M_RESTRICT M_NONNULL src)
     {
         return safe_strcpy_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strcpy(dest, destsz, src)");
     }
-#else
+#    else
     M_INLINE errno_t safe_strcpy(char* M_NONNULL dest, rsize_t destsz, const char* M_NONNULL src)
     {
         return safe_strmove_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strcpy(dest, destsz, src)");
     }
-#endif
+#    endif
 #else
 //! \def safe_strcpy
 //! \brief safe_strcpy that works like C11 annex K's strcpy_s
@@ -400,15 +401,15 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //! - \a destsz is less than or equal to safe_strnlen(src, destsz); truncation would occur
 //!
 //! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between the source and destination strings.
-#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
-#    define safe_strcpy(dest, destsz, src)                                                                             \
-        safe_strcpy_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                              \
-                         "safe_strcpy(" #dest ", " #destsz ", " #src ")")
-#else
-#    define safe_strcpy(dest, destsz, src)                                                                             \
-        safe_strmove_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                             \
-                          "safe_strcpy(" #dest ", " #destsz ", " #src ")")
-#endif
+#    if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
+#        define safe_strcpy(dest, destsz, src)                                                                         \
+            safe_strcpy_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                          \
+                             "safe_strcpy(" #dest ", " #destsz ", " #src ")")
+#    else
+#        define safe_strcpy(dest, destsz, src)                                                                         \
+            safe_strmove_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                         \
+                              "safe_strcpy(" #dest ", " #destsz ", " #src ")")
+#    endif
 #endif
 
 #if defined(DEV_ENVIRONMENT)
@@ -503,7 +504,7 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //!   strnlen_s(src, count); truncation would occur.
     //!
     //! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between the source and destination strings.
-#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
+#    if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
     M_INLINE errno_t safe_strncpy(char* M_RESTRICT M_NONNULL       dest,
                                   rsize_t                          destsz,
                                   const char* M_RESTRICT M_NONNULL src,
@@ -512,16 +513,13 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
         return safe_strncpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
                                  "safe_strncpy(dest, destsz, src, count)");
     }
-#else
-    M_INLINE errno_t safe_strncpy(char* M_NONNULL       dest,
-                                  rsize_t              destsz,
-                                  const char* M_NONNULL src,
-                                  rsize_t              count)
+#    else
+    M_INLINE errno_t safe_strncpy(char* M_NONNULL dest, rsize_t destsz, const char* M_NONNULL src, rsize_t count)
     {
         return safe_strnmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
                                   "safe_strncpy(dest, destsz, src, count)");
     }
-#endif
+#    endif
 #else
 //! \def safe_strncpy
 //! \brief safe_strncpy works like C11 annex K's strncpy_s
@@ -554,15 +552,15 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //!   strnlen_s(src, count); truncation would occur.
 //!
 //! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between the source and destination strings.
-#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
-#    define safe_strncpy(dest, destsz, src, count)                                                                     \
-        safe_strncpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                      \
-                          "safe_strncpy(" #dest ", " #destsz ", " #src ", " #count ")")
-#else
-#    define safe_strncpy(dest, destsz, src, count)                                                                     \
-        safe_strnmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                     \
-                           "safe_strncpy(" #dest ", " #destsz ", " #src ", " #count ")")
-#endif
+#    if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
+#        define safe_strncpy(dest, destsz, src, count)                                                                 \
+            safe_strncpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                  \
+                              "safe_strncpy(" #dest ", " #destsz ", " #src ", " #count ")")
+#    else
+#        define safe_strncpy(dest, destsz, src, count)                                                                 \
+            safe_strnmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                 \
+                               "safe_strncpy(" #dest ", " #destsz ", " #src ", " #count ")")
+#    endif
 #endif
 
 #if defined(DEV_ENVIRONMENT)
@@ -665,17 +663,17 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! - truncation would occur due to not enough space in \a dest to concatenate \a src
     //!
     //! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between \a src and \a dest strings
-#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
+#    if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
     M_INLINE errno_t safe_strcat(char* M_RESTRICT M_NONNULL dest, rsize_t destsz, const char* M_RESTRICT M_NONNULL src)
     {
         return safe_strcat_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strcat(dest, destsz, src)");
     }
-#else
+#    else
     M_INLINE errno_t safe_strcat(char* M_NONNULL dest, rsize_t destsz, const char* M_NONNULL src)
     {
         return safe_strcatmove_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strcat(dest, destsz, src)");
     }
-#endif
+#    endif
 #else
 //! \def safe_strcat
 //! \brief safe_strcat works like C11 annex K's strcat_s
@@ -705,15 +703,15 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //! - truncation would occur due to not enough space in \a dest to concatenate \a src
 //!
 //! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between \a src and \a dest strings
-#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
-#    define safe_strcat(dest, destsz, src)                                                                             \
-        safe_strcat_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                              \
-                         "safe_strcat(" #dest ", " #destsz ", " #src ")")
-#else
-#    define safe_strcat(dest, destsz, src)                                                                             \
-        safe_strcatmove_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                          \
+#    if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
+#        define safe_strcat(dest, destsz, src)                                                                         \
+            safe_strcat_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                          \
                              "safe_strcat(" #dest ", " #destsz ", " #src ")")
-#endif
+#    else
+#        define safe_strcat(dest, destsz, src)                                                                         \
+            safe_strcatmove_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                      \
+                                 "safe_strcat(" #dest ", " #destsz ", " #src ")")
+#    endif
 #endif
 
 #if defined(DEV_ENVIRONMENT)
@@ -750,7 +748,7 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! - truncation would occur due to not enough space in \a dest to concatenate \a src or \a count bytes of \a src
     //!
     //! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between \a src and \a dest strings
-#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
+#    if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
     M_INLINE errno_t safe_strncat(char* M_RESTRICT M_NONNULL       dest,
                                   rsize_t                          destsz,
                                   const char* M_RESTRICT M_NONNULL src,
@@ -759,16 +757,13 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
         return safe_strncat_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
                                  "safe_strncat(dest, destsz, src, count)");
     }
-#else
-    M_INLINE errno_t safe_strncat(char* M_NONNULL       dest,
-                                  rsize_t              destsz,
-                                  const char* M_NONNULL src,
-                                  rsize_t              count)
+#    else
+    M_INLINE errno_t safe_strncat(char* M_NONNULL dest, rsize_t destsz, const char* M_NONNULL src, rsize_t count)
     {
         return safe_strncatmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,
                                      "safe_strncat(dest, destsz, src, count)");
     }
-#endif
+#    endif
 #else
 //! \def safe_strncat
 //! \brief safe_strncat works like C11 annex K's strncat_s
@@ -800,15 +795,15 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //! - truncation would occur due to not enough space in \a dest to concatenate \a src or \a count bytes of \a src
 //!
 //! - when STRCPY_IS_STRCPY_NOT_STRMOVE is defined, overlap would occur between \a src and \a dest strings
-#if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
-#    define safe_strncat(dest, destsz, src, count)                                                                     \
-        safe_strncat_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                      \
-                          "safe_strncat(" #dest ", " #destsz ", " #src ", " #count ")")
-#else
-#    define safe_strncat(dest, destsz, src, count)                                                                     \
-        safe_strncatmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                  \
+#    if defined(STRCPY_IS_STRCPY_NOT_STRMOVE)
+#        define safe_strncat(dest, destsz, src, count)                                                                 \
+            safe_strncat_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                  \
                               "safe_strncat(" #dest ", " #destsz ", " #src ", " #count ")")
-#endif
+#    else
+#        define safe_strncat(dest, destsz, src, count)                                                                 \
+            safe_strncatmove_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                              \
+                                  "safe_strncat(" #dest ", " #destsz ", " #src ", " #count ")")
+#    endif
 #endif
 
 #if defined(DEV_ENVIRONMENT)
@@ -829,9 +824,12 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! \param[in] src pointer to the null-terminated byte string to copy from
     //! \return Zero on success, or an error code on failure.
     //! \note Overlapping buffers will be detected and reported as an error.
-    M_INLINE errno_t safe_strcpy_no_overlap(char* M_RESTRICT M_NONNULL dest, rsize_t destsz, const char* M_RESTRICT M_NONNULL src)
+    M_INLINE errno_t safe_strcpy_no_overlap(char* M_RESTRICT M_NONNULL       dest,
+                                            rsize_t                          destsz,
+                                            const char* M_RESTRICT M_NONNULL src)
     {
-        return safe_strcpy_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strcpy_no_overlap(dest, destsz, src)");
+        return safe_strcpy_impl(dest, destsz, src, __FILE__, __func__, __LINE__,
+                                "safe_strcpy_no_overlap(dest, destsz, src)");
     }
 #else
 //! \def safe_strcpy_no_overlap
@@ -849,7 +847,7 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //! \param[in] src pointer to the null-terminated byte string to copy from
 //! \return Zero on success, or an error code on failure.
 //! \note Overlapping buffers will be detected and reported as an error.
-#    define safe_strcpy_no_overlap(dest, destsz, src)                                                                   \
+#    define safe_strcpy_no_overlap(dest, destsz, src)                                                                  \
         safe_strcpy_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                              \
                          "safe_strcpy_no_overlap(" #dest ", " #destsz ", " #src ")")
 #endif
@@ -872,9 +870,12 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
     //! \param[in] src pointer to the null-terminated byte string to copy from
     //! \return Zero on success, or an error code on failure.
     //! \note Overlapping buffers will be detected and reported as an error.
-    M_INLINE errno_t safe_strcat_no_overlap(char* M_RESTRICT M_NONNULL dest, rsize_t destsz, const char* M_RESTRICT M_NONNULL src)
+    M_INLINE errno_t safe_strcat_no_overlap(char* M_RESTRICT M_NONNULL       dest,
+                                            rsize_t                          destsz,
+                                            const char* M_RESTRICT M_NONNULL src)
     {
-        return safe_strcat_impl(dest, destsz, src, __FILE__, __func__, __LINE__, "safe_strcat_no_overlap(dest, destsz, src)");
+        return safe_strcat_impl(dest, destsz, src, __FILE__, __func__, __LINE__,
+                                "safe_strcat_no_overlap(dest, destsz, src)");
     }
 #else
 //! \def safe_strcat_no_overlap
@@ -892,7 +893,7 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //! \param[in] src pointer to the null-terminated byte string to copy from
 //! \return Zero on success, or an error code on failure.
 //! \note Overlapping buffers will be detected and reported as an error.
-#    define safe_strcat_no_overlap(dest, destsz, src)                                                                   \
+#    define safe_strcat_no_overlap(dest, destsz, src)                                                                  \
         safe_strcat_impl(dest, destsz, src, __FILE__, __func__, __LINE__,                                              \
                          "safe_strcat_no_overlap(" #dest ", " #destsz ", " #src ")")
 #endif
@@ -942,7 +943,7 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //! \param[in] count maximum number of characters to copy
 //! \return Zero on success, or an error code on failure.
 //! \note Overlapping buffers will be detected and reported as an error.
-#    define safe_strncpy_no_overlap(dest, destsz, src, count)                                                           \
+#    define safe_strncpy_no_overlap(dest, destsz, src, count)                                                          \
         safe_strncpy_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                      \
                           "safe_strncpy_no_overlap(" #dest ", " #destsz ", " #src ", " #count ")")
 #endif
@@ -992,7 +993,7 @@ M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen(const char*
 //! \param[in] count maximum number of characters to copy
 //! \return Zero on success, or an error code on failure.
 //! \note Overlapping buffers will be detected and reported as an error.
-#    define safe_strncat_no_overlap(dest, destsz, src, count)                                                           \
+#    define safe_strncat_no_overlap(dest, destsz, src, count)                                                          \
         safe_strncat_impl(dest, destsz, src, count, __FILE__, __func__, __LINE__,                                      \
                           "safe_strncat_no_overlap(" #dest ", " #destsz ", " #src ", " #count ")")
 #endif

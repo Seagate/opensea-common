@@ -87,7 +87,7 @@ extern "C"
     //! \example
     //! M_DIAG_ERROR(M_STRING_REGIONS_OVERLAP_COMPILE_TIME(dest, destsz, src, srclen),
     //!              "source and destination regions overlap")
-#define M_STRING_REGIONS_OVERLAP_COMPILE_TIME(ptr1, size1, ptr2, size2) \
+#define M_STRING_REGIONS_OVERLAP_COMPILE_TIME(ptr1, size1, ptr2, size2)                                                \
     (((ptr1) < (ptr2) + (size2)) && ((ptr2) < (ptr1) + (size1)))
 
     //! \fn errno_t safe_strcpy_impl(char* M_RESTRICT       dest,
@@ -474,13 +474,13 @@ extern "C"
     M_PARAM_RO(3)
     M_NULL_TERM_STRING(1)
     M_NULL_TERM_STRING(3)
-    errno_t safe_strcatmove_impl(char* M_NONNULL       dest,
-                                 rsize_t              destsz,
-                                 const char* M_NONNULL src,
-                                 const char* M_NULLABLE           file,
-                                 const char* M_NULLABLE           function,
-                                 int                              line,
-                                 const char* M_NULLABLE           expression)
+    errno_t safe_strcatmove_impl(char* M_NONNULL        dest,
+                                 rsize_t                destsz,
+                                 const char* M_NONNULL  src,
+                                 const char* M_NULLABLE file,
+                                 const char* M_NULLABLE function,
+                                 int                    line,
+                                 const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_STR_CHECK(dest), "dest is NULL")
         M_DIAG_ERROR(destsz == 0, "destsz is zero")
@@ -530,14 +530,14 @@ extern "C"
     M_PARAM_RW_SIZE(1, 2)
     M_PARAM_RO_SIZE(3, 4)
     M_NULL_TERM_STRING(1)
-    errno_t safe_strncatmove_impl(char* M_NONNULL       dest,
-                                  rsize_t              destsz,
-                                  const char* M_NONNULL src,
-                                  rsize_t              count,
-                                  const char* M_NULLABLE           file,
-                                  const char* M_NULLABLE           function,
-                                  int                              line,
-                                  const char* M_NULLABLE           expression)
+    errno_t safe_strncatmove_impl(char* M_NONNULL        dest,
+                                  rsize_t                destsz,
+                                  const char* M_NONNULL  src,
+                                  rsize_t                count,
+                                  const char* M_NULLABLE file,
+                                  const char* M_NULLABLE function,
+                                  int                    line,
+                                  const char* M_NULLABLE expression)
         // clang-format off
         M_DIAG_ERROR(M_NULL_STR_CHECK(dest), "dest is NULL")
         M_DIAG_ERROR(destsz == 0, "destsz is zero")

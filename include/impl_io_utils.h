@@ -21,8 +21,8 @@
 #include "common_types.h"
 #include "type_conversion.h"
 
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #if defined(__cplusplus)
 extern "C"
@@ -940,17 +940,17 @@ extern "C"
     FUNC_ATTR_PRINTF(7, 0)
     int impl_vsnprintf_err_handle(const char* M_NULLABLE file,
                                   const char* M_NULLABLE function,
-                                  int         line,
+                                  int                    line,
                                   const char* M_NULLABLE expression,
                                   char* M_NULLABLE       buf,
                                   size_t                 bufsize,
                                   const char* M_NONNULL  format,
-                                  va_list     args)
-                                  // clang-format off
+                                  va_list                args)
+        // clang-format off
         M_DIAG_ERROR(M_NULL_IO_CHAR_CHECK(buf) && bufsize != 0, "buf is NULL and bufsize != 0")
         M_DIAG_ERROR(!M_NULL_IO_CHAR_CHECK(buf) && (bufsize == 0 || bufsize > RSIZE_MAX), "bufsize is out of range (1-RSIZE_MAX allowed)")
         // clang-format on
-                                  ;
+        ;
 
 #if defined(__cplusplus)
 }
