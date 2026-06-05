@@ -1704,7 +1704,7 @@ static void test_checked_fputs(void) {
 }
 
 static void test_print_str(void) {
-    char *testStr = "This is a test string.";
+    const char *testStr = "This is a test string.";
     FILE *fp = fopen("test_print_str.txt", "w+");
     TEST_ASSERT(fp != NULL, "File opened successfully for test_print_str");
 

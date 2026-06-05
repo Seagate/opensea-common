@@ -213,22 +213,22 @@ int compare_strings_ctx(const void* a, const void* b, void* ctx)
 }
 
 static void test_safe_lsearch_context(void) {
-    char* arr[10] = {"apple", "banana", "cherry"};
+    const char* arr[10] = {"apple", "banana", "cherry"};
     size_t nelp = 3;
-    char* key = "Banana";
+    const char* key = "Banana";
     StringContext ctx = { .case_sensitive = 0 };
-    char** found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
+    const char** found = (const char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
     TEST_ASSERT(found != NULL && strcmp(*found, "banana") == 0, "safe_lsearch_context finds the key in the array with context");
 
     // case sensitive search
     ctx.case_sensitive = 1;
-    found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
+    found = (const char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
     TEST_ASSERT(found != NULL && strcmp(*found, "Banana") == 0, "safe_lsearch_context inserts the non-existent key at the end of the array with context");
     TEST_ASSERT(nelp == 4, "safe_lsearch_context increments the number of elements when inserting a new key with context");
 
     // Test searching for a non-existent key
     key = "date";
-    found = (char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
+    found = (const char**)safe_lsearch_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
     TEST_ASSERT(found != NULL && strcmp(*found, "date") == 0, "safe_lsearch_context inserts the non-existent key at the end of the array with context");
     TEST_ASSERT(nelp == 5, "safe_lsearch_context increments the number of elements when inserting a new key with context");
 }
@@ -247,16 +247,16 @@ static void test_safe_lfind(void) {
 }
 
 static void test_safe_lfind_context(void) {
-    char* arr[] = {"apple", "banana", "cherry"};
+    const char* arr[] = {"apple", "banana", "cherry"};
     size_t nelp = sizeof(arr) / sizeof(arr[0]);
-    char* key = "Banana";
+    const char* key = "Banana";
     StringContext ctx = { .case_sensitive = 0 };
-    char** found = (char**)safe_lfind_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
+    const char** found = (const char**)safe_lfind_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
     TEST_ASSERT(found != NULL && strcmp(*found, "banana") == 0, "safe_lfind_context finds the key in the array with context");
 
     // Test searching for a non-existent key
     key = "date";
-    found = (char**)safe_lfind_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
+    found = (const char**)safe_lfind_context(&key, arr, &nelp, sizeof(arr[0]), compare_strings_ctx, &ctx);
     TEST_ASSERT(found == NULL, "safe_lfind_context returns NULL for a non-existent key with context");
 }
 
