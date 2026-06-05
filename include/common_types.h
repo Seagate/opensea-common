@@ -592,7 +592,7 @@ typedef int32_t intptr_t;
 #        if defined(HAVE_NULLPTR_T)
 #            define HAVE_NULLPTR
 #        endif
-#    else
+#    elif defined(USING_C23)
 #        define HAVE_NULLPTR
 #    endif
 #    if defined(HAVE_NULLPTR)
