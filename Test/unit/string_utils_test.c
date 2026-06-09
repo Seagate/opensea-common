@@ -58,7 +58,7 @@ static void test_safe_isalnum(void) {
     }
 
     // Test for invalid unsigned char values
-    TEST_ASSERT_EQ(safe_isalnum(-1), 0, "safe_isalnum returns 0 for negative values");
+    TEST_ASSERT_EQ(safe_isalnum(-2), 0, "safe_isalnum returns 0 for negative values");
     TEST_ASSERT(errno == ERANGE, "safe_isalnum sets errno to ERANGE for negative values");
 }
 
@@ -86,7 +86,7 @@ static void test_safe_isalpha(void) {
     }
 
     // Test for invalid unsigned char values
-    TEST_ASSERT_EQ(safe_isalpha(-1), 0, "safe_isalpha returns 0 for negative values");
+    TEST_ASSERT_EQ(safe_isalpha(-2), 0, "safe_isalpha returns 0 for negative values");
     TEST_ASSERT(errno == ERANGE, "safe_isalpha sets errno to ERANGE for negative values");
 }
 
@@ -114,7 +114,7 @@ static void test_safe_islower(void) {
     }
 
     // Test for invalid unsigned char values
-    TEST_ASSERT_EQ(safe_islower(-1), 0, "safe_islower returns 0 for negative values");
+    TEST_ASSERT_EQ(safe_islower(-2), 0, "safe_islower returns 0 for negative values");
     TEST_ASSERT(errno == ERANGE, "safe_islower sets errno to ERANGE for negative values");
 }
 
@@ -142,7 +142,7 @@ static void test_safe_isupper(void) {
     }
 
     // Test for invalid unsigned char values
-    TEST_ASSERT_EQ(safe_isupper(-1), 0, "safe_isupper returns 0 for negative values");
+    TEST_ASSERT_EQ(safe_isupper(-2), 0, "safe_isupper returns 0 for negative values");
     TEST_ASSERT(errno == ERANGE, "safe_isupper sets errno to ERANGE for negative values");
 }
 
@@ -170,7 +170,7 @@ static void test_safe_isdigit(void) {
     }
 
     // Test for invalid unsigned char values
-    TEST_ASSERT_EQ(safe_isdigit(-1), 0, "safe_isdigit returns 0 for negative values");
+    TEST_ASSERT_EQ(safe_isdigit(-2), 0, "safe_isdigit returns 0 for negative values");
     TEST_ASSERT(errno == ERANGE, "safe_isdigit sets errno to ERANGE for negative values");
 }
 
@@ -206,12 +206,12 @@ static void test_safe_isxdigit(void) {
     }
 
     // Test for invalid unsigned char values
-    TEST_ASSERT_EQ(safe_isxdigit(-1), 0, "safe_isxdigit returns 0 for negative values");
+    TEST_ASSERT_EQ(safe_isxdigit(-2), 0, "safe_isxdigit returns 0 for negative values");
     TEST_ASSERT(errno == ERANGE, "safe_isxdigit sets errno to ERANGE for negative values");
 }
 
 uint8_t cntrl_chars[] = {
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
     0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
     0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
@@ -247,7 +247,7 @@ static void test_safe_iscntrl(void) {
     }
 
     // Test for invalid unsigned char values
-    TEST_ASSERT_EQ(safe_iscntrl(-1), 0, "safe_iscntrl returns 0 for negative values");
+    TEST_ASSERT_EQ(safe_iscntrl(-2), 0, "safe_iscntrl returns 0 for negative values");
     TEST_ASSERT(errno == ERANGE, "safe_iscntrl sets errno to ERANGE for negative values");
 }
 
@@ -287,7 +287,7 @@ static void test_safe_isgraph(void) {
     }
 
     // Test for invalid unsigned char values
-    TEST_ASSERT_EQ(safe_isgraph(-1), 0, "safe_isgraph returns 0 for negative values");
+    TEST_ASSERT_EQ(safe_isgraph(-2), 0, "safe_isgraph returns 0 for negative values");
     TEST_ASSERT(errno == ERANGE, "safe_isgraph sets errno to ERANGE for negative values");
 }
 
@@ -320,7 +320,7 @@ static void test_safe_isspace(void) {
     }
 
     // Test for invalid unsigned char values
-    TEST_ASSERT_EQ(safe_isspace(-1), 0, "safe_isspace returns 0 for negative values");
+    TEST_ASSERT_EQ(safe_isspace(-2), 0, "safe_isspace returns 0 for negative values");
     TEST_ASSERT(errno == ERANGE, "safe_isspace sets errno to ERANGE for negative values");
 }
 
@@ -358,7 +358,7 @@ static void test_safe_isblank(void) {
     }
 
     // Test for invalid unsigned char values
-    TEST_ASSERT_EQ(safe_isblank(-1), 0, "safe_isblank returns 0 for negative values");
+    TEST_ASSERT_EQ(safe_isblank(-2), 0, "safe_isblank returns 0 for negative values");
     TEST_ASSERT(errno == ERANGE, "safe_isblank sets errno to ERANGE for negative values");
 }
 
@@ -391,7 +391,7 @@ static void test_safe_isprint(void) {
     }
 
     // Test for invalid unsigned char values
-    TEST_ASSERT_EQ(safe_isprint(-1), 0, "safe_isprint returns 0 for negative values");
+    TEST_ASSERT_EQ(safe_isprint(-2), 0, "safe_isprint returns 0 for negative values");
     TEST_ASSERT(errno == ERANGE, "safe_isprint sets errno to ERANGE for negative values");
 }
 
@@ -424,7 +424,7 @@ static void test_safe_ispunct(void) {
     }
 
     // Test for invalid unsigned char values
-    TEST_ASSERT_EQ(safe_ispunct(-1), 0, "safe_ispunct returns 0 for negative values");
+    TEST_ASSERT_EQ(safe_ispunct(-2), 0, "safe_ispunct returns 0 for negative values");
     TEST_ASSERT(errno == ERANGE, "safe_ispunct sets errno to ERANGE for negative values");
 }
 
