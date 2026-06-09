@@ -19,6 +19,7 @@
 #include "common_types.h"
 #include "impl_sort_and_search.h"
 #include "predef_env_detect.h"
+#include "type_conversion.h"
 
 #if defined(__cplusplus)
 extern "C"
