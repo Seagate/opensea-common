@@ -98,41 +98,41 @@ static void test_safe_bsearch(void) {
     int arr[] = {1, 2, 5, 5, 6, 9};
     size_t arr_size = sizeof(arr) / sizeof(arr[0]);
     int key = 5;
-    void* found = safe_bsearch(&key, arr, arr_size, sizeof(arr[0]), compare_ints);
-    TEST_ASSERT(found != NULL, "safe_bsearch finds the key in the array");
+    int* found = (int*)safe_bsearch(&key, (void*)arr, arr_size, sizeof(arr[0]), compare_ints);
+    TEST_ASSERT(found != NULL && *found == key, "safe_bsearch finds the key in the array");
 
     // Test searching for a non-existent key
     key = 10;
-    found = safe_bsearch(&key, arr, arr_size, sizeof(arr[0]), compare_ints);
+    found = (int*)safe_bsearch(&key, (void*)arr, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL for a non-existent key");
 
     // Test for count 0
-    found = safe_bsearch(&key, arr, 0, sizeof(arr[0]), compare_ints);
+    found = (int*)safe_bsearch(&key, (void*)arr, 0, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when count is 0");
 
     // Test when ptr = NULL - calls abort handler
-    found = safe_bsearch(&key, NULL, arr_size, sizeof(arr[0]), compare_ints);
+    found = (int*)safe_bsearch(&key, NULL, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when ptr is NULL");
     TEST_ASSERT(errno == EINVAL, "safe_bsearch returns EINVAL when ptr is NULL");
 
     // Test when compare = NULL - calls abort handler
-    found = safe_bsearch(&key, arr, arr_size, sizeof(arr[0]), NULL);
+    found = (int*)safe_bsearch(&key, (void*)arr, arr_size, sizeof(arr[0]), NULL);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when compare is NULL");
     TEST_ASSERT(errno == EINVAL, "safe_bsearch returns EINVAL when compare is NULL");
 
 
     // Test when key = NULL - calls abort handler
-    found = safe_bsearch(NULL, arr, arr_size, sizeof(arr[0]), compare_ints);
+    found = (int*)safe_bsearch(NULL, (void*)arr, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when key is NULL");
     TEST_ASSERT(errno == EINVAL, "safe_bsearch returns EINVAL when key is NULL");
 
     // Test when count > RSIZE_MAX - calls abort handler
-    found = safe_bsearch(&key, arr, RSIZE_MAX + 1, sizeof(arr[0]), compare_ints);
+    found = (int*)safe_bsearch(&key, (void*)arr, RSIZE_MAX + 1, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when count is greater than RSIZE_MAX");
     TEST_ASSERT(errno == ERANGE, "safe_bsearch returns ERANGE when count is greater than RSIZE_MAX");
 
     // Test when size > RSIZE_MAX - calls abort handler
-    found = safe_bsearch(&key, arr, arr_size, RSIZE_MAX + 1, compare_ints);
+    found = (int*)safe_bsearch(&key, (void*)arr, arr_size, RSIZE_MAX + 1, compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when size is greater than RSIZE_MAX");
     TEST_ASSERT(errno == ERANGE, "safe_bsearch returns ERANGE when size is greater than RSIZE_MAX");
 }
@@ -160,12 +160,12 @@ static void test_safe_bsearch_context(void) {
     size_t arr_size = sizeof(arr) / sizeof(arr[0]);
     int key = 5;
     search_ctx ctx = {2};
-    void* found = safe_bsearch_context(&key, arr, arr_size, sizeof(arr[0]), compare_with_context, &ctx);
-    TEST_ASSERT(found != NULL, "safe_bsearch_context finds the key in the array with context");
+    int* found = (int*)safe_bsearch_context(&key, arr, arr_size, sizeof(arr[0]), compare_with_context, &ctx);
+    TEST_ASSERT(found != NULL && *found == 2*key, "safe_bsearch_context finds the key in the array with context");
 
     // Test searching for a non-existent key
     key = 11;
-    found = safe_bsearch_context(&key, arr, arr_size, sizeof(arr[0]), compare_with_context, &ctx);
+    found = (int*)safe_bsearch_context(&key, arr, arr_size, sizeof(arr[0]), compare_with_context, &ctx);
     TEST_ASSERT(found == NULL, "safe_bsearch_context returns NULL for a non-existent key with context");
 }
 
