@@ -156,7 +156,8 @@ static bool is_Environment_Variable_List_Tampered(void)
 // this function will return allocated memory for an environment variable that
 // is requested the returned memory must be freed by the caller will return
 // M_NULLPTR if not found
-M_NODISCARD eEnvVarResult get_Environment_Variable(const char* environmentVariableName, char** envVar)
+M_NODISCARD M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_PARAM_WO(2) eEnvVarResult
+    get_Environment_Variable(const char* M_NONNULL environmentVariableName, char* M_NONNULL* M_NULLABLE envVar)
 {
     if (envVar == M_NULLPTR || environmentVariableName == M_NULLPTR)
     {

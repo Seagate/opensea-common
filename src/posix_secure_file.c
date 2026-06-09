@@ -113,7 +113,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* M
     M_USE_UNUSED(file);
 #else
     struct stat st;
-    safe_memset(&st, sizeof(struct stat), 0, sizeof(struct stat));
+    M_INITIALIZE_STRUCTURE(&st, sizeof(struct stat));
     if (file != M_NULLPTR && fstat(fileno(file), &st) == 0)
     {
         // device ID and inode

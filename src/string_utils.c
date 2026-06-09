@@ -58,12 +58,17 @@ static int is_valid_unsigned_char_range(int c)
     return (c >= 0 && c <= UCHAR_MAX);
 }
 
-int safe_isascii(int c) 
+int safe_isascii(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(is_ASCII(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return is_ASCII(C_CAST(unsigned char, c));
     }
     else
     {
@@ -74,10 +79,15 @@ int safe_isascii(int c)
 
 int safe_isalnum(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isalnum(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isalnum(C_CAST(unsigned char, c));
     }
     else
     {
@@ -88,10 +98,15 @@ int safe_isalnum(int c)
 
 int safe_isalpha(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isalpha(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isalpha(C_CAST(unsigned char, c));
     }
     else
     {
@@ -102,10 +117,15 @@ int safe_isalpha(int c)
 
 int safe_islower(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(islower(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return islower(C_CAST(unsigned char, c));
     }
     else
     {
@@ -135,10 +155,15 @@ int safe_tolower(int c)
 
 int safe_isupper(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isupper(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isupper(C_CAST(unsigned char, c));
     }
     else
     {
@@ -168,10 +193,15 @@ int safe_toupper(int c)
 
 int safe_isdigit(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isdigit(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isdigit(C_CAST(unsigned char, c));
     }
     else
     {
@@ -182,10 +212,15 @@ int safe_isdigit(int c)
 
 int safe_isxdigit(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isxdigit(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isxdigit(C_CAST(unsigned char, c));
     }
     else
     {
@@ -196,10 +231,15 @@ int safe_isxdigit(int c)
 
 int safe_iscntrl(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(iscntrl(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return iscntrl(C_CAST(unsigned char, c));
     }
     else
     {
@@ -210,10 +250,15 @@ int safe_iscntrl(int c)
 
 int safe_isgraph(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isgraph(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isgraph(C_CAST(unsigned char, c));
     }
     else
     {
@@ -224,10 +269,15 @@ int safe_isgraph(int c)
 
 int safe_isspace(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isspace(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isspace(C_CAST(unsigned char, c));
     }
     else
     {
@@ -241,10 +291,15 @@ int safe_isspace(int c)
 // this check-TJE
 int safe_isblank(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isblank(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isblank(C_CAST(unsigned char, c));
     }
     else
     {
@@ -255,10 +310,15 @@ int safe_isblank(int c)
 
 int safe_isprint(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(isprint(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return isprint(C_CAST(unsigned char, c));
     }
     else
     {
@@ -269,10 +329,15 @@ int safe_isprint(int c)
 
 int safe_ispunct(int c)
 {
-    if (is_valid_unsigned_char_range(c))
+    if (handle_eof(c) == 0)
     {
         errno = 0;
-        return handle_eof(ispunct(C_CAST(unsigned char, c)));
+        return 0;
+    }
+    else if (is_valid_unsigned_char_range(c))
+    {
+        errno = 0;
+        return ispunct(C_CAST(unsigned char, c));
     }
     else
     {
@@ -1035,13 +1100,12 @@ M_NODISCARD size_t safe_strnlen_impl(const char* M_NULLABLE string, size_t n)
 }
 
 #if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
-M_FUNC_ATTR_MALLOC char* strndup(const char* src, size_t size)
+M_FUNC_ATTR_MALLOC char* strndup(const char* M_NONNULL src, size_t size)
 {
-    void * nullpos = memchr(src, '\0', size);
-    size_t length = nullpos != M_NULLPTR
-                        ? C_CAST(size_t, C_CAST(uintptr_t, nullpos) - C_CAST(uintptr_t, src))
-                        : SIZE_T_C(0);
-    char*  dupstr = M_REINTERPRET_CAST(char*, malloc(length + 1));
+    void*  nullpos = memchr(src, '\0', size);
+    size_t length =
+        nullpos != M_NULLPTR ? C_CAST(size_t, C_CAST(uintptr_t, nullpos) - C_CAST(uintptr_t, src)) : SIZE_T_C(0);
+    char* dupstr = M_REINTERPRET_CAST(char*, malloc(length + 1));
     if (dupstr == M_NULLPTR)
     {
         return M_NULLPTR;
@@ -1182,7 +1246,8 @@ CONSTRAINT_NO_DISCARD errno_t safe_strndup_impl(char* M_NONNULL* M_NULLABLE dup,
     return error;
 }
 
-void byte_Swap_String_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void byte_Swap_String_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     if (stringlen > SIZE_T_C(1)) // Check if the string has more than one character
     {
@@ -1197,24 +1262,25 @@ void byte_Swap_String_Len(char* stringToChange, size_t stringlen)
 }
 
 // use this to swap the bytes in a string...useful for ATA strings
-void byte_Swap_String(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void byte_Swap_String(char* M_NONNULL stringToChange)
 {
     byte_Swap_String_Len(stringToChange, safe_strlen(stringToChange));
 }
 
-void remove_Whitespace_Left(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void remove_Whitespace_Left(char* M_NONNULL stringToChange)
 {
     // Previous code basically did the exact same thing but handled control characters.
     // Updated remove_Leading_Whitespace_Len to also remove control characters and work the same way.
     remove_Leading_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
-void remove_Trailing_Whitespace(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void remove_Trailing_Whitespace(char* M_NONNULL stringToChange)
 {
     remove_Trailing_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
-void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void remove_Trailing_Whitespace_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
@@ -1247,12 +1313,13 @@ void remove_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
         "Calculated memset length will never overflow when stringlen provided to this function is accurate");
 }
 
-void remove_Leading_Whitespace(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void remove_Leading_Whitespace(char* M_NONNULL stringToChange)
 {
     remove_Leading_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
-void remove_Leading_Whitespace_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void remove_Leading_Whitespace_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
@@ -1284,7 +1351,8 @@ M_PARAM_RW(1) M_NULL_TERM_STRING(1) void remove_Leading_And_Trailing_Whitespace(
     remove_Leading_And_Trailing_Whitespace_Len(stringToChange, safe_strlen(stringToChange));
 }
 
-void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void remove_Leading_And_Trailing_Whitespace_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     if (stringToChange == M_NULLPTR || stringlen == SIZE_T_C(0))
     {
@@ -1343,17 +1411,18 @@ void remove_Leading_And_Trailing_Whitespace_Len(char* stringToChange, size_t str
     }
 }
 
-void remove_Leading_And_Trailing_Control_Char(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void remove_Leading_And_Trailing_Control_Char(char* M_NONNULL stringToChange)
 {
     remove_Leading_And_Trailing_Control_Char_Len(stringToChange, safe_strlen(stringToChange));
 }
 
-void remove_Leading_And_Trailing_Control_Char_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void remove_Leading_And_Trailing_Control_Char_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     remove_Leading_And_Trailing_Whitespace_Len(stringToChange, stringlen);
 }
 
-void convert_String_To_Upper_Case(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void convert_String_To_Upper_Case(char* M_NONNULL stringToChange)
 {
     if (stringToChange == M_NULLPTR)
     {
@@ -1365,7 +1434,8 @@ void convert_String_To_Upper_Case(char* stringToChange)
     }
 }
 
-void convert_String_To_Upper_Case_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void convert_String_To_Upper_Case_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     if (stringToChange == M_NULLPTR)
     {
@@ -1377,7 +1447,7 @@ void convert_String_To_Upper_Case_Len(char* stringToChange, size_t stringlen)
     }
 }
 
-void convert_String_To_Lower_Case(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void convert_String_To_Lower_Case(char* M_NONNULL stringToChange)
 {
     if (stringToChange == M_NULLPTR)
     {
@@ -1389,7 +1459,8 @@ void convert_String_To_Lower_Case(char* stringToChange)
     }
 }
 
-void convert_String_To_Lower_Case_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void convert_String_To_Lower_Case_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     if (stringToChange == M_NULLPTR)
     {
@@ -1401,7 +1472,7 @@ void convert_String_To_Lower_Case_Len(char* stringToChange, size_t stringlen)
     }
 }
 
-void convert_String_To_Inverse_Case(char* stringToChange)
+M_PARAM_RW(1) M_NULL_TERM_STRING(1) void convert_String_To_Inverse_Case(char* M_NONNULL stringToChange)
 {
     if (stringToChange == M_NULLPTR)
     {
@@ -1420,7 +1491,8 @@ void convert_String_To_Inverse_Case(char* stringToChange)
     }
 }
 
-void convert_String_To_Inverse_Case_Len(char* stringToChange, size_t stringlen)
+M_PARAM_RW_SIZE(1, 2)
+void convert_String_To_Inverse_Case_Len(char* M_NONNULL stringToChange, size_t stringlen)
 {
     if (stringToChange == M_NULLPTR)
     {
@@ -1439,7 +1511,9 @@ void convert_String_To_Inverse_Case_Len(char* stringToChange, size_t stringlen)
     }
 }
 
-size_t find_last_occurrence_in_string(const char* originalString, const char* stringToFind)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+size_t find_last_occurrence_in_string(const char* M_NONNULL originalString, const char* M_NONNULL stringToFind)
 {
     if (originalString == M_NULLPTR || stringToFind == M_NULLPTR)
     {
@@ -1462,7 +1536,11 @@ size_t find_last_occurrence_in_string(const char* originalString, const char* st
     return (last_occurrence != SIZE_MAX) ? last_occurrence : safe_strlen(originalString);
 }
 
-size_t find_first_occurrence_in_string(const char* originalString, const char* stringToFind)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(2)
+size_t find_first_occurrence_in_string(const char* M_NONNULL originalString, const char* M_NONNULL stringToFind)
 {
     if (originalString == M_NULLPTR || stringToFind == M_NULLPTR)
     {
@@ -1473,7 +1551,9 @@ size_t find_first_occurrence_in_string(const char* originalString, const char* s
                                         : SIZE_MAX;
 }
 
-static M_INLINE bool wildcard_match_internal(const char* pattern, const char* data, bool caseInsensitive)
+static M_INLINE bool wildcard_match_internal(const char* M_NULLABLE pattern,
+                                             const char* M_NULLABLE data,
+                                             bool                   caseInsensitive)
 {
     if (pattern == M_NULLPTR || data == M_NULLPTR)
     {
@@ -1495,19 +1575,27 @@ static M_INLINE bool wildcard_match_internal(const char* pattern, const char* da
     return false;
 }
 
-bool wildcard_case_match(const char* pattern, const char* data)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(2) bool wildcard_case_match(const char* M_NONNULL pattern, const char* M_NONNULL data)
 {
     return wildcard_match_internal(pattern, data, true);
 }
 
-bool wildcard_match(const char* pattern, const char* data)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(2) bool wildcard_match(const char* M_NONNULL pattern, const char* M_NONNULL data)
 {
     return wildcard_match_internal(pattern, data, false);
 }
 
 // Note: Tried M_FORCEINLINE but no performance difference observed
 M_NONNULL_PARAM_LIST(1, 2, 3)
-static M_INLINE long string_version_compare_parse_number(const char** p, int* leading_zeros, size_t* digit_count)
+static M_INLINE long string_version_compare_parse_number(const char* M_NONNULL* M_NONNULL p,
+                                                         int* M_NONNULL                   leading_zeros,
+                                                         size_t* M_NONNULL                digit_count)
 {
     long val       = 0L;
     *leading_zeros = 0;
@@ -1531,7 +1619,11 @@ static M_INLINE long string_version_compare_parse_number(const char** p, int* le
     return val;
 }
 
-int string_version_compare(const char* string1, const char* string2)
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_NULL_TERM_STRING(1)
+M_NULL_TERM_STRING(2)
+int string_version_compare(const char* M_NONNULL string1, const char* M_NONNULL string2)
 {
     while (*string1 && *string2)
     {

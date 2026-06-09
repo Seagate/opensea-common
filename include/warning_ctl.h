@@ -78,6 +78,9 @@ extern "C"
 #    define DISABLE_WARNING_SIGN_CONVERSION                                                                            \
         _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
 #    define RESTORE_WARNING_SIGN_CONVERSION _Pragma("GCC diagnostic pop")
+#elif IS_MSVC_VERSION(MSVC_2005)
+#    define DISABLE_WARNING_SIGN_CONVERSION MSVC_PRAGMA(warning(push)) MSVC_PRAGMA(warning(disable : 4245))
+#    define RESTORE_WARNING_SIGN_CONVERSION MSVC_PRAGMA(warning(pop))
 #else
 #    define DISABLE_WARNING_SIGN_CONVERSION
 #    define RESTORE_WARNING_SIGN_CONVERSION
@@ -227,6 +230,9 @@ extern "C"
 #    define DISABLE_WARNING_INCOMPATIBLE_POINTER_TYPES                                                                 \
         _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wincompatible-pointer-types\"")
 #    define RESTORE_WARNING_INCOMPATIBLE_POINTER_TYPES _Pragma("GCC diagnostic pop")
+#elif IS_MSVC_VERSION(MSVC_2005)
+#    define DISABLE_WARNING_INCOMPATIBLE_POINTER_TYPES MSVC_PRAGMA(warning(push)) MSVC_PRAGMA(warning(disable : 4286))
+#    define RESTORE_WARNING_INCOMPATIBLE_POINTER_TYPES MSVC_PRAGMA(warning(pop))
 #else
 #    define DISABLE_WARNING_INCOMPATIBLE_POINTER_TYPES
 #    define RESTORE_WARNING_INCOMPATIBLE_POINTER_TYPES
@@ -257,3 +263,20 @@ extern "C"
 #        define RESTORE_WARNING_OLD_STYLE_CAST
 #    endif
 #endif //__cplusplus
+
+//! \def DISABLE_WARNING_STRINGOP_OVERREAD
+//! \brief Disables false-positive warnings about buffer overread when reading from struct members via access attributes
+//! \details GCC's access attribute analysis can incorrectly infer buffer sizes from struct member pointers,
+//! particularly with union members and cast operations. These warnings are false-positives when the code correctly
+//! reads from the full structure via explicit size parameters.
+
+//! \def RESTORE_WARNING_STRINGOP_OVERREAD
+//! \brief Restores warnings about buffer overread
+#if IS_GCC_VERSION(7, 0)
+#    define DISABLE_WARNING_STRINGOP_OVERREAD                                                                          \
+        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wstringop-overread\"")
+#    define RESTORE_WARNING_STRINGOP_OVERREAD _Pragma("GCC diagnostic pop")
+#else
+#    define DISABLE_WARNING_STRINGOP_OVERREAD
+#    define RESTORE_WARNING_STRINGOP_OVERREAD
+#endif

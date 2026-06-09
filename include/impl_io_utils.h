@@ -22,8 +22,8 @@
 #include "constraint_handling.h"
 #include "type_conversion.h"
 
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #if defined(__cplusplus)
 extern "C"
@@ -896,7 +896,7 @@ extern "C"
     //! \note Invokes the constraint handler on error.
     M_NONNULL_IF_NONZERO_PARAM(5, 6)
     M_NULL_TERM_STRING(7)
-    M_PARAM_RW(5)
+    M_PARAM_WO_SIZE(5, 6)
     M_PARAM_RO(7)
     FUNC_ATTR_PRINTF(7, 8)
     CONSTRAINT_NO_DISCARD
@@ -940,95 +940,21 @@ extern "C"
     //! \note Invokes the constraint handler on error.
     M_NONNULL_IF_NONZERO_PARAM(5, 6)
     M_NULL_TERM_STRING(7)
-    M_PARAM_RW(5)
+    M_PARAM_WO_SIZE(5, 6)
     M_PARAM_RO(7)
     FUNC_ATTR_PRINTF(7, 0)
     CONSTRAINT_NO_DISCARD
     int impl_vsnprintf_err_handle(const char* M_NULLABLE file,
                                   const char* M_NULLABLE function,
-                                  int         line,
+                                  int                    line,
                                   const char* M_NULLABLE expression,
                                   char* M_NULLABLE       buf,
                                   size_t                 bufsize,
                                   const char* M_NONNULL  format,
-                                  va_list     args)
-                                  // clang-format off
+                                  va_list                args)
+        // clang-format off
         M_DIAG_ERROR(M_NULL_IO_CHAR_CHECK(buf) && bufsize != 0, "buf is NULL and bufsize != 0")
         M_DIAG_ERROR(!M_NULL_IO_CHAR_CHECK(buf) && (bufsize == 0 || bufsize > RSIZE_MAX), "bufsize is out of range (1-RSIZE_MAX allowed)")
-        // clang-format on
-                                  ;
-
-    //! \fn errno_t safe_getdelim_impl(char** M_RESTRICT M_NULLABLE lineptr, rsize_t* M_RESTRICT M_NONNULL
-    //! lineptrAllocedSize, rsize_t* M_RESTRICT M_NONNULL charsRead, int delimiter, FILE* M_NONNULL stream, const char*
-    //! M_NULLABLE functionName, const char* M_NULLABLE fileName, int lineNumber, const char* M_NULLABLE expression)
-    //! \brief A safe implementation of getdelim that performs bounds checking and calls the constraint handler on
-    //! error. This safe version is also limited to RSIZE_MAX memory and bytes read. Memory allocated/reallocated in
-    //! this function is always initialized to zero.
-    //! \param[out] lineptr Pointer to the buffer that will be set to the line read from the file. This buffer is
-    //! allocated by this function and should be freed by the caller when it is no longer needed.
-    //! \param[out] lineptrAllocedSize Pointer to the size of the buffer pointed to by lineptr. This is set to the size
-    //! of the buffer allocated by this function.
-    //! \param[out] charsRead Pointer to the number of characters read, not including the null terminator.
-    //! \param[in] delimiter The delimiter to read until.
-    //! \param[in] stream The file stream to read from.
-    //! \param[in] functionName The function name where this function is called.
-    //! \param[in] fileName The source file name where this function is called.
-    //! \param[in] lineNumber The line number where this function is called.
-    //! \param[in] expression The expression being evaluated.
-    //! \return An error code indicating success or failure.
-    //! \note The following errors are detected at runtime and call the installed constraint handler:
-    //!
-    //! - \a lineptr is a null pointer
-    //!
-    //! - \a lineptrAllocedSize is a null pointer
-    //!
-    //! - \a charsRead is a null pointer
-    //!
-    //! - \a stream is a null pointer or not open for reading
-    //!
-    //! - If an error occurs while reading from the file
-    //!
-    //! - If charsRead is greater than RSIZE_MAX after reading from the file
-    //!
-    //! - If allocated memory attempts to allocate more than RSIZE_MAX bytes while reading
-    M_PARAM_RW(1)
-    M_PARAM_RW(2)
-    M_PARAM_RW(3)
-    M_PARAM_RO(5)
-    CONSTRAINT_NO_DISCARD errno_t safe_getdelim_impl(char* M_NONNULL* M_RESTRICT M_NULLABLE lineptr,
-                                                     rsize_t* M_RESTRICT M_NONNULL          lineptrAllocedSize,
-                                                     rsize_t* M_RESTRICT M_NONNULL          charsRead,
-                                                     int                                    delimiter,
-                                                     FILE* M_NONNULL                        stream,
-                                                     const char* M_NULLABLE                 functionName,
-                                                     const char* M_NULLABLE                 fileName,
-                                                     int                                    lineNumber,
-                                                     const char* M_NULLABLE                 expression)
-        // clang-format off
-        M_DIAG_ERROR(M_NULL_IO_CHAR_CHECK(lineptr), "lineptr is NULL")
-        M_DIAG_ERROR(M_NULL_IO_RSIZE_T_PTR_CHECK(lineptrAllocedSize), "lineptrAllocedSize is NULL")
-        M_DIAG_ERROR(M_NULL_IO_RSIZE_T_PTR_CHECK(charsRead), "charsRead is NULL")
-        M_DIAG_ERROR(M_NULL_STREAM_CHECK(stream), "stream is NULL or not open for reading")
-        // clang-format on
-        ;
-
-    M_PARAM_RW(1)
-    M_PARAM_RW(2)
-    M_PARAM_RW(3)
-    M_PARAM_RO(4)
-    CONSTRAINT_NO_DISCARD errno_t safe_getline_impl(char* M_NONNULL* M_RESTRICT M_NULLABLE lineptr,
-                                                    rsize_t* M_RESTRICT M_NONNULL          lineptrAllocedSize,
-                                                    rsize_t* M_RESTRICT M_NONNULL          charsRead,
-                                                    FILE* M_NONNULL                        stream,
-                                                    const char* M_NULLABLE                 functionName,
-                                                    const char* M_NULLABLE                 fileName,
-                                                    int                                    lineNumber,
-                                                    const char* M_NULLABLE                 expression)
-        // clang-format off
-        M_DIAG_ERROR(M_NULL_IO_CHAR_CHECK(lineptr), "lineptr is NULL")
-        M_DIAG_ERROR(M_NULL_IO_RSIZE_T_PTR_CHECK(lineptrAllocedSize), "lineptrAllocedSize is NULL")
-        M_DIAG_ERROR(M_NULL_IO_RSIZE_T_PTR_CHECK(charsRead), "charsRead is NULL")
-        M_DIAG_ERROR(M_NULL_STREAM_CHECK(stream), "stream is NULL or not open for reading")
         // clang-format on
         ;
 

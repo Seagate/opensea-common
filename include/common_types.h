@@ -79,7 +79,11 @@ RESTORE_WARNING_4255
 #include <errno.h> //for errno_t if it is available
 #include <inttypes.h>
 #include <limits.h>
-#if !defined(USING_C23) && !defined(NEED_BOOL)
+#if !defined(NEED_BOOL)
+// Always include <stdbool.h> when a custom NEED_BOOL is not requested.
+// Some compilers (MSVC with /std:clatest) may define USING_C23 even when
+// full C23 keyword support (e.g., builtin `bool`) is missing; including
+// <stdbool.h> is a safe, portable way to ensure `bool` is available.
 #    include <stdbool.h>
 #endif // NEED_BOOL
 #include <stddef.h>
@@ -805,9 +809,10 @@ typedef int32_t intptr_t;
 //! \param array_name The name of the array.
 //! \param size The size of the array.
 //! \param charVal The char value to initialize the array elements with.
-//! \note This macro is only available for C99 and later. C89 cannot do this when creating an array around other variables (unless it is always the last one).
+//! \note This macro is only available for C99 and later. C89 cannot do this when creating an array around other
+//! variables (unless it is always the last one).
 #    if IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0)
-#        define DECLARE_CHAR_INIT_ARRAY(type_name, array_name, size, charVal)                                                   \
+#        define DECLARE_CHAR_INIT_ARRAY(type_name, array_name, size, charVal)                                          \
             type_name array_name[size] = {[0 ...((size) - 1)] = (unsigned char)charVal}
 #    else
 #        if defined(USING_C99)
@@ -817,12 +822,12 @@ typedef int32_t intptr_t;
         memset_explicit(array, charVal, element_size * element_count);
 #            elif defined(HAVE_C11_ANNEX_K) || defined(HAVE_MEMSET_S)
         memset_s(array, element_size * element_count, charVal, element_size * element_count);
-             #else
+#            else
         memset(array, charVal, element_size * element_count);
 #            endif
     }
 
-#            define DECLARE_CHAR_INIT_ARRAY(type_name, array_name, size, charVal)                                               \
+#            define DECLARE_CHAR_INIT_ARRAY(type_name, array_name, size, charVal)                                      \
                 type_name array_name[size];                                                                            \
                 char_init_array(array_name, sizeof(type_name), size, charVal)
 #        endif
@@ -1110,9 +1115,11 @@ typedef int32_t intptr_t;
     //! For instance, messages like "Performing 5000 Random Reads" or "Sequential Read Test". This allows the UI to get
     //! occasional refreshes.
     //!
-    //! \param[in,out] customData Custom data used to help the Updater function. Usually hidden to the calling function.
+    //! \param[in,out] context Not touched by libraries. Only used by the application to pass context to the callback.
+    //! Can be NULL.
     //! \param[in,out] message Message to go to the UI.
-    typedef void (*custom_Update)(void* customData, char* message);
+    //! \param[in,out] messagelen Length of the message to go to the UI.
+    typedef void (*custom_Update)(void* context, char* message, size_t messagelen);
 
 #if defined(__cplusplus)
 }
@@ -1251,7 +1258,7 @@ template <typename T, size_t N> void char_init_array(T (&array)[N], int value)
 //! \note This does not use memset to handle non-trivial types.
 //!       A compiler may optimize this to memset though if it detects that this
 //!       is a char initialization of the data.
-#    define DECLARE_CHAR_INIT_ARRAY(type_name, array_name, size, value)                                               \
+#    define DECLARE_CHAR_INIT_ARRAY(type_name, array_name, size, value)                                                \
         type_name array_name[size];                                                                                    \
         char_init_array(array_name, value)
 

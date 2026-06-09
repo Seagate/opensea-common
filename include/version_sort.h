@@ -36,9 +36,9 @@ extern "C"
 #endif //__cplusplus
 
 #if defined(NEED_OLD_SCANDIR_CMP_FUNC_TYPE)
-    typedef int (*scandircmp)(const void*, const void*);
+    typedef int (*scandircmp)(const void* M_NONNULL, const void* M_NONNULL);
 #else
-typedef int (*scandircmp)(const struct dirent**, const struct dirent**);
+typedef int (*scandircmp)(const struct dirent* M_NONNULL* M_NONNULL, const struct dirent* M_NONNULL* M_NONNULL);
 #endif
 
     //! \fn int version_sort(const void *ptr1, const void *ptr2)
@@ -49,11 +49,13 @@ typedef int (*scandircmp)(const struct dirent**, const struct dirent**);
     //! \return An integer less than, equal to, or greater than zero if \a ptr1 is found, respectively, to be less than,
     //! to match, or to be greater than \a ptr2.
     //! \note On Windows, this function just returns 0 always since dirent is not supported.
-
+    M_PARAM_RO(1)
+    M_PARAM_RO(2)
+    M_NODISCARD
 #if defined(NEED_OLD_SCANDIR_CMP_FUNC_TYPE)
-    int version_sort(const void* ptr1, const void* ptr2);
+    int version_sort(const void* M_NONNULL ptr1, const void* M_NONNULL ptr2);
 #else
-int version_sort(const struct dirent** ptr1, const struct dirent** ptr2);
+int version_sort(const struct dirent* M_NONNULL* M_NONNULL ptr1, const struct dirent* M_NONNULL* M_NONNULL ptr2);
 #endif
 
 #if defined(__cplusplus)

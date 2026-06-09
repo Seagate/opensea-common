@@ -24,7 +24,7 @@ extern "C"
     //!
     //! \param[in] error The error number to translate
     //! \return M_NULLPTR if memory cannot be allocated or error cannot be translated. Pointer to string successful.
-    M_FUNC_ATTR_MALLOC char* get_strerror(errno_t error);
+    M_FUNC_ATTR_MALLOC char* M_NULLABLE get_strerror(errno_t error);
 
     //! \brief Prints the error number and its meaning to the screen.
     //!
@@ -34,6 +34,13 @@ extern "C"
     void print_Errno_To_Screen(errno_t error);
 
 #if defined(UEFI_C_SOURCE)
+    //! \brief returns an allocated buffer with translation of the EFI_STATUS value
+    //!
+    //! \param[in] efiStatus The EFI_STATUS value to translate
+    //! \return M_NULLPTR if memory cannot be allocated or error cannot be translated. Pointer to string successful.
+    //! Memory should be free'd with free/safe_free
+    M_FUNC_ATTR_MALLOC char* M_NULLABLE get_efistatus_str(EFI_STATUS efiStatus);
+
     //! \brief Prints the EFI status code and its meaning to the screen.
     //!
     //! This function prints the EFI status code and its meaning to the screen, followed by a newline character.

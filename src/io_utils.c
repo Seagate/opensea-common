@@ -24,6 +24,7 @@
 #include "unit_conversion.h"
 #include "warning_ctl.h"
 #include <ctype.h>
+#include <errno.h>
 #include <math.h>   //HUGE_VALF, HUGE_VAL, HUGE_VALL
 #include <stdarg.h> //asprintf/vasprintf
 #include <string.h>
@@ -36,7 +37,7 @@
 #endif // UEFI_C_SOURCE
 
 #if defined(UEFI_C_SOURCE)
-eReturnValues get_Simple_Text_Output_Protocol_Ptr(void** pOutput)
+eReturnValues get_Simple_Text_Output_Protocol_Ptr(void* M_NULLABLE* M_NONNULL pOutput)
 {
     eReturnValues ret        = SUCCESS;
     EFI_STATUS    uefiStatus = EFI_SUCCESS;
@@ -69,7 +70,7 @@ eReturnValues get_Simple_Text_Output_Protocol_Ptr(void** pOutput)
     return ret;
 }
 
-void close_Simple_Text_Output_Protocol_Ptr(void** pOutput)
+void close_Simple_Text_Output_Protocol_Ptr(void* M_NULLABLE* M_NONNULL pOutput)
 {
     EFI_STATUS  uefiStatus = EFI_SUCCESS;
     EFI_HANDLE* handle     = M_NULLPTR;
@@ -99,7 +100,7 @@ void close_Simple_Text_Output_Protocol_Ptr(void** pOutput)
     }
 }
 
-static int32_t get_Default_Console_Colors()
+static int32_t get_Default_Console_Colors(void)
 {
     static int32_t defaultAttributes = INT32_MAX;
     if (defaultAttributes == INT32_MAX)
@@ -135,128 +136,80 @@ void set_Console_Colors(bool foregroundBackground, eConsoleColors consoleColor)
     }
     if (SUCCESS == get_Simple_Text_Output_Protocol_Ptr((void**)&outputProtocol))
     {
+        int32_t currentAttributes = outputProtocol->Mode->Attribute;
+        uint8_t currentBackground = M_Nibble1(C_CAST(unsigned long long, currentAttributes));
+        uint8_t currentForeground = M_Nibble0(C_CAST(unsigned long long, currentAttributes));
+        int32_t newAttributes     = 0;
+        switch (consoleColor)
+        {
+        case DARK_BLUE:
+            newAttributes = EFI_BLUE;
+            break;
+        case CONSOLE_COLOR_BLUE:
+            newAttributes = EFI_LIGHTBLUE;
+            break;
+        case DARK_GREEN:
+            newAttributes = EFI_GREEN;
+            break;
+        case CONSOLE_COLOR_GREEN:
+            newAttributes = EFI_LIGHTGREEN;
+            break;
+        case DARK_RED:
+            newAttributes = EFI_RED;
+            break;
+        case CONSOLE_COLOR_RED:
+            newAttributes = EFI_LIGHTRED;
+            break;
+        case BLACK:
+            newAttributes = EFI_BLACK;
+            break;
+        case BROWN:
+            newAttributes = EFI_BROWN;
+            break;
+        case YELLOW:
+            newAttributes = EFI_YELLOW;
+            break;
+        case TEAL:
+            newAttributes = EFI_CYAN;
+            break;
+        case CYAN:
+            newAttributes = EFI_LIGHTCYAN;
+            break;
+        case PURPLE:
+            newAttributes = EFI_MAGENTA;
+            break;
+        case MAGENTA:
+            newAttributes = EFI_LIGHTMAGENTA;
+            break;
+        case WHITE:
+            newAttributes = EFI_WHITE;
+            break;
+        case DARK_GRAY:
+            newAttributes = EFI_DARKGRAY;
+            break;
+        case CONSOLE_COLOR_GRAY:
+            newAttributes = EFI_LIGHTGRAY;
+            break;
+        case CONSOLE_COLOR_DEFAULT:
+        default:
+            if (foregroundBackground)
+            {
+                newAttributes = M_Nibble0(C_CAST(unsigned long long, get_Default_Console_Colors()));
+            }
+            else
+            {
+                newAttributes = M_Nibble1(C_CAST(unsigned long long, get_Default_Console_Colors()));
+            }
+            break;
+        }
+
         if (foregroundBackground) // change foreground color
         {
-            // save current background color
-            uint8_t currentBackground = M_Nibble1(C_CAST(unsigned long long, outputProtocol->Mode->Attribute));
-            switch (consoleColor)
-            {
-            case DARK_BLUE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_BLUE, currentBackground));
-                break;
-            case CONSOLE_COLOR_BLUE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTBLUE, currentBackground));
-                break;
-            case DARK_GREEN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_GREEN, currentBackground));
-                break;
-            case CONSOLE_COLOR_GREEN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTGREEN, currentBackground));
-                break;
-            case DARK_RED:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_RED, currentBackground));
-                break;
-            case CONSOLE_COLOR_RED:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTRED, currentBackground));
-                break;
-            case BLACK:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_BLACK, currentBackground));
-                break;
-            case BROWN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_BROWN, currentBackground));
-                break;
-            case YELLOW:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_YELLOW, currentBackground));
-                break;
-            case TEAL:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_CYAN, currentBackground));
-                break;
-            case CYAN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTCYAN, currentBackground));
-                break;
-            case PURPLE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_MAGENTA, currentBackground));
-                break;
-            case MAGENTA:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTMAGENTA, currentBackground));
-                break;
-            case WHITE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_WHITE, currentBackground));
-                break;
-            case DARK_GRAY:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_DARKGRAY, currentBackground));
-                break;
-            case CONSOLE_COLOR_GRAY:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(EFI_LIGHTGRAY, currentBackground));
-                break;
-            case CONSOLE_COLOR_DEFAULT:
-            default:
-                outputProtocol->SetAttribute(
-                    outputProtocol, EFI_TEXT_ATTR(M_Nibble0(C_CAST(unsigned long long, get_Default_Console_Colors())),
-                                                  currentBackground));
-                break;
-            }
+            outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(newAttributes, currentBackground));
         }
         else // change background color
         {
-            uint8_t currentForeground = M_Nibble0(C_CAST(unsigned long long, outputProtocol->Mode->Attribute));
-            switch (consoleColor)
-            {
-            case DARK_BLUE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_BLUE));
-                break;
-            case CONSOLE_COLOR_BLUE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTBLUE));
-                break;
-            case DARK_GREEN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_GREEN));
-                break;
-            case CONSOLE_COLOR_GREEN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTGREEN));
-                break;
-            case DARK_RED:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_RED));
-                break;
-            case CONSOLE_COLOR_RED:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTRED));
-                break;
-            case BLACK:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_BLACK));
-                break;
-            case BROWN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_BROWN));
-                break;
-            case YELLOW:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_YELLOW));
-                break;
-            case TEAL:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_CYAN));
-                break;
-            case CYAN:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTCYAN));
-                break;
-            case PURPLE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_MAGENTA));
-                break;
-            case MAGENTA:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTMAGENTA));
-                break;
-            case WHITE:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_WHITE));
-                break;
-            case DARK_GRAY:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_DARKGRAY));
-                break;
-            case CONSOLE_COLOR_GRAY:
-                outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, EFI_LIGHTGRAY));
-                break;
-            case CONSOLE_COLOR_DEFAULT:
-            default:
-                outputProtocol->SetAttribute(
-                    outputProtocol, EFI_TEXT_ATTR(currentForeground,
-                                                  M_Nibble1(C_CAST(unsigned long long, get_Default_Console_Colors()))));
-                break;
-            }
+            outputProtocol->SetAttribute(outputProtocol, EFI_TEXT_ATTR(currentForeground, newAttributes));
         }
         // close the protocol since we are done for now.
         close_Simple_Text_Output_Protocol_Ptr((void**)&outputProtocol);
@@ -482,7 +435,13 @@ static bool set_Input_Console_Mode(DWORD mode)
     return M_ToBool(SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), mode));
 }
 
-eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen)
+M_NULL_TERM_STRING(1)
+M_PARAM_RO(1)
+M_PARAM_RW(2)
+M_PARAM_RW(3)
+eReturnValues get_Secure_User_Input(const char* M_NONNULL       prompt,
+                                    char* M_NONNULL* M_NULLABLE userInput,
+                                    size_t* M_NONNULL           inputDataLen)
 {
     eReturnValues ret            = M_ACCESS_ENUM(eReturnValues, SUCCESS);
     DWORD         defaultConMode = get_Input_Console_Default_Mode();
@@ -497,22 +456,26 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
         rsize_t inputReadLen  = RSIZE_T_C(0);
         if (0 != safe_getline(userInput, &inputAllocLen, &inputReadLen, stdin) || *userInput == M_NULLPTR)
         {
-            ret = M_ACCESS_ENUM(eReturnValues, FAILURE);
+            ret           = M_ACCESS_ENUM(eReturnValues, FAILURE);
             *inputDataLen = 0;
             safe_free(userInput);
         }
         else
         {
-            // remove newline from the end...convert to a null.
-            if ((*userInput)[*inputDataLen - 1] == '\n')
-            {
-                (*userInput)[*inputDataLen - 1] = '\0';
-                *inputDataLen -= 1;
-            }
             if (inputDataLen != M_NULLPTR)
             {
                 *inputDataLen = inputReadLen;
             }
+            // remove newline from the end...convert to a null.
+            if ((*userInput)[inputReadLen - 1] == '\n')
+            {
+                (*userInput)[inputReadLen - 1] = '\0';
+                if (inputDataLen != M_NULLPTR)
+                {
+                    *inputDataLen -= 1;
+                }
+            }
+
         }
     }
     else
@@ -720,7 +683,8 @@ typedef struct sconsoleColorCap
 
 // Future var we might need is whether the reset to defaults (39m & 49m) work or
 // if the complete reset is needed (0m)
-static void get_Console_Color_Capabilities(ptrConsoleColorCap colorCapabilities)
+M_PARAM_WO(1)
+static void get_Console_Color_Capabilities(ptrConsoleColorCap M_NONNULL colorCapabilities)
 {
     if (colorCapabilities != M_NULLPTR)
     {
@@ -1111,7 +1075,13 @@ static M_INLINE void fclose_term(FILE* term)
 //   a terminal).
 // So if necessary, for "compatibility" this could be implemented without echo,
 // but avoiding that for now-TJE
-eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t* inputDataLen)
+M_NULL_TERM_STRING(1)
+M_PARAM_RO(1)
+M_PARAM_RW(2)
+M_PARAM_RW(3)
+eReturnValues get_Secure_User_Input(const char* M_NONNULL       prompt,
+                                    char* M_NONNULL* M_NULLABLE userInput,
+                                    size_t* M_NONNULL           inputDataLen)
 {
     eReturnValues ret = SUCCESS;
 #    if defined(POSIX_2001) && defined(_POSIX_JOB_CONTROL) // https://linux.die.net/man/7/posixoptions
@@ -1160,7 +1130,7 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
     rsize_t inputReadLen  = RSIZE_T_C(0);
     if (0 != safe_getline(userInput, &inputAllocLen, &inputReadLen, term) || *userInput == M_NULLPTR)
     {
-        ret = FAILURE;
+        ret           = FAILURE;
         *inputDataLen = 0;
         safe_free(userInput);
     }
@@ -1274,7 +1244,8 @@ eReturnValues get_Secure_User_Input(const char* prompt, char** userInput, size_t
 }
 #endif
 
-static M_INLINE bool is_Allowed_Datasize_Unit(const char* unit)
+M_PARAM_RO(1)
+static M_INLINE bool is_Allowed_Datasize_Unit(const char* M_NONNULL unit)
 {
     bool allowed = false;
     // allowed units must match exactly at the end of the string!
@@ -1288,7 +1259,8 @@ static M_INLINE bool is_Allowed_Datasize_Unit(const char* unit)
     return allowed;
 }
 
-static M_INLINE bool is_Allowed_Sector_Size_Unit(const char* unit)
+M_PARAM_RO(1)
+static M_INLINE bool is_Allowed_Sector_Size_Unit(const char* M_NONNULL unit)
 {
     bool allowed = false;
     // l is used by some utilities to indicate a count is in
@@ -1302,7 +1274,8 @@ static M_INLINE bool is_Allowed_Sector_Size_Unit(const char* unit)
     return allowed;
 }
 
-static M_INLINE bool is_Allowed_Time_Unit(const char* unit)
+M_PARAM_RO(1)
+static M_INLINE bool is_Allowed_Time_Unit(const char* M_NONNULL unit)
 {
     bool allowed = false;
     if (strcasecmp(unit, "ns") == 0    // nanoseconds
@@ -1319,7 +1292,8 @@ static M_INLINE bool is_Allowed_Time_Unit(const char* unit)
     return allowed;
 }
 
-static M_INLINE bool is_Allowed_Power_Unit(const char* unit)
+M_PARAM_RO(1)
+static M_INLINE bool is_Allowed_Power_Unit(const char* M_NONNULL unit)
 {
     bool allowed = false;
     if (strcasecmp(unit, "w") == 0     // watts
@@ -1332,7 +1306,8 @@ static M_INLINE bool is_Allowed_Power_Unit(const char* unit)
     return allowed;
 }
 
-static M_INLINE bool is_Allowed_Volts_Unit(const char* unit)
+M_PARAM_RO(1)
+static M_INLINE bool is_Allowed_Volts_Unit(const char* M_NONNULL unit)
 {
     bool allowed = false;
     if (strcasecmp(unit, "v") == 0     // volts
@@ -1345,7 +1320,8 @@ static M_INLINE bool is_Allowed_Volts_Unit(const char* unit)
     return allowed;
 }
 
-static M_INLINE bool is_Allowed_Amps_Unit(const char* unit)
+M_PARAM_RO(1)
+static M_INLINE bool is_Allowed_Amps_Unit(const char* M_NONNULL unit)
 {
     bool allowed = false;
     if (strcasecmp(unit, "a") == 0     // amps
@@ -1358,7 +1334,8 @@ static M_INLINE bool is_Allowed_Amps_Unit(const char* unit)
     return allowed;
 }
 
-static M_INLINE bool is_Allowed_Temperature_Unit(const char* unit)
+M_PARAM_RO(1)
+static M_INLINE bool is_Allowed_Temperature_Unit(const char* M_NONNULL unit)
 {
     bool allowed = false;
     if (strcasecmp(unit, "c") == 0    // celsius
@@ -1377,7 +1354,8 @@ static M_INLINE bool is_Allowed_Temperature_Unit(const char* unit)
 // so this matched to KB This allows for the utilities calling
 // this to multiply the output integer into a value that makes
 // sense
-static bool is_Allowed_Unit_For_Get_And_Validate_Input(const char* unit, eAllowedUnitInput unittype)
+M_PARAM_RO(1)
+static bool is_Allowed_Unit_For_Get_And_Validate_Input(const char* M_NULLABLE unit, eAllowedUnitInput unittype)
 {
     bool allowed = false;
     if (unit != M_NULLPTR)
@@ -1433,7 +1411,8 @@ typedef enum integerInputStrTypeEnum
 
 typedef eintegerInputStrType eintergetInputStrType; // Misspelled
 
-static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str, eAllowedUnitInput unittype)
+M_PARAM_RO(1)
+static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* M_NONNULL str, eAllowedUnitInput unittype)
 {
     eintergetInputStrType type = INT_INPUT_DECIMAL;
 
@@ -1502,10 +1481,11 @@ static M_INLINE eintergetInputStrType get_Input_Str_Type(const char* str, eAllow
     return type;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToConvert,
-                                                    char**              unit,
-                                                    eAllowedUnitInput   unittype,
-                                                    unsigned long long* outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_ULL(const char* M_NONNULL         strToConvert,
+                                                          char* M_NULLABLE* M_NULLABLE  unit,
+                                                          eAllowedUnitInput             unittype,
+                                                          unsigned long long* M_NONNULL outputInteger)
 {
     bool result = false;
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
@@ -1532,10 +1512,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_ULL(const char*         strToCon
     return result;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConvert,
-                                                   char**            unit,
-                                                   eAllowedUnitInput unittype,
-                                                   unsigned long*    outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_UL(const char* M_NONNULL        strToConvert,
+                                                         char* M_NULLABLE* M_NULLABLE unit,
+                                                         eAllowedUnitInput            unittype,
+                                                         unsigned long* M_NONNULL     outputInteger)
 {
     bool result = false;
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
@@ -1562,10 +1543,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UL(const char*       strToConver
     return result;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_UI(const char*       strToConvert,
-                                                   char**            unit,
-                                                   eAllowedUnitInput unittype,
-                                                   unsigned int*     outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_UI(const char* M_NONNULL        strToConvert,
+                                                         char* M_NULLABLE* M_NULLABLE unit,
+                                                         eAllowedUnitInput            unittype,
+                                                         unsigned int* M_NONNULL      outputInteger)
 {
     unsigned long temp = 0UL;
     bool          ret  = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
@@ -1587,10 +1569,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UI(const char*       strToConver
     return ret;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_US(const char*       strToConvert,
-                                                   char**            unit,
-                                                   eAllowedUnitInput unittype,
-                                                   unsigned short*   outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_US(const char* M_NONNULL        strToConvert,
+                                                         char* M_NULLABLE* M_NULLABLE unit,
+                                                         eAllowedUnitInput            unittype,
+                                                         unsigned short* M_NONNULL    outputInteger)
 {
     unsigned long temp = 0UL;
     bool          ret  = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
@@ -1612,10 +1595,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_US(const char*       strToConver
     return ret;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_UC(const char*       strToConvert,
-                                                   char**            unit,
-                                                   eAllowedUnitInput unittype,
-                                                   unsigned char*    outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_UC(const char* M_NONNULL        strToConvert,
+                                                         char* M_NULLABLE* M_NULLABLE unit,
+                                                         eAllowedUnitInput            unittype,
+                                                         unsigned char* M_NONNULL     outputInteger)
 {
     unsigned long temp = 0UL;
     bool          ret  = get_And_Validate_Integer_Input_UL(strToConvert, unit, unittype, &temp);
@@ -1637,10 +1621,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_UC(const char*       strToConver
     return ret;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char*       strToConvert,
-                                                   char**            unit,
-                                                   eAllowedUnitInput unittype,
-                                                   long long*        outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_LL(const char* M_NONNULL        strToConvert,
+                                                         char* M_NULLABLE* M_NULLABLE unit,
+                                                         eAllowedUnitInput            unittype,
+                                                         long long* M_NONNULL         outputInteger)
 {
     bool result = false;
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
@@ -1667,10 +1652,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_LL(const char*       strToConver
     return result;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert,
-                                                  char**            unit,
-                                                  eAllowedUnitInput unittype,
-                                                  long*             outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_L(const char* M_NONNULL        strToConvert,
+                                                        char* M_NULLABLE* M_NULLABLE unit,
+                                                        eAllowedUnitInput            unittype,
+                                                        long* M_NONNULL              outputInteger)
 {
     bool result = false;
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
@@ -1697,10 +1683,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_L(const char*       strToConvert
     return result;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_I(const char*       strToConvert,
-                                                  char**            unit,
-                                                  eAllowedUnitInput unittype,
-                                                  int*              outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_I(const char* M_NONNULL        strToConvert,
+                                                        char* M_NULLABLE* M_NULLABLE unit,
+                                                        eAllowedUnitInput            unittype,
+                                                        int* M_NONNULL               outputInteger)
 {
     long temp = 0L;
     bool ret  = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
@@ -1728,10 +1715,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_I(const char*       strToConvert
     return ret;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_S(const char*       strToConvert,
-                                                  char**            unit,
-                                                  eAllowedUnitInput unittype,
-                                                  short*            outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_S(const char* M_NONNULL        strToConvert,
+                                                        char* M_NULLABLE* M_NULLABLE unit,
+                                                        eAllowedUnitInput            unittype,
+                                                        short* M_NONNULL             outputInteger)
 {
     long temp = 0L;
     bool ret  = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
@@ -1759,10 +1747,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_S(const char*       strToConvert
     return ret;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_C(const char*       strToConvert,
-                                                  char**            unit,
-                                                  eAllowedUnitInput unittype,
-                                                  char*             outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_C(const char* M_NONNULL        strToConvert,
+                                                        char* M_NULLABLE* M_NULLABLE unit,
+                                                        eAllowedUnitInput            unittype,
+                                                        char* M_NONNULL              outputInteger)
 {
     long temp = 0L;
     bool ret  = get_And_Validate_Integer_Input_L(strToConvert, unit, unittype, &temp);
@@ -1790,10 +1779,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_C(const char*       strToConvert
     return ret;
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Uint64(const char*       strToConvert,
-                                                       char**            unit,
-                                                       eAllowedUnitInput unittype,
-                                                       uint64_t*         outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Uint64(const char* M_NONNULL        strToConvert,
+                                                             char* M_NULLABLE* M_NULLABLE unit,
+                                                             eAllowedUnitInput            unittype,
+                                                             uint64_t* M_NONNULL          outputInteger)
 {
 #if defined(USING_C11) && defined(get_Valid_Integer_Input)
     // let the generic selection macro do this
@@ -1829,10 +1819,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint64(const char*       strToCo
 #endif
 }
 
-M_NODISCARD bool get_And_Validate_Float_Input(const char*       strToConvert,
-                                              char**            unit,
-                                              eAllowedUnitInput unittype,
-                                              float*            outputFloat)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Float_Input(const char* M_NONNULL        strToConvert,
+                                                    char* M_NULLABLE* M_NULLABLE unit,
+                                                    eAllowedUnitInput            unittype,
+                                                    float* M_NONNULL             outputFloat)
 {
     bool result = false;
     if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
@@ -1851,10 +1842,11 @@ M_NODISCARD bool get_And_Validate_Float_Input(const char*       strToConvert,
     return result;
 }
 
-M_NODISCARD bool get_And_Validate_Double_Input(const char*       strToConvert,
-                                               char**            unit,
-                                               eAllowedUnitInput unittype,
-                                               double*           outputFloat)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Double_Input(const char* M_NONNULL        strToConvert,
+                                                     char* M_NULLABLE* M_NULLABLE unit,
+                                                     eAllowedUnitInput            unittype,
+                                                     double* M_NONNULL            outputFloat)
 {
     bool result = false;
     if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
@@ -1873,10 +1865,11 @@ M_NODISCARD bool get_And_Validate_Double_Input(const char*       strToConvert,
     return result;
 }
 
-M_NODISCARD bool get_And_Validate_LDouble_Input(const char*       strToConvert,
-                                                char**            unit,
-                                                eAllowedUnitInput unittype,
-                                                long double*      outputFloat)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_LDouble_Input(const char* M_NONNULL        strToConvert,
+                                                      char* M_NULLABLE* M_NULLABLE unit,
+                                                      eAllowedUnitInput            unittype,
+                                                      long double* M_NONNULL       outputFloat)
 {
     bool result = false;
     if (strToConvert != M_NULLPTR && outputFloat != M_NULLPTR)
@@ -1897,16 +1890,21 @@ M_NODISCARD bool get_And_Validate_LDouble_Input(const char*       strToConvert,
 
 // NOTE: This function is deprecated as you should use the one that matches your
 // integer type instead for best error handling.
-M_DEPRECATED bool get_And_Validate_Integer_Input(const char* strToConvert, uint64_t* outputInteger)
+M_DEPRECATED_REASON("use the bit width specific versions instead!")
+M_PARAM_RO(1)
+M_NULL_TERM_STRING(1)
+M_PARAM_RW(2)
+M_NODISCARD bool get_And_Validate_Integer_Input(const char* M_NONNULL strToConvert, uint64_t* M_NONNULL outputInteger)
 {
     return get_And_Validate_Integer_Input_Uint64(strToConvert, M_NULLPTR,
                                                  M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE), outputInteger);
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Uint32(const char*       strToConvert,
-                                                       char**            unit,
-                                                       eAllowedUnitInput unittype,
-                                                       uint32_t*         outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Uint32(const char* M_NONNULL        strToConvert,
+                                                             char* M_NULLABLE* M_NULLABLE unit,
+                                                             eAllowedUnitInput            unittype,
+                                                             uint32_t* M_NONNULL          outputInteger)
 {
 #if defined(USING_C11) && defined(get_Valid_Integer_Input)
     // let the generic selection macro do this
@@ -1928,10 +1926,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint32(const char*       strToCo
 #endif
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Uint16(const char*       strToConvert,
-                                                       char**            unit,
-                                                       eAllowedUnitInput unittype,
-                                                       uint16_t*         outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Uint16(const char* M_NONNULL        strToConvert,
+                                                             char* M_NULLABLE* M_NULLABLE unit,
+                                                             eAllowedUnitInput            unittype,
+                                                             uint16_t* M_NONNULL          outputInteger)
 {
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
@@ -1956,10 +1955,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint16(const char*       strToCo
     }
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Uint8(const char*       strToConvert,
-                                                      char**            unit,
-                                                      eAllowedUnitInput unittype,
-                                                      uint8_t*          outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Uint8(const char* M_NONNULL        strToConvert,
+                                                            char* M_NULLABLE* M_NULLABLE unit,
+                                                            eAllowedUnitInput            unittype,
+                                                            uint8_t* M_NONNULL           outputInteger)
 {
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
@@ -1984,10 +1984,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Uint8(const char*       strToCon
     }
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Int64(const char*       strToConvert,
-                                                      char**            unit,
-                                                      eAllowedUnitInput unittype,
-                                                      int64_t*          outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Int64(const char* M_NONNULL        strToConvert,
+                                                            char* M_NULLABLE* M_NULLABLE unit,
+                                                            eAllowedUnitInput            unittype,
+                                                            int64_t* M_NONNULL           outputInteger)
 {
 #if defined(USING_C11) && defined(get_Valid_Integer_Input)
     // let the generic selection macro do this
@@ -2041,10 +2042,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int64(const char*       strToCon
 #endif
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Int32(const char*       strToConvert,
-                                                      char**            unit,
-                                                      eAllowedUnitInput unittype,
-                                                      int32_t*          outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Int32(const char* M_NONNULL        strToConvert,
+                                                            char* M_NULLABLE* M_NULLABLE unit,
+                                                            eAllowedUnitInput            unittype,
+                                                            int32_t* M_NONNULL           outputInteger)
 {
 #if defined(USING_C11) && defined(get_Valid_Integer_Input)
     // let the generic selection macro do this
@@ -2075,10 +2077,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int32(const char*       strToCon
 #endif
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Int16(const char*       strToConvert,
-                                                      char**            unit,
-                                                      eAllowedUnitInput unittype,
-                                                      int16_t*          outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Int16(const char* M_NONNULL        strToConvert,
+                                                            char* M_NULLABLE* M_NULLABLE unit,
+                                                            eAllowedUnitInput            unittype,
+                                                            int16_t* M_NONNULL           outputInteger)
 {
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
@@ -2102,10 +2105,11 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int16(const char*       strToCon
     }
 }
 
-M_NODISCARD bool get_And_Validate_Integer_Input_Int8(const char*       strToConvert,
-                                                     char**            unit,
-                                                     eAllowedUnitInput unittype,
-                                                     int8_t*           outputInteger)
+M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
+    M_PARAM_RW(4) bool get_And_Validate_Integer_Input_Int8(const char* M_NONNULL        strToConvert,
+                                                           char* M_NULLABLE* M_NULLABLE unit,
+                                                           eAllowedUnitInput            unittype,
+                                                           int8_t* M_NONNULL            outputInteger)
 {
     if (strToConvert != M_NULLPTR && outputInteger != M_NULLPTR)
     {
@@ -2133,7 +2137,13 @@ M_NODISCARD bool get_And_Validate_Integer_Input_Int8(const char*       strToConv
 // getdelim and getline are not available, so define them ourselves for our own
 // use
 
-ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter, FILE* stream)
+M_PARAM_RW(1)
+M_PARAM_RW(2)
+M_PARAM_RO(4)
+ssize_t getdelim(char* M_NONNULL* M_RESTRICT M_NULLABLE lineptr,
+                 size_t* M_RESTRICT M_NONNULL           n,
+                 int                                    delimiter,
+                 FILE* M_NONNULL                        stream)
 {
     char* currentptr = M_NULLPTR;
     char* endptr     = M_NULLPTR;
@@ -2218,7 +2228,9 @@ ssize_t getdelim(char** M_RESTRICT lineptr, size_t* M_RESTRICT n, int delimiter,
     } while (1);
 }
 
-ssize_t getline(char** lineptr, size_t* n, FILE* stream)
+M_PARAM_RW(1)
+M_PARAM_RW(2)
+M_PARAM_RO(3) ssize_t getline(char* M_NONNULL* M_NULLABLE lineptr, size_t* M_NONNULL n, FILE* M_NONNULL stream)
 {
     return getdelim(lineptr, n, '\n', stream);
 }
@@ -2406,7 +2418,9 @@ errno_t safe_getline_impl(char**      lineptr,
 #if !defined(__STDC_ALLOC_LIB__) && !defined(_GNU_SOURCE) && !IS_FREEBSD_VERSION(2, 2, 0) &&                           \
     !(defined(__OpenBSD__) && defined(OpenBSD2_3)) && !defined(HAVE_VASPRINTF)
 
-M_NODISCARD FUNC_ATTR_PRINTF(2, 3) int asprintf(char** M_RESTRICT strp, const char* M_RESTRICT fmt, ...)
+M_NODISCARD M_PARAM_RW(1) M_PARAM_RO(2) FUNC_ATTR_PRINTF(2, 3) int asprintf(char* M_NONNULL* M_RESTRICT M_NULLABLE strp,
+                                                                            const char* M_RESTRICT M_NONNULL       fmt,
+                                                                            ...)
 {
     // call vasprintf
     va_list args;
@@ -2416,7 +2430,10 @@ M_NODISCARD FUNC_ATTR_PRINTF(2, 3) int asprintf(char** M_RESTRICT strp, const ch
     return result;
 }
 
-M_NODISCARD FUNC_ATTR_PRINTF(2, 0) int vasprintf(char** M_RESTRICT strp, const char* M_RESTRICT fmt, va_list arg)
+M_NODISCARD M_PARAM_RW(1) M_PARAM_RO(2)
+    FUNC_ATTR_PRINTF(2, 0) int vasprintf(char* M_NONNULL* M_RESTRICT M_NULLABLE strp,
+                                         const char* M_RESTRICT M_NONNULL       fmt,
+                                         va_list                                arg)
 {
     va_list copyarg;
 #    if defined(va_copy)
@@ -2461,7 +2478,12 @@ M_NODISCARD FUNC_ATTR_PRINTF(2, 0) int vasprintf(char** M_RESTRICT strp, const c
 #endif // asprintf, vasprintf
 
 #if defined(_MSC_VER) && _MSC_VER <= MSVC_2013 && defined _WIN32
-int snprintf(char* buffer, size_t bufsz, const char* format, ...)
+M_NONNULL_IF_NONZERO_PARAM(1, 2)
+M_NULL_TERM_STRING(3)
+M_PARAM_RW(1)
+M_PARAM_RO(3)
+FUNC_ATTR_PRINTF(3, 4)
+int snprintf(char* M_NULLABLE buffer, size_t bufsz, const char* M_RESTRICT M_NONNULL format, ...)
 {
     int     charCount = -1;
     va_list args;
@@ -2509,7 +2531,12 @@ int snprintf(char* buffer, size_t bufsz, const char* format, ...)
     return charCount;
 }
 
-int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
+M_NONNULL_IF_NONZERO_PARAM(1, 2)
+M_NULL_TERM_STRING(3)
+M_PARAM_RW(1)
+M_PARAM_RO(3)
+FUNC_ATTR_PRINTF(3, 0)
+int vsnprintf(char* M_NULLABLE buffer, size_t bufsz, const char* M_RESTRICT M_NONNULL format, va_list args)
 {
     int     charCount = -1;
     va_list countargs;
@@ -2550,12 +2577,153 @@ int vsnprintf(char* buffer, size_t bufsz, const char* format, va_list args)
             charCount = _vscprintf(format, countargs); // gets the count of the number of args
         }
     }
-    return charcount;
+    return charCount;
 }
 #endif // defined (_MSC_VER) && _MSC_VER <= MSVC_2013 && defined _WIN32
 
+M_PARAM_WO(2)
+M_NODISCARD bool get_eReturnValues_To_String(eReturnValues ret, char string[M_NONNULL_ARRAY RETURN_VALUE_MAX_STR_LEN])
+{
+    errno_t error = EINVAL; // start with this as safe_strcpy *should* return success
+    explicit_zeroes(string, RETURN_VALUE_MAX_STR_LEN);
+    switch (ret)
+    {
+    case M_ACCESS_ENUM(eReturnValues, SUCCESS):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "SUCCESS\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, NOT_SUPPORTED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "NOT SUPPORTED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, COMMAND_FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "COMMAND FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, IN_PROGRESS):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "IN PROGRESS\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, ABORTED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "ABORTED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "BAD PARAMETER\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "MEMORY FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_PASSTHROUGH_FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "OS PASSTHROUGH FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, LIBRARY_MISMATCH):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "LIBRARY MISMATCH\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, FROZEN):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "FROZEN\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, PERMISSION_DENIED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "PERMISSION DENIED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, FILE_OPEN_ERROR):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "FILE OPEN ERROR\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, WARN_INCOMPLETE_RFTRS):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "WARNING INCOMPLETE RTFRS\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_TIMEOUT):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "COMMAND TIMEOUT\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, WARN_NOT_ALL_DEVICES_ENUMERATED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "WARNING NOT ALL DEVICES ENUMERATED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, WARN_INVALID_CHECKSUM):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "WARN INVALID CHECKSUM\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_NOT_AVAILABLE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "OS COMMAND NOT AVAILABLE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_BLOCKED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "OS COMMAND BLOCKED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, COMMAND_INTERRUPTED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "COMMAND INTERRUPTED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, VALIDATION_FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "VALIDATION FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, STRIP_HDR_FOOTER_FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "STRIP HDR FOOTER FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, PARSE_FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "PARSE FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, INVALID_LENGTH):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "INVALID LENGTH\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, ERROR_WRITING_FILE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "ERROR WRITING FILE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, TIMEOUT):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "TIMEOUT\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, OS_TIMEOUT_TOO_LARGE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "OS TIMEOUT TOO LARGE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, PARSING_EXCEPTION_FAILURE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "PARSING EXCEPTION FAILURE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, POWER_CYCLE_REQUIRED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "POWER CYCLE REQUIRED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DIR_CREATION_FAILED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "DIR CREATION FAILED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, FILE_READ_ERROR):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "FILE READ ERROR\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_ACCESS_DENIED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "DEVICE ACCESS DENIED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, NOT_PARSED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "NOT PARSED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, MISSING_INFORMATION):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "MISSING INFORMATION\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, TRUNCATED_FILE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "TRUNCATED FILE\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, INSECURE_PATH):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "INSECURE PATH\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_BUSY):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "DEVICE BUSY\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_INVALID):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "DEVICE INVALID\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, DEVICE_DISCONNECTED):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "DEVICE DISCONNECTED\n");
+        break;
+    case M_ACCESS_ENUM(eReturnValues, UNKNOWN):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "UNKNOWN\n");
+        break;
+        // NO DEFAULT CASE! This will cause warnings when an enum value is not
+        // in this switch-case so that it is never out of date!
+    }
+    if (error != 0)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
 void print_Return_Enum(const char* funcName, eReturnValues ret)
 {
+    DECLARE_ZERO_INIT_ARRAY(char, retStr, RETURN_VALUE_MAX_STR_LEN);
     if (M_NULLPTR == funcName)
     {
         print_str("Unknown function returning: ");
@@ -2565,130 +2733,13 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
         printf("%s returning: ", funcName);
     }
 
-    switch (ret)
+    if (!get_eReturnValues_To_String(ret, retStr))
     {
-    case M_ACCESS_ENUM(eReturnValues, SUCCESS):
-        print_str("SUCCESS\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, FAILURE):
-        print_str("FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, NOT_SUPPORTED):
-        print_str("NOT SUPPORTED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, COMMAND_FAILURE):
-        print_str("COMMAND FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, IN_PROGRESS):
-        print_str("IN PROGRESS\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, ABORTED):
-        print_str("ABORTED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, BAD_PARAMETER):
-        print_str("BAD PARAMETER\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, MEMORY_FAILURE):
-        print_str("MEMORY FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_PASSTHROUGH_FAILURE):
-        print_str("OS PASSTHROUGH FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, LIBRARY_MISMATCH):
-        print_str("LIBRARY MISMATCH\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, FROZEN):
-        print_str("FROZEN\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, PERMISSION_DENIED):
-        print_str("PERMISSION DENIED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, FILE_OPEN_ERROR):
-        print_str("FILE OPEN ERROR\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, WARN_INCOMPLETE_RFTRS):
-        print_str("WARNING INCOMPLETE RTFRS\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_TIMEOUT):
-        print_str("COMMAND TIMEOUT\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, WARN_NOT_ALL_DEVICES_ENUMERATED):
-        print_str("WARNING NOT ALL DEVICES ENUMERATED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, WARN_INVALID_CHECKSUM):
-        print_str("WARN INVALID CHECKSUM\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_NOT_AVAILABLE):
-        print_str("OS COMMAND NOT AVAILABLE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_COMMAND_BLOCKED):
-        print_str("OS COMMAND BLOCKED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, COMMAND_INTERRUPTED):
-        print_str("COMMAND INTERRUPTED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, VALIDATION_FAILURE):
-        print_str("VALIDATION FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, STRIP_HDR_FOOTER_FAILURE):
-        print_str("STRIP HDR FOOTER FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, PARSE_FAILURE):
-        print_str("PARSE FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, INVALID_LENGTH):
-        print_str("INVALID LENGTH\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, ERROR_WRITING_FILE):
-        print_str("ERROR WRITING FILE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, TIMEOUT):
-        print_str("TIMEOUT\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, OS_TIMEOUT_TOO_LARGE):
-        print_str("OS TIMEOUT TOO LARGE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, PARSING_EXCEPTION_FAILURE):
-        print_str("PARSING EXCEPTION FAILURE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, POWER_CYCLE_REQUIRED):
-        print_str("POWER CYCLE REQUIRED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DIR_CREATION_FAILED):
-        print_str("DIR CREATION FAILED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, FILE_READ_ERROR):
-        print_str("FILE READ ERROR\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DEVICE_ACCESS_DENIED):
-        print_str("DEVICE ACCESS DENIED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, NOT_PARSED):
-        print_str("NOT PARSED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, MISSING_INFORMATION):
-        print_str("MISSING INFORMATION\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, TRUNCATED_FILE):
-        print_str("TRUNCATED FILE\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, INSECURE_PATH):
-        print_str("INSECURE PATH\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DEVICE_BUSY):
-        print_str("DEVICE BUSY\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DEVICE_INVALID):
-        print_str("DEVICE INVALID\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, DEVICE_DISCONNECTED):
-        print_str("DEVICE DISCONNECTED\n");
-        break;
-    case M_ACCESS_ENUM(eReturnValues, UNKNOWN):
-        print_str("UNKNOWN\n");
-        break;
-        // NO DEFAULT CASE! This will cause warnings when an enum value is not
-        // in this switch-case so that it is never out of date!
+        print_str("Invalid return value - conversion not available.\n");
+    }
+    else
+    {
+        print_str(retStr);
     }
     print_str("\n");
 }
@@ -2699,7 +2750,13 @@ void print_Return_Enum(const char* funcName, eReturnValues ret)
 #define CHARS_PER_BUF_VAL       (3)
 // This creates the output for a SINGLE line with optional printable characters and returns it.
 // The pointer to the buffer and remaining length should be passed into this function!
-static char* create_data_line_output(char* line, const uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
+
+M_PARAM_RO_SIZE(2, 3)
+M_NONNULL_PARAM_LIST(1, 2)
+static char* M_NONNULL create_data_line_output(char                     line[M_NONNULL_ARRAY DATA_LINE_BUFFER_LENGTH],
+                                               const uint8_t* M_NONNULL dataBuffer,
+                                               const uint32_t           bufferLen,
+                                               const bool               showPrint)
 {
     M_IGNORE_SAFE_ERRNO_CALL(safe_memset(line, DATA_LINE_BUFFER_LENGTH, ' ', DATA_LINE_BUFFER_LENGTH - 1),
                              "Memset to space padding except null so never goes out of bounds");
@@ -2769,7 +2826,7 @@ static void internal_Print_Data_Buffer(const uint8_t* M_NONNULL dataBuffer,
         }
         // we print out 2 (0x) + printf formatting width + 2 (spaces) then the
         // offsets
-        int fputsret = fputs(spacePad, stdout);
+        int fputsret = fputs(spacePad, outputStream);
         if (fputsret == EOF)
         {
             perror("Error writing space padding to screen for internal_Print_Data_Buffer");
@@ -2779,52 +2836,52 @@ static void internal_Print_Data_Buffer(const uint8_t* M_NONNULL dataBuffer,
         case 0:
             break;
         case 1:
-            fputsret = fputs("0", stdout);
+            fputsret = fputs("0", outputStream);
             break;
         case 2:
-            fputsret = fputs("0  1", stdout);
+            fputsret = fputs("0  1", outputStream);
             break;
         case 3:
-            fputsret = fputs("0  1  2", stdout);
+            fputsret = fputs("0  1  2", outputStream);
             break;
         case 4:
-            fputsret = fputs("0  1  2  3", stdout);
+            fputsret = fputs("0  1  2  3", outputStream);
             break;
         case 5:
-            fputsret = fputs("0  1  2  3  4", stdout);
+            fputsret = fputs("0  1  2  3  4", outputStream);
             break;
         case 6:
-            fputsret = fputs("0  1  2  3  4  5", stdout);
+            fputsret = fputs("0  1  2  3  4  5", outputStream);
             break;
         case 7:
-            fputsret = fputs("0  1  2  3  4  5  6", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6", outputStream);
             break;
         case 8:
-            fputsret = fputs("0  1  2  3  4  5  6  7", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7", outputStream);
             break;
         case 9:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8", outputStream);
             break;
         case 0xA:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8  9", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9", outputStream);
             break;
         case 0xB:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A", outputStream);
             break;
         case 0xC:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B", outputStream);
             break;
         case 0xD:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C", outputStream);
             break;
         case 0xE:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D", outputStream);
             break;
         case 0xF:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D  E", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D  E", outputStream);
             break;
         default:
-            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F", stdout);
+            fputsret = fputs("0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F", outputStream);
             break;
         }
         if (fputsret == EOF)
@@ -2853,7 +2910,7 @@ static void internal_Print_Data_Buffer(const uint8_t* M_NONNULL dataBuffer,
         }
         else
         {
-            if (fputs("\n  ", stdout) == EOF)
+            if (fputs("\n  ", outputStream) == EOF)
             {
                 perror("Error writing newline and space padding in internal_Print_Data_Buffer");
             }
@@ -2862,21 +2919,24 @@ static void internal_Print_Data_Buffer(const uint8_t* M_NONNULL dataBuffer,
         {
             buffLenModifier = buffLen;
         }
-        if (fputs(create_data_line_output(line, &dataBuffer[offset], buffLenModifier, showPrint), stdout) == EOF)
+        if (fputs(create_data_line_output(line, &dataBuffer[offset], buffLenModifier, showPrint), outputStream) == EOF)
         {
             perror("Error writing hex output in internal_Print_Data_Buffer");
         }
     }
 
-    M_STATIC_CAST(void, fputs("\n\n", stdout)); // Not checking for EOF because this is not worth it at this point
+    M_STATIC_CAST(void, fputs("\n\n", outputStream)); // Not checking for EOF because this is not worth it at this point
 }
 
-void print_Data_Buffer(const uint8_t* dataBuffer, uint32_t bufferLen, bool showPrint)
+M_NONNULL_IF_NONZERO_PARAM(1, 2)
+M_PARAM_RO_SIZE(1, 2)
+void print_Data_Buffer(const uint8_t* M_NULLABLE dataBuffer, uint32_t bufferLen, bool showPrint)
 {
     internal_Print_Data_Buffer(dataBuffer, bufferLen, showPrint, true, stdout);
 }
 
-void print_Pipe_Data(const uint8_t* dataBuffer, uint32_t bufferLen)
+M_NONNULL_IF_NONZERO_PARAM(1, 2)
+M_PARAM_RO_SIZE(1, 2) void print_Pipe_Data(const uint8_t* M_NULLABLE dataBuffer, uint32_t bufferLen)
 {
     internal_Print_Data_Buffer(dataBuffer, bufferLen, false, false, stdout);
 }
@@ -3983,6 +4043,17 @@ int impl_snprintf_err_handle(const char* M_NULLABLE file,
                                   set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
         return -1;
     }
+    else if (format == M_NULLPTR)
+    {
+        if (buf != M_NULLPTR && bufsize > 0)
+        {
+            buf[0] = 0;
+        }
+        errno = EINVAL;
+        invoke_Constraint_Handler("snprintf_error_handler_macro: format is NULL",
+                                  set_Env_Info(&envInfo, file, function, expression, line), EINVAL);
+        return -1;
+    }
     va_list args;
     va_start(args, format);
     // Disabling this warning in GCC and Clang for now. It only seems to show in Windows at the moment-TJE
@@ -4018,7 +4089,8 @@ int impl_snprintf_err_handle(const char* M_NULLABLE file,
     return n;
 }
 
-errno_t checked_fputs(const char* nofmt, FILE* out)
+M_NULL_TERM_STRING(1)
+M_PARAM_RO(1) M_PARAM_RW(2) errno_t checked_fputs(const char* M_NONNULL nofmt, FILE* M_NONNULL out)
 {
     if (nofmt == M_NULLPTR || out == M_NULLPTR)
     {

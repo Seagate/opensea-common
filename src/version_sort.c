@@ -15,8 +15,11 @@
 #include "version_sort.h"
 #include "string_utils.h"
 
+M_PARAM_RO(1)
+M_PARAM_RO(2)
+M_NODISCARD
 #if defined(NEED_OLD_SCANDIR_CMP_FUNC_TYPE)
-int version_sort(const void* ptr1, const void* ptr2)
+int version_sort(const void* M_NONNULL ptr1, const void* M_NONNULL ptr2)
 {
 #    if defined(_WIN32)
     M_USE_UNUSED(ptr1);
@@ -29,7 +32,7 @@ int version_sort(const void* ptr1, const void* ptr2)
 #    endif // _WIN32
 }
 #else
-int version_sort(const struct dirent** ptr1, const struct dirent** ptr2)
+int version_sort(const struct dirent* M_NONNULL* M_NONNULL ptr1, const struct dirent* M_NONNULL* M_NONNULL ptr2)
 {
     return string_version_compare((*ptr1)->d_name, (*ptr2)->d_name);
 }

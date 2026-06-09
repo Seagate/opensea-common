@@ -276,12 +276,12 @@ extern "C"
     //! input for the future time calculation
     //! \param[in] secondsInTheFuture = the number of seconds in the future.
     //! \return time_t value representing a time in the future
-    time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
+    M_CONST_FUNC time_t get_Future_Date_And_Time(time_t inputTime, uint64_t secondsInTheFuture)
         // clang-format off
     M_DIAG_ERROR(inputTime == TIME_T_ERROR, "inputTime is TIME_T_ERROR")
     M_DIAG_ERROR(inputTime <= 0, "inputTime is invalid")
         // clang-format on
-        ;
+        M_UNSEQUENCED;
 
     //! \fn void convert_Seconds_To_Displayable_Time(uint64_t  secondsToConvert,
     //!                                              uint8_t*  years,

@@ -779,7 +779,8 @@ static M_INLINE eValidateFormatResult validate_Format_Specifier(const char*     
 // considered insecure and not allowed (we don't use it anyways), and all
 // arguments to strings must be non-M_NULLPTR. Checking for encoding errors
 // would also be good, but not sure the best way to do this right now. -TJE
-int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formatargs)
+M_NULL_TERM_STRING(1)
+M_PARAM_RO(1) int verify_Format_String_And_Args(const char* M_RESTRICT M_NONNULL format, va_list formatargs)
 {
     if (format != M_NULLPTR)
     {

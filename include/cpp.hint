@@ -1,0 +1,157 @@
+// cpp.hint - IntelliSense Hint File for opensea-common
+// Tells the MSVC Browsing Database Parser how to handle project-specific
+// attribute and warning-suppression macros so that functions, structs, and
+// enums decorated with these macros are correctly recognized in the
+// Navigation Bar, Go To, Outline View, and Class View.
+//
+// Sources covered:
+//   code_attributes.h, predef_env_detect.h, constraint_handling.h, warning_ctl.h
+//
+// Conventions used here:
+//   - Function decorator macros  -> expand to empty (no replacement text)
+//   - Inline type qualifier macros -> expand to empty
+//   - Parameterized attribute macros -> parameter list only, empty expansion
+//   - M_INLINE / M_FORCEINLINE -> expand to `inline` (meaningful keyword)
+//   - Warning suppression pairs -> expand to empty
+//
+// After adding or modifying this file, close and reopen the solution/workspace
+// for the browsing database to pick up the changes.
+
+// ============================================================
+// Group A: No-arg function decorator macros  (code_attributes.h)
+// Appear before return types, after parameter lists, or on declarations
+// ============================================================
+#define M_NODISCARD
+#define M_NORETURN
+#define M_DEPRECATED
+#define M_FUNC_ATTR_MALLOC
+#define M_PURE_FUNC
+#define M_CONST_FUNC
+#define M_HOT_FUNC
+#define M_COLD_FUNC
+#define M_RETURNS_NONNULL
+#define M_ALL_PARAMS_NONNULL
+#define M_TAINTED_ARGS
+#define M_UNSEQUENCED
+#define M_REPRODUCIBLE
+#define M_ATTR_UNUSED
+#define M_MS_STRUCT
+#define M_FLAG_ENUM
+#define M_CLOSED_ENUM
+#define M_OPEN_ENUM
+#define M_NONSTRING
+#define M_STRICT_FLEX_ARRAY_AUTO
+#define M_ENUM_DEPRECATED
+#define DLL_EXPORT
+#define DLL_IMPORT
+#define M_FALLTHROUGH
+#define M_LIKELY
+#define M_UNLIKELY
+#define M_DELETE
+
+// From constraint_handling.h
+#define CONSTRAINT_NO_DISCARD
+
+// ============================================================
+// Group B: Inline type qualifier macros  (code_attributes.h)
+// Appear inside pointer and parameter type declarations
+// ============================================================
+#define M_NULLABLE
+#define M_NONNULL
+#define M_NULL_UNSPECIFIED
+#define M_NONNULL_ARRAY
+#define M_RESTRICT
+
+// ============================================================
+// Group C: Inline keyword macros
+// M_INLINE / M_FORCEINLINE expand to `inline` so the parser
+// correctly understands `static M_INLINE returntype funcname()`
+// ============================================================
+#define M_INLINE inline
+#define M_FORCEINLINE inline
+#define M_NOINLINE
+
+// ============================================================
+// Group D: Parameterized attribute macros  (code_attributes.h)
+// Appear before/after function declarations; all expand to empty
+// ============================================================
+#define M_NODISCARD_REASON(msg)
+#define M_DEPRECATED_REASON(msg)
+#define M_NONNULL_PARAM_LIST(...)
+#define M_NONNULL_IF_NONZERO_SIZE(arg, sizearg)
+#define M_NONNULL_IF_NONZERO_SIZE_COUNT(arg, sizearg, countarg)
+#define M_NONNULL_IF_NONZERO_PARAM(arg, sizearg)
+#define M_NULL_TERM_STRING(arg)
+#define FUNC_ATTR_PRINTF(formatargpos, varargpos)
+#define FUNC_ATTR_SCANF(formatargpos, varargpos)
+#define FUNC_ATTR_SCANF_S(formatargpos, varargpos)
+#define M_PARAM_RO(arg)
+#define M_PARAM_WO(arg)
+#define M_PARAM_RW(arg)
+#define M_PARAM_RO_SIZE(arg, sizearg)
+#define M_PARAM_WO_SIZE(arg, sizearg)
+#define M_PARAM_RW_SIZE(arg, sizearg)
+#define M_ALLOC_DEALLOC(deallocatorFunc, argpos)
+#define M_ALLOC_ALIGN(alignmentArg)
+#define M_MALLOC_SIZE(sizearg)
+#define M_CALLOC_SIZE(elementarg, sizearg)
+#define M_FILE_DESCRIPTOR(argnum)
+#define M_FILE_DESCRIPTOR_R(argnum)
+#define M_FILE_DESCRIPTOR_W(argnum)
+#define M_DIAGNOSE_IF(condition, message, level)
+#define M_DIAG_WARNING(condition, message)
+#define M_DIAG_WARN(condition, message)
+#define M_DIAG_ERROR(condition, message)
+#define M_DIAG_ERR(condition, message)
+#define M_STRICT_FLEX_ARRAY(level)
+#define M_COUNTED_BY(member)
+#define M_COUNTED_BY_OR_NULL(member)
+#define M_SIZED_BY(member)
+#define M_SIZED_BY_OR_NULL(member)
+#define M_WARN_IF_NOT_ALIGNED(alignment)
+#define M_ENUM_DEPRECATED_REASON(msg)
+
+// ============================================================
+// Group E: Statement / expression macros (inside function bodies)
+// Less critical for function discovery, but avoids parser confusion
+// ============================================================
+#define M_UNREACHABLE()
+#define M_ASSUME(condition)
+#define M_USE_UNUSED(var) ((void)(var))
+#define M_ALIGNAS(x)
+#define M_ALIGNOF(x)
+
+// From predef_env_detect.h
+#define MSVC_PRAGMA(x)
+#define DISABLE_WARNING_4255
+#define RESTORE_WARNING_4255
+
+// ============================================================
+// Group F: Warning suppression pairs  (warning_ctl.h)
+// These expand to _Pragma / MSVC_PRAGMA calls which confuse the
+// browsing parser when they appear between declarations
+// ============================================================
+#define DISABLE_WARNING_4146
+#define RESTORE_WARNING_4146
+#define DISABLE_WARNING_CONVERSION_DATA_LOSS
+#define RESTORE_WARNING_CONVERSION_DATA_LOSS
+#define DISABLE_WARNING_SIGN_CONVERSION
+#define RESTORE_WARNING_SIGN_CONVERSION
+#define DISABLE_WARNING_ZERO_LENGTH_ARRAY
+#define RESTORE_WARNING_ZERO_LENGTH_ARRAY
+#define DISABLE_WARNING_FORMAT_NONLITERAL
+#define RESTORE_WARNING_FORMAT_NONLITERAL
+#define DISABLE_WARNING_CPP11_COMPAT
+#define RESTORE_WARNING_CPP11_COMPAT
+#define DISABLE_WARNING_FLOAT_EQUAL
+#define RESTORE_WARNING_FLOAT_EQUAL
+#define DISABLE_NONNULL_COMPARE
+#define RESTORE_NONNULL_COMPARE
+#define DISABLE_WARNING_UNDEF
+#define RESTORE_WARNING_UNDEF
+#define DISABLE_WARNING_INCOMPATIBLE_POINTER_TYPES
+#define RESTORE_WARNING_INCOMPATIBLE_POINTER_TYPES
+#define DISABLE_WARNING_OLD_STYLE_CAST
+#define RESTORE_WARNING_OLD_STYLE_CAST
+#define DISABLE_WARNING_STRINGOP_OVERREAD
+#define RESTORE_WARNING_STRINGOP_OVERREAD

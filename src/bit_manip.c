@@ -24,7 +24,8 @@
 //! \param[in] msb most significant bit value
 //! \param[in] lsb least  significant bit value
 //! \return returns range between msb and lsb
-static M_INLINE size_t get_Bytes_Abs_Range(size_t msb, size_t lsb)
+M_CONST_FUNC
+static M_INLINE size_t get_Bytes_Abs_Range(size_t msb, size_t lsb) M_UNSEQUENCED
 {
     if (msb > lsb)
     {
@@ -36,15 +37,20 @@ static M_INLINE size_t get_Bytes_Abs_Range(size_t msb, size_t lsb)
     }
 }
 
-bool get_Bytes_To_64(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t* out)
+M_NODISCARD bool get_Bytes_To_64(const uint8_t* M_NULLABLE dataPtrBeginning,
+                                 size_t                    fullDataLen,
+                                 size_t                    msb,
+                                 size_t                    lsb,
+                                 uint64_t* M_NONNULL       out)
 {
-    if (dataPtrBeginning == M_NULLPTR || out == M_NULLPTR || msb > fullDataLen || lsb > fullDataLen || get_Bytes_Abs_Range(msb, lsb) > sizeof(uint64_t))
+    if (dataPtrBeginning == M_NULLPTR || out == M_NULLPTR || msb > fullDataLen || lsb > fullDataLen ||
+        get_Bytes_Abs_Range(msb, lsb) > sizeof(uint64_t))
     {
-        return false; 
+        return false;
     }
-    *out = UINT64_C(0);// clear to zero before filling in the bytes
-    if (lsb <= msb) // allowing equals for single bytes
-    { 
+    *out = UINT64_C(0); // clear to zero before filling in the bytes
+    if (lsb <= msb)     // allowing equals for single bytes
+    {
         for (size_t iter = msb, counter = 0; counter < fullDataLen && counter < SIZE_MAX && iter >= lsb;
              --iter, ++counter)
         {
@@ -70,7 +76,11 @@ bool get_Bytes_To_64(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t
     return true;
 }
 
-bool get_Bytes_To_32(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint32_t* out)
+M_NODISCARD bool get_Bytes_To_32(const uint8_t* M_NULLABLE dataPtrBeginning,
+                                 size_t                    fullDataLen,
+                                 size_t                    msb,
+                                 size_t                    lsb,
+                                 uint32_t* M_NONNULL       out)
 {
     if (out && get_Bytes_Abs_Range(msb, lsb) <= sizeof(uint32_t))
     {
@@ -88,7 +98,11 @@ bool get_Bytes_To_32(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t
     }
 }
 
-bool get_Bytes_To_16(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint16_t* out)
+M_NODISCARD bool get_Bytes_To_16(const uint8_t* M_NULLABLE dataPtrBeginning,
+                                 size_t                    fullDataLen,
+                                 size_t                    msb,
+                                 size_t                    lsb,
+                                 uint16_t* M_NONNULL       out)
 {
     if (out && get_Bytes_Abs_Range(msb, lsb) <= sizeof(uint16_t))
     {
@@ -149,7 +163,6 @@ static M_INLINE size_t gen_bit_width(uint8_t msb, uint8_t lsb)
 {
     return uint8_to_sizet(msb) - uint8_to_sizet(lsb) + SIZE_T_C(1);
 }
-
 
 static M_INLINE uint64_t gen_safe_mask_u64(size_t width)
 {

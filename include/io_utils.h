@@ -24,6 +24,7 @@
 #include "impl_io_utils.h"
 #include "memory_safety.h"
 #include "type_conversion.h"
+#include "unit_conversion.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -44,7 +45,8 @@ extern "C"
     M_PARAM_RO(1)
     M_NULL_TERM_STRING(1)
     M_PARAM_RW(2)
-    bool get_And_Validate_Integer_Input(const char* M_NONNULL strToConvert, uint64_t* M_NONNULL outputInteger);
+    M_NODISCARD bool get_And_Validate_Integer_Input(const char* M_NONNULL strToConvert,
+                                                    uint64_t* M_NONNULL   outputInteger);
 
     //! \enum eAllowedUnitInput
     //! \brief Enum specifying which units are allowed at the end of the user's input.
@@ -402,7 +404,7 @@ extern "C"
     //!
     //! \param[in] strToConvert The buffer to convert to a float.
     //! \param[out] unit Pointer to the unit string.
-    //! \param[in] unittype The type of unit allowed. 
+    //! \param[in] unittype The type of unit allowed.
     //! \param[out] outputFloat Pointer to the float to store the output.
     //! \return true if able to read a float number, false if the format is invalid.
     M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
@@ -645,9 +647,17 @@ extern "C"
                              "snprintf_err_handle(" #buf ", " #bufsize ", " #format ", va args)", buf, bufsize,        \
                              format, ##__VA_ARGS__)
 
+//! \def vsnprintf_err_handle(buf, bufsize, format, args)
+//! \brief macro wrapper for the implementation of vsnprintf_err_handle
+//! This wrapper passes in file, function, line, expression to the real implementation function
+#define vsnprintf_err_handle(buf, bufsize, format, args)                                                               \
+    impl_vsnprintf_err_handle(__FILE__, __func__, __LINE__,                                                            \
+                              "vsnprintf_err_handle(" #buf ", " #bufsize ", " #format ", " #args ")", buf, bufsize,    \
+                              format, args)
+
     //! \fn int verify_Format_String_And_Args(const char* M_RESTRICT format, va_list formatargs)
     //! \brief Checks for the same conditions as printf_s in C11 annex K.
-    //! \details Ensures that there are no newline characters (\n) and that no NULL pointers are passed for strings.
+    //! \details Ensures that there are no %n formatters and that no NULL pointers are passed for strings.
     //! \param[in] format The format string.
     //! \param[in] formatargs The list of arguments for the format string.
     //! \return An integer indicating the result of the verification.

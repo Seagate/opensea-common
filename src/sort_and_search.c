@@ -34,7 +34,7 @@ errno_t safe_qsort_impl(void* M_NONNULL        ptr,
                         const char* M_NULLABLE expression)
 {
     errno_t           error = 0;
-    constraintEnvInfo envInfo; 
+    constraintEnvInfo envInfo;
     if (count > RSIZE_T_C(0) && ptr == M_NULLPTR)
     {
         error = EINVAL;
@@ -139,7 +139,7 @@ void* M_NULLABLE safe_bsearch_impl(const void* M_NONNULL  key,
         errno = 0;
         if (count > RSIZE_T_C(0))
         {
-            // Const cast to deal with changes to bsearch for const and non-const searches in C23
+            // Const cast to deal with changes to bseach for const and non-const searches in C23
             return M_CONST_CAST(void*, bsearch(key, ptr, count, size, compare));
         }
         else

@@ -1910,7 +1910,10 @@ extern "C"
             return UINT64_MAX;                         // Sentinel value for invalid input
         }
         assert((p2val & (p2val - 1)) == 0 && "Input must be a power of two");
-        return count_trailing_zeros(p2val);
+        DISABLE_WARNING_CONVERSION_DATA_LOSS
+        // MSVC warns excessively here for no reason so the warning is turned off.
+        return C_CAST(uint64_t, count_trailing_zeros(p2val));
+        RESTORE_WARNING_CONVERSION_DATA_LOSS
     }
 
     //! \fn double raise_to_power(double number, double power)

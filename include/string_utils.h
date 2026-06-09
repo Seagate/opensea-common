@@ -1071,7 +1071,7 @@ M_NODISCARD M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen
     //! with the values stored by the previous call.
     //! This version performs the bounds checking described in C11 annex K.
     //! \param[in] str pointer to the null-terminated byte string to tokenize
-    //! \param[in] strmax pointer to an object which initially holds the size of \a str: safe_strtok stores
+    //! \param[in] strmax ointer to an object which initially holds the size of \a str: safe_strtok stores
     //! the number of characters that remain to be examined
     //! \param[in] delim pointer to the null-terminated byte string identifying delimiters
     //! \param[in] saveptr 	pointer to an object of type char*, which is used by safe_strtok to store its
@@ -1413,8 +1413,7 @@ M_NODISCARD M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen
     //! \param[in] originalString pointer to the data containing a string that will be searched
     //! \param[in] stringToFind a pointer to the data containing a string that is to be found within \a originalString
     //! \return offset to last occurrence of \a stringToFind in \a originalString. The offset will be from the end of
-    //! the string with 1-based indexing. If \a stringToFind is not found in \a originalString, returns size of string.
-
+    //! the string
     M_PARAM_RO(1)
     M_PARAM_RO(2)
     size_t find_last_occurrence_in_string(const char* M_NONNULL originalString, const char* M_NONNULL stringToFind);
@@ -1423,9 +1422,7 @@ M_NODISCARD M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen
     //! \brief Find the first occurrence of one string within another string
     //! \param[in] originalString pointer to the data containing a string that will be searched
     //! \param[in] stringToFind a pointer to the data containing a string that is to be found within \a originalString
-    //! \return offset to first occurrence of \a stringToFind in \a originalString. The offset will be from the beginning
-    //! of the string with 0-based indexing. If \a stringToFind is not found in \a originalString, returns SIZE_MAX.
-
+    //! \return offset to first occurrence of \a stringToFind in \a originalString
     M_PARAM_RO(1)
     M_PARAM_RO(2)
     M_NULL_TERM_STRING(1)

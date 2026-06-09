@@ -32,7 +32,7 @@ RESTORE_WARNING_4255
 
 #define ERROR_STRING_BUFFER_LENGTH SIZE_T_C(1024)
 
-char* get_strerror(errno_t error)
+M_FUNC_ATTR_MALLOC char* M_NULLABLE get_strerror(errno_t error)
 {
 #if defined(HAVE_C11_ANNEX_K)
     size_t errorStringLen = strerrorlen_s(error);
@@ -103,7 +103,7 @@ char* get_strerror(errno_t error)
         else
         {
             safe_free(&errorString);
-            return errorString;
+            return M_NULLPTR;
         }
     }
     else
@@ -181,133 +181,132 @@ void print_Errno_To_Screen(errno_t error)
 }
 
 #if defined(UEFI_C_SOURCE)
-// Use %d to print this out or the output look really strange
-#    define PRI_UINTN "d"
-void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus)
+
+M_FUNC_ATTR_MALLOC char* M_NULLABLE get_efistatus_str(EFI_STATUS efiStatus)
 {
     errno_t errorCode       = 0;
     char*   efiStatusString = M_NULLPTR;
     switch (efiStatus)
     {
     case EFI_SUCCESS:
-        printf("%" PRI_UINTN " - Success\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Success");
         break;
     case EFI_LOAD_ERROR:
-        printf("%" PRI_UINTN " - Load Error\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Load Error");
         break;
     case EFI_INVALID_PARAMETER:
-        printf("%" PRI_UINTN " - Invalid Parameter\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Invalid Parameter");
         break;
     case EFI_UNSUPPORTED:
-        printf("%" PRI_UINTN " - Unsupported\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Unsupported");
         break;
     case EFI_BAD_BUFFER_SIZE:
-        printf("%" PRI_UINTN " - Bad Buffer Size\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Bad Buffer Size");
         break;
     case EFI_BUFFER_TOO_SMALL:
-        printf("%" PRI_UINTN " - Buffer Too Small\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Buffer Too Small");
         break;
     case EFI_NOT_READY:
-        printf("%" PRI_UINTN " - Not Ready\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Not Ready");
         break;
     case EFI_DEVICE_ERROR:
-        printf("%" PRI_UINTN " - Device Error\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Device Error");
         break;
     case EFI_WRITE_PROTECTED:
-        printf("%" PRI_UINTN " - Write Protected\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Write Protected");
         break;
     case EFI_OUT_OF_RESOURCES:
-        printf("%" PRI_UINTN " - Out Of Resources\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Out Of Resources");
         break;
     case EFI_VOLUME_CORRUPTED:
-        printf("%" PRI_UINTN " - Volume Corrupted\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Volume Corrupted");
         break;
     case EFI_VOLUME_FULL:
-        printf("%" PRI_UINTN " - Volume Full\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Volume Full");
         break;
     case EFI_NO_MEDIA:
-        printf("%" PRI_UINTN " - No Media\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "No Media");
         break;
     case EFI_MEDIA_CHANGED:
-        printf("%" PRI_UINTN " - Media Changed\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Media Changed");
         break;
     case EFI_NOT_FOUND:
-        printf("%" PRI_UINTN " - Not Found\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Not Found");
         break;
     case EFI_ACCESS_DENIED:
-        printf("%" PRI_UINTN " - Access Denied\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Access Denied");
         break;
     case EFI_NO_RESPONSE:
-        printf("%" PRI_UINTN " - No Response\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "No Response");
         break;
     case EFI_NO_MAPPING:
-        printf("%" PRI_UINTN " - No Mapping\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "No Mapping");
         break;
     case EFI_TIMEOUT:
-        printf("%" PRI_UINTN " - Timeout\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Timeout");
         break;
     case EFI_NOT_STARTED:
-        printf("%" PRI_UINTN " - Not Started\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Not Started");
         break;
     case EFI_ALREADY_STARTED:
-        printf("%" PRI_UINTN " - Already Started\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Already Started");
         break;
     case EFI_ABORTED:
-        printf("%" PRI_UINTN " - Aborted\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Aborted");
         break;
     case EFI_ICMP_ERROR:
-        printf("%" PRI_UINTN " - ICMP Error\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "ICMP Error");
         break;
     case EFI_TFTP_ERROR:
-        printf("%" PRI_UINTN " - TFTP Error\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "TFTP Error");
         break;
     case EFI_PROTOCOL_ERROR:
-        printf("%" PRI_UINTN " - Protocol Error\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Protocol Error");
         break;
     case EFI_INCOMPATIBLE_VERSION:
-        printf("%" PRI_UINTN " - Incompatible Version\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Incompatible Version");
         break;
     case EFI_SECURITY_VIOLATION:
-        printf("%" PRI_UINTN " - Security Violation\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Security Violation");
         break;
     case EFI_CRC_ERROR:
-        printf("%" PRI_UINTN " - CRC Error\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "CRC Error");
         break;
     case EFI_END_OF_MEDIA:
-        printf("%" PRI_UINTN " - End Of Media\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "End Of Media");
         break;
     case EFI_END_OF_FILE:
-        printf("%" PRI_UINTN " - End Of File\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "End Of File");
         break;
     case EFI_INVALID_LANGUAGE:
-        printf("%" PRI_UINTN " - Invalid Language\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Invalid Language");
         break;
     case EFI_COMPROMISED_DATA:
-        printf("%" PRI_UINTN " - Compromised Data\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Compromised Data");
         break;
     case EFI_HTTP_ERROR:
-        printf("%" PRI_UINTN " - HTTP Error\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "HTTP Error");
         break;
     case EFI_WARN_UNKNOWN_GLYPH:
-        printf("%" PRI_UINTN " - Warning Unknown Glyph\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Warning Unknown Glyph");
         break;
     case EFI_WARN_DELETE_FAILURE:
-        printf("%" PRI_UINTN " - Warning Delete Failure\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Warning Delete Failure");
         break;
     case EFI_WARN_WRITE_FAILURE:
-        printf("%" PRI_UINTN " - Warning Write Failure\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Warning Write Failure");
         break;
     case EFI_WARN_BUFFER_TOO_SMALL:
-        printf("%" PRI_UINTN " - Warning Buffer Too Small\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Warning Buffer Too Small");
         break;
     case EFI_WARN_STALE_DATA:
-        printf("%" PRI_UINTN " - Warning Stale Data\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Warning Stale Data");
         break;
     case EFI_WARN_FILE_SYSTEM:
-        printf("%" PRI_UINTN " - Warning File System\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Warning File System");
         break;
     default:
-        printf("%" PRI_UINTN " - Unknown EFI Status value\n", efiStatus);
+        errorCode = safe_strdup(&efiStatusString, "Unknown EFI Status value");
         break;
     }
     if (errorCode == 0)
@@ -337,7 +336,8 @@ void print_EFI_STATUS_To_Screen(EFI_STATUS efiStatus)
 }
 
 #elif defined(_WIN32)
-void print_Windows_Error_To_Screen(winsyserror_t windowsError)
+
+M_FUNC_ATTR_MALLOC char* M_NULLABLE get_windows_error_str(winsyserror_t windowsError)
 {
     LPTSTR windowsErrorString = M_NULLPTR;
     // Originally used: MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT)
@@ -388,17 +388,17 @@ void print_Windows_Error_To_Screen(winsyserror_t windowsError)
     }
 }
 
-// void print_Windows_Error_To_Screen(winsyserror_t windowsError)
-// {
-//     char* windowsErrorString = get_windows_error_str(windowsError);
-//     if (windowsErrorString != M_NULLPTR)
-//     {
-//         printf("%lu - %s\n", windowsError, windowsErrorString);
-//         safe_free(&windowsErrorString);
-//     }
-//     else
-//     {
-//         printf("%lu - <Unable to convert Windows error code to string>\n", windowsError);
-//     }
-// }
+void print_Windows_Error_To_Screen(winsyserror_t windowsError)
+{
+    char* windowsErrorString = get_windows_error_str(windowsError);
+    if (windowsErrorString != M_NULLPTR)
+    {
+        printf("%lu - %s\n", windowsError, windowsErrorString);
+        safe_free(&windowsErrorString);
+    }
+    else
+    {
+        printf("%lu - <Unable to convert Windows error code to string>\n", windowsError);
+    }
+}
 #endif

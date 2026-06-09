@@ -543,7 +543,23 @@ extern "C"
     //! \param[in] lengthBytes size in bytes of \a ptrData to check if equal to zero
     //! \return true = memory is filled with zeros. false = memory has nonzero
     //! values in it.
-    M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* M_NONNULL ptrData, size_t lengthBytes);
+    M_NONNULL_IF_NONZERO_SIZE(1, 2)
+    M_NONNULL_PARAM_LIST(1) M_PARAM_RO_SIZE(1, 2) bool is_Empty(const void* M_NULLABLE ptrData, size_t lengthBytes);
+
+    //! \fn bool is_Buffer_All_ByteValue(const void* ptrData, size_t lengthBytes, uint8_t byteValue)
+    //! \brief   checks if a memory block is set to a specific byte value. Useful to detect all F's or all 0's for
+    //! example.
+    //
+    //! \param[in] ptrData pointer to a memory block to check if all bytes are the same value
+    //! \param[in] lengthBytes size in bytes of \a ptrData to check if all bytes are the same value
+    //! \param[in] byteValue the byte value to check all bytes in the buffer against
+    //! \return true = memory is filled with the byte value. false = memory has non-matching
+    //! values in it.
+    M_NONNULL_IF_NONZERO_SIZE(1, 2)
+    M_NONNULL_PARAM_LIST(1)
+    M_PARAM_RO_SIZE(1, 2) bool is_Buffer_All_ByteValue(const void* M_NULLABLE ptrData,
+                                                       size_t                 lengthBytes,
+                                                       uint8_t                byteValue);
 
 #if defined(DEV_ENVIRONMENT)
     //! \fn errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)
@@ -1170,7 +1186,7 @@ extern "C"
     //! failure.
     M_NODISCARD
     M_PARAM_RW_SIZE(1, 2)
-    M_ALLOC_ALIGN(4) 
+    M_ALLOC_ALIGN(4)
     M_MALLOC_SIZE(3)
     void* M_NULLABLE safe_realloc_aligned(void* M_NULLABLE block, size_t originalSize, size_t size, size_t alignment)
         // clang-format off
@@ -1179,7 +1195,7 @@ extern "C"
         // clang-format on
         ;
 
-    //! \fn  void* safe_reallocf_aligned(void** block, size_t size)
+    //! \fn  void* safe_reallocf(void** block, size_t size)
     //! \brief allocates or reallocates memory pointed to by \a block
     //! If reallocation fails, frees the original memory block.
     //! \details
@@ -1211,7 +1227,7 @@ extern "C"
     //! \fn size_t get_System_Pagesize(void)
     //! \brief Gets the memory page size from a system for the current CPU (often 4096B)
     //! \return Pagesize of system. Returns 4096 as default safe value if cannot be determined.
-    size_t get_System_Pagesize(void);
+    M_CONST_FUNC M_NODISCARD size_t get_System_Pagesize(void) M_UNSEQUENCED;
 
     //! \fn M_INLINE void free_page_aligned(void* ptr)
     //! \brief convenience function around free_aligned.
@@ -1235,7 +1251,7 @@ extern "C"
         ;
 
     //! \fn M_INLINE void safe_free_page_aligned_core(void** mem)
-    //! \brief convenience function around free_page_aligned.
+    //! \brief convenience function around free_aligned.
     M_PARAM_RW(1) static M_INLINE void safe_free_page_aligned_core(void* M_NULLABLE* M_NULLABLE mem)
     {
         if (mem && *mem)
@@ -1863,7 +1879,7 @@ M_INLINE M_PARAM_WO_SIZE(1, 2) M_PARAM_RO_SIZE(3, 4) errno_t
     //! may mean that the pointer is 8 byte aligned but also 16 byte aligned.
     //! if using this to determine if memory alignment is correct, do get_memalignment(ptr) >= alignment
     M_PARAM_RO(1)
-    static M_INLINE size_t get_memalignment(const void* M_NULLABLE ptr)
+    M_CONST_FUNC static M_INLINE size_t get_memalignment(const void* M_NULLABLE ptr) M_UNSEQUENCED
         M_DIAG_WARN(ptr == M_NULLPTR, "ptr is NULL. Possible usage error")
     {
         return M_REINTERPRET_CAST(uintptr_t, ptr) & (~M_REINTERPRET_CAST(uintptr_t, ptr) + 1);
