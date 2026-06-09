@@ -1079,7 +1079,7 @@ static void test_remove_Trailing_Whitespace_Len(void) {
     remove_Trailing_Whitespace_Len(NULL, 0);
     TEST_ASSERT_EQ(strcmp(str, "Hello World        "), 0, "String should remain unchanged when input is NULL for remove_Trailing_Whitespace_Len");
 
-    remove_Trailing_Whitespace_Len(str, SIZE_OF_STACK_ARRAY(str));
+    remove_Trailing_Whitespace_Len(str, strlen(str));
     TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Trailing whitespace should be removed using remove_Trailing_Whitespace_Len");
 }
 
@@ -1119,7 +1119,7 @@ static void test_remove_Leading_And_Trailing_Whitespace_Len(void) {
     remove_Leading_And_Trailing_Whitespace_Len(NULL, 0);
     TEST_ASSERT_EQ(strcmp(str, "   Hello World        "), 0, "String should remain unchanged when input is NULL for remove_Leading_And_Trailing_Whitespace_Len");
 
-    remove_Leading_And_Trailing_Whitespace_Len(str, SIZE_OF_STACK_ARRAY(str));
+    remove_Leading_And_Trailing_Whitespace_Len(str, strlen(str));
     TEST_ASSERT_EQ(strcmp(str, "Hello World"), 0, "Leading and trailing whitespace should be removed using remove_Leading_And_Trailing_Whitespace_Len");
 
     char str2[] = "        ";
@@ -1140,7 +1140,7 @@ static void test_remove_Leading_And_Trailing_Control_Char(void) {
 
 static void test_remove_Leading_And_Trailing_Control_Char_Len(void) {
     char str[] = "\n\tHello\n\t";
-    remove_Leading_And_Trailing_Control_Char_Len(str, SIZE_OF_STACK_ARRAY(str));
+    remove_Leading_And_Trailing_Control_Char_Len(str, strlen(str));
     TEST_ASSERT_EQ(strcmp(str, "Hello"), 0, "Leading and trailing control characters removed using remove_Leading_And_Trailing_Control_Char_Len");
 }
 
