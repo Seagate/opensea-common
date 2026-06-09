@@ -1309,13 +1309,13 @@ static void test_get_Bytes_To_64(void) {
     uint64_t out = 0;
     bool res;
     
-    // lsb < msb
-    res = get_Bytes_To_64(buf, sizeof(buf), 7, 0, &out);
-    TEST_ASSERT_EQ(out, (UINT64_C(0xEFCDAB9078563412)), "Little endian extraction of 8 bytes from a buffer");
-    
     // msb == lsb
     res = get_Bytes_To_64(buf, sizeof(buf), 3, 3, &out);
     TEST_ASSERT_EQ(out, (UINT64_C(0x78)), "Extraction of a single byte from a buffer when msb == lsb");
+    
+    // lsb < msb
+    res = get_Bytes_To_64(buf, sizeof(buf), 7, 0, &out);
+    TEST_ASSERT_EQ(out, (UINT64_C(0xEFCDAB9078563412)), "Little endian extraction of 8 bytes from a buffer");
     
     // lsb > msb
     res = get_Bytes_To_64(buf, sizeof(buf), 0, 7, &out);
