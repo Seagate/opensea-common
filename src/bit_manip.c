@@ -48,8 +48,7 @@ M_NODISCARD bool get_Bytes_To_64(const uint8_t* M_NULLABLE dataPtrBeginning,
     {
         return false;
     }
-    *out = UINT64_C(0); // clear to zero before filling in the bytes
-    if (lsb <= msb)     // allowing equals for single bytes
+    if (lsb <= msb) // allowing equals for single bytes
     {
         for (size_t iter = msb, counter = 0; counter < fullDataLen && counter < SIZE_MAX && iter >= lsb;
              --iter, ++counter)
@@ -540,24 +539,16 @@ genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_
         switch (input.sizeoftype)
         {
         case sizeof(uint8_t):
-            printf("Calling gen_8bit_range\n");
             out = gen_8bit_range(input, outputsize, msb, lsb);
-            printf("errno after generic_Get_Bit_Range: %d\n", errno);
             break;
         case sizeof(uint16_t):
-            printf("Calling gen_16bit_range\n");
             out = gen_16bit_range(input, outputsize, msb, lsb);
-            printf("errno after generic_Get_Bit_Range: %d\n", errno);
             break;
         case sizeof(uint32_t):
-            printf("Calling gen_32bit_range\n");
             out = gen_32bit_range(input, outputsize, msb, lsb);
-            printf("errno after generic_Get_Bit_Range: %d\n", errno);
             break;
         case sizeof(uint64_t):
-            printf("Calling gen_64bit_range\n");
             out = gen_64bit_range(input, outputsize, msb, lsb);
-            printf("errno after generic_Get_Bit_Range: %d\n", errno);
             break;
         default:
             perror("Error in generic get bit range function");
