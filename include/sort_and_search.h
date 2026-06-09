@@ -272,16 +272,16 @@ extern "C"
 //!
 //! - \a key or \a ptr or \a compare is a null pointer (unless count is zero)
 #    if defined(USING_C11) && defined(HAVE_C11_GENERIC_SELECTION)
-#        define safe_bsearch_context(key, ptr, count, size, compare)                                                   \
+#        define safe_bsearch_context(key, ptr, count, size, compare, context)                                                   \
             _Generic((ptr),                                                                                            \
                 const void*: M_STATIC_CAST(const void*,                                                                \
-                                           safe_bsearch_context_impl(key, ptr, count, size, compare, __FILE__,         \
+                                           safe_bsearch_context_impl(key, ptr, count, size, compare, context, __FILE__,         \
                                                                      __func__, __LINE__,                               \
                                                                      "safe_bsearch_context(" #key ", " #ptr            \
-                                                                     ", " #count ", " #size ", " #compare ")")),       \
-                void*: safe_bsearch_context_impl(key, ptr, count, size, compare, __FILE__, __func__, __LINE__,         \
+                                                                     ", " #count ", " #size ", " #compare ", " #context ")")),       \
+                void*: safe_bsearch_context_impl(key, ptr, count, size, compare, context, __FILE__, __func__, __LINE__,         \
                                                  "safe_bsearch_context(" #key ", " #ptr ", " #count ", " #size         \
-                                                 ", " #compare ")"))
+                                                 ", " #compare ", " #context ")"))
 #    else
 #        define safe_bsearch_context(key, ptr, count, size, compare, context)                                          \
             safe_bsearch_context_impl(key, ptr, count, size, compare, context, __FILE__, __func__, __LINE__,           \
