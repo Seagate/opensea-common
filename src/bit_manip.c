@@ -366,7 +366,6 @@ static M_INLINE genericint_t gen_16bit_range(genericint_t input, size_t outputsi
     if (msb > GENERIC_INT_16BIT_MAX || lsb > GENERIC_INT_16BIT_MAX)
     {
         errno = ERANGE;
-        printf("errno in gen_16bit_range: %d\n", errno);
     }
     else
     {
@@ -541,22 +540,29 @@ genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_
         switch (input.sizeoftype)
         {
         case sizeof(uint8_t):
+            printf("Calling gen_8bit_range\n");
             out = gen_8bit_range(input, outputsize, msb, lsb);
+            printf("errno after generic_Get_Bit_Range: %d\n", errno);
             break;
         case sizeof(uint16_t):
+            printf("Calling gen_16bit_range\n");
             out = gen_16bit_range(input, outputsize, msb, lsb);
+            printf("errno after generic_Get_Bit_Range: %d\n", errno);
             break;
         case sizeof(uint32_t):
+            printf("Calling gen_32bit_range\n");
             out = gen_32bit_range(input, outputsize, msb, lsb);
+            printf("errno after generic_Get_Bit_Range: %d\n", errno);
             break;
         case sizeof(uint64_t):
+            printf("Calling gen_64bit_range\n");
             out = gen_64bit_range(input, outputsize, msb, lsb);
+            printf("errno after generic_Get_Bit_Range: %d\n", errno);
             break;
         default:
             perror("Error in generic get bit range function");
             break;
         }
     }
-    printf("errno after generic_Get_Bit_Range: %d\n", errno);
     return out;
 }
