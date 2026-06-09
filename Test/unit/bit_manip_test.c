@@ -448,7 +448,7 @@ static void test_get_bit_range_uint8(void) {
 
     errno = 0;
     // Test for msb > GENERIC_INT_8BIT_MAX
-    get_bit_range_uint8((uint8_t)HEX_RANDOM, 9, 4);
+    get_bit_range_uint8((uint8_t)HEX_RANDOM, 9, 4); 
     TEST_ASSERT(errno == ERANGE, "get_bit_range_uint8 should set errno to ERANGE when msb > 7");
 
     // Test for lsb > GENERIC_INT_8BIT_MAX
