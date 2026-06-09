@@ -332,9 +332,7 @@ static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
     M_INITIALIZE_STRUCTURE(&out, sizeof(genericint_t));
     if (msb > GENERIC_INT_8BIT_MAX || lsb > GENERIC_INT_8BIT_MAX)
     {
-        printf("Error: msb and lsb must be between 0 and 7 for 8-bit range extraction.\n");
         errno = ERANGE;
-        printf("errno in gen_8bit_range: %d\n", errno);
     }
     else
     {
@@ -368,6 +366,7 @@ static M_INLINE genericint_t gen_16bit_range(genericint_t input, size_t outputsi
     if (msb > GENERIC_INT_16BIT_MAX || lsb > GENERIC_INT_16BIT_MAX)
     {
         errno = ERANGE;
+        printf("errno in gen_16bit_range: %d\n", errno);
     }
     else
     {
