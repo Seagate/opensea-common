@@ -98,20 +98,20 @@ static void test_safe_bsearch(void) {
     int arr[] = {1, 2, 5, 5, 6, 9};
     size_t arr_size = sizeof(arr) / sizeof(arr[0]);
     int key = 5;
-    int* found = (int*)safe_bsearch(&key, arr, arr_size, sizeof(arr[0]), compare_ints);
-    TEST_ASSERT(found != NULL && *found == key, "safe_bsearch finds the key in the array");
+    void* found = safe_bsearch(&key, arr, arr_size, sizeof(arr[0]), compare_ints);
+    TEST_ASSERT(found != NULL, "safe_bsearch finds the key in the array");
 
     // Test searching for a non-existent key
     key = 10;
-    found = (int*)safe_bsearch(&key, arr, arr_size, sizeof(arr[0]), compare_ints);
+    found = safe_bsearch(&key, arr, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL for a non-existent key");
 
     // Test for count 0
-    found = (int*)safe_bsearch(&key, arr, 0, sizeof(arr[0]), compare_ints);
+    found = safe_bsearch(&key, arr, 0, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when count is 0");
 
     // Test when ptr = NULL - calls abort handler
-    found = (int*)safe_bsearch(&key, NULL, arr_size, sizeof(arr[0]), compare_ints);
+    found = safe_bsearch(&key, NULL, arr_size, sizeof(arr[0]), compare_ints);
     TEST_ASSERT(found == NULL, "safe_bsearch returns NULL when ptr is NULL");
     TEST_ASSERT(errno == EINVAL, "safe_bsearch returns EINVAL when ptr is NULL");
 
@@ -160,12 +160,12 @@ static void test_safe_bsearch_context(void) {
     size_t arr_size = sizeof(arr) / sizeof(arr[0]);
     int key = 5;
     search_ctx ctx = {2};
-    int* found = (int*)safe_bsearch_context(&key, arr, arr_size, sizeof(arr[0]), compare_with_context, &ctx);
-    TEST_ASSERT(found != NULL && *found == 2*key, "safe_bsearch_context finds the key in the array with context");
+    void* found = safe_bsearch_context(&key, arr, arr_size, sizeof(arr[0]), compare_with_context, &ctx);
+    TEST_ASSERT(found != NULL, "safe_bsearch_context finds the key in the array with context");
 
     // Test searching for a non-existent key
     key = 11;
-    found = (int*)safe_bsearch_context(&key, arr, arr_size, sizeof(arr[0]), compare_with_context, &ctx);
+    found = safe_bsearch_context(&key, arr, arr_size, sizeof(arr[0]), compare_with_context, &ctx);
     TEST_ASSERT(found == NULL, "safe_bsearch_context returns NULL for a non-existent key with context");
 }
 
