@@ -7,6 +7,6 @@ fuzz_sources = files(
 
 foreach src : fuzz_sources
   exe_name = src.stem()
-  fuzz_exe = executable(exe_name, src, dependencies: [dep_yourlib])
-  test(exe_name, fuzz_exe, timeout: 10)  # optional: run in CI for 10s
+  fuzz_exe = executable(exe_name, src, dependencies: [opensea_common_dep])
+  test(exe_name, fuzz_exe, timeout: 10)
 endforeach
