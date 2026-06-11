@@ -1,8 +1,7 @@
 # fuzz/meson.build
 
 fuzz_sources = files(
-  'fuzz_bit_floor_uc.cpp',
-  'fuzz_bit_floor_us.cpp'
+  'fuzz_bit_manip.cpp',
 )
 
 foreach src : fuzz_sources
