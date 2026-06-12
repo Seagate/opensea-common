@@ -55,14 +55,14 @@ jobs:
           #     buildtype: "debug"
           #   }
 
-          # - {
-          #     name: "Windows MSVC",
-          #     os: windows-latest,
-          #     cc: "cl",
-          #     cxx: "cl",
-          #     meson_opts: "-Db_vscrt=static_from_buildtype -Db_coverage=true",
-          #     buildtype: "debug"
-          #   }
+          - {
+              name: "Windows MSVC",
+              os: windows-latest,
+              cc: "cl",
+              cxx: "cl",
+              meson_opts: "-Db_vscrt=static_from_buildtype -Db_coverage=true",
+              buildtype: "debug"
+            }
 
     steps:
     - name: Checkout code
