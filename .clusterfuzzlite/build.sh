@@ -28,4 +28,9 @@ for fuzzer in "${FUZZERS[@]}"; do
   if [ -d "fuzz/${fuzzer}_corpus" ]; then
     cp -r "fuzz/${fuzzer}_corpus" "$OUT/"
   fi
+
+  # Copy the matching dictionary file if present
+  if [ -f "fuzz/${fuzzer}.dict" ]; then
+    cp "fuzz/${fuzzer}.dict" "$OUT/"
+  fi
 done
