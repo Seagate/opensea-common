@@ -589,7 +589,7 @@ opensea_common_dep = declare_dependency(
     include_directories: incdir,
 )
 
-subdir('Test')
+#subdir('Test') - commenting out currently for integrating clusterfuzzlite
 
 is_fuzzing_build = run_command('sh', '-c', 'echo $LIB_FUZZING_ENGINE', check: false).stdout().strip() != ''
 
