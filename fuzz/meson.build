@@ -3,7 +3,7 @@
 fs = import('fs')
 
 fuzz_sources = files(
-    ['fuzz_bit_manip.cpp', 'bit_manip.c']
+    ['fuzz_bit_manip.cpp', 'src/bit_manip.c']
 )
 
 foreach src : fuzz_sources
