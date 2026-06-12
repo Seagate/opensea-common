@@ -28,3 +28,4 @@ jobs:
           fuzz-seconds: 600
           mode: 'code-change'
           sanitizer: 'address'
+          language: 'c++' 
