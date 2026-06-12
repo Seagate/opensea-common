@@ -591,4 +591,8 @@ opensea_common_dep = declare_dependency(
 
 subdir('Test')
 
-subdir('fuzz')
+is_fuzzing_build = run_command('sh', '-c', 'echo $LIB_FUZZING_ENGINE', check: false).stdout().strip() != ''
+
+if is_fuzzing_build
+  subdir('fuzz')
+endif
