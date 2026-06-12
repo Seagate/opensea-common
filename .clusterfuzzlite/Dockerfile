@@ -7,3 +7,5 @@ RUN pip3 install meson
 # Copy source code into the container
 COPY . $SRC/opensea-common
 WORKDIR $SRC/opensea-common
+
+COPY .clusterfuzzlite/build.sh $SRC/build.sh
