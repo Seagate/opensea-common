@@ -11,4 +11,4 @@ meson setup builddir \
 meson compile -C builddir
 
 # Copy the final binary to the $OUT folder (required by CFLite)
-cp builddir/fuzz/fuzz_header $OUT/
+cp builddir/fuzz/bit_manip_fuzzer $OUT/
