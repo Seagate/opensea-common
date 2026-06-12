@@ -382,8 +382,17 @@ extern "C"
 #        define M_DEPRECATED             __attribute__((deprecated))
 #        define M_DEPRECATED_REASON(msg) __attribute__((deprecated(msg)))
 #    elif IS_MSVC_VERSION(MSVC_2017_15_9)
-#        define M_DEPRECATED             __declspec(deprecated) MSVC_PRAGMA(warning(suppress : 4996))
-#        define M_DEPRECATED_REASON(msg) __declspec(deprecated(msg)) MSVC_PRAGMA(warning(suppress : 4996))
+#        if defined(USING_C23)
+// needed for 18.5.2 since even though has_c_attribute SHOULD find this, it does not and the declspec does not work
+// properly.
+//  Unknown when this started or when this is no longer needed as a workaround, so may need additional version checks
+//  along with checking C23 support flag.
+#            define M_DEPRECATED             [[deprecated]]
+#            define M_DEPRECATED_REASON(msg) [[deprecated(msg)]]
+#        else
+#            define M_DEPRECATED             __declspec(deprecated) MSVC_PRAGMA(warning(suppress : 4996))
+#            define M_DEPRECATED_REASON(msg) __declspec(deprecated(msg)) MSVC_PRAGMA(warning(suppress : 4996))
+#        endif
 #    endif
 #endif
 
@@ -392,7 +401,7 @@ extern "C"
 #endif
 
 #if !defined(M_DEPRECATED_REASON)
-#    define M_DEPRECATED_REASON(msg) /*DEPRECATED: msg*/
+#    define M_DEPRECATED_REASON(msg) M_DEPRECATED /*DEPRECATED: msg*/
 #endif
 
 //! \def M_ENUM_DEPRECATED
@@ -465,8 +474,6 @@ extern "C"
 #        define M_NODISCARD __attribute__((nodiscard))
 #    elif DETECT_GNU_ATTR(warn_unused_result) || (IS_GCC_VERSION(3, 4) || IS_CLANG_VERSION(1, 0))
 #        define M_NODISCARD __attribute__((warn_unused_result))
-#    elif defined(SAL_INCLUDED) && defined(_Check_return_) /*from sal.h*/
-#        define M_NODISCARD _Check_return_
 #    endif
 #endif
 
