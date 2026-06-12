@@ -12,9 +12,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         value |= ((uint64_t)data[i]) << (8 * i);
     }
 
-    uint32_t lower = get_DWord0(value);
+    uint32_t lower_32bit = get_DWord0(value);
+    uint32_t upper_32bit = get_DWord1(value);
 
-    if (lower != (uint32_t)value) {
+    if (lower_32bit != (uint32_t)value || upper_32bit != (uint32_t)(value >> 32)) {
         __builtin_trap();
     }
 
