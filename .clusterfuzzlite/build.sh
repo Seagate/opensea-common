@@ -3,9 +3,7 @@
 # Setup Meson to use ClusterFuzzLite's sanitizers and compilers
 meson setup builddir \
   -Db_sanitize=none \
-  -Dcpp_args="$CXXFLAGS" \
   -Dc_args="$CFLAGS" \
-  -Dcpp_link_flags="${LDFLAGS:-}" \
   -Dc_link_flags="${LDFLAGS:-}" \
   --buildtype=debug
 
