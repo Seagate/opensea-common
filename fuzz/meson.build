@@ -3,11 +3,11 @@
 fs = import('fs')
 
 fuzz_sources = files(
-  'fuzz_bit_manip.cpp',
+    ['fuzz_bit_manip.cpp', 'bit_manip.c']
 )
 
 foreach src : fuzz_sources
-  exe_name = fs.stem(src)
-  fuzz_exe = executable(exe_name, src, dependencies: [opensea_common_dep])
+  exe_name = fs.stem(src[0])
+  fuzz_exe = executable(exe_name, src, dependencies: [opensea_common_dep], cpp_args: ['-fsanitize=fuzzer,address'], link_args: ['-fsanitize=fuzzer,address'])
   test(exe_name, fuzz_exe, timeout: 10)
 endforeach
