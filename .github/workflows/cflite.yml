@@ -26,8 +26,8 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sanitizer: 'address'
-          language: 'c++'
-          
+          language: 'c'
+
       - name: Run Fuzzers
         uses: google/clusterfuzzlite/actions/run_fuzzers@v1
         with:
@@ -35,4 +35,4 @@ jobs:
           fuzz-seconds: 600
           mode: 'code-change'
           sanitizer: 'address'
-          language: 'c++' 
+          language: 'c' 
