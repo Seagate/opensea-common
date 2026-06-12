@@ -2,7 +2,7 @@ fuzzing_engine = run_command('sh', '-c', 'echo $LIB_FUZZING_ENGINE', check: true
 fuzz_args = fuzzing_engine.split()
 fuzz_link_args = fuzz_args + ['-fsanitize=address']
 
-sources = [
+fuzz_targets = [
   'bit_manip_fuzzer',
   'bit_manip_fuzzer_64bit_input'
 ]
