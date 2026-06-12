@@ -1,6 +1,9 @@
 #!/bin/bash -eu
 
-# Setup Meson to use ClusterFuzzLite's sanitizers and compilers
+# Clean up any leftover configuration caches
+rm -rf builddir
+
+# Setup Meson to build your pure C fuzzers
 meson setup builddir \
   -Db_sanitize=none \
   -Dc_args="$CFLAGS" \
@@ -10,7 +13,19 @@ meson setup builddir \
 # Compile the target
 meson compile -C builddir
 
-# Copy the final binary to the $OUT folder (required by CFLite)
-cp builddir/fuzz/bit_manip_fuzzer $OUT/
+# Add fuzz targets here
+FUZZERS=(
+  "bit_manip_fuzzer" 
+  "bit_manip_fuzzer_64bit_input"
+)
 
-cp -r fuzz/bit_manip_fuzzer_corpus $OUT/bit_manip_fuzzer_corpus
+# Automated loop to pack binaries and their respective seeds
+for fuzzer in "${FUZZERS[@]}"; do
+  # 1. Copy the executable binary to $OUT
+  cp "builddir/fuzz/$fuzzer" "$OUT/"
+  
+  # 2. Safely copy its matching corpus directory if it exists
+  if [ -d "fuzz/${fuzzer}_corpus" ]; then
+    cp -r "fuzz/${fuzzer}_corpus" "$OUT/"
+  fi
+done
