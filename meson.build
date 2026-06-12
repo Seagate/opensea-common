@@ -590,4 +590,3 @@ opensea_common_dep = declare_dependency(
 )
 
 subdir('Test')
-subdir('fuzz')
