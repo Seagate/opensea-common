@@ -17,6 +17,7 @@ meson compile -C builddir
 FUZZERS=(
   "bit_manip_fuzzer" 
   "bit_manip_fuzzer_64bit_input"
+  "bit_manip_fuzzer_float_input"
 )
 
 # Automated loop to pack binaries and their respective seeds

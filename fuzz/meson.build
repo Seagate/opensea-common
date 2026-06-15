@@ -5,6 +5,7 @@ fuzz_link_args = fuzz_args + ['-fsanitize=address']
 fuzz_targets = [
   'bit_manip_fuzzer',
   'bit_manip_fuzzer_64bit_input'
+  'bit_manip_fuzzer_float_input'
 ]
 
 foreach target : fuzz_targets

@@ -63,7 +63,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint8_t fifteenth_lowest_uint_nibble = M_Nibble14(value);
     uint8_t highest_uint_nibble = M_Nibble15(value);
 
-
     if (lower_uint32bit != (uint32_t)value || upper_uint32bit != (uint32_t)(value >> 32) ||
     lower_int32bit != (int32_t)value || upper_int32bit != (int32_t)(value >> 32) ||
     lower_uint16bit != (uint16_t)(value & UINT64_C(0x000000000000FFFF)) || second_lower_uint16bit !=
