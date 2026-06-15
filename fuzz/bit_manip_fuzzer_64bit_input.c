@@ -21,6 +21,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint16_t second_highest_uint16bit = get_Word2_uint64(value);
     uint16_t highest_uint16bit = get_Word3_uint64(value);
     int16_t lower_int16bit = M_WordInt0(value);
+    int16_t second_lower_int16bit = M_WordInt1(value);
+    int16_t second_highest_int16bit = M_WordInt2(value);
+    int16_t highest_int16bit = M_WordInt3(value);
 
     if (lower_uint32bit != (uint32_t)value || upper_uint32bit != (uint32_t)(value >> 32) ||
     lower_int32bit != (int32_t)value || upper_int32bit != (int32_t)(value >> 32) ||
@@ -28,7 +31,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     (uint16_t)((value & UINT64_C(0x00000000FFFF0000)) >> 16) || second_highest_uint16bit !=
     (uint16_t)((value & UINT64_C(0x0000FFFF00000000)) >> 32) || highest_uint16bit !=
     (uint16_t)((value & UINT64_C(0xFFFF000000000000)) >> 48) || lower_int16bit !=
-    (int16_t)(value & UINT64_C(0x000000000000FFFF))) {
+    (int16_t)(value & UINT64_C(0x000000000000FFFF)) || second_lower_int16bit !=
+    (int16_t)((value & UINT64_C(0x00000000FFFF0000)) >> 16) || second_highest_int16bit !=
+    (int16_t)((value & UINT64_C(0x0000FFFF00000000)) >> 32) || highest_int16bit !=
+    (int16_t)((value & UINT64_C(0xFFFF000000000000)) >> 48)) {
         __builtin_trap();
     }
 
