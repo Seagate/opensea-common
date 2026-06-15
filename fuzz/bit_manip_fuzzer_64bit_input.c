@@ -24,14 +24,22 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     int16_t second_lower_int16bit = M_WordInt1(value);
     int16_t second_highest_int16bit = M_WordInt2(value);
     int16_t highest_int16bit = M_WordInt3(value);
-    uint8_t lowest_byte = M_Byte0(value);
-    uint8_t second_lowest_byte = M_Byte1(value);
-    uint8_t third_lowest_byte = M_Byte2(value);
-    uint8_t fourth_lowest_byte = M_Byte3(value);
-    uint8_t fifth_lowest_byte = M_Byte4(value);
-    uint8_t sixth_lowest_byte = M_Byte5(value);
-    uint8_t seventh_lowest_byte = M_Byte6(value);
-    uint8_t highest_byte = M_Byte7(value);
+    uint8_t lowest_uint_byte = M_Byte0(value);
+    uint8_t second_lowest_uint_byte = M_Byte1(value);
+    uint8_t third_lowest_uint_byte = M_Byte2(value);
+    uint8_t fourth_lowest_uint_byte = M_Byte3(value);
+    uint8_t fifth_lowest_uint_byte = M_Byte4(value);
+    uint8_t sixth_lowest_uint_byte = M_Byte5(value);
+    uint8_t seventh_lowest_uint_byte = M_Byte6(value);
+    uint8_t highest_uint_byte = M_Byte7(value);
+    int8_t lowest_int_byte = M_ByteInt0(value);
+    int8_t second_lowest_int_byte = M_ByteInt1(value);
+    int8_t third_lowest_int_byte = M_ByteInt2(value);
+    int8_t fourth_lowest_int_byte = M_ByteInt3(value);
+    int8_t fifth_lowest_int_byte = M_ByteInt4(value);
+    int8_t sixth_lowest_int_byte = M_ByteInt5(value);
+    int8_t seventh_lowest_int_byte = M_ByteInt6(value);
+    int8_t highest_int_byte = M_ByteInt7(value);
 
     if (lower_uint32bit != (uint32_t)value || upper_uint32bit != (uint32_t)(value >> 32) ||
     lower_int32bit != (int32_t)value || upper_int32bit != (int32_t)(value >> 32) ||
@@ -42,11 +50,17 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     (int16_t)(value & UINT64_C(0x000000000000FFFF)) || second_lower_int16bit !=
     (int16_t)((value & UINT64_C(0x00000000FFFF0000)) >> 16) || second_highest_int16bit !=
     (int16_t)((value & UINT64_C(0x0000FFFF00000000)) >> 32) || highest_int16bit !=
-    (int16_t)((value & UINT64_C(0xFFFF000000000000)) >> 48) || lowest_byte !=
-    (uint8_t)value || second_lowest_byte != (uint8_t)(value >> 8) || third_lowest_byte !=
-    (uint8_t)(value >> 16) || fourth_lowest_byte != (uint8_t)(value >> 24) || fifth_lowest_byte !=
-    (uint8_t)(value >> 32) || sixth_lowest_byte != (uint8_t)(value >> 40) || seventh_lowest_byte !=
-    (uint8_t)(value >> 48) || highest_byte != (uint8_t)(value >> 56)) {
+    (int16_t)((value & UINT64_C(0xFFFF000000000000)) >> 48) || lowest_uint_byte !=
+    (uint8_t)value || second_lowest_uint_byte != (uint8_t)(value >> 8) || third_lowest_uint_byte !=
+    (uint8_t)(value >> 16) || fourth_lowest_uint_byte != (uint8_t)(value >> 24) ||
+    fifth_lowest_uint_byte != (uint8_t)(value >> 32) || sixth_lowest_uint_byte !=
+    (uint8_t)(value >> 40) || seventh_lowest_uint_byte != (uint8_t)(value >> 48) ||
+    highest_uint_byte != (uint8_t)(value >> 56) || lowest_int_byte !=
+    (int8_t)value || second_lowest_int_byte != (int8_t)(value >> 8) || third_lowest_int_byte !=
+    (int8_t)(value >> 16) || fourth_lowest_int_byte != (int8_t)(value >> 24) ||
+    fifth_lowest_int_byte != (int8_t)(value >> 32) || sixth_lowest_int_byte !=
+    (int8_t)(value >> 40) || seventh_lowest_int_byte != (int8_t)(value >> 48) ||
+    highest_int_byte != (int8_t)(value >> 56)) {
         __builtin_trap();
     }
 
