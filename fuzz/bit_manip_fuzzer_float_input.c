@@ -4,13 +4,6 @@
 #include <math.h>
 #include "bit_manip.h"
 
-#ifndef M_STATIC_CAST
-#define M_STATIC_CAST(type, val) ((type)(val))
-#endif
-
-#define ROUNDF(f, c)                                                                                                   \
-    M_STATIC_CAST(float, (M_STATIC_CAST(int, ((f) * (c)) + ((f) >= 0 ? 0.5F : -0.5F))) / M_STATIC_CAST(float, (c)))
-
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     if (size < 8) return 0;
 
