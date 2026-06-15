@@ -26,12 +26,14 @@ for fuzzer in "${FUZZERS[@]}"; do
   cp "builddir/fuzz/$fuzzer" "$OUT/"
   
   # 2. Safely copy its matching corpus directory if it exists
-  if [ -d "fuzz/${fuzzer}_corpus" ]; then
-    cp -r "fuzz/${fuzzer}_corpus" "$OUT/"
+  CORPUS_DIR=$(find fuzz/ -type d -name "${fuzzer}_corpus")
+  if [ -n "$CORPUS_DIR" ]; then
+    cp -r "$CORPUS_DIR" "$OUT/"
   fi
 
   # Copy the matching dictionary file if present
-  if [ -f "fuzz/${fuzzer}.dict" ]; then
-    cp "fuzz/${fuzzer}.dict" "$OUT/"
+  DICT_FILE=$(find fuzz/ -type f -name "${fuzzer}.dict")
+  if [ -n "$DICT_FILE" ]; then
+    cp "$DICT_FILE" "$OUT/"
   fi
 done
