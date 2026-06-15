@@ -305,6 +305,13 @@ extern "C"
 #if !defined(M_ATTR_UNUSED)
 #    if DETECT_GNU_ATTR(unused) || (IS_GCC_FULL_VERSION(2, 95, 3) || IS_CLANG_VERSION(1, 0))
 #        define M_ATTR_UNUSED __attribute__((unused))
+#    elif defined (REAL_MSVC)
+// clang-format off
+// Added clang-format off/on around this so that it expands correctly to hide these
+// warnings. Previously it stopped working due to the way clang-format handled this, so hopefully this version
+// stays working this time. - TJE
+#        define M_ATTR_UNUSED MSVC_PRAGMA(warning(suppress : 4100 4101 4102))
+// clang-format on
 #    endif
 #endif
 
@@ -328,15 +335,19 @@ extern "C"
 //! }
 //! \endcode
 //! \author TJE
-#if defined(_MSC_VER) && !defined(__clang__)
+#if defined(REAL_MSVC)
 #    define M_USE_UNUSED(var)                                                                                          \
         do                                                                                                             \
         {                                                                                                              \
-            MSVC_PRAGMA(warning(suppress : 4100 4101));                                                                \
+            MSVC_PRAGMA(warning(suppress : 4100 4101 4102));                                                           \
             M_STATIC_CAST(void, var);                                                                                  \
         } while (0)
 #else
-#    define M_USE_UNUSED(var) M_STATIC_CAST(void, var)
+#    define M_USE_UNUSED(var)                                                                                          \
+        do                                                                                                             \
+        {                                                                                                              \
+            M_STATIC_CAST(void, var);                                                                                  \
+        } while (0)
 #endif
 
 //! \def M_DEPRECATED
