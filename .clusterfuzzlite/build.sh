@@ -15,7 +15,7 @@ meson compile -C builddir
 
 # Add fuzz targets here
 FUZZERS=(
-  "bit_manip_fuzzer_generic input" 
+  "bit_manip_fuzzer_generic_input" 
   "bit_manip_fuzzer_64bit_input"
   "bit_manip_fuzzer_float_input"
 )
