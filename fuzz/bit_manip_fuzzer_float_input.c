@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
+#include "bit_manip.h"
 
 #ifndef M_STATIC_CAST
 #define M_STATIC_CAST(type, val) ((type)(val))
