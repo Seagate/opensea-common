@@ -47,11 +47,171 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         msb = temp;
     }
 
+    bool is_generic_int_valid_result = is_generic_int_valid(in);
+    (void)is_generic_int_valid_result;
+
     genericint_t generic_Get_Bit_Range_result = generic_Get_Bit_Range(in, outsz, msb, lsb);
     (void)generic_Get_Bit_Range_result;
 
-    bool is_generic_int_valid_result = is_generic_int_valid(in);
-    (void)is_generic_int_valid_result;
+    if (!in.issigned && in.sizeoftype == sizeof(uint8_t) && outsz == sizeof(uint8_t)) {
+        uint8_t wrapper_result = get_bit_range_uint8(in.u8, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u8) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint16_t) && outsz == sizeof(uint16_t)) {
+        uint16_t wrapper_result = get_bit_range_uint16(in.u16, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u16) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint16_t) && outsz == sizeof(uint8_t)) {
+        uint8_t wrapper_result = get_8bit_range_uint16(in.u16, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u8) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint32_t) && outsz == sizeof(uint32_t)) {
+        uint32_t wrapper_result = get_bit_range_uint32(in.u32, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u32) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint32_t) && outsz == sizeof(uint8_t)) {
+        uint8_t wrapper_result = get_8bit_range_uint32(in.u32, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u8) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint32_t) && outsz == sizeof(uint16_t)) {
+        uint16_t wrapper_result = get_16bit_range_uint32(in.u32, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u16) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint64_t) && outsz == sizeof(uint64_t)) {
+        uint64_t wrapper_result = get_bit_range_uint64(in.u64, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u64) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint64_t) && outsz == sizeof(uint8_t)) {
+        uint8_t wrapper_result = get_8bit_range_uint64(in.u64, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u8) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint64_t) && outsz == sizeof(uint16_t)) {
+        uint16_t wrapper_result = get_16bit_range_uint64(in.u64, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u16) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint64_t) && outsz == sizeof(uint32_t)) {
+        uint32_t wrapper_result = get_32bit_range_uint64(in.u64, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u32) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint8_t) && outsz == sizeof(uint8_t)) {
+        uint8_t wrapper_result = get_bit_range_int8(in.u8, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u8) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint16_t) && outsz == sizeof(uint16_t)) {
+        uint16_t wrapper_result = get_bit_range_int16(in.u16, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u16) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint16_t) && outsz == sizeof(uint8_t)) {
+        uint8_t wrapper_result = get_8bit_range_int16(in.u16, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u8) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint32_t) && outsz == sizeof(uint32_t)) {
+        uint32_t wrapper_result = get_bit_range_int32(in.u32, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u32) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint32_t) && outsz == sizeof(uint8_t)) {
+        uint8_t wrapper_result = get_8bit_range_int32(in.u32, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u8) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint32_t) && outsz == sizeof(uint16_t)) {
+        uint16_t wrapper_result = get_16bit_range_int32(in.u32, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u16) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint64_t) && outsz == sizeof(uint64_t)) {
+        uint64_t wrapper_result = get_bit_range_int64(in.u64, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u64) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint64_t) && outsz == sizeof(uint8_t)) {
+        uint8_t wrapper_result = get_8bit_range_int64(in.u64, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u8) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint64_t) && outsz == sizeof(uint16_t)) {
+        uint16_t wrapper_result = get_16bit_range_int64(in.u64, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u16) {
+            __builtin_trap();
+        }
+    }
+
+    if (!in.issigned && in.sizeoftype == sizeof(uint64_t) && outsz == sizeof(uint32_t)) {
+        uint32_t wrapper_result = get_32bit_range_int64(in.u64, msb, lsb);
+        
+        if (wrapper_result != generic_Get_Bit_Range_result.u32) {
+            __builtin_trap();
+        }
+    }
 
     return 0;
 }
