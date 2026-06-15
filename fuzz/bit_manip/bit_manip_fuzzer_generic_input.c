@@ -227,5 +227,11 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     volatile uint64_t M_GETBITRANGE_result = M_GETBITRANGE(M_GETBITRANGE_input, msb, lsb);
     (void)M_GETBITRANGE_result;
 
+    // Fuzzing M_IGETBITRANGE
+    int64_t signed_macro_input = (int64_t)M_GETBITRANGE_input;
+
+    volatile int64_t M_IGETBITRANGE_result = M_IGETBITRANGE(signed_macro_input, msb, lsb);
+    (void)M_IGETBITRANGE_result;
+
     return 0;
 }
