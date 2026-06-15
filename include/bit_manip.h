@@ -2285,17 +2285,24 @@ extern "C"
     return value == 0U ? M_STATIC_CAST(unsigned int, UCHAR_WIDTH)
                        : M_STATIC_CAST(unsigned int, __builtin_clz(value) - (UINT_WIDTH - UCHAR_WIDTH));
 #else
-    unsigned int count = 0U;
-    while (value > 0U)
+    if (value == 0U)
     {
-        if (value & UCHAR_MSB)
-        {
-            break;
-        }
-        ++count;
-        value <<= 1;
+        return M_STATIC_CAST(unsigned int, UCHAR_WIDTH);
     }
-    return count;
+    else
+    {
+        unsigned int count = 0U;
+        while (value > 0U)
+        {
+            if (value & UCHAR_MSB)
+            {
+                break;
+            }
+            ++count;
+            value <<= 1;
+        }
+        return count;
+    }
 #endif
     }
 
@@ -2313,17 +2320,24 @@ extern "C"
     return value == 0U ? M_STATIC_CAST(unsigned int, USHRT_WIDTH)
                        : M_STATIC_CAST(unsigned int, __builtin_clz(value) - (UINT_WIDTH - USHRT_WIDTH));
 #else
-    unsigned int count = 0U;
-    while (value > 0U)
-    {
-        if (value & USHRT_MSB)
+        if (value == 0U)
         {
-            break;
+            return M_STATIC_CAST(unsigned int, USHRT_WIDTH);
         }
-        ++count;
-        value <<= 1;
-    }
-    return count;
+        else
+        {
+            unsigned int count = 0U;
+            while (value > 0U)
+            {
+                if (value & USHRT_MSB)
+                {
+                    break;
+                }
+                ++count;
+                value <<= 1;
+            }
+            return count;
+        }
 #endif
     }
 
@@ -2340,17 +2354,24 @@ extern "C"
 #elif defined(HAVE_BUILT_IN_CLZ)
     return value == 0U ? M_STATIC_CAST(unsigned int, UINT_WIDTH) : M_STATIC_CAST(unsigned int, __builtin_clz(value));
 #else
-    unsigned int count = 0U;
-    while (value > 0U)
-    {
-        if (value & UINT_MSB)
+        if (value == 0U)
         {
-            break;
+            return M_STATIC_CAST(unsigned int, UINT_WIDTH);
         }
-        ++count;
-        value <<= 1;
-    }
-    return count;
+        else
+        {
+            unsigned int count = 0U;
+            while (value > 0U)
+            {
+                if (value & UINT_MSB)
+                {
+                    break;
+                }
+                ++count;
+                value <<= 1;
+            }
+            return count;
+        }
 #endif
     }
 
@@ -2367,17 +2388,24 @@ extern "C"
 #elif defined(HAVE_BUILT_IN_CLZL)
     return value == 0UL ? M_STATIC_CAST(unsigned int, ULONG_WIDTH) : M_STATIC_CAST(unsigned int, __builtin_clzl(value));
 #else
-    unsigned int count = 0U;
-    while (value > 0UL)
-    {
-        if (value & ULONG_MSB)
+        if (value == 0U)
         {
-            break;
+            return M_STATIC_CAST(unsigned int, ULONG_WIDTH);
         }
-        ++count;
-        value <<= 1;
-    }
-    return count;
+        else
+        {
+            unsigned int count = 0U;
+            while (value > 0UL)
+            {
+                if (value & ULONG_MSB)
+                {
+                    break;
+                }
+                ++count;
+                value <<= 1;
+            }
+            return count;
+        }
 #endif
     }
 
@@ -2395,17 +2423,24 @@ extern "C"
     return value == 0ULL ? M_STATIC_CAST(unsigned int, ULLONG_WIDTH)
                          : M_STATIC_CAST(unsigned int, __builtin_clzll(value));
 #else
-    unsigned int count = 0U;
-    while (value > 0ULL)
-    {
-        if (value & ULLONG_MSB)
+        if (value == 0U)
         {
-            break;
+            return M_STATIC_CAST(unsigned int, ULLONG_WIDTH);
         }
-        ++count;
-        value <<= 1;
-    }
-    return count;
+        else
+        {
+            unsigned int count = 0U;
+            while (value > 0ULL)
+            {
+                if (value & ULLONG_MSB)
+                {
+                    break;
+                }
+                ++count;
+                value <<= 1;
+            }
+            return count;
+        }
 #endif
     }
 
