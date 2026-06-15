@@ -28,7 +28,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     (uint16_t)((value & UINT64_C(0x00000000FFFF0000)) >> 16) || second_highest_uint16bit !=
     (uint16_t)((value & UINT64_C(0x0000FFFF00000000)) >> 32) || highest_uint16bit !=
     (uint16_t)((value & UINT64_C(0xFFFF000000000000)) >> 48) || lower_int16bit !=
-    (uint16_t)(value & UINT64_C(0x000000000000FFFF))) {
+    (int16_t)(value & UINT64_C(0x000000000000FFFF))) {
         __builtin_trap();
     }
 
