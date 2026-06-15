@@ -47,9 +47,11 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         msb = temp;
     }
 
+    // Fuzzing is_generic_int_valid
     bool is_generic_int_valid_result = is_generic_int_valid(in);
     (void)is_generic_int_valid_result;
 
+    // Fuzzing generic_Get_Bit_Range
     genericint_t generic_Get_Bit_Range_result = generic_Get_Bit_Range(in, outsz, msb, lsb);
     (void)generic_Get_Bit_Range_result;
 
@@ -212,6 +214,18 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
             __builtin_trap();
         }
     }
+
+    // Fuzzing macro M_GETBITRANGE
+    uint64_t M_GETBITRANGE_input = 0;
+    switch (in.sizeoftype) {
+        case sizeof(uint8_t):  M_GETBITRANGE_input = in.u8;  break;
+        case sizeof(uint16_t): M_GETBITRANGE_input = in.u16; break;
+        case sizeof(uint32_t): M_GETBITRANGE_input = in.u32; break;
+        case sizeof(uint64_t): M_GETBITRANGE_input = in.u64; break;
+    }
+
+    volatile uint64_t M_GETBITRANGE_result = M_GETBITRANGE(M_GETBITRANGE_input, msb, lsb);
+    (void)M_GETBITRANGE_result;
 
     return 0;
 }
