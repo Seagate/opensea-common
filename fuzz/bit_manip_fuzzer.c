@@ -47,8 +47,11 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         msb = temp;
     }
 
-    genericint_t result = generic_Get_Bit_Range(in, outsz, msb, lsb);
-    (void)result;
+    genericint_t generic_Get_Bit_Range_result = generic_Get_Bit_Range(in, outsz, msb, lsb);
+    (void)generic_Get_Bit_Range_result;
+
+    bool is_generic_int_valid_result = is_generic_int_valid(in);
+    (void)is_generic_int_valid_result;
 
     return 0;
 }
