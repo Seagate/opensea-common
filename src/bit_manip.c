@@ -323,19 +323,20 @@ static M_INLINE uint8_t gen_extract_u8(uint8_t val, uint8_t msb, uint8_t lsb)
 //! \param[in] msb most significant bit offset value
 //! \param[in] lsb least  significant bit offset value
 //! \return returns genericint_t in requested range
-static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
+static genericint_t gen_8bit_range(genericint_t         input,
                                             M_ATTR_UNUSED size_t outputsize,
                                             uint8_t              msb,
                                             uint8_t              lsb)
 {
     genericint_t out;
     M_INITIALIZE_STRUCTURE(&out, sizeof(genericint_t));
+    errno = 0; // clear out any errors first
     if (msb > GENERIC_INT_8BIT_MAX || lsb > GENERIC_INT_8BIT_MAX)
     {
         fprintf(stderr, "DEBUG: in gen_8bit_range, line 335\n");
         fprintf(stderr, "errno before: %d\n", errno);
         printf("Setting errno to ERANGE due to errno = %d msb=%u or lsb=%u being out of range for 8-bit type\n", errno, msb, lsb);
-        //errno = ERANGE;
+        errno = ERANGE;
     }
     else
     {
