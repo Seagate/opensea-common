@@ -2137,6 +2137,7 @@ static void test_count_trailing_zeros_ui(void) {
         snprintf(msg, sizeof(msg), "%u trailing zeros in unsigned int", i);
         TEST_ASSERT_EQ(count_trailing_zeros_ui(vals[i]), i, msg);
     }
+    printf("UINT_WIDTH: %zu\n", UINT_WIDTH);
 }
 
 static void test_count_trailing_zeros_ul(void) {
