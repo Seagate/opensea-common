@@ -18,6 +18,7 @@ FUZZERS=(
   "bit_manip_fuzzer_generic_input" 
   "bit_manip_fuzzer_64bit_input"
   "bit_manip_fuzzer_32bit_input"
+  "bit_manip_fuzzer_16bit_input"
   "bit_manip_fuzzer_8bit_input"
   "bit_manip_fuzzer_float_input"
 )
