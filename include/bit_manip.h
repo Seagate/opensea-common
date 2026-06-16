@@ -2570,6 +2570,10 @@ extern "C"
 #elif defined(HAVE_BUILT_IN_CTZ)
     return value == 0U ? UCHAR_WIDTH : M_STATIC_CAST(unsigned int, __builtin_ctz(value));
 #else
+    if (value == 0U)
+    {
+        return UCHAR_WIDTH;
+    }
     unsigned int count = 0U;
     while (value > 0U)
     {
@@ -2600,6 +2604,10 @@ extern "C"
 #elif defined(HAVE_BUILT_IN_CTZ)
     return value == 0U ? USHRT_WIDTH : M_STATIC_CAST(unsigned int, __builtin_ctz(value));
 #else
+    if (value == 0U)
+    {
+        return USHRT_WIDTH;
+    }
     unsigned int count = 0U;
     while (value > 0U)
     {
@@ -2630,6 +2638,10 @@ extern "C"
 #elif defined(HAVE_BUILT_IN_CTZ)
     return value == 0U ? UINT_WIDTH : M_STATIC_CAST(unsigned int, __builtin_ctz(value));
 #else
+    if (value == 0U)
+    {
+        return UINT_WIDTH;
+    }
     unsigned int count = 0U;
     while (value > 0U)
     {
@@ -2660,6 +2672,10 @@ extern "C"
 #elif defined(HAVE_BUILT_IN_CTZL)
     return value == 0UL ? ULONG_WIDTH : M_STATIC_CAST(unsigned int, __builtin_ctzl(value));
 #else
+    if (value == 0UL)
+    {
+        return ULONG_WIDTH;
+    }
     unsigned int count = 0U;
     while (value > 0UL)
     {
@@ -2690,6 +2706,10 @@ extern "C"
 #elif defined(HAVE_BUILT_IN_CTZLL)
     return value == 0ULL ? ULLONG_WIDTH : M_STATIC_CAST(unsigned int, __builtin_ctzll(value));
 #else
+    if (value == 0ULL)
+    {
+        return ULLONG_WIDTH;
+    }
     unsigned int count = 0U;
     while (value > 0ULL)
     {

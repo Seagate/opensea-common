@@ -339,6 +339,7 @@ static genericint_t gen_8bit_range(genericint_t input, M_ATTR_UNUSED size_t outp
     else
     {
         size_t bit_count = gen_bit_width(msb, lsb);
+
         if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
         {
             errno = ERANGE;
