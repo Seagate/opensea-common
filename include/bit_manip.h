@@ -1236,7 +1236,7 @@ extern "C"
 
     // Bit access macros
 
-    //! \def M_BitN(n)
+    //! \def M_BitN(n) 
     //! \brief Sets a specific bit number to 1 and all other bits are zero.
     //! Recommend using the other macros with specific widths over this one
     //! \sa M_BitN8
