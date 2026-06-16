@@ -48,8 +48,8 @@ M_NODISCARD bool get_Bytes_To_64(const uint8_t* M_NULLABLE dataPtrBeginning,
     {
         return false;
     }
-    *out = UINT64_C(0);// clear to zero before filling in the bytes
-    if (lsb <= msb) // allowing equals for single bytes
+    *out = UINT64_C(0); // clear to zero before filling in the bytes
+    if (lsb <= msb)     // allowing equals for single bytes
     {
         for (size_t iter = msb, counter = 0; counter < fullDataLen && counter < SIZE_MAX && iter >= lsb;
              --iter, ++counter)
@@ -323,26 +323,22 @@ static M_INLINE uint8_t gen_extract_u8(uint8_t val, uint8_t msb, uint8_t lsb)
 //! \param[in] msb most significant bit offset value
 //! \param[in] lsb least  significant bit offset value
 //! \return returns genericint_t in requested range
-static genericint_t gen_8bit_range(genericint_t         input,
-                                            M_ATTR_UNUSED size_t outputsize,
-                                            uint8_t              msb,
-                                            uint8_t              lsb)
+static genericint_t gen_8bit_range(genericint_t input, M_ATTR_UNUSED size_t outputsize, uint8_t msb, uint8_t lsb)
 {
     genericint_t out;
     M_INITIALIZE_STRUCTURE(&out, sizeof(genericint_t));
     errno = 0; // clear out any errors first
     if (msb > GENERIC_INT_8BIT_MAX || lsb > GENERIC_INT_8BIT_MAX)
     {
-        fprintf(stderr, "DEBUG: in gen_8bit_range, line 335\n");
-        fprintf(stderr, "errno before: %d\n", errno);
-        printf("Setting errno to ERANGE due to errno = %d msb=%u or lsb=%u being out of range for 8-bit type\n", errno, msb, lsb);
+        printf("Setting errno to ERANGE due to errno = %d msb=%u or lsb=%u being out of range for 8-bit type\n", errno,
+               msb, lsb);
         errno = ERANGE;
     }
     else
     {
         size_t bit_count = gen_bit_width(msb, lsb);
         printf("DEBUG: msb=%u, lsb=%u, bit_count=%zu, SIZE_MAX=%zu\n", msb, lsb, bit_count, SIZE_MAX);
-        
+
         if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
         {
             errno = ERANGE;
@@ -538,11 +534,8 @@ genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_
     }
     else if (msb > GENERIC_INT_MAX_BIT || lsb > GENERIC_INT_MAX_BIT)
     {
-        fprintf(stderr, "DEBUG: in gen_8bit_range, line 538\n");
-        fprintf(stderr, "errno before: %d\n", errno);
         printf("Setting errno to ERANGE due to errno = %d, msb = %u or lsb = %u being out of range\n", errno, msb, lsb);
         errno = ERANGE;
-        //__asm__ __volatile__("");  // Volatile asm barrier to prevent optimization
     }
     else
     {
