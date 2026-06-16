@@ -332,8 +332,10 @@ static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
     M_INITIALIZE_STRUCTURE(&out, sizeof(genericint_t));
     if (msb > GENERIC_INT_8BIT_MAX || lsb > GENERIC_INT_8BIT_MAX)
     {
+        fprintf(stderr, "DEBUG: in gen_8bit_range, line 335\n");
+        fprintf(stderr, "errno before: %d\n", errno);
         printf("Setting errno to ERANGE due to errno = %d msb=%u or lsb=%u being out of range for 8-bit type\n", errno, msb, lsb);
-        errno = ERANGE;
+        //errno = ERANGE;
     }
     else
     {
@@ -535,8 +537,11 @@ genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_
     }
     else if (msb > GENERIC_INT_MAX_BIT || lsb > GENERIC_INT_MAX_BIT)
     {
+        fprintf(stderr, "DEBUG: in gen_8bit_range, line 538\n");
+        fprintf(stderr, "errno before: %d\n", errno);
         printf("Setting errno to ERANGE due to errno = %d, msb = %u or lsb = %u being out of range\n", errno, msb, lsb);
-        //errno = ERANGE;
+        errno = ERANGE;
+        //__asm__ __volatile__("");  // Volatile asm barrier to prevent optimization
     }
     else
     {
