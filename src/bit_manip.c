@@ -337,7 +337,8 @@ static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
     else
     {
         size_t bit_count = gen_bit_width(msb, lsb);
-
+        printf("DEBUG: msb=%u, lsb=%u, bit_count=%zu, SIZE_MAX=%zu\n", msb, lsb, bit_count, SIZE_MAX);
+        
         if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
         {
             errno = ERANGE;
@@ -531,10 +532,10 @@ genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_
     {
         errno = EINVAL;
     }
-    else if (msb > GENERIC_INT_MAX_BIT || lsb > GENERIC_INT_MAX_BIT)
+    /*else if (msb > GENERIC_INT_MAX_BIT || lsb > GENERIC_INT_MAX_BIT)
     {
         errno = ERANGE;
-    }
+    }*/
     else
     {
         switch (input.sizeoftype)
