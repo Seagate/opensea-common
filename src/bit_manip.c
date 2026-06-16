@@ -323,14 +323,16 @@ static M_INLINE uint8_t gen_extract_u8(uint8_t val, uint8_t msb, uint8_t lsb)
 //! \param[in] msb most significant bit offset value
 //! \param[in] lsb least  significant bit offset value
 //! \return returns genericint_t in requested range
-static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
-                                            M_ATTR_UNUSED size_t outputsize,
-                                            uint8_t              msb,
-                                            uint8_t              lsb)
+static genericint_t gen_8bit_range(genericint_t input, M_ATTR_UNUSED size_t outputsize, uint8_t msb, uint8_t lsb)
 {
     genericint_t out;
     M_INITIALIZE_STRUCTURE(&out, sizeof(genericint_t));
+    errno = 0; // clear out any errors first
     if (msb > GENERIC_INT_8BIT_MAX || lsb > GENERIC_INT_8BIT_MAX)
+    {
+        errno = ERANGE;
+    }
+    else if (msb < lsb)
     {
         errno = ERANGE;
     }
@@ -363,7 +365,12 @@ static M_INLINE genericint_t gen_16bit_range(genericint_t input, size_t outputsi
 {
     genericint_t out;
     M_INITIALIZE_STRUCTURE(&out, sizeof(out));
+    errno = 0; // clear out any errors first
     if (msb > GENERIC_INT_16BIT_MAX || lsb > GENERIC_INT_16BIT_MAX)
+    {
+        errno = ERANGE;
+    }
+    else if (msb < lsb)
     {
         errno = ERANGE;
     }
@@ -409,7 +416,12 @@ static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsi
 {
     genericint_t out;
     M_INITIALIZE_STRUCTURE(&out, sizeof(out));
+    errno = 0; // clear out any errors first
     if (msb > GENERIC_INT_32BIT_MAX || lsb > GENERIC_INT_32BIT_MAX)
+    {
+        errno = ERANGE;
+    }
+    else if (msb < lsb)
     {
         errno = ERANGE;
     }
@@ -466,7 +478,12 @@ static M_INLINE genericint_t gen_64bit_range(genericint_t input, size_t outputsi
 {
     genericint_t out;
     M_INITIALIZE_STRUCTURE(&out, sizeof(out));
+    errno = 0; // clear out any errors first
     if (msb > GENERIC_INT_64BIT_MAX || lsb > GENERIC_INT_64BIT_MAX)
+    {
+        errno = ERANGE;
+    }
+    else if (msb < lsb)
     {
         errno = ERANGE;
     }
@@ -530,6 +547,10 @@ genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_
     if (!is_generic_int_valid(input))
     {
         errno = EINVAL;
+    }
+    else if (msb < lsb)
+    {
+        errno = ERANGE;
     }
     else if (msb > GENERIC_INT_MAX_BIT || lsb > GENERIC_INT_MAX_BIT)
     {
