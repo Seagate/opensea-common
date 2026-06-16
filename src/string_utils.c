@@ -1103,8 +1103,7 @@ M_NODISCARD size_t safe_strnlen_impl(const char* M_NULLABLE string, size_t n)
 M_FUNC_ATTR_MALLOC char* strndup(const char* M_NONNULL src, size_t size)
 {
     void*  nullpos = memchr(src, '\0', size);
-    size_t length =
-        nullpos != M_NULLPTR ? C_CAST(size_t, C_CAST(uintptr_t, nullpos) - C_CAST(uintptr_t, src)) : SIZE_T_C(0);
+    size_t length = nullpos != M_NULLPTR ? C_CAST(size_t, C_CAST(uintptr_t, nullpos) - C_CAST(uintptr_t, src)) : size;
     char* dupstr = M_REINTERPRET_CAST(char*, malloc(length + 1));
     if (dupstr == M_NULLPTR)
     {
