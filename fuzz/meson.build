@@ -5,6 +5,8 @@ fuzz_link_args = fuzz_args + ['-fsanitize=address']
 fuzz_targets = [
   'bit_manip/bit_manip_fuzzer_generic_input',
   'bit_manip/bit_manip_fuzzer_64bit_input',
+  'bit_manip/bit_manip_fuzzer_32bit_input',
+  'bit_manip/bit_manip_fuzzer_8bit_input',
   'bit_manip/bit_manip_fuzzer_float_input'
 ]
 
