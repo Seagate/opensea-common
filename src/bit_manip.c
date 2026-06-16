@@ -533,10 +533,11 @@ genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_
     {
         errno = EINVAL;
     }
-    /*else if (msb > GENERIC_INT_MAX_BIT || lsb > GENERIC_INT_MAX_BIT)
+    else if (msb > GENERIC_INT_MAX_BIT || lsb > GENERIC_INT_MAX_BIT)
     {
         errno = ERANGE;
-    }*/
+        printf("Setting errno to ERANGE due to errno = %d, msb = %u or lsb = %u being out of range\n", errno, msb, lsb);
+    }
     else
     {
         switch (input.sizeoftype)
