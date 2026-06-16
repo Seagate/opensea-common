@@ -330,15 +330,15 @@ static genericint_t gen_8bit_range(genericint_t input, M_ATTR_UNUSED size_t outp
     errno = 0; // clear out any errors first
     if (msb > GENERIC_INT_8BIT_MAX || lsb > GENERIC_INT_8BIT_MAX)
     {
-        printf("Setting errno to ERANGE due to errno = %d msb=%u or lsb=%u being out of range for 8-bit type\n", errno,
-               msb, lsb);
+        errno = ERANGE;
+    }
+    else if (msb < lsb)
+    {
         errno = ERANGE;
     }
     else
     {
         size_t bit_count = gen_bit_width(msb, lsb);
-        printf("DEBUG: msb=%u, lsb=%u, bit_count=%zu, SIZE_MAX=%zu\n", msb, lsb, bit_count, SIZE_MAX);
-
         if (bit_count == GENERIC_WIDTH_0 || bit_count > GENERIC_WIDTH_8)
         {
             errno = ERANGE;
@@ -364,7 +364,12 @@ static M_INLINE genericint_t gen_16bit_range(genericint_t input, size_t outputsi
 {
     genericint_t out;
     M_INITIALIZE_STRUCTURE(&out, sizeof(out));
+    errno = 0; // clear out any errors first
     if (msb > GENERIC_INT_16BIT_MAX || lsb > GENERIC_INT_16BIT_MAX)
+    {
+        errno = ERANGE;
+    }
+    else if (msb < lsb)
     {
         errno = ERANGE;
     }
@@ -410,7 +415,12 @@ static M_INLINE genericint_t gen_32bit_range(genericint_t input, size_t outputsi
 {
     genericint_t out;
     M_INITIALIZE_STRUCTURE(&out, sizeof(out));
+    errno = 0; // clear out any errors first
     if (msb > GENERIC_INT_32BIT_MAX || lsb > GENERIC_INT_32BIT_MAX)
+    {
+        errno = ERANGE;
+    }
+    else if (msb < lsb)
     {
         errno = ERANGE;
     }
@@ -467,7 +477,12 @@ static M_INLINE genericint_t gen_64bit_range(genericint_t input, size_t outputsi
 {
     genericint_t out;
     M_INITIALIZE_STRUCTURE(&out, sizeof(out));
+    errno = 0; // clear out any errors first
     if (msb > GENERIC_INT_64BIT_MAX || lsb > GENERIC_INT_64BIT_MAX)
+    {
+        errno = ERANGE;
+    }
+    else if (msb < lsb)
     {
         errno = ERANGE;
     }
@@ -532,9 +547,12 @@ genericint_t generic_Get_Bit_Range(genericint_t input, size_t outputsize, uint8_
     {
         errno = EINVAL;
     }
+    else if (msb < lsb)
+    {
+        errno = ERANGE;
+    }
     else if (msb > GENERIC_INT_MAX_BIT || lsb > GENERIC_INT_MAX_BIT)
     {
-        printf("Setting errno to ERANGE due to errno = %d, msb = %u or lsb = %u being out of range\n", errno, msb, lsb);
         errno = ERANGE;
     }
     else
