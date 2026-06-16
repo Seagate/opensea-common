@@ -33,7 +33,7 @@ jobs:
             os: ubuntu-latest,
             cc: "clang",
             cxx: "clang++",
-            meson_opts: "-Db_coverage=true -Ddiagnose-if-attr=disabled",
+            meson_opts: "-Db_coverage=true -Ddiagnose-if-attr=disabled -Doptimization=0",
             buildtype: "debug"
           }
 
