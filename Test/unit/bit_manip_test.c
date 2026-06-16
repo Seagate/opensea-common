@@ -452,12 +452,15 @@ static void test_get_bit_range_uint8(void) {
     TEST_ASSERT(errno == ERANGE, "get_bit_range_uint8 should set errno to ERANGE when msb > 7");
 
     // Test for lsb > GENERIC_INT_8BIT_MAX
+    errno = 0;
     get_bit_range_uint8((uint8_t)HEX_RANDOM, 7, 8);
+    printf("errno: %d, msb = 7, lsb = 8\n", errno); // Debug print to check errno value
     TEST_ASSERT(errno == ERANGE, "get_bit_range_uint8 should set errno to ERANGE when lsb > 7");
 
     // Test for bitcount = 0
     errno = 0;
     get_bit_range_uint8((uint8_t)HEX_RANDOM, 5, 6);
+    printf("errno: %d, msb = 5, lsb = 6\n", errno); // Debug print to check errno value
     TEST_ASSERT(errno == ERANGE, "get_bit_range_uint8 should set errno to ERANGE when bitcount = 0");
 
     // Test for bitcount > GENERIC_WIDTH_8 - Not possible

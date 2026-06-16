@@ -333,6 +333,7 @@ static M_INLINE genericint_t gen_8bit_range(genericint_t         input,
     if (msb > GENERIC_INT_8BIT_MAX || lsb > GENERIC_INT_8BIT_MAX)
     {
         errno = ERANGE;
+        printf("Setting errno to ERANGE due to errno = %d msb=%u or lsb=%u being out of range for 8-bit type\n", errno, msb, lsb);
     }
     else
     {
