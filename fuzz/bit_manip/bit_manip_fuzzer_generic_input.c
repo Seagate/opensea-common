@@ -272,6 +272,44 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     volatile uint64_t M_SET_BIT_stability_check = set_bit_val;
     (void)M_SET_BIT_stability_check;
 
+    uint8_t uint8_val = (uint8_t)M_GETBITRANGE_input;
+    uint8_t set_uint8_result = set_uint8_bit(uint8_val, raw_bit_position);
+
+    uint16_t uint16_val = (uint16_t)M_GETBITRANGE_input;
+    uint16_t set_uint16_result = set_uint16_bit(uint16_val, raw_bit_position);
+
+    uint32_t uint32_val = (uint32_t)M_GETBITRANGE_input;
+    uint32_t set_uint32_result = set_uint32_bit(uint32_val, raw_bit_position);
+
+    uint64_t uint64_val = M_GETBITRANGE_input;
+    uint64_t set_uint64_result = set_uint64_bit(uint64_val, raw_bit_position);
+
+    // Validate that the results of M_SET_BIT macros are consistent with expected values
+    if (raw_bit_position < 8) {
+        uint8_t expected_uint8 = (uint8_t)(uint8_val | (uint8_t)((uint8_t)1 << raw_bit_position));
+        if (set_uint8_result != expected_uint8) {
+            __builtin_trap();
+        }
+    }
+    if (raw_bit_position < 16) {
+        uint16_t expected_uint16 = (uint16_t)(uint16_val | (uint16_t)((uint16_t)1 << raw_bit_position));
+        if (set_uint16_result != expected_uint16) {
+            __builtin_trap(); 
+        }
+    }
+    if (raw_bit_position < 32) {
+        uint32_t expected_uint32 = (uint32_t)(uint32_val | (uint32_t)((uint32_t)1 << raw_bit_position));
+        if (set_uint32_result != expected_uint32) {
+            __builtin_trap();
+        }
+    }
+    if (raw_bit_position < 64) {
+        uint64_t expected_uint64 = (uint64_t)(uint64_val | (uint64_t)((uint64_t)1 << raw_bit_position));
+        if (set_uint64_result != expected_uint64) {
+            __builtin_trap();
+        }
+    }
+
     // Fuzzing M_CLEAR_BIT
     uint64_t clear_bit_val = M_GETBITRANGE_input;
     M_CLEAR_BIT(clear_bit_val, raw_bit_position);
