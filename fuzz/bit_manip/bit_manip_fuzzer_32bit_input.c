@@ -17,8 +17,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         val2 |= ((uint16_t)data[i + sizeof(uint16_t)]) << (8 * i);
     }
 
-    volatile uint16_t lowest_16bits = get_Word0_uint32(val1);
-    (void)lowest_16bits;
+    uint16_t lowest_16bits = get_Word0_uint32(val1);
+    if (lowest_16bits != (uint16_t)(val1 & UINT32_C(0x0000FFFF))) __builtin_trap();
 
     volatile uint16_t highest_16bits = get_Word1_uint32(val2);
     (void)highest_16bits;
