@@ -37,7 +37,10 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
     size_t outsz = widths[(data[0] >> 1) % 4];
 
-    if (!is_generic_int_valid(in)) return 0;
+    // Fuzzing is_generic_int_valid
+    if (!is_generic_int_valid(in)) {
+        __builtin_trap();
+    }
 
     msb = msb % (in.sizeoftype * 8);
     lsb = lsb % (in.sizeoftype * 8);
@@ -47,14 +50,47 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         msb = temp;
     }
 
-    // Fuzzing is_generic_int_valid
-    volatile bool is_generic_int_valid_result = is_generic_int_valid(in);
-    (void)is_generic_int_valid_result;
-
     // Fuzzing generic_Get_Bit_Range
     volatile genericint_t generic_Get_Bit_Range_result = generic_Get_Bit_Range(in, outsz, msb, lsb);
-    (void)generic_Get_Bit_Range_result;
+    
+    // Extract the exact input integer configuration as a baseline uint64_t
+    uint64_t oracle_input_val = 0;
+    switch (in.sizeoftype) {
+        case sizeof(uint8_t):  oracle_input_val = in.u8;  break;
+        case sizeof(uint16_t): oracle_input_val = in.u16; break;
+        case sizeof(uint32_t): oracle_input_val = in.u32; break;
+        case sizeof(uint64_t): oracle_input_val = in.u64; break;
+    }
 
+    // Slice bits out one by one manually using a clean, unoptimized loop
+    uint64_t generic_reference = 0;
+    size_t bit_counter = 0;
+    for (uint8_t i = lsb; i <= msb; i++) {
+        uint64_t bit = (oracle_input_val >> i) & 1;
+        generic_reference |= (bit << bit_counter);
+        bit_counter++;
+    }
+
+    // Truncate the reference value to match the requested output container width
+    if (outsz < sizeof(uint64_t)) {
+        uint64_t size_mask = ((uint64_t)1 << (outsz * 8)) - 1;
+        generic_reference &= size_mask;
+    }
+
+    // Unpack what your function returned
+    uint64_t generic_function_val = 0;
+    switch (generic_Get_Bit_Range_result.sizeoftype) {
+        case sizeof(uint8_t):  generic_function_val = generic_Get_Bit_Range_result.u8;  break;
+        case sizeof(uint16_t): generic_function_val = generic_Get_Bit_Range_result.u16; break;
+        case sizeof(uint32_t): generic_function_val = generic_Get_Bit_Range_result.u32; break;
+        case sizeof(uint64_t): generic_function_val = generic_Get_Bit_Range_result.u64; break;
+    }
+
+    if (generic_function_val != generic_reference) {
+        __builtin_trap();
+    }
+
+    // Fuzzing the wrapper functions for specific input/output types
     if (!in.issigned && in.sizeoftype == sizeof(uint8_t) && outsz == sizeof(uint8_t)) {
         uint8_t wrapper_result = get_bit_range_uint8(in.u8, msb, lsb);
         
