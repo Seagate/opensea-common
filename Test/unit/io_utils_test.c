@@ -6,6 +6,15 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#ifdef _WIN32
+    #include <io.h>
+    #define dup     _dup
+    #define dup2    _dup2
+    #define close   _close
+#else
+    #include <unistd.h>
+#endif
+
 #define SUCCESS 0
 #define FAILURE 1
 #define EFI_SUCCESS 0
