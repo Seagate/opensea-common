@@ -265,5 +265,19 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         if (M_BitN_result != (uint64_t)((uint64_t)1 << raw_bit_position)) __builtin_trap();
     }
 
+    // Fuzzing M_SET_BIT
+    uint64_t set_bit_val = M_GETBITRANGE_input;
+    M_SET_BIT(set_bit_val, raw_bit_position);
+    
+    volatile uint64_t M_SET_BIT_stability_check = set_bit_val;
+    (void)M_SET_BIT_stability_check;
+
+    // Fuzzing M_CLEAR_BIT
+    uint64_t clear_bit_val = M_GETBITRANGE_input;
+    M_CLEAR_BIT(clear_bit_val, raw_bit_position);
+
+    volatile uint64_t M_CLEAR_BIT_stability_check = clear_bit_val;
+    (void)M_CLEAR_BIT_stability_check;
+
     return 0;
 }
