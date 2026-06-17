@@ -75,6 +75,9 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     if (outsz < sizeof(uint64_t)) {
         uint64_t size_mask = ((uint64_t)1 << (outsz * 8)) - 1;
         generic_reference &= size_mask;
+    } else {
+        // If outsz is 8 bytes, no masking is required (full 64-bit capacity)
+        generic_reference &= UINT64_MAX;
     }
 
     // Unpack what your function returned
