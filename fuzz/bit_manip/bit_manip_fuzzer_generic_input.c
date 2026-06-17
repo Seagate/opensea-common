@@ -317,5 +317,37 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     volatile uint64_t M_CLEAR_BIT_stability_check = clear_bit_val;
     (void)M_CLEAR_BIT_stability_check;
 
+    uint8_t clear_uint8_result = clear_uint8_bit(uint8_val, raw_bit_position);
+    if (raw_bit_position < 8) {
+        uint8_t expected_clear8 = (uint8_t)(uint8_val & (uint8_t)(~(uint8_t)((uint8_t)1 << raw_bit_position)));
+        if (clear_uint8_result != expected_clear8) {
+            __builtin_trap(); 
+        }
+    }
+
+    uint16_t clear_uint16_result = clear_uint16_bit(uint16_val, raw_bit_position);
+    if (raw_bit_position < 16) {
+        uint16_t expected_clear16 = (uint16_t)(uint16_val & (uint16_t)(~(uint16_t)((uint16_t)1 << raw_bit_position)));
+        if (clear_uint16_result != expected_clear16) {
+            __builtin_trap(); 
+        }
+    }
+
+    uint32_t clear_uint32_result = clear_uint32_bit(uint32_val, raw_bit_position);
+    if (raw_bit_position < 32) {
+        uint32_t expected_clear32 = (uint32_t)(uint32_val & (uint32_t)(~(uint32_t)((uint32_t)1 << raw_bit_position)));
+        if (clear_uint32_result != expected_clear32) {
+            __builtin_trap();
+        }
+    }
+
+    uint64_t clear_uint64_result = clear_uint64_bit(uint64_val, raw_bit_position);
+    if (raw_bit_position < 64) {
+        uint64_t expected_clear64 = (uint64_t)(uint64_val & (uint64_t)(~(uint64_t)((uint64_t)1 << raw_bit_position)));
+        if (clear_uint64_result != expected_clear64) {
+            __builtin_trap();
+        }
+    }
+
     return 0;
 }
