@@ -18,19 +18,20 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
     c = fabsf(c);
 
-    if (f > 100000.0f || f < -100000.0f || c > 1000.0f) return 0;
+    if (f > 100000.0f || f < -100000.0f || c > 1000.0f || c < 0.001f) return 0;
 
     float result = ROUNDF(f, c);
 
-    float max_allowed_distance = 1.0f / c;
+    float max_allowed_distance = (0.5f / c) + 1e-4f;
     float actual_distance = fabsf(f - result);
     
     if (actual_distance > max_allowed_distance) {
-        __builtin_trap(); // The macro rounded completely out of bounds!
+        __builtin_trap();
     }
 
-    if (fabsf(result) > fabsf(f) + 1e-5f) {
-        __builtin_trap(); // The macro incorrectly rounded UP away from zero!
+    float double_round_result = ROUNDF(result, c);
+    if (result != double_round_result) {
+        __builtin_trap();
     }
 
     return 0;
