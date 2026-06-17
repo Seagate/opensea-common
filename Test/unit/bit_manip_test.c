@@ -220,7 +220,7 @@ static void test_M_ByteInt2(void)
     {
         TEST_ASSERT_EQ(M_ByteInt2(cases[i].input), cases[i].expected, cases[i].description);
     }
-}
+} 
 
 static void test_M_ByteInt3(void)
 {
