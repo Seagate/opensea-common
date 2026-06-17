@@ -771,7 +771,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint8_t get_bit_range_uint8(uint8_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE uint8_t get_bit_range_uint8(uint8_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -791,7 +791,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint16_t get_bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE uint16_t get_bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -811,7 +811,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint8_t get_8bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE uint8_t get_8bit_range_uint16(uint16_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -831,7 +831,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint32_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint32_t get_bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE uint32_t get_bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -851,7 +851,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint8_t get_8bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE uint8_t get_8bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -871,7 +871,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint16_t get_16bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE uint16_t get_16bit_range_uint32(uint32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -891,7 +891,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint64_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint64_t get_bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE uint64_t get_bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.issigned   = false;
@@ -910,7 +910,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint8_t get_8bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE uint8_t get_8bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.issigned   = false;
@@ -929,7 +929,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint16_t get_16bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE uint16_t get_16bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.issigned   = false;
@@ -948,7 +948,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint32_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE uint32_t get_32bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE uint32_t get_32bit_range_uint64(uint64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.issigned   = false;
@@ -967,7 +967,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int8_t get_bit_range_int8(int8_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE int8_t get_bit_range_int8(int8_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -987,7 +987,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int16_t get_bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE int16_t get_bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -1007,7 +1007,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int8_t get_8bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE int8_t get_8bit_range_int16(int16_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -1027,7 +1027,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int32_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int32_t get_bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE int32_t get_bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -1047,7 +1047,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int8_t get_8bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE int8_t get_8bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -1067,7 +1067,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int16_t get_16bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE int16_t get_16bit_range_int32(int32_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
@@ -1087,7 +1087,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return uint64_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int64_t get_bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE int64_t get_bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.issigned   = true;
@@ -1106,7 +1106,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int8_t get_8bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE int8_t get_8bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.issigned   = true;
@@ -1125,7 +1125,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int16_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int16_t get_16bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE int16_t get_16bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.issigned   = true;
@@ -1144,7 +1144,7 @@ extern "C"
     //! \param[in] msb most significant bit value
     //! \param[in] lsb least significant bit value
     //! \return int32_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
-    static M_INLINE int32_t get_32bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb) M_UNSEQUENCED
+    static M_INLINE int32_t get_32bit_range_int64(int64_t value, uint8_t msb, uint8_t lsb)
     {
         genericint_t genint;
         genint.issigned   = true;

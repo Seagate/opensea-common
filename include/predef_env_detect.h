@@ -150,6 +150,16 @@
 #define MSVC_2022_17_8  1938
 #define MSVC_2022_17_9  1939
 #define MSVC_2022_17_10 1940
+#define MSVC_2022_17_11 1941
+#define MSVC_2022_17_12 1942
+#define MSVC_2022_17_13 1943
+#define MSVC_2022_17_14 1944
+// Starting in MSVC 2026, build tools and Visual Studio versions are decoupled.
+// So above macros are MSVC_<VSversion>_<buildtools_major>_<buildtools_minor>
+// Below here it will simply be the build tools version as that affects functionality more than anything else -TJE
+#define MSVC_BUILD_TOOLS_14_50 1950
+#define MSVC_BUILD_TOOLS_14_51 1951
+#define MSVC_BUILD_TOOLS_14_52 1952
 
 // Some specific full versions when needing to differentiate on the _MSC_FULL_VER macros
 #define MSVC_FULL_2019_16_8  192829333 // need full ver to differentiate
@@ -172,6 +182,13 @@
 #    endif
 #else
 #    define IS_MSVC_VERSION(msvcver) (0)
+#endif
+
+//! \def MSVC_HAS_PRAGMA_WARNING_SUPRESS_JUSTIFICATION
+//! \brief MSVC added support for adding a justification to the warning suppress pragmas in version 17.14.
+//! When this is set, then that field can also be applied to the supression pragmas
+#if IS_MSVC_VERSION(MSVC_2022_17_14)
+#    define MSVC_HAS_PRAGMA_WARNING_SUPRESS_JUSTIFICATION
 #endif
 
 //! \def IS_MSVC_FULL_VERSION(msvcfullver)

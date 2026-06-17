@@ -401,8 +401,13 @@ extern "C"
 #            define M_DEPRECATED             [[deprecated]]
 #            define M_DEPRECATED_REASON(msg) [[deprecated(msg)]]
 #        else
-#            define M_DEPRECATED             __declspec(deprecated) MSVC_PRAGMA(warning(suppress : 4996))
-#            define M_DEPRECATED_REASON(msg) __declspec(deprecated(msg)) MSVC_PRAGMA(warning(suppress : 4996))
+#            if defined(MSVC_HAS_PRAGMA_WARNING_SUPRESS_JUSTIFICATION)
+#                define M_DEPRECATED             __declspec(deprecated) MSVC_PRAGMA(warning(suppress : 4996, justification: "Deprecation warning disabled at declaration site. Warning still shows at call sites."))
+#                define M_DEPRECATED_REASON(msg) __declspec(deprecated(msg)) MSVC_PRAGMA(warning(suppress : 4996, justification: "Deprecation warning disabled at declaration site. Warning still shows at call sites."))
+#            else
+#                define M_DEPRECATED             __declspec(deprecated) MSVC_PRAGMA(warning(suppress : 4996))
+#                define M_DEPRECATED_REASON(msg) __declspec(deprecated(msg)) MSVC_PRAGMA(warning(suppress : 4996))
+#            endif
 #        endif
 #    endif
 #endif
