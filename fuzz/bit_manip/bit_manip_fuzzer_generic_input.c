@@ -82,7 +82,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
     // Unpack what your function returned
     uint64_t generic_function_val = 0;
-    switch (generic_Get_Bit_Range_result.sizeoftype) {
+    switch (outsz) {
         case sizeof(uint8_t):  generic_function_val = generic_Get_Bit_Range_result.u8;  break;
         case sizeof(uint16_t): generic_function_val = generic_Get_Bit_Range_result.u16; break;
         case sizeof(uint32_t): generic_function_val = generic_Get_Bit_Range_result.u32; break;
