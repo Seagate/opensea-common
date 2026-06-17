@@ -350,7 +350,7 @@ M_FUNC_ATTR_MALLOC char* M_NULLABLE get_windows_error_str(winsyserror_t windowsE
                   C_CAST(LPTSTR, &windowsErrorString), 0, M_NULLPTR);
     if (windowsErrorString != M_NULLPTR)
     {
-        size_t errorStrLen = lstrlen(windowsErrorString) + SIZE_T_C(1);
+        size_t errorStrLen = int_to_sizet(lstrlen(windowsErrorString)) + SIZE_T_C(1);
         char*  errorString = M_REINTERPRET_CAST(char*, safe_calloc(errorStrLen, sizeof(char)));
         if (errorString != M_NULLPTR)
         {
