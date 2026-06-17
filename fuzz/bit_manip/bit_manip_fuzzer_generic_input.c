@@ -239,20 +239,16 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     (void)M_BitN_result;
 
     // Fuzzing M_BitN8
-    volatile uint8_t M_BitN8_result = M_BitN8(raw_bit_position);
-    (void)M_BitN8_result;
+    uint8_t M_BitN8_result = M_BitN8(raw_bit_position);
 
     // Fuzzing M_BitN16
-    volatile uint16_t M_BitN16_result = M_BitN16(raw_bit_position);
-    (void)M_BitN16_result;
+    uint16_t M_BitN16_result = M_BitN16(raw_bit_position);
 
     // Fuzzing M_BitN32
-    volatile uint32_t M_BitN32_result = M_BitN32(raw_bit_position);
-    (void)M_BitN32_result;
+    uint32_t M_BitN32_result = M_BitN32(raw_bit_position);
 
     // Fuzzing M_BitN64
-    volatile uint64_t M_BitN64_result = M_BitN64(raw_bit_position);
-    (void)M_BitN64_result;
+    uint64_t M_BitN64_result = M_BitN64(raw_bit_position);
 
     // Validate that the results of M_BitN macros are consistent with expected values
     if (raw_bit_position < 8) {
