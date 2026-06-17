@@ -98,6 +98,31 @@ jobs:
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
 
+    - name: Check OS and compiler version (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        echo "OS Information:"
+        uname -a
+        lsb_release -a || cat /etc/os-release
+        echo "GCC Version:"
+        gcc --version || true
+        echo "Clang Version:"
+        clang --version || true
+
+    - name: Check OS and compiler version (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        Write-Host "OS Information:"
+        systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+        Write-Host "GCC Version (if available):"
+        gcc --version
+        Write-Host "Clang Version (if available):"
+        clang --version
+        Write-Host "MSVC Version (if available):"
+        cl
+
     - name: Configure Meson (Linux)
       if: runner.os == 'Linux'
       shell: bash
