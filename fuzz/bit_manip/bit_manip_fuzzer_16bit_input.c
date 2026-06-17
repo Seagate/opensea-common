@@ -12,10 +12,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint16_t word1 = (uint16_t)data[4] | ((uint16_t)data[5] << 8);
     uint16_t lsw = (uint16_t)data[6] | ((uint16_t)data[7] << 8);
 
-    uint32_t words_To_Uint32_result = words_To_Uint32(msw, lsw);
+    volatile uint32_t words_To_Uint32_result = words_To_Uint32(msw, lsw);
     (void)words_To_Uint32_result;
 
-    uint64_t words_To_Uint64_result = words_To_Uint64(msw, word2, word1, lsw);
+    volatile uint64_t words_To_Uint64_result = words_To_Uint64(msw, word2, word1, lsw);
     (void)words_To_Uint64_result;
 
     return 0;

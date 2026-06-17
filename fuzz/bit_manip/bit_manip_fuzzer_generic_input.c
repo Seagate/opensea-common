@@ -48,11 +48,11 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     }
 
     // Fuzzing is_generic_int_valid
-    bool is_generic_int_valid_result = is_generic_int_valid(in);
+    volatile bool is_generic_int_valid_result = is_generic_int_valid(in);
     (void)is_generic_int_valid_result;
 
     // Fuzzing generic_Get_Bit_Range
-    genericint_t generic_Get_Bit_Range_result = generic_Get_Bit_Range(in, outsz, msb, lsb);
+    volatile genericint_t generic_Get_Bit_Range_result = generic_Get_Bit_Range(in, outsz, msb, lsb);
     (void)generic_Get_Bit_Range_result;
 
     if (!in.issigned && in.sizeoftype == sizeof(uint8_t) && outsz == sizeof(uint8_t)) {
