@@ -55,7 +55,7 @@ extern "C"
     M_ATTR_UNUSED constexpr float*              nullfloat       = M_NULLPTR;
     M_ATTR_UNUSED constexpr double*             nulldouble      = M_NULLPTR;
     M_ATTR_UNUSED constexpr long double*        nullldouble     = M_NULLPTR;
-    M_ATTR_UNUSED constexpr rsize_t*            nullrsizet      = M_NULLPTR;
+    M_ATTR_UNUSED constexpr rsize_t*            nullrsizetio    = M_NULLPTR;
 #    define M_NULL_STREAM_CHECK(ptr)         ((ptr) == nullstreamptr)
 #    define M_NULL_IO_CHAR_CHECK(ptr)        ((ptr) == nulliochar)
 #    define M_NULL_IO_CONST_CHAR_CHECK(ptr)  ((ptr) == nullioconstchar)
@@ -69,7 +69,7 @@ extern "C"
 #    define M_NULL_IO_FLOAT_CHECK(ptr)       ((ptr) == nullfloat)
 #    define M_NULL_IO_DOUBLE_CHECK(ptr)      ((ptr) == nulldouble)
 #    define M_NULL_IO_LDOUBLE_CHECK(ptr)     ((ptr) == nullldouble)
-#    define M_NULL_IO_RSIZE_T_PTR_CHECK(ptr) ((ptr) == nullrsizet)
+#    define M_NULL_IO_RSIZE_T_PTR_CHECK(ptr) ((ptr) == nullrsizetio)
 #else
 #    define M_NULL_STREAM_CHECK(ptr)         (!(ptr))
 #    define M_NULL_IO_CHAR_CHECK(ptr)        (!(ptr))
