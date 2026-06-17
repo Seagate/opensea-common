@@ -254,5 +254,20 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     volatile uint64_t M_BitN64_result = M_BitN64(raw_bit_position);
     (void)M_BitN64_result;
 
+    // Validate that the results of M_BitN macros are consistent with expected values
+    if (raw_bit_position < 8) {
+        if (M_BitN8_result != (uint8_t)((uint8_t)1 << raw_bit_position)) __builtin_trap();
+    }
+    if (raw_bit_position < 16) {
+        if (M_BitN16_result != (uint16_t)((uint16_t)1 << raw_bit_position)) __builtin_trap();
+    }
+    if (raw_bit_position < 32) {
+        if (M_BitN32_result != (uint32_t)((uint32_t)1 << raw_bit_position)) __builtin_trap();
+    }
+    if (raw_bit_position < 64) {
+        if (M_BitN64_result != (uint64_t)((uint64_t)1 << raw_bit_position)) __builtin_trap();
+        if (M_BitN_result != (uint64_t)((uint64_t)1 << raw_bit_position)) __builtin_trap();
+    }
+
     return 0;
 }
