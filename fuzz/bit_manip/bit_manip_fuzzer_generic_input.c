@@ -51,7 +51,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     }
 
     // Fuzzing generic_Get_Bit_Range
-    volatile genericint_t generic_Get_Bit_Range_result = generic_Get_Bit_Range(in, outsz, msb, lsb);
+    genericint_t generic_Get_Bit_Range_result = generic_Get_Bit_Range(in, outsz, msb, lsb);
     
     // Extract the exact input integer configuration as a baseline uint64_t
     uint64_t oracle_input_val = 0;
