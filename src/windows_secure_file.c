@@ -1388,10 +1388,12 @@ M_PARAM_RO(1)
 M_PARAM_WO(2)
 eReturnValues get_Full_Path(const char* M_NONNULL pathAndFile, char fullPath[M_NONNULL_ARRAY OPENSEA_PATH_MAX])
 {
+    DISABLE_NONNULL_COMPARE
     if (pathAndFile == M_NULLPTR || fullPath == M_NULLPTR)
     {
         return BAD_PARAMETER;
     }
+    RESTORE_NONNULL_COMPARE
     size_t localPathAndFileLength = (safe_strlen(pathAndFile) + 1) * sizeof(TCHAR);
     TCHAR* localpathAndFileBuf    = M_REINTERPRET_CAST(TCHAR*, safe_calloc(localPathAndFileLength, sizeof(TCHAR)));
     DECLARE_ZERO_INIT_ARRAY(TCHAR, fullPathOutput, OPENSEA_PATH_MAX);
