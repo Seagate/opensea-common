@@ -21,5 +21,14 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint16_t b_swap_16_result = b_swap_16(msw);
     if (b_swap_16_result != (((msw & UINT16_C(0x00FF)) << 8) | ((msw & UINT16_C(0xFF00)) >> 8))) __builtin_trap();
 
+    uint16_t byte_Swap_16_result = msw;
+    byte_Swap_16(&byte_Swap_16_result);
+    if (byte_Swap_16_result != b_swap_16_result) __builtin_trap();
+
+    int16_t signed_value = (int16_t)msw;
+    int16_t byte_Swap_Int16_result = signed_value;
+    byte_Swap_Int16(&byte_Swap_Int16_result);
+    if (byte_Swap_Int16_result != (int16_t)b_swap_16_result) __builtin_trap();
+
     return 0;
 }
