@@ -156,5 +156,18 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         __builtin_trap();
     }
 
+    uint64_t byte_Swap_64_result = value;
+    byte_Swap_64(&byte_Swap_64_result);
+    if (byte_Swap_64_result != b_swap_64_result) __builtin_trap();
+
+    uint64_t word_Swap_64_result = value;
+    word_Swap_64(&word_Swap_64_result);
+    if (word_Swap_64_result != (((value & UINT64_C(0x000000000000FFFF)) << 48) |
+        ((value & UINT64_C(0x00000000FFFF0000)) << 16) |
+        ((value & UINT64_C(0x0000FFFF00000000)) >> 16) |
+        ((value & UINT64_C(0xFFFF000000000000)) >> 48))) {
+        __builtin_trap();
+    }
+
     return 0;
 }
