@@ -145,10 +145,16 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (highest_uint_nibble != (uint8_t)((value >> 60) & 0x0F)) __builtin_trap();
 
     uint64_t b_swap_64_result = b_swap_64(value);
-    if (((value & UINT64_C(0xFF00000000000000)) >> 56) | ((value & UINT64_C(0x00FF000000000000)) >> 40) |
-            ((value & UINT64_C(0x0000FF0000000000)) >> 24) | ((value & UINT64_C(0x000000FF00000000)) >> 8) |
-            ((value & UINT64_C(0x00000000FF000000)) << 8) | ((value & UINT64_C(0x0000000000FF0000))<< 24) |
-            ((value & UINT64_C(0x000000000000FF00)) << 40) | ((value & UINT64_C(0x00000000000000FF)) << 56)) __builtin_trap();
+    if (b_swap_64_result != (((value & UINT64_C(0xFF00000000000000)) >> 56) |
+                         ((value & UINT64_C(0x00FF000000000000)) >> 40) |
+                         ((value & UINT64_C(0x0000FF0000000000)) >> 24) |
+                         ((value & UINT64_C(0x000000FF00000000)) >> 8)  |
+                         ((value & UINT64_C(0x00000000FF000000)) << 8)  |
+                         ((value & UINT64_C(0x0000000000FF0000)) << 24) |
+                         ((value & UINT64_C(0x000000000000FF00)) << 40) |
+                         ((value & UINT64_C(0x00000000000000FF)) << 56))) {
+        __builtin_trap();
+    }
 
     return 0;
 }
