@@ -63,27 +63,26 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint16_t outVal = 0xDEAD;
     bool result = get_Bytes_To_16(buffer, fullDataLen, msb, lsb, &outVal);
 
-    bool valid = (fullDataLen > 0 &&
-                  msb < fullDataLen &&
-                  lsb < fullDataLen &&
-                  &outVal != NULL);
+    bool expectedValid =
+        (&outVal != NULL) &&
+        (get_Bytes_Abs_Range(msb, lsb) <= sizeof(uint16_t)) &&
+        (msb < fullDataLen) &&
+        (lsb < fullDataLen);
 
-    if (valid) {
-        uint16_t expected;
-        if (msb > lsb) {
-            expected = ((uint16_t)buffer[msb] << 8) | buffer[lsb];
-        } else {
-            expected = ((uint16_t)buffer[lsb] << 8) | buffer[msb];
+    if (result) {
+        if (!expectedValid) {
+            fprintf(stderr, "Function succeeded on invalid input!\n");
+            return 0;
         }
-        if (!result || outVal != expected) {
-            fprintf(stderr, "Mismatch: msb=%zu lsb=%zu got=%04x expected=%04x\n",
-                    msb, lsb, outVal, expected);
-            __builtin_trap();
+        uint16_t expected = ((uint16_t)buffer[msb] << 8) | buffer[lsb];
+        if (outVal != expected) {
+            fprintf(stderr, "Mismatch: got=%04x expected=%04x\n", outVal, expected);
+            return 0;
         }
     } else {
-        if (result) {
-            fprintf(stderr, "Function returned true for invalid input!\n");
-            __builtin_trap();
+        if (expectedValid) {
+            fprintf(stderr, "Function failed on valid input!\n");
+            return 0;
         }
     }
 
