@@ -1,8 +1,5 @@
 #include <stdint.h>
 #include <stddef.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
 #include "bit_manip.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
