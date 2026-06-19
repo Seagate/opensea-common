@@ -65,7 +65,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     bool expectedValid =
         (&outVal != NULL) &&
-        (get_Bytes_Abs_Range(msb, lsb) <= sizeof(uint16_t)) &&
+        (abs(msb, lsb) <= sizeof(uint16_t)) && 
         (msb < fullDataLen) &&
         (lsb < fullDataLen);
 
