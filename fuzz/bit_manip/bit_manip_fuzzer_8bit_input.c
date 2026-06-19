@@ -46,5 +46,43 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     nibble_Swap(&nibble_Swap_result);
     if (nibble_Swap_result != n_swap_8_result) __builtin_trap();
 
+    // Fuzzing get_Bytes_To_16
+    size_t fullDataLen = data[0] % 16;
+    size_t msb = data[1];
+    size_t lsb = data[2];
+
+    uint8_t buffer[16] = {0};
+    if (fullDataLen > 0) {
+        size_t copyLen = (fullDataLen < size - 3) ? fullDataLen : size - 3;
+        memcpy(buffer, data + 3, copyLen);
+    }
+
+    uint16_t outVal = 0xDEAD;
+    bool result = get_Bytes_To_16(buffer, fullDataLen, msb, lsb, &outVal);
+
+    bool valid = (fullDataLen > 0 &&
+                  msb < fullDataLen &&
+                  lsb < fullDataLen &&
+                  &outVal != NULL);
+
+    if (valid) {
+        uint16_t expected;
+        if (msb > lsb) {
+            expected = ((uint16_t)buffer[msb] << 8) | buffer[lsb];
+        } else {
+            expected = ((uint16_t)buffer[lsb] << 8) | buffer[msb];
+        }
+        if (!result || outVal != expected) {
+            fprintf(stderr, "Mismatch: msb=%zu lsb=%zu got=%04x expected=%04x\n",
+                    msb, lsb, outVal, expected);
+            __builtin_trap();
+        }
+    } else {
+        if (result) {
+            fprintf(stderr, "Function returned true for invalid input!\n");
+            __builtin_trap();
+        }
+    }
+
     return 0;
 }
