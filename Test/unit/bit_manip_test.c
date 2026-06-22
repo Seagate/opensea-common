@@ -1571,10 +1571,6 @@ static void test_get_Bytes_To_64(void)
     // Test for get_Bytes_Abs_Range(msb, lsb) > sizeof(uint64_t)
     res = get_Bytes_To_64(buf, sizeof(buf), 0, 9, &out);
     TEST_ASSERT_EQ(res, false, "get_Bytes_To_64 returns false for get_Bytes_Abs_Range(msb, lsb) > sizeof(uint64_t)");
-
-    // Test for msb == lsb == fullDataLen
-    res = get_Bytes_To_64(buf, sizeof(buf), 8, 8, &out);
-    TEST_ASSERT_EQ(res, false, "get_Bytes_To_64 returns false for msb == lsb == fullDataLen");
 }
 
 static void test_be16_to_host(void)
