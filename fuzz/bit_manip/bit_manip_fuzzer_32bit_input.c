@@ -67,17 +67,31 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     bool result = get_Bytes_To_32(buffer, fullDataLen, msb, lsb, &outVal);
 
     bool expectedValid =
-        (&outVal != NULL) &&
-        (abs(msb - lsb) <= sizeof(uint32_t)) && 
-        (msb < fullDataLen) &&
-        (lsb < fullDataLen);
+    (msb <= fullDataLen) &&
+    (lsb <= fullDataLen) &&
+    (abs(msb - lsb) <= sizeof(uint32_t));
 
     if (result) {
         if (!expectedValid) {
             fprintf(stderr, "Function succeeded on invalid input!\n");
             return 0;
         }
-        uint32_t expected = ((uint32_t)buffer[msb] << 24) | ((uint32_t)buffer[msb + 1] << 16) | ((uint32_t)buffer[msb + 2] << 8) | buffer[lsb];
+
+        uint64_t temp = 0;
+        if (lsb <= msb) {
+            for (size_t iter = msb; iter >= lsb; --iter) {
+                temp <<= 8;
+                temp |= buffer[iter];
+                if (iter == 0) break;
+            }
+        } else {
+            for (size_t iter = msb; iter <= lsb; ++iter) {
+                temp <<= 8;
+                temp |= buffer[iter];
+            }
+        }
+
+        uint32_t expected = (uint32_t)temp;
         if (outVal != expected) {
             fprintf(stderr, "Mismatch: got=%08x expected=%08x\n", outVal, expected);
             return 0;
