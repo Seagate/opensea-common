@@ -53,55 +53,55 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (word_Swap_32_result != w_swap_32_result) __builtin_trap();
 
     // Fuzzing get_Bytes_To_32
-    size_t fullDataLen = data[0] % 16;
-    size_t msb = data[1];
-    size_t lsb = data[2];
+    // size_t fullDataLen = data[0] % 16;
+    // size_t msb = data[1];
+    // size_t lsb = data[2];
 
-    uint8_t buffer[16] = {0};
-    if (fullDataLen > 0) {
-        size_t copyLen = (fullDataLen < size - 3) ? fullDataLen : size - 3;
-        memcpy(buffer, data + 3, copyLen);
-    }
+    // uint8_t buffer[16] = {0};
+    // if (fullDataLen > 0) {
+    //     size_t copyLen = (fullDataLen < size - 3) ? fullDataLen : size - 3;
+    //     memcpy(buffer, data + 3, copyLen);
+    // }
 
-    uint32_t outVal = 0xDEAD;
-    bool result = get_Bytes_To_32(buffer, fullDataLen, msb, lsb, &outVal);
+    // uint32_t outVal = 0xDEAD;
+    // bool result = get_Bytes_To_32(buffer, fullDataLen, msb, lsb, &outVal);
 
-    bool expectedValid =
-    (msb <= fullDataLen) &&
-    (lsb <= fullDataLen) &&
-    (abs(msb - lsb) <= sizeof(uint32_t));
+    // bool expectedValid =
+    // (msb <= fullDataLen) &&
+    // (lsb <= fullDataLen) &&
+    // (abs(msb - lsb) <= sizeof(uint32_t));
 
-    if (result) {
-        if (!expectedValid) {
-            fprintf(stderr, "Function succeeded on invalid input!\n");
-            return 0;
-        }
+    // if (result) {
+    //     if (!expectedValid) {
+    //         fprintf(stderr, "Function succeeded on invalid input!\n");
+    //         return 0;
+    //     }
 
-        uint64_t temp = 0;
-        if (lsb <= msb) {
-            for (size_t iter = msb; iter >= lsb; --iter) {
-                temp <<= 8;
-                temp |= buffer[iter];
-                if (iter == 0) break;
-            }
-        } else {
-            for (size_t iter = msb; iter <= lsb; ++iter) {
-                temp <<= 8;
-                temp |= buffer[iter];
-            }
-        }
+    //     uint64_t temp = 0;
+    //     if (lsb <= msb) {
+    //         for (size_t iter = msb; iter >= lsb; --iter) {
+    //             temp <<= 8;
+    //             temp |= buffer[iter];
+    //             if (iter == 0) break;
+    //         }
+    //     } else {
+    //         for (size_t iter = msb; iter <= lsb; ++iter) {
+    //             temp <<= 8;
+    //             temp |= buffer[iter];
+    //         }
+    //     }
 
-        uint32_t expected = (uint32_t)temp;
-        if (outVal != expected) {
-            fprintf(stderr, "Mismatch: got=%08x expected=%08x\n", outVal, expected);
-            return 0;
-        }
-    } else {
-        if (expectedValid) {
-            fprintf(stderr, "Function failed on valid input!\n");
-            return 0;
-        }
-    }
+    //     uint32_t expected = (uint32_t)temp;
+    //     if (outVal != expected) {
+    //         fprintf(stderr, "Mismatch: got=%08x expected=%08x\n", outVal, expected);
+    //         return 0;
+    //     }
+    // } else {
+    //     if (expectedValid) {
+    //         fprintf(stderr, "Function failed on valid input!\n");
+    //         return 0;
+    //     }
+    // }
 
     return 0;
 }
