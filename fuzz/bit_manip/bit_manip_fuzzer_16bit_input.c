@@ -107,5 +107,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     big_To_Little_Endian_16(&big_To_Little_Endian_16_result);
     if (big_To_Little_Endian_16_result != be16_to_host(msw)) __builtin_trap();
 
+    // Fuzzing count_leading_zeros_us
+    uint16_t count_leading_zeros_us_result = count_leading_zeros_us(msw);
+    if (count_leading_zeros_us_result != (msw == 0U ? M_STATIC_CAST(unsigned int, USHRT_WIDTH) : M_STATIC_CAST(unsigned int, __builtin_clz(msw) - (UINT_WIDTH - USHRT_WIDTH)))) __builtin_trap();
+
     return 0;
 }
