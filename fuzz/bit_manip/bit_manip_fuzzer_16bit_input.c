@@ -6,7 +6,7 @@
 #include "bit_manip.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    if (size < (4 * sizeof(uint16_t))) {
+    if (size < 8) {
         return 0;
     }
 
@@ -69,6 +69,14 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     //         return 0;
     //     }
     // }
+
+    // Fuzzing be16_to_host
+    uint16_t be16_to_host_result = be16_to_host(msw);
+    #if defined(ENV_BIG_ENDIAN)
+        if (be16_to_host_result != msw) __builtin_trap();
+    #else
+        if (be16_to_host_result != b_swap_16(msw)) __builtin_trap();
+    #endif
 
     return 0;
 }
