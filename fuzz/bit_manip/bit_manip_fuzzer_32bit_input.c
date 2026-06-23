@@ -111,5 +111,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         if (be32_to_host_result != b_swap_32(val1)) __builtin_trap();
     #endif
 
+    // Fuzzing host_to_be32
+    uint32_t host_to_be32_result = host_to_be32(val1);
+    #if defined(ENV_BIG_ENDIAN)
+        if (host_to_be32_result != val1) __builtin_trap();
+    #else
+        if (host_to_be32_result != b_swap_32(val1)) __builtin_trap();
+    #endif      
+
     return 0;
 }
