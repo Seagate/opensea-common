@@ -190,7 +190,15 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         if (host_to_be64_result != value) __builtin_trap();
     #else
         if (host_to_be64_result != b_swap_64(value)) __builtin_trap();
-    #endif    
+    #endif
+    
+    // Fuzzing host_to_le64
+    uint64_t host_to_le64_result = host_to_le64(value);
+    #if defined(ENV_LITTLE_ENDIAN) 
+        if (host_to_le64_result != value) __builtin_trap();
+    #else
+        if (host_to_le64_result != b_swap_64(value)) __builtin_trap();
+    #endif
 
     return 0;
 }
