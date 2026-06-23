@@ -46,5 +46,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     nibble_Swap(&nibble_Swap_result);
     if (nibble_Swap_result != n_swap_8_result) __builtin_trap();
 
+    // Fuzzing count_leading_zeros_uc
+    uint8_t count_leading_zeros_uc_result = count_leading_zeros_uc(byte1_32);
+    if (count_leading_zeros_uc_result != (byte1_32 == 0U ? M_STATIC_CAST(unsigned int, UCHAR_WIDTH) : M_STATIC_CAST(unsigned int, __builtin_clz(byte1_32) - (UINT_WIDTH - UCHAR_WIDTH)))) __builtin_trap();
+
     return 0;
 }
