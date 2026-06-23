@@ -216,5 +216,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint64_t count_leading_zeros_ull_result = count_leading_zeros_ull(value);
     if (count_leading_zeros_ull_result != (value == 0ULL ? M_STATIC_CAST(unsigned int, ULLONG_WIDTH) : M_STATIC_CAST(unsigned int, __builtin_clzll(value)))) __builtin_trap();
 
+    // Fuzzing count_leading_ones_ul
+    uint64_t count_leading_ones_ul_result = count_leading_ones_ul(value);
+    if (count_leading_ones_ul_result != count_leading_zeros_ul(~value)) __builtin_trap();
+
+    // Fuzzing count_leading_ones_ull
+    uint64_t count_leading_ones_ull_result = count_leading_ones_ull(value);
+    if (count_leading_ones_ull_result != count_leading_zeros_ull(~value)) __builtin_trap();
+
     return 0;
 }
