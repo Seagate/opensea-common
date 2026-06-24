@@ -127,5 +127,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint16_t first_leading_one_us_result = first_leading_one_us(msw);
     if (first_leading_one_us_result != (msw == 0U ? 0U : M_STATIC_CAST(unsigned int, __builtin_clz(msw) - (UINT_WIDTH - USHRT_WIDTH) + 1))) __builtin_trap();
 
+    // Fuzzing first_leading_zero_us
+    uint16_t first_leading_zero_us_result = first_leading_zero_us(msw);
+    if (first_leading_zero_us_result != first_leading_one_us(~msw)) __builtin_trap();
+
     return 0;
 }
