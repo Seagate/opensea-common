@@ -281,19 +281,19 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (has_single_bit_ull_result != (value != 0ULL && (value & (value - 1ULL)) == 0ULL)) __builtin_trap();
 
     // Fuzzing get_req_bit_width_ul
-    uint8_t get_req_bit_width_ul_result = get_req_bit_width_ul(value);
+    uint32_t get_req_bit_width_ul_result = get_req_bit_width_ul(value);
     if (get_req_bit_width_ul_result != (ULONG_WIDTH - (value == 0UL ? ULONG_WIDTH : count_leading_zeros_ul(value)))) __builtin_trap();
 
     // Fuzzing get_req_bit_width_ull
-    uint8_t get_req_bit_width_ull_result = get_req_bit_width_ull(value);
+    uint32_t get_req_bit_width_ull_result = get_req_bit_width_ull(value);
     if (get_req_bit_width_ull_result != (ULLONG_WIDTH - (value == 0ULL ? ULLONG_WIDTH : count_leading_zeros_ull(value)))) __builtin_trap();
 
     // Fuzzing bit_floor_ul
-    uint8_t bit_floor_ul_result = bit_floor_ul(value);
+    uint32_t bit_floor_ul_result = bit_floor_ul(value);
     if (bit_floor_ul_result != (value == 0UL ? 0UL : 1UL << (ULONG_WIDTH - 1UL - count_leading_zeros_ul(value)))) __builtin_trap();
 
     // Fuzzing bit_floor_ull
-    uint8_t bit_floor_ull_result = bit_floor_ull(value);
+    uint32_t bit_floor_ull_result = bit_floor_ull(value);
     if (bit_floor_ull_result != (value == 0ULL ? 0ULL : 1ULL << (ULLONG_WIDTH - 1ULL - count_leading_zeros_ull(value)))) __builtin_trap();
 
     return 0;
