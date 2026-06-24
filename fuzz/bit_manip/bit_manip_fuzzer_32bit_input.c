@@ -176,5 +176,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     bool has_single_bit_ui_result = has_single_bit_ui(val1);
     if (has_single_bit_ui_result != (val1 != 0U && (val1 & (val1 - 1U)) == 0U)) __builtin_trap();
 
+    // Fuzzing get_req_bit_width_ui
+    uint8_t get_req_bit_width_ui_result = get_req_bit_width_ui(val1);
+    if (get_req_bit_width_ui_result != (UINT_WIDTH - (val1 == 0U ? UINT_WIDTH : count_leading_zeros_ui(val1)))) __builtin_trap();
+
     return 0;
 }

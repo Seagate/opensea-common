@@ -143,5 +143,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     bool has_single_bit_us_result = has_single_bit_us(msw);
     if (has_single_bit_us_result != (msw != 0U && (msw & (msw - 1U)) == 0U)) __builtin_trap();
 
+    // Fuzzing get_req_bit_width_us
+    uint8_t get_req_bit_width_us_result = get_req_bit_width_us(msw);
+    if (get_req_bit_width_us_result != (USHRT_WIDTH - (msw == 0U ? USHRT_WIDTH : count_leading_zeros_us(msw)))) __builtin_trap();
+
     return 0;
 }
