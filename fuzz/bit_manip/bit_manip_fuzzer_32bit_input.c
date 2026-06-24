@@ -156,5 +156,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint32_t count_trailing_ones_ui_result = count_trailing_ones_ui(val1);
     if (count_trailing_ones_ui_result != count_trailing_zeros_ui(~val1)) __builtin_trap();
 
+    // Fuzzing first_leading_one_ui
+    uint32_t first_leading_one_ui_result = first_leading_one_ui(val1);
+    if (first_leading_one_ui_result != (val1 == 0U ? 0U : M_STATIC_CAST(unsigned int, __builtin_clz(val1) + 1))) __builtin_trap();
+
     return 0;
 }
