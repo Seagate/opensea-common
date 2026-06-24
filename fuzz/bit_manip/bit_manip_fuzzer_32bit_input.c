@@ -163,6 +163,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     // Fuzzing first_leading_zero_ui
     uint32_t first_leading_zero_ui_result = first_leading_zero_ui(val1);
     if (first_leading_zero_ui_result != first_leading_one_ui(~val1)) __builtin_trap();
-    
+
+    // Fuzzing count_ones_ui
+    uint32_t count_ones_ui_result = count_ones_ui(val1);
+    if (count_ones_ui_result != M_STATIC_CAST(unsigned int, __builtin_popcount(val1))) __builtin_trap();
+
     return 0;
 }
