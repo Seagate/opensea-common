@@ -78,5 +78,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint8_t count_zeros_uc_result = count_zeros_uc(byte1_32);
     if (count_zeros_uc_result != count_ones_uc(~byte1_32)) __builtin_trap();
 
+    // Fuzzing has_single_bit_uc
+    bool has_single_bit_uc_result = has_single_bit_uc(byte1_32);
+    if (has_single_bit_uc_result != __builtin_stdc_has_single_bit(byte1_32)) __builtin_trap();
+
     return 0;
 }
