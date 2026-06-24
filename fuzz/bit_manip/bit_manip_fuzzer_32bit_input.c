@@ -168,5 +168,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint32_t count_ones_ui_result = count_ones_ui(val1);
     if (count_ones_ui_result != M_STATIC_CAST(unsigned int, __builtin_popcount(val1))) __builtin_trap();
 
+    // Fuzzing count_zeros_ui
+    uint32_t count_zeros_ui_result = count_zeros_ui(val1);
+    if (count_zeros_ui_result != count_ones_ui(~val1)) __builtin_trap();
+
     return 0;
 }
