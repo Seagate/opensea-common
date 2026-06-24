@@ -290,11 +290,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     // Fuzzing bit_floor_ul
     uint8_t bit_floor_ul_result = bit_floor_ul(value);
-    if (bit_floor_ul_result != (value == 0UL ? 0U : 1U << (ULONG_WIDTH - 1U - count_leading_zeros_ul(value)))) __builtin_trap();
+    if (bit_floor_ul_result != (value == 0UL ? 0UL : 1UL << (ULONG_WIDTH - 1UL - count_leading_zeros_ul(value)))) __builtin_trap();
 
     // Fuzzing bit_floor_ull
     uint8_t bit_floor_ull_result = bit_floor_ull(value);
-    if (bit_floor_ull_result != (value == 0ULL ? 0U : 1U << (ULLONG_WIDTH - 1U - count_leading_zeros_ull(value)))) __builtin_trap();
+    if (bit_floor_ull_result != (value == 0ULL ? 0ULL : 1ULL << (ULLONG_WIDTH - 1ULL - count_leading_zeros_ull(value)))) __builtin_trap();
 
     return 0;
 }
