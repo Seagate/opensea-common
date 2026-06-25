@@ -304,5 +304,27 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint64_t bit_ceil_ull_result = bit_ceil_ull(value);
     if (bit_ceil_ull_result != (value <= 1ULL ? 1ULL : 2ULL << (ULLONG_WIDTH - 1ULL - count_leading_zeros_ull(value - 1ULL)))) __builtin_trap();
 
+    // Fuzzing rotate_left_ul
+    uint64_t rotate_left_ul_result = rotate_left_ul(value, 3);
+    unsigned left_count_ul  = 3 % ULONG_WIDTH;
+    unsigned right_count_ul = (ULONG_WIDTH - left_count_ul) % ULONG_WIDTH;
+
+    unsigned long expected_rotate_left_ul_result = (value << left_count_ul) | (value >> right_count_ul);
+
+    if (rotate_left_ul_result != expected_rotate_left_ul_result) {
+        __builtin_trap();
+    }
+
+    // Fuzzing rotate_left_ull
+    uint64_t rotate_left_ull_result = rotate_left_ull(value, 3);
+    unsigned left_count_ull  = 3 % ULLONG_WIDTH;
+    unsigned right_count_ull = (ULLONG_WIDTH - left_count_ull) % ULLONG_WIDTH;
+
+    unsigned long long expected_rotate_left_ull_result = (value << left_count_ull) | (value >> right_count_ull);
+
+    if (rotate_left_ull_result != expected_rotate_left_ull_result) {
+        __builtin_trap();
+    }
+
     return 0;
 }
