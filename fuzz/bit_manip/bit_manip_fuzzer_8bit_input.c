@@ -92,35 +92,35 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     // Fuzzing bit_ceil_uc
     uint8_t bit_ceil_uc_result = bit_ceil_uc(byte1_32);
-    uint8_t expected_uc;
+    uint8_t bit_ceil_uc_result;
 
     if (byte1_32 <= 1U) {
-        expected_uc = 1U;
+        bit_ceil_uc_result = 1U;
     } else {
         uint8_t temp = (uint8_t)(byte1_32 - 1U);
         unsigned shift = UCHAR_WIDTH - 1U - count_leading_zeros_uc(temp);
         if (shift < UCHAR_WIDTH) {
-        expected_uc = (uint8_t)(2U << shift);
+        bit_ceil_uc_result = (uint8_t)(2U << shift);
         } else {
-            expected_uc = 0;
+            bit_ceil_uc_result = 0;
         }
     }
 
-    if (bit_ceil_uc_result != expected_uc) {
+    if (bit_ceil_uc_result != bit_ceil_uc_result) {
         __builtin_trap();
     }
 
     // Fuzzing rotate_left_uc
     uint8_t rotate_left_uc_result = rotate_left_uc(byte1_32, 3);
-    uint8_t expected_uc;
+    uint8_t expected_rotate_left_uc_result;
     unsigned left_count  = 3 % UCHAR_WIDTH;
     unsigned right_count = (UCHAR_WIDTH - left_count) % UCHAR_WIDTH;
 
-    expected_uc = (uint8_t)((byte1_32 << left_count) | (byte1_32 >> right_count));
+    expected_rotate_left_uc_result = (uint8_t)((byte1_32 << left_count) | (byte1_32 >> right_count));
 
-    if (rotate_left_uc_result != expected_uc) {
+    if (rotate_left_uc_result != expected_rotate_left_uc_result) {
         __builtin_trap();
     }
-    
+
     return 0;
 }
