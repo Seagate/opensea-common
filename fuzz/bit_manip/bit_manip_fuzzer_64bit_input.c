@@ -306,10 +306,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     // Fuzzing rotate_left_ul
     uint64_t rotate_left_ul_result = rotate_left_ul(value, 3);
-    unsigned left_count_ul  = 3 % ULONG_WIDTH;
-    unsigned right_count_ul = (ULONG_WIDTH - left_count_ul) % ULONG_WIDTH;
+    unsigned left_count  = 3 % ULONG_WIDTH;
+    unsigned right_count = (ULONG_WIDTH - left_count) % ULONG_WIDTH;
 
-    unsigned long expected_rotate_left_ul_result = (value << left_count_ul) | (value >> right_count_ul);
+    unsigned long expected_rotate_left_ul_result = (value << left_count) | (value >> right_count);
 
     if (rotate_left_ul_result != expected_rotate_left_ul_result) {
         __builtin_trap();
@@ -317,10 +317,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     // Fuzzing rotate_left_ull
     uint64_t rotate_left_ull_result = rotate_left_ull(value, 3);
-    unsigned left_count_ull  = 3 % ULLONG_WIDTH;
-    unsigned right_count_ull = (ULLONG_WIDTH - left_count_ull) % ULLONG_WIDTH;
+    left_count  = 3 % ULLONG_WIDTH;
+    right_count = (ULLONG_WIDTH - left_count) % ULLONG_WIDTH;
 
-    unsigned long long expected_rotate_left_ull_result = (value << left_count_ull) | (value >> right_count_ull);
+    unsigned long long expected_rotate_left_ull_result = (value << left_count) | (value >> right_count);
 
     if (rotate_left_ull_result != expected_rotate_left_ull_result) {
         __builtin_trap();
@@ -328,8 +328,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     // Fuzzing rotate_right_ul
     uint64_t rotate_right_ul_result = rotate_right_ul(value, 3);
-    unsigned left_count  = (ULONG_WIDTH - (3 % ULONG_WIDTH)) % ULONG_WIDTH;
-    unsigned right_count = 3 % ULONG_WIDTH;
+    left_count  = (ULONG_WIDTH - (3 % ULONG_WIDTH)) % ULONG_WIDTH;
+    right_count = 3 % ULONG_WIDTH;
 
     uint64_t expected_rotate_right_ul_result = (uint64_t)((value >> right_count) | (value << left_count));
 
@@ -339,10 +339,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     // Fuzzing rotate_right_ull
     uint64_t rotate_right_ull_result = rotate_right_ull(value, 3);
-    unsigned left_count_ull  = (ULLONG_WIDTH - (3 % ULLONG_WIDTH)) % ULLONG_WIDTH;
-    unsigned right_count_ull = 3 % ULLONG_WIDTH;
+    left_count  = (ULLONG_WIDTH - (3 % ULLONG_WIDTH)) % ULLONG_WIDTH;
+    right_count = 3 % ULLONG_WIDTH;
 
-    uint64_t expected_rotate_right_ull_result = (uint64_t)((value >> right_count_ull) | (value << left_count_ull));
+    uint64_t expected_rotate_right_ull_result = (uint64_t)((value >> right_count) | (value << left_count));
 
     if (rotate_right_ull_result != expected_rotate_right_ull_result) {
         __builtin_trap();
