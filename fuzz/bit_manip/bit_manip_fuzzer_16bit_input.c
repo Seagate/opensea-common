@@ -171,5 +171,17 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         __builtin_trap();
     }
 
+    // Fuzzing rotate_left_us
+    uint16_t rotate_left_us_result = rotate_left_us(msw, 3);
+    uint16_t expected_rotate_left_us_result;
+    unsigned left_count  = 3 % USHRT_WIDTH;
+    unsigned right_count = (USHRT_WIDTH - left_count) % USHRT_WIDTH;
+
+    expected_rotate_left_us_result = (uint16_t)((msw << left_count) | (msw >> right_count));
+
+    if (rotate_left_us_result != expected_rotate_left_us_result) {
+        __builtin_trap();
+    }
+
     return 0;
 }
