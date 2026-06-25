@@ -92,21 +92,21 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     // Fuzzing bit_ceil_uc
     uint8_t bit_ceil_uc_result = bit_ceil_uc(byte1_32);
-    uint8_t bit_ceil_uc_result;
+    uint8_t expected_bit_ceil_uc_result;
 
     if (byte1_32 <= 1U) {
-        bit_ceil_uc_result = 1U;
+        expected_bit_ceil_uc_result = 1U;
     } else {
         uint8_t temp = (uint8_t)(byte1_32 - 1U);
         unsigned shift = UCHAR_WIDTH - 1U - count_leading_zeros_uc(temp);
         if (shift < UCHAR_WIDTH) {
-        bit_ceil_uc_result = (uint8_t)(2U << shift);
+        expected_bit_ceil_uc_result = (uint8_t)(2U << shift);
         } else {
-            bit_ceil_uc_result = 0;
+            expected_bit_ceil_uc_result = 0;
         }
     }
 
-    if (bit_ceil_uc_result != bit_ceil_uc_result) {
+    if (bit_ceil_uc_result != expected_bit_ceil_uc_result) {
         __builtin_trap();
     }
 
