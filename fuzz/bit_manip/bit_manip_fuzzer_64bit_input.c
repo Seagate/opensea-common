@@ -348,5 +348,30 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         __builtin_trap();
     }
 
+    // Fuzzing get_Bytes_To_64
+    uint64_t out_val;
+    size_t msb = data[8] % size;
+    size_t lsb = data[9] % size;
+    bool get_Bytes_To_64_result = get_Bytes_To_64(data, size, msb, lsb, &out_val);
+
+    bool should_succeed = (msb < size) && (lsb < size);
+    if (get_Bytes_To_64_result != should_succeed) __builtin_trap();
+
+    if (should_succeed) {
+        uint64_t expected = 0;
+        if (msb >= lsb) {
+            for (size_t i = lsb; i <= msb; i++) {
+                expected <<= 8;
+                expected |= data[i];
+            }
+        } else {
+            for (size_t i = msb; i <= lsb; i++) {
+                expected <<= 8;
+                expected |= data[i];
+            }
+        }
+        if (out_val != expected) __builtin_trap();
+    }
+
     return 0;
 }
