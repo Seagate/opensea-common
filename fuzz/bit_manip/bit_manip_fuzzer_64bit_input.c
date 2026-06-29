@@ -361,7 +361,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
                           (&out_val != NULL) &&
                           (msb <= size) &&
                           (lsb <= size) &&
-                          (abs_range <= sizeof(uint64_t));
+                          (abs(msb - lsb) <= sizeof(uint64_t));
 
     if (get_Bytes_To_64_result != should_succeed) __builtin_trap();
 
