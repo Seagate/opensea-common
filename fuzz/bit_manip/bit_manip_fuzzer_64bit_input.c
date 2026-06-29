@@ -350,24 +350,33 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     // Fuzzing get_Bytes_To_64
     uint64_t out_val;
-    size_t msb = data[8] % size;
-    size_t lsb = data[9] % size;
+    size_t msb = data[8] % (size + 1);
+    size_t lsb = data[9] % (size + 1);
+
     bool get_Bytes_To_64_result = get_Bytes_To_64(data, size, msb, lsb, &out_val);
 
-    bool should_succeed = (msb < size) && (lsb < size);
+    size_t abs_range = (msb >= lsb) ? (msb - lsb + 1) : (lsb - msb + 1);
+
+    bool should_succeed = (data != NULL) &&
+                          (&out_val != NULL) &&
+                          (msb <= size) &&
+                          (lsb <= size) &&
+                          (abs_range <= sizeof(uint64_t));
+
     if (get_Bytes_To_64_result != should_succeed) __builtin_trap();
 
     if (should_succeed) {
         uint64_t expected = 0;
-        if (msb >= lsb) {
-            for (size_t i = lsb; i <= msb; i++) {
+        if (lsb <= msb) {
+            for (size_t iter = msb; iter >= lsb; --iter) {
                 expected <<= 8;
-                expected |= data[i];
+                expected |= data[iter];
+                if (iter == 0) break;
             }
         } else {
-            for (size_t i = msb; i <= lsb; i++) {
+            for (size_t iter = msb; iter <= lsb; ++iter) {
                 expected <<= 8;
-                expected |= data[i];
+                expected |= data[iter];
             }
         }
         if (out_val != expected) __builtin_trap();
