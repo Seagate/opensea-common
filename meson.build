@@ -337,6 +337,7 @@ endif
 
 src_files = [
     'src/bit_manip.c',
+    'src/cmdline_utils.c',
     'src/constraint_handling.c',
     'src/env_detect.c',
     'src/error_translation.c',
