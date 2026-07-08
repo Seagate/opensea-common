@@ -436,7 +436,7 @@ void* M_NULLABLE explicit_zeroes(void* M_NONNULL dest, size_t count)
         //       manual. Not sure what version to use, so letting meson detect
         //       and set the HAVE_...macros
         return explicit_memset(dest, 0, count);
-#elif defined(HAVE_C11_ANNEX_K) || defined(HAVE_MSFT_SECURE_LIB)
+#elif defined(HAVE_C11_ANNEX_K)
         // use memset_s since it cannot be optimized out
         if (0 == memset_s(dest, count, 0, count))
         {

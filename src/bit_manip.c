@@ -37,7 +37,7 @@ static M_INLINE size_t get_Bytes_Abs_Range(size_t msb, size_t lsb) M_UNSEQUENCED
     }
 }
 
-M_NODISCARD bool get_Bytes_To_64(const uint8_t* M_NULLABLE dataPtrBeginning,
+M_NODISCARD bool get_Bytes_To_64(const uint8_t* M_NONNULL dataPtrBeginning,
                                  size_t                    fullDataLen,
                                  size_t                    msb,
                                  size_t                    lsb,
@@ -76,7 +76,7 @@ M_NODISCARD bool get_Bytes_To_64(const uint8_t* M_NULLABLE dataPtrBeginning,
     return true;
 }
 
-M_NODISCARD bool get_Bytes_To_32(const uint8_t* M_NULLABLE dataPtrBeginning,
+M_NODISCARD bool get_Bytes_To_32(const uint8_t* M_NONNULL dataPtrBeginning,
                                  size_t                    fullDataLen,
                                  size_t                    msb,
                                  size_t                    lsb,
@@ -98,7 +98,7 @@ M_NODISCARD bool get_Bytes_To_32(const uint8_t* M_NULLABLE dataPtrBeginning,
     }
 }
 
-M_NODISCARD bool get_Bytes_To_16(const uint8_t* M_NULLABLE dataPtrBeginning,
+M_NODISCARD bool get_Bytes_To_16(const uint8_t* M_NONNULL dataPtrBeginning,
                                  size_t                    fullDataLen,
                                  size_t                    msb,
                                  size_t                    lsb,

@@ -1963,7 +1963,9 @@ extern "C"
     //! \param[in] lsb least significant byte offset
     //! \param[out] out uint16_t output based on the input parameters
     //! \return true when this function succeeds, false on error.
-    M_NODISCARD bool get_Bytes_To_16(const uint8_t* M_NULLABLE dataPtrBeginning,
+    M_PARAM_RO_SIZE(1, 2)
+    M_PARAM_WO(5)
+    M_NODISCARD bool get_Bytes_To_16(const uint8_t* M_NONNULL dataPtrBeginning,
                                      size_t                    fullDataLen,
                                      size_t                    msb,
                                      size_t                    lsb,
@@ -1983,13 +1985,15 @@ extern "C"
     //! \param[in] lsb least significant byte offset
     //! \param[out] out uint32_t output based on the input parameters
     //! \return true when this function succeeds, false on error.
-    M_NODISCARD bool get_Bytes_To_32(const uint8_t* M_NULLABLE dataPtrBeginning,
+    M_PARAM_RO_SIZE(1, 2)
+    M_PARAM_WO(5)
+    M_NODISCARD bool get_Bytes_To_32(const uint8_t* M_NONNULL  dataPtrBeginning,
                                      size_t                    fullDataLen,
                                      size_t                    msb,
                                      size_t                    lsb,
                                      uint32_t* M_NONNULL       out);
 
-    //! \fn bool get_Bytes_To_32(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t*
+    //! \fn bool get_Bytes_To_64(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t*
     //! out) \brief takes a data pointer and byte offsets to output a uint64_t
     //!
     //! Reads from a data buffer pointer to output a uint64_t. MSB and LSB can
@@ -2003,7 +2007,9 @@ extern "C"
     //! \param[in] lsb least significant byte offset
     //! \param[out] out uint64_t output based on the input parameters
     //! \return true when this function succeeds, false on error.
-    M_NODISCARD bool get_Bytes_To_64(const uint8_t* M_NULLABLE dataPtrBeginning,
+    M_PARAM_RO_SIZE(1, 2)
+    M_PARAM_WO(5)
+    M_NODISCARD bool get_Bytes_To_64(const uint8_t* M_NONNULL  dataPtrBeginning,
                                      size_t                    fullDataLen,
                                      size_t                    msb,
                                      size_t                    lsb,
