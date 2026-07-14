@@ -573,7 +573,7 @@ endif
 
 m_dep = c.find_library('m', required: false)
 
-incdir = include_directories('include')
+incdir = include_directories('include', 'Test', 'Test/framework',)
 
 opensea_common_lib = static_library(
     'opensea-common',
@@ -588,3 +588,11 @@ opensea_common_dep = declare_dependency(
     compile_args: global_cpp_args,
     include_directories: incdir,
 )
+
+is_fuzzing_build = run_command('sh', '-c', 'echo $LIB_FUZZING_ENGINE', check: false).stdout().strip() != ''
+
+if is_fuzzing_build
+  subdir('fuzz')
+else
+  subdir('Test')
+endif
