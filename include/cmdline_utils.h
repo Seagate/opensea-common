@@ -33,7 +33,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __GETOPT_H__
 /**
  * DISCLAIMER
  * This file has no copyright assigned and is placed in the Public Domain.
@@ -44,8 +43,7 @@
  * IMPLIED ARE HEREBY DISCLAIMED.  This includes but is not limited to
  * warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-
-#define __GETOPT_H__ // NOLINT
+#pragma once
 
 #if defined(_WIN32)
 /* All the headers include this file. */
@@ -84,28 +82,6 @@ extern "C"
     extern int optreset;
 #endif
 
-#ifdef __cplusplus
-}
-#endif
-/*
- * POSIX requires the `getopt' API to be specified in `unistd.h';
- * thus, `unistd.h' includes this header.  However, we do not want
- * to expose the `getopt_long' or `getopt_long_only' APIs, when
- * included in this manner.  Thus, close the standard __GETOPT_H__
- * declarations block, and open an additional __GETOPT_LONG_H__
- * specific block, only when *not* __UNISTD_H_SOURCED__, in which
- * to declare the extended API.
- */
-#endif /* !defined(__GETOPT_H__) */
-
-#if !defined(__UNISTD_H_SOURCED__) && !defined(__GETOPT_LONG_H__)
-#define __GETOPT_LONG_H__ // NOLINT
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
     struct option /* specification for a long form option...	*/
     {
         const char* name;    /* option name, without leading hyphens */
@@ -142,18 +118,7 @@ extern "C"
                                      const char* M_NULLABLE          options,
                                      const struct option* M_NULLABLE long_options,
                                      int* M_NULLABLE                 idx);
-/*
- * Previous MinGW implementation had...
- */
-#ifndef HAVE_DECL_GETOPT
-/*
- * ...for the long form API only; keep this for compatibility.
- */
-#    define HAVE_DECL_GETOPT 1
-#endif
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* !defined(__UNISTD_H_SOURCED__) && !defined(__GETOPT_LONG_H__) */
