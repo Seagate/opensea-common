@@ -52,7 +52,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "cmdline_utils.h"
+#include "getopt.h"
 #include "predef_env_detect.h"
 #include "warning_utils.h"
 

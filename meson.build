@@ -337,10 +337,10 @@ endif
 
 src_files = [
     'src/bit_manip.c',
-    'src/cmdline_utils.c',
     'src/constraint_handling.c',
     'src/env_detect.c',
     'src/error_translation.c',
+    'src/getopt.c',
     'src/io_utils.c',
     'src/math_utils.c',
     'src/memory_safety.c',

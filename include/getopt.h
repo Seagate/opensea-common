@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: BSD-2-Clause  */
+/* SPDX-License-Identifier: BSD-2-Clause and MPL-2.0 */
 /* Modifications Copyright 2022 Seagate Technology and/or its Affiliates */
 
 /*	$OpenBSD: getopt.h,v 1.3 2013/11/22 21:32:49 millert Exp $	*/
@@ -43,6 +43,14 @@
  * IMPLIED ARE HEREBY DISCLAIMED.  This includes but is not limited to
  * warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+//! Modifications are licensed under MPL 2.0
+//! Modifications:
+//!
+//! - type casts updated to use project-standard macros (M_STATIC_CAST, M_CONST_CAST,
+//!   M_REINTERPRET_CAST) from code_attributes.h for portable, portable casting
+//!
+//! - parameter annotations added (M_NONNULL, M_NULLABLE, M_PARAM_RO, M_PARAM_WO,
+//!   M_PARAM_RW, M_NULL_TERM_STRING) for enhanced type safety and documentation
 #pragma once
 
 #if defined(_WIN32)
