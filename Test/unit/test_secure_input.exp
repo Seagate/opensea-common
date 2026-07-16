@@ -1,0 +1,36 @@
+#!/usr/bin/expect -f
+
+exp_internal 1
+log_user 1
+
+set timeout 30
+
+set prog [lindex $argv 0]
+
+spawn {*}$prog
+
+expect {
+    -re "Enter password.*" {
+        send "mypassword\r"
+    }
+    eof {
+        # Program exited early, do nothing
+    }
+    timeout {
+        puts "WARNING: Prompt not seen, sending input anyway"
+        send "mypassword\r"
+    }
+}
+
+expect {
+    eof {}
+    timeout {
+        puts "ERROR: Program did not exit"
+        exit 1
+    }
+}
+
+catch wait result
+set exit_status [lindex $result 3]
+
+exit $exit_status

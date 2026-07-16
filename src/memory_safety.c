@@ -543,7 +543,7 @@ errno_t safe_memset_impl(void* M_NONNULL        dest,
 #        else
         memset(dest, ch, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #        endif
-        asm volatile("" ::: "memory");
+        __asm__ volatile("" ::: "memory");
 #    elif IS_MSVC_VERSION(MSVC_2005)
 #        if !defined(NO_HAVE_MSFT_SECURE_ZERO_MEMORY2) &&                                                              \
             (defined(HAVE_MSFT_SECURE_ZERO_MEMORY2) ||                                                                 \

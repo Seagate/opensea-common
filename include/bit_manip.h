@@ -772,7 +772,7 @@ extern "C"
     //! \param[in] lsb least significant bit value
     //! \return uint8_t with the requested bit range. Will be shifted so input lsb is at bit 0 of this output.
     static M_INLINE uint8_t get_bit_range_uint8(uint8_t value, uint8_t msb, uint8_t lsb)
-    {
+    { 
         genericint_t genint;
         genint.u64        = UINT64_C(0); // to ensure all bits of the anonymous union are zeroed
         genint.issigned   = false;

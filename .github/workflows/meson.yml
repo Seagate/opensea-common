@@ -1,0 +1,195 @@
+name: CI for meson test
+
+on: 
+  push:
+    branches:
+      - pratiksha
+  pull_request:
+    branches:
+      - pratiksha
+
+jobs:
+  test:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        config:
+
+          - {
+              name: "Linux GCC",
+              os: ubuntu-latest,
+              cc: "gcc",
+              cxx: "g++",
+              meson_opts: "-Db_coverage=true",
+              buildtype: "debug"
+            }
+
+          - {
+            name: "Linux Clang",
+            os: ubuntu-latest,
+            cc: "clang",
+            cxx: "clang++",
+            meson_opts: "-Db_coverage=true -Ddiagnose-if-attr=disabled -Doptimization=0 --buildtype=debug",
+            buildtype: "debug"
+          }
+
+          - {
+            name: "Windows Clang-CL",
+            os: windows-latest,
+            cc: "clang-cl",
+            cxx: "clang-cl",
+            meson_opts: "-Db_vscrt=static_from_buildtype -Db_coverage=true -Ddiagnose-if-attr=disabled",
+            buildtype: "debug"
+          }
+
+          - {
+              name: "Windows MinGW",
+              os: windows-latest,
+              cc: "gcc",
+              cxx: "g++",
+              meson_opts: "-Db_coverage=true -Dc_std=c23",
+              buildtype: "debug"
+            }
+
+          - {
+              name: "Windows MSVC",
+              os: windows-latest,
+              cc: "cl",
+              cxx: "cl",
+              meson_opts: "-Db_vscrt=static_from_buildtype -Db_coverage=true",
+              buildtype: "debug"
+            }
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    
+    - name: Install Meson and Ninja
+      run: |
+        python -m pip install --upgrade pip
+        pip install meson ninja
+    
+    # Linux dependencies
+    - name: Install dependencies (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y expect lcov gcc g++ clang
+
+    # Windows dependencies
+    - name: Install dependencies (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        choco install mingw -y
+
+    - name: Setup MSVC
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Check OS and compiler version (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        echo "OS Information:"
+        uname -a
+        lsb_release -a || cat /etc/os-release
+        echo "GCC Version:"
+        gcc --version || true
+        echo "Clang Version:"
+        clang --version || true
+
+    - name: Check OS and compiler version (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        Write-Host "OS Information:"
+        systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+        Write-Host "GCC Version (if available):"
+        gcc --version
+        Write-Host "Clang Version (if available):"
+        clang --version
+        Write-Host "MSVC Version (if available):"
+        cl
+
+    - name: Configure Meson (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        export CC="${{ matrix.config.cc }}"
+        export CXX="${{ matrix.config.cxx }}"
+
+        export CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
+        export LDFLAGS="-fsanitize=address"
+
+        meson setup Meson/Executables \
+          --buildtype=${{ matrix.config.buildtype }} \
+          ${{ matrix.config.meson_opts }}
+
+    - name: Configure Meson (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        $env:CC="${{ matrix.config.cc }}"
+        $env:CXX="${{ matrix.config.cxx }}"
+
+        meson setup Meson/Executables `
+          --buildtype=${{ matrix.config.buildtype }} `
+          ${{ matrix.config.meson_opts }}
+
+    - name: Build with Meson (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        meson compile -C Meson/Executables
+
+    - name: Build with Meson (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        meson compile -C Meson/Executables
+    
+    - name: Run test (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        export ASAN_OPTIONS=allocator_may_return_null=1:detect_leaks=1
+
+        meson test -C Meson/Executables --verbose
+
+    - name: Run test (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        meson test -C Meson/Executables --verbose
+
+    - name: Show Meson test log on failure
+      if: failure()
+      shell: pwsh
+      run: |
+        Get-Content Meson/Executables/meson-logs/testlog.txt
+
+    - name: Generate coverage (Linux only)
+      if: runner.os == 'Linux'
+      run: |
+        ninja -C Meson/Executables coverage
+
+    - name: Upload coverage report
+      if: runner.os == 'Linux'
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: Meson/Executables/meson-logs
+
+    
