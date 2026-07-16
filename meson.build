@@ -590,7 +590,12 @@ opensea_common_dep = declare_dependency(
     include_directories: incdir,
 )
 
-is_fuzzing_build = run_command('sh', '-c', 'echo $LIB_FUZZING_ENGINE', check: false).stdout().strip() != ''
+# Check for LIB_FUZZING_ENGINE environment variable (cross-platform compatible)
+if target_machine.system() == 'windows'
+  is_fuzzing_build = run_command('cmd', '/c', 'echo %LIB_FUZZING_ENGINE%', check: false).stdout().strip() != ''
+else
+  is_fuzzing_build = run_command('sh', '-c', 'echo $LIB_FUZZING_ENGINE', check: false).stdout().strip() != ''
+endif
 
 if is_fuzzing_build
   subdir('fuzz')
