@@ -475,7 +475,6 @@ eReturnValues get_Secure_User_Input(const char* M_NONNULL       prompt,
                     *inputDataLen -= 1;
                 }
             }
-
         }
     }
     else
@@ -2536,7 +2535,7 @@ M_NULL_TERM_STRING(3)
 M_PARAM_RW(1)
 M_PARAM_RO(3)
 FUNC_ATTR_PRINTF(3, 0)
-int vsnprintf(char* M_NULLABLE buffer, size_t bufsz, const char* M_RESTRICT M_NONNULL format, va_list args)
+M_NODISCARD int vsnprintf(char* M_NULLABLE buffer, size_t bufsz, const char* M_RESTRICT M_NONNULL format, va_list args)
 {
     int     charCount = -1;
     va_list countargs;
