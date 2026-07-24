@@ -335,10 +335,10 @@ if target_machine.system() == 'windows'
     opensea_attributes += ['dllimport', 'dllexport']
 endif
 
-if meson.version().version_compare('1.5.0')
+if meson.version().version_compare('>=1.5.0')
     opensea_attributes += ['null_terminated_string_arg']
 endif
-if meson.version().version_compare('1.10.0')
+if meson.version().version_compare('>=1.10.0')
     opensea_attributes += ['counted_by']
 endif
 
@@ -489,7 +489,7 @@ if c.has_function('getline', prefix: '#include <stdio.h>')
 endif
 
 # Test support for _Generic keyword. May not be available in some cases.
-gernericSelectionTest = '''
+generic_selection_test_code = '''
                       long add_long(long x, long y)
                       {
                         return x + y;
@@ -531,14 +531,14 @@ gernericSelectionTest = '''
                       }
                   '''
 
-genericSelectionTestResult = c.compiles(gernericSelectionTest, name: 'Generic Selection Support', args: genericargs)
-if genericSelectionTestResult == true
+generic_selection_test_result = c.compiles(generic_selection_test_code, name: 'Generic Selection Support', args: genericargs)
+if generic_selection_test_result == true
     global_cpp_args += ['-DHAVE_C11_GENERIC_SELECTION']
 endif
 
-constexprTest = ' int main (void) { constexpr int i = 50; int j = 0; return j / i; }'
-constexprTestResult = c.compiles(constexprTest, name: 'Constexpr Support')
-if constexprTestResult == true
+const_expr_test_code = ' int main (void) { constexpr int i = 50; int j = 0; return j / i; }'
+const_expr_test_result = c.compiles(const_expr_test_code, name: 'Constexpr Support')
+if const_expr_test_result == true
     global_cpp_args += ['-DHAVE_CONSTEXPR']
 endif
 
@@ -550,7 +550,7 @@ endif
 # Test support for __has_c_attribute for namespaced attribtues (compiler unique)
 # Some compilers do not support this properly and throw errors about using the : symbol
 # MSVC does not like this and Clang 16.0.6 in openBSD also complains.
-attributeTest = ''' #include <stdio.h>
+attribute_test = ''' #include <stdio.h>
                       #if defined (__has_c_attribute)
                       #    if __has_c_attribute(clang::unused)
                       #        define HAS_CLANG_UNUSED
@@ -562,8 +562,8 @@ attributeTest = ''' #include <stdio.h>
                           return 0;
                       }
                   '''
-attributeTestResult = c.compiles(attributeTest, name: '__has_c_attribute for compiler specific attributes')
-if attributeTestResult == false
+attribute_test_result = c.compiles(attribute_test, name: '__has_c_attribute for compiler specific attributes')
+if attribute_test_result == false
     global_cpp_args += ['-DNO_COMPILER_UNIQUE_C_ATTRIBUTES']
     if not c.get_id().contains('msvc')
         global_cpp_args += ['-DFORCE_GNU_STYLE_ATTRIBUTES']
@@ -598,7 +598,7 @@ if c.sizeof('time_t', prefix: '#include <time.h>') < 8
     if c.sizeof('time_t', prefix: '#define _TIME_BITS 64\n#include <time.h>') >= 8
         global_cpp_args += ['-D_TIME_BITS=64']
     else
-        if get_option('allow-32bit-time-t')
+        if get_option('allow-32bit-time-t').enabled()
             message(
                 'Warning: 32-bit time_t detected and allow-32bit-time-t option enabled. This may cause issues with dates after 2038. It is recommended to use a compiler and platform that supports 64-bit time_t if possible.',
             )
