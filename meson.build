@@ -1,6 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (c) 2021-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
-project('opensea-common', 'c', license: 'MPL-2.0', version: '6.1.0', meson_version: '>=0.55.0', default_options: ['warning_level=2', 'default_library=static'])
+project(
+    'opensea-common',
+    'c',
+    license: 'MPL-2.0',
+    version: '6.1.0',
+    meson_version: '>=0.55.0',
+    default_options: ['warning_level=2', 'default_library=static'],
+)
 
 c = meson.get_compiler('c')
 
@@ -109,7 +116,7 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
         '-Wcalloc-transposed-args',
         '-Werror=alloca',  # Do not allow use of the alloca function
         '-Wstring-compare',  # Helps detect when strcmp is used when the programmer likely meant to use strncmp
-        '-Wfortify-source' # Clang specific (at least for now) but enables additional diagnostics.
+        '-Wfortify-source',  # Clang specific (at least for now) but enables additional diagnostics.
     ]
 
     if get_option('cc-suggest-attribute')
@@ -183,6 +190,8 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
     if fortifyresult == true
         warning_flags += ['-U_FORTIFY_SOURCE', '-D_FORTIFY_SOURCE=3']
     endif
+
+
 
 elif c.get_id().contains('msvc')
     #See here for enabling/disabling msvc warnings:
@@ -262,13 +271,13 @@ elif c.get_id().contains('msvc')
     # MSVC defaults to old MSVC C compatibility which is mostly C89 with some newer C99/C11-ish support
     # Since we support older meson versions, we deal with this causing a warning over using the default_options to
     # set the C standard for the project.
-    if  c.has_argument('/std:clatest')
+    if c.has_argument('/std:clatest')
         genericargs += '/std:clatest'
         warning_flags += '/std:clatest'
-    elif  c.has_argument('/std:c17')
+    elif c.has_argument('/std:c17')
         genericargs += '/std:c17'
         warning_flags += '/std:c17'
-    elif  c.has_argument('/std:c11')
+    elif c.has_argument('/std:c11')
         genericargs += '/std:c11'
         warning_flags += '/std:c11'
     endif
@@ -296,6 +305,53 @@ endif
 add_project_arguments(c.get_supported_arguments(warning_flags), language: 'c')
 add_project_link_arguments(c.get_supported_link_arguments(linker_flags), language: 'c')
 
+# This is not necessarily an exhaustive list of what is used by opensea-common.
+# This is a short list based on what meson says it can search for and what we are using
+# today in code_attributes.h
+# See here for supported attribtues: https://mesonbuild.com/Reference-tables.html#gcc-__attribute__
+opensea_attributes = [
+    'aligned',
+    'alloc_size',
+    'always_inline',
+    'cold',
+    'const',
+    'deprecated',
+    'fallthrough',
+    'format',
+    'hot',
+    'malloc',
+    'noinline',
+    'nonnull',
+    'noreturn',
+    'packed',
+    'pure',
+    'returns_nonnull',
+    'unused',
+    'visibility:default',
+    'warn_unused_result',
+]
+
+if target_machine.system() == 'windows'
+    opensea_attributes += ['dllimport', 'dllexport']
+endif
+
+if meson.version().version_compare('1.5.0')
+    opensea_attributes += ['null_terminated_string_arg']
+endif
+if meson.version().version_compare('1.10.0')
+    opensea_attributes += ['counted_by']
+endif
+
+# use meson's attribute lookup. More helpful for old GCC without the `__has_attribute(attr)` available.
+# while the C code has some preprocessor macro based checks for compiler version, etc, this is
+# a bit simpler to use overall for old versions where the manual C checks may not be exactly correct.
+supported_attributes = c.get_supported_function_attributes(opensea_attributes)
+# While we could filter the list to what we use, we use a lot of them, so a few extra definitions
+# won't hurt anything here. If anything, it will make this forward compatible to newer versions
+# of meson as it adds detection for other attributes.
+foreach attribute : supported_attributes
+    global_cpp_args += ['-DHAS_@0@_ATTR'.format(attribute.underscorify().to_upper())]
+endforeach
 
 if get_option('debug')
     add_project_arguments('-D_DEBUG', language: 'c')
@@ -543,7 +599,9 @@ if c.sizeof('time_t', prefix: '#include <time.h>') < 8
         global_cpp_args += ['-D_TIME_BITS=64']
     else
         if get_option('allow-32bit-time-t')
-            message('Warning: 32-bit time_t detected and allow-32bit-time-t option enabled. This may cause issues with dates after 2038. It is recommended to use a compiler and platform that supports 64-bit time_t if possible.')
+            message(
+                'Warning: 32-bit time_t detected and allow-32bit-time-t option enabled. This may cause issues with dates after 2038. It is recommended to use a compiler and platform that supports 64-bit time_t if possible.',
+            )
             global_cpp_args += ['-DALLOW_32BIT_TIME_T']
         else
             error('64bit time_t is required for this project.')
@@ -572,17 +630,31 @@ else
     src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']
 endif
 
+# Math library may need to be linked on some systems. Keep it simple and optional.
+# If it is a stub like in some modern libc's, this has no effect.
+# There are a couple places in opensea-common that use the math functions.
 m_dep = c.find_library('m', required: false)
+# Realtime library may need to be linked on some systems. Keep it simple and optional.
+# If it is a stub like in some modern libc's, this has no effect.
+# Note: This is included mostly for backwards compatibility in case we needed to compile
+# for an older target like CentOS6. Modern libc's do not need this and lrt is a stub.
+# There are uses of monotonic clock functions in time_utils.c that may need this
+# to link properly for older systems
+rt_dep = c.find_library('rt', required: false)
 
-incdir = include_directories('include', 'Test', 'Test/framework',)
+incdir = include_directories(
+    'include',
+    'Test',
+    'Test/framework',
+)
 
 opensea_common_lib = static_library(
     'opensea-common',
     src_files,
     c_args: global_cpp_args,
-    dependencies: [m_dep, deps],
+    dependencies: [m_dep, rt_dep, deps],
     include_directories: incdir,
-    gnu_symbol_visibility : 'hidden'
+    gnu_symbol_visibility: 'hidden',
 )
 opensea_common_dep = declare_dependency(
     link_with: opensea_common_lib,
@@ -592,13 +664,13 @@ opensea_common_dep = declare_dependency(
 
 # Check for LIB_FUZZING_ENGINE environment variable (cross-platform compatible)
 if target_machine.system() == 'windows'
-  is_fuzzing_build = run_command('cmd', '/c', 'echo %LIB_FUZZING_ENGINE%', check: false).stdout().strip() != ''
+    is_fuzzing_build = run_command('cmd', '/c', 'echo %LIB_FUZZING_ENGINE%', check: false).stdout().strip() != ''
 else
-  is_fuzzing_build = run_command('sh', '-c', 'echo $LIB_FUZZING_ENGINE', check: false).stdout().strip() != ''
+    is_fuzzing_build = run_command('sh', '-c', 'echo $LIB_FUZZING_ENGINE', check: false).stdout().strip() != ''
 endif
 
 if is_fuzzing_build
-  subdir('fuzz')
+    subdir('fuzz')
 else
-  subdir('Test')
+    subdir('Test')
 endif

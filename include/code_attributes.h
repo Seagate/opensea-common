@@ -177,7 +177,7 @@ extern "C"
 #        endif
 #    endif
 #    if !defined(M_NOINLINE)
-#        if DETECT_GNU_ATTR(noinline) || (IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0))
+#        if defined (HAS_NOINLINE_ATTR) || DETECT_GNU_ATTR(noinline) || (IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0))
 #            define M_NOINLINE __attribute__((noinline))
 #        elif IS_MSVC_VERSION(MSVC_6_0)
 #            define M_NOINLINE __declspec(noinline)
@@ -210,7 +210,7 @@ extern "C"
 #        endif
 #    endif
 #    if !defined(M_FORCEINLINE)
-#        if DETECT_GNU_ATTR(always_inline) || (IS_GCC_FULL_VERSION(4, 1, 3) || IS_CLANG_VERSION(1, 0))
+#        if defined (HAS_ALWAYS_INLINE_ATTR) || DETECT_GNU_ATTR(always_inline) || (IS_GCC_FULL_VERSION(4, 1, 3) || IS_CLANG_VERSION(1, 0))
 #            define M_FORCEINLINE __attribute__((always_inline)) M_INLINE
 #        elif IS_MSVC_VERSION(MSVC_6_0)
 #            define M_FORCEINLINE __forceinline
@@ -249,7 +249,7 @@ extern "C"
 #    endif
 #endif
 #if !defined(M_FALLTHROUGH)
-#    if DETECT_GNU_ATTR(fallthrough) || (IS_GCC_VERSION(7, 0) || IS_CLANG_VERSION(3, 9))
+#    if defined (HAS_FALLTHROUGH_ATTR) || DETECT_GNU_ATTR(fallthrough) || (IS_GCC_VERSION(7, 0) || IS_CLANG_VERSION(3, 9))
 #        define M_FALLTHROUGH                                                                                          \
             do                                                                                                         \
             {                                                                                                          \
@@ -303,7 +303,7 @@ extern "C"
 #    endif
 #endif
 #if !defined(M_ATTR_UNUSED)
-#    if DETECT_GNU_ATTR(unused) || (IS_GCC_FULL_VERSION(2, 95, 3) || IS_CLANG_VERSION(1, 0))
+#    if defined (HAS_UNUSED_ATTR) || DETECT_GNU_ATTR(unused) || (IS_GCC_FULL_VERSION(2, 95, 3) || IS_CLANG_VERSION(1, 0))
 #        define M_ATTR_UNUSED __attribute__((unused))
 #    elif defined (REAL_MSVC)
 // clang-format off
@@ -389,7 +389,7 @@ extern "C"
 #    endif
 #endif
 #if !defined(M_DEPRECATED)
-#    if DETECT_GNU_ATTR(deprecated) || (IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(3, 0))
+#    if defined (HAS_DEPRECATED_ATTR) || DETECT_GNU_ATTR(deprecated) || (IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(3, 0))
 #        define M_DEPRECATED             __attribute__((deprecated))
 #        define M_DEPRECATED_REASON(msg) __attribute__((deprecated(msg)))
 #    elif IS_MSVC_VERSION(MSVC_2017_15_9)
@@ -488,7 +488,7 @@ extern "C"
 #if !defined(M_NODISCARD)
 #    if DETECT_GNU_ATTR(nodiscard)
 #        define M_NODISCARD __attribute__((nodiscard))
-#    elif DETECT_GNU_ATTR(warn_unused_result) || (IS_GCC_VERSION(3, 4) || IS_CLANG_VERSION(1, 0))
+#    elif defined (HAS_WARN_UNUSED_RESULT_ATTR) || DETECT_GNU_ATTR(warn_unused_result) || (IS_GCC_VERSION(3, 4) || IS_CLANG_VERSION(1, 0))
 #        define M_NODISCARD __attribute__((warn_unused_result))
 #    endif
 #endif
@@ -547,7 +547,7 @@ extern "C"
 #    endif
 #endif
 #if !defined(M_NORETURN)
-#    if DETECT_GNU_ATTR(noreturn) || (IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0))
+#    if defined(HAS_NORETURN_ATTR) || DETECT_GNU_ATTR(noreturn) || (IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0))
 #        define M_NORETURN __attribute__((noreturn))
 #    elif IS_MSVC_VERSION(MSVC_6_0)
 #        define M_NORETURN __declspec(noreturn)
@@ -656,7 +656,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #        endif
 #    endif
 #    if !defined(M_FUNC_ATTR_MALLOC)
-#        if DETECT_GNU_ATTR(malloc) || IS_CLANG_VERSION(1, 0) || IS_GCC_FULL_VERSION(4, 1, 3)
+#        if defined (HAS_MALLOC_ATTR) || DETECT_GNU_ATTR(malloc) || IS_CLANG_VERSION(1, 0) || IS_GCC_FULL_VERSION(4, 1, 3)
 #            define M_FUNC_ATTR_MALLOC __attribute__((malloc))
 #            if IS_GCC_VERSION(11, 0)
 #                define M_ALLOC_DEALLOC(deallocatorFunc, argpos) __attribute__((malloc(deallocatorFunc, argpos)))
@@ -742,7 +742,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #        endif
 #    endif
 #    if !defined(FUNC_ATTR_PRINTF)
-#        if DETECT_GNU_ATTR(format) || (IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0))
+#        if defined (HAS_FORMAT_ATTR) || DETECT_GNU_ATTR(format) || (IS_GCC_VERSION(2, 5) || IS_CLANG_VERSION(1, 0))
 #            define FUNC_ATTR_PRINTF(formatargpos, varargpos)  __attribute__((format(printf, formatargpos, varargpos)))
 #            define FUNC_ATTR_SCANF(formatargpos, varargpos)   __attribute__((format(scanf, formatargpos, varargpos)))
 #            define FUNC_ATTR_SCANF_S(formatargpos, varargpos) __attribute__((format(scanf, formatargpos, varargpos)))
@@ -810,7 +810,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #    elif IS_MSVC_VERSION(MSVC_4_0)
 #        define DLL_EXPORT __declspec(dllexport)
 #        define DLL_IMPORT __declspec(dllimport)
-#    elif DETECT_GNU_ATTR(visibility) || (IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0))
+#    elif defined (HAS_VISIBILITY_DEFAULT_ATTR) || DETECT_GNU_ATTR(visibility) || (IS_GCC_VERSION(4, 0) || IS_CLANG_VERSION(1, 0))
 #        define DLL_EXPORT __attribute__((visibility("default")))
 #        define DLL_IMPORT __attribute__((visibility("default")))
 #    endif
@@ -857,7 +857,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #    endif
 #endif
 #if !defined(M_ALIGNOF)
-#    if IS_GCC_VERSION(2, 7) || IS_CLANG_VERSION(1, 0)
+#    if defined (HAS_ALIGNED_ATTR) || IS_GCC_VERSION(2, 7) || IS_CLANG_VERSION(1, 0)
 #        define M_ALIGNOF(x) __alignof__(x)
 #        define M_ALIGNAS(x) __attribute__((aligned(x)))
 #    elif IS_MSVC_VERSION(MSVC_2005)
@@ -952,7 +952,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #        endif
 #    endif
 #    if !defined(M_ALL_PARAMS_NONNULL)
-#        if DETECT_GNU_ATTR(nonnull) || IS_GCC_VERSION(3, 3)
+#        if defined (HAS_NONNULL_ATTR) || DETECT_GNU_ATTR(nonnull) || IS_GCC_VERSION(3, 3)
 #            define M_ALL_PARAMS_NONNULL      __attribute__((nonnull))
 #            define M_NONNULL_PARAM_LIST(...) __attribute__((nonnull(__VA_ARGS__)))
 #        endif
@@ -1070,7 +1070,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #        endif
 #    endif
 #    if !defined(M_NULL_TERM_STRING)
-#        if DETECT_GNU_ATTR(null_terminated_string_arg)
+#        if defined (HAS_NULL_TERMINATED_STRING_ARG_ATTR) || DETECT_GNU_ATTR(null_terminated_string_arg)
 #            define M_NULL_TERM_STRING(arg) __attribute__((null_terminated_string_arg(arg)))
 #        endif
 #    endif
@@ -1156,7 +1156,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #        endif
 #    endif
 #    if !defined(M_RETURNS_NONNULL)
-#        if DETECT_GNU_ATTR(returns_nonnull)
+#        if defined (HAS_RETURNS_NONNULL_ATTR) || DETECT_GNU_ATTR(returns_nonnull)
 #            define M_RETURNS_NONNULL __attribute__((returns_nonnull))
 #        elif defined(SAL_INCLUDED) && defined(_Ret_notnull_) /* SAL.h */
 #            define M_RETURNS_NONNULL _Ret_notnull_
@@ -1366,7 +1366,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #        endif
 #    endif
 #    if !defined(M_MALLOC_SIZE)
-#        if DETECT_GNU_ATTR(alloc_size) || (IS_GCC_VERSION(4, 9) || IS_CLANG_VERSION(3, 7))
+#        if defined (HAS_ALLOC_SIZE_ATTR) || DETECT_GNU_ATTR(alloc_size) || (IS_GCC_VERSION(4, 4) || IS_CLANG_VERSION(3, 7))
 #            define M_MALLOC_SIZE(sizearg)             __attribute__((alloc_size(sizearg)))
 #            define M_CALLOC_SIZE(elementarg, sizearg) __attribute__((alloc_size(elementarg, sizearg)))
 #        endif
@@ -1587,7 +1587,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #        endif
 #    endif
 #    if !defined(M_COUNTED_BY) && (FLEX_LEVEL == 3)
-#        if DETECT_GNU_ATTR(counted_by)
+#        if defined (HAS_COUNTED_BY_ATTR) || DETECT_GNU_ATTR(counted_by)
 #            define M_COUNTED_BY(member) __attribute__((counted_by(member)))
 #        elif DETECT_GNU_ATTR(element_count)
 #            define M_COUNTED_BY(member) __attribute__((element_count(member)))
@@ -1829,7 +1829,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #        endif
 #    endif
 #    if !defined(M_HOT_FUNC)
-#        if DETECT_GNU_ATTR(hot)
+#        if defined (HAS_HOT_ATTR) || DETECT_GNU_ATTR(hot)
 #            define M_HOT_FUNC __attribute__((hot))
 #        endif
 #    endif
@@ -1850,7 +1850,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #        endif
 #    endif
 #    if !defined(M_COLD_FUNC)
-#        if DETECT_GNU_ATTR(cold)
+#        if defined (HAS_COLD_ATTR) || DETECT_GNU_ATTR(cold)
 #            define M_COLD_FUNC __attribute__((cold))
 #        endif
 #    endif
@@ -2274,7 +2274,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #        endif
 #    endif
 #    if !defined(M_PURE_FUNC)
-#        if DETECT_GNU_ATTR(pure)
+#        if defined (HAS_PURE_ATTR) || DETECT_GNU_ATTR(pure)
 #            define M_PURE_FUNC __attribute__((pure))
 #            define HAVE_PURE_FUNC
 #        endif
@@ -2391,7 +2391,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 #        endif
 #    endif
 #    if !defined(M_CONST_FUNC)
-#        if DETECT_GNU_ATTR(const)
+#        if defined (HAS_CONST_ATTR) || DETECT_GNU_ATTR(const)
 #            define M_CONST_FUNC __attribute__((const))
 #            define HAVE_CONST_FUNC
 #        endif
