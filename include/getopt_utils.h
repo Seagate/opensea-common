@@ -72,7 +72,6 @@ extern "C"
 
     extern char* optarg; /* pointer to argument of current option  */
 
-    M_NULL_TERM_STRING(3)
     M_PARAM_RO(2)
     M_PARAM_RO(3)
     M_NODISCARD int getopt(int nargc, char* const* M_NONNULL nargv, const char* M_NULLABLE options);
@@ -105,8 +104,7 @@ extern "C"
         optional_argument  /* option may take an argument		*/
     };
 
-    M_NULL_TERM_STRING(3)
-    M_PARAM_RW(2)
+    M_PARAM_RO(2)
     M_PARAM_RO(3)
     M_PARAM_RO(4)
     M_PARAM_WO(5)
@@ -116,8 +114,7 @@ extern "C"
                                 const struct option* M_NULLABLE long_options,
                                 int* M_NULLABLE                 idx);
 
-    M_NULL_TERM_STRING(3)
-    M_PARAM_RW(2)
+    M_PARAM_RO(2)
     M_PARAM_RO(3)
     M_PARAM_RO(4)
     M_PARAM_WO(5)

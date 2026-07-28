@@ -52,7 +52,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "getopt.h"
+#include "getopt_utils.h"
 #include "predef_env_detect.h"
 #include "warning_utils.h"
 
@@ -195,7 +195,7 @@ M_NODISCARD M_PURE_FUNC M_NULL_TERM_STRING(1) M_PARAM_RO(1) static size_t getopt
  * in each block).
  */
 M_NONNULL_PARAM_LIST(4)
-M_PARAM_RW(4) static void permute_args(int panonopt_start, int panonopt_end, int opt_end, char* const* M_NONNULL nargv)
+M_PARAM_RO(4) static void permute_args(int panonopt_start, int panonopt_end, int opt_end, char* const* M_NONNULL nargv)
 {
     int   cstart, cyclelen, i, j, ncycle, nnonopts, nopts, pos;
     char* swap;
@@ -370,7 +370,7 @@ static const char* posixlycorrectenv = "POSIXLY_CORRECT";
  * getopt_internal --
  *	Parse argc/argv argument vector.  Called by user level routines.
  */
-M_NODISCARD M_NONNULL_PARAM_LIST(2) M_PARAM_RW(2) M_NULL_TERM_STRING(3) M_PARAM_RO(3) M_PARAM_RO(4)
+M_NODISCARD M_NONNULL_PARAM_LIST(2) M_PARAM_RO(2) M_NULL_TERM_STRING(3) M_PARAM_RO(3) M_PARAM_RO(4)
     M_PARAM_WO(5) static int getopt_internal(int                             nargc,
                                              char* const* M_NONNULL          nargv,
                                              const char* M_NULLABLE          options,
@@ -648,7 +648,7 @@ M_NODISCARD M_NULL_TERM_STRING(3) M_PARAM_RO(2)
  * getopt_long --
  *	Parse argc/argv argument vector.
  */
-M_NODISCARD M_NULL_TERM_STRING(3) M_PARAM_RW(2) M_PARAM_RO(3) M_PARAM_RO(4)
+M_NODISCARD M_NULL_TERM_STRING(3) M_PARAM_RO(2) M_PARAM_RO(3) M_PARAM_RO(4)
     M_PARAM_WO(5) int getopt_long(int                             nargc,
                                   char* const* M_NONNULL          nargv,
                                   const char* M_NULLABLE          options,
@@ -662,7 +662,7 @@ M_NODISCARD M_NULL_TERM_STRING(3) M_PARAM_RW(2) M_PARAM_RO(3) M_PARAM_RO(4)
  * getopt_long_only --
  *	Parse argc/argv argument vector.
  */
-M_NODISCARD M_NULL_TERM_STRING(3) M_PARAM_RW(2) M_PARAM_RO(3) M_PARAM_RO(4)
+M_NODISCARD M_NULL_TERM_STRING(3) M_PARAM_RO(2) M_PARAM_RO(3) M_PARAM_RO(4)
     M_PARAM_WO(5) int getopt_long_only(int                             nargc,
                                        char* const* M_NONNULL          nargv,
                                        const char* M_NULLABLE          options,

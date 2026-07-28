@@ -330,6 +330,7 @@
     <ClInclude Include="..\..\..\..\include\common_platform.h" />
     <ClInclude Include="..\..\..\..\include\common_windows.h" />
     <ClInclude Include="..\..\..\..\include\opensea_common_version.h" />
+    <ClInclude Include="..\..\..\..\include\getopt_utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\common.c" />
@@ -345,6 +346,7 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\common_platform.c" />
     <ClCompile Include="..\..\..\..\src\common_windows.c" />
+    <ClCompile Include="..\..\..\..\src\getopt_utils.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

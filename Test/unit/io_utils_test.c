@@ -1,388 +1,612 @@
-#include "test_framework.h"
 #include "io_utils.h"
 #include "pattern_utils.h"
 #include "testConstants.h"
-#include <stdint.h>
+#include "test_framework.h"
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 
+
 #ifdef _WIN32
-    #include <io.h>
-    #define dup     _dup
-    #define dup2    _dup2
-    #define close   _close
+#    include <io.h>
+#    define dup   _dup
+#    define dup2  _dup2
+#    define close _close
 #else
-    #include <unistd.h>
+#    include <unistd.h>
 #endif
 
-#define SUCCESS 0
-#define FAILURE 1
+#define SUCCESS     0
+#define FAILURE     1
 #define EFI_SUCCESS 0
 
 typedef unsigned long long UINTN;
-typedef int EFI_STATUS;
+typedef int                EFI_STATUS;
 
-//console color constants
-#define EFI_BLACK        0
-#define EFI_BLUE         1
-#define EFI_GREEN        2
-#define EFI_CYAN         3
-#define EFI_RED          4
-#define EFI_MAGENTA      5
-#define EFI_BROWN        6
-#define EFI_LIGHTGRAY    7
-#define EFI_DARKGRAY     8
-#define EFI_LIGHTBLUE    9
-#define EFI_LIGHTGREEN   10
-#define EFI_LIGHTCYAN    11
-#define EFI_LIGHTRED     12
-#define EFI_LIGHTMAGENTA 13
-#define EFI_YELLOW       14
-#define EFI_WHITE        15
+// console color constants
+#define EFI_BLACK             0
+#define EFI_BLUE              1
+#define EFI_GREEN             2
+#define EFI_CYAN              3
+#define EFI_RED               4
+#define EFI_MAGENTA           5
+#define EFI_BROWN             6
+#define EFI_LIGHTGRAY         7
+#define EFI_DARKGRAY          8
+#define EFI_LIGHTBLUE         9
+#define EFI_LIGHTGREEN        10
+#define EFI_LIGHTCYAN         11
+#define EFI_LIGHTRED          12
+#define EFI_LIGHTMAGENTA      13
+#define EFI_YELLOW            14
+#define EFI_WHITE             15
 
 #define EFI_TEXT_ATTR(fg, bg) ((fg) | ((bg) << 4))
 
-#define M_Nibble0(x) ((x) & 0xF)
-#define M_Nibble1(x) (((x) >> 4) & 0xF)
+#define M_Nibble0(x)          ((x) & 0xF)
+#define M_Nibble1(x)          (((x) >> 4) & 0xF)
 
-#define C_CAST(type, val) ((type)(val))
+#define C_CAST(type, val)     ((type)(val))
 
 #ifndef _WIN32
-static void test_get_And_Validate_Integer_Input(void) {
+static void test_get_And_Validate_Integer_Input(void)
+{
     uint64_t outputInteger;
     TEST_ASSERT(get_And_Validate_Integer_Input("12345", &outputInteger), "Converted string to integer successfully");
     TEST_ASSERT(get_And_Validate_Integer_Input("0xFF", &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input("xyz", &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input("12.5", &outputInteger), "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input("xyz", &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input("12.5", &outputInteger),
+                "Could not convert string to integer successfully");
 }
 #endif
 
-static void test_get_And_Validate_Integer_Input_Uint64(void) {
+static void test_get_And_Validate_Integer_Input_Uint64(void)
+{
     uint64_t outputInteger;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_Uint64("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Uint64("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Uint64("12c", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint64("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint64("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint64("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
+    char*    unit = NULL;
+    TEST_ASSERT(get_And_Validate_Integer_Input_Uint64("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Uint64("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Uint64("12c", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint64("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint64("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint64("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
 }
 
-static void test_get_And_Validate_Integer_Input_Uint32(void) {
+static void test_get_And_Validate_Integer_Input_Uint32(void)
+{
     uint32_t outputInteger;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_Uint32("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Uint32("123f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Uint32("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint32("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint32("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint32("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
+    char*    unit = NULL;
+    TEST_ASSERT(get_And_Validate_Integer_Input_Uint32("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Uint32("123f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Uint32("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint32("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint32("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint32("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
 }
 
-static void test_get_And_Validate_Integer_Input_Uint16(void) {
+static void test_get_And_Validate_Integer_Input_Uint16(void)
+{
     uint16_t outputInteger;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_Uint16("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Uint16("123c", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Uint16("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint16("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint16("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint16("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint16("65536", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than UINT16_MAX should fail");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint16(NULL, NULL, ALLOW_UNIT_NONE, &outputInteger),"Null string should not be converted to integer successfully");
+    char*    unit = NULL;
+    TEST_ASSERT(get_And_Validate_Integer_Input_Uint16("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Uint16("123c", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Uint16("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint16("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint16("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint16("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint16("65536", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Value larger than UINT16_MAX should fail");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint16(NULL, NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Null string should not be converted to integer successfully");
 }
 
-static void test_get_And_Validate_Integer_Input_Uint8(void) {
+static void test_get_And_Validate_Integer_Input_Uint8(void)
+{
     uint8_t outputInteger;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_Uint8("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Uint8("20f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Uint8("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8("256", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than UINT8_MAX should fail");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8(NULL, NULL, ALLOW_UNIT_NONE, &outputInteger),"Null string should not be converted to integer successfully");
+    char*   unit = NULL;
+    TEST_ASSERT(get_And_Validate_Integer_Input_Uint8("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Uint8("20f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Uint8("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8("256", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Value larger than UINT8_MAX should fail");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Uint8(NULL, NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Null string should not be converted to integer successfully");
 }
 
-static void test_get_And_Validate_Integer_Input_Int64(void) {
+static void test_get_And_Validate_Integer_Input_Int64(void)
+{
     int64_t outputInteger;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int64("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int64("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int64("5f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int64("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int64("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int64("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int64("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
+    char*   unit = NULL;
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int64("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int64("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int64("5f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int64("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int64("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int64("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int64("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
 }
 
-static void test_get_And_Validate_Integer_Input_Int32(void) {
+static void test_get_And_Validate_Integer_Input_Int32(void)
+{
     int32_t outputInteger;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int32("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int32("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int32("5f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int32("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int32("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int32("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int32("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
+    char*   unit = NULL;
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int32("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int32("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int32("5f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int32("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int32("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int32("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int32("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
 }
 
-static void test_get_And_Validate_Integer_Input_Int16(void) {
+static void test_get_And_Validate_Integer_Input_Int16(void)
+{
     int16_t outputInteger;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int16("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int16("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int16("5f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int16("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    // TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("32768", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than INT16_MAX should fail");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("-32769", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value smaller than INT16_MIN should fail");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int16(NULL, NULL, ALLOW_UNIT_NONE, &outputInteger),"Null string should not be converted to integer successfully");
+    char*   unit = NULL;
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int16("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int16("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int16("5f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int16("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    // TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("32768", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger
+    // than INT16_MAX should fail");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int16("-32769", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Value smaller than INT16_MIN should fail");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int16(NULL, NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Null string should not be converted to integer successfully");
 }
 
-static void test_get_And_Validate_Integer_Input_Int8(void) {
+static void test_get_And_Validate_Integer_Input_Int8(void)
+{
     int8_t outputInteger;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int8("0x7F", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int8("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int8("5f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_Int8("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("128", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than INT8_MAX should fail");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("-129", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value smaller than INT8_MIN should fail");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8(NULL, NULL, ALLOW_UNIT_NONE, &outputInteger),"Null string should not be converted to integer successfully");
+    char*  unit = NULL;
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int8("0x7F", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int8("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int8("5f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_Int8("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("128", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Value larger than INT8_MAX should fail");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8("-129", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Value smaller than INT8_MIN should fail");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_Int8(NULL, NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Null string should not be converted to integer successfully");
 }
 
-static void test_get_And_Validate_Integer_Input_ULL(void) {
+static void test_get_And_Validate_Integer_Input_ULL(void)
+{
     unsigned long long outputInteger;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_ULL("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_ULL("12H", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_ULL("123mw", &unit, ALLOW_UNIT_POWER, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_ULL("12mv", &unit, ALLOW_UNIT_VOLTS, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_ULL("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_ULL("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_ULL("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_ULL("0xFF", NULL, ALLOW_UNIT_VOLTS, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_ULL("123", NULL, ALLOW_UNIT_POWER, &outputInteger), "Could not convert string to integer successfully");
+    char*              unit = NULL;
+    TEST_ASSERT(get_And_Validate_Integer_Input_ULL("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_ULL("12H", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_ULL("123mw", &unit, ALLOW_UNIT_POWER, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_ULL("12mv", &unit, ALLOW_UNIT_VOLTS, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_ULL("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_ULL("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_ULL("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_ULL("0xFF", NULL, ALLOW_UNIT_VOLTS, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_ULL("123", NULL, ALLOW_UNIT_POWER, &outputInteger),
+                "Could not convert string to integer successfully");
 }
 
-static void test_get_And_Validate_Integer_Input_UL(void) {
+static void test_get_And_Validate_Integer_Input_UL(void)
+{
     unsigned long outputInteger;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_UL("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_UL("123mw", &unit, ALLOW_UNIT_POWER, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_UL("12mv", &unit, ALLOW_UNIT_VOLTS, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_UL("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_UL("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_UL("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_UL("0xFF", NULL, ALLOW_UNIT_VOLTS, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_UL("123mw", NULL, ALLOW_UNIT_POWER, &outputInteger), "Converted string to integer successfully");
+    char*         unit = NULL;
+    TEST_ASSERT(get_And_Validate_Integer_Input_UL("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_UL("123mw", &unit, ALLOW_UNIT_POWER, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_UL("12mv", &unit, ALLOW_UNIT_VOLTS, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UL("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UL("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UL("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UL("0xFF", NULL, ALLOW_UNIT_VOLTS, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UL("123mw", NULL, ALLOW_UNIT_POWER, &outputInteger),
+                "Converted string to integer successfully");
 }
 
-static void test_get_And_Validate_Integer_Input_UI(void) {
+static void test_get_And_Validate_Integer_Input_UI(void)
+{
     unsigned int outputInteger;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_UI("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_UI("123w", &unit, ALLOW_UNIT_POWER, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_UI("12v", &unit, ALLOW_UNIT_VOLTS, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_UI("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_UI("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_UI("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_UI("4294967296", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than UINT_MAX should fail");
+    char*        unit = NULL;
+    TEST_ASSERT(get_And_Validate_Integer_Input_UI("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_UI("123w", &unit, ALLOW_UNIT_POWER, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_UI("12v", &unit, ALLOW_UNIT_VOLTS, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UI("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UI("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UI("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UI("4294967296", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Value larger than UINT_MAX should fail");
 }
 
-static void test_get_And_Validate_Integer_Input_US(void) {
+static void test_get_And_Validate_Integer_Input_US(void)
+{
     unsigned short outputInteger;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_US("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_US("12a", &unit, ALLOW_UNIT_AMPS, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_US("12v", &unit, ALLOW_UNIT_VOLTS, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_US("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_US("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_US("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
+    char*          unit = NULL;
+    TEST_ASSERT(get_And_Validate_Integer_Input_US("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_US("12a", &unit, ALLOW_UNIT_AMPS, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_US("12v", &unit, ALLOW_UNIT_VOLTS, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_US("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_US("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_US("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
 }
 
-static void test_get_And_Validate_Integer_Input_UC(void) {
+static void test_get_And_Validate_Integer_Input_UC(void)
+{
     unsigned char outputInteger;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_UC("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_UC("12w", &unit, ALLOW_UNIT_POWER, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_UC("20a", &unit, ALLOW_UNIT_AMPS, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_UC("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_UC("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_UC("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_UC("256", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than UINT_MAX should fail");
+    char*         unit = NULL;
+    TEST_ASSERT(get_And_Validate_Integer_Input_UC("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_UC("12w", &unit, ALLOW_UNIT_POWER, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_UC("20a", &unit, ALLOW_UNIT_AMPS, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UC("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UC("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UC("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_UC("256", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Value larger than UINT_MAX should fail");
 }
 
-static void test_get_And_Validate_Integer_Input_LL(void) {
+static void test_get_And_Validate_Integer_Input_LL(void)
+{
     long long outputInteger;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_LL("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_LL("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_LL("50f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_LL("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_LL("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_LL("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_LL("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_LL("50f", NULL, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
+    char*     unit = NULL;
+    TEST_ASSERT(get_And_Validate_Integer_Input_LL("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_LL("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_LL("50f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_LL("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_LL("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_LL("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_LL("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_LL("50f", NULL, ALLOW_UNIT_TEMPERATURE, &outputInteger),
+                "Converted string to integer successfully");
 }
 
-static void test_get_And_Validate_Integer_Input_L(void) {
-    long outputInteger;
+static void test_get_And_Validate_Integer_Input_L(void)
+{
+    long  outputInteger;
     char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_L("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_L("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_L("50f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_L("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_L("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_L("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_L("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_L("50f", NULL, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_L("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_L("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_L("50f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_L("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_L("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_L("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_L("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_L("50f", NULL, ALLOW_UNIT_TEMPERATURE, &outputInteger),
+                "Converted string to integer successfully");
 }
 
-static void test_get_And_Validate_Integer_Input_I(void) {
-    int outputInteger;
+static void test_get_And_Validate_Integer_Input_I(void)
+{
+    int   outputInteger;
     char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_I("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_I("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_I("50f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_I("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_I("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_I("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_I("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_I("2147483648", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than INT_MAX should fail");
-} 
+    TEST_ASSERT(get_And_Validate_Integer_Input_I("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_I("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_I("50f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_I("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_I("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_I("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_I("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_I("2147483648", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Value larger than INT_MAX should fail");
+}
 
-static void test_get_And_Validate_Integer_Input_S(void) {
+static void test_get_And_Validate_Integer_Input_S(void)
+{
     short outputInteger;
     char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_S("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_S("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_S("5f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_S("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_S("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_S("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_S("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_S("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_S("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_S("5f", &unit, ALLOW_UNIT_TEMPERATURE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_S("12ms", &unit, ALLOW_UNIT_TIME, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_S("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_S("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_S("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
 }
 
-static void test_get_And_Validate_Integer_Input_C(void) {
-    char outputInteger;
+static void test_get_And_Validate_Integer_Input_C(void)
+{
+    char  outputInteger;
     char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Integer_Input_C("0x7F", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_C("5a", &unit, ALLOW_UNIT_AMPS, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_And_Validate_Integer_Input_C("20v", &unit, ALLOW_UNIT_VOLTS, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_C("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_C("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_C("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_C("128", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value larger than CHAR_MAX should fail");
-    TEST_ASSERT(!get_And_Validate_Integer_Input_C("-129", NULL, ALLOW_UNIT_NONE, &outputInteger),"Value smaller than CHAR_MIN should fail");
+    TEST_ASSERT(get_And_Validate_Integer_Input_C("0x7F", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_C("5a", &unit, ALLOW_UNIT_AMPS, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_And_Validate_Integer_Input_C("20v", &unit, ALLOW_UNIT_VOLTS, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_C("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_C("123KB", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_C("12.5", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_C("128", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Value larger than CHAR_MAX should fail");
+    TEST_ASSERT(!get_And_Validate_Integer_Input_C("-129", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Value smaller than CHAR_MIN should fail");
 }
 
-static void test_get_And_Validate_Float_Input(void) {
+static void test_get_And_Validate_Float_Input(void)
+{
     float outputFloat;
     char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Float_Input("12.34", NULL, ALLOW_UNIT_NONE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12.34", NULL, ALLOW_UNIT_NONE, &outputFloat),
+                "Converted string to float successfully");
 
     // unittype - ALLOW_UNIT_DATASIZE
-    TEST_ASSERT(get_And_Validate_Float_Input("123B", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("123KB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("123KiB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("123MB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("123MiB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("123GB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("123GiB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("123TB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("123TiB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("123BLOCKS", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("123SECTORS", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("123", &unit, ALLOW_UNIT_DATASIZE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123B", &unit, ALLOW_UNIT_DATASIZE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123KB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123KiB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123MB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123MiB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123GB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123GiB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123TB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123TiB", &unit, ALLOW_UNIT_DATASIZE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123BLOCKS", &unit, ALLOW_UNIT_DATASIZE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123SECTORS", &unit, ALLOW_UNIT_DATASIZE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123", &unit, ALLOW_UNIT_DATASIZE, &outputFloat),
+                "Converted string to float successfully");
 
     // unittype - ALLOW_UNIT_SECTOR_TYPE
-    TEST_ASSERT(get_And_Validate_Float_Input("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("5l", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("5logical", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("5physical", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("5", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("5p", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("5l", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("5logical", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("5physical", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("5", &unit, ALLOW_UNIT_SECTOR_TYPE, &outputFloat),
+                "Converted string to float successfully");
 
     // unittype - ALLOW_UNIT_TIME
-    TEST_ASSERT(get_And_Validate_Float_Input("12ns", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("12us", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("12ms", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("12s", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("12m", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("12h", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("12", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12ns", &unit, ALLOW_UNIT_TIME, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12us", &unit, ALLOW_UNIT_TIME, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12ms", &unit, ALLOW_UNIT_TIME, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12s", &unit, ALLOW_UNIT_TIME, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12m", &unit, ALLOW_UNIT_TIME, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12h", &unit, ALLOW_UNIT_TIME, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12", &unit, ALLOW_UNIT_TIME, &outputFloat),
+                "Converted string to float successfully");
 
     // unittype - ALLOW_UNIT_POWER
-    TEST_ASSERT(get_And_Validate_Float_Input("123w", &unit, ALLOW_UNIT_POWER, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("123mw", &unit, ALLOW_UNIT_POWER, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("123", &unit, ALLOW_UNIT_POWER, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123w", &unit, ALLOW_UNIT_POWER, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123mw", &unit, ALLOW_UNIT_POWER, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("123", &unit, ALLOW_UNIT_POWER, &outputFloat),
+                "Converted string to float successfully");
 
     // unittype - ALLOW_UNIT_VOLTS
-    TEST_ASSERT(get_And_Validate_Float_Input("12v", &unit, ALLOW_UNIT_VOLTS, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("12mv", &unit, ALLOW_UNIT_VOLTS, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("12", &unit, ALLOW_UNIT_VOLTS, &outputFloat), "Converted string to float successfully");
-
+    TEST_ASSERT(get_And_Validate_Float_Input("12v", &unit, ALLOW_UNIT_VOLTS, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12mv", &unit, ALLOW_UNIT_VOLTS, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12", &unit, ALLOW_UNIT_VOLTS, &outputFloat),
+                "Converted string to float successfully");
 
     // ALLOW_UNIT_AMPS
-    TEST_ASSERT(get_And_Validate_Float_Input("12a", &unit, ALLOW_UNIT_AMPS, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("12ma", &unit, ALLOW_UNIT_AMPS, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("12", &unit, ALLOW_UNIT_AMPS, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12a", &unit, ALLOW_UNIT_AMPS, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12ma", &unit, ALLOW_UNIT_AMPS, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("12", &unit, ALLOW_UNIT_AMPS, &outputFloat),
+                "Converted string to float successfully");
 
     // ALLOW_UNIT_TEMPERATURE
-    TEST_ASSERT(get_And_Validate_Float_Input("20.06", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("20.34c", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("20.34f", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("20.34k", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("20.06", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("20.34c", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("20.34f", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("20.34k", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat),
+                "Converted string to float successfully");
 
-    unit = NULL; 
-    TEST_ASSERT(get_And_Validate_Float_Input("20", &unit, ALLOW_UNIT_NONE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("20.34", NULL, ALLOW_UNIT_NONE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(get_And_Validate_Float_Input("20.34f", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(!get_And_Validate_Float_Input("xyz", NULL, ALLOW_UNIT_NONE, &outputFloat), "Could not convert string to float successfully");
-    TEST_ASSERT(!get_And_Validate_Float_Input("123KB", &unit, ALLOW_UNIT_NONE, &outputFloat), "Could not convert string to float successfully");
+    unit = NULL;
+    TEST_ASSERT(get_And_Validate_Float_Input("20", &unit, ALLOW_UNIT_NONE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("20.34", NULL, ALLOW_UNIT_NONE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(get_And_Validate_Float_Input("20.34f", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(!get_And_Validate_Float_Input("xyz", NULL, ALLOW_UNIT_NONE, &outputFloat),
+                "Could not convert string to float successfully");
+    TEST_ASSERT(!get_And_Validate_Float_Input("123KB", &unit, ALLOW_UNIT_NONE, &outputFloat),
+                "Could not convert string to float successfully");
 }
 
-static void test_get_And_Validate_Double_Input(void) {
+static void test_get_And_Validate_Double_Input(void)
+{
     double outputFloat;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_Double_Input("20.34f", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to double successfully");
-    TEST_ASSERT(get_And_Validate_Double_Input("12.34", NULL, ALLOW_UNIT_NONE, &outputFloat), "Converted string to double successfully");
-    TEST_ASSERT(get_And_Validate_Double_Input("56.78ms", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to double successfully");
-    TEST_ASSERT(!get_And_Validate_Double_Input("xyz", NULL, ALLOW_UNIT_NONE, &outputFloat), "Could not convert string to double successfully");
-    TEST_ASSERT(!get_And_Validate_Double_Input("123KB", &unit, ALLOW_UNIT_NONE, &outputFloat), "Could not convert string to double successfully");
+    char*  unit = NULL;
+    TEST_ASSERT(get_And_Validate_Double_Input("20.34f", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat),
+                "Converted string to double successfully");
+    TEST_ASSERT(get_And_Validate_Double_Input("12.34", NULL, ALLOW_UNIT_NONE, &outputFloat),
+                "Converted string to double successfully");
+    TEST_ASSERT(get_And_Validate_Double_Input("56.78ms", &unit, ALLOW_UNIT_TIME, &outputFloat),
+                "Converted string to double successfully");
+    TEST_ASSERT(!get_And_Validate_Double_Input("xyz", NULL, ALLOW_UNIT_NONE, &outputFloat),
+                "Could not convert string to double successfully");
+    TEST_ASSERT(!get_And_Validate_Double_Input("123KB", &unit, ALLOW_UNIT_NONE, &outputFloat),
+                "Could not convert string to double successfully");
 }
 
-static void test_get_And_Validate_LDouble_Input(void) {
+static void test_get_And_Validate_LDouble_Input(void)
+{
     long double outputFloat;
-    char* unit = NULL;
-    TEST_ASSERT(get_And_Validate_LDouble_Input("20.34f", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat), "Converted string to long double successfully");
-    TEST_ASSERT(get_And_Validate_LDouble_Input("12.34", NULL, ALLOW_UNIT_NONE, &outputFloat), "Converted string to long double successfully");
-    TEST_ASSERT(get_And_Validate_LDouble_Input("56.78ms", &unit, ALLOW_UNIT_TIME, &outputFloat), "Converted string to long double successfully");
-    TEST_ASSERT(!get_And_Validate_LDouble_Input("xyz", NULL, ALLOW_UNIT_NONE, &outputFloat), "Could not convert string to long double successfully");
-    TEST_ASSERT(!get_And_Validate_LDouble_Input("123KB", &unit, ALLOW_UNIT_NONE, &outputFloat), "Could not convert string to long double successfully");
+    char*       unit = NULL;
+    TEST_ASSERT(get_And_Validate_LDouble_Input("20.34f", &unit, ALLOW_UNIT_TEMPERATURE, &outputFloat),
+                "Converted string to long double successfully");
+    TEST_ASSERT(get_And_Validate_LDouble_Input("12.34", NULL, ALLOW_UNIT_NONE, &outputFloat),
+                "Converted string to long double successfully");
+    TEST_ASSERT(get_And_Validate_LDouble_Input("56.78ms", &unit, ALLOW_UNIT_TIME, &outputFloat),
+                "Converted string to long double successfully");
+    TEST_ASSERT(!get_And_Validate_LDouble_Input("xyz", NULL, ALLOW_UNIT_NONE, &outputFloat),
+                "Could not convert string to long double successfully");
+    TEST_ASSERT(!get_And_Validate_LDouble_Input("123KB", &unit, ALLOW_UNIT_NONE, &outputFloat),
+                "Could not convert string to long double successfully");
 }
 
-static void test_get_Valid_Integer_Input(void) {
+#if defined(USING_C11) && defined(get_Valid_Integer_Input)
+static void test_get_Valid_Integer_Input(void)
+{
     uint64_t outputInteger;
-    float outputFloat;
-    TEST_ASSERT(get_Valid_Integer_Input("12", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_Valid_Integer_Input("12345789", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_Valid_Integer_Input("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger), "Converted string to integer successfully");
-    TEST_ASSERT(get_Valid_Integer_Input("12.5", NULL, ALLOW_UNIT_NONE, &outputFloat), "Converted string to float successfully");
-    TEST_ASSERT(!get_Valid_Integer_Input("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger), "Could not convert string to integer successfully");
+    float    outputFloat;
+    TEST_ASSERT(get_Valid_Integer_Input("12", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_Valid_Integer_Input("12345789", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_Valid_Integer_Input("0xFF", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Converted string to integer successfully");
+    TEST_ASSERT(get_Valid_Integer_Input("12.5", NULL, ALLOW_UNIT_NONE, &outputFloat),
+                "Converted string to float successfully");
+    TEST_ASSERT(!get_Valid_Integer_Input("xyz", NULL, ALLOW_UNIT_NONE, &outputInteger),
+                "Could not convert string to integer successfully");
 }
+#endif
 
-static void test_getline(void) {
-    char *buffer = NULL;
-    size_t size = 0;
+static void test_getline(void)
+{
+    char*  buffer = NULL;
+    size_t size   = 0;
 
     FILE* testFile = fopen("test_input.txt", "w");
     fprintf(testFile, "This is a test line.\n");
@@ -394,16 +618,16 @@ static void test_getline(void) {
     ssize_t len = getline(&buffer, &size, testFile);
 
     TEST_ASSERT(len != -1, "Read line from file successfully");
-    TEST_ASSERT(strcmp(buffer, "This is a test line.\n") == 0,
-                "Line read matches expected content");
+    TEST_ASSERT(strcmp(buffer, "This is a test line.\n") == 0, "Line read matches expected content");
 
     fclose(testFile);
     free(buffer);
 }
 
-static void test_getdelim(void) {
-    char *buffer = NULL;
-    size_t size = 0;
+static void test_getdelim(void)
+{
+    char*  buffer = NULL;
+    size_t size   = 0;
 
     FILE* testFile = fopen("test_input.txt", "w");
     fprintf(testFile, "This is a test line. This is another test line.\n");
@@ -415,25 +639,25 @@ static void test_getdelim(void) {
     ssize_t len = getdelim(&buffer, &size, '.', testFile);
 
     TEST_ASSERT(len != -1, "Read line from file successfully");
-    TEST_ASSERT(strcmp(buffer, "This is a test line.") == 0,
-                "Line read matches expected content");
+    TEST_ASSERT(strcmp(buffer, "This is a test line.") == 0, "Line read matches expected content");
 
     fclose(testFile);
-    free(buffer); 
+    free(buffer);
 }
 
-static void test_asprintf(void) {
+static void test_asprintf(void)
+{
     char* str;
-    int result = asprintf(&str, "Hello, %s!", "world");
+    int   result = asprintf(&str, "Hello, %s!", "world");
     TEST_ASSERT(result != -1, "asprintf succeeded");
     TEST_ASSERT(strcmp(str, "Hello, world!") == 0, "asprintf produced expected string");
     free(str);
 }
 
-static int test_vasprintf_wrapper(char **out, const char *fmt, ...)
+static int test_vasprintf_wrapper(char** out, const char* fmt, ...)
 {
     va_list args;
-    int ret;
+    int     ret;
 
     va_start(args, fmt);
     ret = vasprintf(out, fmt, args);
@@ -442,26 +666,28 @@ static int test_vasprintf_wrapper(char **out, const char *fmt, ...)
     return ret;
 }
 
-static void test_vasprintf(void) {
+static void test_vasprintf(void)
+{
     char* str = NULL;
-    
+
     int result = test_vasprintf_wrapper(&str, "Hello, %s! It's a %s", "world", "beautiful day");
     TEST_ASSERT(result != -1, "vasprintf succeeded");
     TEST_ASSERT(strcmp(str, "Hello, world! It's a beautiful day") == 0, "vasprintf produced expected string");
     free(str);
 }
 
-static void test_snprintf(void) {
+static void test_snprintf(void)
+{
     char buffer[50] = {0};
-    int result = snprintf(buffer, sizeof(buffer), "Hello, %s!", "world");
+    int  result     = snprintf(buffer, sizeof(buffer), "Hello, %s!", "world");
     TEST_ASSERT(result >= 0 && result < sizeof(buffer), "snprintf succeeded and did not truncate");
     TEST_ASSERT(strcmp(buffer, "Hello, world!") == 0, "snprintf produced expected string");
 }
 
-static int test_snprintf_wrapper(char *buffer, size_t size, const char *fmt, ...)
+static int test_snprintf_wrapper(char* buffer, size_t size, const char* fmt, ...)
 {
     va_list args;
-    int ret;
+    int     ret;
 
     va_start(args, fmt);
     ret = vsnprintf(buffer, size, fmt, args);
@@ -470,9 +696,10 @@ static int test_snprintf_wrapper(char *buffer, size_t size, const char *fmt, ...
     return ret;
 }
 
-static void test_vsnprintf(void) {
+static void test_vsnprintf(void)
+{
     char buffer[50] = {0};
-    int result = test_snprintf_wrapper(buffer, sizeof(buffer), "Hello, %s! It's a %s", "world", "beautiful day");
+    int  result     = test_snprintf_wrapper(buffer, sizeof(buffer), "Hello, %s! It's a %s", "world", "beautiful day");
     TEST_ASSERT(result >= 0 && result < sizeof(buffer), "vsnprintf succeeded and did not truncate");
     TEST_ASSERT(strcmp(buffer, "Hello, world! It's a beautiful day") == 0, "vsnprintf produced expected string");
 }
@@ -489,7 +716,7 @@ static void test_snprintf_err_handle(void) {
 static int test_verify_Format_String_And_Args_wrapper(const char* fmt, ...)
 {
     va_list args;
-    int ret;
+    int     ret;
 
     va_start(args, fmt);
     ret = verify_Format_String_And_Args(fmt, args);
@@ -501,7 +728,7 @@ static int test_verify_Format_String_And_Args_wrapper(const char* fmt, ...)
 static void test_verify_Format_String_And_Args(void)
 {
     const char* formatString = "Hello, %s!";
-    
+
     int result = test_verify_Format_String_And_Args_wrapper(formatString, "world");
     TEST_ASSERT(result != -1, "Format string and arguments are valid");
 
@@ -509,7 +736,7 @@ static void test_verify_Format_String_And_Args(void)
     TEST_ASSERT(result2 == -1, "Returns -1 for invalid argument");
 }
 
-/* function test_get_Secure_User_Input added to file test_secure_inputs.c as 
+/* function test_get_Secure_User_Input added to file test_secure_inputs.c as
 it is an interactive test function and requires user input from terminal
 
 typedef struct {
@@ -583,7 +810,7 @@ static void test_set_Console_Colors(void) {
 
     for (size_t i = 0; i < sizeof(tests)/sizeof(tests[0]); i++)
     {
-        //Test Foreground 
+        //Test Foreground
         set_attribute_called = 0;
 
         set_Console_Colors(true, tests[i].color);
@@ -612,13 +839,14 @@ static void test_set_Console_Colors(void) {
 }
 */
 
-static void test_print_Data_Buffer(void) {
+static void test_print_Data_Buffer(void)
+{
     uint8_t data[32];
     memset(data, 0xAA, sizeof(data));
 
-    FILE *fp = fopen("output.txt", "w+");
+    FILE* fp = fopen("output.txt", "w+");
 
-    fflush(stdout);                      
+    fflush(stdout);
 
     int saved_stdout = dup(fileno(stdout));
     dup2(fileno(fp), fileno(stdout));
@@ -632,12 +860,12 @@ static void test_print_Data_Buffer(void) {
     // Cover default case (≥16)
     print_Data_Buffer(data, 16, true);
 
-    fflush(stdout);                     
+    fflush(stdout);
 
     dup2(saved_stdout, fileno(stdout));
     close(saved_stdout);
 
-    fflush(stdout);                   
+    fflush(stdout);
 
     // Test for dataBuffer = NULL
     print_Data_Buffer(NULL, sizeof(data), true);
@@ -647,14 +875,14 @@ static void test_print_Data_Buffer(void) {
 
     // UINT16_MAX branch (>255)
     uint32_t mediumSize = 1000;
-    uint8_t *mediumBuf = malloc(mediumSize);
+    uint8_t* mediumBuf  = malloc(mediumSize);
     memset(mediumBuf, 0xAA, mediumSize);
     print_Data_Buffer(mediumBuf, mediumSize, true);
     free(mediumBuf);
 
     // 0xFFFFFF branch (>65535)
     uint32_t largeSize = 70000;
-    uint8_t *largeBuf = malloc(largeSize);
+    uint8_t* largeBuf  = malloc(largeSize);
     memset(largeBuf, 0xAA, largeSize);
     print_Data_Buffer(largeBuf, largeSize, true);
     free(largeBuf);
@@ -670,7 +898,7 @@ static void test_print_Pipe_Data(void)
 {
     uint8_t data[] = {0xDE, 0xAD, 0xBE, 0xEF};
 
-    FILE *fp = fopen("pipe_output.bin", "w+");
+    FILE* fp = fopen("pipe_output.bin", "w+");
 
     fflush(stdout);
 
@@ -688,23 +916,23 @@ static void test_print_Pipe_Data(void)
 
     fseek(fp, 0, SEEK_SET);
 
-    char buffer[256] = {0};
-    size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
-    buffer[n] = '\0';
+    char   buffer[256] = {0};
+    size_t n           = fread(buffer, 1, sizeof(buffer) - 1, fp);
+    buffer[n]          = '\0';
 
     printf("Captured output:\n%s\n", buffer);
 
-    TEST_ASSERT(strstr(buffer, "DE AD BE EF") != NULL,
-                "Pipe data printed correctly");
+    TEST_ASSERT(strstr(buffer, "DE AD BE EF") != NULL, "Pipe data printed correctly");
 
     fclose(fp);
 }
 
-static void test_print_Return_Enum(void) {
-    char *input = NULL;
-    size_t len = 0;
+static void test_print_Return_Enum(void)
+{
+    char*  input = NULL;
+    size_t len   = 0;
 
-    FILE *fp = fopen("pipe_output.bin", "w+");
+    FILE* fp = fopen("pipe_output.bin", "w+");
 
     fflush(stdout);
 
@@ -723,9 +951,9 @@ static void test_print_Return_Enum(void) {
     fflush(stdout);
 
     fseek(fp, 0, SEEK_SET);
-    char buffer[256] = {0};
-    size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
-    buffer[n] = '\0';
+    char   buffer[256] = {0};
+    size_t n           = fread(buffer, 1, sizeof(buffer) - 1, fp);
+    buffer[n]          = '\0';
 
     printf("Captured output:\n%s\n", buffer);
 
@@ -736,12 +964,12 @@ static void test_print_Return_Enum(void) {
     print_Return_Enum(NULL, FAILURE);
 
     // Test when returnValue is SUCCESS
-    uint8_t buffer1[10];
+    uint8_t       buffer1[10];
     eReturnValues result_success = fill_Random_Pattern_In_Buffer(buffer1, sizeof(buffer1));
     print_Return_Enum("fill_Random_Pattern_In_Buffer", result_success);
 
     // Test when returnValue is BAD_PARAMETER
-    uint8_t startValue = 0x00;
+    uint8_t       startValue       = 0x00;
     eReturnValues result_bad_param = fill_Incrementing_Pattern_In_Buffer(startValue, NULL, sizeof(buffer1));
     print_Return_Enum("fill_Incrementing_Pattern_In_Buffer", result_bad_param);
 
@@ -895,8 +1123,9 @@ static void test_print_Return_Enum(void) {
     print_Return_Enum("some_Function", unknown_result);
 }
 
-static void test_flush_stdout(void) {
-    FILE *fp = fopen("flush_output.txt", "w+");
+static void test_flush_stdout(void)
+{
+    FILE* fp = fopen("flush_output.txt", "w+");
 
     fflush(stdout);
 
@@ -915,19 +1144,21 @@ static void test_flush_stdout(void) {
 
     fseek(fp, 0, SEEK_SET);
 
-    char buffer[256] = {0};
-    size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
-    buffer[n] = '\0';
+    char   buffer[256] = {0};
+    size_t n           = fread(buffer, 1, sizeof(buffer) - 1, fp);
+    buffer[n]          = '\0';
 
     printf("Captured output:\n%s\n", buffer);
 
-    TEST_ASSERT(strstr(buffer, "This is a test for flush_stdout.") != NULL, "flush_stdout flushed the output correctly");
+    TEST_ASSERT(strstr(buffer, "This is a test for flush_stdout.") != NULL,
+                "flush_stdout flushed the output correctly");
 
     fclose(fp);
 }
 
-static void test_flush_stderr(void) {
-    FILE *fp = fopen("flush_stderr_output.txt", "w+");
+static void test_flush_stderr(void)
+{
+    FILE* fp = fopen("flush_stderr_output.txt", "w+");
 
     fflush(stderr);
 
@@ -946,20 +1177,22 @@ static void test_flush_stderr(void) {
 
     fseek(fp, 0, SEEK_SET);
 
-    char buffer[256] = {0};
-    size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
-    buffer[n] = '\0';
+    char   buffer[256] = {0};
+    size_t n           = fread(buffer, 1, sizeof(buffer) - 1, fp);
+    buffer[n]          = '\0';
 
     printf("Captured output:\n%s\n", buffer);
 
-    TEST_ASSERT(strstr(buffer, "This is a test for flush_stderr.") != NULL, "flush_stderr flushed the output correctly");
+    TEST_ASSERT(strstr(buffer, "This is a test for flush_stderr.") != NULL,
+                "flush_stderr flushed the output correctly");
 
     fclose(fp);
 }
 
-static void test_safe_fopen(void) {
-    FILE* file;
-    errno_t err = safe_fopen(&file,"test_safe_fopen.txt", "w");
+static void test_safe_fopen(void)
+{
+    FILE*   file;
+    errno_t err = safe_fopen(&file, "test_safe_fopen.txt", "w");
     TEST_ASSERT(file != NULL, "safe_fopen opened the file successfully");
     fprintf(file, "Testing safe_fopen.\n");
     fclose(file);
@@ -967,9 +1200,9 @@ static void test_safe_fopen(void) {
     err = safe_fopen(&file, "test_safe_fopen.txt", "r");
     TEST_ASSERT(file != NULL, "safe_fopen opened the file successfully for reading");
 
-    char buffer[256] = {0};
-    size_t n = fread(buffer, 1, sizeof(buffer) - 1, file);
-    buffer[n] = '\0';
+    char   buffer[256] = {0};
+    size_t n           = fread(buffer, 1, sizeof(buffer) - 1, file);
+    buffer[n]          = '\0';
 
     printf("Read from file:\n%s\n", buffer);
     TEST_ASSERT(strstr(buffer, "Testing safe_fopen.") != NULL, "safe_fopen read the correct content");
@@ -996,7 +1229,7 @@ static void test_safe_freopen(void)
 {
     printf("Testing safe_freopen. This should not be captured in the file.\n");
 
-    FILE *file = NULL;
+    FILE* file = NULL;
 
     int saved_stdout = dup(fileno(stdout));
 
@@ -1013,12 +1246,12 @@ static void test_safe_freopen(void)
 
     fflush(stdout);
 
-    char buffer[256] = {0};
-    FILE *readFile = fopen("test_safe_freopen.txt", "r");
+    char  buffer[256] = {0};
+    FILE* readFile    = fopen("test_safe_freopen.txt", "r");
 
     TEST_ASSERT(readFile != NULL, "output file opened");
 
-    size_t n = fread(buffer, 1, sizeof(buffer) - 1, readFile);
+    size_t n  = fread(buffer, 1, sizeof(buffer) - 1, readFile);
     buffer[n] = '\0';
 
     printf("Read from file:\n%s\n", buffer);
@@ -1043,10 +1276,10 @@ static void test_safe_freopen(void)
     TEST_ASSERT(err == errno, "safe_freopen returned the correct error code for NULL mode");
 
     // Test with invalid filename
-    FILE *invalidfile = tmpfile();
+    FILE* invalidfile = tmpfile();
     TEST_ASSERT(invalidfile != NULL, "temp file opened");
 
-    FILE *orig = invalidfile;
+    FILE* orig = invalidfile;
 
     err = safe_freopen(&invalidfile, "/invalid_path/test_safe_freopen.txt", "w", invalidfile);
 
@@ -1058,8 +1291,9 @@ static void test_safe_freopen(void)
     }
 }
 
-static void test_safe_tmpfile(void) {
-    FILE* file;
+static void test_safe_tmpfile(void)
+{
+    FILE*   file;
     errno_t err = safe_tmpfile(&file);
     TEST_ASSERT(file != NULL, "safe_tmpfile created a temporary file successfully");
     fprintf(file, "Testing safe_tmpfile.\n");
@@ -1067,12 +1301,13 @@ static void test_safe_tmpfile(void) {
 
     fseek(file, 0, SEEK_SET);
 
-    char buffer[256] = {0};
-    size_t n = fread(buffer, 1, sizeof(buffer) - 1, file);
-    buffer[n] = '\0';
+    char   buffer[256] = {0};
+    size_t n           = fread(buffer, 1, sizeof(buffer) - 1, file);
+    buffer[n]          = '\0';
 
     printf("Read from temporary file:\n%s\n", buffer);
-    TEST_ASSERT(strstr(buffer, "Testing safe_tmpfile.") != NULL, "safe_tmpfile wrote the correct content to the temporary file");
+    TEST_ASSERT(strstr(buffer, "Testing safe_tmpfile.") != NULL,
+                "safe_tmpfile wrote the correct content to the temporary file");
 
     fclose(file);
 
@@ -1086,7 +1321,7 @@ static void test_safe_gets(void)
 {
     char buffer[64] = {0};
 
-    FILE *fp = fopen("test_input.txt", "w");
+    FILE* fp = fopen("test_input.txt", "w");
     TEST_ASSERT(fp != NULL, "input file created");
 
     fprintf(fp, "hello world\n");
@@ -1099,7 +1334,7 @@ static void test_safe_gets(void)
 
     dup2(fileno(fp), fileno(stdin));
 
-    char *res = safe_gets(buffer, sizeof(buffer));
+    char* res = safe_gets(buffer, sizeof(buffer));
 
     dup2(saved_stdin, fileno(stdin));
     close(saved_stdin);
@@ -1107,8 +1342,7 @@ static void test_safe_gets(void)
     fclose(fp);
 
     TEST_ASSERT(res != NULL, "safe_gets returned non-null");
-    TEST_ASSERT(strcmp(buffer, "hello world") == 0,
-                "safe_gets read correct string");
+    TEST_ASSERT(strcmp(buffer, "hello world") == 0, "safe_gets read correct string");
 
     // Test for n = 1
     res = safe_gets(buffer, 1);
@@ -1132,14 +1366,14 @@ static void test_safe_gets(void)
 
     // Test for str = NULL
     errno = 0; // Clear errno before test
-    res = safe_gets(NULL, sizeof(buffer));
+    res   = safe_gets(NULL, sizeof(buffer));
     TEST_ASSERT(res == NULL, "safe_gets returned NULL for str = NULL");
     TEST_ASSERT(errno == EINVAL, "safe_gets set errno to EINVAL for str = NULL");
 
     // Test when fgets returns NULL due to EOF - test only for Linux
 #ifdef __linux__
     errno = 0; // Clear errno before test
-    fp = fopen("test_input.txt", "r");
+    fp    = fopen("test_input.txt", "r");
     TEST_ASSERT(fp != NULL, "input file opened for EOF test");
     fseek(fp, 0, SEEK_END); // Move to end of file to simulate EOF
     res = safe_gets(buffer, sizeof(buffer));
@@ -1149,9 +1383,10 @@ static void test_safe_gets(void)
 #endif
 }
 
-static void test_safe_strtol(void) {
-    long result;
-    char *endptr;
+static void test_safe_strtol(void)
+{
+    long    result;
+    char*   endptr;
     errno_t err = safe_strtol(&result, "12345", &endptr, 10);
     TEST_ASSERT(result == 12345, "safe_strtol converted string to long correctly for base 10");
     TEST_ASSERT(*endptr == '\0', "safe_strtol consumed the entire string");
@@ -1198,7 +1433,8 @@ static void test_safe_strtol(void) {
     err = safe_strtol(&result, "abc", &endptr, 10);
     TEST_ASSERT(result == 0, "safe_strtol returned 0 for invalid input");
     TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtol set endptr correctly for invalid input");
-    TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtol set errno to EINVAL or left it unchanged for invalid input");
+    TEST_ASSERT(errno == EINVAL || errno == 0,
+                "safe_strtol set errno to EINVAL or left it unchanged for invalid input");
 
     // Test when value = NULL
     err = safe_strtol(NULL, "123", &endptr, 10);
@@ -1216,10 +1452,11 @@ static void test_safe_strtol(void) {
     TEST_ASSERT(err == errno, "safe_strtol returned the correct error code for invalid base");
 }
 
-static void test_safe_strtoll(void) {
+static void test_safe_strtoll(void)
+{
     long long result;
-    char *endptr;
-    errno_t err = safe_strtoll(&result, "12345", &endptr, 10);
+    char*     endptr;
+    errno_t   err = safe_strtoll(&result, "12345", &endptr, 10);
     TEST_ASSERT(result == 12345, "safe_strtoll converted string to long long correctly for base 10");
     TEST_ASSERT(*endptr == '\0', "safe_strtoll consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoll did not set errno for valid input");
@@ -1276,10 +1513,11 @@ static void test_safe_strtoll(void) {
     TEST_ASSERT(err == errno, "safe_strtoll returned the correct error code for invalid base");
 }
 
-static void test_safe_strtoul(void) {
+static void test_safe_strtoul(void)
+{
     unsigned long result;
-    char *endptr;
-    errno_t err = safe_strtoul(&result, "12345", &endptr, 10);
+    char*         endptr;
+    errno_t       err = safe_strtoul(&result, "12345", &endptr, 10);
     TEST_ASSERT(result == 12345, "safe_strtoul converted string to unsigned long correctly for base 10");
     TEST_ASSERT(*endptr == '\0', "safe_strtoul consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoul did not set errno for valid input");
@@ -1335,16 +1573,18 @@ static void test_safe_strtoul(void) {
     TEST_ASSERT(err == errno, "safe_strtoul returned the correct error code for invalid base");
 }
 
-static void test_safe_strtoull(void) {
+static void test_safe_strtoull(void)
+{
     unsigned long long result;
-    char *endptr;
-    errno_t err = safe_strtoull(&result, "12345", &endptr, 10);
+    char*              endptr;
+    errno_t            err = safe_strtoull(&result, "12345", &endptr, 10);
     TEST_ASSERT(result == 12345, "safe_strtoull converted string to unsigned long long correctly for base 10");
     TEST_ASSERT(*endptr == '\0', "safe_strtoull consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoull did not set errno for valid input");
 
     err = safe_strtoull(&result, "0xFFFFFFFF", &endptr, 0);
-    TEST_ASSERT(result == 4294967295ULL, "safe_strtoull converted string to unsigned long long correctly for base 0 (hexadecimal)");
+    TEST_ASSERT(result == 4294967295ULL,
+                "safe_strtoull converted string to unsigned long long correctly for base 0 (hexadecimal)");
     TEST_ASSERT(*endptr == '\0', "safe_strtoull consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoull did not set errno for valid input");
 
@@ -1366,7 +1606,7 @@ static void test_safe_strtoull(void) {
     err = safe_strtoull(&result, "V", &endptr, 32);
     TEST_ASSERT(result == 31, "safe_strtoull converted string to unsigned long long correctly for base 32");
     TEST_ASSERT(*endptr == '\0', "safe_strtoull consumed the entire string");
-    TEST_ASSERT(errno == 0, "safe_strtoull did not set errno for valid input"); 
+    TEST_ASSERT(errno == 0, "safe_strtoull did not set errno for valid input");
 
     err = safe_strtoull(&result, "abc", &endptr, 10);
     TEST_ASSERT(result == 0, "Result should be 0 for invalid input");
@@ -1390,10 +1630,11 @@ static void test_safe_strtoull(void) {
     TEST_ASSERT(err == errno, "safe_strtoull returned the correct error code for invalid base");
 }
 
-static void test_safe_strtoimax(void) {
+static void test_safe_strtoimax(void)
+{
     intmax_t result;
-    char *endptr;
-    errno_t err = safe_strtoimax(&result, "12345", &endptr, 10);
+    char*    endptr;
+    errno_t  err = safe_strtoimax(&result, "12345", &endptr, 10);
     TEST_ASSERT(result == 12345, "safe_strtoimax converted string to intmax_t correctly for base 10");
     TEST_ASSERT(*endptr == '\0', "safe_strtoimax consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoimax did not set errno for valid input");
@@ -1415,7 +1656,8 @@ static void test_safe_strtoimax(void) {
     err = safe_strtoimax(&result, "abc", &endptr, 10);
     TEST_ASSERT(err == EINVAL, "safe_strtoimax returned EINVAL for invalid input");
     TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtoimax set endptr correctly for invalid input");
-    TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtoimax set errno to EINVAL or left it unchanged for invalid input");
+    TEST_ASSERT(errno == EINVAL || errno == 0,
+                "safe_strtoimax set errno to EINVAL or left it unchanged for invalid input");
 
     // Test when value = NULL
     err = safe_strtoimax(NULL, "123", &endptr, 10);
@@ -1433,10 +1675,11 @@ static void test_safe_strtoimax(void) {
     TEST_ASSERT(err == errno, "safe_strtoimax returned the correct error code for invalid base");
 }
 
-static void test_safe_strtoumax(void) {
+static void test_safe_strtoumax(void)
+{
     uintmax_t result;
-    char *endptr;
-    errno_t err = safe_strtoumax(&result, "12345", &endptr, 10);
+    char*     endptr;
+    errno_t   err = safe_strtoumax(&result, "12345", &endptr, 10);
     TEST_ASSERT(result == 12345, "safe_strtoumax converted string to uintmax_t correctly for base 10");
     TEST_ASSERT(*endptr == '\0', "safe_strtoumax consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoumax did not set errno for valid input");
@@ -1447,14 +1690,16 @@ static void test_safe_strtoumax(void) {
     TEST_ASSERT(errno == 0, "safe_strtoumax did not set errno for valid input");
 
     err = safe_strtoumax(&result, "0xFFFFFFFFFFFFFFFF", &endptr, 0);
-    TEST_ASSERT(result == UINTMAX_MAX, "safe_strtoumax converted string to uintmax_t correctly for base 0 (hexadecimal)");
+    TEST_ASSERT(result == UINTMAX_MAX,
+                "safe_strtoumax converted string to uintmax_t correctly for base 0 (hexadecimal)");
     TEST_ASSERT(*endptr == '\0', "safe_strtoumax consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtoumax did not set errno for valid input");
 
     err = safe_strtoumax(&result, "abc", &endptr, 10);
     TEST_ASSERT(err == EINVAL, "safe_strtoumax returned EINVAL for invalid input");
     TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtoumax set endptr correctly for invalid input");
-    TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtoumax set errno to EINVAL or left it unchanged for invalid input");
+    TEST_ASSERT(errno == EINVAL || errno == 0,
+                "safe_strtoumax set errno to EINVAL or left it unchanged for invalid input");
 
     // Test when value = NULL
     err = safe_strtoumax(NULL, "123", &endptr, 10);
@@ -1472,9 +1717,10 @@ static void test_safe_strtoumax(void) {
     TEST_ASSERT(err == errno, "safe_strtoumax returned the correct error code for invalid base");
 }
 
-static void test_safe_strtof(void) {
-    float result;
-    char *endptr;
+static void test_safe_strtof(void)
+{
+    float   result;
+    char*   endptr;
     errno_t err = safe_strtof(&result, "123.45", &endptr);
     TEST_ASSERT(result == 123.45f, "safe_strtof converted string to float correctly");
     TEST_ASSERT(*endptr == '\0', "safe_strtof consumed the entire string");
@@ -1493,7 +1739,8 @@ static void test_safe_strtof(void) {
     err = safe_strtof(&result, "abc", &endptr);
     TEST_ASSERT(err == EINVAL, "safe_strtof returned EINVAL for invalid input");
     TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtof set endptr correctly for invalid input");
-    TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtof set errno to EINVAL or left it unchanged for invalid input");
+    TEST_ASSERT(errno == EINVAL || errno == 0,
+                "safe_strtof set errno to EINVAL or left it unchanged for invalid input");
 
     // Test when value = NULL
     err = safe_strtof(NULL, "123", &endptr);
@@ -1506,9 +1753,10 @@ static void test_safe_strtof(void) {
     TEST_ASSERT(err == errno, "safe_strtof returned the correct error code for NULL string");
 }
 
-static void test_safe_strtod(void) {
-    double result;
-    char *endptr;
+static void test_safe_strtod(void)
+{
+    double  result;
+    char*   endptr;
     errno_t err = safe_strtod(&result, "123.45", &endptr);
     TEST_ASSERT(result == 123.45, "safe_strtod converted string to double correctly");
     TEST_ASSERT(*endptr == '\0', "safe_strtod consumed the entire string");
@@ -1527,7 +1775,8 @@ static void test_safe_strtod(void) {
     err = safe_strtod(&result, "abc", &endptr);
     TEST_ASSERT(err == EINVAL, "safe_strtod returned EINVAL for invalid input");
     TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtod set endptr correctly for invalid input");
-    TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtod set errno to EINVAL or left it unchanged for invalid input");
+    TEST_ASSERT(errno == EINVAL || errno == 0,
+                "safe_strtod set errno to EINVAL or left it unchanged for invalid input");
 
     // Test when value = NULL - calls constraint handler
     err = safe_strtod(NULL, "123", &endptr);
@@ -1540,10 +1789,11 @@ static void test_safe_strtod(void) {
     TEST_ASSERT(err == errno, "safe_strtod returned the correct error code for NULL string");
 }
 
-static void test_safe_strtold(void) {
+static void test_safe_strtold(void)
+{
     long double result;
-    char *endptr;
-    errno_t err = safe_strtold(&result, "123.45", &endptr);
+    char*       endptr;
+    errno_t     err = safe_strtold(&result, "123.45", &endptr);
     TEST_ASSERT(result == 123.45L, "safe_strtold converted string to long double correctly");
     TEST_ASSERT(*endptr == '\0', "safe_strtold consumed the entire string");
     TEST_ASSERT(errno == 0, "safe_strtold did not set errno for valid input");
@@ -1561,7 +1811,8 @@ static void test_safe_strtold(void) {
     err = safe_strtold(&result, "abc", &endptr);
     TEST_ASSERT(err == EINVAL, "safe_strtold returned EINVAL for invalid input");
     TEST_ASSERT(endptr == NULL || *endptr == 'a', "safe_strtold set endptr correctly for invalid input");
-    TEST_ASSERT(errno == EINVAL || errno == 0, "safe_strtold set errno to EINVAL or left it unchanged for invalid input");
+    TEST_ASSERT(errno == EINVAL || errno == 0,
+                "safe_strtold set errno to EINVAL or left it unchanged for invalid input");
 
     // Test when value = NULL
     err = safe_strtold(NULL, "123", &endptr);
@@ -1575,8 +1826,9 @@ static void test_safe_strtold(void) {
 }
 
 // Value is set to 0 on error
-static void test_safe_atoi(void) {
-    int result;
+static void test_safe_atoi(void)
+{
+    int     result;
     errno_t err = safe_atoi(&result, "12345");
     TEST_ASSERT(result == 12345, "safe_atoi converted string to int correctly");
     TEST_ASSERT(errno == 0, "safe_atoi did not set errno for valid input");
@@ -1609,8 +1861,9 @@ static void test_safe_atoi(void) {
     TEST_ASSERT(errno == ERANGE, "safe_atoi set errno to ERANGE for value less than INT_MIN");
 }
 
-static void test_safe_atol(void) {
-    long result;
+static void test_safe_atol(void)
+{
+    long    result;
     errno_t err = safe_atol(&result, "12345");
     TEST_ASSERT(result == 12345, "safe_atol converted string to long correctly");
     TEST_ASSERT(errno == 0, "safe_atol did not set errno for valid input");
@@ -1628,9 +1881,10 @@ static void test_safe_atol(void) {
     TEST_ASSERT(errno == ERANGE, "safe_atol set errno to ERANGE for underflow");
 }
 
-static void test_safe_atoll(void) {
+static void test_safe_atoll(void)
+{
     long long result;
-    errno_t err = safe_atoll(&result, "12345");
+    errno_t   err = safe_atoll(&result, "12345");
     TEST_ASSERT(result == 12345, "safe_atoll converted string to long long correctly");
     TEST_ASSERT(errno == 0, "safe_atoll did not set errno for valid input");
 
@@ -1647,8 +1901,9 @@ static void test_safe_atoll(void) {
     TEST_ASSERT(errno == ERANGE, "safe_atoll set errno to ERANGE for underflow");
 }
 
-static void test_safe_atof(void) {
-    double result;
+static void test_safe_atof(void)
+{
+    double  result;
     errno_t err = safe_atof(&result, "123.45");
     TEST_ASSERT(result == 123.45, "safe_atof converted string to double correctly");
     TEST_ASSERT(errno == 0, "safe_atof did not set errno for valid input");
@@ -1670,8 +1925,9 @@ static void test_safe_atof(void) {
     TEST_ASSERT(errno == EINVAL || errno == 0, "safe_atof set errno to EINVAL or left it unchanged for invalid input");
 }
 
-static void test_checked_fputs(void) {
-    FILE *fp = fopen("test_checked_fputs.txt", "w");
+static void test_checked_fputs(void)
+{
+    FILE* fp = fopen("test_checked_fputs.txt", "w");
     TEST_ASSERT(fp != NULL, "File opened successfully for checked_fputs test");
 
     errno_t err = checked_fputs("Hello, World!\n", fp);
@@ -1682,9 +1938,9 @@ static void test_checked_fputs(void) {
     fp = fopen("test_checked_fputs.txt", "r");
     TEST_ASSERT(fp != NULL, "File opened successfully for reading in checked_fputs test");
 
-    char buffer[256] = {0};
-    size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
-    buffer[n] = '\0';
+    char   buffer[256] = {0};
+    size_t n           = fread(buffer, 1, sizeof(buffer) - 1, fp);
+    buffer[n]          = '\0';
 
     printf("Read from file:\n%s\n", buffer);
     TEST_ASSERT(strstr(buffer, "Hello, World!") != NULL, "checked_fputs wrote the correct content to the file");
@@ -1712,9 +1968,10 @@ static void test_checked_fputs(void) {
 #endif
 }
 
-static void test_print_str(void) {
-    const char *testStr = "This is a test string.";
-    FILE *fp = fopen("test_print_str.txt", "w+");
+static void test_print_str(void)
+{
+    const char* testStr = "This is a test string.";
+    FILE*       fp      = fopen("test_print_str.txt", "w+");
     TEST_ASSERT(fp != NULL, "File opened successfully for test_print_str");
 
     fflush(stdout);
@@ -1733,9 +1990,9 @@ static void test_print_str(void) {
 
     fseek(fp, 0, SEEK_SET);
 
-    char buffer[256] = {0};
-    size_t n = fread(buffer, 1, sizeof(buffer) - 1, fp);
-    buffer[n] = '\0';
+    char   buffer[256] = {0};
+    size_t n           = fread(buffer, 1, sizeof(buffer) - 1, fp);
+    buffer[n]          = '\0';
 
     printf("Captured output:\n%s\n", buffer);
     TEST_ASSERT(strstr(buffer, testStr) != NULL, "print_str printed the correct string");
@@ -1743,10 +2000,11 @@ static void test_print_str(void) {
     fclose(fp);
 }
 
-void run_io_utils_tests(void) {
-    #ifndef _WIN32
+void run_io_utils_tests(void)
+{
+#ifndef _WIN32
     test_get_And_Validate_Integer_Input();
-    #endif
+#endif
     test_get_And_Validate_Integer_Input_Uint64();
     test_get_And_Validate_Integer_Input_Uint32();
     test_get_And_Validate_Integer_Input_Uint16();
@@ -1763,12 +2021,14 @@ void run_io_utils_tests(void) {
     test_get_And_Validate_Integer_Input_LL();
     test_get_And_Validate_Integer_Input_L();
     test_get_And_Validate_Integer_Input_I();
-    test_get_And_Validate_Integer_Input_S();    
+    test_get_And_Validate_Integer_Input_S();
     test_get_And_Validate_Integer_Input_C();
     test_get_And_Validate_Float_Input();
     test_get_And_Validate_Double_Input();
     test_get_And_Validate_LDouble_Input();
+#if defined(USING_C11) && defined(get_Valid_Integer_Input)
     test_get_Valid_Integer_Input();
+#endif
     test_getline();
     test_getdelim();
     test_asprintf();

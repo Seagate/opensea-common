@@ -1309,7 +1309,7 @@ extern "C"
 //! ...
 //!
 //! safe_free_alsafe_free_page_alignedigned(&memory);
-#    define safe_free_page_aligned(mem) safe_free_page_aligned(M_REINTERPRET_CAST(void**, mem))
+#    define safe_free_page_aligned(mem) safe_free_page_aligned_core(M_REINTERPRET_CAST(void**, mem))
 #endif // C11
 
     //! \fn M_FUNC_ATTR_MALLOC void* calloc_page_aligned(size_t num, size_t size)
@@ -1920,7 +1920,7 @@ template <typename T> M_INLINE void safe_free_aligned(T* M_NULLABLE* M_NULLABLE 
 #    if !defined(safe_free_page_aligned)
 template <typename T> M_INLINE void safe_free_page_aligned(T* M_NULLABLE* M_NULLABLE mem)
 {
-    safe_free_aligned_core(reinterpret_cast<void**>(mem));
+    safe_free_page_aligned_core(reinterpret_cast<void**>(mem));
 }
 #    endif // safe_free_page_aligned
 
@@ -1929,5 +1929,5 @@ template <typename T> M_INLINE void safe_free_page_aligned(T* M_NULLABLE* M_NULL
 #if defined(SAFE_FREE_BACKWARDS_COMPATIBILITY)
 #    define safe_Free(mem)              safe_free_core(mem)
 #    define safe_Free_aligned(mem)      safe_free_aligned_core(mem)
-#    define safe_Free_page_aligned(mem) safe_free_page_aligned(mem)
+#    define safe_Free_page_aligned(mem) safe_free_page_aligned_core(mem)
 #endif

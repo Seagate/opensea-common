@@ -73,6 +73,7 @@
     <ClInclude Include="..\..\..\..\include\constraint_handling.h" />
     <ClInclude Include="..\..\..\..\include\env_detect.h" />
     <ClInclude Include="..\..\..\..\include\error_translation.h" />
+    <ClInclude Include="..\..\..\..\include\getopt_utils.h" />
     <ClInclude Include="..\..\..\..\include\impl_io_utils.h" />
     <ClInclude Include="..\..\..\..\include\impl_memory_safety.h" />
     <ClInclude Include="..\..\..\..\include\impl_sort_and_search.h" />
@@ -103,6 +104,7 @@
     <ClCompile Include="..\..\..\..\src\constraint_handling.c" />
     <ClCompile Include="..\..\..\..\src\env_detect.c" />
     <ClCompile Include="..\..\..\..\src\error_translation.c" />
+    <ClCompile Include="..\..\..\..\src\getopt_utils.c" />
     <ClCompile Include="..\..\..\..\src\io_utils.c" />
     <ClCompile Include="..\..\..\..\src\math_utils.c" />
     <ClCompile Include="..\..\..\..\src\memory_safety.c" />

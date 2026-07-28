@@ -340,7 +340,7 @@ src_files = [
     'src/constraint_handling.c',
     'src/env_detect.c',
     'src/error_translation.c',
-    'src/getopt.c',
+    'src/getopt_utils.c',
     'src/io_utils.c',
     'src/math_utils.c',
     'src/memory_safety.c',

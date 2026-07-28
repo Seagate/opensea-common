@@ -431,6 +431,7 @@ LIB_SRC_FILES = \
    $(SRC_DIR)constraint_handling.c\
 	$(SRC_DIR)env_detect.c\
 	$(SRC_DIR)error_translation.c\
+   $(SRC_DIR)getopt_utils.c\
 	$(SRC_DIR)io_utils.c\
 	$(SRC_DIR)math_utils.c\
 	$(SRC_DIR)memory_safety.c\

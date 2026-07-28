@@ -348,6 +348,7 @@
     <ClInclude Include="..\..\..\..\include\type_conversion.h" />
     <ClInclude Include="..\..\..\..\include\unit_conversion.h" />
     <ClInclude Include="..\..\..\..\include\windows_version_detect.h" />
+    <ClInclude Include="..\..\..\..\include\getopt_utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\bit_manip.c" />
@@ -405,6 +406,7 @@
     <ClCompile Include="..\..\..\..\src\windows_env_detect.c" />
     <ClCompile Include="..\..\..\..\src\windows_secure_file.c" />
     <ClCompile Include="..\..\..\..\src\windows_version_detect.c" />
+    <ClCompile Include="..\..\..\..\src\getopt_utils.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

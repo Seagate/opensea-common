@@ -20,6 +20,7 @@ e = executable(
     'opensea-common-tests',
     test_sources,
     dependencies: [opensea_common_dep],
+    c_args: global_cpp_args,  # Access the same variable from parent scope
 )
 
 test('opensea-common-unit-tests', e)

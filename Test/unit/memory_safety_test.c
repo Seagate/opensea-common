@@ -1,8 +1,9 @@
-#include "test_framework.h"
 #include "io_utils.h"
 #include "testConstants.h"
+#include "test_framework.h"
 
-static void test_safe_malloc(void) {
+static void test_safe_malloc(void)
+{
     void* ptr = safe_malloc(100);
     TEST_ASSERT(ptr != NULL, "safe_malloc should return a non-null pointer for a non-zero size");
     free(ptr);
@@ -10,33 +11,35 @@ static void test_safe_malloc(void) {
     // Test that safe_malloc returns null for a size of zero - invokes constraint handler
     ptr = safe_malloc(0);
     TEST_ASSERT(ptr == NULL, "safe_malloc should return a null pointer for a size of zero");
-} 
+}
 
-static void test_safe_calloc(void) {
+static void test_safe_calloc(void)
+{
     void* ptr = safe_calloc(10, 20);
     TEST_ASSERT(ptr != NULL, "safe_calloc should return a non-null pointer for non-zero count and size");
     free(ptr);
 
     // Test that safe_calloc returns null for a count of zero - invokes constraint handler
     errno = 0;
-    ptr = safe_calloc(0, 20);
+    ptr   = safe_calloc(0, 20);
     TEST_ASSERT(ptr == NULL, "safe_calloc should return a null pointer for a count of zero");
     TEST_ASSERT(errno == EINVAL, "safe_calloc should set errno to EINVAL when count is zero");
 
     // Test that safe_calloc returns null for a size of zero - invokes constraint handler
     errno = 0;
-    ptr = safe_calloc(10, 0);
+    ptr   = safe_calloc(10, 0);
     TEST_ASSERT(ptr == NULL, "safe_calloc should return a null pointer for a size of zero");
     TEST_ASSERT(errno == EINVAL, "safe_calloc should set errno to EINVAL when size is zero");
 
     // Test that safe_calloc returns null for a count > (SIZE_MAX / size) - invokes constraint handler
     errno = 0;
-    ptr = safe_calloc(SIZE_MAX, 2);
+    ptr   = safe_calloc(SIZE_MAX, 2);
     TEST_ASSERT(ptr == NULL, "safe_calloc should return a null pointer for a count > (SIZE_MAX / size)");
     TEST_ASSERT(errno == EINVAL, "safe_calloc should set errno to EINVAL when count > (SIZE_MAX / size)");
 }
 
-static void test_safe_realloc(void) {
+static void test_safe_realloc(void)
+{
     void* ptr = safe_malloc(100);
     TEST_ASSERT(ptr != NULL, "safe_malloc should return a non-null pointer for a non-zero size");
 
@@ -63,7 +66,8 @@ static void test_safe_realloc(void) {
     TEST_ASSERT(new_ptr == NULL, "safe_realloc should return a null pointer when reallocating to zero");
 }
 
-static void test_safe_reallocf(void) {
+static void test_safe_reallocf(void)
+{
     void* ptr = safe_malloc(100);
     TEST_ASSERT(ptr != NULL, "safe_malloc should return a non-null pointer for a non-zero size");
 
@@ -73,7 +77,7 @@ static void test_safe_reallocf(void) {
     free(new_ptr);
 
     // Test that reallocating to zero frees the memory and returns null
-    ptr = safe_malloc(100);
+    ptr     = safe_malloc(100);
     new_ptr = safe_reallocf(&ptr, 0);
     TEST_ASSERT(new_ptr == NULL, "safe_reallocf should return a null pointer when reallocating to zero");
 
@@ -82,115 +86,135 @@ static void test_safe_reallocf(void) {
     TEST_ASSERT(new_ptr == NULL, "safe_reallocf should return a null pointer when the input pointer is NULL");
 
     // Reallocating to a larger size but realloc fails, should free the original block and return NULL
-    ptr = safe_malloc(100);
+    ptr     = safe_malloc(100);
     new_ptr = safe_reallocf(&ptr, RSIZE_MAX);
-    TEST_ASSERT(new_ptr == NULL, "safe_reallocf should return a null pointer when reallocating to an excessively large size");
-    TEST_ASSERT(ptr == NULL, "safe_reallocf should set the original pointer to NULL when reallocating to an excessively large size");
+    TEST_ASSERT(new_ptr == NULL,
+                "safe_reallocf should return a null pointer when reallocating to an excessively large size");
+    TEST_ASSERT(ptr == NULL,
+                "safe_reallocf should set the original pointer to NULL when reallocating to an excessively large size");
 
     // Test when block is NULL, should return safe_malloc behavior
-    ptr = NULL;
+    ptr     = NULL;
     new_ptr = safe_reallocf(&ptr, 100);
     TEST_ASSERT(new_ptr != NULL, "safe_reallocf should return a non-null pointer when the input pointer is NULL");
     free(new_ptr);
 }
 
-static void test_safe_free_core(void) {
+static void test_safe_free_core(void)
+{
     char* ptr = safe_malloc(100);
     safe_free_core((void**)&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_core should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_char(void) {
+static void test_safe_free_char(void)
+{
     char* ptr = safe_malloc(100);
     safe_free_char(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_char should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_schar(void) {
+static void test_safe_free_schar(void)
+{
     signed char* ptr = safe_malloc(100);
     safe_free_schar(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_schar should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_uchar(void) {
+static void test_safe_free_uchar(void)
+{
     unsigned char* ptr = safe_malloc(100);
     safe_free_uchar(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_uchar should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_wchar(void) {
+static void test_safe_free_wchar(void)
+{
     wchar_t* ptr = safe_malloc(100 * sizeof(wchar_t));
     safe_free_wchar(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_wchar should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_short(void) {
+static void test_safe_free_short(void)
+{
     signed short* ptr = safe_malloc(100);
     safe_free_short(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_short should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_ushort(void) {
+static void test_safe_free_ushort(void)
+{
     unsigned short* ptr = safe_malloc(100);
     safe_free_ushort(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_ushort should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_int(void) {
+static void test_safe_free_int(void)
+{
     signed int* ptr = safe_malloc(100);
     safe_free_int(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_int should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_uint(void) {
+static void test_safe_free_uint(void)
+{
     unsigned int* ptr = safe_malloc(100);
     safe_free_uint(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_uint should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_long(void) {
+static void test_safe_free_long(void)
+{
     signed long* ptr = safe_malloc(100);
     safe_free_long(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_long should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_ulong(void) {
+static void test_safe_free_ulong(void)
+{
     unsigned long* ptr = safe_malloc(100);
     safe_free_ulong(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_ulong should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_longlong(void) {
+static void test_safe_free_longlong(void)
+{
     signed long long* ptr = safe_malloc(100);
     safe_free_longlong(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_longlong should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_ulonglong(void) {
+static void test_safe_free_ulonglong(void)
+{
     unsigned long long* ptr = safe_malloc(100);
     safe_free_ulonglong(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_ulonglong should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_float(void) {
+static void test_safe_free_float(void)
+{
     float* ptr = safe_malloc(100);
     safe_free_float(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_float should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_double(void) {
+static void test_safe_free_double(void)
+{
     double* ptr = safe_malloc(100);
     safe_free_double(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_double should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_longdouble(void) {
+static void test_safe_free_longdouble(void)
+{
     long double* ptr = safe_malloc(100);
     safe_free_longdouble(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_longdouble should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free(void) {
+#if defined(USING_C11) && defined(safe_free)
+static void test_safe_free(void)
+{
     char* char_ptr = safe_malloc(100);
     safe_free(&char_ptr);
     TEST_ASSERT(char_ptr == NULL, "safe_free should set the signed char pointer to NULL after freeing");
@@ -243,30 +267,36 @@ static void test_safe_free(void) {
     safe_free(&longdouble_ptr);
     TEST_ASSERT(longdouble_ptr == NULL, "safe_free should set the long double pointer to NULL after freeing");
 }
-
-#if defined(_WIN32)
-    static void test_safe_free_tchar(void) {
-        TCHAR* memory = safe_malloc(50);
-        safe_free_tchar(&memory);
-        TEST_ASSERT(memory == NULL, "safe_free should set the TCHAR pointer to NULL after freeing");
-    }
 #endif
 
-static void test_is_Empty(void) {
+#if defined(_WIN32)
+static void test_safe_free_tchar(void)
+{
+    TCHAR* memory = safe_malloc(50);
+    safe_free_tchar(&memory);
+    TEST_ASSERT(memory == NULL, "safe_free should set the TCHAR pointer to NULL after freeing");
+}
+#endif
+
+static void test_is_Empty(void)
+{
     char buffer[10] = {0};
     TEST_ASSERT(is_Empty(buffer, sizeof(buffer)), "is_Empty should return true for a buffer initialized to zero");
 
     buffer[5] = 'A';
-    TEST_ASSERT(!is_Empty(buffer, sizeof(buffer)), "is_Empty should return false for a buffer that contains non-zero values");
+    TEST_ASSERT(!is_Empty(buffer, sizeof(buffer)),
+                "is_Empty should return false for a buffer that contains non-zero values");
 
     TEST_ASSERT(!is_Empty(NULL, sizeof(buffer)), "is_Empty should return false for a null pointer");
     TEST_ASSERT(!is_Empty(buffer, 0), "is_Empty should return false for a zero size");
 }
 
-static void test_safe_memset(void) {
-    char buffer[10]; 
+static void test_safe_memset(void)
+{
+    char buffer[10];
     safe_memset(buffer, sizeof(buffer), '3', sizeof(buffer));
-    for (size_t i = 0; i < sizeof(buffer); i++) {
+    for (size_t i = 0; i < sizeof(buffer); i++)
+    {
         TEST_ASSERT(buffer[i] == '3', "safe_memset should set all bytes in the buffer to '3'");
     }
 
@@ -277,32 +307,39 @@ static void test_safe_memset(void) {
 
     // Test when dest is NULL
     errno = 0;
-    TEST_ASSERT(safe_memset(NULL, sizeof(buffer), '3', sizeof(buffer)) != 0, "safe_memset should return an error code when dest is NULL");
+    TEST_ASSERT(safe_memset(NULL, sizeof(buffer), '3', sizeof(buffer)) != 0,
+                "safe_memset should return an error code when dest is NULL");
     TEST_ASSERT(errno == EINVAL, "safe_memset should set errno to EINVAL when dest is NULL");
 
     // Test when destsz > RSIZE_MAX
     errno = 0;
-    TEST_ASSERT(safe_memset(buffer, RSIZE_MAX + 1, '3', sizeof(buffer)) != 0, "safe_memset should return an error code when destsz is greater than RSIZE_MAX");
+    TEST_ASSERT(safe_memset(buffer, RSIZE_MAX + 1, '3', sizeof(buffer)) != 0,
+                "safe_memset should return an error code when destsz is greater than RSIZE_MAX");
     TEST_ASSERT(errno == ERANGE, "safe_memset should set errno to ERANGE when destsz is greater than RSIZE_MAX");
 
     // Test when count > RSIZE_MAX
     errno = 0;
-    TEST_ASSERT(safe_memset(buffer, sizeof(buffer), '3', RSIZE_MAX + 1) != 0, "safe_memset should return an error code when count is greater than RSIZE_MAX");
+    TEST_ASSERT(safe_memset(buffer, sizeof(buffer), '3', RSIZE_MAX + 1) != 0,
+                "safe_memset should return an error code when count is greater than RSIZE_MAX");
     TEST_ASSERT(errno == ERANGE, "safe_memset should set errno to ERANGE when count is greater than RSIZE_MAX");
 
     // Test when count > destsz
     errno = 0;
-    TEST_ASSERT(safe_memset(buffer, sizeof(buffer), '3', sizeof(buffer) + 1) != 0, "safe_memset should return an error code when count is greater than destsz");
+    TEST_ASSERT(safe_memset(buffer, sizeof(buffer), '3', sizeof(buffer) + 1) != 0,
+                "safe_memset should return an error code when count is greater than destsz");
     TEST_ASSERT(errno == ERANGE, "safe_memset should set errno to ERANGE when count is greater than destsz");
 }
 
-static void test_explicit_zeroes(void) {
+static void test_explicit_zeroes(void)
+{
     int buffer[10];
-    for (size_t i = 0; i < sizeof(buffer) / sizeof(buffer[0]); i++) {
+    for (size_t i = 0; i < sizeof(buffer) / sizeof(buffer[0]); i++)
+    {
         buffer[i] = 42; // Fill with non-zero values
     }
     explicit_zeroes(buffer, sizeof(buffer));
-    for (size_t i = 0; i < sizeof(buffer) / sizeof(buffer[0]); i++) {
+    for (size_t i = 0; i < sizeof(buffer) / sizeof(buffer[0]); i++)
+    {
         TEST_ASSERT(buffer[i] == 0, "explicit_zeroes should set all bytes in the buffer to zero");
     }
 
@@ -312,136 +349,157 @@ static void test_explicit_zeroes(void) {
     // Testing when the buffer is already zeroed out
     int char_buffer[10] = {0};
     explicit_zeroes(char_buffer, sizeof(char_buffer));
-    for (size_t i = 0; i < sizeof(char_buffer) / sizeof(char_buffer[0]); i++) {
+    for (size_t i = 0; i < sizeof(char_buffer) / sizeof(char_buffer[0]); i++)
+    {
         TEST_ASSERT(char_buffer[i] == 0, "explicit_zeroes should set all bytes in the buffer to zero");
     }
 }
 
-static void test_free_aligned(void) {
+static void test_free_aligned(void)
+{
     char* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     free_aligned(ptr);
 }
 
-static void test_malloc_aligned(void) {
+static void test_malloc_aligned(void)
+{
     char* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     free_aligned(ptr);
 }
 
-static void test_safe_free_aligned_core(void) {
+static void test_safe_free_aligned_core(void)
+{
     char* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_core((void**)&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_core should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_char(void) {
+static void test_safe_free_aligned_char(void)
+{
     char* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_char(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_char should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_wchar(void) {
+static void test_safe_free_aligned_wchar(void)
+{
     wchar_t* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_wchar(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_wchar should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_schar(void) {
+static void test_safe_free_aligned_schar(void)
+{
     signed char* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_schar(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_schar should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_uchar(void) {
+static void test_safe_free_aligned_uchar(void)
+{
     unsigned char* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_uchar(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_uchar should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_short(void) {
+static void test_safe_free_aligned_short(void)
+{
     signed short* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_short(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_short should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_ushort(void) {
+static void test_safe_free_aligned_ushort(void)
+{
     unsigned short* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_ushort(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_ushort should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_int(void) {
+static void test_safe_free_aligned_int(void)
+{
     signed int* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_int(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_int should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_uint(void) {
+static void test_safe_free_aligned_uint(void)
+{
     unsigned int* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_uint(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_uint should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_long(void) {
+static void test_safe_free_aligned_long(void)
+{
     signed long* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_long(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_long should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_ulong(void) {
+static void test_safe_free_aligned_ulong(void)
+{
     unsigned long* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_ulong(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_ulong should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_longlong(void) {
+static void test_safe_free_aligned_longlong(void)
+{
     signed long long* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_longlong(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_longlong should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_ulonglong(void) {
+static void test_safe_free_aligned_ulonglong(void)
+{
     unsigned long long* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_ulonglong(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_ulonglong should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_float(void) {
+static void test_safe_free_aligned_float(void)
+{
     float* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_float(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_float should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_double(void) {
+static void test_safe_free_aligned_double(void)
+{
     double* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_double(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_double should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned_longdouble(void) {
+static void test_safe_free_aligned_longdouble(void)
+{
     long double* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned_longdouble(&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_aligned_longdouble should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_aligned(void) {
+#if defined(USING_C11) && defined(safe_free_aligned)
+static void test_safe_free_aligned(void)
+{
     char* ptr = malloc_aligned(100, 16);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     safe_free_aligned(&ptr);
@@ -457,34 +515,40 @@ static void test_safe_free_aligned(void) {
     safe_free_aligned(&ptr3);
     TEST_ASSERT(ptr3 == NULL, "safe_free_aligned should set the pointer to NULL after freeing");
 }
+#endif
 
-static void test_calloc_aligned(void) {
-    size_t alignment = 16;
+static void test_calloc_aligned(void)
+{
+    size_t alignment    = 16;
     size_t num_elements = 10;
     size_t element_size = sizeof(int);
-    int* ptr = calloc_aligned(num_elements, element_size, alignment);
+    int*   ptr          = calloc_aligned(num_elements, element_size, alignment);
     TEST_ASSERT(ptr != NULL, "calloc_aligned should return a non-null pointer for non-zero count and size");
-    for (size_t i = 0; i < num_elements; i++) {
+    for (size_t i = 0; i < num_elements; i++)
+    {
         TEST_ASSERT(ptr[i] == 0, "calloc_aligned should initialize all elements to zero");
     }
     free_aligned(ptr);
 }
 
-static void test_realloc_aligned(void) {
-    size_t alignment = 16;
+static void test_realloc_aligned(void)
+{
+    size_t alignment    = 16;
     size_t num_elements = 10;
     size_t element_size = sizeof(int);
-    int* ptr = calloc_aligned(num_elements, element_size, alignment);
-    for (size_t i = 0; i < num_elements; i++) {
+    int*   ptr          = calloc_aligned(num_elements, element_size, alignment);
+    for (size_t i = 0; i < num_elements; i++)
+    {
         ptr[i] = (int)i;
     }
     TEST_ASSERT(ptr != NULL, "calloc_aligned should return a non-null pointer for non-zero count and size");
 
     // Reallocate to a larger size
     size_t new_num_elements = 20;
-    int* new_ptr = realloc_aligned(ptr, element_size * num_elements, element_size * new_num_elements, alignment);
+    int*   new_ptr = realloc_aligned(ptr, element_size * num_elements, element_size * new_num_elements, alignment);
     TEST_ASSERT(new_ptr != NULL, "realloc_aligned should return a non-null pointer when reallocating to a larger size");
-    for (size_t i = 0; i < num_elements; i++) {
+    for (size_t i = 0; i < num_elements; i++)
+    {
         TEST_ASSERT(new_ptr[i] == (int)i, "realloc_aligned should preserve the contents of the original memory block");
     }
 
@@ -493,12 +557,13 @@ static void test_realloc_aligned(void) {
     TEST_ASSERT(new_ptr == NULL, "realloc_aligned should return a null pointer when reallocating to zero");
 }
 
-static void test_safe_malloc_aligned(void) {
+static void test_safe_malloc_aligned(void)
+{
     size_t alignment = 16;
-    char* ptr = safe_malloc_aligned(100, alignment);
+    char*  ptr       = safe_malloc_aligned(100, alignment);
     TEST_ASSERT(ptr != NULL, "safe_malloc_aligned should return a non-null pointer for a non-zero size");
     free_aligned(ptr);
-    
+
     errno = 0;
     // Test for size = 0 - invokes constraint handler
     ptr = safe_malloc_aligned(0, alignment);
@@ -506,43 +571,47 @@ static void test_safe_malloc_aligned(void) {
     TEST_ASSERT(errno == EINVAL, "safe_malloc_aligned should set errno to EINVAL when size is zero");
 }
 
-static void test_safe_calloc_aligned(void) {
-    size_t alignment = 16;
+static void test_safe_calloc_aligned(void)
+{
+    size_t alignment    = 16;
     size_t num_elements = 10;
     size_t element_size = sizeof(int);
-    int* ptr = safe_calloc_aligned(num_elements, element_size, alignment);
+    int*   ptr          = safe_calloc_aligned(num_elements, element_size, alignment);
     TEST_ASSERT(ptr != NULL, "safe_calloc_aligned should return a non-null pointer for non-zero count and size");
-    for (size_t i = 0; i < num_elements; i++) {
+    for (size_t i = 0; i < num_elements; i++)
+    {
         TEST_ASSERT(ptr[i] == 0, "safe_calloc_aligned should initialize all elements to zero");
     }
     free_aligned(ptr);
 
     // Test when count is zero - invokes constraint handler
     errno = 0;
-    ptr = safe_calloc_aligned(0, element_size, alignment);
+    ptr   = safe_calloc_aligned(0, element_size, alignment);
     TEST_ASSERT(ptr == NULL, "safe_calloc_aligned should return a null pointer for a count of zero");
     TEST_ASSERT(errno == EINVAL, "safe_calloc_aligned should set errno to EINVAL when count is zero");
 
     // Test when size is zero - invokes constraint handler
     errno = 0;
-    ptr = safe_calloc_aligned(num_elements, 0, alignment);
+    ptr   = safe_calloc_aligned(num_elements, 0, alignment);
     TEST_ASSERT(ptr == NULL, "safe_calloc_aligned should return a null pointer for a size of zero");
     TEST_ASSERT(errno == EINVAL, "safe_calloc_aligned should set errno to EINVAL when size is zero");
 
     // Test when count > (SIZE_MAX / size) - invokes constraint handler
     errno = 0;
-    ptr = safe_calloc_aligned(SIZE_MAX, 2, alignment);
+    ptr   = safe_calloc_aligned(SIZE_MAX, 2, alignment);
     TEST_ASSERT(ptr == NULL, "safe_calloc_aligned should return a null pointer for a count > (SIZE_MAX / size)");
     TEST_ASSERT(errno == EINVAL, "safe_calloc_aligned should set errno to EINVAL when count > (SIZE_MAX / size)");
 }
 
-static void test_safe_realloc_aligned(void) {
+static void test_safe_realloc_aligned(void)
+{
     size_t num_elements = 20;
 
     int* ptr = safe_calloc_aligned(num_elements, sizeof(int), 16);
     TEST_ASSERT(ptr != NULL, "safe_calloc_aligned should return a non-null pointer for non-zero count and size");
 
-    for (size_t i = 0; i < num_elements; i++) {
+    for (size_t i = 0; i < num_elements; i++)
+    {
         ptr[i] = (int)i;
     }
 
@@ -552,7 +621,8 @@ static void test_safe_realloc_aligned(void) {
 
     // Test when alignment < sizeof(void*) should be promoted to sizeof(void*)
     new_ptr = safe_realloc_aligned(new_ptr, sizeof(int) * num_elements, sizeof(int) * num_elements, 1);
-    TEST_ASSERT(new_ptr != NULL, "safe_realloc_aligned should set alignment to sizeof(void*) when alignment is less than sizeof(void*)");
+    TEST_ASSERT(new_ptr != NULL,
+                "safe_realloc_aligned should set alignment to sizeof(void*) when alignment is less than sizeof(void*)");
 
     // Test when size is zero, should free the original block and return null
     new_ptr = safe_realloc_aligned(new_ptr, sizeof(int) * num_elements, 0, 16);
@@ -560,55 +630,64 @@ static void test_safe_realloc_aligned(void) {
 
     // Test for RSIZE_MAX, should free the original block and return null
     new_ptr = safe_realloc_aligned(ptr, sizeof(int) * num_elements, RSIZE_MAX, 16);
-    TEST_ASSERT(new_ptr == NULL, "safe_realloc_aligned should return a null pointer when size is large enough to cause overflow");
+    TEST_ASSERT(new_ptr == NULL,
+                "safe_realloc_aligned should return a null pointer when size is large enough to cause overflow");
 
-    safe_free_aligned(&ptr);
+    safe_free_aligned_core((void**)&ptr);
 }
 
-static void test_safe_reallocf_aligned(void) {
-    size_t alignment = 16;
+static void test_safe_reallocf_aligned(void)
+{
+    size_t alignment    = 16;
     size_t num_elements = 10;
     size_t element_size = sizeof(int);
-    int* ptr = calloc_aligned(num_elements, element_size, alignment);
+    int*   ptr          = calloc_aligned(num_elements, element_size, alignment);
     TEST_ASSERT(ptr != NULL, "calloc_aligned should return a non-null pointer for non-zero count and size");
-    for (size_t i = 0; i < num_elements; i++) {
+    for (size_t i = 0; i < num_elements; i++)
+    {
         ptr[i] = (int)i;
     }
 
     // Reallocate to a larger size
     int* new_ptr = safe_reallocf_aligned((void**)&ptr, element_size * num_elements, RSIZE_MAX, alignment);
-    TEST_ASSERT(new_ptr == NULL, "safe_reallocf_aligned should return a null pointer when reallocating to an excessively large size");
-    TEST_ASSERT(ptr == NULL, "safe_reallocf_aligned should return a null pointer when reallocating to a larger size fails");
+    TEST_ASSERT(new_ptr == NULL,
+                "safe_reallocf_aligned should return a null pointer when reallocating to an excessively large size");
+    TEST_ASSERT(ptr == NULL,
+                "safe_reallocf_aligned should return a null pointer when reallocating to a larger size fails");
 
     // Test when block is NULL, should return M_NULLPTR
     new_ptr = safe_reallocf_aligned(NULL, 0, element_size * num_elements, alignment);
     TEST_ASSERT(new_ptr == NULL, "safe_reallocf_aligned should return a null pointer when the input pointer is NULL");
 
     // Test when *block is NULL, should behave like safe_malloc_aligned
-    ptr = NULL;
+    ptr     = NULL;
     new_ptr = safe_reallocf_aligned((void**)&ptr, 0, element_size * num_elements, alignment);
-    TEST_ASSERT(new_ptr != NULL, "safe_reallocf_aligned should return a non-null pointer when the input pointer is NULL");
-    safe_free_aligned(&new_ptr);
+    TEST_ASSERT(new_ptr != NULL,
+                "safe_reallocf_aligned should return a non-null pointer when the input pointer is NULL");
+    safe_free_aligned_core((void**)&new_ptr);
 
     // Test when size is zero, should free the original block and return null
-    ptr = calloc_aligned(num_elements, element_size, alignment);
+    ptr     = calloc_aligned(num_elements, element_size, alignment);
     new_ptr = safe_reallocf_aligned((void**)&ptr, element_size * num_elements, 0, alignment);
     TEST_ASSERT(new_ptr == NULL, "safe_reallocf_aligned should return a null pointer when reallocating to zero");
     TEST_ASSERT(ptr == NULL, "safe_reallocf_aligned should set the original pointer to NULL when reallocating to zero");
 }
 
-static void test_get_System_Pagesize(void) {
+static void test_get_System_Pagesize(void)
+{
     size_t page_size = get_System_Pagesize();
     TEST_ASSERT(page_size > 0, "get_System_Pagesize should return a positive page size");
 }
 
-static void test_free_page_aligned(void) {
+static void test_free_page_aligned(void)
+{
     char* ptr = malloc_page_aligned(100);
     TEST_ASSERT(ptr != NULL, "malloc_page_aligned should return a non-null pointer for a non-zero size");
     free_page_aligned(ptr);
 }
 
-static void test_malloc_page_aligned(void) {
+static void test_malloc_page_aligned(void)
+{
     char* ptr = malloc_page_aligned(100);
     TEST_ASSERT(ptr != NULL, "malloc_page_aligned should return a non-null pointer for a non-zero size");
     free_page_aligned(ptr);
@@ -618,14 +697,17 @@ static void test_malloc_page_aligned(void) {
     TEST_ASSERT(ptr2 == NULL, "malloc_page_aligned should return a null pointer for a size greater than RSIZE_MAX");
 }
 
-static void test_safe_free_page_aligned_core(void) {
+static void test_safe_free_page_aligned_core(void)
+{
     char* ptr = malloc_page_aligned(100);
     TEST_ASSERT(ptr != NULL, "malloc_page_aligned should return a non-null pointer for a non-zero size");
     safe_free_page_aligned_core((void**)&ptr);
     TEST_ASSERT(ptr == NULL, "safe_free_page_aligned_core should set the pointer to NULL after freeing");
 }
 
-static void test_safe_free_page_aligned(void) {
+#if defined(USING_C11) && defined(safe_free_page_aligned)
+static void test_safe_free_page_aligned(void)
+{
     char* ptr = malloc_page_aligned(100);
     TEST_ASSERT(ptr != NULL, "malloc_page_aligned should return a non-null pointer for a non-zero size");
     safe_free_page_aligned(&ptr);
@@ -633,7 +715,7 @@ static void test_safe_free_page_aligned(void) {
 
     double* ptr2 = malloc_page_aligned(100);
     TEST_ASSERT(ptr2 != NULL, "malloc_page_aligned should return a non-null pointer for a non-zero size");
-    safe_free_page_aligned(&ptr2);  
+    safe_free_page_aligned(&ptr2);
     TEST_ASSERT(ptr2 == NULL, "safe_free_page_aligned should set the double pointer to NULL after freeing");
 
     float* ptr3 = malloc_page_aligned(100);
@@ -641,13 +723,16 @@ static void test_safe_free_page_aligned(void) {
     safe_free_page_aligned(&ptr3);
     TEST_ASSERT(ptr3 == NULL, "safe_free_page_aligned should set the float pointer to NULL after freeing");
 }
+#endif
 
-static void test_calloc_page_aligned(void) {
+static void test_calloc_page_aligned(void)
+{
     size_t num_elements = 10;
     size_t element_size = sizeof(int);
-    int* ptr = calloc_page_aligned(num_elements, element_size);
+    int*   ptr          = calloc_page_aligned(num_elements, element_size);
     TEST_ASSERT(ptr != NULL, "calloc_page_aligned should return a non-null pointer for non-zero count and size");
-    for (size_t i = 0; i < num_elements; i++) {
+    for (size_t i = 0; i < num_elements; i++)
+    {
         TEST_ASSERT(ptr[i] == 0, "calloc_page_aligned should initialize all elements to zero");
     }
     free_page_aligned(ptr);
@@ -656,98 +741,121 @@ static void test_calloc_page_aligned(void) {
     ptr = calloc_page_aligned(0, element_size);
     TEST_ASSERT(ptr == NULL, "calloc_page_aligned should return a null pointer for a count of zero");
 
-    // Test for size of zero    
+    // Test for size of zero
     ptr = calloc_page_aligned(10, 0);
     TEST_ASSERT(ptr == NULL, "calloc_page_aligned should return a null pointer for a size of zero");
 }
 
-static void test_realloc_page_aligned(void) {
+static void test_realloc_page_aligned(void)
+{
     size_t num_elements = 10;
     size_t element_size = sizeof(int);
-    int* ptr = calloc_page_aligned(num_elements, element_size);
+    int*   ptr          = calloc_page_aligned(num_elements, element_size);
     TEST_ASSERT(ptr != NULL, "calloc_page_aligned should return a non-null pointer for non-zero count and size");
-    for (size_t i = 0; i < num_elements; i++) {
+    for (size_t i = 0; i < num_elements; i++)
+    {
         ptr[i] = (int)i;
     }
 
     // Reallocate to a larger size
     size_t new_num_elements = 20;
-    int* new_ptr = realloc_page_aligned(ptr, element_size * num_elements, element_size * new_num_elements);
-    TEST_ASSERT(new_ptr != NULL, "realloc_page_aligned should return a non-null pointer when reallocating to a larger size");
-    for (size_t i = 0; i < num_elements; i++) {
-        TEST_ASSERT(new_ptr[i] == (int)i, "realloc_page_aligned should preserve the contents of the original memory block");
+    int*   new_ptr          = realloc_page_aligned(ptr, element_size * num_elements, element_size * new_num_elements);
+    TEST_ASSERT(new_ptr != NULL,
+                "realloc_page_aligned should return a non-null pointer when reallocating to a larger size");
+    for (size_t i = 0; i < num_elements; i++)
+    {
+        TEST_ASSERT(new_ptr[i] == (int)i,
+                    "realloc_page_aligned should preserve the contents of the original memory block");
     }
     free_page_aligned(new_ptr);
 }
 
-static void test_safe_malloc_page_aligned(void) {
-    char* ptr = safe_malloc_page_aligned(100); 
+static void test_safe_malloc_page_aligned(void)
+{
+    char* ptr = safe_malloc_page_aligned(100);
     TEST_ASSERT(ptr != NULL, "safe_malloc_page_aligned should return a non-null pointer for a non-zero size");
     free_page_aligned(ptr);
 }
 
-static void test_safe_calloc_page_aligned(void) {
+static void test_safe_calloc_page_aligned(void)
+{
     int* ptr = safe_calloc_page_aligned(10, sizeof(int));
     TEST_ASSERT(ptr != NULL, "safe_calloc_page_aligned should return a non-null pointer for non-zero count and size");
-    for (size_t i = 0; i < 10; i++) {
+    for (size_t i = 0; i < 10; i++)
+    {
         TEST_ASSERT(ptr[i] == 0, "safe_calloc_page_aligned should initialize all elements to zero");
     }
     free_page_aligned(ptr);
 }
 
-static void test_safe_realloc_page_aligned(void) {
+static void test_safe_realloc_page_aligned(void)
+{
     size_t num_elements = 10;
     size_t element_size = sizeof(int);
-    int* ptr = safe_calloc_page_aligned(num_elements, element_size);
-    for (size_t i = 0; i < num_elements; i++) {
+    int*   ptr          = safe_calloc_page_aligned(num_elements, element_size);
+    for (size_t i = 0; i < num_elements; i++)
+    {
         ptr[i] = (int)i;
     }
     TEST_ASSERT(ptr != NULL, "safe_calloc_page_aligned should return a non-null pointer for non-zero count and size");
 
     // Reallocate to a larger size
     size_t new_num_elements = 20;
-    int* new_ptr = safe_realloc_page_aligned(ptr, element_size * num_elements, element_size * new_num_elements);
-    TEST_ASSERT(new_ptr != NULL, "safe_realloc_page_aligned should return a non-null pointer when reallocating to a larger size");
-    for (size_t i = 0; i < num_elements; i++) {
-        TEST_ASSERT(new_ptr[i] == (int)i, "safe_realloc_page_aligned should preserve the contents of the original memory block");
+    int*   new_ptr = safe_realloc_page_aligned(ptr, element_size * num_elements, element_size * new_num_elements);
+    TEST_ASSERT(new_ptr != NULL,
+                "safe_realloc_page_aligned should return a non-null pointer when reallocating to a larger size");
+    for (size_t i = 0; i < num_elements; i++)
+    {
+        TEST_ASSERT(new_ptr[i] == (int)i,
+                    "safe_realloc_page_aligned should preserve the contents of the original memory block");
     }
     free_page_aligned(new_ptr);
 }
 
-static void test_safe_reallocf_page_aligned(void) {
+static void test_safe_reallocf_page_aligned(void)
+{
     size_t num_elements = 10;
     size_t element_size = sizeof(int);
-    int* ptr = safe_calloc_page_aligned(num_elements, element_size);
-    for (size_t i = 0; i < num_elements; i++) {
+    int*   ptr          = safe_calloc_page_aligned(num_elements, element_size);
+    for (size_t i = 0; i < num_elements; i++)
+    {
         ptr[i] = (int)i;
     }
     TEST_ASSERT(ptr != NULL, "safe_calloc_page_aligned should return a non-null pointer for non-zero count and size");
 
     // Reallocate to a larger size
     size_t new_num_elements = 20;
-    int* new_ptr = safe_reallocf_page_aligned((void**)&ptr, element_size * num_elements, element_size * new_num_elements);
-    TEST_ASSERT(new_ptr != NULL, "safe_reallocf_page_aligned should return a non-null pointer when reallocating to a larger size");
-    for (size_t i = 0; i < num_elements; i++) {
-        TEST_ASSERT(new_ptr[i] == (int)i, "safe_reallocf_page_aligned should preserve the contents of the original memory block");
+    int*   new_ptr =
+        safe_reallocf_page_aligned((void**)&ptr, element_size * num_elements, element_size * new_num_elements);
+    TEST_ASSERT(new_ptr != NULL,
+                "safe_reallocf_page_aligned should return a non-null pointer when reallocating to a larger size");
+    for (size_t i = 0; i < num_elements; i++)
+    {
+        TEST_ASSERT(new_ptr[i] == (int)i,
+                    "safe_reallocf_page_aligned should preserve the contents of the original memory block");
     }
     free_page_aligned(new_ptr);
 }
 
-static void test_memory_regions_overlap(void) {
+static void test_memory_regions_overlap(void)
+{
     char buffer[20];
 
     char* ptr1 = buffer;
-    char* ptr2 = buffer + 10; 
-    char* ptr3 = buffer + 5;  
+    char* ptr2 = buffer + 10;
+    char* ptr3 = buffer + 5;
 
     size_t size = 10;
-    TEST_ASSERT(memory_regions_overlap(ptr1, size, ptr2, size) == 0, "memory_regions_overlap should return zero for non-overlapping regions");
-    TEST_ASSERT(memory_regions_overlap(ptr1, size, ptr3, size) != 0, "memory_regions_overlap should return non-zero value for overlapping regions");
+    TEST_ASSERT(memory_regions_overlap(ptr1, size, ptr2, size) == 0,
+                "memory_regions_overlap should return zero for non-overlapping regions");
+    TEST_ASSERT(memory_regions_overlap(ptr1, size, ptr3, size) != 0,
+                "memory_regions_overlap should return non-zero value for overlapping regions");
 }
 
-static void test_safe_memmove(void) {
-    char src[20] = "Hello, World!";
-    char dest[10];
+static void test_safe_memmove(void)
+{
+    char    src[20] = "Hello, World!";
+    char    dest[10];
     errno_t result = safe_memmove(dest, sizeof(dest), src, 5);
     TEST_ASSERT(result == 0, "safe_memmove should return zero on success");
 
@@ -777,16 +885,17 @@ static void test_safe_memmove(void) {
     TEST_ASSERT(result == errno, "safe_memmove should return errno when count is greater than destsz");
 }
 
-static void test_safe_memcpy(void) {
-    char src[20] = "Hello, World!";
-    char dest[10];
+static void test_safe_memcpy(void)
+{
+    char    src[20] = "Hello, World!";
+    char    dest[10];
     errno_t result = safe_memcpy(dest, sizeof(dest), src, 5);
     TEST_ASSERT(result == 0, "safe_memcpy should return zero on success");
     TEST_ASSERT(strncmp(dest, src, 5) == 0, "safe_memcpy should copy the correct data");
 
     // Test for overlapping
     char buffer[20] = "Hello, World!";
-    result = safe_memcpy(buffer + 5, sizeof(buffer) - 5, buffer, 10);
+    result          = safe_memcpy(buffer + 5, sizeof(buffer) - 5, buffer, 10);
 
 #ifdef MEMCPY_IS_MEMCPY_NOT_MEMMOVE
     TEST_ASSERT(result == EINVAL, "safe_memcpy should fail for overlapping regions");
@@ -799,9 +908,10 @@ static void test_safe_memcpy(void) {
 #endif
 }
 
-static void test_safe_memcpy_no_overlap(void) {
-    char src[20] = "Hello, World!";
-    char dest[10];
+static void test_safe_memcpy_no_overlap(void)
+{
+    char    src[20] = "Hello, World!";
+    char    dest[10];
     errno_t result = safe_memcpy_no_overlap(dest, sizeof(dest), src, 10);
     TEST_ASSERT(result == 0, "safe_memcpy_no_overlap should return zero on success");
     TEST_ASSERT(strncmp(dest, src, 10) == 0, "safe_memcpy_no_overlap should copy the correct data");
@@ -818,12 +928,14 @@ static void test_safe_memcpy_no_overlap(void) {
 
     // Test when destsz > RSIZE_MAX - invokes constraint handler
     result = safe_memcpy_no_overlap(dest, RSIZE_MAX + 1, src, 5);
-    TEST_ASSERT(errno == EINVAL, "safe_memcpy_no_overlap should set errno to EINVAL when destsz is greater than RSIZE_MAX");
+    TEST_ASSERT(errno == EINVAL,
+                "safe_memcpy_no_overlap should set errno to EINVAL when destsz is greater than RSIZE_MAX");
     TEST_ASSERT(result == errno, "safe_memcpy_no_overlap should return errno when destsz is greater than RSIZE_MAX");
 
     // Test when count > RSIZE_MAX - invokes constraint handler
     result = safe_memcpy_no_overlap(dest, sizeof(dest), src, RSIZE_MAX + 1);
-    TEST_ASSERT(errno == EINVAL, "safe_memcpy_no_overlap should set errno to EINVAL when count is greater than RSIZE_MAX");
+    TEST_ASSERT(errno == EINVAL,
+                "safe_memcpy_no_overlap should set errno to EINVAL when count is greater than RSIZE_MAX");
     TEST_ASSERT(result == errno, "safe_memcpy_no_overlap should return errno when count is greater than RSIZE_MAX");
 
     // Test when count > destsz - invokes constraint handler
@@ -833,13 +945,14 @@ static void test_safe_memcpy_no_overlap(void) {
 
     // Test for overlapping
     char buffer[20] = "Hello, World!";
-    result = safe_memcpy_no_overlap(buffer + 5, sizeof(buffer) - 5, buffer, 10);
+    result          = safe_memcpy_no_overlap(buffer + 5, sizeof(buffer) - 5, buffer, 10);
     TEST_ASSERT(result != 0, "safe_memcpy_no_overlap should return non-zero for overlapping regions");
 }
 
-static void test_safe_memccpy(void) {
-    char src[20] = "Hello, World!";
-    char dest[20];
+static void test_safe_memccpy(void)
+{
+    char    src[20] = "Hello, World!";
+    char    dest[20];
     errno_t result = safe_memccpy(dest, sizeof(dest), src, 'o', sizeof(src));
     TEST_ASSERT(result == 0, "safe_memccpy should return zero on success");
     TEST_ASSERT(strncmp(dest, src, 5) == 0, "safe_memccpy should copy up to and including the specified character");
@@ -847,55 +960,59 @@ static void test_safe_memccpy(void) {
     // Testing when the character is not found
     result = safe_memccpy(dest, sizeof(dest), src, 'x', sizeof(src));
     TEST_ASSERT(result == 0, "safe_memccpy should return zero when the specified character is not found");
-    TEST_ASSERT(strncmp(dest, src, sizeof(src)) == 0, "safe_memccpy should copy the entire source buffer when the specified character is not found");
+    TEST_ASSERT(strncmp(dest, src, sizeof(src)) == 0,
+                "safe_memccpy should copy the entire source buffer when the specified character is not found");
 
     // Test when the count is less than the position of the specified character
     result = safe_memccpy(dest, sizeof(dest), src, 'o', 3);
-    TEST_ASSERT(result == 0, "safe_memccpy should return zero when the count is less than the position of the specified character");
-    TEST_ASSERT(strncmp(dest, src, 3) == 0, "safe_memccpy should copy only the specified count of bytes when the count is less than the position of the specified character");
+    TEST_ASSERT(result == 0,
+                "safe_memccpy should return zero when the count is less than the position of the specified character");
+    TEST_ASSERT(strncmp(dest, src, 3) == 0, "safe_memccpy should copy only the specified count of bytes when the count "
+                                            "is less than the position of the specified character");
 
     // Test when dest is NULL - calls abort handler
-    errno = 0;
+    errno  = 0;
     result = safe_memccpy(NULL, sizeof(dest), src, 'o', sizeof(src));
     TEST_ASSERT(errno == EINVAL, "safe_memccpy should set errno to EINVAL when dest is NULL");
     TEST_ASSERT(result == errno, "safe_memccpy should return errno when dest is NULL");
 
     // Test when src is NULL - calls abort handler
-    errno = 0;
+    errno  = 0;
     result = safe_memccpy(dest, sizeof(dest), NULL, 'o', sizeof(src));
     TEST_ASSERT(errno == EINVAL, "safe_memccpy should set errno to EINVAL when src is NULL");
     TEST_ASSERT(result == errno, "safe_memccpy should return errno when src is NULL");
 
     // Test when destsz > RSIZE_MAX - calls abort handler
-    errno = 0;
+    errno  = 0;
     result = safe_memccpy(dest, RSIZE_MAX + 1, src, 'o', sizeof(src));
     TEST_ASSERT(errno == ERANGE, "safe_memccpy should set errno to ERANGE when destsz is greater than RSIZE_MAX");
     TEST_ASSERT(result == errno, "safe_memccpy should return errno when destsz is greater than RSIZE_MAX");
 
     // Test when count > RSIZE_MAX - calls abort handler
-    errno = 0;
+    errno  = 0;
     result = safe_memccpy(dest, sizeof(dest), src, 'o', RSIZE_MAX + 1);
     TEST_ASSERT(errno == ERANGE, "safe_memccpy should set errno to ERANGE when count is greater than RSIZE_MAX");
     TEST_ASSERT(result == errno, "safe_memccpy should return errno when count is greater than RSIZE_MAX");
 
     // Test when count > destsz - calls abort handler
-    errno = 0;
+    errno  = 0;
     result = safe_memccpy(dest, sizeof(dest), src, 'o', sizeof(dest) + 1);
     TEST_ASSERT(errno == ERANGE, "safe_memccpy should set errno to ERANGE when count is greater than destsz");
     TEST_ASSERT(result == errno, "safe_memccpy should return errno when count is greater than destsz");
 
     // Test for overlapping regions
     char buffer[20] = "Hello, World!";
-    result = safe_memccpy(buffer + 2, 10, buffer, 'o', 8);
+    result          = safe_memccpy(buffer + 2, 10, buffer, 'o', 8);
     TEST_ASSERT(result == EINVAL, "safe_memccpy should return errno for overlapping regions");
 
     result = safe_memccpy(buffer, 10, buffer + 2, 'o', 8);
     TEST_ASSERT(result == EINVAL, "safe_memccpy should return errno for overlapping regions");
 }
 
-static void test_safe_memcmove(void) {
-    char src[20] = "Hello, World!";
-    char dest[20];
+static void test_safe_memcmove(void)
+{
+    char    src[20] = "Hello, World!";
+    char    dest[20];
     errno_t result = safe_memcmove(dest, sizeof(dest), src, 'o', sizeof(src));
     TEST_ASSERT(result == 0, "safe_memcmove should return zero on success");
     TEST_ASSERT(strncmp(dest, src, 5) == 0, "safe_memcmove should copy up to and including the specified character");
@@ -903,76 +1020,82 @@ static void test_safe_memcmove(void) {
     // Testing when the character is not found
     result = safe_memcmove(dest, sizeof(dest), src, 'x', sizeof(src));
     TEST_ASSERT(result == 0, "safe_memcmove should return zero when the specified character is not found");
-    TEST_ASSERT(strncmp(dest, src, sizeof(src)) == 0, "safe_memcmove should copy the entire source buffer when the specified character is not found");
+    TEST_ASSERT(strncmp(dest, src, sizeof(src)) == 0,
+                "safe_memcmove should copy the entire source buffer when the specified character is not found");
 
     // Test when the count is less than the position of the specified character
     result = safe_memcmove(dest, sizeof(dest), src, 'o', 3);
-    TEST_ASSERT(result == 0, "safe_memcmove should return zero when the count is less than the position of the specified character");
-    TEST_ASSERT(strncmp(dest, src, 3) == 0, "safe_memcmove should copy only the specified count of bytes when the count is less than the position of the specified character");
+    TEST_ASSERT(result == 0,
+                "safe_memcmove should return zero when the count is less than the position of the specified character");
+    TEST_ASSERT(strncmp(dest, src, 3) == 0, "safe_memcmove should copy only the specified count of bytes when the "
+                                            "count is less than the position of the specified character");
 
     // Test when dest is NULL - calls abort handler
-    errno = 0;
+    errno  = 0;
     result = safe_memcmove(NULL, sizeof(dest), src, 'o', sizeof(src));
     TEST_ASSERT(errno == EINVAL, "safe_memcmove should set errno to EINVAL when dest is NULL");
     TEST_ASSERT(result == errno, "safe_memcmove should return errno when dest is NULL");
 
     // Test when src is NULL - calls abort handler
-    errno = 0;
+    errno  = 0;
     result = safe_memcmove(dest, sizeof(dest), NULL, 'o', sizeof(src));
     TEST_ASSERT(errno == EINVAL, "safe_memcmove should set errno to EINVAL when src is NULL");
     TEST_ASSERT(result == errno, "safe_memcmove should return errno when src is NULL");
 
     // Test when destsz > RSIZE_MAX - calls abort handler
-    errno = 0;
+    errno  = 0;
     result = safe_memcmove(dest, RSIZE_MAX + 1, src, 'o', sizeof(src));
     TEST_ASSERT(errno == ERANGE, "safe_memcmove should set errno to ERANGE when destsz is greater than RSIZE_MAX");
     TEST_ASSERT(result == errno, "safe_memcmove should return errno when destsz is greater than RSIZE_MAX");
 
     // Test when count > RSIZE_MAX - calls abort handler
-    errno = 0;
+    errno  = 0;
     result = safe_memcmove(dest, sizeof(dest), src, 'o', RSIZE_MAX + 1);
     TEST_ASSERT(errno == ERANGE, "safe_memcmove should set errno to ERANGE when count is greater than RSIZE_MAX");
     TEST_ASSERT(result == errno, "safe_memcmove should return errno when count is greater than RSIZE_MAX");
 
     // Test when count > destsz - calls abort handler
-    errno = 0;
+    errno  = 0;
     result = safe_memcmove(dest, sizeof(dest), src, 'o', sizeof(dest) + 1);
     TEST_ASSERT(errno == ERANGE, "safe_memcmove should set errno to ERANGE when count is greater than destsz");
     TEST_ASSERT(result == errno, "safe_memcmove should return errno when count is greater than destsz");
 
     // Test when src = dest - calls abort handler
-    errno = 0;
+    errno           = 0;
     char buffer[20] = "Hello, World!";
-    result = safe_memcmove(buffer, sizeof(buffer), buffer, 'o', sizeof(buffer));
+    result          = safe_memcmove(buffer, sizeof(buffer), buffer, 'o', sizeof(buffer));
     TEST_ASSERT(errno == EINVAL, "safe_memcmove should set errno to EINVAL when src and dest are the same");
     TEST_ASSERT(result == errno, "safe_memcmove should return errno when src and dest are the same");
 }
 
-static void test_get_memalignment(void) {
+static void test_get_memalignment(void)
+{
     char* ptr = malloc_aligned(100, 2);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     size_t alignment = get_memalignment(ptr);
     TEST_ASSERT(alignment > 0, "get_memalignment should return a positive alignment value");
-    safe_free_aligned(&ptr);
+    safe_free_aligned_core((void**)&ptr);
 }
 
-static void test_SIZE_OF_STACK_ARRAY(void) {
-    int stack_array[10];
+static void test_SIZE_OF_STACK_ARRAY(void)
+{
+    int    stack_array[10];
     size_t size = SIZE_OF_STACK_ARRAY(stack_array);
     TEST_ASSERT(size == 10, "SIZE_OF_STACK_ARRAY should return the correct size of the stack array");
 }
 
 #if defined(POSIX_1990) || defined(BSD4_2)
-    static void test_safe_free_dirent(void)
-    {
-        struct dirent *entry = malloc(sizeof(struct dirent));
-        TEST_ASSERT(entry != NULL, "malloc should return a non-null pointer for a non-zero size");
-        safe_free_dirent(&entry);
-        TEST_ASSERT(entry == NULL, "safe_free_dirent should set the pointer to NULL");
-    }
+static void test_safe_free_dirent(void)
+{
+    struct dirent* entry = malloc(sizeof(struct dirent));
+    TEST_ASSERT(entry != NULL, "malloc should return a non-null pointer for a non-zero size");
+    safe_free_dirent(&entry);
+    TEST_ASSERT(entry == NULL, "safe_free_dirent should set the pointer to NULL");
+}
 #endif
 
-void run_memory_safety_tests(void) {
+void run_memory_safety_tests(void)
+{
     test_safe_malloc();
     test_safe_calloc();
     test_safe_realloc();
@@ -993,10 +1116,12 @@ void run_memory_safety_tests(void) {
     test_safe_free_float();
     test_safe_free_double();
     test_safe_free_longdouble();
+#if defined(USING_C11) && defined(safe_free)
     test_safe_free();
-    #ifdef _WIN32
+#endif
+#ifdef _WIN32
     test_safe_free_tchar();
-    #endif
+#endif
     test_is_Empty();
     test_safe_memset();
     test_explicit_zeroes();
@@ -1018,7 +1143,9 @@ void run_memory_safety_tests(void) {
     test_safe_free_aligned_float();
     test_safe_free_aligned_double();
     test_safe_free_aligned_longdouble();
+#if defined(USING_C11) && defined(safe_free_aligned)
     test_safe_free_aligned();
+#endif
     test_calloc_aligned();
     test_realloc_aligned();
     test_safe_malloc_aligned();
@@ -1029,7 +1156,9 @@ void run_memory_safety_tests(void) {
     test_free_page_aligned();
     test_malloc_page_aligned();
     test_safe_free_page_aligned_core();
+#if defined(USING_C11) && defined(safe_free_page_aligned)
     test_safe_free_page_aligned();
+#endif
     test_calloc_page_aligned();
     test_realloc_page_aligned();
     test_safe_malloc_page_aligned();
@@ -1044,7 +1173,7 @@ void run_memory_safety_tests(void) {
     test_safe_memcmove();
     test_get_memalignment();
     test_SIZE_OF_STACK_ARRAY();
-    #if defined(POSIX_1990) || defined(BSD4_2)
+#if defined(POSIX_1990) || defined(BSD4_2)
     test_safe_free_dirent();
-    #endif
+#endif
 }
