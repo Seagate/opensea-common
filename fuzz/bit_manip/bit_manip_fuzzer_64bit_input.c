@@ -2,6 +2,8 @@
 #include <stddef.h>
 #include "bit_manip.h"
 
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (size < sizeof(uint64_t)) {
         return 0;

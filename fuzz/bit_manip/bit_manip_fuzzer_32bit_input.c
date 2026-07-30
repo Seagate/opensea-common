@@ -5,6 +5,8 @@
 #include <string.h>
 #include "bit_manip.h"
 
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (size < 2 * sizeof(uint32_t)) {
         return 0;
@@ -39,10 +41,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     byte_Swap_32(&byte_Swap_32_result);
     if (byte_Swap_32_result != b_swap_32_result) __builtin_trap();
 
-    uint32_t signed_val1 = (int32_t)val1;
-    uint32_t byte_Swap_Int32_result = signed_val1;
+    int32_t signed_val1 = (int32_t)val1;
+    int32_t byte_Swap_Int32_result = signed_val1;
     byte_Swap_Int32(&byte_Swap_Int32_result);
-    if (byte_Swap_Int32_result != (uint32_t)b_swap_32_result) __builtin_trap();
+    if ((uint32_t)byte_Swap_Int32_result != b_swap_32_result) __builtin_trap();
         
     uint32_t w_swap_32_result = w_swap_32(val1);
     if (w_swap_32_result != ((((val1 & UINT32_C(0x0000FFFF)) << 16) |
@@ -66,10 +68,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint32_t outVal = 0xDEAD;
     bool result = get_Bytes_To_32(buffer, fullDataLen, msb, lsb, &outVal);
 
+    size_t byteDistance = (msb >= lsb) ? (msb - lsb) : (lsb - msb);
+
     bool expectedValid =
     (msb <= fullDataLen) &&
     (lsb <= fullDataLen) &&
-    (abs(msb - lsb) <= sizeof(uint32_t));
+    (byteDistance <= sizeof(uint32_t));
 
     if (result) {
         if (!expectedValid) {

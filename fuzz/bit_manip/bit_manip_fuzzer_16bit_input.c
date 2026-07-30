@@ -5,6 +5,8 @@
 #include <string.h>
 #include "bit_manip.h"
 
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (size < 8) {
         return 0;
@@ -47,9 +49,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint16_t outVal = 0xDEAD;
     bool result = get_Bytes_To_16(buffer, fullDataLen, msb, lsb, &outVal);
 
+    size_t byteDistance = (msb >= lsb) ? (msb - lsb) : (lsb - msb);
+
     bool expectedValid =
-        (&outVal != NULL) &&
-        (abs(msb - lsb) <= sizeof(uint16_t)) && 
+        (byteDistance <= sizeof(uint16_t)) &&
         (msb < fullDataLen) &&
         (lsb < fullDataLen);
 
