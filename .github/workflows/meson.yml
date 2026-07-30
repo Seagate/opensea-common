@@ -3,10 +3,10 @@ name: CI for meson test
 on: 
   push:
     branches:
-      - pratiksha
+      - develop
   pull_request:
     branches:
-      - pratiksha
+      - develop
 
 jobs:
   test:

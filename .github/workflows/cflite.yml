@@ -3,10 +3,10 @@ name: ClusterFuzzLite
 on: 
   push:
     branches:
-      - pratiksha
+      - develop
   pull_request:
     branches:
-      - pratiksha
+      - develop
 
 permissions: read-all
 
