@@ -238,6 +238,25 @@ extern "C"
 #    define RESTORE_WARNING_INCOMPATIBLE_POINTER_TYPES
 #endif
 
+//! \def DISABLE_WARNING_STRICT_PROTOTYPES
+//! \brief Disables warning about function declarations that are not prototypes (e.g., `void foo()` instead of `void foo(void)`).
+//! Useful when including third-party SDK headers that don't follow strict C prototype conventions.
+
+//! \def RESTORE_WARNING_STRICT_PROTOTYPES
+//! \brief Restores warning about function declarations that are not prototypes.
+#if IS_CLANG_VERSION(1, 0)
+#    define DISABLE_WARNING_STRICT_PROTOTYPES                                                                          \
+        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wstrict-prototypes\"")
+#    define RESTORE_WARNING_STRICT_PROTOTYPES _Pragma("clang diagnostic pop")
+#elif IS_GCC_VERSION(3, 0)
+#    define DISABLE_WARNING_STRICT_PROTOTYPES                                                                          \
+        _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wstrict-prototypes\"")
+#    define RESTORE_WARNING_STRICT_PROTOTYPES _Pragma("GCC diagnostic pop")
+#else
+#    define DISABLE_WARNING_STRICT_PROTOTYPES
+#    define RESTORE_WARNING_STRICT_PROTOTYPES
+#endif
+
 #if defined(__cplusplus)
 }
 
