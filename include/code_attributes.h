@@ -1775,7 +1775,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 //! \see https://clang.llvm.org/docs/AttributeReference.html#likely-and-unlikely
 #if !defined(DISABLE_ATTRIBUTES)
 #    if defined(DETECT_STD_ATTR_CHECK)
-#        if defined(USING_CPP11) && DETECT_STD_ATTR_CHECK(likely)
+#        if defined(USING_CPP11) && DETECT_STD_ATTR(likely)
 #            define M_LIKELY [[likely]]
 #        elif DETECT_STD_ATTR_QUAL(clang::likely)
 #            define M_LIKELY [[clang::likely]]
@@ -1795,7 +1795,7 @@ M_NORETURN M_INLINE void unreachable_func(void)
 //! \see https://clang.llvm.org/docs/AttributeReference.html#likely-and-unlikely
 #if !defined(DISABLE_ATTRIBUTES)
 #    if defined(DETECT_STD_ATTR_CHECK)
-#        if defined(USING_CPP11) && DETECT_STD_ATTR_CHECK(unlikely)
+#        if defined(USING_CPP11) && DETECT_STD_ATTR(unlikely)
 #            define M_UNLIKELY [[unlikely]]
 #        elif DETECT_STD_ATTR_QUAL(clang::unlikely)
 #            define M_UNLIKELY [[clang::unlikely]]
