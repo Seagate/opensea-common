@@ -25,6 +25,15 @@
 #include <stdio.h>
 #include <string.h>
 
+M_PARAM_RW_SIZE(1, 2)
+void null_Terminate_String(char* M_NONNULL str, rsize_t size)
+{
+    if (size > 0)
+    {
+        str[size - 1] = '\0';
+    }
+}
+
 #if defined(COMPILE_LIB) && !defined(_MSC_VER)
 M_PARAM_RO(1) M_NULL_TERM_STRING(1) size_t safe_strlen(const char* M_NULLABLE string)
 {
@@ -1103,8 +1112,8 @@ M_NODISCARD size_t safe_strnlen_impl(const char* M_NULLABLE string, size_t n)
 M_FUNC_ATTR_MALLOC char* strndup(const char* M_NONNULL src, size_t size)
 {
     void*  nullpos = memchr(src, '\0', size);
-    size_t length = nullpos != M_NULLPTR ? C_CAST(size_t, C_CAST(uintptr_t, nullpos) - C_CAST(uintptr_t, src)) : size;
-    char* dupstr = M_REINTERPRET_CAST(char*, malloc(length + 1));
+    size_t length  = nullpos != M_NULLPTR ? C_CAST(size_t, C_CAST(uintptr_t, nullpos) - C_CAST(uintptr_t, src)) : size;
+    char*  dupstr  = M_REINTERPRET_CAST(char*, malloc(length + 1));
     if (dupstr == M_NULLPTR)
     {
         return M_NULLPTR;

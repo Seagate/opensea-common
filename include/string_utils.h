@@ -1480,6 +1480,14 @@ M_NODISCARD M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen
     M_NULL_TERM_STRING(2)
     int string_version_compare(const char* M_NONNULL string1, const char* M_NONNULL string2);
 
+    //! \fn void null_Terminate_String(char* str, rsize_t size)
+    //! \brief Used to manually set the null terminator at the end of the provided buffer.
+    //! \param[in,out] str a pointer to the string to add null termination
+    //! \param[in] size the size of the buffer pointed to by \a str (allocated size)
+    //! \note Made to help avoid an off by one error which writes outside of allocated memory space.
+    M_PARAM_RW_SIZE(1, 2)
+    void null_Terminate_String(char* M_NONNULL str, rsize_t size);
+
 #if defined(__cplusplus)
 }
 #endif
