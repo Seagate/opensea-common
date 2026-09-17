@@ -557,9 +557,8 @@ extern "C"
     //! values in it.
     M_NONNULL_IF_NONZERO_SIZE(1, 2)
     M_NONNULL_PARAM_LIST(1)
-    M_PARAM_RO_SIZE(1, 2) bool is_Buffer_All_ByteValue(const void* M_NULLABLE ptrData,
-                                                       size_t                 lengthBytes,
-                                                       uint8_t                byteValue);
+    M_PARAM_RO_SIZE(1, 2)
+    bool is_Buffer_All_ByteValue(const void* M_NULLABLE ptrData, size_t lengthBytes, uint8_t byteValue);
 
 #if defined(DEV_ENVIRONMENT)
     //! \fn errno_t safe_memset(void* dest, rsize_t destsz, int ch, rsize_t count)

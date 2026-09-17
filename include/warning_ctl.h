@@ -239,8 +239,8 @@ extern "C"
 #endif
 
 //! \def DISABLE_WARNING_STRICT_PROTOTYPES
-//! \brief Disables warning about function declarations that are not prototypes (e.g., `void foo()` instead of `void foo(void)`).
-//! Useful when including third-party SDK headers that don't follow strict C prototype conventions.
+//! \brief Disables warning about function declarations that are not prototypes (e.g., `void foo()` instead of `void
+//! foo(void)`). Useful when including third-party SDK headers that don't follow strict C prototype conventions.
 
 //! \def RESTORE_WARNING_STRICT_PROTOTYPES
 //! \brief Restores warning about function declarations that are not prototypes.

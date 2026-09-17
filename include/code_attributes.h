@@ -305,8 +305,8 @@ extern "C"
 #if !defined(M_ATTR_UNUSED)
 #    if DETECT_GNU_ATTR(unused) || (IS_GCC_FULL_VERSION(2, 95, 3) || IS_CLANG_VERSION(1, 0))
 #        define M_ATTR_UNUSED __attribute__((unused))
-#    elif defined (REAL_MSVC)
-// clang-format off
+#    elif defined(REAL_MSVC)
+    // clang-format off
 // Added clang-format off/on around this so that it expands correctly to hide these
 // warnings. Previously it stopped working due to the way clang-format handled this, so hopefully this version
 // stays working this time. - TJE
@@ -402,8 +402,14 @@ extern "C"
 #            define M_DEPRECATED_REASON(msg) [[deprecated(msg)]]
 #        else
 #            if defined(MSVC_HAS_PRAGMA_WARNING_SUPRESS_JUSTIFICATION)
-#                define M_DEPRECATED             __declspec(deprecated) MSVC_PRAGMA(warning(suppress : 4996, justification: "Deprecation warning disabled at declaration site. Warning still shows at call sites."))
-#                define M_DEPRECATED_REASON(msg) __declspec(deprecated(msg)) MSVC_PRAGMA(warning(suppress : 4996, justification: "Deprecation warning disabled at declaration site. Warning still shows at call sites."))
+#                define M_DEPRECATED                                                                                   \
+                    __declspec(deprecated) MSVC_PRAGMA(                                                                \
+                        warning(suppress : 4996, justification : "Deprecation warning disabled at declaration site. "  \
+                                                                 "Warning still shows at call sites."))
+#                define M_DEPRECATED_REASON(msg)                                                                       \
+                    __declspec(deprecated(msg)) MSVC_PRAGMA(                                                           \
+                        warning(suppress : 4996, justification : "Deprecation warning disabled at declaration site. "  \
+                                                                 "Warning still shows at call sites."))
 #            else
 #                define M_DEPRECATED             __declspec(deprecated) MSVC_PRAGMA(warning(suppress : 4996))
 #                define M_DEPRECATED_REASON(msg) __declspec(deprecated(msg)) MSVC_PRAGMA(warning(suppress : 4996))

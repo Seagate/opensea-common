@@ -1966,10 +1966,10 @@ extern "C"
     M_PARAM_RO_SIZE(1, 2)
     M_PARAM_WO(5)
     M_NODISCARD bool get_Bytes_To_16(const uint8_t* M_NONNULL dataPtrBeginning,
-                                     size_t                    fullDataLen,
-                                     size_t                    msb,
-                                     size_t                    lsb,
-                                     uint16_t* M_NONNULL       out);
+                                     size_t                   fullDataLen,
+                                     size_t                   msb,
+                                     size_t                   lsb,
+                                     uint16_t* M_NONNULL      out);
 
     //! \fn bool get_Bytes_To_32(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint32_t*
     //! out) \brief takes a data pointer and byte offsets to output a uint32_t
@@ -1987,11 +1987,11 @@ extern "C"
     //! \return true when this function succeeds, false on error.
     M_PARAM_RO_SIZE(1, 2)
     M_PARAM_WO(5)
-    M_NODISCARD bool get_Bytes_To_32(const uint8_t* M_NONNULL  dataPtrBeginning,
-                                     size_t                    fullDataLen,
-                                     size_t                    msb,
-                                     size_t                    lsb,
-                                     uint32_t* M_NONNULL       out);
+    M_NODISCARD bool get_Bytes_To_32(const uint8_t* M_NONNULL dataPtrBeginning,
+                                     size_t                   fullDataLen,
+                                     size_t                   msb,
+                                     size_t                   lsb,
+                                     uint32_t* M_NONNULL      out);
 
     //! \fn bool get_Bytes_To_64(const uint8_t* dataPtrBeginning, size_t fullDataLen, size_t msb, size_t lsb, uint64_t*
     //! out) \brief takes a data pointer and byte offsets to output a uint64_t
@@ -2009,11 +2009,11 @@ extern "C"
     //! \return true when this function succeeds, false on error.
     M_PARAM_RO_SIZE(1, 2)
     M_PARAM_WO(5)
-    M_NODISCARD bool get_Bytes_To_64(const uint8_t* M_NONNULL  dataPtrBeginning,
-                                     size_t                    fullDataLen,
-                                     size_t                    msb,
-                                     size_t                    lsb,
-                                     uint64_t* M_NONNULL       out);
+    M_NODISCARD bool get_Bytes_To_64(const uint8_t* M_NONNULL dataPtrBeginning,
+                                     size_t                   fullDataLen,
+                                     size_t                   msb,
+                                     size_t                   lsb,
+                                     uint64_t* M_NONNULL      out);
 
     //! \fn uint16_t be16_to_host(uint16_t value)
     //! \brief takes a big endian uint16_t and returns it in host endianness
