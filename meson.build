@@ -1,6 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (c) 2021-2026 Seagate Technology LLC and/or its Affiliates, All Rights Reserved
-project('opensea-common', 'c', license: 'MPL-2.0', version: '6.1.0', meson_version: '>=0.55.0', default_options: ['warning_level=2', 'default_library=static'])
+project(
+    'opensea-common',
+    'c',
+    license: 'MPL-2.0',
+    version: '6.1.0',
+    meson_version: '>=0.55.0',
+    default_options: ['warning_level=2', 'default_library=static'],
+)
 
 c = meson.get_compiler('c')
 
@@ -109,7 +116,7 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
         '-Wcalloc-transposed-args',
         '-Werror=alloca',  # Do not allow use of the alloca function
         '-Wstring-compare',  # Helps detect when strcmp is used when the programmer likely meant to use strncmp
-        '-Wfortify-source' # Clang specific (at least for now) but enables additional diagnostics.
+        '-Wfortify-source',  # Clang specific (at least for now) but enables additional diagnostics.
     ]
 
     if get_option('cc-suggest-attribute')
@@ -262,13 +269,13 @@ elif c.get_id().contains('msvc')
     # MSVC defaults to old MSVC C compatibility which is mostly C89 with some newer C99/C11-ish support
     # Since we support older meson versions, we deal with this causing a warning over using the default_options to
     # set the C standard for the project.
-    if  c.has_argument('/std:clatest')
+    if c.has_argument('/std:clatest')
         genericargs += '/std:clatest'
         warning_flags += '/std:clatest'
-    elif  c.has_argument('/std:c17')
+    elif c.has_argument('/std:c17')
         genericargs += '/std:c17'
         warning_flags += '/std:c17'
-    elif  c.has_argument('/std:c11')
+    elif c.has_argument('/std:c11')
         genericargs += '/std:c11'
         warning_flags += '/std:c11'
     endif
@@ -543,7 +550,9 @@ if c.sizeof('time_t', prefix: '#include <time.h>') < 8
         global_cpp_args += ['-D_TIME_BITS=64']
     else
         if get_option('allow-32bit-time-t')
-            message('Warning: 32-bit time_t detected and allow-32bit-time-t option enabled. This may cause issues with dates after 2038. It is recommended to use a compiler and platform that supports 64-bit time_t if possible.')
+            message(
+                'Warning: 32-bit time_t detected and allow-32bit-time-t option enabled. This may cause issues with dates after 2038. It is recommended to use a compiler and platform that supports 64-bit time_t if possible.',
+            )
             global_cpp_args += ['-DALLOW_32BIT_TIME_T']
         else
             error('64bit time_t is required for this project.')
@@ -574,7 +583,11 @@ endif
 
 m_dep = c.find_library('m', required: false)
 
-incdir = include_directories('include', 'Test', 'Test/framework',)
+incdir = include_directories(
+    'include',
+    'Test',
+    'Test/framework',
+)
 
 opensea_common_lib = static_library(
     'opensea-common',
@@ -582,7 +595,7 @@ opensea_common_lib = static_library(
     c_args: global_cpp_args,
     dependencies: [m_dep, deps],
     include_directories: incdir,
-    gnu_symbol_visibility : 'hidden'
+    gnu_symbol_visibility: 'hidden',
 )
 opensea_common_dep = declare_dependency(
     link_with: opensea_common_lib,
@@ -590,15 +603,18 @@ opensea_common_dep = declare_dependency(
     include_directories: incdir,
 )
 
-# Check for LIB_FUZZING_ENGINE environment variable (cross-platform compatible)
-if target_machine.system() == 'windows'
-  is_fuzzing_build = run_command('cmd', '/c', 'echo %LIB_FUZZING_ENGINE%', check: false).stdout().strip() != ''
-else
-  is_fuzzing_build = run_command('sh', '-c', 'echo $LIB_FUZZING_ENGINE', check: false).stdout().strip() != ''
-endif
+# Build tests or fuzzing targets when tests are enabled
+if not get_option('tests').disabled()
+    # Check for LIB_FUZZING_ENGINE environment variable (cross-platform compatible)
+    if target_machine.system() == 'windows'
+        is_fuzzing_build = run_command('cmd', '/c', 'echo %LIB_FUZZING_ENGINE%', check: false).stdout().strip() != ''
+    else
+        is_fuzzing_build = run_command('sh', '-c', 'echo $LIB_FUZZING_ENGINE', check: false).stdout().strip() != ''
+    endif
 
-if is_fuzzing_build
-  subdir('fuzz')
-else
-  subdir('Test')
+    if is_fuzzing_build
+        subdir('fuzz')
+    else
+        subdir('Test')
+    endif
 endif

@@ -116,3 +116,11 @@ option(
                 'an error or a warning condition and allow compiling past these checks.' +
                 'This can be useful to disable for testing purposes, but it is recommended this is left enabled.'
 )
+
+option(
+  'tests',
+  type : 'feature',
+  value : 'disabled',
+  description : 'Build unit tests. Disabled by default to keep regular builds ' +
+                'clean and avoid expected test warnings. Enable with -Dtests=enabled.'
+)
