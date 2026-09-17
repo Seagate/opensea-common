@@ -24,7 +24,7 @@ jobs:
               os: ubuntu-latest,
               cc: "gcc",
               cxx: "g++",
-              meson_opts: "-Db_coverage=true",
+              meson_opts: "-Db_coverage=true -Dtests=enabled",
               buildtype: "debug"
             }
 
@@ -33,7 +33,7 @@ jobs:
             os: ubuntu-latest,
             cc: "clang",
             cxx: "clang++",
-            meson_opts: "-Db_coverage=true -Ddiagnose-if-attr=disabled -Doptimization=0 --buildtype=debug",
+            meson_opts: "-Db_coverage=true -Ddiagnose-if-attr=disabled -Doptimization=0 --buildtype=debug -Dtests=enabled",
             buildtype: "debug"
           }
 
@@ -42,7 +42,7 @@ jobs:
             os: windows-latest,
             cc: "clang-cl",
             cxx: "clang-cl",
-            meson_opts: "-Db_vscrt=static_from_buildtype -Db_coverage=true -Ddiagnose-if-attr=disabled",
+            meson_opts: "-Db_vscrt=static_from_buildtype -Db_coverage=true -Ddiagnose-if-attr=disabled -Dtests=enabled",
             buildtype: "debug"
           }
 
@@ -51,7 +51,7 @@ jobs:
               os: windows-latest,
               cc: "gcc",
               cxx: "g++",
-              meson_opts: "-Db_coverage=true -Dc_std=c23",
+              meson_opts: "-Db_coverage=true -Dc_std=c23 -Dtests=enabled",
               buildtype: "debug"
             }
 
@@ -60,7 +60,7 @@ jobs:
               os: windows-latest,
               cc: "cl",
               cxx: "cl",
-              meson_opts: "-Db_vscrt=static_from_buildtype -Db_coverage=true",
+              meson_opts: "-Db_vscrt=static_from_buildtype -Db_coverage=true -Dtests=enabled",
               buildtype: "debug"
             }
 
