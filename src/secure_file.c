@@ -226,8 +226,11 @@ secureFileInfo* M_NULLABLE secure_Open_File(const char* M_NONNULL        filenam
                 if (safe_strlen(thex) > 1)
                 {
                     size_t lenx = safe_strlen(thex);
-                    safe_memmove(thex, lenx, thex + 1, lenx - 1);
-                    thex[lenx - 1] = '\0';
+                    if (0 != safe_memmove(thex, lenx, thex + 1, lenx - 1))
+                    {
+                        perror("Error removing 'x' from file mode for backwards compatibility/workaround");
+                    }
+                    null_Terminate_String(thex, lenx);
                 }
                 else
                 {
