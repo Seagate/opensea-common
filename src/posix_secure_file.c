@@ -597,13 +597,23 @@ M_PARAM_RO(1)
 M_PARAM_WO(2)
 eReturnValues get_Full_Path(const char* M_NONNULL pathAndFile, char fullPath[M_NONNULL_ARRAY OPENSEA_PATH_MAX])
 {
+    errno              = 0;
     char* resolvedPath = realpath(pathAndFile, fullPath);
-    if (resolvedPath != M_NULLPTR)
+    if (resolvedPath != M_NULLPTR && errno == 0)
     {
         return SUCCESS;
     }
+    else if (errno != 0)
+    {
+        print_str("realpath failed, reason: ");
+        print_Errno_To_Screen(errno);
+        return FAILURE;
+    }
     else
     {
+#if defined(_DEBUG)
+        print_str("realpath failed for %s, for unknown reason.\n", pathAndFile);
+#endif
         return FAILURE;
     }
 }
