@@ -1070,7 +1070,7 @@ static void test_safe_memcmove(void)
 
 static void test_get_memalignment(void)
 {
-    char* ptr = malloc_aligned(100, 2);
+    char* ptr = malloc_aligned(100, 8);
     TEST_ASSERT(ptr != NULL, "malloc_aligned should return a non-null pointer for a non-zero size");
     size_t alignment = get_memalignment(ptr);
     TEST_ASSERT(alignment > 0, "get_memalignment should return a positive alignment value");

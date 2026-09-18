@@ -599,7 +599,7 @@ eReturnValues get_Full_Path(const char* M_NONNULL pathAndFile, char fullPath[M_N
 {
     errno              = 0;
     char* resolvedPath = realpath(pathAndFile, fullPath);
-    if (resolvedPath != M_NULLPTR && errno == 0)
+    if (resolvedPath != M_NULLPTR)
     {
         return SUCCESS;
     }
@@ -612,7 +612,7 @@ eReturnValues get_Full_Path(const char* M_NONNULL pathAndFile, char fullPath[M_N
     else
     {
 #if defined(_DEBUG)
-        print_str("realpath failed for %s, for unknown reason.\n", pathAndFile);
+        printf("realpath failed for %s, for unknown reason.\n", pathAndFile);
 #endif
         return FAILURE;
     }
