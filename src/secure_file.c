@@ -527,6 +527,19 @@ secureFileInfo* M_NULLABLE secure_Open_File(const char* M_NONNULL        filenam
             // available without opening the file handle.
             if (expectedFileInfo != M_NULLPTR)
             {
+                if (beforeattrs == M_NULLPTR)
+                {
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE_ATTRIBUTES);
+                    set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                                  "Reading file attributes failed. Cannot compare to expected attributes.");
+                    safe_free(&intFileName);
+                    free_File_Attributes(&beforeattrs);
+                    if (duplicatedModeForInternalUse)
+                    {
+                        safe_free(&internalmode);
+                    }
+                    return fileInfo;
+                }
                 // check device ID and inode. These are unique on POSIX as a
                 // file ID. Windows is not far enough along to get this info
                 // yet.
@@ -572,10 +585,14 @@ secureFileInfo* M_NULLABLE secure_Open_File(const char* M_NONNULL        filenam
         }
         free_File_Attributes(&beforeattrs);
 
+        const char* fileNameOnly = strrchr(fileInfo->fullpath, SYSTEM_PATH_SEPARATOR);
+        if (fileNameOnly != M_NULLPTR)
+        {
+            fileNameOnly++; // Move past the final separator
+        }
         // Canonical path will already have the proper system path separator in
         // it. No need to search / in Windows
-        fileInfo->filename =
-            strrchr(fileInfo->fullpath, SYSTEM_PATH_SEPARATOR) + 1; // plus 1 to get past final seperator
+        fileInfo->filename = fileNameOnly; // Use the computed fileNameOnly pointer instead of recalculating
 
         // Need to verify only the path. Passing the file in with it will cause
         // it to fail since it is not a directory
@@ -659,6 +676,27 @@ secureFileInfo* M_NULLABLE secure_Open_File(const char* M_NONNULL        filenam
                     }
                 }
                 fileInfo->attributes = os_Get_File_Attributes_By_File(fileInfo->file);
+                if (fileInfo->attributes == M_NULLPTR)
+                {
+                    // Failed to read file attributes after opening the file.
+                    // Close it and return an error.
+                    M_STATIC_CAST(void, fclose(fileInfo->file));
+                    fileInfo->file  = M_NULLPTR;
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE_ATTRIBUTES);
+                    set_Secure_File_error_message(
+                        M_CONST_CAST(char**, &fileInfo->errorString),
+                        "Reading file attributes after opening failed. Cannot validate file attributes.");
+                    safe_free(&intFileName);
+                    if (duplicatedModeForInternalUse)
+                    {
+                        safe_free(&internalmode);
+                    }
+                    if (pathOnly && allocatedLocalPathOnly)
+                    {
+                        safe_free(&pathOnly);
+                    }
+                    return fileInfo;
+                }
                 // compare to user provided attributes
                 if (expectedFileInfo != M_NULLPTR)
                 {
