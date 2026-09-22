@@ -108,6 +108,10 @@ extern const char* __progname; // NOLINT
 /*This will define our own global to store the programe name into -TJE*/
 #endif /*Checking PROGNAME capabilities*/
 
+#if defined(HAS_GETEXECNAME)
+#include <libgen.h> // for getexecname() on Solaris
+#endif
+
 #if defined(NEED_PROGNAME)
     char* getopt_progname = M_NULLPTR;
 #endif /*NEED_PROGNAME*/
