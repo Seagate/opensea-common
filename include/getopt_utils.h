@@ -70,11 +70,11 @@ extern "C"
     extern int opterr; /* flag to enable built-in diagnostics... */
     /* (user may set to zero, to suppress)    */
 
-    extern char* optarg; /* pointer to argument of current option  */
+    extern char* M_NULLABLE optarg; /* pointer to argument of current option  */
 
     M_PARAM_RO(2)
     M_PARAM_RO(3)
-    M_NODISCARD int getopt(int nargc, char* const* M_NONNULL nargv, const char* M_NULLABLE options);
+    M_NODISCARD int getopt(int nargc, char* M_NONNULL const* M_NONNULL nargv, const char* M_NULLABLE options);
 
 #ifdef _BSD_SOURCE
 /*
@@ -91,9 +91,9 @@ extern "C"
 
     struct option /* specification for a long form option...	*/
     {
-        const char* name;    /* option name, without leading hyphens */
-        int         has_arg; /* does it take an argument?		*/
-        int*        flag;    /* where to save its status, or NULL	*/
+        const char* M_NULLABLE name; /* option name, without leading hyphens */
+        int                   has_arg; /* does it take an argument?		*/
+        int* M_NULLABLE   flag;   /* where to save its status, or NULL	*/
         int         val;     /* its associated status value		*/
     };
 
@@ -108,21 +108,21 @@ extern "C"
     M_PARAM_RO(3)
     M_PARAM_RO(4)
     M_PARAM_WO(5)
-    M_NODISCARD int getopt_long(int                             nargc,
-                                char* const* M_NONNULL          nargv,
-                                const char* M_NULLABLE          options,
-                                const struct option* M_NULLABLE long_options,
-                                int* M_NULLABLE                 idx);
+    M_NODISCARD int getopt_long(int                              nargc,
+                                char* M_NONNULL const* M_NONNULL nargv,
+                                const char* M_NULLABLE           options,
+                                const struct option* M_NULLABLE  long_options,
+                                int* M_NULLABLE                  idx);
 
     M_PARAM_RO(2)
     M_PARAM_RO(3)
     M_PARAM_RO(4)
     M_PARAM_WO(5)
-    M_NODISCARD int getopt_long_only(int                             nargc,
-                                     char* const* M_NONNULL          nargv,
-                                     const char* M_NULLABLE          options,
-                                     const struct option* M_NULLABLE long_options,
-                                     int* M_NULLABLE                 idx);
+    M_NODISCARD int getopt_long_only(int                              nargc,
+                                     char* M_NONNULL const* M_NONNULL nargv,
+                                     const char* M_NULLABLE           options,
+                                     const struct option* M_NULLABLE  long_options,
+                                     int* M_NULLABLE                  idx);
 
 #ifdef __cplusplus
 }

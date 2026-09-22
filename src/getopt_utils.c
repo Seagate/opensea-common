@@ -108,8 +108,8 @@ int optopt = '?'; /* character checked for validity */
 #        undef optreset /* see getopt.h */
 #        define optreset __mingw_optreset
 #    endif      /*__MINGW32__*/
-int   optreset; /* reset getopt */
-char* optarg;   /* argument associated with option */
+int            optreset; /* reset getopt */
+char* M_NULLABLE optarg; /* argument associated with option */
 #endif          /*REPLACE_GETOPT*/
 
 #define PRINT_ERROR   ((opterr) && (*options != ':'))
@@ -195,7 +195,7 @@ M_NODISCARD M_PURE_FUNC M_NULL_TERM_STRING(1) M_PARAM_RO(1) static size_t getopt
  * in each block).
  */
 M_NONNULL_PARAM_LIST(4)
-M_PARAM_RO(4) static void permute_args(int panonopt_start, int panonopt_end, int opt_end, char* const* M_NONNULL nargv)
+M_PARAM_RO(4) static void permute_args(int panonopt_start, int panonopt_end, int opt_end, char* M_NONNULL const* M_NONNULL nargv)
 {
     int   cstart, cyclelen, i, j, ncycle, nnonopts, nopts, pos;
     char* swap;
@@ -233,7 +233,7 @@ M_PARAM_RO(4) static void permute_args(int panonopt_start, int panonopt_end, int
  * Returns -1 if short_too is set and the option does not match long_options.
  */
 M_NODISCARD M_NONNULL_PARAM_LIST(1, 3) M_PARAM_RO(1) M_PARAM_RO(3)
-    M_PARAM_WO(4) static int parse_long_options(char* const* M_NONNULL               nargv,
+    M_PARAM_WO(4) static int parse_long_options(char* M_NONNULL const* M_NONNULL     nargv,
                                                 M_ATTR_UNUSED const char* M_NULLABLE options,
                                                 const struct option* M_NONNULL       long_options,
                                                 int* M_NULLABLE                      idx,
@@ -371,12 +371,12 @@ static const char* posixlycorrectenv = "POSIXLY_CORRECT";
  *	Parse argc/argv argument vector.  Called by user level routines.
  */
 M_NODISCARD M_NONNULL_PARAM_LIST(2) M_PARAM_RO(2) M_NULL_TERM_STRING(3) M_PARAM_RO(3) M_PARAM_RO(4)
-    M_PARAM_WO(5) static int getopt_internal(int                             nargc,
-                                             char* const* M_NONNULL          nargv,
-                                             const char* M_NULLABLE          options,
-                                             const struct option* M_NULLABLE long_options,
-                                             int* M_NULLABLE                 idx,
-                                             int                             flags)
+    M_PARAM_WO(5) static int getopt_internal(int                              nargc,
+                                             char* M_NONNULL const* M_NONNULL nargv,
+                                             const char* M_NULLABLE           options,
+                                             const struct option* M_NULLABLE  long_options,
+                                             int* M_NULLABLE                  idx,
+                                             int                              flags)
 {
     const char* oli; /* option letter list index */
     int         optchar, short_too;
@@ -630,7 +630,7 @@ start:
  * [eventually this will replace the BSD getopt]
  */
 M_NODISCARD M_NULL_TERM_STRING(3) M_PARAM_RO(2)
-    M_PARAM_RO(3) int getopt(int nargc, char* const* M_NONNULL nargv, const char* M_NULLABLE options)
+    M_PARAM_RO(3) int getopt(int nargc, char* M_NONNULL const* M_NONNULL nargv, const char* M_NULLABLE options)
 {
     /*
      * We don't pass FLAG_PERMUTE to getopt_internal() since
@@ -649,11 +649,11 @@ M_NODISCARD M_NULL_TERM_STRING(3) M_PARAM_RO(2)
  *	Parse argc/argv argument vector.
  */
 M_NODISCARD M_NULL_TERM_STRING(3) M_PARAM_RO(2) M_PARAM_RO(3) M_PARAM_RO(4)
-    M_PARAM_WO(5) int getopt_long(int                             nargc,
-                                  char* const* M_NONNULL          nargv,
-                                  const char* M_NULLABLE          options,
-                                  const struct option* M_NULLABLE long_options,
-                                  int* M_NULLABLE                 idx)
+    M_PARAM_WO(5) int getopt_long(int                              nargc,
+                                  char* M_NONNULL const* M_NONNULL nargv,
+                                  const char* M_NULLABLE           options,
+                                  const struct option* M_NULLABLE  long_options,
+                                  int* M_NULLABLE                  idx)
 {
     return (getopt_internal(nargc, nargv, options, long_options, idx, FLAG_PERMUTE));
 }
@@ -663,11 +663,11 @@ M_NODISCARD M_NULL_TERM_STRING(3) M_PARAM_RO(2) M_PARAM_RO(3) M_PARAM_RO(4)
  *	Parse argc/argv argument vector.
  */
 M_NODISCARD M_NULL_TERM_STRING(3) M_PARAM_RO(2) M_PARAM_RO(3) M_PARAM_RO(4)
-    M_PARAM_WO(5) int getopt_long_only(int                             nargc,
-                                       char* const* M_NONNULL          nargv,
-                                       const char* M_NULLABLE          options,
-                                       const struct option* M_NULLABLE long_options,
-                                       int* M_NULLABLE                 idx)
+    M_PARAM_WO(5) int getopt_long_only(int                              nargc,
+                                       char* M_NONNULL const* M_NONNULL nargv,
+                                       const char* M_NULLABLE           options,
+                                       const struct option* M_NULLABLE  long_options,
+                                       int* M_NULLABLE                  idx)
 {
     return (getopt_internal(nargc, nargv, options, long_options, idx, FLAG_PERMUTE | FLAG_LONGONLY));
 }
