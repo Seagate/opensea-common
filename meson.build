@@ -549,13 +549,13 @@ if c.sizeof('time_t', prefix: '#include <time.h>') < 8
     if c.sizeof('time_t', prefix: '#define _TIME_BITS 64\n#include <time.h>') >= 8
         global_cpp_args += ['-D_TIME_BITS=64']
     else
-        if get_option('allow-32bit-time-t')
+        if get_option('allow-32bit-time-t').enabled()
             message(
                 'Warning: 32-bit time_t detected and allow-32bit-time-t option enabled. This may cause issues with dates after 2038. It is recommended to use a compiler and platform that supports 64-bit time_t if possible.',
             )
             global_cpp_args += ['-DALLOW_32BIT_TIME_T']
         else
-            error('64bit time_t is required for this project.')
+            error('64bit time_t is required for this project. The allow-32bit-time-t can override this, however it is not recommended.')
         endif
     endif
 endif
