@@ -613,7 +613,12 @@ secureFileInfo* M_NULLABLE secure_Open_File(const char* M_NONNULL        filenam
         }
 #endif //_WIN32
 
-        if (safe_strndup(&pathOnly, fileInfo->fullpath,
+        //docker crashes at this strndup.
+        //probably because lastsep is NULL since it returns an empty realpath.
+        // Need to handle this possible null before using it here.
+
+        if (lastsep != M_NULLPTR &&
+            safe_strndup(&pathOnly, fileInfo->fullpath,
                          C_CAST(uintptr_t, lastsep) - C_CAST(uintptr_t, fileInfo->fullpath)) == 0 &&
             pathOnly != M_NULLPTR)
         {
@@ -625,7 +630,7 @@ secureFileInfo* M_NULLABLE secure_Open_File(const char* M_NONNULL        filenam
         }
 
 #if defined(_DEBUG)
-        printf("Checking directory security: %s\n", pathOnly);
+        printf("Checking directory security: <%s>\n", pathOnly);
 #endif
         // This flag can disable the file path security check.
         // NOTE: Currently disabling _WIN32 due to new Windows security feature breaking
