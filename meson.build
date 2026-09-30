@@ -393,6 +393,53 @@ endif
 add_project_arguments(c.get_supported_arguments(warning_flags), language: 'c')
 add_project_link_arguments(c.get_supported_link_arguments(linker_flags), language: 'c')
 
+# This is not necessarily an exhaustive list of what is used by opensea-common.
+# This is a short list based on what meson says it can search for and what we are using
+# today in code_attributes.h
+# See here for supported attribtues: https://mesonbuild.com/Reference-tables.html#gcc-__attribute__
+opensea_attributes = [
+    'aligned',
+    'alloc_size',
+    'always_inline',
+    'cold',
+    'const',
+    'deprecated',
+    'fallthrough',
+    'format',
+    'hot',
+    'malloc',
+    'noinline',
+    'nonnull',
+    'noreturn',
+    'packed',
+    'pure',
+    'returns_nonnull',
+    'unused',
+    'visibility:default',
+    'warn_unused_result',
+]
+
+if target_machine.system() == 'windows'
+    opensea_attributes += ['dllimport', 'dllexport']
+endif
+
+if meson.version().version_compare('>=1.5.0')
+    opensea_attributes += ['null_terminated_string_arg']
+endif
+if meson.version().version_compare('>=1.10.0')
+    opensea_attributes += ['counted_by']
+endif
+
+# use meson's attribute lookup. More helpful for old GCC without the `__has_attribute(attr)` available.
+# while the C code has some preprocessor macro based checks for compiler version, etc, this is
+# a bit simpler to use overall for old versions where the manual C checks may not be exactly correct.
+supported_attributes = c.get_supported_function_attributes(opensea_attributes)
+# While we could filter the list to what we use, we use a lot of them, so a few extra definitions
+# won't hurt anything here. If anything, it will make this forward compatible to newer versions
+# of meson as it adds detection for other attributes.
+foreach attribute : supported_attributes
+    global_cpp_args += ['-DHAS_@0@_ATTR'.format(attribute.underscorify().to_upper())]
+endforeach
 
 if get_option('debug')
     add_project_arguments('-D_DEBUG', language: 'c')
@@ -530,7 +577,7 @@ if c.has_function('getline', prefix: '#include <stdio.h>')
 endif
 
 # Test support for _Generic keyword. May not be available in some cases.
-gernericSelectionTest = '''
+generic_selection_test_code = '''
                       long add_long(long x, long y)
                       {
                         return x + y;
@@ -572,14 +619,14 @@ gernericSelectionTest = '''
                       }
                   '''
 
-genericSelectionTestResult = c.compiles(gernericSelectionTest, name: 'Generic Selection Support', args: genericargs)
-if genericSelectionTestResult == true
+generic_selection_test_result = c.compiles(generic_selection_test_code, name: 'Generic Selection Support', args: genericargs)
+if generic_selection_test_result == true
     global_cpp_args += ['-DHAVE_C11_GENERIC_SELECTION']
 endif
 
-constexprTest = ' int main (void) { constexpr int i = 50; int j = 0; return j / i; }'
-constexprTestResult = c.compiles(constexprTest, name: 'Constexpr Support')
-if constexprTestResult == true
+const_expr_test_code = ' int main (void) { constexpr int i = 50; int j = 0; return j / i; }'
+const_expr_test_result = c.compiles(const_expr_test_code, name: 'Constexpr Support')
+if const_expr_test_result == true
     global_cpp_args += ['-DHAVE_CONSTEXPR']
 endif
 
@@ -591,7 +638,7 @@ endif
 # Test support for __has_c_attribute for namespaced attribtues (compiler unique)
 # Some compilers do not support this properly and throw errors about using the : symbol
 # MSVC does not like this and Clang 16.0.6 in openBSD also complains.
-attributeTest = ''' #include <stdio.h>
+attribute_test = ''' #include <stdio.h>
                       #if defined (__has_c_attribute)
                       #    if __has_c_attribute(clang::unused)
                       #        define HAS_CLANG_UNUSED
@@ -603,8 +650,8 @@ attributeTest = ''' #include <stdio.h>
                           return 0;
                       }
                   '''
-attributeTestResult = c.compiles(attributeTest, name: '__has_c_attribute for compiler specific attributes')
-if attributeTestResult == false
+attribute_test_result = c.compiles(attribute_test, name: '__has_c_attribute for compiler specific attributes')
+if attribute_test_result == false
     global_cpp_args += ['-DNO_COMPILER_UNIQUE_C_ATTRIBUTES']
     if not c.get_id().contains('msvc')
         global_cpp_args += ['-DFORCE_GNU_STYLE_ATTRIBUTES']
@@ -673,7 +720,17 @@ else
     src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']
 endif
 
+# Math library may need to be linked on some systems. Keep it simple and optional.
+# If it is a stub like in some modern libc's, this has no effect.
+# There are a couple places in opensea-common that use the math functions.
 m_dep = c.find_library('m', required: false)
+# Realtime library may need to be linked on some systems. Keep it simple and optional.
+# If it is a stub like in some modern libc's, this has no effect.
+# Note: This is included mostly for backwards compatibility in case we needed to compile
+# for an older target like CentOS6. Modern libc's do not need this and lrt is a stub.
+# There are uses of monotonic clock functions in time_utils.c that may need this
+# to link properly for older systems
+rt_dep = c.find_library('rt', required: false)
 
 incdir = include_directories(
     'include',
@@ -685,7 +742,7 @@ opensea_common_lib = static_library(
     'opensea-common',
     src_files,
     c_args: global_cpp_args,
-    dependencies: [m_dep, deps],
+    dependencies: [m_dep, rt_dep, deps],
     include_directories: incdir,
     gnu_symbol_visibility: 'hidden',
 )

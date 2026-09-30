@@ -716,7 +716,7 @@ typedef int32_t intptr_t;
 //! \param name The name of the structure.
 //! \param alignmentval The alignment value for the structure.
 //! \param ... The structure members.
-#if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
+#if (defined (HAS_PACKED_ATTR) && defined (HAS_ALIGNED_ATTR)) || IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
 #    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
         typedef struct s_##name                                                                                        \
         {                                                                                                              \
@@ -745,7 +745,7 @@ typedef int32_t intptr_t;
 //! It attempts to provide a compatible definition for various compilers.
 //! \param name The name of the structure.
 //! \param ... The structure members.
-#if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
+#if defined (HAS_PACKED_ATTR) || IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
 #    define M_PACKED_STRUCT(name, ...)                                                                                 \
         typedef struct s_##name                                                                                        \
         {                                                                                                              \
@@ -768,7 +768,7 @@ typedef int32_t intptr_t;
 //! It attempts to provide a compatible definition for various compilers.
 //! \param name The name of the union
 //! \param ... The union members.
-#if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
+#if defined (HAS_PACKED_ATTR) || IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
 #    define M_PACKED_UNION(name, ...)                                                                                  \
         union name                                                                                                     \
         {                                                                                                              \
