@@ -591,6 +591,62 @@ extern "C"
                           size_t                               count,
                           size_t* M_NULLABLE                   numberwritten /*optional*/);
 
+    //! \fn M_NODISCARD eSecureFileError secure_fgetc(secureFileInfo* fileInfo, int* byte)
+    //! \brief Reads a single byte from a secure file.
+    //! \param[in,out] fileInfo Pointer to the secureFileInfo structure representing the file.
+    //! \param[out] byte Required pointer to an int where the byte read will be stored.
+    //! \return eSecureFileError indicating the result of the read operation.
+    //! \note If the return value is not SEC_FILE_SUCCESS, *byte is not modified. Only use the value in *byte
+    //! after confirming the return value is SEC_FILE_SUCCESS. On SEC_FILE_SUCCESS, *byte holds the byte read in
+    //! the range 0-255 (unsigned). Cast to the desired type (e.g. char, uint8_t) as needed.
+    M_NODISCARD M_PARAM_RW(1) eSecureFileError secure_fgetc(secureFileInfo* M_NONNULL fileInfo, int* M_NONNULL byte);
+
+    //! \fn M_NODISCARD eSecureFileError secure_fgets(secureFileInfo* fileInfo, char* buffer, size_t size)
+    //! \brief Reads up to size-1 characters from a secure file, retaining a newline if one is read.
+    //! \param[in,out] fileInfo Pointer to the secureFileInfo structure representing the file.
+    //! \param[out] buffer Pointer to the buffer where the line will be stored. Must be able to hold at least
+    //! size bytes.
+    //! \param[in] size The size of the buffer in bytes. Always includes room for the terminating NUL.
+    //! \return eSecureFileError indicating the result of the read operation.
+    //! \note For size > 1, fgets reads at most size-1 characters and retains a newline if read. Successful reads
+    //! are NUL-terminated. If fgets returns NULL, this wrapper sets buffer[0] to NUL.
+    //! A partial line (reached EOF before a newline) is SEC_FILE_SUCCESS if at least one byte was read.
+    //! SEC_FILE_END_OF_FILE_REACHED is returned if no bytes are read because the stream is already at end of file.
+    //! For a valid open file, size 1 sets buffer[0] to NUL, reads no input, and returns SEC_FILE_SUCCESS. This does
+    //! not advance the stream; callers must not rely on progress from a size-1 call in a read loop.
+    //! Size is size_t, but the underlying fgets count is int. Sizes of 0 and values greater than INT_MAX return
+    //! SEC_FILE_INVALID_PARAMETER.
+    M_NODISCARD M_PARAM_RW(1) M_PARAM_WO_SIZE(2, 3) eSecureFileError
+        secure_fgets(secureFileInfo* M_RESTRICT M_NONNULL fileInfo, char* M_RESTRICT M_NONNULL buffer, size_t size);
+
+    //! \fn M_NODISCARD eSecureFileError secure_fputs(secureFileInfo* fileInfo, const char* str)
+    //! \brief Writes a NUL-terminated string to a secure file.
+    //! \param[in,out] fileInfo Pointer to the secureFileInfo structure representing the file.
+    //! \param[in] str Pointer to the NUL-terminated string to write.
+    //! \return eSecureFileError indicating the result of the write operation.
+    //! \note The terminating NUL is not written to the file. The file must have been opened in a write mode.
+    M_NODISCARD M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2) eSecureFileError
+        secure_fputs(secureFileInfo* M_NONNULL fileInfo, const char* M_RESTRICT M_NONNULL str);
+
+    //! \fn M_NODISCARD eSecureFileError secure_fputc(secureFileInfo* fileInfo, int c)
+    //! \brief Writes a single character (low byte of c) to a secure file.
+    //! \param[in,out] fileInfo Pointer to the secureFileInfo structure representing the file.
+    //! \param[in] c The character to write, as an int. Only the low byte is written.
+    //! \return eSecureFileError indicating the result of the write operation.
+    //! \note The file must have been opened in a write mode.
+    M_NODISCARD M_PARAM_RW(1) eSecureFileError secure_fputc(secureFileInfo* M_NONNULL fileInfo, int c);
+
+    //! \fn M_NODISCARD eSecureFileError secure_ungetc(secureFileInfo* fileInfo, int c)
+    //! \brief Pushes a character (low byte of c) back onto the input stream of a secure file, so that it will be
+    //! returned by the next read.
+    //! \param[in,out] fileInfo Pointer to the secureFileInfo structure representing the file.
+    //! \param[in] c The character to push back, as an int. If c is EOF, no character is pushed back and
+    //! SEC_FILE_INVALID_PARAMETER is returned immediately.
+    //! \return eSecureFileError indicating the result of the operation.
+    //! \note As with the C standard ungetc, the standard only guarantees that a single pushed-back character is
+    //! remembered. Multiple successive ungetc calls may fail.
+    M_NODISCARD M_PARAM_RW(1) eSecureFileError secure_ungetc(secureFileInfo* M_NONNULL fileInfo, int c);
+
     //! \fn M_NODISCARD eSecureFileError secure_Seek_File(secureFileInfo* fileInfo, oscoffset_t offset, int
     //! initialPosition)
     //! \brief Sets the file position indicator for a secure file.
@@ -646,8 +702,8 @@ extern "C"
     //! \return eSecureFileError indicating the result of the get position operation.
     M_PARAM_RW(1)
     M_PARAM_WO(2)
-    eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT M_NONNULL fileInfo,
-                                        fpos_t* M_RESTRICT M_NONNULL         pos);
+    M_NODISCARD eSecureFileError secure_GetPos_File(secureFileInfo* M_RESTRICT M_NONNULL fileInfo,
+                                                    fpos_t* M_RESTRICT M_NONNULL         pos);
 
     //! \fn eSecureFileError secure_SetPos_File(secureFileInfo* fileInfo, const fpos_t* pos)
     //! \brief Sets the file position indicator for a secure file.
@@ -655,7 +711,8 @@ extern "C"
     //! \param[in] pos Pointer to an fpos_t variable containing the new file position.
     //! \return eSecureFileError indicating the result of the set position operation.
     M_PARAM_RW(1)
-    M_PARAM_RO(2) eSecureFileError secure_SetPos_File(secureFileInfo* M_NONNULL fileInfo, const fpos_t* M_NONNULL pos);
+    M_PARAM_RO(2)
+    M_NODISCARD eSecureFileError secure_SetPos_File(secureFileInfo* M_NONNULL fileInfo, const fpos_t* M_NONNULL pos);
 
     //! \fn FUNC_ATTR_PRINTF(2, 0) eSecureFileError secure_vfprintf_File(secureFileInfo* M_RESTRICT fileInfo,
     //!                                                                  const char* M_RESTRICT format,

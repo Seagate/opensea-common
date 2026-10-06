@@ -530,8 +530,9 @@ secureFileInfo* M_NULLABLE secure_Open_File(const char* M_NONNULL        filenam
                 if (beforeattrs == M_NULLPTR)
                 {
                     fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE_ATTRIBUTES);
-                    set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
-                                                  "Reading file attributes failed. Cannot compare to expected attributes.");
+                    set_Secure_File_error_message(
+                        M_CONST_CAST(char**, &fileInfo->errorString),
+                        "Reading file attributes failed. Cannot compare to expected attributes.");
                     safe_free(&intFileName);
                     free_File_Attributes(&beforeattrs);
                     if (duplicatedModeForInternalUse)
@@ -613,9 +614,9 @@ secureFileInfo* M_NULLABLE secure_Open_File(const char* M_NONNULL        filenam
         }
 #endif //_WIN32
 
-        //docker crashes at this strndup.
-        //probably because lastsep is NULL since it returns an empty realpath.
-        // Need to handle this possible null before using it here.
+        // docker crashes at this strndup.
+        // probably because lastsep is NULL since it returns an empty realpath.
+        //  Need to handle this possible null before using it here.
 
         if (lastsep != M_NULLPTR &&
             safe_strndup(&pathOnly, fileInfo->fullpath,
@@ -1030,6 +1031,219 @@ M_NODISCARD M_PARAM_RW(1) M_PARAM_RO_SIZE(2, 3) M_PARAM_WO(6) eSecureFileError
                 // unknown result, so call this an error.
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Unknown file write error");
                 fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE);
+            }
+        }
+        return fileInfo->error;
+    }
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
+}
+
+M_NODISCARD M_PARAM_RW(1) eSecureFileError secure_fgetc(secureFileInfo* M_NONNULL fileInfo, int* M_NONNULL byte)
+{
+    if (fileInfo != M_NULLPTR)
+    {
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
+        {
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
+        }
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
+        set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
+        if (byte == M_NULLPTR)
+        {
+            fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PARAMETER);
+            set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                          "Invalid byte output pointer for fgetc");
+            return fileInfo->error;
+        }
+        if (fileInfo->file)
+        {
+            int getres = fgetc(fileInfo->file);
+            if (getres == EOF)
+            {
+                if (ferror(fileInfo->file))
+                {
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_READ_WRITE_ERROR);
+                    set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                                  "File read error occurred");
+                }
+                else
+                {
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_END_OF_FILE_REACHED);
+                    set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "End of file reached");
+                }
+            }
+            else
+            {
+                *byte           = getres;
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                              "File byte read successfully");
+            }
+        }
+        return fileInfo->error;
+    }
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
+}
+
+M_NODISCARD M_PARAM_RW(1) M_PARAM_WO_SIZE(2, 3) eSecureFileError
+    secure_fgets(secureFileInfo* M_RESTRICT M_NONNULL fileInfo, char* M_RESTRICT M_NONNULL buffer, size_t size)
+{
+    if (fileInfo != M_NULLPTR)
+    {
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
+        {
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
+        }
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
+        set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
+        if (buffer == M_NULLPTR || size <= SIZE_T_C(0) || size > INT_MAX)
+        {
+            fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PARAMETER);
+            set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                          "Invalid buffer or buffer size for fgets");
+            return fileInfo->error;
+        }
+        if (fileInfo->file)
+        {
+            if (size == SIZE_T_C(1))
+            {
+                buffer[0] = '\0';
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                              "Buffer size is one; wrote a NUL terminator without reading.");
+                return fileInfo->error;
+            }
+            else
+            {
+                char* fgetsres = M_NULLPTR;
+                fgetsres       = fgets(buffer, M_STATIC_CAST(int, size), fileInfo->file);
+                if (fgetsres != M_NULLPTR)
+                {
+                    // fgets retains a newline when read and appends a NUL after the last character.
+                    fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
+                    set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                                "File line read successfully");
+                }
+                else
+                {
+                    buffer[0] = '\0';
+                    if (ferror(fileInfo->file))
+                    {
+                        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_READ_WRITE_ERROR);
+                        set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                                    "File read error occurred");
+                    }
+                    else
+                    {
+                        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_END_OF_FILE_REACHED);
+                        set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                                    "End of file reached, no bytes read");
+                    }
+                }
+            }
+        }
+        return fileInfo->error;
+    }
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
+}
+
+M_NODISCARD M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2) eSecureFileError
+    secure_fputs(secureFileInfo* M_NONNULL fileInfo, const char* M_RESTRICT M_NONNULL str)
+{
+    if (fileInfo != M_NULLPTR)
+    {
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
+        {
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
+        }
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
+        set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
+        if (fileInfo->file)
+        {
+            if (str == M_NULLPTR)
+            {
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PARAMETER);
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid string. Must be nonnull");
+                return fileInfo->error;
+            }
+            int putres = fputs(str, fileInfo->file);
+            if (putres == EOF)
+            {
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_READ_WRITE_ERROR);
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                              "File write error. The file may not be open for writing.");
+            }
+            else
+            {
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                              "File string written successfully");
+            }
+        }
+        return fileInfo->error;
+    }
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
+}
+
+M_NODISCARD M_PARAM_RW(1) eSecureFileError secure_fputc(secureFileInfo* M_NONNULL fileInfo, int c)
+{
+    if (fileInfo != M_NULLPTR)
+    {
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
+        {
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
+        }
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
+        set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
+        if (fileInfo->file)
+        {
+            int putres = fputc(c, fileInfo->file);
+            if (putres == EOF)
+            {
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_READ_WRITE_ERROR);
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                              "File write error. The file may not be open for writing.");
+            }
+            else
+            {
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                              "File byte written successfully");
+            }
+        }
+        return fileInfo->error;
+    }
+    return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_SECURE_FILE);
+}
+
+M_NODISCARD M_PARAM_RW(1) eSecureFileError secure_ungetc(secureFileInfo* M_NONNULL fileInfo, int c)
+{
+    if (c == EOF)
+    {
+        return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PARAMETER);
+    }
+    if (fileInfo != M_NULLPTR)
+    {
+        if (fileInfo->error == M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE))
+        {
+            return M_ACCESS_ENUM(eSecureFileError, SEC_FILE_FAILURE_CLOSING_FILE);
+        }
+        fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_FILE);
+        set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid secureFileInfo");
+        if (fileInfo->file)
+        {
+            int ungres = ungetc(c, fileInfo->file);
+            if (ungres == EOF)
+            {
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_READ_WRITE_ERROR);
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                              "Unable to push back character on file");
+            }
+            else
+            {
+                fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                              "Character pushed back on file successfully");
             }
         }
         return fileInfo->error;
