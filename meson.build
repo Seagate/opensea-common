@@ -6,7 +6,7 @@ project(
     license: 'MPL-2.0',
     version: '6.1.0',
     meson_version: '>=0.56.0',
-    default_options: ['warning_level=2', 'default_library=static'],
+    default_options: ['warning_level=2', 'werror=true', 'b_ndebug=if-release', 'default_library=static'],
 )
 
 c = meson.get_compiler('c')
@@ -619,7 +619,11 @@ generic_selection_test_code = '''
                       }
                   '''
 
-generic_selection_test_result = c.compiles(generic_selection_test_code, name: 'Generic Selection Support', args: genericargs)
+generic_selection_test_result = c.compiles(
+    generic_selection_test_code,
+    name: 'Generic Selection Support',
+    args: genericargs,
+)
 if generic_selection_test_result == true
     global_cpp_args += ['-DHAVE_C11_GENERIC_SELECTION']
 endif

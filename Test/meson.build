@@ -21,6 +21,7 @@ e = executable(
     test_sources,
     dependencies: [opensea_common_dep],
     c_args: global_cpp_args,  # Access the same variable from parent scope
+    override_options: ['werror=false'],
 )
 
 test('opensea-common-unit-tests', e)
