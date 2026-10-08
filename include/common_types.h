@@ -70,7 +70,8 @@
 #include <sys/types.h> //This is available in Windows and linux/unix-like systems
 #if defined(_WIN32)
 #    include <BaseTsd.h> //for MAXSSIZE_T
-DISABLE_WARNING_4255
+DISABLE_WARNING_4255 // MSVC 14.16 (VS2017) immintrin.h declares intrinsics without prototypes
+#    include <intrin.h> // declares intrinsics for C, e.g. _CountOneBits64 used by newer SDK winnt.h on ARM64
 #    include <windows.h> //Includes various Windows headers for types and functions. Used for MAX_PATH below
 RESTORE_WARNING_4255
 #else
