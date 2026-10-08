@@ -369,12 +369,14 @@ typedef int32_t intptr_t;
 
 #if !defined(SSIZE_MAX) && !defined(SSIZE_MIN) && !defined(SSIZE_T_DEFINED)
 #    if defined(_MSC_VER) && defined(MAXSSIZE_T) && defined(MINSSIZE_T)
+#        if !defined(ssize_t)
     //! \typedef ssize_t
     //! \brief Defines the signed size type for Microsoft compilers.
     //!
     //! This type is defined as SSIZE_T to match POSIX standards.
     //! \note This is the same as intptr_t in Microsoft headers.
     typedef SSIZE_T ssize_t;
+#        endif
 
 //! \def SSIZE_MAX
 //! \brief Defines the maximum value for ssize_t on Microsoft compilers.
@@ -384,11 +386,13 @@ typedef int32_t intptr_t;
 //! \brief Defines the minimum value for ssize_t on Microsoft compilers.
 #        define SSIZE_MIN MINSSIZE_T
 #    else //!_MSCVER && !MAXSSIZE_T && !MINSSIZE_T
+#        if !defined(ssize_t)
     //! \typedef ssize_t
     //! \brief Defines the signed size type.
     //!
     //! This type is defined as intptr_t to ensure compatibility with the same range.
     typedef intptr_t ssize_t;
+#        endif
 
 //! \def SSIZE_MAX
 //! \brief Defines the maximum value for ssize_t.
@@ -399,6 +403,9 @@ typedef int32_t intptr_t;
 #        define SSIZE_MIN INTPTR_MIN
 #    endif //_MSC_VER && MAXSSIZE_T && MINSSIZE_T
 #    define SSIZE_T_DEFINED
+#    if !defined(ssize_t)
+#        define ssize_t ssize_t
+#    endif
 #endif // SSIZE_MAX && _MSC_VER
 
 // Bit widths. Standardized in C23, but if the def is missing, we will define it -TJE
