@@ -1107,7 +1107,7 @@ M_NODISCARD M_PARAM_RW(1) M_PARAM_WO_SIZE(2, 3) eSecureFileError
         {
             if (size == SIZE_T_C(1))
             {
-                buffer[0] = '\0';
+                buffer[0]       = '\0';
                 fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
                 set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
                                               "Buffer size is one; wrote a NUL terminator without reading.");
@@ -1122,7 +1122,7 @@ M_NODISCARD M_PARAM_RW(1) M_PARAM_WO_SIZE(2, 3) eSecureFileError
                     // fgets retains a newline when read and appends a NUL after the last character.
                     fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_SUCCESS);
                     set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
-                                                "File line read successfully");
+                                                  "File line read successfully");
                 }
                 else
                 {
@@ -1131,13 +1131,13 @@ M_NODISCARD M_PARAM_RW(1) M_PARAM_WO_SIZE(2, 3) eSecureFileError
                     {
                         fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_READ_WRITE_ERROR);
                         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
-                                                    "File read error occurred");
+                                                      "File read error occurred");
                     }
                     else
                     {
                         fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_END_OF_FILE_REACHED);
                         set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
-                                                    "End of file reached, no bytes read");
+                                                      "End of file reached, no bytes read");
                     }
                 }
             }
@@ -1163,7 +1163,8 @@ M_NODISCARD M_PARAM_RW(1) M_PARAM_RO(2) M_NULL_TERM_STRING(2) eSecureFileError
             if (str == M_NULLPTR)
             {
                 fileInfo->error = M_ACCESS_ENUM(eSecureFileError, SEC_FILE_INVALID_PARAMETER);
-                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString), "Invalid string. Must be nonnull");
+                set_Secure_File_error_message(M_CONST_CAST(char**, &fileInfo->errorString),
+                                              "Invalid string. Must be nonnull");
                 return fileInfo->error;
             }
             int putres = fputs(str, fileInfo->file);
