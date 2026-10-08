@@ -2401,14 +2401,18 @@ errno_t safe_getdelim_impl(char** M_RESTRICT   lineptr,
     return error;
 }
 
-errno_t safe_getline_impl(char**      lineptr,
-                          size_t*     lineptrAllocedSize,
-                          rsize_t*    charsRead,
-                          FILE*       stream,
-                          const char* functionName,
-                          const char* fileName,
-                          int         lineNumber,
-                          const char* expression)
+M_PARAM_RW(1)
+    M_PARAM_RW(2)
+    M_PARAM_RW(3)
+    M_PARAM_RO(4)
+    CONSTRAINT_NO_DISCARD errno_t safe_getline_impl(char* M_NONNULL* M_RESTRICT M_NULLABLE lineptr,
+                                                    rsize_t* M_RESTRICT M_NONNULL          lineptrAllocedSize,
+                                                    rsize_t* M_RESTRICT M_NONNULL          charsRead,
+                                                    FILE* M_NONNULL                        stream,
+                                                    const char* M_NULLABLE                 functionName,
+                                                    const char* M_NULLABLE                 fileName,
+                                                    int                                    lineNumber,
+                                                    const char* M_NULLABLE                 expression)
 {
     return safe_getdelim_impl(lineptr, lineptrAllocedSize, charsRead, '\n', stream, functionName, fileName, lineNumber,
                               expression);
