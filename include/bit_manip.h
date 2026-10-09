@@ -2461,11 +2461,13 @@ extern "C"
                 unsigned long long: count_leading_zeros_ull)(value)
 #    else
 #        define count_leading_zeros(value)                                                                             \
-            (sizeof(value) == sizeof(unsigned char)    ? count_leading_zeros_uc(value)                                 \
-             : sizeof(value) == sizeof(unsigned short) ? count_leading_zeros_us(value)                                 \
-             : sizeof(value) == sizeof(unsigned int)   ? count_leading_zeros_ui(value)                                 \
+            (DISABLE_WARNING_CONVERSION_DATA_LOSS sizeof(value) == sizeof(unsigned long long)                          \
+                 ? count_leading_zeros_ull(value)                                                                      \
              : sizeof(value) == sizeof(unsigned long)  ? count_leading_zeros_ul(value)                                 \
-                                                       : count_leading_zeros_ull(value))
+             : sizeof(value) == sizeof(unsigned int)   ? count_leading_zeros_ui(value)                                 \
+             : sizeof(value) == sizeof(unsigned short) ? count_leading_zeros_us(value)                                 \
+                                                       : count_leading_zeros_uc(value)                                 \
+                                                             RESTORE_WARNING_CONVERSION_DATA_LOSS)
 #    endif
 #endif // __cplusplus
 
@@ -2555,11 +2557,13 @@ extern "C"
                 unsigned long long: count_leading_ones_ull)(value)
 #    else
 #        define count_leading_ones(value)                                                                              \
-            (sizeof(value) == sizeof(unsigned char)    ? count_leading_ones_uc(value)                                  \
-             : sizeof(value) == sizeof(unsigned short) ? count_leading_ones_us(value)                                  \
-             : sizeof(value) == sizeof(unsigned int)   ? count_leading_ones_ui(value)                                  \
+            (DISABLE_WARNING_CONVERSION_DATA_LOSS sizeof(value) == sizeof(unsigned long long)                          \
+                 ? count_leading_ones_ull(value)                                                                       \
              : sizeof(value) == sizeof(unsigned long)  ? count_leading_ones_ul(value)                                  \
-                                                       : count_leading_ones_ull(value))
+             : sizeof(value) == sizeof(unsigned int)   ? count_leading_ones_ui(value)                                  \
+             : sizeof(value) == sizeof(unsigned short) ? count_leading_ones_us(value)                                  \
+                                                       : count_leading_ones_uc(value)                                  \
+                                                             RESTORE_WARNING_CONVERSION_DATA_LOSS)
 #    endif
 #endif // __cplusplus
 
@@ -2744,11 +2748,13 @@ extern "C"
                 unsigned long long: count_trailing_zeros_ull)(value)
 #    else
 #        define count_trailing_zeros(value)                                                                            \
-            (sizeof(value) == sizeof(unsigned long long) ? count_trailing_zeros_ull(value)                             \
-             : sizeof(value) == sizeof(unsigned long)    ? count_trailing_zeros_ul(value)                              \
-             : sizeof(value) == sizeof(unsigned int)     ? count_trailing_zeros_ui(value)                              \
-             : sizeof(value) == sizeof(unsigned short)   ? count_trailing_zeros_us(value)                              \
-                                                         : count_trailing_zeros_uc(value))
+            (DISABLE_WARNING_CONVERSION_DATA_LOSS sizeof(value) == sizeof(unsigned long long)                          \
+                 ? count_trailing_zeros_ull(value)                                                                     \
+             : sizeof(value) == sizeof(unsigned long)  ? count_trailing_zeros_ul(value)                                \
+             : sizeof(value) == sizeof(unsigned int)   ? count_trailing_zeros_ui(value)                                \
+             : sizeof(value) == sizeof(unsigned short) ? count_trailing_zeros_us(value)                                \
+                                                       : count_trailing_zeros_uc(value)                                \
+                                                             RESTORE_WARNING_CONVERSION_DATA_LOSS)
 #    endif
 #endif // __cplusplus
 
@@ -2838,11 +2844,13 @@ extern "C"
                 unsigned long long: count_trailing_ones_ull)(value)
 #    else
 #        define count_trailing_ones(value)                                                                             \
-            (sizeof(value) == sizeof(unsigned char)    ? count_trailing_ones_uc(value)                                 \
-             : sizeof(value) == sizeof(unsigned short) ? count_trailing_ones_us(value)                                 \
-             : sizeof(value) == sizeof(unsigned int)   ? count_trailing_ones_ui(value)                                 \
+            (DISABLE_WARNING_CONVERSION_DATA_LOSS sizeof(value) == sizeof(unsigned long long)                          \
+                 ? count_trailing_ones_ull(value)                                                                      \
              : sizeof(value) == sizeof(unsigned long)  ? count_trailing_ones_ul(value)                                 \
-                                                       : count_trailing_ones_ull(value))
+             : sizeof(value) == sizeof(unsigned int)   ? count_trailing_ones_ui(value)                                 \
+             : sizeof(value) == sizeof(unsigned short) ? count_trailing_ones_us(value)                                 \
+                                                       : count_trailing_ones_uc(value)                                 \
+                                                             RESTORE_WARNING_CONVERSION_DATA_LOSS)
 #    endif
 #endif
 
@@ -2997,11 +3005,13 @@ extern "C"
                 unsigned long long: first_leading_one_ull)(value)
 #    else
 #        define first_leading_one(value)                                                                               \
-            (sizeof(value) == sizeof(unsigned char)    ? first_leading_one_uc(value)                                   \
-             : sizeof(value) == sizeof(unsigned short) ? first_leading_one_us(value)                                   \
-             : sizeof(value) == sizeof(unsigned int)   ? first_leading_one_ui(value)                                   \
+            (DISABLE_WARNING_CONVERSION_DATA_LOSS sizeof(value) == sizeof(unsigned long long)                          \
+                 ? first_leading_one_ull(value)                                                                        \
              : sizeof(value) == sizeof(unsigned long)  ? first_leading_one_ul(value)                                   \
-                                                       : first_leading_one_ull(value))
+             : sizeof(value) == sizeof(unsigned int)   ? first_leading_one_ui(value)                                   \
+             : sizeof(value) == sizeof(unsigned short) ? first_leading_one_us(value)                                   \
+                                                       : first_leading_one_uc(value)                                   \
+                                                             RESTORE_WARNING_CONVERSION_DATA_LOSS)
 #    endif
 #endif // __cplusplus
 
@@ -3091,11 +3101,13 @@ extern "C"
                 unsigned long long: first_leading_zero_ull)(value)
 #    else
 #        define first_leading_zero(value)                                                                              \
-            (sizeof(value) == sizeof(unsigned char)    ? first_leading_zero_uc(value)                                  \
-             : sizeof(value) == sizeof(unsigned short) ? first_leading_zero_us(value)                                  \
-             : sizeof(value) == sizeof(unsigned int)   ? first_leading_zero_ui(value)                                  \
+            (DISABLE_WARNING_CONVERSION_DATA_LOSS sizeof(value) == sizeof(unsigned long long)                          \
+                 ? first_leading_zero_ull(value)                                                                       \
              : sizeof(value) == sizeof(unsigned long)  ? first_leading_zero_ul(value)                                  \
-                                                       : first_leading_zero_ull(value))
+             : sizeof(value) == sizeof(unsigned int)   ? first_leading_zero_ui(value)                                  \
+             : sizeof(value) == sizeof(unsigned short) ? first_leading_zero_us(value)                                  \
+                                                       : first_leading_zero_uc(value)                                  \
+                                                             RESTORE_WARNING_CONVERSION_DATA_LOSS)
 #    endif
 #endif // __cplusplus
 
@@ -3228,11 +3240,11 @@ extern "C"
                 unsigned long long: count_ones_ull)(value)
 #    else
 #        define count_ones(value)                                                                                      \
-            (sizeof(value) == sizeof(unsigned char)    ? count_ones_uc(value)                                          \
-             : sizeof(value) == sizeof(unsigned short) ? count_ones_us(value)                                          \
-             : sizeof(value) == sizeof(unsigned int)   ? count_ones_ui(value)                                          \
-             : sizeof(value) == sizeof(unsigned long)  ? count_ones_ul(value)                                          \
-                                                       : count_ones_ull(value))
+            (DISABLE_WARNING_CONVERSION_DATA_LOSS sizeof(value) == sizeof(unsigned long long) ? count_ones_ull(value)  \
+             : sizeof(value) == sizeof(unsigned long)                                         ? count_ones_ul(value)   \
+             : sizeof(value) == sizeof(unsigned int)                                          ? count_ones_ui(value)   \
+             : sizeof(value) == sizeof(unsigned short)                                        ? count_ones_us(value)   \
+                                                       : count_ones_uc(value) RESTORE_WARNING_CONVERSION_DATA_LOSS)
 #    endif
 #endif // __cplusplus
 
@@ -3322,11 +3334,11 @@ extern "C"
                 unsigned long long: count_zeros_ull)(value)
 #    else
 #        define count_zeros(value)                                                                                     \
-            (sizeof(value) == sizeof(unsigned char)    ? count_zeros_uc(value)                                         \
-             : sizeof(value) == sizeof(unsigned short) ? count_zeros_us(value)                                         \
-             : sizeof(value) == sizeof(unsigned int)   ? count_zeros_ui(value)                                         \
-             : sizeof(value) == sizeof(unsigned long)  ? count_zeros_ul(value)                                         \
-                                                       : count_zeros_ull(value))
+            (DISABLE_WARNING_CONVERSION_DATA_LOSS sizeof(value) == sizeof(unsigned long long) ? count_zeros_ull(value) \
+             : sizeof(value) == sizeof(unsigned long)                                         ? count_zeros_ul(value)  \
+             : sizeof(value) == sizeof(unsigned int)                                          ? count_zeros_ui(value)  \
+             : sizeof(value) == sizeof(unsigned short)                                        ? count_zeros_us(value)  \
+                                                       : count_zeros_uc(value) RESTORE_WARNING_CONVERSION_DATA_LOSS)
 #    endif
 #endif
 
@@ -3406,11 +3418,13 @@ extern "C"
                 unsigned long long: has_single_bit_ull)(value)
 #    else
 #        define has_single_bit(value)                                                                                  \
-            (sizeof(value) == sizeof(unsigned char)    ? has_single_bit_uc(value)                                      \
-             : sizeof(value) == sizeof(unsigned short) ? has_single_bit_us(value)                                      \
-             : sizeof(value) == sizeof(unsigned int)   ? has_single_bit_ui(value)                                      \
+            (DISABLE_WARNING_CONVERSION_DATA_LOSS sizeof(value) == sizeof(unsigned long long)                          \
+                 ? has_single_bit_ull(value)                                                                           \
              : sizeof(value) == sizeof(unsigned long)  ? has_single_bit_ul(value)                                      \
-                                                       : has_single_bit_ull(value))
+             : sizeof(value) == sizeof(unsigned int)   ? has_single_bit_ui(value)                                      \
+             : sizeof(value) == sizeof(unsigned short) ? has_single_bit_us(value)                                      \
+                                                       : has_single_bit_uc(value)                                      \
+                                                             RESTORE_WARNING_CONVERSION_DATA_LOSS)
 #    endif
 #endif // __cplusplus
 
@@ -3500,11 +3514,13 @@ extern "C"
                 unsigned long long: get_req_bit_width_ull)(value)
 #    else
 #        define get_req_bit_width(value)                                                                               \
-            (sizeof(value) == sizeof(unsigned char)    ? get_req_bit_width_uc(value)                                   \
-             : sizeof(value) == sizeof(unsigned short) ? get_req_bit_width_us(value)                                   \
-             : sizeof(value) == sizeof(unsigned int)   ? get_req_bit_width_ui(value)                                   \
+            (DISABLE_WARNING_CONVERSION_DATA_LOSS sizeof(value) == sizeof(unsigned long long)                          \
+                 ? get_req_bit_width_ull(value)                                                                        \
              : sizeof(value) == sizeof(unsigned long)  ? get_req_bit_width_ul(value)                                   \
-                                                       : get_req_bit_width_ull(value))
+             : sizeof(value) == sizeof(unsigned int)   ? get_req_bit_width_ui(value)                                   \
+             : sizeof(value) == sizeof(unsigned short) ? get_req_bit_width_us(value)                                   \
+                                                       : get_req_bit_width_uc(value)                                   \
+                                                             RESTORE_WARNING_CONVERSION_DATA_LOSS)
 #    endif
 #endif // __cplusplus
 
@@ -3594,11 +3610,11 @@ extern "C"
                 unsigned long long: bit_floor_ull)(value)
 #    else
 #        define bit_floor(value)                                                                                       \
-            (sizeof(value) == sizeof(unsigned char)    ? bit_floor_uc(value)                                           \
-             : sizeof(value) == sizeof(unsigned short) ? bit_floor_us(value)                                           \
-             : sizeof(value) == sizeof(unsigned int)   ? bit_floor_ui(value)                                           \
-             : sizeof(value) == sizeof(unsigned long)  ? bit_floor_ul(value)                                           \
-                                                       : bit_floor_ull(value))
+            (DISABLE_WARNING_CONVERSION_DATA_LOSS sizeof(value) == sizeof(unsigned long long) ? bit_floor_ull(value)   \
+             : sizeof(value) == sizeof(unsigned long)                                         ? bit_floor_ul(value)    \
+             : sizeof(value) == sizeof(unsigned int)                                          ? bit_floor_ui(value)    \
+             : sizeof(value) == sizeof(unsigned short)                                        ? bit_floor_us(value)    \
+                                                       : bit_floor_uc(value) RESTORE_WARNING_CONVERSION_DATA_LOSS)
 #    endif
 #endif // __cplusplus
 
@@ -3688,11 +3704,11 @@ extern "C"
                 unsigned long long: bit_ceil_ull)(value)
 #    else
 #        define bit_ceil(value)                                                                                        \
-            (sizeof(value) == sizeof(unsigned char)    ? bit_ceil_uc(value)                                            \
-             : sizeof(value) == sizeof(unsigned short) ? bit_ceil_us(value)                                            \
-             : sizeof(value) == sizeof(unsigned int)   ? bit_ceil_ui(value)                                            \
-             : sizeof(value) == sizeof(unsigned long)  ? bit_ceil_ul(value)                                            \
-                                                       : bit_ceil_ull(value))
+            (DISABLE_WARNING_CONVERSION_DATA_LOSS sizeof(value) == sizeof(unsigned long long) ? bit_ceil_ull(value)    \
+             : sizeof(value) == sizeof(unsigned long)                                         ? bit_ceil_ul(value)     \
+             : sizeof(value) == sizeof(unsigned int)                                          ? bit_ceil_ui(value)     \
+             : sizeof(value) == sizeof(unsigned short)                                        ? bit_ceil_us(value)     \
+                                                       : bit_ceil_uc(value) RESTORE_WARNING_CONVERSION_DATA_LOSS)
 #    endif
 #endif // __cplusplus
 
@@ -3778,11 +3794,13 @@ extern "C"
                 unsigned long long: rotate_left_ull)(value, count)
 #    else
 #        define rotate_left(value, count)                                                                              \
-            (sizeof(value) == sizeof(unsigned char)    ? rotate_left_uc((unsigned char)(value), count)                 \
-             : sizeof(value) == sizeof(unsigned short) ? rotate_left_us((unsigned short)(value), count)                \
-             : sizeof(value) == sizeof(unsigned int)   ? rotate_left_ui((unsigned int)(value), count)                  \
-             : sizeof(value) == sizeof(unsigned long)  ? rotate_left_ul((unsigned long)(value), count)                 \
-                                                       : rotate_left_ull((unsigned long long)(value), count))
+            (DISABLE_WARNING_CONVERSION_DATA_LOSS sizeof(value) == sizeof(unsigned long long)                          \
+                 ? rotate_left_ull(value, count)                                                                       \
+             : sizeof(value) == sizeof(unsigned long)  ? rotate_left_ul(value, count)                                  \
+             : sizeof(value) == sizeof(unsigned int)   ? rotate_left_ui(value, count)                                  \
+             : sizeof(value) == sizeof(unsigned short) ? rotate_left_us(value, count)                                  \
+                                                       : rotate_left_uc(value, count)                                  \
+                                                             RESTORE_WARNING_CONVERSION_DATA_LOSS)
 #    endif
 #endif // __cplusplus
 
@@ -3868,11 +3886,13 @@ extern "C"
                 unsigned long long: rotate_right_ull)(value, count)
 #    else
 #        define rotate_right(value, count)                                                                             \
-            (sizeof(value) == sizeof(unsigned char)    ? rotate_right_uc((unsigned char)(value), count)                \
-             : sizeof(value) == sizeof(unsigned short) ? rotate_right_us((unsigned short)(value), count)               \
-             : sizeof(value) == sizeof(unsigned int)   ? rotate_right_ui((unsigned int)(value), count)                 \
-             : sizeof(value) == sizeof(unsigned long)  ? rotate_right_ul((unsigned long)(value), count)                \
-                                                       : rotate_right_ull((unsigned long long)(value), count))
+            (DISABLE_WARNING_CONVERSION_DATA_LOSS sizeof(value) == sizeof(unsigned long long)                          \
+                 ? rotate_right_ull(value, count)                                                                      \
+             : sizeof(value) == sizeof(unsigned long)  ? rotate_right_ul(value, count)                                 \
+             : sizeof(value) == sizeof(unsigned int)   ? rotate_right_ui(value, count)                                 \
+             : sizeof(value) == sizeof(unsigned short) ? rotate_right_us(value, count)                                 \
+                                                       : rotate_right_uc(value, count)                                 \
+                                                             RESTORE_WARNING_CONVERSION_DATA_LOSS)
 #    endif
 #endif // __cplusplus
 
