@@ -1123,7 +1123,6 @@ eReturnValues get_Secure_User_Input(const char* M_NONNULL       prompt,
         print_str("\n");
         return FAILURE;
     }
-    ssize_t inputRes = getline(userInput, inputDataLen, term);
     // now read the input with getline
     rsize_t inputAllocLen = RSIZE_T_C(0);
     rsize_t inputReadLen  = RSIZE_T_C(0);
@@ -1135,12 +1134,11 @@ eReturnValues get_Secure_User_Input(const char* M_NONNULL       prompt,
     }
     else
     {
-        *inputDataLen = C_CAST(size_t, inputRes);
         // remove newline from the end...convert to a null.
-        if ((*userInput)[*inputDataLen - 1] == '\n')
+        if ((*userInput)[inputReadLen - 1] == '\n')
         {
-            (*userInput)[*inputDataLen - 1] = '\0';
-            *inputDataLen -= 1;
+            (*userInput)[inputReadLen - 1] = '\0';
+            inputReadLen -= 1;
         }
         if (inputDataLen != M_NULLPTR)
         {
@@ -2401,14 +2399,18 @@ errno_t safe_getdelim_impl(char** M_RESTRICT   lineptr,
     return error;
 }
 
-errno_t safe_getline_impl(char**      lineptr,
-                          size_t*     lineptrAllocedSize,
-                          rsize_t*    charsRead,
-                          FILE*       stream,
-                          const char* functionName,
-                          const char* fileName,
-                          int         lineNumber,
-                          const char* expression)
+M_PARAM_RW(1)
+M_PARAM_RW(2)
+M_PARAM_RW(3)
+M_PARAM_RO(4)
+CONSTRAINT_NO_DISCARD errno_t safe_getline_impl(char* M_NONNULL* M_RESTRICT M_NULLABLE lineptr,
+                                                rsize_t* M_RESTRICT M_NONNULL          lineptrAllocedSize,
+                                                rsize_t* M_RESTRICT M_NONNULL          charsRead,
+                                                FILE* M_NONNULL                        stream,
+                                                const char* M_NULLABLE                 functionName,
+                                                const char* M_NULLABLE                 fileName,
+                                                int                                    lineNumber,
+                                                const char* M_NULLABLE                 expression)
 {
     return safe_getdelim_impl(lineptr, lineptrAllocedSize, charsRead, '\n', stream, functionName, fileName, lineNumber,
                               expression);

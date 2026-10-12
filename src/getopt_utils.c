@@ -107,10 +107,10 @@ int optopt = '?'; /* character checked for validity */
 #    if defined(__MINGW32__)
 #        undef optreset /* see getopt.h */
 #        define optreset __mingw_optreset
-#    endif      /*__MINGW32__*/
-int            optreset; /* reset getopt */
-char* M_NULLABLE optarg; /* argument associated with option */
-#endif          /*REPLACE_GETOPT*/
+#    endif                 /*__MINGW32__*/
+int              optreset; /* reset getopt */
+char* M_NULLABLE optarg;   /* argument associated with option */
+#endif                     /*REPLACE_GETOPT*/
 
 #define PRINT_ERROR   ((opterr) && (*options != ':'))
 
@@ -195,7 +195,8 @@ M_NODISCARD M_PURE_FUNC M_NULL_TERM_STRING(1) M_PARAM_RO(1) static size_t getopt
  * in each block).
  */
 M_NONNULL_PARAM_LIST(4)
-M_PARAM_RO(4) static void permute_args(int panonopt_start, int panonopt_end, int opt_end, char* M_NONNULL const* M_NONNULL nargv)
+M_PARAM_RO(4)
+static void permute_args(int panonopt_start, int panonopt_end, int opt_end, char* M_NONNULL const* M_NONNULL nargv)
 {
     int   cstart, cyclelen, i, j, ncycle, nnonopts, nopts, pos;
     char* swap;

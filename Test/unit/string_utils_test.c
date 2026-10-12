@@ -981,7 +981,8 @@ static void test_safe_String_Token(void) {
     TEST_ASSERT_EQ(token, NULL, "No more tokens expected");
 }
 
-#if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
+#if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23) && \
+    !defined(HAVE_STRNDUP)
 static void test_strndup(void) {
     const char* str = "Hello, World!";
     char* dup = strndup(str, 5);

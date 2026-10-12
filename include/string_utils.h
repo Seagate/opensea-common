@@ -1148,7 +1148,8 @@ M_NODISCARD M_PARAM_RO(1) M_NULL_TERM_STRING(1) M_FORCEINLINE size_t safe_strlen
     //! \ref safe_String_Token
 #define common_String_Token(str, strmax, delim, saveptr) safe_String_Token(str, strmax, delim, saveptr)
 
-#if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23)
+#if !defined(__STDC_ALLOC_LIB__) && !defined(POSIX_2008) && !defined(USING_C23) && \
+    !defined(HAVE_STRNDUP)
     // define strndup
     // NOTE: Not defining strdup since this may be available in the OS's that need
     // this definition already (Windows currently)

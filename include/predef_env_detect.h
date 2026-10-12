@@ -335,6 +335,42 @@
 #if defined(_WIN32)
 #    include <sdkddkver.h>
 DISABLE_WARNING_4255
+#    include <intrin.h> // declares C intrinsics, used by winnt.h's PopulationCount64 on ARM64
+// Workaround for an MSVC header bug: SDK 10.0.26100.0's (24H2) winnt.h calls _CountOneBits64 but
+// MSVC up to 14.30 (VS2022 17.0) only declares it in intrin.h for 32-bit ARM (guarded with
+// __MACHINEARM instead of __MACHINEARM_ARM64) even though it has been a documented ARM64 intrinsic
+// since VS2015, and no CRT library provides an ARM64 implementation for those toolsets:
+// https://learn.microsoft.com/en-us/cpp/intrinsics/arm64-intrinsics?view=msvc-140
+// https://learn.microsoft.com/en-us/cpp/intrinsics/arm64-intrinsics?view=msvc-150
+// https://learn.microsoft.com/en-us/cpp/intrinsics/arm64-intrinsics?view=msvc-160
+// https://learn.microsoft.com/en-us/cpp/intrinsics/arm64-intrinsics?view=msvc-170
+// https://learn.microsoft.com/en-us/cpp/intrinsics/arm64-intrinsics?view=msvc-180
+// This threshold was verified with Compiler Explorer (godbolt) ARM64 codegen: 19.16 and 19.29 emit
+// a `bl _CountOneBits64` + IMPORT while 19.31 (VS2022 17.1) is the first toolset to recognize the
+// intrinsic and lower real calls to a native popcount (CNT/ADDV), so on older MSVC toolsets an
+// internal implementation is provided instead of a mere declaration: a declaration alone fixes the
+// C4013 at parse time, but any real call (e.g. winnt.h's PopulationCount64) still emitted a
+// `bl _CountOneBits64` that failed to link (LNK2019).
+// On non-MSVC compilers or newer toolsets a plain declaration is sufficient.
+#    if defined(_M_ARM64) && defined(WDK_NTDDI_VERSION) &&                                                             \
+        WDK_NTDDI_VERSION >= 0x0A000010 /* WIN_API_TARGET_WIN11_26100 */
+#        if defined(_MSC_VER) && !IS_MSVC_VERSION(MSVC_2022_17_1)
+static inline unsigned int _CountOneBits64(unsigned __int64 value)
+{
+    value = value - ((value >> 1) & 0x5555555555555555ULL);
+    value = (value & 0x3333333333333333ULL) + ((value >> 2) & 0x3333333333333333ULL);
+    value = (value + (value >> 4)) & 0x0F0F0F0F0F0F0F0FULL;
+#            if defined(__cplusplus)
+    return static_cast<unsigned int>
+#            else
+    return (unsigned int)
+#            endif
+        (((value * 0x0101010101010101ULL) >> 56) & 0x3FULL);
+}
+#        else
+extern unsigned int _CountOneBits64(unsigned __int64);
+#        endif
+#    endif
 #    include <windows.h>
 RESTORE_WARNING_4255
 #    include <winsdkver.h>
