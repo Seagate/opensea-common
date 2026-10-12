@@ -87,6 +87,7 @@
     <ClInclude Include="..\..\..\..\include\precision_timer.h" />
     <ClInclude Include="..\..\..\..\include\predef_env_detect.h" />
     <ClInclude Include="..\..\..\..\include\prng.h" />
+    <ClInclude Include="..\..\..\..\include\program_name_utils.h" />
     <ClInclude Include="..\..\..\..\include\secured_env_vars.h" />
     <ClInclude Include="..\..\..\..\include\secure_file.h" />
     <ClInclude Include="..\..\..\..\include\sleep.h" />
@@ -97,6 +98,7 @@
     <ClInclude Include="..\..\..\..\include\unit_conversion.h" />
     <ClInclude Include="..\..\..\..\include\version_sort.h" />
     <ClInclude Include="..\..\..\..\include\warning_ctl.h" />
+    <ClInclude Include="..\..\..\..\include\warning_utils.h" />
     <ClInclude Include="..\..\..\..\include\windows_version_detect.h" />
   </ItemGroup>
   <ItemGroup>
@@ -182,6 +184,9 @@
     <ClCompile Include="..\..\..\..\src\windows_env_detect.c" />
     <ClCompile Include="..\..\..\..\src\windows_secure_file.c" />
     <ClCompile Include="..\..\..\..\src\windows_version_detect.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\include\cpp.hint" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FBCBA2F1-3BF8-4A25-B815-E228E1AEDCFF}</ProjectGuid>

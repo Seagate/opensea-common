@@ -108,6 +108,12 @@
     <ClInclude Include="..\..\..\..\include\warning_ctl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\program_name_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\warning_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\bit_manip.c">
@@ -203,5 +209,10 @@
     <ClCompile Include="..\..\..\..\src\version_sort.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\include\cpp.hint">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

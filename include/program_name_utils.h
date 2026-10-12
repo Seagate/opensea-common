@@ -109,7 +109,7 @@ extern const char* __progname; // NOLINT
 #endif /*Checking PROGNAME capabilities*/
 
 #if defined(HAS_GETEXECNAME)
-#include <libgen.h> // for getexecname() on Solaris
+#    include <libgen.h> // for getexecname() on Solaris
 #endif
 
 #if defined(NEED_PROGNAME)

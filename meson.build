@@ -6,7 +6,7 @@ project(
     license: 'MPL-2.0',
     version: '6.1.0',
     meson_version: '>=0.56.0',
-    default_options: ['warning_level=2', 'default_library=static'],
+    default_options: ['warning_level=2', 'werror=true', 'b_ndebug=if-release', 'default_library=static'],
 )
 
 c = meson.get_compiler('c')
@@ -48,6 +48,7 @@ if c.get_id().contains('gcc') or c.get_id().contains('clang')
         '-Wfloat-equal',
         '-Wnull-dereference',
         '-Wunused-const-variable',
+        '-Wunused-but-set-variable',
         '-Wunused-parameter',
         '-Wunused-value',
         '-Wduplicated-cond',
@@ -301,41 +302,41 @@ elif c.get_id().contains('msvc')
         '/wd5105',  # macro expansion producing 'defined' has undefined behavior
         '/wd4746',  # volatile access of '<expression>' is subject to /volatile:[iso|ms] setting; consider using __iso_volatile_load/store intrinsic functions.
         #Turn on the following warnings to make the output more useful or like GCC/clang
-        '/w14255',  # 'function' : no function prototype given: converting '()' to '(void)'
-        '/w14062',  # enumerator 'identifier' in switch of enum 'enumeration' is not handled
-        '/w14101',  # 'identifier' : unreferenced local variable
-        '/w14189',  # 'identifier' : local variable is initialized but not referenced
-        '/w15031',  # #pragma warning(pop): likely mismatch, popping warning state pushed in different file
-        '/w15032',  # detected #pragma warning(push) with no corresponding #pragma warning(pop)
-        '/w15262',  # implicit fall-through occurs here; are you missing a break statement? Use [[fallthrough]] when a break statement is intentionally omitted between cases
-        '/w14255',  # 'function' : no function prototype given: converting '()' to '(void)' #NOTE: Only needed for /Wall, otherwise enabling can be good-TJE
-        '/w14242',  # identifier conversion from type 1 to type 2, possible loss of data (matches -wconversion above)
-        '/w14254',  # operator conversion from type 1 to type 2, possible loss of data (matches -wconversion above)
-        '/w14287',  # operator: unsigned/negative constant mismatch (matches -wconversion above)
-        '/w14296',  # operator: expression is always false
-        '/w14365',  # action: conversion from type 1 to type 2, signed/unsigned mismatch (matches -wconversion above)
-        '/w14388',  # implicit conversion warning during a comparison (matches -wconversion above)
-        '/w14545',  # expression before comma evaluates to a function which is missing an argument list
-        '/w14546',  # function call before comma missing argument list
-        '/w14547',  # 'operator' : operator before comma has no effect; expected operator with side-effect
-        '/w14548',  # expression before comma has no effect; expected expression with side-effect
-        '/w14549',  # 'operator1': operator before comma has no effect; did you intend 'operator2'?
-        '/w14574',  # 'identifier' is defined to be '0': did you mean to use '#if identifier'?
-        '/w14605',  # 	'/Dmacro' specified on current command line, but was not specified when precompiled header was built
-        '/w14555',  # expression has no effect; expected expression with side-effect
-        '/w14774',  # 'string' : format string expected in argument number is not a string literal
-        '/w14777',  # 'function' : format string 'string' requires an argument of type 'type1', but variadic argument number has type 'type2'
-        '/w14826',  # Conversion from 'type1' to 'type2' is sign-extended. This may cause unexpected runtime behavior (more -wconversion)
-        '/w15219',  # implicit conversion from 'type-1' to 'type-2', possible loss of data (-wconversion)
-        '/w15240',  # 'attribute-name': attribute is ignored in this syntactic position
-        '/w15245',  # 'function': unreferenced function with internal linkage has been removed
-        '/w14555',  # expression has no effect; expected expression with side-effect
-        '/w15264',  # 'variable-name': 'const' variable is not used
+        '/w34255',  # 'function' : no function prototype given: converting '()' to '(void)'
+        '/w34062',  # enumerator 'identifier' in switch of enum 'enumeration' is not handled
+        '/w34101',  # 'identifier' : unreferenced local variable
+        '/w34189',  # 'identifier' : local variable is initialized but not referenced
+        '/w35031',  # #pragma warning(pop): likely mismatch, popping warning state pushed in different file
+        '/w35032',  # detected #pragma warning(push) with no corresponding #pragma warning(pop)
+        '/w35262',  # implicit fall-through occurs here; are you missing a break statement? Use [[fallthrough]] when a break statement is intentionally omitted between cases
+        '/w34255',  # 'function' : no function prototype given: converting '()' to '(void)' #NOTE: Only needed for /Wall, otherwise enabling can be good-TJE
+        '/w34242',  # identifier conversion from type 1 to type 2, possible loss of data (matches -wconversion above)
+        '/w34254',  # operator conversion from type 1 to type 2, possible loss of data (matches -wconversion above)
+        '/w34287',  # operator: unsigned/negative constant mismatch (matches -wconversion above)
+        '/w34296',  # operator: expression is always false
+        '/w34365',  # action: conversion from type 1 to type 2, signed/unsigned mismatch (matches -wconversion above)
+        '/w34388',  # implicit conversion warning during a comparison (matches -wconversion above)
+        '/w34545',  # expression before comma evaluates to a function which is missing an argument list
+        '/w34546',  # function call before comma missing argument list
+        '/w34547',  # 'operator' : operator before comma has no effect; expected operator with side-effect
+        '/w34548',  # expression before comma has no effect; expected expression with side-effect
+        '/w34549',  # 'operator1': operator before comma has no effect; did you intend 'operator2'?
+        '/w34574',  # 'identifier' is defined to be '0': did you mean to use '#if identifier'?
+        '/w34605',  # 	'/Dmacro' specified on current command line, but was not specified when precompiled header was built
+        '/w34555',  # expression has no effect; expected expression with side-effect
+        '/w34774',  # 'string' : format string expected in argument number is not a string literal
+        '/w34777',  # 'function' : format string 'string' requires an argument of type 'type1', but variadic argument number has type 'type2'
+        '/w34826',  # Conversion from 'type1' to 'type2' is sign-extended. This may cause unexpected runtime behavior (more -wconversion)
+        '/w35219',  # implicit conversion from 'type-1' to 'type-2', possible loss of data (-wconversion)
+        '/w35240',  # 'attribute-name': attribute is ignored in this syntactic position
+        '/w35245',  # 'function': unreferenced function with internal linkage has been removed
+        '/w34555',  # expression has no effect; expected expression with side-effect
+        '/w35264',  # 'variable-name': 'const' variable is not used
         '/w24302',  # 'conversion': truncation from 'type1' to 'type2'
         '/w14311',  # 'variable': pointer truncation from 'type' to 'type'
         '/w14312',  # 'operation': conversion from 'type1' to 'type2' of greater size
         '/w14319',  # 'operator': zero extending 'type1' to 'type2' of greater size
-        '/w14702',  # warning for unreachable code
+        '/w34702',  # warning for unreachable code
         #Treat the following as errors
         '/we4431',  # missing type specifier - int assumed. Note: C no longer supports default-int
         '/we4905',  # wide string literal cast to 'LPSTR'
@@ -393,6 +394,53 @@ endif
 add_project_arguments(c.get_supported_arguments(warning_flags), language: 'c')
 add_project_link_arguments(c.get_supported_link_arguments(linker_flags), language: 'c')
 
+# This is not necessarily an exhaustive list of what is used by opensea-common.
+# This is a short list based on what meson says it can search for and what we are using
+# today in code_attributes.h
+# See here for supported attribtues: https://mesonbuild.com/Reference-tables.html#gcc-__attribute__
+opensea_attributes = [
+    'aligned',
+    'alloc_size',
+    'always_inline',
+    'cold',
+    'const',
+    'deprecated',
+    'fallthrough',
+    'format',
+    'hot',
+    'malloc',
+    'noinline',
+    'nonnull',
+    'noreturn',
+    'packed',
+    'pure',
+    'returns_nonnull',
+    'unused',
+    'visibility:default',
+    'warn_unused_result',
+]
+
+if target_machine.system() == 'windows'
+    opensea_attributes += ['dllimport', 'dllexport']
+endif
+
+if meson.version().version_compare('>=1.5.0')
+    opensea_attributes += ['null_terminated_string_arg']
+endif
+if meson.version().version_compare('>=1.10.0')
+    opensea_attributes += ['counted_by']
+endif
+
+# use meson's attribute lookup. More helpful for old GCC without the `__has_attribute(attr)` available.
+# while the C code has some preprocessor macro based checks for compiler version, etc, this is
+# a bit simpler to use overall for old versions where the manual C checks may not be exactly correct.
+supported_attributes = c.get_supported_function_attributes(opensea_attributes)
+# While we could filter the list to what we use, we use a lot of them, so a few extra definitions
+# won't hurt anything here. If anything, it will make this forward compatible to newer versions
+# of meson as it adds detection for other attributes.
+foreach attribute : supported_attributes
+    global_cpp_args += ['-DHAS_@0@_ATTR'.format(attribute.underscorify().to_upper())]
+endforeach
 
 if get_option('debug')
     add_project_arguments('-D_DEBUG', language: 'c')
@@ -529,8 +577,12 @@ if c.has_function('getline', prefix: '#include <stdio.h>')
     global_cpp_args += ['-DHAVE_GETLINE']
 endif
 
+if c.has_function('strndup', prefix: '#include <string.h>')
+    global_cpp_args += ['-DHAVE_STRNDUP']
+endif
+
 # Test support for _Generic keyword. May not be available in some cases.
-gernericSelectionTest = '''
+generic_selection_test_code = '''
                       long add_long(long x, long y)
                       {
                         return x + y;
@@ -572,14 +624,18 @@ gernericSelectionTest = '''
                       }
                   '''
 
-genericSelectionTestResult = c.compiles(gernericSelectionTest, name: 'Generic Selection Support', args: genericargs)
-if genericSelectionTestResult == true
+generic_selection_test_result = c.compiles(
+    generic_selection_test_code,
+    name: 'Generic Selection Support',
+    args: genericargs,
+)
+if generic_selection_test_result == true
     global_cpp_args += ['-DHAVE_C11_GENERIC_SELECTION']
 endif
 
-constexprTest = ' int main (void) { constexpr int i = 50; int j = 0; return j / i; }'
-constexprTestResult = c.compiles(constexprTest, name: 'Constexpr Support')
-if constexprTestResult == true
+const_expr_test_code = ' int main (void) { constexpr int i = 50; int j = 0; return j / i; }'
+const_expr_test_result = c.compiles(const_expr_test_code, name: 'Constexpr Support')
+if const_expr_test_result == true
     global_cpp_args += ['-DHAVE_CONSTEXPR']
 endif
 
@@ -591,7 +647,7 @@ endif
 # Test support for __has_c_attribute for namespaced attribtues (compiler unique)
 # Some compilers do not support this properly and throw errors about using the : symbol
 # MSVC does not like this and Clang 16.0.6 in openBSD also complains.
-attributeTest = ''' #include <stdio.h>
+attribute_test = ''' #include <stdio.h>
                       #if defined (__has_c_attribute)
                       #    if __has_c_attribute(clang::unused)
                       #        define HAS_CLANG_UNUSED
@@ -603,8 +659,8 @@ attributeTest = ''' #include <stdio.h>
                           return 0;
                       }
                   '''
-attributeTestResult = c.compiles(attributeTest, name: '__has_c_attribute for compiler specific attributes')
-if attributeTestResult == false
+attribute_test_result = c.compiles(attribute_test, name: '__has_c_attribute for compiler specific attributes')
+if attribute_test_result == false
     global_cpp_args += ['-DNO_COMPILER_UNIQUE_C_ATTRIBUTES']
     if not c.get_id().contains('msvc')
         global_cpp_args += ['-DFORCE_GNU_STYLE_ATTRIBUTES']
@@ -673,7 +729,17 @@ else
     src_files += ['src/posix_env_detect.c', 'src/posix_secure_file.c']
 endif
 
+# Math library may need to be linked on some systems. Keep it simple and optional.
+# If it is a stub like in some modern libc's, this has no effect.
+# There are a couple places in opensea-common that use the math functions.
 m_dep = c.find_library('m', required: false)
+# Realtime library may need to be linked on some systems. Keep it simple and optional.
+# If it is a stub like in some modern libc's, this has no effect.
+# Note: This is included mostly for backwards compatibility in case we needed to compile
+# for an older target like CentOS6. Modern libc's do not need this and lrt is a stub.
+# There are uses of monotonic clock functions in time_utils.c that may need this
+# to link properly for older systems
+rt_dep = c.find_library('rt', required: false)
 
 incdir = include_directories(
     'include',
@@ -685,7 +751,7 @@ opensea_common_lib = static_library(
     'opensea-common',
     src_files,
     c_args: global_cpp_args,
-    dependencies: [m_dep, deps],
+    dependencies: [m_dep, rt_dep, deps],
     include_directories: incdir,
     gnu_symbol_visibility: 'hidden',
 )

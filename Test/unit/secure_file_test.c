@@ -67,7 +67,7 @@ static void test_os_Is_Directory_Secure(void) {
     TEST_ASSERT(os_Is_Directory_Secure(abs_path, NULL), "Directory should be secure");
 
     free(abs_path);
-    
+
     char* error = NULL;
     mkdir("insecure_dir", 0777); // umask removes the permissions for group and others, so we need to explicitly set them to make it insecure.
     chmod("insecure_dir", 0777); // Make the directory writable by others, which should make it insecure.
@@ -174,7 +174,7 @@ static void test_secure_Open_File(void) {
     fprintf(f, "hello");
     fclose(f);
     fileExt extList[] = {{"txt"}, {"log"}, {NULL}};
-    fileAttributes* realAttrs = os_Get_File_Attributes_By_Name(filename); 
+    fileAttributes* realAttrs = os_Get_File_Attributes_By_Name(filename);
 
     secureFileInfo* fileInfo = secure_Open_File(filename, "r", extList, realAttrs, NULL);
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
@@ -223,7 +223,7 @@ static void test_secure_Open_File(void) {
     FILE* f5 = fopen(filename5, "w");
     fclose(f5);
     fileAttributes invalidAttrs = {0};
-    invalidAttrs.deviceID = 999; 
+    invalidAttrs.deviceID = 999;
     secureFileInfo* fileInfo5 = secure_Open_File(filename5, "r", extList, &invalidAttrs, NULL);
     TEST_ASSERT(fileInfo5->error == SEC_FILE_INVALID_FILE_ATTRIBUTES, "Should return invalid file attributes error when attributes do not match");
     free_Secure_File_Info(&fileInfo5);
@@ -251,7 +251,7 @@ static void test_secure_Close_File(void) {
     const char* filename = "test_secure_close.txt";
     FILE* f = fopen(filename, "w");
     fprintf(f, "hello");
-    fclose(f); 
+    fclose(f);
 
     secureFileInfo* fileInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
     TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
@@ -269,7 +269,7 @@ static void test_secure_Close_File(void) {
     // fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
     // closeResult = secure_Close_File(fileInfo);
     // TEST_ASSERT(closeResult == SEC_FILE_FAILURE_CLOSING_FILE, "secure_Close_File should return failure closing file error if fileInfo is in that state");
-} 
+}
 
 static void test_secure_Read_File(void) {
     const char* filename = "test_secure_read.txt";
@@ -529,7 +529,7 @@ static void test_secure_Tell_File(void) {
     tellResult = secure_Tell_File(fileInfo2);
     TEST_ASSERT(tellResult == -1, "secure_Tell_File should return -1 when fileInfo is in failure closing state");
     free_Secure_File_Info(&fileInfo2);
-    
+
     // Test when FILE pointer is NULL
     secureFileInfo* fileInfo3 = secure_Open_File(filename, "r", NULL, NULL, NULL);
     TEST_ASSERT(fileInfo3 != NULL, "secure_Open_File should return a valid pointer");
@@ -714,7 +714,7 @@ static void test_secure_GetPos_File(void) {
     secureFileInfo* fileInfo3 = secure_Open_File(filename, "r", NULL, NULL, NULL);
     TEST_ASSERT(fileInfo3 != NULL, "secure_Open_File should return a valid pointer");
     TEST_ASSERT(fileInfo3->isValid, "secure_Open_File should return valid file info");
-    
+
     // Test when file is closed
     fclose(fileInfo3->file);
     result = secure_GetPos_File(fileInfo3, &pos);
@@ -1060,7 +1060,225 @@ static void test_create_And_Open_Secure_Log_File(void) {
     secureFileInfo* fileInfo4 = NULL;
     result = create_And_Open_Secure_Log_File("testfile", strlen("testfile"), &fileInfo4, NAMING_SERIAL_NUMBER_ONLY, NULL, 0, NULL, 0, ".bin", 4);
     TEST_ASSERT(result == FAILURE, "Function should fail when file already exists");
-    free_Secure_File_Info(&fileInfo4); 
+    free_Secure_File_Info(&fileInfo4);
+}
+
+static void test_secure_fgetc(void) {
+    const char* filename = "test_secure_fgetc.txt";
+    FILE* f = fopen(filename, "w");
+    fprintf(f, "hello");
+    fclose(f);
+
+    secureFileInfo* fileInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
+    TEST_ASSERT(fileInfo->isValid, "secure_Open_File should return valid file info");
+
+    // A null output pointer is rejected without consuming input.
+    int byte = 0;
+    int* nullableByte = M_NULLPTR;
+    eSecureFileError result = secure_fgetc(fileInfo, nullableByte);
+    TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_fgetc should reject a null output pointer");
+    result = secure_fgetc(fileInfo, &byte);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fgetc should succeed");
+    TEST_ASSERT(byte == 'h', "secure_fgetc should return the first byte 'h'");
+    result = secure_fgetc(fileInfo, &byte);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fgetc should succeed");
+    TEST_ASSERT(byte == 'e', "secure_fgetc should return the second byte 'e'");
+
+    // Seek to end of file, then fgetc -> SEC_FILE_END_OF_FILE_REACHED and *byte unchanged
+    (void)secure_Seek_File(fileInfo, 5, SEEK_SET);
+    const int sentinel = -12345;
+    byte = sentinel;
+    result = secure_fgetc(fileInfo, &byte);
+    TEST_ASSERT(result == SEC_FILE_END_OF_FILE_REACHED, "secure_fgetc should return end of file error at end of file");
+    TEST_ASSERT(byte == sentinel, "secure_fgetc should not modify *byte on failure");
+
+    // Closed-stream state
+    fileInfo->error = SEC_FILE_FAILURE_CLOSING_FILE;
+    result = secure_fgetc(fileInfo, &byte);
+    TEST_ASSERT(result == SEC_FILE_FAILURE_CLOSING_FILE, "secure_fgetc should return failure closing file error if fileInfo is in that state");
+    free_Secure_File_Info(&fileInfo);
+
+    // NULL fileInfo
+    result = secure_fgetc(NULL, &byte);
+    TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_fgetc should return invalid secure file error when fileInfo is NULL");
+}
+
+static void test_secure_fgets(void) {
+    const char* filename = "test_secure_fgets.txt";
+    FILE* f = fopen(filename, "w");
+    fprintf(f, "hello\nworld\n");
+    fclose(f);
+
+    secureFileInfo* fileInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
+
+    // fgets retains the newline when it reads one.
+    char line[16] = {0};
+    eSecureFileError result = secure_fgets(fileInfo, line, sizeof(line));
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fgets should succeed reading a full line");
+    TEST_ASSERT(strcmp(line, "hello\n") == 0, "secure_fgets should retain the newline in the first line");
+
+    // Read the second line
+    memset(line, 0, sizeof(line));
+    result = secure_fgets(fileInfo, line, sizeof(line));
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fgets should succeed reading the second line");
+    TEST_ASSERT(strcmp(line, "world\n") == 0, "secure_fgets should retain the newline in the second line");
+
+    // At end of file now: nothing readable -> SEC_FILE_END_OF_FILE_REACHED
+    memset(line, 0, sizeof(line));
+    line[0] = (char)0xAB;
+    result = secure_fgets(fileInfo, line, sizeof(line));
+    TEST_ASSERT(result == SEC_FILE_END_OF_FILE_REACHED, "secure_fgets should return end of file error when nothing can be read");
+    TEST_ASSERT(line[0] == 0, "secure_fgets should NUL-terminate the buffer on failure");
+    free_Secure_File_Info(&fileInfo);
+
+    // Partial line (no trailing newline) is still success as long as >= 1 byte read
+    const char* partialFilename = "test_secure_fgets_partial.txt";
+    f = fopen(partialFilename, "w");
+    fprintf(f, "partial");
+    fclose(f);
+    secureFileInfo* partialFileInfo = secure_Open_File(partialFilename, "r", NULL, NULL, NULL);
+    memset(line, 0, sizeof(line));
+    result = secure_fgets(partialFileInfo, line, sizeof(line));
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fgets should succeed reading a partial line at end of file");
+    TEST_ASSERT(strcmp(line, "partial") == 0, "secure_fgets should read the partial line 'partial'");
+    free_Secure_File_Info(&partialFileInfo);
+
+    // size = 1: write a NUL terminator without consuming input.
+    secureFileInfo* tinyFileInfo = secure_Open_File(partialFilename, "r", NULL, NULL, NULL);
+    char tiny[1] = {(char)0xAB};
+    result = secure_fgets(tinyFileInfo, tiny, sizeof(tiny));
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fgets should succeed with a size-1 buffer");
+    TEST_ASSERT(tiny[0] == '\0', "secure_fgets should NUL-terminate a size-1 buffer");
+    char afterTiny[16] = {0};
+    result = secure_fgets(tinyFileInfo, afterTiny, sizeof(afterTiny));
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fgets should still read after a size-1 call");
+    TEST_ASSERT(strcmp(afterTiny, "partial") == 0, "a size-1 call should not consume input");
+    free_Secure_File_Info(&tinyFileInfo);
+
+    // NULL buffer -> SEC_FILE_INVALID_PARAMETER
+    secureFileInfo* nullBufferInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    result = secure_fgets(nullBufferInfo, NULL, sizeof(line));
+    TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_fgets should return invalid parameter error when buffer is NULL");
+    free_Secure_File_Info(&nullBufferInfo);
+
+    // size = 0 -> SEC_FILE_INVALID_PARAMETER
+    secureFileInfo* zeroSizeInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    result = secure_fgets(zeroSizeInfo, line, 0);
+    TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_fgets should return invalid parameter error when size is 0");
+    free_Secure_File_Info(&zeroSizeInfo);
+}
+
+static void test_secure_fputs(void) {
+    const char* filename = "test_secure_fputs.txt";
+
+    // Write a string, then read it back to verify
+    secureFileInfo* fileInfo = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
+    eSecureFileError result = secure_fputs(fileInfo, "hello");
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fputs should succeed");
+    (void)secure_Flush_File(fileInfo);
+    free_Secure_File_Info(&fileInfo);
+
+    secureFileInfo* readInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    char buffer[10] = {0};
+    size_t numberRead = 0;
+    result = secure_Read_File(readInfo, buffer, sizeof(buffer), 1, 5, &numberRead);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_Read_File should succeed reading back the written string");
+    TEST_ASSERT(strcmp(buffer, "hello") == 0, "File should contain 'hello'");
+    free_Secure_File_Info(&readInfo);
+
+    // Writing to a read-only file -> SEC_FILE_READ_WRITE_ERROR
+    secureFileInfo* readOnlyInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    result = secure_fputs(readOnlyInfo, "hello");
+    TEST_ASSERT(result == SEC_FILE_READ_WRITE_ERROR, "secure_fputs should return read/write error when writing to a read-only file");
+    free_Secure_File_Info(&readOnlyInfo);
+
+    // NULL string
+    secureFileInfo* nullStringInfo = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    result = secure_fputs(nullStringInfo, NULL);
+    TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER,
+                 "secure_fputs should return invalid parameter error when str is NULL");
+    free_Secure_File_Info(&nullStringInfo);
+
+    // NULL fileInfo
+    result = secure_fputs(NULL, "hello");
+    TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_fputs should return invalid secure file error when fileInfo is NULL");
+}
+
+static void test_secure_fputc(void) {
+    const char* filename = "test_secure_fputc.txt";
+
+    // Write a byte, then read it back to verify
+    secureFileInfo* fileInfo = secure_Open_File(filename, "w", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
+    eSecureFileError result = secure_fputc(fileInfo, 'x');
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fputc should succeed");
+    (void)secure_Flush_File(fileInfo);
+    free_Secure_File_Info(&fileInfo);
+
+    secureFileInfo* readInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    int byte = 0;
+    result = secure_fgetc(readInfo, &byte);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fgetc should succeed reading back the written byte");
+    TEST_ASSERT(byte == 'x', "File should contain 'x'");
+    free_Secure_File_Info(&readInfo);
+
+    // Writing to a read-only file -> SEC_FILE_READ_WRITE_ERROR
+    secureFileInfo* readOnlyInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    result = secure_fputc(readOnlyInfo, 'x');
+    TEST_ASSERT(result == SEC_FILE_READ_WRITE_ERROR, "secure_fputc should return read/write error when writing to a read-only file");
+    free_Secure_File_Info(&readOnlyInfo);
+
+    // NULL fileInfo
+    result = secure_fputc(NULL, 'x');
+    TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_fputc should return invalid secure file error when fileInfo is NULL");
+}
+
+static void test_secure_ungetc(void) {
+    const char* filename = "test_secure_ungetc.txt";
+    FILE* f = fopen(filename, "w");
+    fprintf(f, "he");
+    fclose(f);
+
+    secureFileInfo* fileInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    TEST_ASSERT(fileInfo != NULL, "secure_Open_File should return a valid pointer");
+
+    // Read 'h', push it back, and read it again
+    int byte = 0;
+    eSecureFileError result = secure_fgetc(fileInfo, &byte);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fgetc should succeed");
+    TEST_ASSERT(byte == 'h', "secure_fgetc should return the first byte 'h'");
+    result = secure_ungetc(fileInfo, 'h');
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_ungetc should succeed");
+    result = secure_fgetc(fileInfo, &byte);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fgetc should succeed after ungetc");
+    TEST_ASSERT(byte == 'h', "secure_fgetc should return the pushed back byte 'h'");
+    result = secure_fgetc(fileInfo, &byte);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fgetc should succeed");
+    TEST_ASSERT(byte == 'e', "secure_fgetc should continue with the next byte 'e' after ungetc");
+
+    // c == EOF -> SEC_FILE_INVALID_PARAMETER, stream untouched
+    result = secure_ungetc(fileInfo, EOF);
+    TEST_ASSERT(result == SEC_FILE_INVALID_PARAMETER, "secure_ungetc should return invalid parameter error when c is EOF");
+
+    // Input pushback is valid on a read-only stream.
+    secureFileInfo* readOnlyInfo = secure_Open_File(filename, "r", NULL, NULL, NULL);
+    result = secure_fgetc(readOnlyInfo, &byte);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fgetc should succeed on the read-only file");
+    result = secure_ungetc(readOnlyInfo, byte);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_ungetc should succeed on a read-only input stream");
+    int pushedBackByte = 0;
+    result = secure_fgetc(readOnlyInfo, &pushedBackByte);
+    TEST_ASSERT(result == SEC_FILE_SUCCESS, "secure_fgetc should read the pushed-back byte");
+    TEST_ASSERT(pushedBackByte == byte, "secure_ungetc should push back the same byte");
+    free_Secure_File_Info(&readOnlyInfo);
+
+    // NULL fileInfo
+    result = secure_ungetc(NULL, 'h');
+    TEST_ASSERT(result == SEC_FILE_INVALID_SECURE_FILE, "secure_ungetc should return invalid secure file error when fileInfo is NULL");
+    free_Secure_File_Info(&fileInfo);
 }
 
 void run_secure_file_tests(void) {
@@ -1075,6 +1293,11 @@ void run_secure_file_tests(void) {
     test_secure_Close_File();
     test_secure_Read_File();
     test_secure_Write_File();
+    test_secure_fgetc();
+    test_secure_fgets();
+    test_secure_fputs();
+    test_secure_fputc();
+    test_secure_ungetc();
     test_secure_Seek_File();
     test_secure_Rewind_File();
     test_secure_Tell_File();

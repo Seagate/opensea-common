@@ -70,9 +70,7 @@
 #include <sys/types.h> //This is available in Windows and linux/unix-like systems
 #if defined(_WIN32)
 #    include <BaseTsd.h> //for MAXSSIZE_T
-DISABLE_WARNING_4255
 #    include <windows.h> //Includes various Windows headers for types and functions. Used for MAX_PATH below
-RESTORE_WARNING_4255
 #else
 #    include <sys/param.h>
 #endif             //_WIN32
@@ -369,12 +367,14 @@ typedef int32_t intptr_t;
 
 #if !defined(SSIZE_MAX) && !defined(SSIZE_MIN) && !defined(SSIZE_T_DEFINED)
 #    if defined(_MSC_VER) && defined(MAXSSIZE_T) && defined(MINSSIZE_T)
+#        if !defined(ssize_t)
     //! \typedef ssize_t
     //! \brief Defines the signed size type for Microsoft compilers.
     //!
     //! This type is defined as SSIZE_T to match POSIX standards.
     //! \note This is the same as intptr_t in Microsoft headers.
     typedef SSIZE_T ssize_t;
+#        endif
 
 //! \def SSIZE_MAX
 //! \brief Defines the maximum value for ssize_t on Microsoft compilers.
@@ -384,11 +384,13 @@ typedef int32_t intptr_t;
 //! \brief Defines the minimum value for ssize_t on Microsoft compilers.
 #        define SSIZE_MIN MINSSIZE_T
 #    else //!_MSCVER && !MAXSSIZE_T && !MINSSIZE_T
+#        if !defined(ssize_t)
     //! \typedef ssize_t
     //! \brief Defines the signed size type.
     //!
     //! This type is defined as intptr_t to ensure compatibility with the same range.
     typedef intptr_t ssize_t;
+#        endif
 
 //! \def SSIZE_MAX
 //! \brief Defines the maximum value for ssize_t.
@@ -399,6 +401,9 @@ typedef int32_t intptr_t;
 #        define SSIZE_MIN INTPTR_MIN
 #    endif //_MSC_VER && MAXSSIZE_T && MINSSIZE_T
 #    define SSIZE_T_DEFINED
+#    if !defined(ssize_t)
+#        define ssize_t ssize_t
+#    endif
 #endif // SSIZE_MAX && _MSC_VER
 
 // Bit widths. Standardized in C23, but if the def is missing, we will define it -TJE
@@ -716,7 +721,7 @@ typedef int32_t intptr_t;
 //! \param name The name of the structure.
 //! \param alignmentval The alignment value for the structure.
 //! \param ... The structure members.
-#if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
+#if (defined(HAS_PACKED_ATTR) && defined(HAS_ALIGNED_ATTR)) || IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
 #    define M_PACK_ALIGN_STRUCT(name, alignmentval, ...)                                                               \
         typedef struct s_##name                                                                                        \
         {                                                                                                              \
@@ -745,7 +750,7 @@ typedef int32_t intptr_t;
 //! It attempts to provide a compatible definition for various compilers.
 //! \param name The name of the structure.
 //! \param ... The structure members.
-#if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
+#if defined(HAS_PACKED_ATTR) || IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
 #    define M_PACKED_STRUCT(name, ...)                                                                                 \
         typedef struct s_##name                                                                                        \
         {                                                                                                              \
@@ -768,7 +773,7 @@ typedef int32_t intptr_t;
 //! It attempts to provide a compatible definition for various compilers.
 //! \param name The name of the union
 //! \param ... The union members.
-#if IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
+#if defined(HAS_PACKED_ATTR) || IS_GCC_VERSION(3, 0) || IS_CLANG_VERSION(1, 0)
 #    define M_PACKED_UNION(name, ...)                                                                                  \
         union name                                                                                                     \
         {                                                                                                              \
