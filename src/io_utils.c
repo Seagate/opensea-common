@@ -1123,7 +1123,6 @@ eReturnValues get_Secure_User_Input(const char* M_NONNULL       prompt,
         print_str("\n");
         return FAILURE;
     }
-    ssize_t inputRes = getline(userInput, inputDataLen, term);
     // now read the input with getline
     rsize_t inputAllocLen = RSIZE_T_C(0);
     rsize_t inputReadLen  = RSIZE_T_C(0);
@@ -1135,12 +1134,11 @@ eReturnValues get_Secure_User_Input(const char* M_NONNULL       prompt,
     }
     else
     {
-        *inputDataLen = C_CAST(size_t, inputRes);
         // remove newline from the end...convert to a null.
-        if ((*userInput)[*inputDataLen - 1] == '\n')
+        if ((*userInput)[inputReadLen - 1] == '\n')
         {
-            (*userInput)[*inputDataLen - 1] = '\0';
-            *inputDataLen -= 1;
+            (*userInput)[inputReadLen - 1] = '\0';
+            inputReadLen -= 1;
         }
         if (inputDataLen != M_NULLPTR)
         {
