@@ -1491,7 +1491,7 @@ M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
-            if (0 != safe_strtoull(outputInteger, strToConvert, unit, strType) ||
+            if (0 != safe_strtoull(outputInteger, strToConvert, unit, M_STATIC_CAST(int, strType)) ||
                 (unit == M_NULLPTR && unittype != M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE)))
             {
                 result = false;
@@ -1522,7 +1522,7 @@ M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
-            if (0 != safe_strtoul(outputInteger, strToConvert, unit, strType) ||
+            if (0 != safe_strtoul(outputInteger, strToConvert, unit, M_STATIC_CAST(int, strType)) ||
                 (unit == M_NULLPTR && unittype != M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE)))
             {
                 result = false;
@@ -1631,7 +1631,7 @@ M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
-            if (0 != safe_strtoll(outputInteger, strToConvert, unit, strType) ||
+            if (0 != safe_strtoll(outputInteger, strToConvert, unit, M_STATIC_CAST(int, strType)) ||
                 (unit == M_NULLPTR && unittype != M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE)))
             {
                 result = false;
@@ -1662,7 +1662,7 @@ M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
         // If everything is a valid hex digit.
         if (strType != INT_INPUT_INVALID)
         {
-            if (0 != safe_strtol(outputInteger, strToConvert, unit, strType) ||
+            if (0 != safe_strtol(outputInteger, strToConvert, unit, M_STATIC_CAST(int, strType)) ||
                 (unit == M_NULLPTR && unittype != M_ACCESS_ENUM(eAllowedUnitInput, ALLOW_UNIT_NONE)))
             {
                 result = false;
