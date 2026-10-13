@@ -120,7 +120,7 @@ M_NODISCARD fileUniqueIDInfo* os_Get_File_Unique_Identifying_Information(FILE* M
         uniqueID = M_REINTERPRET_CAST(fileUniqueIDInfo*, safe_calloc(1, sizeof(fileUniqueIDInfo)));
         if (uniqueID != M_NULLPTR)
         {
-            uniqueID->deviceid = st.st_dev;
+            uniqueID->deviceid = M_STATIC_CAST(uint64_t, st.st_dev);
             uniqueID->inode    = st.st_ino;
         }
     }
