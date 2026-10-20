@@ -1706,7 +1706,7 @@ M_NODISCARD M_NULL_TERM_STRING(1) M_PARAM_RO(1) M_PARAM_WO(2)
         else
 #endif // ULONG_MAX !> INT_MAX
         {
-            *outputInteger = C_CAST(short, temp);
+            *outputInteger = C_CAST(int, temp);
         }
     }
     return ret;
