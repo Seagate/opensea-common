@@ -970,6 +970,13 @@ typedef int32_t intptr_t;
 #    define NO_TYPEOF
 #endif
 
+#if defined (INT_MAX)
+#define RETVAL_SENTINEL (INT_MAX)
+#else
+// assuming 32bit.
+#define RETVAL_SENTINEL (0x7FFFFFFF)
+#endif
+
     //! \enum eReturnValues
     //! \brief Enum representing various return values.
     //!
@@ -1054,8 +1061,20 @@ typedef int32_t intptr_t;
         DEVICE_INVALID = 37,
         /*!< Device disconnected since being opened and is no longer available. */
         DEVICE_DISCONNECTED = 38,
-        /*!< Unknown error. */
-        UNKNOWN);
+        /*!< No transfer size could be found that meets the device and OS requirements, so the operation was not attempted. */
+        TRANSFER_SIZE_UNAVAILABLE = 39,
+        /*!< Unknown error. Sentinel value set to the maximum int so it is never confused with a real code. */
+        UNKNOWN = RETVAL_SENTINEL);
+
+    // UNKNOWN must remain the last and highest value (the sentinel), so all real return
+    // codes stay in the low range and can never be confused with it - TJE
+    M_STATIC_ASSERT(M_ACCESS_ENUM(eReturnValues, UNKNOWN) > M_ACCESS_ENUM(eReturnValues, TRANSFER_SIZE_UNAVAILABLE),
+                    RETURN_VALUES_SENTINEL_MUST_BE_HIGHEST);
+    M_STATIC_ASSERT(M_ACCESS_ENUM(eReturnValues, UNKNOWN) == RETVAL_SENTINEL, RETURN_VALUES_UNKNOWN_MUST_BE_RETVAL_SENTINEL);
+    // If any code is ever assigned a value too large (e.g. >= 0x80000000), the enum's underlying
+    // type would enlarge beyond int, which would allow codes to collide with or exceed the
+    // sentinel range. The sentinel itself is INT_MAX, so the type must stay at int or smaller.
+    M_STATIC_ASSERT(sizeof(M_ACCESS_ENUM(eReturnValues, UNKNOWN)) <= sizeof(int), RETURN_VALUES_MUST_FIT_IN_INT);
 
     //! \enum eDataTransferDirection
     //! \brief Enum representing data transfer directions.

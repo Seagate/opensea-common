@@ -2706,6 +2706,9 @@ M_NODISCARD bool get_eReturnValues_To_String(eReturnValues ret, char string[M_NO
     case M_ACCESS_ENUM(eReturnValues, DEVICE_DISCONNECTED):
         error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "DEVICE DISCONNECTED\n");
         break;
+    case M_ACCESS_ENUM(eReturnValues, TRANSFER_SIZE_UNAVAILABLE):
+        error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "TRANSFER SIZE UNAVAILABLE\n");
+        break;
     case M_ACCESS_ENUM(eReturnValues, UNKNOWN):
         error = safe_strcpy(string, RETURN_VALUE_MAX_STR_LEN, "UNKNOWN\n");
         break;
