@@ -42,6 +42,10 @@ This document also describes how to create an issue, generate a pull request, an
 
 See [SECURITY.md](SECURITY.md) for information on Seagate's security policy for details on how to report security vulnerabilities.
 
+For administrator-controlled Linux diagnostic output exceptions, migration
+from the compile-time directory-check bypass, and CERT C considerations, see
+[Diagnostic output path security](docs/path-security.md).
+
 ### Names, Logos, and Brands
 
 All product names, logos, and brands are property of their respective owners.

@@ -26,6 +26,28 @@ e = executable(
 
 test('opensea-common-unit-tests', e)
 
+if host_machine.system() == 'windows'
+    windows_acl_tests = executable(
+        'windows-acl-tests',
+        ['windows_acl_test.c', 'framework/test_framework.c'],
+        include_directories: include_directories('..\\src'),
+        dependencies: [opensea_common_dep, deps, c.find_library('advapi32')],
+        c_args: global_cpp_args,
+    )
+    test('windows-acl-tests', windows_acl_tests)
+endif
+
+if host_machine.system() == 'linux'
+    path_policy_tests = executable(
+        'path-security-tests',
+        ['path_security_test.c', 'framework/test_framework.c'],
+        dependencies: [opensea_common_dep],
+        c_args: global_cpp_args,
+    )
+    test('path-security-unit-tests', path_policy_tests)
+    test('path-security-isolated-tests', path_policy_tests, args: ['--integration'])
+endif
+
 #---------------------for secure input----------------------------
 
 #secure_tests = executable(

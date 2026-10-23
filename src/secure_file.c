@@ -634,21 +634,15 @@ secureFileInfo* M_NULLABLE secure_Open_File(const char* M_NONNULL        filenam
 #if defined(_DEBUG)
         printf("Checking directory security: <%s>\n", pathOnly);
 #endif
-        // This flag can disable the file path security check.
-        // NOTE: Currently disabling _WIN32 due to new Windows security feature breaking
-        // how current code works.
-        //       This will be reenabled once we have resolved the low-level issue.
-#if defined(DISABLE_SECURE_FILE_PATH_CHECK) || defined(_WIN32)
-#    if !defined(_WIN32)
-#        pragma message(                                                                                               \
-            "WARNING: Disabling Cert-C directory security check. This is not recommended for production level code.")
-#    endif //!_WIN32
+        // Windows directory assessment is not yet bound to this pathname open or its inherited file DACL.
+        // Keep automatic enforcement disabled until that integration is validated.
+#if defined(_WIN32)
         if (/* DISABLES CODE */ (true))
 #else
         // Check for secure directory - This code must traverse the full path
         // and validate permissions of the directories.
         if (os_Is_Directory_Secure(pathOnly, M_CONST_CAST(char**, &fileInfo->errorString)))
-#endif // DISABLE_SECURE_FILE_PATH_CHECK || _WIN32
+#endif // _WIN32
         {
             errno_t fopenError = 0;
             fileInfo->file     = M_NULLPTR;
@@ -1918,7 +1912,11 @@ eReturnValues create_And_Open_Secure_Log_File(const char* M_NONNULL             
     // Step 3: Create the secure file (which will check directory security, etc
     // for us. NOTE: Always opened with X for exclusive so as not to overwrite
     // an existing file)
+#if defined(__linux__) && !defined(UEFI_C_SOURCE)
+    *file = os_Create_Exclusive_Secure_Log(logGeneratedName);
+#else
     *file = secure_Open_File(logGeneratedName, "wxb", M_NULLPTR, M_NULLPTR, M_NULLPTR);
+#endif
     // Step 4: return error code depending on what happened from attempting to
     // do all of these steps
     if (*file == M_NULLPTR)

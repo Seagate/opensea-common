@@ -18,13 +18,9 @@ option(
   'directorysecurity',
   type : 'feature',
   value : 'enabled',
-  description : 'Directory security follows SEI CERT FIO15-C. This is ' +
-                'enabled by default to ensure that file operations are ' +
-                'performed in a secure directory. Disabling this option may ' +
-                'expose the application to security risks, such as ' +
-                'unauthorized access to files. It is strongly recommended to ' +
-                'keep this option enabled unless there is a specific reason ' +
-                'to disable it and the environment is secure.'
+  description : 'Directory security follows SEI CERT FIO15-C and cannot be disabled. ' +
+                'Retained for build compatibility; disabled is an error. Linux diagnostic ' +
+                'output exceptions require an administrator-created path-security policy.'
 )
 
 option(

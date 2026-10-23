@@ -516,7 +516,7 @@ if get_option('username').enabled()
 endif
 
 if get_option('directorysecurity').disabled()
-    global_cpp_args += ['-DDISABLE_SECURE_FILE_PATH_CHECK']
+    error('Disabling directory security is no longer supported. Use the Linux output-only path-security policy.')
 endif
 
 if get_option('memcpy-is-memcpy-not-memmove').enabled()
@@ -831,7 +831,7 @@ opensea_common_dep = declare_dependency(
 if not get_option('tests').disabled()
     # Check for LIB_FUZZING_ENGINE environment variable (cross-platform compatible)
     if target_machine.system() == 'windows'
-        is_fuzzing_build = run_command('cmd', '/c', 'echo %LIB_FUZZING_ENGINE%', check: false).stdout().strip() != ''
+        is_fuzzing_build = run_command('cmd', '/c', 'if defined LIB_FUZZING_ENGINE echo enabled', check: false).stdout().strip() != ''
     else
         is_fuzzing_build = run_command('sh', '-c', 'echo $LIB_FUZZING_ENGINE', check: false).stdout().strip() != ''
     endif

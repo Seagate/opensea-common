@@ -175,9 +175,16 @@ extern "C"
     //! (https://wiki.sei.cmu.edu/confluence/display/c/FIO15-C.+Ensure+that+file+operations+are+performed+in+a+secure+directory).
     //! \note The function ensures that the full real path, from the root of the system/volume to the last directory
     //!  specified, is secure.
-    //! \note Each directory must be owned by either the current user or root.
-    //! \note Each directory must not be writable by groups or others to be secure and free of tampering while working
-    //! within it.
+    //! \note POSIX directories must be owned by the current user/root (or the accepted sudo user) and must not be
+    //! writable by groups or others. Linux additionally imposes the immutable root baseline.
+    //! \note Windows assesses local drive-letter paths with persistent ACLs. Trusted owners/writers are the effective
+    //! user, SYSTEM, Administrators, and the exact TrustedInstaller identity. Ancestors may permit sibling creation
+    //! but not untrusted replacement/security changes; the final directory must not permit untrusted creation.
+    //! \note Windows ignores inherit-only ACEs for the current directory, conservatively ignores deny reductions,
+    //! and rejects unsupported effective ACE forms, reparse points, and non-local paths with a diagnostic.
+    //! \warning This is a snapshot assessment, not a retained-handle guarantee for a later pathname operation.
+    //! It does not validate a newly created file's inherited DACL. Windows automatic opening-path enforcement remains
+    //! disabled pending a creation/traversal integration with an explicit file security contract.
     M_NODISCARD M_PARAM_RO(1) M_PARAM_WO(2) bool os_Is_Directory_Secure(const char* M_NONNULL        fullpath,
                                                                         char* M_NULLABLE* M_NULLABLE outputError);
 
@@ -423,6 +430,13 @@ extern "C"
         //! allocated.
         const char* M_NULLABLE errorString;
     } secureFileInfo;
+
+#if defined(__linux__) && !defined(UEFI_C_SOURCE)
+    //! \brief Creates new diagnostic output using descriptor-bound traversal and system policy.
+    //! \note Existing files are never opened. Exceptions do not apply to secure_Open_File or deletion.
+    //! \return File information, including an error on failure; free with free_Secure_File_Info().
+    M_NODISCARD secureFileInfo* M_NULLABLE os_Create_Exclusive_Secure_Log(const char* filename);
+#endif
 
     //! \fn void free_Secure_File_Info(secureFileInfo** fileInfo)
     //! \brief Securely frees the memory allocated for a secureFileInfo structure.

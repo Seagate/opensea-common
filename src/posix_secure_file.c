@@ -19,6 +19,10 @@
 //       anyways
 //  https://github.com/tianocore/edk2-libc/blob/caea801aac338aa60f85a7c10148ca0b4440fff3/StdLib/Include/sys/stat.h
 
+#if defined(__linux__) && !defined(_GNU_SOURCE)
+#    define _GNU_SOURCE 1
+#endif
+
 #include "io_utils.h"
 #include "memory_safety.h"
 #include "secure_file.h"
@@ -33,6 +37,17 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#if defined(__linux__) && !defined(UEFI_C_SOURCE)
+#    include <fcntl.h>
+
+static bool path_root_attributes_secure(const struct stat* attrs)
+{
+    // On Linux POSIX ACLs, the group mode bits include the effective ACL mask.
+    return S_ISDIR(attrs->st_mode) && attrs->st_uid == 0 && attrs->st_gid == 0 &&
+           (attrs->st_mode & (S_IWGRP | S_IWOTH)) == 0;
+}
+#endif
 
 M_NODISCARD fileAttributes* os_Get_File_Attributes_By_Name(const char* M_NONNULL filetoCheck)
 {
@@ -506,9 +521,533 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
 
 bool os_Is_Directory_Secure(const char* M_NONNULL fullpath, char** outputError)
 {
+#if defined(__linux__) && !defined(UEFI_C_SOURCE)
+    struct stat rootattrs;
+    int         rootfd     = open("/", O_PATH | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    bool        rootsecure = rootfd >= 0 && fstat(rootfd, &rootattrs) == 0 && path_root_attributes_secure(&rootattrs);
+    if (rootfd >= 0)
+    {
+        close(rootfd);
+    }
+    if (!rootsecure)
+    {
+        set_dir_security_output_error_message(
+            outputError, "Error: / must be owned by UID/GID 0 and not writable by group or others.\n");
+        return false;
+    }
+#endif
     unsigned int num_symlinks = 0U;
     return internal_OS_Is_Directory_Secure(fullpath, num_symlinks, outputError);
 }
+
+#if defined(__linux__) && !defined(UEFI_C_SOURCE)
+#    define PATH_POLICY_MAX_RULES 32
+#    define PATH_POLICY_MAX_BYTES 65536
+
+typedef struct sPathDirectoryRule
+{
+    char         path[OPENSEA_PATH_MAX];
+    bool         allowGroupWrite;
+    bool         allowOtherWrite;
+    bool         requireStickyBit;
+    unsigned int specified;
+} pathDirectoryRule;
+
+typedef struct sPathOutputPolicy
+{
+    size_t            count;
+    pathDirectoryRule rules[PATH_POLICY_MAX_RULES];
+} pathOutputPolicy;
+
+static bool path_policy_error(char** error, const char* message)
+{
+    set_dir_security_output_error_message(error, "Path-security policy: %s\n", message);
+    return false;
+}
+
+static bool path_policy_canonical_name(const char* path)
+{
+    if (path[0] != '/' || path[1] == '\0')
+    {
+        return false;
+    }
+    for (const char* component = path + 1; *component != '\0';)
+    {
+        const char* end    = strchr(component, '/');
+        size_t      length = end != M_NULLPTR ? M_STATIC_CAST(size_t, end - component) : strlen(component);
+        if (length == 0 || (length == 1 && component[0] == '.') ||
+            (length == 2 && component[0] == '.' && component[1] == '.') || (end != M_NULLPTR && end[1] == '\0'))
+        {
+            return false;
+        }
+        component += length;
+        if (*component == '/')
+        {
+            ++component;
+        }
+    }
+    return true;
+}
+
+static char* path_policy_trim(char* text)
+{
+    while (*text == ' ' || *text == '\t')
+    {
+        ++text;
+    }
+    size_t length = strlen(text);
+    while (length > 0 && (text[length - 1] == ' ' || text[length - 1] == '\t' || text[length - 1] == '\r'))
+    {
+        text[--length] = '\0';
+    }
+    return text;
+}
+
+static bool path_policy_parse(char* text, size_t length, pathOutputPolicy* policy, char** error)
+{
+    pathDirectoryRule* rule = M_NULLPTR;
+    memset(policy, 0, sizeof(*policy));
+    if (length > PATH_POLICY_MAX_BYTES)
+    {
+        return path_policy_error(error, "file exceeds 65536 bytes");
+    }
+    for (size_t i = 0; i < length; ++i)
+    {
+        unsigned char ch = M_STATIC_CAST(unsigned char, text[i]);
+        if ((ch < 32 && ch != '\n' && ch != '\r' && ch != '\t') || ch > 126)
+        {
+            return path_policy_error(error, "only printable ASCII, tabs, and line endings are accepted");
+        }
+    }
+    text[length] = '\0';
+    for (char* line = text; line != M_NULLPTR;)
+    {
+        char* next = strchr(line, '\n');
+        if (next != M_NULLPTR)
+        {
+            *next++ = '\0';
+        }
+        if (strlen(line) >= OPENSEA_PATH_MAX + 64)
+        {
+            return path_policy_error(error, "line is too long");
+        }
+        line = path_policy_trim(line);
+        if (*line == '[')
+        {
+            size_t linelen = strlen(line);
+            if (linelen < 16 || strncmp(line, "[directory \"", 12) != 0 || strcmp(line + linelen - 2, "\"]") != 0 ||
+                policy->count == PATH_POLICY_MAX_RULES)
+            {
+                return path_policy_error(error, "invalid section or too many directory rules");
+            }
+            line[linelen - 2] = '\0';
+            const char* path  = line + 12;
+            if (strlen(path) >= OPENSEA_PATH_MAX || strchr(path, '"') != M_NULLPTR || !path_policy_canonical_name(path))
+            {
+                return path_policy_error(error, "directory must be absolute and canonical; root rules are forbidden");
+            }
+            for (size_t i = 0; i < policy->count; ++i)
+            {
+                if (strcmp(policy->rules[i].path, path) == 0)
+                {
+                    return path_policy_error(error, "duplicate directory rule");
+                }
+            }
+            rule = &policy->rules[policy->count++];
+            if (safe_strcpy(rule->path, sizeof(rule->path), path) != 0)
+            {
+                return path_policy_error(error, "cannot copy directory rule");
+            }
+        }
+        else if (*line != '\0' && *line != '#' && *line != ';')
+        {
+            char* equals = strchr(line, '=');
+            if (rule == M_NULLPTR || equals == M_NULLPTR)
+            {
+                return path_policy_error(error, "setting outside directory section or missing equals sign");
+            }
+            *equals             = '\0';
+            const char* key     = path_policy_trim(line);
+            const char* value   = path_policy_trim(equals + 1);
+            bool        enabled = strcmp(value, "true") == 0;
+            if (!enabled && strcmp(value, "false") != 0)
+            {
+                return path_policy_error(error, "boolean must be true or false");
+            }
+            unsigned int field   = 0;
+            bool*        setting = M_NULLPTR;
+            if (strcmp(key, "allow_group_write") == 0)
+            {
+                field   = 1;
+                setting = &rule->allowGroupWrite;
+            }
+            else if (strcmp(key, "allow_other_write") == 0)
+            {
+                field   = 2;
+                setting = &rule->allowOtherWrite;
+            }
+            else if (strcmp(key, "require_sticky_bit") == 0)
+            {
+                field   = 4;
+                setting = &rule->requireStickyBit;
+            }
+            else
+            {
+                return path_policy_error(error, "unknown setting");
+            }
+            if ((rule->specified & field) != 0)
+            {
+                return path_policy_error(error, "duplicate setting");
+            }
+            rule->specified |= field;
+            *setting = enabled;
+        }
+        line = next;
+    }
+    for (size_t i = 0; i < policy->count; ++i)
+    {
+        rule = &policy->rules[i];
+        if ((rule->allowGroupWrite || rule->allowOtherWrite) && !rule->requireStickyBit)
+        {
+            return path_policy_error(error, "write exceptions require require_sticky_bit=true");
+        }
+    }
+    return true;
+}
+
+static bool path_policy_admin_attributes(const struct stat* attrs, bool directory)
+{
+    return (directory ? S_ISDIR(attrs->st_mode) : S_ISREG(attrs->st_mode)) && attrs->st_uid == 0 &&
+           (attrs->st_mode & (S_IWGRP | S_IWOTH)) == 0;
+}
+
+static bool path_policy_load(int rootfd, pathOutputPolicy* policy, char** error)
+{
+    static const char* const components[] = {"etc", "opensea", "path-security.conf"};
+    int                      parent       = fcntl(rootfd, F_DUPFD_CLOEXEC, 0);
+    if (parent < 0)
+    {
+        return path_policy_error(error, "cannot duplicate root descriptor");
+    }
+    memset(policy, 0, sizeof(*policy));
+    for (size_t i = 0; i < 3; ++i)
+    {
+        bool directory = i < 2;
+        int  fd        = openat(parent, components[i],
+                                O_NOFOLLOW | O_CLOEXEC | (directory ? O_PATH | O_DIRECTORY : O_RDONLY | O_NONBLOCK));
+        int  openerror = errno;
+        close(parent);
+        if (fd < 0)
+        {
+            if (openerror == ENOENT)
+            {
+                return true;
+            }
+            return path_policy_error(error, "cannot securely open /etc/opensea/path-security.conf");
+        }
+        struct stat attrs;
+        if (fstat(fd, &attrs) != 0 || !path_policy_admin_attributes(&attrs, directory))
+        {
+            close(fd);
+            return path_policy_error(error,
+                                     "policy and containing directories must be root-owned without untrusted write");
+        }
+        if (directory)
+        {
+            parent = fd;
+            continue;
+        }
+        if (attrs.st_size < 0 || attrs.st_size > PATH_POLICY_MAX_BYTES)
+        {
+            close(fd);
+            return path_policy_error(error, "file exceeds 65536 bytes");
+        }
+        char* text = M_REINTERPRET_CAST(char*, safe_calloc(PATH_POLICY_MAX_BYTES + 1, sizeof(char)));
+        if (text == M_NULLPTR)
+        {
+            close(fd);
+            return path_policy_error(error, "cannot allocate parser buffer");
+        }
+        size_t  used   = 0;
+        ssize_t amount = 0;
+        do
+        {
+            amount = read(fd, text + used, PATH_POLICY_MAX_BYTES + 1 - used);
+            if (amount > 0)
+            {
+                used += M_STATIC_CAST(size_t, amount);
+            }
+        } while ((amount > 0 && used <= PATH_POLICY_MAX_BYTES) || (amount < 0 && errno == EINTR));
+        struct stat after;
+        bool        unchanged =
+            fstat(fd, &after) == 0 && after.st_size == attrs.st_size && after.st_mtim.tv_sec == attrs.st_mtim.tv_sec &&
+            after.st_mtim.tv_nsec == attrs.st_mtim.tv_nsec && after.st_ctim.tv_sec == attrs.st_ctim.tv_sec &&
+            after.st_ctim.tv_nsec == attrs.st_ctim.tv_nsec && path_policy_admin_attributes(&after, false);
+        close(fd);
+        bool valid = false;
+        if (amount != 0 || used > PATH_POLICY_MAX_BYTES || !unchanged || used != M_STATIC_CAST(size_t, attrs.st_size))
+        {
+            path_policy_error(error, "read failed, file changed, or size limit exceeded");
+        }
+        else
+        {
+            valid = path_policy_parse(text, used, policy, error);
+            for (size_t rule = 0; valid && rule < policy->count; ++rule)
+            {
+                char* resolved = realpath(policy->rules[rule].path, M_NULLPTR);
+                struct stat ruleattrs;
+                if (resolved == M_NULLPTR || strcmp(resolved, policy->rules[rule].path) != 0 ||
+                    stat(resolved, &ruleattrs) != 0 || !S_ISDIR(ruleattrs.st_mode))
+                {
+                    valid = path_policy_error(error, "rules must name existing canonical directories, not aliases");
+                }
+                safe_free(&resolved);
+            }
+        }
+        safe_free(&text);
+        return valid;
+    }
+    return path_policy_error(error, "incomplete policy traversal");
+}
+
+static bool path_output_component_secure(const char*             path,
+                                         const struct stat*      attrs,
+                                         bool                    leaf,
+                                         const pathOutputPolicy* policy,
+                                         bool*                   exceptionUsed,
+                                         char**                  error)
+{
+    if (!S_ISDIR(attrs->st_mode) ||
+        (attrs->st_uid != 0 && attrs->st_uid != geteuid() && !(geteuid() == 0 && attrs->st_uid == get_sudo_uid())))
+    {
+        return path_policy_error(error, "output directory has an untrusted owner or type");
+    }
+    const pathDirectoryRule* rule = M_NULLPTR;
+    for (size_t i = 0; i < policy->count; ++i)
+    {
+        if (strcmp(policy->rules[i].path, path) == 0)
+        {
+            rule = &policy->rules[i];
+            break;
+        }
+    }
+    if (rule != M_NULLPTR && rule->requireStickyBit && (attrs->st_mode & S_ISVTX) == 0)
+    {
+        return path_policy_error(error, "configured output ancestor is missing its required sticky bit");
+    }
+    mode_t writable = attrs->st_mode & (S_IWGRP | S_IWOTH);
+    if (writable == 0)
+    {
+        return true;
+    }
+    // Exceptions admit shared ancestors, never a shared output directory.
+    if (leaf || rule == M_NULLPTR || attrs->st_uid != 0 || (attrs->st_mode & S_ISVTX) == 0 ||
+        ((writable & S_IWGRP) != 0 && !rule->allowGroupWrite) || ((writable & S_IWOTH) != 0 && !rule->allowOtherWrite))
+    {
+        set_dir_security_output_error_message(error, "Insecure output directory component: %s\n", path);
+        return false;
+    }
+    *exceptionUsed = true;
+    return true;
+}
+
+static int path_output_parent(int                     rootfd,
+                              const char*             path,
+                              const pathOutputPolicy* policy,
+                              bool*                   exceptionUsed,
+                              char**                  error)
+{
+    char copy[OPENSEA_PATH_MAX];
+    char prefix[OPENSEA_PATH_MAX] = "";
+    if (strcmp(path, "/") != 0 && !path_policy_canonical_name(path))
+    {
+        path_policy_error(error, "output parent is not canonical");
+        return -1;
+    }
+    if (safe_strcpy(copy, sizeof(copy), path) != 0)
+    {
+        path_policy_error(error, "output parent is too long");
+        return -1;
+    }
+    int parent = fcntl(rootfd, F_DUPFD_CLOEXEC, 0);
+    if (parent < 0)
+    {
+        path_policy_error(error, "cannot duplicate output root descriptor");
+        return -1;
+    }
+    for (char* component = copy + 1; *component != '\0';)
+    {
+        char* next = strchr(component, '/');
+        if (next != M_NULLPTR)
+        {
+            *next = '\0';
+        }
+        int fd = openat(parent, component, O_PATH | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+        close(parent);
+        if (fd < 0)
+        {
+            path_policy_error(error, "cannot open output directory component without following links");
+            return -1;
+        }
+        struct stat attrs;
+        if (safe_strcat(prefix, sizeof(prefix), "/") != 0 || safe_strcat(prefix, sizeof(prefix), component) != 0 ||
+            fstat(fd, &attrs) != 0 ||
+            !path_output_component_secure(prefix, &attrs, next == M_NULLPTR, policy, exceptionUsed, error))
+        {
+            close(fd);
+            if (error != M_NULLPTR && *error == M_NULLPTR)
+            {
+                path_policy_error(error, "cannot inspect output directory component");
+            }
+            return -1;
+        }
+        parent = fd;
+        if (next == M_NULLPTR)
+        {
+            break;
+        }
+        component = next + 1;
+    }
+    return parent;
+}
+
+secureFileInfo* os_Create_Exclusive_Secure_Log(const char* filename)
+{
+    secureFileInfo* info = M_REINTERPRET_CAST(secureFileInfo*, safe_calloc(1, sizeof(secureFileInfo)));
+    if (info == M_NULLPTR)
+    {
+        return M_NULLPTR;
+    }
+    info->error                = SEC_FILE_INSECURE_PATH;
+    char**            error    = M_CONST_CAST(char**, &info->errorString);
+    int               rootfd   = -1;
+    int               parentfd = -1;
+    int               fd       = -1;
+    pathOutputPolicy* policy   = M_NULLPTR;
+    char              parent[OPENSEA_PATH_MAX];
+    char*             canonical = M_NULLPTR;
+    char*             fullpath  = M_CONST_CAST(char*, info->fullpath);
+    const char*       basename  = filename != M_NULLPTR ? strrchr(filename, '/') : M_NULLPTR;
+    basename                    = basename != M_NULLPTR ? basename + 1 : filename;
+    bool        exceptionUsed   = false;
+    size_t      parentlen       = 0;
+    struct stat attrs;
+
+    if (basename == M_NULLPTR || *basename == '\0' || strcmp(basename, ".") == 0 || strcmp(basename, "..") == 0 ||
+        strlen(filename) >= OPENSEA_PATH_MAX)
+    {
+        info->error = SEC_FILE_INVALID_PATH;
+        path_policy_error(error, "invalid output filename");
+        goto cleanup;
+    }
+    parentlen = M_STATIC_CAST(size_t, basename - filename);
+    if (parentlen == 0)
+    {
+        if (safe_strcpy(parent, sizeof(parent), ".") != 0)
+        {
+            goto cleanup;
+        }
+    }
+    else
+    {
+        memcpy(parent, filename, parentlen);
+        parent[parentlen] = '\0';
+    }
+    rootfd = open("/", O_PATH | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    if (rootfd < 0 || fstat(rootfd, &attrs) != 0 || !path_root_attributes_secure(&attrs))
+    {
+        path_policy_error(error, "/ must be owned by UID/GID 0 and not writable by group or others");
+        goto cleanup;
+    }
+    policy = M_REINTERPRET_CAST(pathOutputPolicy*, safe_calloc(1, sizeof(pathOutputPolicy)));
+    if (policy == M_NULLPTR)
+    {
+        path_policy_error(error, "cannot allocate output policy");
+        goto cleanup;
+    }
+    if (!path_policy_load(rootfd, policy, error))
+    {
+        goto cleanup;
+    }
+    canonical = realpath(parent, M_NULLPTR);
+    if (canonical == M_NULLPTR || strlen(canonical) >= OPENSEA_PATH_MAX)
+    {
+        path_policy_error(error, "cannot canonicalize output parent");
+        goto cleanup;
+    }
+    parentfd = path_output_parent(rootfd, canonical, policy, &exceptionUsed, error);
+    if (parentfd < 0)
+    {
+        goto cleanup;
+    }
+    if (safe_strcpy(fullpath, OPENSEA_PATH_MAX, canonical) != 0 ||
+        (strcmp(canonical, "/") != 0 && safe_strcat(fullpath, OPENSEA_PATH_MAX, "/") != 0) ||
+        safe_strcat(fullpath, OPENSEA_PATH_MAX, basename) != 0)
+    {
+        info->error = SEC_FILE_INVALID_PATH;
+        path_policy_error(error, "output path is too long");
+        goto cleanup;
+    }
+    fd = openat(parentfd, basename, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, S_IRUSR | S_IWUSR);
+    if (fd < 0)
+    {
+        info->error = errno == EEXIST ? SEC_FILE_FILE_ALREADY_EXISTS : SEC_FILE_FAILURE;
+        set_dir_security_output_error_message(error, "Cannot exclusively create diagnostic output (errno %d)\n", errno);
+        goto cleanup;
+    }
+    if (fstat(fd, &attrs) != 0 || !S_ISREG(attrs.st_mode) || attrs.st_uid != geteuid() || attrs.st_nlink != 1 ||
+        (attrs.st_mode & (S_IRWXG | S_IRWXO)) != 0)
+    {
+        info->error = SEC_FILE_INVALID_FILE_ATTRIBUTES;
+        path_policy_error(error, "new output file has invalid attributes");
+        goto cleanup;
+    }
+    info->file = fdopen(fd, "wb");
+    if (info->file == M_NULLPTR)
+    {
+        info->error = SEC_FILE_FAILURE;
+        path_policy_error(error, "cannot attach stream to output descriptor");
+        goto cleanup;
+    }
+    fd               = -1;
+    info->attributes = os_Get_File_Attributes_By_File(info->file);
+    info->uniqueID   = os_Get_File_Unique_Identifying_Information(info->file);
+    if (info->attributes == M_NULLPTR || info->uniqueID == M_NULLPTR)
+    {
+        fclose(info->file);
+        info->file  = M_NULLPTR;
+        info->error = SEC_FILE_INVALID_FILE_ATTRIBUTES;
+        path_policy_error(error, "cannot allocate output identity information");
+        goto cleanup;
+    }
+    info->filename = strrchr(info->fullpath, '/') + 1;
+    info->fileno   = fileno(info->file);
+    info->isValid  = true;
+    info->error    = SEC_FILE_SUCCESS;
+    if (exceptionUsed)
+    {
+        fprintf(stderr, "WARNING: /etc/opensea/path-security.conf relaxed ancestor write checks for %s\n",
+                info->fullpath);
+    }
+
+cleanup:
+    if (fd >= 0)
+    {
+        close(fd);
+    }
+    if (parentfd >= 0)
+    {
+        close(parentfd);
+    }
+    if (rootfd >= 0)
+    {
+        close(rootfd);
+    }
+    safe_free_core(M_REINTERPRET_CAST(void**, &policy));
+    safe_free(&canonical);
+    return info;
+}
+#endif
 
 bool os_Directory_Exists(const char* M_NONNULL pathToCheck)
 {

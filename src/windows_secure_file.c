@@ -30,48 +30,6 @@ RESTORE_WARNING_4255
 #include "string_utils.h"
 #include "type_conversion.h"
 
-#if defined(HAVE_NTIFS)
-#    include <ntifs.h>
-#else
-// https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_reparse_data_buffer
-// Defining this ourselves to be able to access this.
-typedef struct sREPARSE_DATA_BUFFER
-{
-    ULONG  ReparseTag;
-    USHORT ReparseDataLength;
-    USHORT Reserved;
-    union
-    {
-        struct
-        {
-            USHORT SubstituteNameOffset;
-            USHORT SubstituteNameLength;
-            USHORT PrintNameOffset;
-            USHORT PrintNameLength;
-            ULONG  Flags;
-            WCHAR  PathBuffer[1];
-        } SymbolicLinkReparseBuffer;
-        struct
-        {
-            USHORT SubstituteNameOffset;
-            USHORT SubstituteNameLength;
-            USHORT PrintNameOffset;
-            USHORT PrintNameLength;
-            WCHAR  PathBuffer[1];
-        } MountPointReparseBuffer;
-        struct
-        {
-            UCHAR DataBuffer[1];
-        } GenericReparseBuffer;
-    } DUMMYUNIONNAME;
-} REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
-#endif // HAVE_NTIFS
-
-static M_INLINE void safe_free_reparse_data_buf(REPARSE_DATA_BUFFER** reparse)
-{
-    safe_free_core(M_REINTERPRET_CAST(void**, reparse));
-}
-
 int64_t os_Get_File_Size(FILE* M_NONNULL filePtr)
 {
     if (filePtr != M_NULLPTR)
@@ -421,15 +379,26 @@ static char* get_Current_User_SID(void)
 {
     char*  sidAsString = M_NULLPTR;
     HANDLE hToken      = M_NULLPTR;
-    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+    BOOL   opened      = OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, &hToken);
+    if (!opened && GetLastError() == ERROR_NO_TOKEN)
+    {
+        opened = OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken);
+    }
+    if (opened)
     {
         DWORD dwSize = DWORD_C(0);
-        GetTokenInformation(hToken, TokenUser, M_NULLPTR, 0, &dwSize);
+        if (GetTokenInformation(hToken, TokenUser, M_NULLPTR, 0, &dwSize) ||
+            GetLastError() != ERROR_INSUFFICIENT_BUFFER || dwSize < sizeof(TOKEN_USER))
+        {
+            CloseHandle(hToken);
+            return M_NULLPTR;
+        }
         PTOKEN_USER pUser = M_REINTERPRET_CAST(PTOKEN_USER, safe_malloc(dwSize));
         if (pUser != M_NULLPTR)
         {
             explicit_zeroes(pUser, dwSize);
-            if (GetTokenInformation(hToken, TokenUser, pUser, dwSize, &dwSize))
+            DWORD allocatedSize = dwSize;
+            if (GetTokenInformation(hToken, TokenUser, pUser, allocatedSize, &dwSize) && IsValidSid(pUser->User.Sid))
             {
                 LPSTR pSidString = M_NULLPTR;
                 if (ConvertSidToStringSidA(pUser->User.Sid, &pSidString))
@@ -443,7 +412,7 @@ static char* get_Current_User_SID(void)
                     LocalFree(pSidString);
                 }
             }
-            explicit_zeroes(pUser, dwSize);
+            explicit_zeroes(pUser, allocatedSize);
             safe_free_token_user(&pUser);
         }
         CloseHandle(hToken);
@@ -460,7 +429,8 @@ static bool is_Root_Path(const char* path)
         // trailing \ is not checked because it is stripped off by win_dirname
         // function when this is used to figure out number of directories to
         // validate.
-        if (safe_strlen(path) == 2 && safe_isascii(path[0]) && path[1] == ':')
+        if (safe_strlen(path) == 2 && ((path[0] >= 'A' && path[0] <= 'Z') || (path[0] >= 'a' && path[0] <= 'z')) &&
+            path[1] == ':')
         {
             isroot = true;
         }
@@ -476,12 +446,7 @@ static char* win_dirname(char* path)
         char* lastseperator = strrchr(path, '\\');
         if (lastseperator != M_NULLPTR)
         {
-            if (!is_Root_Path(lastseperator))
-            {
-                /* Special case. The root path C:\ needs to leave the trailing
-                 * backslash behind */
-                *lastseperator = '\0';
-            }
+            *lastseperator = '\0';
             return path;
         }
         else
@@ -498,125 +463,10 @@ static char* win_dirname(char* path)
 }
 
 // https://learn.microsoft.com/en-us/windows/win32/secauthz/well-known-sids
-static bool is_Secure_Well_Known_SID(PSID sid, bool allowUsersAndAuthenticatedUsers)
+static bool is_Secure_Well_Known_SID(PSID sid)
 {
-    bool secure = false;
-    if (sid && IsValidSid(sid))
-    {
-        // NOLINTBEGIN(bugprone-branch-clone)
-        // Disabling clang-tidy here because it is easier to read these as
-        // separate cases and it may end up changing in the future-TJE
-        if (IsWellKnownSid(sid, WinAccountAdministratorSid) || IsWellKnownSid(sid, WinLocalSystemSid) ||
-            IsWellKnownSid(sid, WinNtAuthoritySid) || IsWellKnownSid(sid, WinBuiltinAdministratorsSid))
-        {
-            // Do we need to check any of these other SIDs for admins?
-            //  POSIX validates user or root. Do any of these others below in
-            //  the if above as accepted???
-            // WinLocalSid
-            // WinBuiltinAdministratorsSid ??
-            // WinAccountDomainAdminsSid ??
-            // WinAccountCertAdminsSid ??
-            // WinAccountSchemaAdminsSid ??
-            // WinAccountEnterpriseAdminsSid ??
-            // WinAccountPolicyAdminsSid ??
-            // WinBuiltinHyperVAdminsSid ??
-            // WinLocalAccountAndAdministratorSid ??
-            // WinBuiltinStorageReplicaAdminsSid ??
-            // WinAccountKeyAdminsSid ??
-            // WinAccountEnterpriseKeyAdminsSid ??
-            secure = true;
-        }
-        else if (allowUsersAndAuthenticatedUsers &&
-                 (IsWellKnownSid(sid, WinBuiltinUsersSid) || IsWellKnownSid(sid, WinAuthenticatedUserSid)))
-        {
-            // This is a special case for C: and C:\Users where these
-            // accounts/groups also has permission and must be trusted.
-            secure = true;
-        }
-        // NOLINTEND(bugprone-branch-clone)
-    }
-    return secure;
-}
-
-static bool get_System_Volume(char* winSysVol, size_t winSysVolLen)
-{
-    // Need to read the system drive's info so we can setup specific permissions
-    // allowed for specific directories.-TJE
-    static bool validsystemvol = false;
-    static DECLARE_ZERO_INIT_ARRAY(char, windowsSystemVolume, MAX_PATH);
-    if (validsystemvol && safe_strnlen(windowsSystemVolume, MAX_PATH) > 0)
-    {
-        if (safe_memset(winSysVol, winSysVolLen, 0, winSysVolLen) == 0)
-        {
-            if (safe_strcat(winSysVol, winSysVolLen, windowsSystemVolume) == 0)
-            {
-                // Successfully set the system volume
-            }
-        }
-    }
-    else
-    {
-        if (GetWindowsDirectoryA(windowsSystemVolume, MAX_PATH) == 0)
-        {
-            // This function failed so try reading this environment variable
-            // instead
-            char* systemDrive = M_NULLPTR;
-            if (safe_memset(windowsSystemVolume, MAX_PATH, 0, MAX_PATH) != 0)
-            {
-                safe_free(&systemDrive);
-                return false;
-            }
-            if (ENV_VAR_SUCCESS != get_Environment_Variable("SystemDrive", &systemDrive))
-            {
-#if defined(_DEBUG)
-                print_str("Failed reading the system drive environment variable.\n");
-#endif //_DEBUG
-            }
-            else
-            {
-                if (safe_strcat(windowsSystemVolume, MAX_PATH, systemDrive) == 0)
-                {
-                    if (M_NULLPTR == strchr(windowsSystemVolume, '\\'))
-                    {
-                        if (0 != safe_strcat(windowsSystemVolume, MAX_PATH, "\\"))
-                        {
-                            safe_free(&systemDrive);
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-                    safe_free(&systemDrive);
-                    return false;
-                }
-            }
-            safe_free(&systemDrive);
-        }
-        if (safe_strnlen(windowsSystemVolume, MAX_PATH) > 0)
-        {
-            // modify this info to be just the volume as we need to know this,
-            // not C:\Windows. It MAY already be set to C:\, but it may not.
-            char* slashPointer = strchr(windowsSystemVolume, '\\');
-            if (slashPointer && safe_strnlen(slashPointer + 1, MAX_PATH - (C_CAST(uintptr_t, slashPointer) -
-                                                                           C_CAST(uintptr_t, windowsSystemVolume))))
-            {
-                // need to add a null after this backslash so it's set to only
-                // the volume in the path. This root directory is necessary to
-                // know to properly validate other permissions.
-                *(slashPointer + 1) = '\0';
-            }
-            if (safe_memset(winSysVol, winSysVolLen, 0, winSysVolLen) == 0)
-            {
-                if (safe_strcat(winSysVol, winSysVolLen, windowsSystemVolume) == 0)
-                {
-                    // Successfully set the system volume
-                    validsystemvol = true;
-                }
-            }
-        }
-    }
-    return validsystemvol;
+    return sid != M_NULLPTR && IsValidSid(sid) &&
+           (IsWellKnownSid(sid, WinLocalSystemSid) || IsWellKnownSid(sid, WinBuiltinAdministratorsSid));
 }
 
 FUNC_ATTR_PRINTF(2, 3) static void set_dir_security_output_error_message(char** outputError, const char* format, ...)
@@ -646,51 +496,31 @@ FUNC_ATTR_PRINTF(2, 3) static void set_dir_security_output_error_message(char** 
     }
 }
 
-static bool is_Folder_Secure(const char* securityDescriptorString, const char* dirptr, char** outputError)
+static bool is_Folder_Secure(PSECURITY_DESCRIPTOR secdesc,
+                             const char*          dirptr,
+                             PSID                 mySid,
+                             PSID                 winTI,
+                             bool                 leaf,
+                             char**               outputError)
 {
     bool secure = true;
-    if (securityDescriptorString == M_NULLPTR || dirptr == M_NULLPTR)
+    if (secdesc == M_NULLPTR || dirptr == M_NULLPTR || mySid == M_NULLPTR || winTI == M_NULLPTR)
     {
-        set_dir_security_output_error_message(outputError, "Invalid security descriptor string or directory given.\n");
+        set_dir_security_output_error_message(outputError,
+                                              "Invalid security descriptor, trusted identity, or directory\n");
         return false;
     }
-    DECLARE_ZERO_INIT_ARRAY(char, windowsSystemVolume, MAX_PATH);
-    char*                mySidStr                        = get_Current_User_SID();
-    PSID                 mySid                           = M_NULLPTR;
-    PSID                 winTI                           = M_NULLPTR; // To check for Windows trusted installer SID
-    PSID                 everyoneGroupSID                = M_NULLPTR; // for C:\\Users directory
-    PSECURITY_DESCRIPTOR secdesc                         = M_NULLPTR;
-    ULONG                secdesclen                      = ULONG_C(0);
-    PSID                 userSid                         = M_NULLPTR;
-    BOOL                 defaultOwner                    = FALSE;
-    PACL                 dacl                            = M_NULLPTR;
-    BOOL                 daclPresent                     = FALSE;
-    BOOL                 daclDefault                     = FALSE;
-    bool                 allowUsersAndAuthenticatedUsers = false;
-    bool                 allowEveryoneGroup              = false;
+    PSID userSid      = M_NULLPTR;
+    BOOL defaultOwner = FALSE;
+    PACL dacl         = M_NULLPTR;
+    BOOL daclPresent  = FALSE;
+    BOOL daclDefault  = FALSE;
     do
     {
-        if (MSFT_BOOL_FALSE(ConvertStringSidToSidA(mySidStr, &mySid)))
-        {
-            /* Handle Error */
-            set_dir_security_output_error_message(outputError,
-                                                  "Failed to convert current user's SID string to sid structure\n");
-            secure = false;
-            break;
-        }
-        if (MSFT_BOOL_FALSE(IsValidSid(mySid)))
+        if (MSFT_BOOL_FALSE(IsValidSid(mySid)) || MSFT_BOOL_FALSE(IsValidSid(winTI)))
         {
             /* Handle Error */
             set_dir_security_output_error_message(outputError, "Invalid sid\n");
-            secure = false;
-            break;
-        }
-        if (MSFT_BOOL_FALSE(ConvertStringSecurityDescriptorToSecurityDescriptorA(securityDescriptorString,
-                                                                                 SDDL_REVISION, &secdesc, &secdesclen)))
-        {
-            /* Handle Error */
-            set_dir_security_output_error_message(
-                outputError, "Failed to convert security descriptor string to security descriptor structure\n");
             secure = false;
             break;
         }
@@ -715,124 +545,22 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
             secure = false;
             break;
         }
-        if (MSFT_BOOL_FALSE(EqualSid(mySid, userSid)) && !is_Secure_Well_Known_SID(userSid, false))
+        if (MSFT_BOOL_FALSE(EqualSid(mySid, userSid)) && MSFT_BOOL_FALSE(EqualSid(winTI, userSid)) &&
+            !is_Secure_Well_Known_SID(userSid))
         {
-            if (get_System_Volume(windowsSystemVolume, MAX_PATH))
+            char* sidString = M_NULLPTR;
+            secure          = false;
+            if (MSFT_BOOL_TRUE(ConvertSidToStringSidA(userSid, &sidString)))
             {
-                // Need to check for the system directory
-                if (strstr(dirptr, windowsSystemVolume) == dirptr)
-                {
-                    const char* WindowsTrustedInstallSID = "S-1-5-80-956008885-3418522649-1831038044-1853292631-"
-                                                           "2271478464";
-                    if (MSFT_BOOL_FALSE(ConvertStringSidToSidA(WindowsTrustedInstallSID, &winTI)))
-                    {
-                        secure = false;
-                        break;
-                    }
-#if defined(_DEBUG)
-                    print_str("This path is on the system drive. Set flags for "
-                              "only specific folders to validate "
-                              "permissions correctly\n");
-#endif //_DEBUG
-       // Set the isWindowsSystemDir to allow specific owners/groups for
-       // specific folders to trust them. These are specific cases due to how
-       // Windows sets permissions for these folders. Specifically, the root
-       // volume for Windows allows all local users access. This is normally a
-       // security issue in this code, however this is how Windows sets the
-       // permissions itself, so allow it in this case. C:\, C:\Users\ allow
-       // this permission C:\ also allows the NT installer user. NOTE: This is
-       // not a complete list of all the specific cases for all Windows systems
-       // paths at this time.
-       //      Generally software using this is not accessing these Windows
-       //      specific folders like C:\Windows\System32, etc so these are not
-       //      listed here.
-                    if (strcmp(dirptr, windowsSystemVolume) == 0)
-                    {
-                        if (MSFT_BOOL_TRUE(EqualSid(userSid, winTI)))
-                        {
-                            // This case the Windows trusted installer is found
-                            // and can be trusted. This should only happen on
-                            // the system root directory (C:) in Windows
-#if defined(_DEBUG)
-                            print_str("Detected Windows trusted installer as owner "
-                                      "of this directory and allowed to trust "
-                                      "it.\n");
-#endif                                                              //_DEBUG
-                            allowUsersAndAuthenticatedUsers = true; // S-1-5-11 and S-1-5-32-545
-                        }
-                        else
-                        {
-                            /* Directory is owned by someone besides
-                             * user/system/administrator */
-                            secure          = false;
-                            char* sidString = M_NULLPTR;
-                            if (MSFT_BOOL_TRUE(ConvertSidToStringSidA(userSid, &sidString)))
-                            {
-                                set_dir_security_output_error_message(
-                                    outputError, "Directory (%s) owned by SID (not trusted): %s\n", dirptr, sidString);
-                                LocalFree(sidString);
-                                sidString = M_NULLPTR;
-                            }
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    /* Directory is owned by someone besides
-                     * user/system/administrator */
-                    secure          = false;
-                    char* sidString = M_NULLPTR;
-                    if (MSFT_BOOL_TRUE(ConvertSidToStringSidA(userSid, &sidString)))
-                    {
-                        set_dir_security_output_error_message(
-                            outputError, "Directory (%s) owned by SID (not trusted): %s\n", dirptr, sidString);
-                        LocalFree(sidString);
-                        sidString = M_NULLPTR;
-                    }
-                    break;
-                }
+                set_dir_security_output_error_message(outputError, "Directory (%s) has untrusted owner: %s\n", dirptr,
+                                                      sidString);
+                LocalFree(sidString);
             }
             else
             {
-                /* Directory is owned by someone besides
-                 * user/system/administrator */
-                secure          = false;
-                char* sidString = M_NULLPTR;
-                if (MSFT_BOOL_TRUE(ConvertSidToStringSidA(userSid, &sidString)))
-                {
-                    set_dir_security_output_error_message(
-                        outputError, "Directory (%s) owned by SID (not trusted): %s\n", dirptr, sidString);
-                    LocalFree(sidString);
-                    sidString = M_NULLPTR;
-                }
-                break;
+                set_dir_security_output_error_message(outputError, "Directory (%s) has untrusted owner\n", dirptr);
             }
-        }
-        else
-        {
-            // work around specific directories
-            if (get_System_Volume(windowsSystemVolume, MAX_PATH))
-            {
-                // Need to check for the system directory
-                if (strstr(dirptr, windowsSystemVolume) == dirptr)
-                {
-                    // need to construct the paths to allow based on the windows
-                    // volume path read earlier Using MAX_PATH for each of these
-                    // for simplicity. Can reduce memory by shortening, but this
-                    // is fine for now on this limited list.
-                    DECLARE_ZERO_INIT_ARRAY(char, usersdir, MAX_PATH);
-                    errno_t userdirError      = safe_strcat(usersdir, MAX_PATH, windowsSystemVolume);
-                    errno_t userdirErrorUsers = safe_strcat(usersdir, MAX_PATH,
-                                                            "Users"); // no trailing slash as the paths passed in
-                                                                      // are not completed with a slash
-                    if (userdirError == 0 && userdirErrorUsers == 0 && strcmp(dirptr, usersdir) == 0)
-                    {
-                        allowUsersAndAuthenticatedUsers = true; // S-1-5-11 and S-1-5-32-545
-                        allowEveryoneGroup              = true; // S-1-1-0
-                    }
-                }
-            }
+            break;
         }
 
         if (MSFT_BOOL_FALSE(GetSecurityDescriptorDacl(secdesc, &daclPresent, &dacl, &daclDefault)))
@@ -867,62 +595,79 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
             ACE_HEADER* aceHeader = M_NULLPTR;
             if (MSFT_BOOL_TRUE(GetAce(dacl, iter, C_CAST(void**, &aceHeader))))
             {
+                if (aceHeader->AceSize < sizeof(ACE_HEADER))
+                {
+                    secure = false;
+                    set_dir_security_output_error_message(outputError, "Directory (%s): truncated ACE %lu\n", dirptr,
+                                                          iter);
+                    break;
+                }
+                if ((aceHeader->AceFlags & INHERIT_ONLY_ACE) != 0 || aceHeader->AceType == ACCESS_DENIED_ACE_TYPE)
+                {
+                    // A deny cannot grant access. Ignoring it may conservatively reject a safe DACL.
+                    continue;
+                }
                 if (aceHeader->AceType == ACCESS_ALLOWED_ACE_TYPE)
                 {
+                    size_t sidOffset = FIELD_OFFSET(ACCESS_ALLOWED_ACE, SidStart);
+                    if (aceHeader->AceSize < sidOffset + GetSidLengthRequired(0))
+                    {
+                        secure = false;
+                        set_dir_security_output_error_message(outputError, "Directory (%s): truncated allow ACE %lu\n",
+                                                              dirptr, iter);
+                        break;
+                    }
                     PACCESS_ALLOWED_ACE allowedACE = C_CAST(PACCESS_ALLOWED_ACE, aceHeader);
                     ACCESS_MASK         accessMask = allowedACE->Mask;
                     PSID                aceSID     = C_CAST(PSID, &allowedACE->SidStart);
+                    if (GetSidLengthRequired(*GetSidSubAuthorityCount(aceSID)) > aceHeader->AceSize - sidOffset)
+                    {
+                        secure = false;
+                        set_dir_security_output_error_message(outputError, "Directory (%s): SID exceeds ACE %lu\n",
+                                                              dirptr, iter);
+                        break;
+                    }
+                    GENERIC_MAPPING mapping = {FILE_GENERIC_READ, FILE_GENERIC_WRITE, FILE_GENERIC_EXECUTE,
+                                               FILE_ALL_ACCESS};
+                    MapGenericMask(&accessMask, &mapping);
+                    if ((accessMask & ~(M_STATIC_CAST(ACCESS_MASK, FILE_ALL_ACCESS))) != 0)
+                    {
+                        secure = false;
+                        set_dir_security_output_error_message(
+                            outputError, "Directory (%s): unsupported access mask 0x%08lx at ACE %lu\n", dirptr,
+                            accessMask, iter);
+                        break;
+                    }
+                    // Creating siblings does not authorize replacing an existing protected child.
+                    ACCESS_MASK mutation =
+                        DELETE | WRITE_DAC | WRITE_OWNER | FILE_DELETE_CHILD | FILE_WRITE_ATTRIBUTES | FILE_WRITE_EA;
+                    if (leaf)
+                    {
+                        mutation |= FILE_ADD_FILE | FILE_ADD_SUBDIRECTORY;
+                    }
                     if (MSFT_BOOL_TRUE(IsValidSid(aceSID)))
                     {
-                        if (accessMask & (FILE_GENERIC_WRITE | FILE_APPEND_DATA) &&
-                            (MSFT_BOOL_FALSE(EqualSid(mySid, aceSID)) &&
-                             !is_Secure_Well_Known_SID(aceSID, allowUsersAndAuthenticatedUsers)))
-                        {
-                            LPCSTR everyoneGroup = "S-1-1-0";
-                            if (allowEveryoneGroup && everyoneGroupSID == M_NULLPTR)
-                            {
-                                ConvertStringSidToSidA(everyoneGroup, &everyoneGroupSID);
-                            }
-
-                            if (!(allowEveryoneGroup && everyoneGroupSID != M_NULLPTR &&
-                                  MSFT_BOOL_TRUE(EqualSid(aceSID, everyoneGroupSID))))
-                            {
-                                char* sidString = M_NULLPTR;
-                                secure          = false;
-                                if (MSFT_BOOL_TRUE(ConvertSidToStringSidA(aceSID, &sidString)))
-                                {
-                                    set_dir_security_output_error_message(
-                                        outputError,
-                                        "Directory (%s) can be accessed by SID (not trusted, must be removed to be "
-                                        "secure): %s\n",
-                                        dirptr, sidString);
-                                    LocalFree(sidString);
-                                    sidString = M_NULLPTR;
-                                }
-                            }
-#if defined(_DEBUG)
-                            else
-                            {
-                                char* sidString = M_NULLPTR;
-                                if (MSFT_BOOL_TRUE(ConvertSidToStringSidA(aceSID, &sidString)))
-                                {
-                                    printf("Trusted SID: %s\n", sidString);
-                                    LocalFree(sidString);
-                                    sidString = M_NULLPTR;
-                                }
-                            }
-#endif //_DEBUG
-                        }
-#if defined(_DEBUG)
-                        else
+                        if ((accessMask & mutation) != 0 &&
+                            (MSFT_BOOL_FALSE(EqualSid(mySid, aceSID)) && MSFT_BOOL_FALSE(EqualSid(winTI, aceSID)) &&
+                             !is_Secure_Well_Known_SID(aceSID)))
                         {
                             char* sidString = M_NULLPTR;
+                            secure          = false;
                             if (MSFT_BOOL_TRUE(ConvertSidToStringSidA(aceSID, &sidString)))
                             {
-                                printf("Trusted SID: %s\n", sidString);
+                                set_dir_security_output_error_message(
+                                    outputError,
+                                    "Directory (%s): ACE %lu SID %s grants mutation rights 0x%08lx (flags 0x%02x)\n",
+                                    dirptr, iter, sidString, accessMask & mutation, aceHeader->AceFlags);
+                                LocalFree(sidString);
+                            }
+                            else
+                            {
+                                set_dir_security_output_error_message(
+                                    outputError, "Directory (%s): ACE %lu grants mutation rights to an untrusted SID\n",
+                                    dirptr, iter);
                             }
                         }
-#endif //_DEBUG
                     }
                     else
                     {
@@ -931,50 +676,118 @@ static bool is_Folder_Secure(const char* securityDescriptorString, const char* d
                         secure = false;
                     }
                 }
-                /* Else? What to do about other ACEs?*/
+                else
+                {
+                    secure = false;
+                    set_dir_security_output_error_message(
+                        outputError, "Directory (%s): unsupported effective ACE type 0x%02x at index %lu\n", dirptr,
+                        aceHeader->AceType, iter);
+                }
             }
             else
             {
                 /* Handle Error */
                 secure = false;
+                set_dir_security_output_error_message(outputError, "Directory (%s): cannot read ACE %lu\n", dirptr,
+                                                      iter);
             }
         }
     } while (0);
 
-    SecureZeroMemory(mySidStr, safe_strlen(mySidStr));
-    safe_free(&mySidStr);
-    if (mySid != M_NULLPTR)
-    {
-        SecureZeroMemory(mySid, GetLengthSid(mySid));
-        LocalFree(mySid);
-        mySid = M_NULLPTR;
-    }
-    if (winTI != M_NULLPTR)
-    {
-        SecureZeroMemory(winTI, GetLengthSid(winTI));
-        LocalFree(winTI);
-        winTI = M_NULLPTR;
-    }
-    if (everyoneGroupSID != M_NULLPTR)
-    {
-        SecureZeroMemory(everyoneGroupSID, GetLengthSid(everyoneGroupSID));
-        LocalFree(everyoneGroupSID);
-        everyoneGroupSID = M_NULLPTR;
-    }
-    if (secdesc != M_NULLPTR)
-    {
-        SecureZeroMemory(secdesc, secdesclen);
-        LocalFree(secdesc);
-        secdesc = M_NULLPTR;
-    }
-
     return secure;
 }
 
-#define MAX_SYMLINKS_IN_PATH 5
+static bool win_Inspect_Directory(const char* path, PSID mySid, PSID trustedInstaller, bool leaf, char** outputError)
+{
+    bool                 secure     = false;
+    WCHAR*               widepath   = M_NULLPTR;
+    PSECURITY_DESCRIPTOR descriptor = M_NULLPTR;
+    HANDLE               directory  = INVALID_HANDLE_VALUE;
+    int                  length     = MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, path, -1, M_NULLPTR, 0);
+    if (length <= 0)
+    {
+        set_dir_security_output_error_message(outputError, "Cannot decode directory path (Windows error %lu)\n",
+                                              GetLastError());
+        return false;
+    }
+    widepath = M_REINTERPRET_CAST(WCHAR*, safe_calloc(M_STATIC_CAST(size_t, length), sizeof(WCHAR)));
+    if (widepath == M_NULLPTR || MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, path, -1, widepath, length) == 0)
+    {
+        set_dir_security_output_error_message(outputError, "Cannot allocate or convert directory path\n");
+        safe_free_core(M_REINTERPRET_CAST(void**, &widepath));
+        return false;
+    }
+    WCHAR root[]    = {widepath[0], L':', L'\\', L'\0'};
+    UINT  driveType = GetDriveTypeW(root);
+    if (driveType != DRIVE_FIXED && driveType != DRIVE_REMOVABLE && driveType != DRIVE_RAMDISK)
+    {
+        set_dir_security_output_error_message(outputError, "Unsupported or non-local filesystem: %s\n", path);
+        safe_free_core(M_REINTERPRET_CAST(void**, &widepath));
+        return false;
+    }
+    directory = CreateFileW(widepath, READ_CONTROL | FILE_READ_ATTRIBUTES,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, M_NULLPTR, OPEN_EXISTING,
+                            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, M_NULLPTR);
+    if (directory == INVALID_HANDLE_VALUE)
+    {
+        set_dir_security_output_error_message(outputError, "Cannot inspect directory (%s), Windows error %lu\n", path,
+                                              GetLastError());
+    }
+    else
+    {
+        BY_HANDLE_FILE_INFORMATION attributes;
+        if (!GetFileInformationByHandle(directory, &attributes))
+        {
+            set_dir_security_output_error_message(outputError, "Cannot read opened directory (%s), Windows error %lu\n",
+                                                  path, GetLastError());
+        }
+        else if ((attributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
+        {
+            set_dir_security_output_error_message(outputError, "Not a directory: %s\n", path);
+        }
+        else if ((attributes.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
+        {
+            // Reparse tags are not all symbolic links. Never decode an unvalidated union as one.
+            set_dir_security_output_error_message(outputError,
+                                                  "Reparse-point directory assessment is unsupported: %s\n", path);
+        }
+        else
+        {
+            DWORD flags = 0;
+            if (!GetVolumeInformationByHandleW(directory, M_NULLPTR, 0, M_NULLPTR, M_NULLPTR, &flags, M_NULLPTR, 0) ||
+                (flags & FILE_PERSISTENT_ACLS) == 0)
+            {
+                set_dir_security_output_error_message(
+                    outputError, "Filesystem does not provide supported persistent ACLs: %s\n", path);
+            }
+            else
+            {
+                DWORD result =
+                    GetSecurityInfo(directory, SE_FILE_OBJECT, OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
+                                    M_NULLPTR, M_NULLPTR, M_NULLPTR, M_NULLPTR, &descriptor);
+                if (result != ERROR_SUCCESS)
+                {
+                    set_dir_security_output_error_message(
+                        outputError, "Cannot read directory security (%s), Windows error %lu\n", path, result);
+                }
+                else
+                {
+                    secure = is_Folder_Secure(descriptor, path, mySid, trustedInstaller, leaf, outputError);
+                }
+            }
+        }
+        CloseHandle(directory);
+    }
+    if (descriptor != M_NULLPTR)
+    {
+        LocalFree(descriptor);
+    }
+    safe_free_core(M_REINTERPRET_CAST(void**, &widepath));
+    return secure;
+}
 
 /* This function requires Windows style seperators (\) to function properly! */
-static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int num_symlinks, char** outputError)
+static bool internal_OS_Is_Directory_Secure(const char* fullpath, char** outputError)
 {
     char*   path_copy   = M_NULLPTR;
     char**  dirs        = M_NULLPTR;
@@ -983,33 +796,49 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     ssize_t i           = SSIZE_T_C(0);
     errno_t error       = 0;
 
-    // TODO: Set error message appropriate for Windows errors detected
-    M_USE_UNUSED(outputError);
-
-    if (!fullpath || fullpath[0] == '\0')
+    if (!fullpath || safe_strnlen(fullpath, OPENSEA_PATH_MAX) < 3 ||
+        safe_strnlen(fullpath, OPENSEA_PATH_MAX) == OPENSEA_PATH_MAX)
     {
-        /* Handle error */
+        set_dir_security_output_error_message(outputError, "Invalid or overlong Windows directory path\n");
         return false;
     }
     // Check for drive letter format:
-    if (fullpath[1] != ':' && fullpath[2] != '\\')
+    if (!((fullpath[0] >= 'A' && fullpath[0] <= 'Z') || (fullpath[0] >= 'a' && fullpath[0] <= 'z')) ||
+        fullpath[1] != ':' || fullpath[2] != '\\' || strchr(fullpath + 2, ':') != M_NULLPTR ||
+        strchr(fullpath, '/') != M_NULLPTR)
     {
-        /* Handle error */
+        set_dir_security_output_error_message(outputError,
+                                              "Only absolute local drive-letter directory paths are supported\n");
         return false;
     }
 
-    if (num_symlinks > MAX_SYMLINKS_IN_PATH)
+    for (const char* component = fullpath + 3; *component != '\0';)
     {
-        /* Could be a symlink loop */
-        /* Handle error */
-        return false;
+        const char* end = strchr(component, '\\');
+        size_t      len = end != M_NULLPTR ? M_STATIC_CAST(size_t, end - component) : strlen(component);
+        if (len == 0 || component[len - 1] == '.' || component[len - 1] == ' ')
+        {
+            set_dir_security_output_error_message(
+                outputError, "Directory path must not contain empty, dot, or ambiguous components\n");
+            return false;
+        }
+        component += len;
+        if (*component == '\\')
+        {
+            ++component;
+        }
     }
 
     error = safe_strdup(&path_copy, fullpath);
     if (error != 0 || path_copy == M_NULLPTR)
     {
-        /* Handle error */
+        set_dir_security_output_error_message(outputError, "Cannot allocate directory path copy\n");
         return false;
+    }
+    size_t pathlen = strlen(path_copy);
+    if (pathlen >= 3 && path_copy[pathlen - 1] == '\\')
+    {
+        path_copy[pathlen - 1] = '\0';
     }
 
     /* Figure out how far it is to the root */
@@ -1025,28 +854,35 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     }
     if (num_of_dirs == SSIZE_MAX)
     {
-        /* out of room to compare this many directories deep */
+        set_dir_security_output_error_message(outputError, "Too many directory components\n");
+        safe_free(&path_copy);
         return false;
     }
     /* Now num_of_dirs indicates # of dirs we must check */
     safe_free(&path_copy);
-    dirs = M_REINTERPRET_CAST(char**, safe_malloc(C_CAST(size_t, num_of_dirs) * sizeof(char*)));
+    dirs = M_REINTERPRET_CAST(char**, safe_calloc(C_CAST(size_t, num_of_dirs), sizeof(char*)));
     if (dirs == M_NULLPTR)
     {
-        /* Handle error */
+        set_dir_security_output_error_message(outputError, "Cannot allocate directory list\n");
         return false;
     }
     error = safe_strdup(&dirs[num_of_dirs - SSIZE_T_C(1)], fullpath);
     if (error != 0 || dirs[num_of_dirs - SSIZE_T_C(1)] == M_NULLPTR)
     {
-        /* Handle error */
+        set_dir_security_output_error_message(outputError, "Cannot allocate directory entry\n");
         safe_free(M_REINTERPRET_CAST(void**, &dirs));
         return false;
     }
-    error = safe_strdup(&path_copy, fullpath);
+    pathlen = strlen(dirs[num_of_dirs - 1]);
+    if (pathlen >= 3 && dirs[num_of_dirs - 1][pathlen - 1] == '\\')
+    {
+        dirs[num_of_dirs - 1][pathlen - 1] = '\0';
+    }
+    error = safe_strdup(&path_copy, dirs[num_of_dirs - 1]);
     if (error != 0 || path_copy == M_NULLPTR)
     {
-        /* Handle error */
+        set_dir_security_output_error_message(outputError, "Cannot allocate directory traversal copy\n");
+        safe_free(&dirs[num_of_dirs - SSIZE_T_C(1)]);
         safe_free(M_REINTERPRET_CAST(void**, &dirs));
         return false;
     }
@@ -1067,11 +903,8 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     safe_free(&path_copy);
     if (!secure)
     {
-        // cleanup dirs before returning error
-        // i is set to when strdup failed and was decrementing to zero/negatives
-        // so use it + 1 as the starting point to go through and cleanup the
-        // stored directories to free up memory
-        for (ssize_t cleanup = i + 1; cleanup <= num_of_dirs; cleanup++)
+        set_dir_security_output_error_message(outputError, "Cannot allocate directory ancestor\n");
+        for (ssize_t cleanup = 0; cleanup < num_of_dirs; cleanup++)
         {
             safe_free(&dirs[cleanup]);
         }
@@ -1079,15 +912,23 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
         return secure;
     }
 
+    char* currentUser      = get_Current_User_SID();
+    PSID  mySid            = M_NULLPTR;
+    PSID  trustedInstaller = M_NULLPTR;
+    if (currentUser == M_NULLPTR || !ConvertStringSidToSidA(currentUser, &mySid) ||
+        !ConvertStringSidToSidA("S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464", &trustedInstaller))
+    {
+        set_dir_security_output_error_message(outputError, "Cannot determine effective Windows security identity\n");
+        secure = false;
+    }
     /*
      * Traverse from the root to the fullpath,
      * checking permissions along the way.
      */
     for (i = 0; i < num_of_dirs && secure; i++)
     {
-        fileAttributes* attrs                 = M_NULLPTR;
-        char*           dirptr                = dirs[i];
-        bool            appendedTrailingSlash = false;
+        char* dirptr                = dirs[i];
+        bool  appendedTrailingSlash = false;
         if (is_Root_Path(dirptr))
         {
             // append a trailing \ to the end before attempting to get the
@@ -1099,191 +940,35 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
                 if (0 != safe_memcpy(dirptr, newlen, dirs[i], newlen - 2))
                 {
                     secure = false;
-                    perror("Failed memcpy while traversing directory tree\n");
+                    set_dir_security_output_error_message(outputError, "Cannot copy volume root path\n");
+                    safe_free(&dirptr);
                     break;
                 }
                 if (0 != safe_strcat(dirptr, newlen, "\\"))
                 {
                     secure = false;
-                    perror("Failed strcat while traversing directory tree\n");
+                    set_dir_security_output_error_message(outputError, "Cannot append volume root separator\n");
+                    safe_free(&dirptr);
                     break;
                 }
                 appendedTrailingSlash = true;
             }
             else
             {
-                dirptr = dirs[i];
+                secure = false;
+                set_dir_security_output_error_message(outputError, "Cannot allocate volume root path\n");
+                break;
             }
         }
 #if defined(_DEBUG)
         printf("dirptr = %s\n", dirptr);
 #endif //_DEBUG
 
-        attrs = os_Get_File_Attributes_By_Name(dirptr);
-        if (attrs != M_NULLPTR)
-        {
-            /* handle error */
-            secure = false;
-            set_dir_security_output_error_message(outputError, "Unable to read directory attributes: %s\n", dirptr);
-            if (appendedTrailingSlash)
-            {
-                safe_free(&dirptr);
-            }
-            break;
-        }
-        if (attrs->numberOfLinks > MAX_SYMLINKS_IN_PATH)
-        {
-            /* handle error */
-            secure = false;
-            set_dir_security_output_error_message(outputError, "Too many symlinks in path (>%d): %s\n",
-                                                  MAX_SYMLINKS_IN_PATH, dirptr);
-            free_File_Attributes(&attrs);
-            if (appendedTrailingSlash)
-            {
-                safe_free(&dirptr);
-            }
-            break;
-        }
-
-        if (attrs->fileFlags & FILE_ATTRIBUTE_REPARSE_POINT)
-        {
-            /* This is a link. Need to resolve it and test it */
-            HANDLE link = CreateFileA(dirptr, GENERIC_READ, FILE_SHARE_READ, M_NULLPTR, OPEN_EXISTING,
-                                      FILE_FLAG_OPEN_REPARSE_POINT, M_NULLPTR);
-            if (link != INVALID_HANDLE_VALUE)
-            {
-                PREPARSE_DATA_BUFFER reparseData =
-                    M_REINTERPRET_CAST(PREPARSE_DATA_BUFFER, safe_malloc(sizeof(REPARSE_DATA_BUFFER) + MAX_PATH));
-                if (reparseData != M_NULLPTR)
-                {
-                    DWORD bytesRead = DWORD_C(0);
-                    explicit_zeroes(reparseData, sizeof(REPARSE_DATA_BUFFER) + MAX_PATH);
-                    if (DeviceIoControl(link, FSCTL_GET_REPARSE_POINT, M_NULLPTR, 0, &reparseData, sizeof(reparseData),
-                                        &bytesRead, M_NULLPTR))
-                    {
-                        size_t bufferSize  = SIZE_T_C(0);
-                        char*  reparsePath = M_NULLPTR;
-#if defined(HAVE_MSFT_SECURE_LIB)
-                        wcstombs_s(&bufferSize, M_NULLPTR, 0,
-                                   C_CAST(wchar_t*, reparseData->SymbolicLinkReparseBuffer.PathBuffer), 0);
-#else
-                        bufferSize =
-                            wcstombs(M_NULLPTR, C_CAST(wchar_t*, reparseData->SymbolicLinkReparseBuffer.PathBuffer), 0);
-#endif
-                        if (bufferSize > 0 && bufferSize != SIZE_MAX)
-                        {
-                            reparsePath = M_REINTERPRET_CAST(char*, safe_calloc(bufferSize + 1, sizeof(char)));
-                            if (reparsePath != M_NULLPTR)
-                            {
-                                size_t conversionSize = SIZE_T_C(0);
-#if defined(HAVE_MSFT_SECURE_LIB)
-                                wcstombs_s(&conversionSize, reparsePath, bufferSize + 1,
-                                           C_CAST(wchar_t*, reparseData->SymbolicLinkReparseBuffer.PathBuffer),
-                                           bufferSize + 1);
-#else
-                                conversionSize = wcstombs(
-                                    reparsePath, C_CAST(wchar_t*, reparseData->SymbolicLinkReparseBuffer.PathBuffer),
-                                    bufferSize + 1);
-#endif
-                                if (conversionSize != bufferSize || conversionSize == SIZE_MAX)
-                                {
-                                    // an error occurred during the conversion,
-                                    // so consider this not secure.
-                                    secure = false;
-                                }
-                                else
-                                {
-                                    num_symlinks++;
-                                    bool recurseSecure =
-                                        internal_OS_Is_Directory_Secure(reparsePath, num_symlinks, outputError);
-                                    num_symlinks--;
-                                    if (!recurseSecure)
-                                    {
-                                        secure = false;
-                                    }
-                                }
-                                safe_free(&reparsePath);
-                            }
-                            else
-                            {
-                                set_dir_security_output_error_message(
-                                    outputError, "Unable to allocate memory to check reparse point in path: %s\n",
-                                    dirptr);
-                                secure = false;
-                            }
-                        }
-                        else
-                        {
-                            set_dir_security_output_error_message(
-                                outputError, "Unable to calculate memory length to check reparse point in path: %s\n",
-                                dirptr);
-                            secure = false;
-                        }
-                    }
-                    else
-                    {
-                        set_dir_security_output_error_message(
-                            outputError,
-                            "Unable to issue FSCTL_GET_REPASE_POINT to validate reparse point in path: %s\n", dirptr);
-                        secure = false;
-                    }
-                    safe_free_reparse_data_buf(&reparseData);
-                }
-                else
-                {
-                    set_dir_security_output_error_message(
-                        outputError, "Unable to allocate memory to check reparse point in path: %s\n", dirptr);
-                    secure = false;
-                }
-                CloseHandle(link);
-                if (secure)
-                {
-                    continue;
-                }
-                else
-                {
-                    if (appendedTrailingSlash)
-                    {
-                        safe_free(&dirptr);
-                    }
-                    break;
-                }
-            }
-            else
-            {
-                set_dir_security_output_error_message(outputError,
-                                                      "Unable to open handle to reparse point in path: %s\n", dirptr);
-                secure = false;
-                free_File_Attributes(&attrs);
-                if (appendedTrailingSlash)
-                {
-                    safe_free(&dirptr);
-                }
-                break;
-            }
-        }
-
-        if (!(attrs->fileFlags & FILE_ATTRIBUTE_DIRECTORY))
-        {
-            /* Not a directory */
-            secure = false;
-            set_dir_security_output_error_message(outputError,
-                                                  "%s is not a directory. Cannot validate as part of path.\n", dirptr);
-            free_File_Attributes(&attrs);
-            if (appendedTrailingSlash)
-            {
-                safe_free(&dirptr);
-            }
-            break;
-        }
-
-        secure = is_Folder_Secure(attrs->winSecurityDescriptor, dirptr, outputError);
+        secure = win_Inspect_Directory(dirptr, mySid, trustedInstaller, i == num_of_dirs - 1, outputError);
         if (appendedTrailingSlash)
         {
             safe_free(&dirptr);
         }
-
-        free_File_Attributes(&attrs);
     }
 
     for (i = 0; i < num_of_dirs; i++)
@@ -1292,6 +977,15 @@ static bool internal_OS_Is_Directory_Secure(const char* fullpath, unsigned int n
     }
 
     safe_free(M_REINTERPRET_CAST(void**, &dirs));
+    safe_free(&currentUser);
+    if (mySid != M_NULLPTR)
+    {
+        LocalFree(mySid);
+    }
+    if (trustedInstaller != M_NULLPTR)
+    {
+        LocalFree(trustedInstaller);
+    }
     return secure;
 }
 
@@ -1299,8 +993,7 @@ M_NODISCARD bool os_Is_Directory_Secure(const char* M_NONNULL fullpath, char** o
 {
     // This was implemented as close as possible to
     // https://wiki.sei.cmu.edu/confluence/display/c/FIO15-C.+Ensure+that+file+operations+are+performed+in+a+secure+directory
-    unsigned int num_symlinks = 0;
-    return internal_OS_Is_Directory_Secure(fullpath, num_symlinks, outputError);
+    return internal_OS_Is_Directory_Secure(fullpath, outputError);
 }
 
 bool os_Directory_Exists(const char* M_NONNULL pathToCheck)
