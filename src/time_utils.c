@@ -115,13 +115,11 @@ static M_INLINE int win_filetime_to_struct_timespec(struct timespec* ts, int bas
     epoch.wDayOfWeek = WORD_C(4); // Thursday
     epoch.wDay       = WORD_C(1);
     GetSystemTimeAsFileTime(&ftnow);
-    safe_memcpy(&nowAsInt, sizeof(ULARGE_INTEGER), &ftnow,
-                sizeof(FILETIME)); // these are both 8 bytes in size, so it SHOULD
-                                   // be fine and MSFT says to do this-TJE
+    M_IGNORE_SAFE_ERRNO_CALL(safe_memcpy(&nowAsInt, sizeof(ULARGE_INTEGER), &ftnow,
+                sizeof(FILETIME)), "these are both 8 bytes in size, so it SHOULD be fine and MSFT says to do this");
     SystemTimeToFileTime(&epoch, &epochfile);
-    safe_memcpy(&epochAsInt, sizeof(ULARGE_INTEGER), &epochfile,
-                sizeof(FILETIME));                // these are both 8 bytes in size, so it SHOULD
-                                                  // be fine and MSFT says to do this-TJE
+    M_IGNORE_SAFE_ERRNO_CALL(safe_memcpy(&epochAsInt, sizeof(ULARGE_INTEGER), &epochfile,
+                sizeof(FILETIME)), "these are both 8 bytes in size, so it SHOULD be fine and MSFT says to do this");
     if (nowAsInt.QuadPart >= epochAsInt.QuadPart) // this should always be true, but seems like
                                                   // microsoft is likely checking this, so
                                                   // checking this as well-TJE
@@ -191,8 +189,7 @@ static M_INLINE int struct_tm_to_struct_timespec(struct timespec* ts, int base)
         return UINT64_C(0);
     }
     M_INITIALIZE_STRUCTURE(&nowstruct, sizeof(struct tm));
-    get_UTCtime(&currentTime, &nowstruct);
-    uint64_t currentyear = (M_STATIC_CAST(uint64_t, nowstruct.tm_year) + UINT64_C(1900));
+    uint64_t currentyear = (M_STATIC_CAST(uint64_t, get_UTCtime(&currentTime, &nowstruct)->tm_year) + UINT64_C(1900));
     if (currentyear >= UINT64_C(1970))
     {
         // need to account for leap years before calculating below. This
@@ -610,7 +607,7 @@ struct tm* M_NULLABLE impl_safe_gmtime(const time_t* M_RESTRICT M_NONNULL timer,
         //       So there is room for improvement in this fallback function
         // Last thing we can do is use the unsafe version and copy it
         // immediately to our own buffer if nothing else is possible
-        safe_memcpy(buf, sizeof(struct tm), gmtime(timer), sizeof(struct tm));
+        M_IGNORE_SAFE_ERRNO_CALL(safe_memcpy(buf, sizeof(struct tm), gmtime(timer), sizeof(struct tm)), "src and dest are the same type and same size");
 #endif
     }
     return buf;
@@ -661,7 +658,7 @@ struct tm* M_NULLABLE impl_safe_localtime(const time_t* M_RESTRICT M_NONNULL tim
         //       So there is room for improvement in this fallback function
         // Last thing we can do is use the unsafe version and copy it
         // immediately to our own buffer if nothing else is possible
-        safe_memcpy(buf, sizeof(struct tm), localtime(timer), sizeof(struct tm));
+        M_IGNORE_SAFE_ERRNO_CALL(safe_memcpy(buf, sizeof(struct tm), localtime(timer), sizeof(struct tm)), "src and dest are the same type and same size");
 #endif
     }
     return buf;
